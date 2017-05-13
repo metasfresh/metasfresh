@@ -1,6 +1,7 @@
 package de.metas.ui.web.document.filter;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
@@ -11,6 +12,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,10 +49,21 @@ public final class DocumentFilter
 		return builder()
 				.setFilterId(filterId)
 				.addParameter(DocumentFilterParam.builder()
-						.setJoinAnd(true)
 						.setFieldName(fieldName)
 						.setOperator(operator)
 						.setValue(value)
+						.build())
+				.build();
+	}
+
+	public static DocumentFilter inArrayFilter(final String filterId, final String fieldName, final Collection<Integer> values)
+	{
+		return builder()
+				.setFilterId(filterId)
+				.addParameter(DocumentFilterParam.builder()
+						.setFieldName(fieldName)
+						.setOperator(Operator.IN_ARRAY)
+						.setValue(ImmutableList.copyOf(values))
 						.build())
 				.build();
 	}
@@ -86,6 +99,15 @@ public final class DocumentFilter
 	public List<DocumentFilterParam> getParameters()
 	{
 		return parameters;
+	}
+
+	public DocumentFilterParam getParameter(@NonNull final String fieldName)
+	{
+		return parameters
+				.stream()
+				.filter(param -> fieldName.equals(param.getFieldName()))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("Parameter " + fieldName + " not found in " + this));
 	}
 
 	public static final class Builder

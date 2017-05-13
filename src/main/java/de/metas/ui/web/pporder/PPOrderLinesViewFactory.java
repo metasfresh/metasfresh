@@ -2,17 +2,20 @@ package de.metas.ui.web.pporder;
 
 import java.util.Collection;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.pattribute.ASIRepository;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -51,16 +54,26 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	private final transient CCache<WindowId, ViewLayout> layouts = CCache.newLRUCache("PPOrderLinesViewFactory#Layouts", 10, 0);
 
 	@Override
-	public PPOrderLinesView createView(final ViewCreateRequest request)
+	public PPOrderLinesView createView(final CreateViewRequest request)
 	{
 		final ViewId viewId = ViewId.random(request.getWindowId());
-		
+
 		return PPOrderLinesView.builder()
 				.parentViewId(request.getParentViewId())
 				.viewId(viewId)
+				.viewType(request.getViewType())
+				.referencingDocumentPaths(request.getReferencingDocumentPaths())
 				.ppOrderId(request.getSingleFilterOnlyId())
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
 				.build();
+	}
+
+	@Override
+	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest)
+	{
+		throw new AdempiereException("View does not support filtering")
+				.setParameter("view", view)
+				.setParameter("filterViewRequest", filterViewRequest);
 	}
 
 	@Override

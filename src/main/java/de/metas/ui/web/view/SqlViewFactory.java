@@ -108,7 +108,7 @@ public class SqlViewFactory implements IViewFactory
 	}
 
 	@Override
-	public IView createView(final ViewCreateRequest request)
+	public IView createView(final CreateViewRequest request)
 	{
 		if (!request.getFilterOnlyIds().isEmpty())
 		{
@@ -121,8 +121,11 @@ public class SqlViewFactory implements IViewFactory
 		
 		return DefaultView.builder(sqlViewDataRepository)
 				.setWindowId(request.getWindowId())
+				.setViewType(request.getViewType())
+				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 				.setParentViewId(request.getParentViewId())
-				.setStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
+				.addStickyFilters(request.getStickyFilters())
+				.addStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
 				.setFiltersFromJSON(request.getFilters())
 				.build();
 	}

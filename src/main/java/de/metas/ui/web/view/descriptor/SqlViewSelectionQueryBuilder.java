@@ -20,7 +20,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFiltersBuilder;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -186,9 +186,8 @@ public final class SqlViewSelectionQueryBuilder
 		//
 		// Document filters
 		{
-			final String sqlFilters = SqlDocumentFiltersBuilder.newInstance(entityBinding)
-					.addFilters(filters)
-					.buildSqlWhereClause(sqlParams);
+			final String sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
+					.getSql(sqlParams, filters);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
@@ -327,7 +326,7 @@ public final class SqlViewSelectionQueryBuilder
 				+ ")";
 		final List<Object> sqlParams = ImmutableList.of(selectionId);
 
-		return new TypedSqlQueryFilter<>(sql, sqlParams);
+		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
 
 }

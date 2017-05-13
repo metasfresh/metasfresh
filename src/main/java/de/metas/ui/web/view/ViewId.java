@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -40,68 +42,67 @@ public final class ViewId
 {
 	public static final ViewId of(@Nullable final String windowIdStr, @NonNull final String viewIdStr)
 	{
-		final WindowId windowIdExpected = extractWindowIdFromViewId(viewIdStr);
-		final WindowId windowId;
-		if (windowIdStr == null)
+		final WindowId expectedWindowId = windowIdStr == null ? null : WindowId.fromJson(windowIdStr);
+		return ofViewIdString(viewIdStr, expectedWindowId);
+	}
+
+	/** @return ViewId from given viewId string; the WindowId will be extracted from viewId string */
+	@JsonCreator
+	public static ViewId ofViewIdString(@NonNull String viewIdStr)
+	{
+		final WindowId windowId = null; // N/A
+		return ofViewIdString(viewIdStr, windowId);
+	}
+
+	public static ViewId ofViewIdString(@NonNull String viewIdStr, @Nullable WindowId expectedWindowId)
+	{
+		final WindowId windowId = extractWindowIdFromViewId(viewIdStr);
+		if(expectedWindowId != null)
 		{
-			windowId = windowIdExpected;
+			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
 		}
-		else
-		{
-			windowId = WindowId.fromJson(windowIdStr);
-			Preconditions.checkArgument(Objects.equals(windowId, windowIdExpected), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
-		}
-		
+
 		return new ViewId(windowId, viewIdStr);
 	}
 
-	public static ViewId of(@Nullable WindowId windowId, @NonNull String viewIdStr)
-	{
-		final WindowId windowIdExpected = extractWindowIdFromViewId(viewIdStr);
-		final WindowId windowIdEffective;
-		if(windowId == null)
-		{
-			windowIdEffective = windowIdExpected;
-		}
-		else
-		{
-			windowIdEffective = windowId;
-			Preconditions.checkArgument(Objects.equals(windowIdEffective, windowIdExpected), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
-		}
-		
-		return new ViewId(windowIdEffective, viewIdStr);
-	}
-	
 	public static ViewId random(@NonNull final WindowId windowId)
 	{
 		// TODO: find a way to generate smaller viewIds
-		final String viewIdStr = windowId.toJson() + "-" + UUID.randomUUID().toString();
+		final String viewIdStr = windowId.toJson() + SEPARATOR_AFTER_WindowId + UUID.randomUUID().toString();
 		return new ViewId(windowId, viewIdStr);
 	}
-	
+
 	private static final WindowId extractWindowIdFromViewId(@NonNull final String viewIdStr)
 	{
-		final int idx = viewIdStr.indexOf("-");
+		final int idx = viewIdStr.indexOf(SEPARATOR_AFTER_WindowId);
 		final String windowIdStr = viewIdStr.substring(0, idx);
 		return WindowId.fromJson(windowIdStr);
 	}
+	
+	private static final String SEPARATOR_AFTER_WindowId = "-";
 
 	private final WindowId windowId;
 	private final String viewId;
 
-	public ViewId(@NonNull final WindowId windowId, @NonNull final String viewId)
+	private ViewId(@NonNull final WindowId windowId, @NonNull final String viewId)
 	{
 		super();
 		this.windowId = windowId;
 		this.viewId = viewId;
 	}
-	
+
 	public WindowId getWindowId()
 	{
 		return windowId;
 	}
-	
+
 	public String getViewId()
+	{
+		return viewId;
+	}
+
+	@JsonValue
+	public String toJson()
 	{
 		return viewId;
 	}

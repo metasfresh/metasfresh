@@ -1,20 +1,19 @@
 package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.compiere.util.CCache;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
-import de.metas.ui.web.view.ViewCreateRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
@@ -27,7 +26,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
  * #%L
@@ -66,24 +64,6 @@ public class HUEditorViewFactory implements IViewFactory
 		return sqlViewBindingCache.getOrLoad(key, () -> createSqlViewBinding());
 	}
 
-	private static final DocumentFilterDescriptorsProvider createFilterDescriptors()
-	{
-		// TODO: implement
-//		final ITranslatableString caption = Services.get(IMsgBL.class).translatable("Barcode");
-		final DocumentFilterDescriptorsProvider viewFilterDescriptors = ImmutableDocumentFilterDescriptorsProvider.builder()
-//				.descriptor(DocumentFilterDescriptor.builder()
-//						.setFilterId("barcode")
-//						.setDisplayName(caption)
-//						.addParameter(DocumentFilterParamDescriptor.builder()
-//								.setFieldName("Barcode")
-//								.setDisplayName(caption)
-//								.setWidgetType(DocumentFieldWidgetType.Text))
-//						.build())
-				.build();
-
-		return viewFilterDescriptors;
-	}
-
 	private static SqlViewBinding createSqlViewBinding()
 	{
 		return SqlViewBinding.builder()
@@ -99,8 +79,6 @@ public class HUEditorViewFactory implements IViewFactory
 						.fieldLoader((rs, adLanguage) -> null) // shall not be used
 						.build())
 				//
-				.setOrderBys(ImmutableList.of(DocumentQueryOrderBy.byFieldName(I_M_HU.COLUMNNAME_M_HU_ID, true)))
-				.setViewFilterDescriptors(createFilterDescriptors())
 				.build();
 	}
 
@@ -117,7 +95,7 @@ public class HUEditorViewFactory implements IViewFactory
 		return getSqlViewBinding().getViewFilterDescriptors().getAll();
 	}
 
-	private final ViewLayout createHUViewLayout(final WindowId windowId, JSONViewDataType viewDataType)
+	private final ViewLayout createHUViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
 		if (viewDataType == JSONViewDataType.includedView)
 		{
@@ -220,7 +198,7 @@ public class HUEditorViewFactory implements IViewFactory
 	}
 
 	@Override
-	public HUEditorView createView(final ViewCreateRequest request)
+	public HUEditorView createView(final CreateViewRequest request)
 	{
 		final WindowId windowId = request.getWindowId();
 		if (!WEBUI_HU_Constants.WEBUI_HU_Window_ID.equals(windowId))
@@ -244,10 +222,16 @@ public class HUEditorViewFactory implements IViewFactory
 		}
 
 		final Set<Integer> huIds = request.getFilterOnlyIds();
+		List<DocumentFilter> stickyFilters = request.getStickyFilters();
+		final List<DocumentFilter> filters = JSONDocumentFilter.unwrapList(request.getFilters(), getSqlViewBinding().getViewFilterDescriptors());
+
 		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setWindowId(windowId)
+				.setViewType(request.getViewType())
 				.setHUIds(huIds)
+				.setStickyFilters(stickyFilters)
+				.setFilters(filters)
 				.setHighVolume(huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD)
 				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())

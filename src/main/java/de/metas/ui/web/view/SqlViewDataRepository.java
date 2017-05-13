@@ -292,7 +292,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
-				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))
+				.filter(TypedSqlQueryFilter.of(sqlWhereClause))
 				.create()
 				.list(modelClass);
 	}

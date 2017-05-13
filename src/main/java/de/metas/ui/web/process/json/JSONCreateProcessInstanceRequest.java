@@ -168,7 +168,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		{
 			return null;
 		}
-		return ViewId.of(windowId, viewId);
+		return ViewId.ofViewIdString(viewId, windowId);
 	}
 
 	public Set<DocumentId> getViewDocumentIds()
