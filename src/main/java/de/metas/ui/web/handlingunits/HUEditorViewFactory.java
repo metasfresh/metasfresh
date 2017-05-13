@@ -31,6 +31,7 @@ import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -270,6 +271,7 @@ public class HUEditorViewFactory implements IViewFactory
 			return DocumentFilterDescriptor.builder()
 					.setFilterId(FILTER_ID)
 					.setDisplayName(barcodeCaption)
+					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)
