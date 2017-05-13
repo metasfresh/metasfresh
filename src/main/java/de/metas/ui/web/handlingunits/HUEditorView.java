@@ -28,7 +28,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.process.view.ViewActionParam;
@@ -41,6 +40,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -415,7 +415,7 @@ public class HUEditorView implements IView
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
-	@ViewAction(caption = "Barcode", layoutType = ProcessLayoutType.SingleOverlayField)
+	@ViewAction(caption = "Barcode", layoutType = PanelLayoutType.SingleOverlayField)
 	public SelectViewRowsAction actionSelectHUsByBarcode( //
 			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
 	// , final Set<DocumentId> selectedRowIds //
