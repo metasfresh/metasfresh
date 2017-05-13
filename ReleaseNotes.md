@@ -19,6 +19,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
     * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
+  * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
+    * New window in WebUI to allow the Print Format maintenance.
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
 
