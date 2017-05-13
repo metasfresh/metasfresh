@@ -241,7 +241,7 @@ public class SimpleTableLookup<T> implements ITerminalLookup
 			}
 		}
 
-		return new TypedSqlQueryFilter<T>(whereClause.toString(), params);
+		return TypedSqlQueryFilter.of(whereClause.toString(), params);
 	}
 
 	private final IQuery<T> createSearchQuery(final String text)

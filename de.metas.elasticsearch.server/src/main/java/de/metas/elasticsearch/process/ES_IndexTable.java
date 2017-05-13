@@ -160,7 +160,7 @@ public class ES_IndexTable extends JavaProcess
 
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			queryBuilder.filter(new TypedSqlQueryFilter<>(p_WhereClause));
+			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
 		}
 
 		if (p_Limit > 0)

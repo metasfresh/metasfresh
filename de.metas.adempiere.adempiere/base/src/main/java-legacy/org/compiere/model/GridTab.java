@@ -4238,7 +4238,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return ConstantQueryFilter.of(false);
 		}
 
-		final IQueryFilter<T> gridTabFilter = new TypedSqlQueryFilter<>(sqlWhereClause);
+		final IQueryFilter<T> gridTabFilter = TypedSqlQueryFilter.of(sqlWhereClause);
 		return gridTabFilter;
 	}
 	// metas: end
