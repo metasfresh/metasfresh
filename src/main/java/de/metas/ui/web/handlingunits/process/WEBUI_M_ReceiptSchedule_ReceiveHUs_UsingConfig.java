@@ -44,7 +44,13 @@ import de.metas.process.Param;
  * #L%
  */
 
-public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base implements IProcessDefaultParametersProvider
+/**
+ * Receive planning HUs using given configuration (parameters).
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_ReceiptSchedule_ReceiveHUs_Base implements IProcessDefaultParametersProvider
 {
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)

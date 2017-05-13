@@ -122,7 +122,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 		// Make sure each of them are eligible for receiving
 		{
 			final ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
-					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
+					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_ReceiveHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
 					.filter(resolution -> !resolution.isAccepted())
 					.findFirst()
 					.orElse(null);

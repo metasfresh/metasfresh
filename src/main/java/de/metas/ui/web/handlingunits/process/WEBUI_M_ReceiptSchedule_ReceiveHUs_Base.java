@@ -44,11 +44,18 @@ import de.metas.quantity.Quantity;
  * #L%
  */
 
-/* package */ abstract class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base extends JavaProcess implements IProcessPrecondition
+/**
+ * Base class for receiving HUs from selected receipt schedule.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+/* package */ abstract class WEBUI_M_ReceiptSchedule_ReceiveHUs_Base extends JavaProcess implements IProcessPrecondition
 {
 	protected abstract I_M_HU_LUTU_Configuration createM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration template);
+
 	protected abstract boolean isUpdateReceiptScheduleDefaultConfiguration();
-	
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
@@ -62,13 +69,13 @@ import de.metas.quantity.Quantity;
 		}
 
 		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
-		
+
 		// guard against null (might happen if the selected ID is not valid)
-		if(receiptSchedule == null)
+		if (receiptSchedule == null)
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
+
 		return checkEligibleForReceivingHUs(receiptSchedule);
 	}
 
@@ -89,7 +96,7 @@ import de.metas.quantity.Quantity;
 		}
 
 		return ProcessPreconditionsResolution.accept();
-		
+
 	}
 
 	protected static I_M_HU_LUTU_Configuration getCurrentLUTUConfiguration(final I_M_ReceiptSchedule receiptSchedule)
