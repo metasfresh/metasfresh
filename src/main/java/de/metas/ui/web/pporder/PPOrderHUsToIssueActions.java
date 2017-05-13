@@ -90,12 +90,23 @@ public final class PPOrderHUsToIssueActions
 
 			final DocumentId rowId = selectedDocumentIds.iterator().next();
 			final HUEditorRow row = HUEditorRow.cast(view.getById(rowId));
-			if (!row.isLU() && !row.isTU())
+			
+			if(row.isLU())
+			{
+				return ProcessPreconditionsResolution.accept();
+			}
+			else if(row.isTU())
+			{
+				if(row.isTopLevel())
+				{
+					return ProcessPreconditionsResolution.reject("top level TU");
+				}
+				return ProcessPreconditionsResolution.accept();
+			}
+			else
 			{
 				return ProcessPreconditionsResolution.reject("LU or TU shall be selected");
 			}
-
-			return ProcessPreconditionsResolution.accept();
 		}
 	}
 

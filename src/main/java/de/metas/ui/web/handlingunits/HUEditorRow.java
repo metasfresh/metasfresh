@@ -99,6 +99,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
 	private final HUEditorRowType type;
+	private final boolean topLevel;
 	private final boolean processed;
 
 	private final Map<String, Object> values;
@@ -123,6 +124,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		rowId = documentPath.getDocumentId();
 
 		type = builder.getType();
+		topLevel = builder.isTopLevel();
 		processed = builder.isProcessed();
 
 		values = builder.buildValuesMap();
@@ -323,6 +325,11 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		return getType() == HUEditorRowType.LU;
 	}
+	
+	public boolean isTopLevel()
+	{
+		return topLevel;
+	}
 
 	public String getSummary()
 	{
@@ -438,6 +445,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		private final WindowId windowId;
 		private DocumentId _rowId;
+		private Boolean topLevel;
 		private HUEditorRowType type;
 		private Boolean processed;
 
@@ -518,6 +526,18 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		{
 			this.type = type;
 			return this;
+		}
+		
+		public Builder setTopLevel(final boolean topLevel)
+		{
+			this.topLevel = topLevel;
+			return this;
+		}
+		
+		private boolean isTopLevel()
+		{
+			Check.assumeNotNull(topLevel, "Parameter topLevel is not null");
+			return topLevel;
 		}
 
 		public Builder setProcessed(final boolean processed)
