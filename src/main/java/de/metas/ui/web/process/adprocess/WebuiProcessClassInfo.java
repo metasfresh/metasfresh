@@ -26,9 +26,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessClassInfo;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.ListLookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
@@ -147,14 +147,14 @@ final class WebuiProcessClassInfo
 
 	private final ProcessClassInfo processClassInfo;
 	private final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders;
-	private final ProcessLayoutType layoutType;
+	private final PanelLayoutType layoutType;
 
 	/** Null constructor */
 	private WebuiProcessClassInfo()
 	{
 		processClassInfo = ProcessClassInfo.NULL;
 		paramLookupValuesProviders = ImmutableMap.of();
-		this.layoutType = ProcessLayoutType.Panel;
+		this.layoutType = PanelLayoutType.Panel;
 	}
 
 	private WebuiProcessClassInfo(final ProcessClassInfo processClassInfo, final WebuiProcess webuiProcessAnn, final ImmutableMap<String, LookupDescriptorProvider> paramLookupValuesProviders)
@@ -167,7 +167,7 @@ final class WebuiProcessClassInfo
 		}
 		else
 		{
-			this.layoutType = ProcessLayoutType.Panel;
+			this.layoutType = PanelLayoutType.Panel;
 		}
 	}
 
@@ -180,7 +180,7 @@ final class WebuiProcessClassInfo
 				.toString();
 	}
 	
-	public ProcessLayoutType getLayoutType()
+	public PanelLayoutType getLayoutType()
 	{
 		return layoutType;
 	}

@@ -12,11 +12,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -59,16 +59,18 @@ public final class JSONDocumentLayout implements Serializable
 	}
 	
 	@JsonProperty("windowId")
-	private final String windowId;
-
-	/** i.e. AD_Window_ID */
+	private final WindowId windowId;
 	@JsonProperty("type")
 	@Deprecated
-	private final String type;
+	private final WindowId type;
 
+	@JsonProperty("tabId")
+	@JsonInclude(Include.NON_NULL)
+	private final DetailId tabId;
+	@Deprecated
 	@JsonProperty("tabid")
 	@JsonInclude(Include.NON_NULL)
-	private final String tabid;
+	private final DetailId tabid;
 	
 	@JsonProperty("caption")
 	@JsonInclude(Include.NON_EMPTY)
@@ -118,9 +120,11 @@ public final class JSONDocumentLayout implements Serializable
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
-		windowId = String.valueOf(layout.getAD_Window_ID());
+		this.windowId = layout.getWindowId();
 		type = windowId;
-		tabid = null;
+		
+		tabId = null;
+		tabid = tabId;
 		
 		caption = layout.getCaption(jsonOpts.getAD_Language());
 		
@@ -171,11 +175,11 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		final String adLanguage = jsonOpts.getAD_Language();
 
-		windowId = String.valueOf(detailLayout.getAD_Window_ID());
+		windowId = detailLayout.getWindowId();
 		type = windowId;
 
-		final DetailId detailId = detailLayout.getDetailId();
-		tabid = DetailId.toJson(detailId);
+		tabId = detailLayout.getDetailId();
+		tabid = tabId;
 
 		caption = detailLayout.getCaption(jsonOpts.getAD_Language());
 
@@ -198,8 +202,8 @@ public final class JSONDocumentLayout implements Serializable
 
 	@JsonCreator
 	private JSONDocumentLayout(
-			@JsonProperty("windowId") final String windowId//
-			, @JsonProperty("tabid") final String tabId //
+			@JsonProperty("windowId") final WindowId windowId//
+			, @JsonProperty("tabId") final DetailId tabId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("documentSummaryElement") final JSONDocumentLayoutElement documentSummaryElement //
 			, @JsonProperty("docActionElement") final JSONDocumentLayoutElement docActionElement//
@@ -213,7 +217,9 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		this.windowId = windowId;
 		type = windowId;
-		tabid = Strings.emptyToNull(tabId);
+		
+		this.tabId = tabId;
+		tabid = tabId;
 		
 		this.caption = caption;
 		
@@ -232,56 +238,11 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("type", type)
+				.add("windowId", windowId)
 				.add("sections", sections.isEmpty() ? null : sections)
 				.add("tabs", tabs.isEmpty() ? null : tabs)
 				.add("filters", filters.isEmpty() ? null : filters)
 				.toString();
-	}
-
-	public String getType()
-	{
-		return type;
-	}
-
-	public String getTabid()
-	{
-		return tabid;
-	}
-
-	public JSONDocumentLayoutElement getDocumentSummaryElement()
-	{
-		return documentSummaryElement;
-	}
-
-	public JSONDocumentLayoutElement getDocActionElement()
-	{
-		return docActionElement;
-	}
-
-	public List<JSONDocumentLayoutSection> getSections()
-	{
-		return sections;
-	}
-
-	public List<JSONDocumentLayoutTab> getTabs()
-	{
-		return tabs;
-	}
-
-	public List<JSONDocumentFilterDescriptor> getFilters()
-	{
-		return filters;
-	}
-
-	public String getEmptyResultText()
-	{
-		return emptyResultText;
-	}
-
-	public String getEmptyResultHint()
-	{
-		return emptyResultHint;
 	}
 
 	@JsonAnyGetter

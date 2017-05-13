@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +20,8 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -26,7 +29,9 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -73,8 +78,9 @@ public class DefaultView implements IView
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final ViewId parentViewId;
+	private final JSONViewDataType viewType;
+	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
-	// private final transient IViewRowIdsOrderedSelectionFactory orderedSelectionFactory;
 	private final transient ViewRowIdsOrderedSelection defaultSelection;
 	private final transient ConcurrentHashMap<ImmutableList<DocumentQueryOrderBy>, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
@@ -82,9 +88,9 @@ public class DefaultView implements IView
 	// Filters
 	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	/** Sticky filters (i.e. active filters which cannot be changed) */
-	private final List<DocumentFilter> stickyFilters;
+	private final ImmutableList<DocumentFilter> stickyFilters;
 	/** Active filters */
-	private final List<DocumentFilter> filters;
+	private final ImmutableList<DocumentFilter> filters;
 
 	//
 	// Misc
@@ -94,16 +100,19 @@ public class DefaultView implements IView
 	// Caching
 	private final transient CCache<DocumentId, IViewRow> cache_rowsById;
 
+
 	private DefaultView(final Builder builder)
 	{
 		viewDataRepository = builder.getViewDataRepository();
 		parentViewId = builder.getParentViewId();
+		viewType = builder.getViewType();
+		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
 		//
 		// Filters
 		viewFilterDescriptors = builder.getViewFilterDescriptors();
-		stickyFilters = ImmutableList.copyOf(builder.getStickyFilters());
-		filters = ImmutableList.copyOf(builder.getFilters());
+		stickyFilters = builder.getStickyFilters();
+		filters = builder.getFilters();
 
 		//
 		// Selection
@@ -114,7 +123,7 @@ public class DefaultView implements IView
 			defaultSelection = viewDataRepository.createOrderedSelection(
 					evalCtx //
 					, builder.getWindowId() //
-					, ImmutableList.<DocumentFilter> builder().addAll(stickyFilters).addAll(filters).build() //
+					, ImmutableList.copyOf(Iterables.concat(stickyFilters, filters)) //
 			);
 			selectionsByOrderBys.put(defaultSelection.getOrderBys(), defaultSelection);
 		}
@@ -157,6 +166,18 @@ public class DefaultView implements IView
 	public ViewId getViewId()
 	{
 		return defaultSelection.getViewId();
+	}
+	
+	@Override
+	public JSONViewDataType getViewType()
+	{
+		return viewType;
+	}
+	
+	@Override
+	public ImmutableSet<DocumentPath> getReferencingDocumentPaths()
+	{
+		return referencingDocumentPaths;
 	}
 
 	@Override
@@ -366,6 +387,8 @@ public class DefaultView implements IView
 	public static final class Builder
 	{
 		private WindowId windowId;
+		private JSONViewDataType viewType;
+		private Set<DocumentPath> referencingDocumentPaths;
 		private ViewId parentViewId;
 		private final IViewDataRepository viewDataRepository;
 
@@ -398,6 +421,28 @@ public class DefaultView implements IView
 		{
 			return windowId;
 		}
+		
+		public Builder setViewType(JSONViewDataType viewType)
+		{
+			this.viewType = viewType;
+			return this;
+		}
+		
+		public JSONViewDataType getViewType()
+		{
+			return viewType;
+		}
+		
+		public Builder setReferencingDocumentPaths(Set<DocumentPath> referencingDocumentPaths)
+		{
+			this.referencingDocumentPaths = referencingDocumentPaths;
+			return this;
+		}
+		
+		private ImmutableSet<DocumentPath> getReferencingDocumentPaths()
+		{
+			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+		}
 
 		private ViewId getParentViewId()
 		{
@@ -414,22 +459,42 @@ public class DefaultView implements IView
 			return viewDataRepository.getViewFilterDescriptors();
 		}
 
-		public Builder setStickyFilter(@Nullable final DocumentFilter stickyFilter)
+		public Builder addStickyFilter(@Nullable final DocumentFilter stickyFilter)
 		{
-			setStickyFilters(stickyFilter == null ? ImmutableList.of() : ImmutableList.of(stickyFilter));
+			if(stickyFilter == null)
+			{
+				return this;
+			}
+			
+			if(_stickyFilters == null)
+			{
+				_stickyFilters = new ArrayList<>();
+			}
+			_stickyFilters.add(stickyFilter);
+			
 			return this;
 		}
 		
-		public Builder setStickyFilters(final List<DocumentFilter> stickyFilters)
+		public Builder addStickyFilters(final List<DocumentFilter> stickyFilters)
 		{
-			_stickyFilters = stickyFilters == null || stickyFilters.isEmpty() ? ImmutableList.of() : ImmutableList.copyOf(stickyFilters);
+			if(stickyFilters == null || stickyFilters.isEmpty())
+			{
+				return this;
+			}
+			
+			if(_stickyFilters == null)
+			{
+				_stickyFilters = new ArrayList<>();
+			}
+			_stickyFilters.addAll(stickyFilters);
+			
 			return this;
 		}
 
 
-		private List<DocumentFilter> getStickyFilters()
+		private ImmutableList<DocumentFilter> getStickyFilters()
 		{
-			return _stickyFilters;
+			return _stickyFilters == null ? ImmutableList.of() : ImmutableList.copyOf(_stickyFilters);
 		}
 
 		public Builder setFilters(final List<DocumentFilter> filters)
@@ -444,9 +509,9 @@ public class DefaultView implements IView
 			return this;
 		}
 
-		private List<DocumentFilter> getFilters()
+		private ImmutableList<DocumentFilter> getFilters()
 		{
-			return _filters;
+			return _filters == null ? ImmutableList.of() : ImmutableList.copyOf(_filters);
 		}
 	}
 }

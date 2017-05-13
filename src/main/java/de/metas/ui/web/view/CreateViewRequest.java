@@ -11,9 +11,11 @@ import org.adempiere.util.collections.ListUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -49,11 +51,22 @@ import lombok.NonNull;
  *
  */
 @lombok.Data
-public final class ViewCreateRequest
+public final class CreateViewRequest
 {
 	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
 	{
 		return new Builder(windowId, viewType);
+	}
+
+	public static final Builder filterViewBuilder(@NonNull final IView view, @NonNull final JSONFilterViewRequest filterViewRequest)
+	{
+		return builder(view.getViewId().getWindowId(), view.getViewType())
+				.setParentViewId(view.getParentViewId())
+				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
+				.setStickyFilters(view.getStickyFilters())
+				.setFilters(filterViewRequest.getFilters())
+		// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+		;
 	}
 
 	private final WindowId windowId;
@@ -62,15 +75,13 @@ public final class ViewCreateRequest
 	private final ViewId parentViewId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
+	private final List<DocumentFilter> stickyFilters;
 	private final List<JSONDocumentFilter> filters;
 	private final Set<Integer> filterOnlyIds;
 
-	private final int queryFirstRow;
-	private final int queryPageLength;
-
 	private final ViewActionDescriptorsList actions;
 
-	private ViewCreateRequest(final Builder builder)
+	private CreateViewRequest(final Builder builder)
 	{
 		windowId = builder.getWindowId();
 		viewType = builder.getViewType();
@@ -78,11 +89,9 @@ public final class ViewCreateRequest
 		parentViewId = builder.getParentViewId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
+		stickyFilters = builder.getStickyFilters();
 		filters = builder.getFilters();
 		filterOnlyIds = builder.getFilterOnlyIds();
-
-		queryFirstRow = builder.getQueryFirstRow();
-		queryPageLength = builder.getQueryPageLength();
 
 		actions = builder.getActions();
 	}
@@ -96,7 +105,7 @@ public final class ViewCreateRequest
 	{
 		return windowId;
 	}
-	
+
 	public ViewActionDescriptorsList getActions()
 	{
 		return actions;
@@ -110,6 +119,7 @@ public final class ViewCreateRequest
 
 	public DocumentPath getSingleReferencingDocumentPathOrNull()
 	{
+		final Set<DocumentPath> referencingDocumentPaths = getReferencingDocumentPaths();
 		if (referencingDocumentPaths.isEmpty())
 		{
 			return null;
@@ -120,10 +130,10 @@ public final class ViewCreateRequest
 			return referencingDocumentPaths.iterator().next();
 		}
 	}
-	
+
 	public int getSingleFilterOnlyId()
 	{
-		return ListUtils.singleElement(getFilterOnlyIds());		
+		return ListUtils.singleElement(getFilterOnlyIds());
 	}
 
 	//
@@ -137,11 +147,10 @@ public final class ViewCreateRequest
 		private ViewId parentViewId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
+		private List<DocumentFilter> stickyFilters;
 		private List<JSONDocumentFilter> filters;
 		private Set<Integer> filterOnlyIds;
 
-		private int queryFirstRow = -1;
-		private int queryPageLength = -1;
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 
 		private Builder(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewType)
@@ -150,9 +159,9 @@ public final class ViewCreateRequest
 			this.viewType = viewType;
 		}
 
-		public ViewCreateRequest build()
+		public CreateViewRequest build()
 		{
-			return new ViewCreateRequest(this);
+			return new CreateViewRequest(this);
 		}
 
 		private WindowId getWindowId()
@@ -185,6 +194,17 @@ public final class ViewCreateRequest
 		private Set<DocumentPath> getReferencingDocumentPaths()
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
+		}
+
+		public Builder setStickyFilters(List<DocumentFilter> stickyFilters)
+		{
+			this.stickyFilters = stickyFilters;
+			return this;
+		}
+
+		private List<DocumentFilter> getStickyFilters()
+		{
+			return stickyFilters == null ? ImmutableList.of() : ImmutableList.copyOf(stickyFilters);
 		}
 
 		public Builder setFilters(final List<JSONDocumentFilter> filters)
@@ -221,23 +241,6 @@ public final class ViewCreateRequest
 		private Set<Integer> getFilterOnlyIds()
 		{
 			return filterOnlyIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(filterOnlyIds);
-		}
-
-		public Builder setFetchPage(final int queryFirstRow, final int queryPageLength)
-		{
-			this.queryFirstRow = queryFirstRow;
-			this.queryPageLength = queryPageLength;
-			return this;
-		}
-
-		private int getQueryFirstRow()
-		{
-			return queryFirstRow;
-		}
-
-		private int getQueryPageLength()
-		{
-			return queryPageLength;
 		}
 
 		public Builder addActionsFromUtilityClass(final Class<?> utilityClass)

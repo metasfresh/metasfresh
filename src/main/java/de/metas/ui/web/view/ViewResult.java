@@ -68,6 +68,7 @@ public final class ViewResult
 	private final int queryLimit;
 	private final boolean queryLimitHit;
 	
+	private final List<DocumentFilter> stickyFilters;
 	private final List<DocumentFilter> filters;
 	private final List<DocumentQueryOrderBy> orderBys;
 
@@ -93,6 +94,7 @@ public final class ViewResult
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
 		
+		stickyFilters = ImmutableList.copyOf(view.getStickyFilters());
 		filters = ImmutableList.copyOf(view.getFilters());
 		this.orderBys = ImmutableList.copyOf(orderBys);
 
@@ -113,6 +115,7 @@ public final class ViewResult
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
 		
+		stickyFilters = ImmutableList.copyOf(view.getStickyFilters());
 		filters = ImmutableList.copyOf(view.getFilters());
 		orderBys = view.getDefaultOrderBys();
 
@@ -165,6 +168,11 @@ public final class ViewResult
 	public int getPageLength()
 	{
 		return pageLength;
+	}
+	
+	public List<DocumentFilter> getStickyFilters()
+	{
+		return stickyFilters;
 	}
 
 	public List<DocumentFilter> getFilters()

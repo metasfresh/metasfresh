@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.process.descriptor.ProcessLayout;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutElement;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
@@ -45,7 +45,7 @@ public class JSONProcessLayout implements Serializable
 	}
 
 	@JsonProperty("layoutType")
-	private final ProcessLayoutType layoutType;
+	private final PanelLayoutType layoutType;
 	
 	@JsonProperty("caption")
 	private final String caption;

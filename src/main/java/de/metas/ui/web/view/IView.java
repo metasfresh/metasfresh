@@ -13,7 +13,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -43,12 +45,20 @@ public interface IView
 {
 	ViewId getViewId();
 
+	JSONViewDataType getViewType();
+
+	Set<DocumentPath> getReferencingDocumentPaths();
+
 	/** @return table name or null */
 	String getTableName();
 
-	/** @return parent viewId or null */
+	/**
+	 * @return In case this is an included view, this method will return the parent's viewId. Else null will be returned.
+	 * @see #isIncludedView()
+	 */
 	ViewId getParentViewId();
 
+	/** @return true if this is an included view */
 	default boolean isIncludedView()
 	{
 		return getParentViewId() != null;
@@ -81,6 +91,11 @@ public interface IView
 
 	LookupValuesList getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
 
+	/**
+	 * Gets the stick filters.
+	 * Sticky filters are those filters which cannot be changed by user and which shall be preserved between filterings.
+	 * Sticky filters shall never be exported to frontend.
+	 */
 	List<DocumentFilter> getStickyFilters();
 
 	/**

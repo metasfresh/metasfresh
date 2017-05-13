@@ -1,13 +1,11 @@
 package de.metas.ui.web.document.filter.sql;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.adempiere.db.DBConstants;
 import org.compiere.util.DB;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -42,55 +40,38 @@ import lombok.NonNull;
  */
 
 /**
- * Helper class to build SQL where clauses from {@link DocumentFilter}s.
+ * Default {@link SqlDocumentFilterConverter}.
+ *
+ * It simply converts the filters to SQL using a given {@link SqlEntityBinding} to map filter parameters.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class SqlDocumentFiltersBuilder
+/* package */final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilterConverter
 {
-	public static final SqlDocumentFiltersBuilder newInstance(final SqlEntityBinding entityBinding)
+	static SqlDefaultDocumentFilterConverter newInstance(final SqlEntityBinding entityBinding)
 	{
-		return new SqlDocumentFiltersBuilder(entityBinding);
+		return new SqlDefaultDocumentFilterConverter(entityBinding);
 	}
 
 	private final SqlEntityBinding entityBinding;
-	private final List<DocumentFilter> filters = new ArrayList<>();
 
-	private SqlDocumentFiltersBuilder(@NonNull final SqlEntityBinding entityBinding)
+	private SqlDefaultDocumentFilterConverter(final @NonNull SqlEntityBinding entityBinding)
 	{
 		this.entityBinding = entityBinding;
 	}
 
-	public String buildSqlWhereClause(final List<Object> sqlParams)
+	@Override
+	public String toString()
 	{
-		if (filters.isEmpty())
-		{
-			return "";
-		}
-
-		final StringBuilder sqlWhereClauseBuilder = new StringBuilder();
-
-		for (final DocumentFilter filter : filters)
-		{
-			final String sqlFilter = buildSqlWhereClause(sqlParams, filter);
-			if (Check.isEmpty(sqlFilter, true))
-			{
-				continue;
-			}
-
-			if (sqlWhereClauseBuilder.length() > 0)
-			{
-				sqlWhereClauseBuilder.append("\n AND ");
-			}
-			sqlWhereClauseBuilder.append(DB.TO_COMMENT(filter.getFilterId())).append("(").append(sqlFilter).append(")");
-		}
-
-		return sqlWhereClauseBuilder.toString();
+		return MoreObjects.toStringHelper(this)
+				.add("entityBinding", entityBinding)
+				.toString();
 	}
 
 	/** Build document filter where clause */
-	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilter filter)
+	@Override
+	public String getSql(final List<Object> sqlParams, final DocumentFilter filter)
 	{
 		final StringBuilder sql = new StringBuilder();
 
@@ -148,7 +129,7 @@ public class SqlDocumentFiltersBuilder
 			}
 			case IN_ARRAY:
 			{
-				final List<Object> sqlValuesList = convertToSqlValuesList(filterParam.getValue(), fieldBinding);
+				final List<Object> sqlValuesList = filterParam.getValueAsList(itemObj -> convertToSqlValue(itemObj, fieldBinding));
 				return buildSqlWhereClause_InArray(columnSql, sqlValuesList, sqlParams);
 			}
 			case GREATER:
@@ -219,24 +200,6 @@ public class SqlDocumentFiltersBuilder
 		final Class<?> targetClass = fieldBinding.getSqlValueClass();
 		final Object sqlValue = SqlDocumentsRepository.convertValueToPO(value, columnName, widgetType, targetClass);
 		return sqlValue;
-	}
-
-	private List<Object> convertToSqlValuesList(final Object valuesAsObj, final SqlEntityFieldBinding fieldBinding)
-	{
-		final Stream<?> valuesStream;
-		if (valuesAsObj instanceof Collection)
-		{
-			Collection<?> valuesCollection = (Collection<?>)valuesAsObj;
-			valuesStream = valuesCollection.stream();
-		}
-		else
-		{
-			throw new IllegalArgumentException("Value type not supported: " + valuesAsObj);
-		}
-
-		return valuesStream
-				.map(value -> convertToSqlValue(value, fieldBinding))
-				.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final List<Object> sqlParams)
@@ -330,7 +293,7 @@ public class SqlDocumentFiltersBuilder
 				.toString();
 	}
 
-	public String replaceTableNameWithTableAlias(final String sql)
+	private String replaceTableNameWithTableAlias(final String sql)
 	{
 		if (sql == null || sql.isEmpty())
 		{
@@ -341,14 +304,4 @@ public class SqlDocumentFiltersBuilder
 		return sqlFixed;
 	}
 
-	public SqlDocumentFiltersBuilder addFilters(final List<DocumentFilter> filters)
-	{
-		if (filters == null || filters.isEmpty())
-		{
-			return this;
-		}
-
-		this.filters.addAll(filters);
-		return this;
-	}
 }

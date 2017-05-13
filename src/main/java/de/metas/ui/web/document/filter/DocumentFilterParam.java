@@ -1,8 +1,15 @@
 package de.metas.ui.web.document.filter;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import lombok.NonNull;
 
 /*
  * #%L
@@ -32,7 +39,7 @@ public class DocumentFilterParam
 	{
 		return new Builder();
 	}
-	
+
 	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
 	{
 		return new DocumentFilterParam(joinAnd, sqlWhereClause);
@@ -54,7 +61,7 @@ public class DocumentFilterParam
 		LESS_OR_EQUAL, //
 		BETWEEN, //
 		;
-		
+
 		public boolean isRangeOperator()
 		{
 			return this == BETWEEN;
@@ -106,7 +113,7 @@ public class DocumentFilterParam
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("join", joinAnd ? "AND" : "OR")
+				.add("joinAnd", joinAnd)
 				.add("fieldName", fieldName)
 				.add("operator", operator)
 				.add("value", value)
@@ -143,6 +150,60 @@ public class DocumentFilterParam
 	public Object getValue()
 	{
 		return value;
+	}
+
+	public Collection<?> getValueAsCollection()
+	{
+		if (value == null)
+		{
+			throw new IllegalStateException("Cannot convert null value to Collection<?>");
+		}
+		else if (value instanceof Collection)
+		{
+			return (Collection<?>)value;
+		}
+		else
+		{
+			throw new IllegalStateException("Cannot convert value to Collection<?>: " + value);
+		}
+	}
+
+	public <T> List<T> getValueAsList(@NonNull final Function<Object, T> itemConverter)
+	{
+		final Collection<?> valueAsCollection = getValueAsCollection();
+		if (valueAsCollection == null)
+		{
+			throw new IllegalStateException("Cannot convert null value to List<Integer>");
+		}
+		
+		if(valueAsCollection.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return valueAsCollection.stream()
+				.map(itemConverter)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	public List<Integer> getValueAsIntList()
+	{
+		return getValueAsList(itemObj -> {
+			if (itemObj == null)
+			{
+				// pass-through, even though it will produce an exception when the list will be converted to immutable list
+				return null;
+			}
+			else if (itemObj instanceof Number)
+			{
+				return ((Number)itemObj).intValue();
+			}
+			else
+			{
+				return Integer.parseInt(itemObj.toString());
+			}
+		});
 	}
 
 	public Object getValueTo()

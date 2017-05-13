@@ -68,7 +68,7 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 {
 	public static final int HIGHVOLUME_THRESHOLD = 100;
-	
+
 	private static final int STREAM_ALL_MAX_SIZE = 100;
 
 	private final HUEditorViewRepository huEditorRepo;
@@ -79,14 +79,15 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
-	HUEditorViewBuffer_HighVolume(final WindowId windowId //
+	HUEditorViewBuffer_HighVolume( //
+			final WindowId windowId //
 			, final HUEditorViewRepository huEditorRepo //
-			, final SqlViewBinding entityBinding //
 			, final List<DocumentFilter> filters //
 	)
 	{
 		this.huEditorRepo = huEditorRepo;
 
+		final SqlViewBinding entityBinding = huEditorRepo.getSqlViewBinding();
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(entityBinding);
 		sqlSelectHUIdsByPage = entityBinding.getSqlSelectByPage();
 
@@ -109,6 +110,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return Objects.equals(defaultSelectionOld, defaultSelectionNew);
 	}
 
+	@Override
 	public ViewId getViewId()
 	{
 		return getDefaultSelection().getViewId();

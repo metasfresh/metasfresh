@@ -27,6 +27,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
@@ -145,7 +146,7 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public IView createView(final ViewCreateRequest request)
+	public IView createView(final CreateViewRequest request)
 	{
 		final WindowId windowId = request.getWindowId();
 		final JSONViewDataType viewType = request.getViewType();
@@ -161,6 +162,37 @@ public class ViewsRepository implements IViewsRepository
 		views.put(view.getViewId().getViewId(), view);
 
 		return view;
+	}
+
+	@Override
+	public IView filterView(final ViewId viewId, final JSONFilterViewRequest jsonRequest)
+	{
+		// Get current view
+		final IView view = getView(viewId);
+
+		//
+		// Create the new view
+		final IViewFactory factory = getFactory(view.getViewId().getWindowId(), view.getViewType());
+		final IView newView = factory.filterView(view, jsonRequest);
+		if (newView == null)
+		{
+			throw new AdempiereException("Failed filtering view")
+					.setParameter("viewId", viewId)
+					.setParameter("request", jsonRequest)
+					.setParameter("factory", factory.toString());
+		}
+		
+		//
+		// Add the new view to our internal map
+		// NOTE: avoid adding if the factory returned the same view.
+		if(view != newView)
+		{
+			final ViewId newViewId = newView.getViewId();
+			views.put(newViewId.getViewId(), newView);
+		}
+
+		// Return the newly created view
+		return newView;
 	}
 
 	@Override
@@ -180,9 +212,9 @@ public class ViewsRepository implements IViewsRepository
 		{
 			throw new EntityNotFoundException("No view found for viewId=" + viewId);
 		}
-		
+
 		DocumentPermissionsHelper.assertWindowAccess(view.getViewId().getWindowId(), viewId, UserSession.getCurrentPermissions());
-		
+
 		return view;
 	}
 
@@ -203,18 +235,18 @@ public class ViewsRepository implements IViewsRepository
 	@Async
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		if(recordRefs.isEmpty())
+		if (recordRefs.isEmpty())
 		{
 			return;
 		}
 
 		final Collection<IView> views = this.views.asMap().values();
-		
-		if(logger.isDebugEnabled())
+
+		if (logger.isDebugEnabled())
 		{
 			logger.debug("Notifing {} views about changed records: {}", views.size(), recordRefs);
 		}
-		
+
 		views.forEach(view -> view.notifyRecordsChanged(recordRefs));
 	}
 }
