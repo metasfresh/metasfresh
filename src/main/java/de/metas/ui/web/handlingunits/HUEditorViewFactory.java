@@ -4,14 +4,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.CCache;
+import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -78,6 +89,12 @@ public class HUEditorViewFactory implements IViewFactory
 						.sqlValueClass(Integer.class)
 						.fieldLoader((rs, adLanguage) -> null) // shall not be used
 						.build())
+				//
+				// View filters and converters
+				.setViewFilterDescriptors(ImmutableDocumentFilterDescriptorsProvider.builder()
+						.descriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
+						.build())
+				.addViewFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
 				//
 				.build();
 	}
@@ -237,4 +254,62 @@ public class HUEditorViewFactory implements IViewFactory
 				.setActions(request.getActions())
 				.build();
 	}
+
+	/**
+	 * HU's Barcode filter converter
+	 */
+	private static final class HUBarcodeSqlDocumentFilterConverter implements SqlDocumentFilterConverter
+	{
+		public static final String FILTER_ID = "barcode";
+
+		public static final transient HUBarcodeSqlDocumentFilterConverter instance = new HUBarcodeSqlDocumentFilterConverter();
+
+		public static DocumentFilterDescriptor createDocumentFilterDescriptor()
+		{
+			final ITranslatableString barcodeCaption = Services.get(IMsgBL.class).translatable("Barcode");
+			return DocumentFilterDescriptor.builder()
+					.setFilterId(FILTER_ID)
+					.setDisplayName(barcodeCaption)
+					.addParameter(DocumentFilterParamDescriptor.builder()
+							.setFieldName(PARAM_Barcode)
+							.setDisplayName(barcodeCaption)
+							.setWidgetType(DocumentFieldWidgetType.Text))
+					.build();
+		}
+
+		private static final String PARAM_Barcode = "Barcode";
+
+		private HUBarcodeSqlDocumentFilterConverter()
+		{
+		}
+
+		@Override
+		public String getSql(final List<Object> sqlParamsOut, final DocumentFilter filter)
+		{
+			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
+			if (barcodeObj == null)
+			{
+				throw new IllegalArgumentException("Barcode parameter is null: " + filter);
+			}
+
+			final String barcode = barcodeObj.toString().trim();
+			if (barcode.isEmpty())
+			{
+				throw new IllegalArgumentException("Barcode parameter is empty: " + filter);
+			}
+
+			final IQueryFilter<I_M_HU> queryFilter = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
+					.setContext(PlainContextAware.newOutOfTrx())
+					.setOnlyWithBarcode(barcode)
+					.createQueryFilter();
+			
+			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(queryFilter);
+			final String sql = sqlQueryFilter.getSql();
+			final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
+
+			sqlParamsOut.addAll(sqlParams);
+			return sql;
+		}
+	}
+
 }
