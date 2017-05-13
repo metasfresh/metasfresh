@@ -332,7 +332,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, contextProvider)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
-				.filter(new TypedSqlQueryFilter<T>(lockedRecordsSQL));
+				.filter(TypedSqlQueryFilter.of(lockedRecordsSQL));
 	}
 
 	/**

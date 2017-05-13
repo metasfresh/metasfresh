@@ -25,7 +25,8 @@ package de.metas.impex.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  * 

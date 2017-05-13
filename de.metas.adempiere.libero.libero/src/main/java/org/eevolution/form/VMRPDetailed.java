@@ -132,7 +132,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -150,6 +149,7 @@ import org.eevolution.mrp.api.IMRPNoteBL;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.process.IProcessExecutionListener;

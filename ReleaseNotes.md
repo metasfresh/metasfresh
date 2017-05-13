@@ -17,6 +17,12 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1305](https://github.com/metasfresh/metasfresh/issues/1305) Jasper Document for Vendor Returns
+    * Created a new Jasper Document that allows to Vendor Return Confirmation.
+  * [#1320](https://github.com/metasfresh/metasfresh/issues/1320) Translation for nl_NL in WebUI
+    * Initial Translation for nl_NL for multiple WebUI Windows and elements. Thanks to @Arjanvb for this contribution.
+  * [#1460](https://github.com/metasfresh/metasfresh/issues/1460) The Bestellkontrolle barcodes shall be generated and persisted in database
+    * New Barcode Generator for the Order Control report in Manufacuring. This Barcode is needed to the scan possibility in Manufacturing when starting the action issue and receipt workflow in WebUI.
   * [#1463](https://github.com/metasfresh/metasfresh/issues/1463) Add Window for S_Resource_Ressource to WebUI
     * Adding a new window to WebUI to allow maintaining Manufacturing Resources.
   * [#1464](https://github.com/metasfresh/metasfresh/issues/1464) New Window for Manufacturing Workflow in WebUI
@@ -27,6 +33,8 @@ Here come the actual release notes:
     * Adding the ResourceType maintenance Window to WebUI.
   * [#1467](https://github.com/metasfresh/metasfresh/issues/1467) New Window for Product Planning Data in WebUI
     * Including the Window Product Planning Data to WebUI, to allow the user to maintain Manufacturing dependant data for products.
+  * [#1471](https://github.com/metasfresh/metasfresh/issues/1471) Provide material-dispo and spring-boot-admin as services
+    * New Material Disposition Framework alowing to start the "Make or Buy" decision nearly just-in-time. This implementation is preparing the gound for the furture metasfresh microservices framework
   * [#1473](https://github.com/metasfresh/metasfresh/issues/1473) New Window for Node Transitions in webUI
     * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
   * [#1478](https://github.com/metasfresh/metasfresh/issues/1478) New Window for InvoiceSchedule in WebUI
@@ -37,6 +45,68 @@ Here come the actual release notes:
     * Adjustment in Window Workflow Node Transition, now allowing the user to select the Workflow Node.
   * [#1494](https://github.com/metasfresh/metasfresh/issues/1494) Add HU_PI_Item to Product Price Window in WebUI
     * Adding the Field Handling Unit Packing Instruction to Product Price Window. Minor Adjustments in Layout.
+  * [#1499](https://github.com/metasfresh/metasfresh/issues/1499) Update to spring-boot 1.5.3
+    * Updating spring-boot from 1.4.2 to version 1.5.3
+  * [#1502](https://github.com/metasfresh/metasfresh/issues/1502) Drop the CU-TU assignment for "No PI" (M_HU_ID=100)
+    * Dropping the Customer Unit/Transport Unit assignment creation for "No Packing Instructions2 Handling Units.
+
+* metasfresh-webui-api
+  * [#280](https://github.com/metasfresh/metasfresh-webui-api/issues/280) Scan of Barcode "Bestellkontrolle" for Manufacturing execution
+    * New Functionality for manufacturing action issue/ receipt processing, allowing the user to scan the Order control report for efficient workflow start.
+  * [#348](https://github.com/metasfresh/metasfresh-webui-api/issues/348) backend: Implement Zoom-into in webUI
+    * New usability feature for zoom-into. Fields with references to other records now create a link to the corresponding records via available field label.
+  * [#352](https://github.com/metasfresh/metasfresh-webui-api/issues/352) Introduce JSONLayoutType.primaryLongLabels
+    * Introducing a new Lable LayoutType for longer label names.
+  * [#354](https://github.com/metasfresh/metasfresh-webui-api/issues/354) Support for Record_ID buttons
+    * New Functionality for table-ID record-ID buttons, allowing the user to navigate quickly into the referenced window.
+  * [#356](https://github.com/metasfresh/metasfresh-webui-api/issues/356) Manufacturing Quickaction: Reverse Issue / Receipt
+    * New quickaction allowing the reverse issues/ receipts planning in Action-receipt and -issue window of manufacturing in WebUI.
+  * [#357](https://github.com/metasfresh/metasfresh-webui-api/issues/357) Manufacturing Quickaction: Issue selected HU w/ TU Quantity parm
+    * New Quickaction in manufacturing issue/ receipt window. Allowing to issue Handling Units with a predefined quantity of Transport Units.
+
+* metasfresh-webui-frontend
+  * [#216](https://github.com/metasfresh/metasfresh-webui-frontend/issues/216) Button record_id does not open according window
+    * Frontend implementation of table-id/ record-id buttons.
+  * [#716](https://github.com/metasfresh/metasfresh-webui-frontend/issues/716) Image widget: button to clear current image
+    * New button that allows to clear the current saved image.
+  * [#719](https://github.com/metasfresh/metasfresh-webui-frontend/issues/719) Document references: group them by their top level menu
+    * New Grouping functionality in referenced documents sidelist allowing a better usability.
+  * [#720](https://github.com/metasfresh/metasfresh-webui-frontend/issues/720) Implement Zoom-into in webUI
+    * Implementation of the new Zoom-into functionality in WebUI.
+
+* other
+  * [#1](https://github.com/metasfresh/metasfresh-dev/issues/1) extend metasfresh-eclipse-config repo to generally contain dev resources
+    * Extension of the metasfresh-eclipse-config repository to generally contain development resources
+  * [#2](https://github.com/metasfresh/metasfresh-dev/issues/2) add Vagrantfile for developers
+    * Adding Vagrantfile for Developers.
+  * [#3](https://github.com/metasfresh/metasfresh-admin/issues/3) create docker image for metasfresh-admin
+    * Creating a docker image for usage of metasfresh-admin.
+
+## Fixes
+
+* metasfresh-backend
+  * [#1179](https://github.com/metasfresh/metasfresh/issues/1179) Process logs are not displayed in Swing
+    * Fixes an exception of processe which create process logs in swing client.
+    
+* metasfresh-webui-api
+  * [#255](https://github.com/metasfresh/metasfresh-webui-api/issues/255) Document fields: when receiving empty string values from frontend, convert them to nulls
+    * Converting empty string values to null for document fields.
+  * [#351](https://github.com/metasfresh/metasfresh-webui-api/issues/351) Fix NPE when opening Materialdisposition
+    * Fixes a Null Pointer Exception that happend when opening the Material Disposition Window in WebUI.
+  * [#360](https://github.com/metasfresh/metasfresh-webui-api/issues/360) Material receipt candidates: Error while Receving HUs for a particular case
+    * Fixes an error that occured in Material receipt window when trying to receive Handling units for a minor case.
+
+* metasfresh-webui-frontend
+  * [#705](https://github.com/metasfresh/metasfresh-webui-frontend/issues/705) Debug/Fix why /window/540189 shows empty
+    * Fix in webui. Window 540189 was only shown as empty screeen.
+  * [#717](https://github.com/metasfresh/metasfresh-webui-frontend/issues/717) Sidelist's scrollbar is on wrong container.
+    * Adding the sidelist scrollbar now in the correct container.
+  * [#724](https://github.com/metasfresh/metasfresh-webui-frontend/issues/724) Login role selection keyboard down does not scroll automatically
+    * Fixing the login role selection. Now allowing the user to also select and see roles also in long role lists.
+  * [#725](https://github.com/metasfresh/metasfresh-webui-frontend/issues/725) Sidelist closes when doubleclick
+    * Fixing the sidelist navigational behavior. When selecting a record the sidelist now remains sticky, until the user closes it via "oustide" cklick.
+  * [#727](https://github.com/metasfresh/metasfresh-webui-frontend/issues/727) Grid view: reset current page to 1 when filtering
+    * Fixes the filtering functionality in grid view. Retestting the page counter to 1 after adding new Filter criteria.
 
 # metasfresh 5.8 (2017-18)
 

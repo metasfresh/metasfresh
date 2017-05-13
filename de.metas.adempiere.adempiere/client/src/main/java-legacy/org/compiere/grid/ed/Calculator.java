@@ -60,9 +60,9 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.i18n.Msg;
 
 /**
  *  Calculator with currency conversion

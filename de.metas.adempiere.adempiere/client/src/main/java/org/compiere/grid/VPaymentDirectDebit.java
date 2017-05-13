@@ -40,7 +40,8 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 public class VPaymentDirectDebit extends AbstractPaymentDirectDebit
 {

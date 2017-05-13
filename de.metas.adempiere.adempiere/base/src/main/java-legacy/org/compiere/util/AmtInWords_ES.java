@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import de.metas.i18n.Language;
+
 /**
  *	Spanish Amount in Words
  *

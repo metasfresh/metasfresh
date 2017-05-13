@@ -29,9 +29,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.CalloutEngine;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.i18n.Msg;
 
 public class Invoice extends CalloutEngine {
 

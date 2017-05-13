@@ -42,10 +42,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_PrintForm;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

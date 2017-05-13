@@ -43,10 +43,10 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CScrollPane;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

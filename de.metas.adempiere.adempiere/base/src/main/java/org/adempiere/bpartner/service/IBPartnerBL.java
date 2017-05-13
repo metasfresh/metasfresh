@@ -26,10 +26,10 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.util.Language;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
 
 public interface IBPartnerBL extends ISingletonService

@@ -29,6 +29,8 @@ import java.sql.Statement;
 import java.util.Currency;
 import java.util.Locale;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
@@ -52,7 +54,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 /**
  *	Setup System

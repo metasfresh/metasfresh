@@ -22,12 +22,13 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 
 /**

@@ -183,6 +183,6 @@ public class SwingRelatedProcessDescriptor
 
 	public String getDisabledReason(final String adLanguage)
 	{
-		return getPreconditionsResolution().getRejectReason();
+		return getPreconditionsResolution().getRejectReason().translate(adLanguage);
 	}
 }

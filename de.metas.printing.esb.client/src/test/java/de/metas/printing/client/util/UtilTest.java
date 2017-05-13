@@ -22,8 +22,7 @@ package de.metas.printing.client.util;
  * #L%
  */
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 public class UtilTest

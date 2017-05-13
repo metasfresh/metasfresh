@@ -16,10 +16,10 @@ import org.compiere.model.MStore;
 import org.compiere.util.CCache;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /*

@@ -47,12 +47,12 @@ import org.compiere.model.PO;
 import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 
 

@@ -25,6 +25,8 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JFrame;
@@ -39,7 +41,6 @@ import org.compiere.swing.CPanel;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  *	Point of Sales Main Window.

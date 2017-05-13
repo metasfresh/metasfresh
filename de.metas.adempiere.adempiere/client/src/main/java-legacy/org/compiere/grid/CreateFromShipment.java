@@ -44,6 +44,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import org.compiere.minigrid.IMiniTable;
@@ -63,7 +65,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 /**
  *  Create Invoice Transactions from PO Orders or Receipt

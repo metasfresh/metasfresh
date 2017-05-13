@@ -38,8 +38,9 @@ import org.compiere.apps.AKeyboardFocusManager;
 import org.compiere.apps.ALogin;
 import org.compiere.swing.CFrame;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Splash;
+
+import de.metas.i18n.Msg;
 
 public class PosApplication {
 

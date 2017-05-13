@@ -36,7 +36,6 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
@@ -60,6 +59,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.service.ICountryCustomInfo;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 
 /**
