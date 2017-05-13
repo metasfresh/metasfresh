@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -90,11 +89,6 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	public static DocumentId rowIdFromM_HU_Storage(final int huId, final int productId)
 	{
 		return DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + productId);
-	}
-
-	public static int rowIdToM_HU_ID(final DocumentId rowId)
-	{
-		return rowId == null ? -1 : rowId.toInt();
 	}
 
 	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
@@ -433,45 +427,6 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	public LookupValue toLookupValue()
 	{
 		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
-	}
-
-	public String getBarcode()
-	{
-		if (!isPureHU())
-		{
-			return null;
-		}
-
-		//
-		// Try fetching SSCC first!
-		final String sscc18 = getAttributes().getSSCC18().orElse(null);
-		if (sscc18 != null)
-		{
-			return sscc18;
-		}
-
-		//
-		// Use HU's code (i.e. M_HU.Value)
-		final String huCode = getValue();
-		return huCode;
-	}
-
-	public boolean matchesBarcode(final String barcodeToMatch)
-	{
-		if (Check.isEmpty(barcodeToMatch, true))
-		{
-			throw new IllegalArgumentException("Invalid barcode: " + barcodeToMatch);
-		}
-
-		final String barcodeToMatchNormalized = barcodeToMatch.trim();
-
-		final String huBarcode = getBarcode();
-		if (huBarcode == null)
-		{
-			return false;
-		}
-
-		return Objects.equals(huBarcode, barcodeToMatchNormalized);
 	}
 
 	//

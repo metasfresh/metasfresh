@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
@@ -27,10 +26,7 @@ import com.google.common.collect.Iterables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
-import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
-import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
@@ -40,9 +36,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -413,32 +407,6 @@ public class HUEditorView implements IView
 				.list(I_M_HU.class);
 
 		return InterfaceWrapperHelper.createList(hus, modelClass);
-	}
-
-	@ViewAction(caption = "Barcode", layoutType = PanelLayoutType.SingleOverlayField)
-	public SelectViewRowsAction actionSelectHUsByBarcode( //
-			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
-	// , final Set<DocumentId> selectedRowIds //
-			)
-	{
-		// Search for matching rowIds by barcode
-		final Set<DocumentId> matchingRowIds = rowsBuffer.getRowIdsMatchingBarcode(barcode);
-		if (matchingRowIds.isEmpty())
-		{
-			throw new AdempiereException("Nothing found for '" + barcode + "'");
-		}
-
-		// Join matching rowIds with currently selected ones
-		final Set<DocumentId> rowIds = ImmutableSet.<DocumentId> builder()
-				.addAll(matchingRowIds)
-				// .addAll(selectedDocumentIds) // don't keep the previously selected ones (see https://github.com/metasfresh/metasfresh-webui-api/issues/313 )
-				.build();
-
-		return SelectViewRowsAction.builder()
-				.viewId(getViewId())
-				.rowIds(rowIds)
-				.build();
-
 	}
 
 	/**
