@@ -67,6 +67,11 @@ public interface IRoleDAO extends ISingletonService
 	List<I_AD_Role> retrieveAllRolesWithAutoMaintenance(Properties ctx);
 
 	/**
+	 * @return all roles on which current user has access
+	 */
+	List<I_AD_Role> retrieveAllRolesWithUserAccess(Properties ctx);
+
+	/**
 	 * @param ctx
 	 * @param adClientId AD_Client_ID
 	 * @return all roles of given AD_Client_ID
