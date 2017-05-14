@@ -170,8 +170,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		{
 			resetCacheRunning.compareAndSet(true, false);
 		}
-		
-		if(broadcast)
+
+		if (broadcast)
 		{
 			UserRolePermissionsEventBus.fireCacheResetEvent();
 		}
@@ -1257,7 +1257,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				+ "FROM " + I_AD_Private_Access.Table_Name
 				+ "WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive='Y' "
 				+ "ORDER BY Record_ID";
-		final Object[] sqlParams = new Object[]{adUserId, adTableId};
+		final Object[] sqlParams = new Object[] { adUserId, adTableId };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -1265,14 +1265,14 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
-			
+
 			final ImmutableSet.Builder<Integer> recordIds = ImmutableSet.builder();
 			while (rs.next())
 			{
 				final int recordId = rs.getInt(1);
 				recordIds.add(recordId);
 			}
-			
+
 			return recordIds.build();
 		}
 		catch (final SQLException e)
