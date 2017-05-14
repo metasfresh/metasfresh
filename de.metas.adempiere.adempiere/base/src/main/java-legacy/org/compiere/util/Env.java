@@ -1226,11 +1226,6 @@ public final class Env
 		return Services.get(IUserRolePermissionsDAO.class).retrieveUserRolePermissions(userRolePermissionsKey);
 	}
 
-	public static void resetUserRolePermissions()
-	{
-		Services.get(IUserRolePermissionsDAO.class).resetCache();
-	}
-
 	public static int getAD_Session_ID(final Properties ctx)
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Session_ID);

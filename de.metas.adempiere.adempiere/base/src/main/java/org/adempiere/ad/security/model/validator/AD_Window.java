@@ -13,25 +13,24 @@ package org.adempiere.ad.security.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Window;
-import org.compiere.model.MWindowAccess;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_Role;
@@ -44,11 +43,14 @@ public class AD_Window
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void addAccessToRolesWithAutomaticMaintenance(final I_AD_Window window)
 	{
+		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+
+		final int adWindowId = window.getAD_Window_ID();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(window);
 		for (final I_AD_Role role : Services.get(IRoleDAO.class).retrieveAllRolesWithAutoMaintenance(ctx))
 		{
-			final MWindowAccess pa = new MWindowAccess(window, role);
-			pa.save();
+			final boolean readWrite = true;
+			permissionsDAO.createWindowAccess(role, adWindowId, readWrite);
 		}
 
 	}

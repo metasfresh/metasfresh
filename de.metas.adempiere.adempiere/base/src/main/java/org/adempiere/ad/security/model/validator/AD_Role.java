@@ -35,9 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -132,16 +129,8 @@ public class AD_Role
 
 		//
 		// Reset the cached role permissions after the transaction is commited.
-		Services.get(ITrxManager.class)
-				.getTrxListenerManager(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						Env.resetUserRolePermissions();
-					}
-				});
+		// NOTE: not needed because it's performed automatically
+		//Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
 	}	// afterSave
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

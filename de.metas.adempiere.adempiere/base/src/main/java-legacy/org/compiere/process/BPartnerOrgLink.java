@@ -16,18 +16,21 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Role_OrgAccess;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MLocator;
 import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
-import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.AdempiereUserError;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Link Business Partner to Organization.
@@ -38,6 +41,8 @@ import de.metas.process.JavaProcess;
  */
 public class BPartnerOrgLink extends JavaProcess
 {
+	private final transient IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+
 	/**	Existing Org			*/
 	private int			p_AD_Org_ID;
 	/** Info for New Org		*/
@@ -167,25 +172,28 @@ public class BPartnerOrgLink extends JavaProcess
 		//	Save BP
 		if (!bp.save())	
 			throw new Exception ("Business Partner not updated");
-		
+
+		//
 		//	Limit to specific Role
-		if (p_AD_Role_ID != 0)	
+		if (p_AD_Role_ID > 0)	
 		{
 			boolean found = false;
-			MRoleOrgAccess[] orgAccesses = MRoleOrgAccess.getOfOrg (getCtx(), p_AD_Org_ID);
 			//	delete all accesses except the specific
-			for (int i = 0; i < orgAccesses.length; i++)
+			for (final I_AD_Role_OrgAccess orgAccess : permissionsDAO.retrieveRoleOrgAccessRecordsForOrg(p_AD_Org_ID))
 			{
-				if (orgAccesses[i].getAD_Role_ID() == p_AD_Role_ID)
+				if (orgAccess.getAD_Role_ID() == p_AD_Role_ID)
+				{
 					found = true;
+				}
 				else
-					orgAccesses[i].delete(true);
+				{
+					InterfaceWrapperHelper.delete(orgAccess);
+				}
 			}
 			//	create access
 			if (!found)
 			{
-				MRoleOrgAccess orgAccess = new MRoleOrgAccess (org, p_AD_Role_ID);
-				orgAccess.save(get_TrxName());
+				permissionsDAO.createOrgAccess(p_AD_Role_ID, org.getAD_Org_ID());
 			}
 		}
 		

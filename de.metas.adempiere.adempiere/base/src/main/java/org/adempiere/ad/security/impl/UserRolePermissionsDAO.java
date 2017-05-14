@@ -1,9 +1,15 @@
 package org.adempiere.ad.security.impl;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -14,6 +20,7 @@ import org.adempiere.ad.security.IRolesTreeNode;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsBuilder;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsEventBus;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.security.permissions.Access;
@@ -34,6 +41,8 @@ import org.adempiere.ad.security.permissions.TableRecordPermission;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.TableResource;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
@@ -46,6 +55,7 @@ import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Form_Access;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_Private_Access;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Record_Access;
@@ -60,7 +70,6 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
-import org.compiere.model.X_AD_Role;
 import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
@@ -69,31 +78,103 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
 
 	private boolean accountingModuleActive = false;
 
+	private static final Set<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
+			// I_AD_Role.Table_Name // NEVER include the AD_Role
+			// Included role
+			I_AD_Role_Included.Table_Name,
+			// Org Access
+			I_AD_User_OrgAccess.Table_Name,
+			I_AD_Role_OrgAccess.Table_Name,
+			// Access records
+			I_AD_Window_Access.Table_Name,
+			I_AD_Process_Access.Table_Name,
+			I_AD_Form_Access.Table_Name,
+			I_AD_Workflow_Access.Table_Name,
+			I_AD_Task_Access.Table_Name,
+			I_AD_Document_Action_Access.Table_Name,
+			// Table/Record access
+			I_AD_Table_Access.Table_Name,
+			I_AD_Record_Access.Table_Name);
+
 	@Override
-	public void resetCache()
+	public Set<String> getRoleDependentTableNames()
 	{
-		final CacheMgt cacheManager = CacheMgt.get();
-		cacheManager.reset(I_AD_Role.Table_Name);
-		cacheManager.reset(I_AD_Role_Included.Table_Name);
-		cacheManager.reset(I_AD_User_OrgAccess.Table_Name);
-		cacheManager.reset(I_AD_Window_Access.Table_Name);
-		cacheManager.reset(I_AD_Process_Access.Table_Name);
-		cacheManager.reset(I_AD_Task_Access.Table_Name);
-		cacheManager.reset(I_AD_Form_Access.Table_Name);
-		cacheManager.reset(I_AD_Workflow_Access.Table_Name);
-		cacheManager.reset(I_AD_Document_Action_Access.Table_Name);
-		cacheManager.reset(I_AD_Table_Access.Table_Name);
-		cacheManager.reset(I_AD_Record_Access.Table_Name);
+		return ROLE_DEPENDENT_TABLENAMES;
+	}
+
+	@Override
+	public void resetCacheAfterTrxCommit()
+	{
+		final ITrx trx = Services.get(ITrxManager.class).getTrxOrNull(ITrx.TRXNAME_ThreadInherited);
+
+		// If running out of transaction, reset the cache now
+		if (trx == null)
+		{
+			logger.info("No current running transaction. Reseting the cache now.");
+			resetCache(true);
+		}
+		else
+		{
+			final String TRXPROPERTY_ResetCache = getClass().getName() + ".ResetCache";
+			trx.getProperty(TRXPROPERTY_ResetCache, () -> {
+				trx.getTrxListenerManager().onAfterCommit(() -> {
+					logger.info("Reseting the cache because transaction was commited: {}", trx);
+					resetCache(true);
+				});
+				logger.info("Scheduled cache reset after trx commit: {}", trx);
+
+				return Boolean.TRUE;
+			});
+		}
+	}
+
+	@Override
+	public void resetLocalCache()
+	{
+		final boolean broadcast = false;
+		resetCache(broadcast);
+	}
+
+	private static final AtomicBoolean resetCacheRunning = new AtomicBoolean(false);
+
+	private static void resetCache(final boolean broadcast)
+	{
+		// If already running, do nothing (avoid StackOverflowError)
+		final boolean alreadyRunning = resetCacheRunning.getAndSet(true);
+		if (alreadyRunning)
+		{
+			return;
+		}
+
+		try
+		{
+			final CacheMgt cacheManager = CacheMgt.get();
+			cacheManager.reset(I_AD_Role.Table_Name); // cache reset role itself
+			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::reset);
+			logger.info("Finished permissions cache reset");
+		}
+		finally
+		{
+			resetCacheRunning.compareAndSet(true, false);
+		}
+		
+		if(broadcast)
+		{
+			UserRolePermissionsEventBus.fireCacheResetEvent();
+		}
 	}
 
 	@Override
@@ -393,10 +474,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Workflow_Access.COLUMNNAME_AD_Workflow_ID);
 	}
 
-	final <AccessTableType> ElementPermissions retrieveElementPermissions(final int adRoleId, final int adClientId,
-			final Class<AccessTableType> accessTableClass,
-			final String elementTableName,
-			final String elementColumnName)
+	final <AccessTableType> ElementPermissions retrieveElementPermissions(final int adRoleId, final int adClientId, final Class<AccessTableType> accessTableClass, final String elementTableName, final String elementColumnName)
 	{
 		final Properties ctx = Env.getCtx();
 		final IQueryFilter<AccessTableType> aspFilter = Services.get(IASPFiltersFactory.class).getASPFiltersForClient(adClientId).getFilter(accessTableClass);
@@ -623,6 +701,31 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}	// loadRecordAccess
 
 	@Override
+	public List<I_AD_Record_Access> retrieveRecordAccesses(final int adTableId, final int recordId, final int adClientId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Record_Access.class)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Client_ID, adClientId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list(I_AD_Record_Access.class);
+	}
+
+	@Override
+	public void updateAccessRecordsForAllRoles()
+	{
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, //
+				"SELECT role_access_update()", // SQL
+				new Object[] {} // SQL params
+		);
+
+		// Schedule cache reset
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
 	public String updateAccessRecords(final I_AD_Role role)
 	{
 		if (role.isManual())
@@ -630,143 +733,43 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			return "-";
 		}
 
-		final String trxName = InterfaceWrapperHelper.getTrxName(role);
+		//
+		// Delete/Create role access records
 		final int adRoleId = role.getAD_Role_ID();
-		final int adClientId = role.getAD_Client_ID();
-		final int adOrgId = role.getAD_Org_ID();
 		final int updatedBy = role.getUpdatedBy();
-		final String userLevel = role.getUserLevel();
+		DB.executeFunctionCallEx(ITrx.TRXNAME_ThreadInherited, //
+				"SELECT role_access_update(p_AD_Role_ID => " + adRoleId + ", p_CreatedBy => " + updatedBy + ")", // SQL
+				new Object[] {} // SQL params
+		);
 
-		final String roleClientOrgUser = adRoleId + ","
-				+ adClientId + "," + adOrgId + ",'Y', now(),"
-				+ updatedBy + ", now()," + updatedBy
-				+ ",'Y' ";	// IsReadWrite
+		// Schedule cache reset
+		resetCacheAfterTrxCommit();
 
-		String sqlWindow = "INSERT INTO AD_Window_Access "
-				+ "(AD_Window_ID, AD_Role_ID,"
-				+ " AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,IsReadWrite) "
-				+ "SELECT DISTINCT w.AD_Window_ID, " + roleClientOrgUser
-				+ "FROM AD_Window w"
-				+ " INNER JOIN AD_Tab t ON (w.AD_Window_ID=t.AD_Window_ID)"
-				+ " INNER JOIN AD_Table tt ON (t.AD_Table_ID=tt.AD_Table_ID) "
-				+ "WHERE t.SeqNo=(SELECT MIN(SeqNo) FROM AD_Tab xt "	// only check first tab
-				+ "WHERE xt.AD_Window_ID=w.AD_Window_ID)"
-				+ "AND tt.AccessLevel IN ";
-
-		String sqlProcess = "INSERT INTO AD_Process_Access "
-				+ "(AD_Process_ID, AD_Role_ID,"
-				+ " AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,IsReadWrite) "
-				+ "SELECT DISTINCT p.AD_Process_ID, " + roleClientOrgUser
-				+ "FROM AD_Process p "
-				+ "WHERE AccessLevel IN ";
-
-		String sqlForm = "INSERT INTO AD_Form_Access "
-				+ "(AD_Form_ID, AD_Role_ID,"
-				+ " AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,IsReadWrite) "
-				+ "SELECT f.AD_Form_ID, " + roleClientOrgUser
-				+ "FROM AD_Form f "
-				+ "WHERE AccessLevel IN ";
-
-		String sqlWorkflow = "INSERT INTO AD_WorkFlow_Access "
-				+ "(AD_WorkFlow_ID, AD_Role_ID,"
-				+ " AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,IsReadWrite) "
-				+ "SELECT w.AD_WorkFlow_ID, " + roleClientOrgUser
-				+ "FROM AD_WorkFlow w "
-				+ "WHERE AccessLevel IN ";
-
-		String sqlDocAction = "INSERT INTO AD_Document_Action_Access "
-				+ "(AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
-				+ "C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) "
-				+ "(SELECT "
-				+ adClientId + ",0,'Y', now(),"
-				+ updatedBy + ", now()," + updatedBy
-				+ ", doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID "
-				+ "FROM AD_Client client "
-				+ "INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) "
-				+ "INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) "
-				+ "INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID "
-				+ "AND rol.AD_Role_ID=" + adRoleId
-				+ ") )";
-
-		/**
-		 * Fill AD_xx_Access
-		 * ---------------------------------------------------------------------------
-		 * SCO# Levels S__ 100 4 System info
-		 * SCO 111 7 System shared info
-		 * SC_ 110 6 System/Client info
-		 * _CO 011 3 Client shared info
-		 * _C_ 011 2 Client
-		 * __O 001 1 Organization info
-		 * Roles:
-		 * S 4,7,6
-		 * _CO 7,6,3,2,1
-		 * __O 3,1,7
-		 */
-		String roleAccessLevel = null;
-		String roleAccessLevelWin = null;
-		if (X_AD_Role.USERLEVEL_System.equals(userLevel))
-			roleAccessLevel = "('4','7','6')";
-		else if (X_AD_Role.USERLEVEL_Client.equals(userLevel))
-			roleAccessLevel = "('7','6','3','2')";
-		else if (X_AD_Role.USERLEVEL_ClientPlusOrganization.equals(userLevel))
-			roleAccessLevel = "('7','6','3','2','1')";
-		else
-		// if (USERLEVEL_Organization.equals(getUserLevel()))
-		{
-			roleAccessLevel = "('3','1','7')";
-			roleAccessLevelWin = roleAccessLevel
-					+ " AND w.Name NOT LIKE '%(all)%'";
-		}
-		if (roleAccessLevelWin == null)
-			roleAccessLevelWin = roleAccessLevel;
-		//
-		String whereDel = " WHERE AD_Role_ID=" + adRoleId;
-		//
-		int winDel = DB.executeUpdate("DELETE FROM AD_Window_Access" + whereDel, trxName);
-		int win = DB.executeUpdate(sqlWindow + roleAccessLevelWin, trxName);
-		int procDel = DB.executeUpdate("DELETE FROM AD_Process_Access" + whereDel, trxName);
-		int proc = DB.executeUpdate(sqlProcess + roleAccessLevel, trxName);
-		int formDel = DB.executeUpdate("DELETE FROM AD_Form_Access" + whereDel, trxName);
-		int form = DB.executeUpdate(sqlForm + roleAccessLevel, trxName);
-		int wfDel = DB.executeUpdate("DELETE FROM AD_WorkFlow_Access" + whereDel, trxName);
-		int wf = DB.executeUpdate(sqlWorkflow + roleAccessLevel, trxName);
-		int docactDel = DB.executeUpdate("DELETE FROM AD_Document_Action_Access" + whereDel, trxName);
-		int docact = DB.executeUpdate(sqlDocAction, trxName);
-
-		logger.debug("AD_Window_ID=" + winDel + "+" + win
-				+ ", AD_Process_ID=" + procDel + "+" + proc
-				+ ", AD_Form_ID=" + formDel + "+" + form
-				+ ", AD_Workflow_ID=" + wfDel + "+" + wf
-				+ ", AD_Document_Action_Access=" + docactDel + "+" + docact);
-
-		// loadAccess(true);
-		return "@AD_Window_ID@ #" + win
-				+ " -  @AD_Process_ID@ #" + proc
-				+ " -  @AD_Form_ID@ #" + form
-				+ " -  @AD_Workflow_ID@ #" + wf
-				+ " -  @DocAction@ #" + docact;
-
-	}	// createAccessRecords
+		// TODO: improve the returned message
+		return "OK";
+	}
 
 	@Override
 	public void deleteAccessRecords(final I_AD_Role role)
 	{
 		final int adRoleId = role.getAD_Role_ID();
-		final String trxName = InterfaceWrapperHelper.getTrxName(role);
 
-		final String whereDel = " WHERE AD_Role_ID=" + adRoleId;
-		//
-		int winDel = DB.executeUpdate("DELETE FROM AD_Window_Access" + whereDel, trxName);
-		int procDel = DB.executeUpdate("DELETE FROM AD_Process_Access" + whereDel, trxName);
-		int formDel = DB.executeUpdate("DELETE FROM AD_Form_Access" + whereDel, trxName);
-		int wfDel = DB.executeUpdate("DELETE FROM AD_WorkFlow_Access" + whereDel, trxName);
-		int docactDel = DB.executeUpdate("DELETE FROM AD_Document_Action_Access" + whereDel, trxName);
+		// Delete role dependent records
+		for (final String accessTableName : ROLE_DEPENDENT_TABLENAMES)
+		{
+			// Skip AD_Role dependent tables which does not have an AD_Role_ID column
+			final boolean hasRoleColumn = !I_AD_User_OrgAccess.Table_Name.equals(accessTableName);
+			if (!hasRoleColumn)
+			{
+				continue;
+			}
 
-		logger.debug("AD_Window_Access=" + winDel
-				+ ", AD_Process_Access=" + procDel
-				+ ", AD_Form_Access=" + formDel
-				+ ", AD_Workflow_Access=" + wfDel
-				+ ", AD_Document_Action_Access=" + docactDel);
+			final int deleteCount = DB.executeUpdateEx("DELETE FROM " + accessTableName + " WHERE AD_Role_ID=" + adRoleId, ITrx.TRXNAME_ThreadInherited);
+			logger.info("deleteAccessRecords({}): deleted {} rows from {}", role, adRoleId, deleteCount, accessTableName);
+		}
+
+		// Schedule cache reset
+		resetCacheAfterTrxCommit();
 	}
 
 	@Override
@@ -774,11 +777,511 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	{
 		accountingModuleActive = true;
 	}
-	
+
 	@Override
 	public boolean isAccountingModuleActive()
 	{
 		return accountingModuleActive;
 	}
 
+	@Override
+	public List<I_AD_Role_OrgAccess> retrieveRoleOrgAccessRecordsForOrg(final int adOrgId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Role_OrgAccess.class)
+				.addEqualsFilter(I_AD_Role_OrgAccess.COLUMNNAME_AD_Org_ID, adOrgId)
+				// .addOnlyActiveRecordsFilter() // NOTE: retrieve all
+				.create()
+				.list(I_AD_Role_OrgAccess.class);
+	}
+
+	@Override
+	public void createOrgAccess(final int adRoleId, final int adOrgId)
+	{
+		final I_AD_Role_OrgAccess roleOrgAccess = InterfaceWrapperHelper.newInstance(I_AD_Role_OrgAccess.class);
+		roleOrgAccess.setAD_Org_ID(adOrgId);
+		roleOrgAccess.setAD_Role_ID(adRoleId);
+		roleOrgAccess.setIsReadOnly(false);
+		InterfaceWrapperHelper.save(roleOrgAccess);
+	}
+
+	@Override
+	public void createWindowAccess(final I_AD_Role role, final int adWindowId, final boolean readWrite)
+	{
+		changeWindowAccess(role, adWindowId, windowAccess -> {
+			windowAccess.setIsActive(true);
+			windowAccess.setIsReadWrite(readWrite);
+		});
+	}
+
+	@Override
+	public void deleteWindowAccess(final I_AD_Role role, final int adWindowId)
+	{
+		changeWindowAccess(role, adWindowId, windowAccess -> {
+			windowAccess.setIsActive(false); // request to be deleted
+		});
+	}
+
+	private void changeWindowAccess(@NonNull final I_AD_Role role, final int adWindowId, @NonNull final Consumer<I_AD_Window_Access> updater)
+	{
+		Preconditions.checkArgument(adWindowId > 0, "adWindowId > 0");
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Window_Access windowAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Window_Access.class)
+				.addEqualsFilter(I_AD_Window_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Window_Access.COLUMNNAME_AD_Window_ID, adWindowId)
+				.create()
+				.firstOnly(I_AD_Window_Access.class);
+
+		if (windowAccess == null)
+		{
+			windowAccess = InterfaceWrapperHelper.newInstance(I_AD_Window_Access.class);
+			InterfaceWrapperHelper.setValue(windowAccess, I_AD_Window_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			windowAccess.setAD_Org_ID(role.getAD_Org_ID());
+			windowAccess.setAD_Role_ID(adRoleId);
+			windowAccess.setAD_Window_ID(adWindowId);
+		}
+
+		updater.accept(windowAccess);
+
+		if (windowAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(windowAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(windowAccess))
+			{
+				InterfaceWrapperHelper.delete(windowAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public void createProcessAccess(final I_AD_Role role, final int adProcessId, final boolean readWrite)
+	{
+		changeProcessAccess(role, adProcessId, access -> {
+			access.setIsActive(true);
+			access.setIsReadWrite(readWrite);
+		});
+	}
+
+	@Override
+	public void deleteProcessAccess(final I_AD_Role role, final int adProcessId)
+	{
+		changeProcessAccess(role, adProcessId, access -> {
+			access.setIsActive(false); // request to be deleted
+		});
+	}
+
+	private void changeProcessAccess(@NonNull final I_AD_Role role, final int adProcessId, @NonNull final Consumer<I_AD_Process_Access> updater)
+	{
+		Preconditions.checkArgument(adProcessId > 0, "adProcessId > 0");
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Process_Access processAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Process_Access.class)
+				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Process_ID, adProcessId)
+				.create()
+				.firstOnly(I_AD_Process_Access.class);
+
+		if (processAccess == null)
+		{
+			processAccess = InterfaceWrapperHelper.newInstance(I_AD_Process_Access.class);
+			InterfaceWrapperHelper.setValue(processAccess, I_AD_Process_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			processAccess.setAD_Org_ID(role.getAD_Org_ID());
+			processAccess.setAD_Role_ID(adRoleId);
+			processAccess.setAD_Process_ID(adProcessId);
+		}
+
+		updater.accept(processAccess);
+
+		if (processAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(processAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(processAccess))
+			{
+				InterfaceWrapperHelper.delete(processAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public void createFormAccess(final I_AD_Role role, final int adFormId, final boolean readWrite)
+	{
+		changeFormAccess(role, adFormId, access -> {
+			access.setIsActive(true);
+			access.setIsReadWrite(readWrite);
+		});
+	}
+
+	@Override
+	public void deleteFormAccess(final I_AD_Role role, final int adFormId)
+	{
+		changeFormAccess(role, adFormId, access -> {
+			access.setIsActive(false); // request to be deleted
+		});
+	}
+
+	private void changeFormAccess(@NonNull final I_AD_Role role, final int adFormId, @NonNull final Consumer<I_AD_Form_Access> updater)
+	{
+		Preconditions.checkArgument(adFormId > 0, "adFormId > 0");
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Form_Access formAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Form_Access.class)
+				.addEqualsFilter(I_AD_Form_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Form_Access.COLUMNNAME_AD_Form_ID, adFormId)
+				.create()
+				.firstOnly(I_AD_Form_Access.class);
+
+		if (formAccess == null)
+		{
+			formAccess = InterfaceWrapperHelper.newInstance(I_AD_Form_Access.class);
+			InterfaceWrapperHelper.setValue(formAccess, I_AD_Form_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			formAccess.setAD_Org_ID(role.getAD_Org_ID());
+			formAccess.setAD_Role_ID(adRoleId);
+			formAccess.setAD_Form_ID(adFormId);
+		}
+
+		updater.accept(formAccess);
+
+		if (formAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(formAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(formAccess))
+			{
+				InterfaceWrapperHelper.delete(formAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public void createTaskAccess(final I_AD_Role role, final int adTaskId, final boolean readWrite)
+	{
+		changeTaskAccess(role, adTaskId, access -> {
+			access.setIsActive(true);
+			access.setIsReadWrite(readWrite);
+		});
+	}
+
+	@Override
+	public void deleteTaskAccess(final I_AD_Role role, final int adTaskId)
+	{
+		changeTaskAccess(role, adTaskId, access -> {
+			access.setIsActive(false); // request to be deleted
+		});
+	}
+
+	private void changeTaskAccess(@NonNull final I_AD_Role role, final int adTaskId, @NonNull final Consumer<I_AD_Task_Access> updater)
+	{
+		Preconditions.checkArgument(adTaskId > 0, "adTaskId > 0");
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Task_Access taskAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Task_Access.class)
+				.addEqualsFilter(I_AD_Task_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Task_Access.COLUMNNAME_AD_Task_ID, adTaskId)
+				.create()
+				.firstOnly(I_AD_Task_Access.class);
+
+		if (taskAccess == null)
+		{
+			taskAccess = InterfaceWrapperHelper.newInstance(I_AD_Task_Access.class);
+			InterfaceWrapperHelper.setValue(taskAccess, I_AD_Task_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			taskAccess.setAD_Org_ID(role.getAD_Org_ID());
+			taskAccess.setAD_Role_ID(adRoleId);
+			taskAccess.setAD_Task_ID(adTaskId);
+		}
+
+		updater.accept(taskAccess);
+
+		if (taskAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(taskAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(taskAccess))
+			{
+				InterfaceWrapperHelper.delete(taskAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public void createWorkflowAccess(final I_AD_Role role, final int adWorkflowId, final boolean readWrite)
+	{
+		changeWorkflowAccess(role, adWorkflowId, access -> {
+			access.setIsActive(true);
+			access.setIsReadWrite(readWrite);
+		});
+	}
+
+	@Override
+	public void deleteWorkflowAccess(final I_AD_Role role, final int adWorkflowId)
+	{
+		changeWorkflowAccess(role, adWorkflowId, access -> {
+			access.setIsActive(false); // request to be deleted
+		});
+	}
+
+	private void changeWorkflowAccess(@NonNull final I_AD_Role role, final int adWorkflowId, @NonNull final Consumer<I_AD_Workflow_Access> updater)
+	{
+		Preconditions.checkArgument(adWorkflowId > 0, "adWorkflowId > 0");
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Workflow_Access workflowAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Workflow_Access.class)
+				.addEqualsFilter(I_AD_Workflow_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Workflow_Access.COLUMNNAME_AD_Workflow_ID, adWorkflowId)
+				.create()
+				.firstOnly(I_AD_Workflow_Access.class);
+
+		if (workflowAccess == null)
+		{
+			workflowAccess = InterfaceWrapperHelper.newInstance(I_AD_Workflow_Access.class);
+			InterfaceWrapperHelper.setValue(workflowAccess, I_AD_Workflow_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			workflowAccess.setAD_Org_ID(role.getAD_Org_ID());
+			workflowAccess.setAD_Role_ID(adRoleId);
+			workflowAccess.setAD_Workflow_ID(adWorkflowId);
+		}
+
+		updater.accept(workflowAccess);
+
+		if (workflowAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(workflowAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(workflowAccess))
+			{
+				InterfaceWrapperHelper.delete(workflowAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public void createDocumentActionAccess(final I_AD_Role role, final int docTypeId, final int docActionRefListId)
+	{
+		changeDocumentActionAccess(role, docTypeId, docActionRefListId, access -> {
+			access.setIsActive(true);
+		});
+	}
+
+	@Override
+	public void deleteDocumentActionAccess(final I_AD_Role role, final int docTypeId, final int docActionRefListId)
+	{
+		changeDocumentActionAccess(role, docTypeId, docActionRefListId, access -> {
+			access.setIsActive(false); // request to be deleted
+		});
+	}
+
+	private void changeDocumentActionAccess(@NonNull final I_AD_Role role, final int docTypeId, final int docActionRefListId, @NonNull final Consumer<I_AD_Document_Action_Access> updater)
+	{
+		Preconditions.checkArgument(docTypeId > 0, "docTypeId > 0");
+		Preconditions.checkArgument(docActionRefListId > 0, "docActionRefListId > 0");
+
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Document_Action_Access docActionAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Document_Action_Access.class)
+				.addEqualsFilter(I_AD_Document_Action_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Document_Action_Access.COLUMNNAME_C_DocType_ID, docTypeId)
+				.addEqualsFilter(I_AD_Document_Action_Access.COLUMNNAME_AD_Ref_List_ID, docActionRefListId)
+				.create()
+				.firstOnly(I_AD_Document_Action_Access.class);
+
+		if (docActionAccess == null)
+		{
+			docActionAccess = InterfaceWrapperHelper.newInstance(I_AD_Document_Action_Access.class);
+			InterfaceWrapperHelper.setValue(docActionAccess, I_AD_Document_Action_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			docActionAccess.setAD_Org_ID(role.getAD_Org_ID());
+			docActionAccess.setAD_Role_ID(adRoleId);
+			docActionAccess.setC_DocType_ID(docTypeId);
+			docActionAccess.setAD_Ref_List_ID(docActionRefListId);
+		}
+
+		updater.accept(docActionAccess);
+
+		if (docActionAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(docActionAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(docActionAccess))
+			{
+				InterfaceWrapperHelper.delete(docActionAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public I_AD_Record_Access changeRecordAccess(@NonNull final I_AD_Role role, final int adTableId, final int recordId, @NonNull final Consumer<I_AD_Record_Access> updater)
+	{
+		Preconditions.checkArgument(adTableId > 0, "adTableId > 0");
+		Preconditions.checkArgument(recordId >= 0, "recordId >= 0");
+		final int adRoleId = role.getAD_Role_ID();
+
+		I_AD_Record_Access recordAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Record_Access.class)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Role_ID, adRoleId)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Record_Access.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.firstOnly(I_AD_Record_Access.class);
+
+		if (recordAccess == null)
+		{
+			recordAccess = InterfaceWrapperHelper.newInstance(I_AD_Record_Access.class);
+			InterfaceWrapperHelper.setValue(recordAccess, I_AD_Record_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
+			recordAccess.setAD_Org_ID(role.getAD_Org_ID());
+			recordAccess.setAD_Role_ID(adRoleId);
+			recordAccess.setAD_Table_ID(adTableId);
+			recordAccess.setRecord_ID(recordId);
+
+			recordAccess.setIsExclude(true);
+			recordAccess.setIsReadOnly(false);
+			recordAccess.setIsDependentEntities(false);
+		}
+
+		updater.accept(recordAccess);
+
+		if (recordAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(recordAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(recordAccess))
+			{
+				InterfaceWrapperHelper.delete(recordAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+
+		return recordAccess;
+	}
+
+	@Override
+	public void createPrivateAccess(final int adUserId, final int adTableId, final int recordId)
+	{
+		changePrivateAccess(adUserId, adTableId, recordId, access -> {
+			access.setIsActive(true);
+		});
+	}
+
+	@Override
+	public void deletePrivateAccess(final int adUserId, final int adTableId, final int recordId)
+	{
+		changePrivateAccess(adUserId, adTableId, recordId, access -> {
+			access.setIsActive(false); // request to be deleted
+		});
+	}
+
+	public void changePrivateAccess(final int adUserId, final int adTableId, final int recordId, @NonNull final Consumer<I_AD_Private_Access> updater)
+	{
+		Preconditions.checkArgument(adUserId >= 0, "adUserId >= 0");
+		Preconditions.checkArgument(adTableId > 0, "adTableId > 0");
+		Preconditions.checkArgument(recordId >= 0, "recordId >= 0");
+
+		I_AD_Private_Access privateAccess = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Private_Access.class)
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_User_ID, adUserId)
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_Record_ID, recordId)
+				.create()
+				.firstOnly(I_AD_Private_Access.class);
+
+		if (privateAccess == null)
+		{
+			privateAccess = InterfaceWrapperHelper.newInstance(I_AD_Private_Access.class);
+			privateAccess.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_System);
+			privateAccess.setAD_User_ID(adUserId);
+			privateAccess.setAD_Table_ID(adTableId);
+			privateAccess.setRecord_ID(recordId);
+		}
+
+		updater.accept(privateAccess);
+
+		if (privateAccess.isActive())
+		{
+			InterfaceWrapperHelper.save(privateAccess);
+		}
+		else
+		{
+			if (!InterfaceWrapperHelper.isNew(privateAccess))
+			{
+				InterfaceWrapperHelper.delete(privateAccess);
+			}
+		}
+
+		//
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public Set<Integer> retrievePrivateAccessRecordIds(final int adUserId, final int adTableId)
+	{
+		final String sql = "SELECT Record_ID "
+				+ "FROM " + I_AD_Private_Access.Table_Name
+				+ "WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive='Y' "
+				+ "ORDER BY Record_ID";
+		final Object[] sqlParams = new Object[]{adUserId, adTableId};
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, sqlParams);
+			rs = pstmt.executeQuery();
+			
+			final ImmutableSet.Builder<Integer> recordIds = ImmutableSet.builder();
+			while (rs.next())
+			{
+				final int recordId = rs.getInt(1);
+				recordIds.add(recordId);
+			}
+			
+			return recordIds.build();
+		}
+		catch (final SQLException e)
+		{
+			throw new DBException(e, sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
 }

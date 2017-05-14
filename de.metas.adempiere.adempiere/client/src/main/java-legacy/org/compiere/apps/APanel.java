@@ -2688,7 +2688,7 @@ public class APanel extends CPanel
 		}
 		else
 		{
-			m_curTab.lock(Env.getCtx(), record_ID, aLock.getButton().isSelected());
+			m_curTab.lock(record_ID, aLock.getButton().isSelected());
 			m_curTab.loadAttachments();			// reload
 		}
 		aLock.setPressed(m_curTab.isLocked());
