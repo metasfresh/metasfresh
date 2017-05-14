@@ -87,11 +87,9 @@ public interface IRoleDAO extends ISingletonService
 	 */
 	String retrieveRoleName(Properties ctx, int adRoleId);
 
-	/**
-	 * @param ctx
-	 * @param adUserId
-	 * @param adRoleId
-	 * @return true if there is an AD_User_Roles entry for the given role and user, false otherwise.
-	 */
-	boolean hasUserRoleAssignment(Properties ctx, int adUserId, int adRoleId);
+	List<Integer> retrieveUserIdsForRoleId(int adRoleId);
+
+	int retrieveFirstRoleIdForUserId(int adUserId);
+
+	void createUserRoleAssignmentIfMissing(int adUserId, int adRoleId);
 }

@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.TreeSet;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -215,20 +216,14 @@ public class MScheduler extends X_AD_Scheduler
 			MSchedulerRecipient recipient = recipients[i];
 			if (!recipient.isActive())
 				continue;
-			if (recipient.getAD_User_ID() != 0)
+			if (recipient.getAD_User_ID() > 0)
 			{
 				list.add(recipient.getAD_User_ID());
 			}
-			if (recipient.getAD_Role_ID() != 0)
+			if (recipient.getAD_Role_ID() > 0)
 			{
-				MUserRoles[] urs = MUserRoles.getOfRole(getCtx(), recipient.getAD_Role_ID());
-				for (int j = 0; j < urs.length; j++)
-				{
-					MUserRoles ur = urs[j];
-					if (!ur.isActive())
-						continue;
-					list.add(ur.getAD_User_ID());
-				}
+				final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(recipient.getAD_Role_ID());
+				list.addAll(allRoleUserIds);
 			}
 		}
 		//	Add Updater

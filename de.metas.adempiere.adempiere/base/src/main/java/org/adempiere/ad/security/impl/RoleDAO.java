@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IRolesTreeNode;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -196,10 +197,49 @@ public class RoleDAO implements IRoleDAO
 	}
 
 	@Override
-	public boolean hasUserRoleAssignment(final Properties ctx, final int adUserId, final int adRoleId)
+	// @Cached(cacheName = I_AD_User_Roles.Table_Name + "#by#AD_Role_ID", expireMinutes = 0) // not sure if caching is needed...
+	public List<Integer> retrieveUserIdsForRoleId(final int adRoleId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Roles.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_AD_User_Roles.COLUMNNAME_AD_User_ID, Integer.class);
+	}
+
+	@Override
+	public int retrieveFirstRoleIdForUserId(final int adUserId)
+	{
+		final Integer firstRoleId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, adUserId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.first(I_AD_User_Roles.COLUMNNAME_AD_Role_ID, Integer.class);
+		return firstRoleId == null ? -1 : firstRoleId;
+	}
+
+	@Override
+	public void createUserRoleAssignmentIfMissing(final int adUserId, final int adRoleId)
+	{
+		if(hasUserRoleAssignment(adUserId, adRoleId))
+		{
+			return;
+		}
+		
+		final I_AD_User_Roles userRole = InterfaceWrapperHelper.newInstance(I_AD_User_Roles.class);
+		userRole.setAD_User_ID(adUserId);
+		userRole.setAD_Role_ID(adRoleId);
+		InterfaceWrapperHelper.save(userRole);
+		
+		Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
+	}
+
+	private boolean hasUserRoleAssignment(final int adUserId, final int adRoleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Roles.class)
 				.addEqualsFilter(I_AD_User_Roles.COLUMNNAME_AD_User_ID, adUserId)
 				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()
