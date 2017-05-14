@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS role_access_update();
+
 DROP FUNCTION IF EXISTS role_access_update(numeric, numeric);
 
 CREATE OR REPLACE FUNCTION role_access_update
