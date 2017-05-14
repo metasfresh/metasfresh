@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Preconditions;
@@ -57,7 +59,7 @@ public final class ViewId
 	public static ViewId ofViewIdString(@NonNull String viewIdStr, @Nullable WindowId expectedWindowId)
 	{
 		final WindowId windowId = extractWindowIdFromViewId(viewIdStr);
-		if(expectedWindowId != null)
+		if (expectedWindowId != null)
 		{
 			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
 		}
@@ -74,11 +76,18 @@ public final class ViewId
 
 	private static final WindowId extractWindowIdFromViewId(@NonNull final String viewIdStr)
 	{
-		final int idx = viewIdStr.indexOf(SEPARATOR_AFTER_WindowId);
-		final String windowIdStr = viewIdStr.substring(0, idx);
-		return WindowId.fromJson(windowIdStr);
+		try
+		{
+			final int idx = viewIdStr.indexOf(SEPARATOR_AFTER_WindowId);
+			final String windowIdStr = viewIdStr.substring(0, idx);
+			return WindowId.fromJson(windowIdStr);
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Invalid viewId: " + viewIdStr, ex);
+		}
 	}
-	
+
 	private static final String SEPARATOR_AFTER_WindowId = "-";
 
 	private final WindowId windowId;
