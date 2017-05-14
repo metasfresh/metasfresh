@@ -209,4 +209,14 @@ public interface ITrx
 	 * @see #getProperty(String, Supplier)
 	 */
 	<T> T getProperty(String name, Function<ITrx, T> valueInitializer);
+
+	/**
+	 * Change property using the value remapping function and then returns it.
+	 * If the remapping function returns null then the property will be removed.
+	 * 
+	 * @param name property name
+	 * @param valueRemappingFunction function which takes as input the old value and returns the new value
+	 * @return new value or null in case the remapping function returned null
+	 */
+	<T> T setAndGetProperty(String name, Function<T, T> valueRemappingFunction);
 }
