@@ -23,6 +23,7 @@ class OverlayField extends Component {
                 break;
             case 'Delete':
                 clearData && clearData();
+                break;
         }
     }
 
@@ -60,23 +61,19 @@ class OverlayField extends Component {
                     entity="documentView"
                     subentity="filter"
                     subentityId={layout.filterId}
-                    handlePatch={handlePatch}
-                    handleChange={handleChange}
                     widgetType={item.widgetType}
                     fields={[item]}
-                    windowType={windowType}
                     type={item.type}
                     widgetData={[item]}
                     key={index}
                     id={index}
                     range={item.range}
-                    onShow={onShow}
-                    onHide={onHide}
                     caption={item.caption}
                     noLabel={false}
                     filterWidget={true}
-                    viewId={viewId}
                     autoFocus={index === 0}
+                    {...{handlePatch, handleChange, windowType, onShow, onHide,
+                        viewId}}
                 />
             )
         })
