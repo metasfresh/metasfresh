@@ -256,4 +256,13 @@ public class ContractChangeBL implements IContractChangeBL
 		}
 		return pricingSystemId;
 	}
+	
+	@Override
+	public void endContract(I_C_Flatrate_Term currentTerm)
+	{
+		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
+		currentTerm.setIsAutoRenew(false);
+		currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_EndingContract);
+		InterfaceWrapperHelper.save(currentTerm);
+	}
 }

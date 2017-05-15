@@ -55,4 +55,10 @@ public interface IContractChangeBL extends ISingletonService
 	 * @throws SubscriptionChangeException if <code>changeDate</code> is before the term's EndDate and if there is no {@link de.metas.flatrate.model.I_C_Contract_Change} record for that date
 	 */
 	void cancelContract(I_C_Flatrate_Term term, Timestamp changeDate,  boolean isCloseInvoiceCandidate);
+	
+	/**
+	 * ending naturally a contract
+	 * @param term
+	 */
+	void endContract(I_C_Flatrate_Term term);
 }
