@@ -1,4 +1,4 @@
-package de.metas.material.planning.ddorder;
+package de.metas.material.event.ddorder;
 
 import java.util.Date;
 import java.util.List;
@@ -35,6 +35,9 @@ import lombok.Singular;
 final @Builder public class DDOrder
 {
 
+	/**
+	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
+	 */
 	@NonNull
 	private final Integer orgId;
 
@@ -45,19 +48,7 @@ final @Builder public class DDOrder
 	private final Integer plantId;
 
 	@NonNull
-	private final Integer bPartnerId;
-
-	@NonNull
-	private final Integer bPartnerLocationId;
-
-	@NonNull
-	private final Integer plannerId;
-
-	@NonNull
-	private final Integer inTransitWarehouseId;
-
-	@NonNull
-	private final Date dateOrdered;
+	private final Integer productPlanningId;
 
 	@NonNull
 	private final Date datePromised;

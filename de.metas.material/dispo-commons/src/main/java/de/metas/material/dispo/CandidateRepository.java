@@ -33,6 +33,7 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.NonNull;
 
@@ -132,6 +133,11 @@ public class CandidateRepository
 			addOrRecplaceProductionDetail(candidate, synchedRecord);
 		}
 
+		if (candidate.getSubType() == SubType.DISTRIBUTION && candidate.getDistributionDetail() != null)
+		{
+			addOrRecplaceDistributionDetail(candidate, synchedRecord);
+		}
+
 		if (candidate.getDemandDetail() != null)
 		{
 			// we do this independently of the type; the demand info might be needed by many records, not just by the "first" demand record
@@ -200,12 +206,49 @@ public class CandidateRepository
 		InterfaceWrapperHelper.save(detailRecordToUpdate);
 	}
 
-	private I_MD_Candidate_Prod_Detail retrieveProductionDetail(@NonNull final I_MD_Candidate synchedRecord)
+	private void addOrRecplaceDistributionDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
+		final I_MD_Candidate_Dist_Detail existingDetail = retrieveDistributionDetail(synchedRecord);
+		if (existingDetail == null)
+		{
+			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
+			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+		}
+		else
+		{
+			detailRecordToUpdate = existingDetail;
+		}
+		final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
+		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
+		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
+		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());
+		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
+		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
+		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
+		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
+		InterfaceWrapperHelper.save(detailRecordToUpdate);
+	}
+
+	private I_MD_Candidate_Dist_Detail retrieveDistributionDetail(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final I_MD_Candidate_Dist_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
+				.create()
+				.firstOnly(I_MD_Candidate_Dist_Detail.class); // we have a UC in place..
+		return existingDetail;
+	}
+
+	private I_MD_Candidate_Prod_Detail retrieveProductionDetail(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_MD_Candidate_Prod_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
+				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
 				.create()
 				.firstOnly(I_MD_Candidate_Prod_Detail.class); // we have a UC in place..
 		return existingDetail;
@@ -323,6 +366,7 @@ public class CandidateRepository
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, referencedRecord.getRecord_ID());
 		}
 
+		// filter by demand detail ignore if there is none!
 		final DemandCandidateDetail demandDetail = candidate.getDemandDetail();
 		if (demandDetail != null && demandDetail.getOrderLineId() != 0)
 		{
@@ -347,6 +391,7 @@ public class CandidateRepository
 			}
 		}
 
+		// filter by productionDetail; if there is none, *don't* ignore, but filter my "not-existing"
 		{
 			final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
 
@@ -374,6 +419,38 @@ public class CandidateRepository
 				if (doFilter)
 				{
 					builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
+				}
+			}
+		}
+
+		// filter by distributionDetail; if there is none, *don't* ignore, but filter my "not-existing"
+		{
+			final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
+
+			final IQueryBuilder<I_MD_Candidate_Dist_Detail> distDetailSubQueryBuilder = queryBL
+					.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (distributionDetail == null)
+			{
+				builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
+			}
+			else
+			{
+				boolean doFilter = false;
+				if (distributionDetail.getProductPlanningId() > 0)
+				{
+					distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_PP_Product_Planning_ID, distributionDetail.getProductPlanningId());
+					doFilter = true;
+				}
+				if (distributionDetail.getNetworkDistributionLineId() > 0)
+				{
+					distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_NetworkDistributionLine_ID, distributionDetail.getNetworkDistributionLineId());
+					doFilter = true;
+				}
+				if (doFilter)
+				{
+					builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
 				}
 			}
 		}
@@ -469,7 +546,7 @@ public class CandidateRepository
 			return Optional.empty();
 		}
 
-		CandidateBuilder builder = Candidate.builder()
+		final CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
 				.productId(candidateRecord.getM_Product_ID())
@@ -486,34 +563,50 @@ public class CandidateRepository
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			builder = builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
+			builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
 		}
 
 		if (candidateRecord.getRecord_ID() > 0)
 		{
-			builder = builder.reference(TableRecordReference.ofReferenced(candidateRecord));
+			builder.reference(TableRecordReference.ofReferenced(candidateRecord));
 		}
 
 		SubType subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
 		{
 			subType = SubType.valueOf(candidateRecord.getMD_Candidate_SubType());
-			builder = builder.subType(subType);
+			builder.subType(subType);
 		}
 		if (subType == SubType.PRODUCTION)
 		{
-			final I_MD_Candidate_Prod_Detail productiondetail = retrieveProductionDetail(candidateRecord);
-			if (productiondetail != null)
+			final I_MD_Candidate_Prod_Detail productionDetail = retrieveProductionDetail(candidateRecord);
+			if (productionDetail != null)
 			{
 				builder.productionDetail(ProductionCandidateDetail.builder()
-						.description(productiondetail.getDescription())
-						.plantId(productiondetail.getPP_Plant_ID())
-						.productBomLineId(productiondetail.getPP_Product_BOMLine_ID())
-						.productPlanningId(productiondetail.getPP_Product_Planning_ID())
-						.uomId(productiondetail.getC_UOM_ID())
-						.ppOrderId(productiondetail.getPP_Order_ID())
-						.ppOrderLineId(productiondetail.getPP_Order_BOMLine_ID())
-						.ppOrderDocStatus(productiondetail.getPP_Order_DocStatus())
+						.description(productionDetail.getDescription())
+						.plantId(productionDetail.getPP_Plant_ID())
+						.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
+						.productPlanningId(productionDetail.getPP_Product_Planning_ID())
+						.uomId(productionDetail.getC_UOM_ID())
+						.ppOrderId(productionDetail.getPP_Order_ID())
+						.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
+						.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
+						.build());
+			}
+		}
+		else if (subType == SubType.DISTRIBUTION)
+		{
+			final I_MD_Candidate_Dist_Detail distributionDetail = retrieveDistributionDetail(candidateRecord);
+			if (distributionDetail != null)
+			{
+				builder.distributionDetail(DistributionCandidateDetail.builder()
+						.networkDistributionLineId(distributionDetail.getDD_NetworkDistributionLine_ID())
+						.productPlanningId(distributionDetail.getPP_Product_Planning_ID())
+						.plantId(distributionDetail.getPP_Plant_ID())
+						.ddOrderId(distributionDetail.getDD_Order_ID())
+						.ddOrderLineId(distributionDetail.getDD_OrderLine_ID())
+						.ddOrderDocStatus(distributionDetail.getDD_Order_DocStatus())
+						.shipperId(distributionDetail.getM_Shipper_ID())
 						.build());
 			}
 		}

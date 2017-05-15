@@ -1,7 +1,7 @@
 
 -- 2017-04-26T16:03:40.856
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541269,540709,TO_TIMESTAMP('2017-04-26 16:03:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','Warenausgang',TO_TIMESTAMP('2017-04-26 16:03:40','YYYY-MM-DD HH24:MI:SS'),100,'DELIVERY','DELIVERY')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541269,540709,TO_TIMESTAMP('2017-04-26 16:03:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','Warenausgang',TO_TIMESTAMP('2017-04-26 16:03:40','YYYY-MM-DD HH24:MI:SS'),100,'DELIVERY','DELIVERY')
 ;
 
 -- 2017-04-26T16:03:40.859
@@ -21,7 +21,7 @@ UPDATE AD_Column SET IsIdentifier='Y', SeqNo=50,Updated=TO_TIMESTAMP('2017-04-26
 
 -- 2017-04-26T16:38:31.849
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,556515,566,0,11,540808,'N','SeqNo',TO_TIMESTAMP('2017-04-26 16:38:31','YYYY-MM-DD HH24:MI:SS'),100,'N','Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst','de.metas.material.dispo.service',14,'"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Reihenfolge',0,TO_TIMESTAMP('2017-04-26 16:38:31','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,556515,566,0,11,540808,'N','SeqNo',TO_TIMESTAMP('2017-04-26 16:38:31','YYYY-MM-DD HH24:MI:SS'),100,'N','Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst','de.metas.material.dispo',14,'"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Reihenfolge',0,TO_TIMESTAMP('2017-04-26 16:38:31','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2017-04-26T16:38:31.853
@@ -51,7 +51,7 @@ UPDATE AD_Field SET SortNo=10.000000000000,Updated=TO_TIMESTAMP('2017-04-26 16:3
 
 -- 2017-04-26T16:39:29.534
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET EntityType='de.metas.material.dispo.service',Updated=TO_TIMESTAMP('2017-04-26 16:39:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558151
+UPDATE AD_Field SET EntityType='de.metas.material.dispo',Updated=TO_TIMESTAMP('2017-04-26 16:39:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558151
 ;
 
 -- 2017-04-26T16:42:05.689

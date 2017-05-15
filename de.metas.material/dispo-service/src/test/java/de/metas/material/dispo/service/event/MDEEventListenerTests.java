@@ -37,6 +37,8 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
 import mockit.Mocked;
 
 /*
@@ -161,14 +163,20 @@ public class MDEEventListenerTests
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
 				.eventDescr(new EventDescr())
-				.distributionStart(t1)
 				.fromWarehouseId(fromWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t1)
+				.toWarehouseId(toWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.plantId(800)
+						.productPlanningId(810)
+						.shipperId(820)
+						.datePromised(t1)
+						.ddOrderLine(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(0)
+								.networkDistributionLineId(900)
+								.build())
 						.build())
 				.reference(reference)
 				.build();

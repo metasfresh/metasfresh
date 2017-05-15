@@ -136,7 +136,7 @@ public class ProductionPlanEventHandler
 
 		if (ppOrder.isCreatePPOrder())
 		{
-			candidateService.requestPPOrder(candidateWithGroupId.getGroupId());
+			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
 }

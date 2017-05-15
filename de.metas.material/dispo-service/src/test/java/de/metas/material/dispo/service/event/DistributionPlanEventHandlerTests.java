@@ -30,13 +30,11 @@ import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.CandidateFactory;
-import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
-import de.metas.material.dispo.service.event.MDEventListener;
-import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -72,9 +70,15 @@ public class DistributionPlanEventHandlerTests
 
 	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
 
-	private static final Date t2 = TimeUtil.addMinutes(t0, 20);
+	/**
+	 * {@link #t1} plus one day, so that we can work/test with {@link DDOrderLine#getDurationDays()}.
+	 */
+	private static final Date t2 = TimeUtil.addDays(t0, 1);
 
-	private static final Date t3 = TimeUtil.addMinutes(t0, 30);
+	/**
+	 * {@link #t2} plus two days so that we can work/test with {@link DDOrderLine#getDurationDays()}.
+	 */
+	private static final Date t3 = TimeUtil.addDays(t0, 3);
 
 	public static final int fromWarehouseId = 10;
 	public static final int intermediateWarehouseId = 20;
@@ -123,14 +127,16 @@ public class DistributionPlanEventHandlerTests
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
 				.eventDescr(new EventDescr())
-				.distributionStart(t1)
 				.fromWarehouseId(fromWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t2)
+				.toWarehouseId(toWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.datePromised(t2)
+						.ddOrderLine(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(1)
+								.build())
 						.build())
 				.reference(reference)
 				.build();
@@ -215,14 +221,16 @@ public class DistributionPlanEventHandlerTests
 
 		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
 				.eventDescr(new EventDescr())
-				.distributionStart(t1)
 				.fromWarehouseId(fromWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t2)
+				.toWarehouseId(intermediateWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(intermediateWarehouseId)
+						.datePromised(t1)
+						.ddOrderLine(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(1)
+								.build())
 						.build())
 				.reference(reference)
 				.build();
@@ -234,14 +242,16 @@ public class DistributionPlanEventHandlerTests
 
 		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
 				.eventDescr(new EventDescr())
-				.distributionStart(t2)
 				.fromWarehouseId(intermediateWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t3)
+				.toWarehouseId(toWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.datePromised(t2)
+						.ddOrderLine(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(2)
+								.build())
 						.build())
 				.reference(reference)
 				.build();

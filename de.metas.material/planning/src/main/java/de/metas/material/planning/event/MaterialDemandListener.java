@@ -1,7 +1,6 @@
 package de.metas.material.planning.event;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -11,12 +10,11 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +30,8 @@ import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.MaterialEventListener;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.planning.IMRPContextFactory;
 import de.metas.material.planning.IMRPNoteBuilder;
@@ -40,9 +40,7 @@ import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ddorder.DDOrder;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
-import de.metas.material.planning.ddorder.DDOrderLine;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.material.planning.impl.SimpleMRPNoteBuilder;
 import de.metas.material.planning.pporder.PPOrderDemandMatcher;
@@ -114,6 +112,10 @@ public class MaterialDemandListener implements MaterialEventListener
 		handleMaterialDemandEvent((MaterialDemandEvent)event);
 	}
 
+	/**
+	 * Invokes our {@link DDOrderPojoSupplier} and returns the resulting {@link DDOrder} pojo as {@link DistributionPlanEvent}
+	 * @param materialDemandEvent
+	 */
 	private void handleMaterialDemandEvent(@NonNull final MaterialDemandEvent materialDemandEvent)
 	{
 		final IMutableMRPContext mrpContext = mkMRPContext(materialDemandEvent);
@@ -129,24 +131,13 @@ public class MaterialDemandListener implements MaterialEventListener
 			{
 				for (final DDOrderLine ddOrderLine : ddOrder.getDdOrderLines())
 				{
-					final Timestamp orderLineStartDate = TimeUtil.addDays(ddOrder.getDatePromised(), ddOrderLine.getDurationDays() * -1);
-
-					final I_M_Locator fromLocator = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getFromLocatorId(), I_M_Locator.class, mrpContext.getTrxName());
-					final I_M_Locator toLocator = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getToLocatorId(), I_M_Locator.class, mrpContext.getTrxName());
-
+					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, mrpContext.getTrxName());
+									
 					final DistributionPlanEvent distributionPlanEvent = DistributionPlanEvent.builder()
 							.eventDescr(new EventDescr())
-							.fromWarehouseId(fromLocator.getM_Warehouse_ID())
-							.distributionStart(orderLineStartDate)
-							.materialDescr(MaterialDescriptor.builder()
-									.date(ddOrder.getDatePromised())
-									.orgId(ddOrder.getOrgId())
-									.productId(ddOrderLine.getProductId())
-									.qty(ddOrderLine.getQty())
-									.warehouseId(toLocator.getM_Warehouse_ID())
-									.build())
+							.fromWarehouseId(networkLine.getM_WarehouseSource_ID())
+							.toWarehouseId(networkLine.getM_Warehouse_ID())
 							.reference(materialDemandEvent.getReference())
-							.orderLineId(materialDemandEvent.getOrderLineId())
 							.build();
 
 					materialEventService.fireEvent(distributionPlanEvent);

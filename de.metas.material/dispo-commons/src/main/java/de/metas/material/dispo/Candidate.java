@@ -107,6 +107,11 @@ public class Candidate
 	private final ProductionCandidateDetail productionDetail;
 
 	/**
+	 * Used for additional infos if this candidate has the sub type {@link SubType#DISTRIBUTION}.
+	 */
+	private final DistributionCandidateDetail distributionDetail;
+	
+	/**
 	 * Used for additional infos if this candidate relates to particular demand
 	 */
 	private final DemandCandidateDetail demandDetail;
