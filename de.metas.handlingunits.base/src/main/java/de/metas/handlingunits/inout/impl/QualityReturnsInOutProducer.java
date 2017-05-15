@@ -24,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -112,16 +113,14 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 
 		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
-			
-			
 
 			final I_M_HU hu = huAssignment.getM_HU();
 
 			final boolean isHUTU = handlingUnitsBL.isTransportUnit(hu);
 			final boolean isHULU = handlingUnitsBL.isLoadingUnit(hu);
-			
+
 			final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(hu);
-			
+
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huAssignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
@@ -136,18 +135,24 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 			}
 			else
 			{
-				// check if there is any aggregated HU in the top level HU.
-				final I_M_HU_PI_Item huPIItem = hu.getM_HU_PI_Item_Product().getM_HU_PI_Item();
+				final I_M_HU_PI_Item_Product huPIItemProduct = hu.getM_HU_PI_Item_Product();
 
-				final I_M_HU_Item item = handlingUnitsDAO.retrieveAggregatedItemOrNull(topLevelParent, huPIItem);
-				if (item != null)
+				// not a virtual HU
+				if (! (huPIItemProduct == null))
 				{
-					final I_M_HU_PI huPI = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI();
-					collector.addM_HU_PI(huPI, item.getQty().intValueExact(), inOutLine);
+					// check if there is any aggregated HU in the top level HU.
+					final I_M_HU_PI_Item huPIItem = hu.getM_HU_PI_Item_Product().getM_HU_PI_Item();
+
+					final I_M_HU_Item item = handlingUnitsDAO.retrieveAggregatedItemOrNull(topLevelParent, huPIItem);
+					if (item != null)
+					{
+						final I_M_HU_PI huPI = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI();
+						collector.addM_HU_PI(huPI, item.getQty().intValueExact(), inOutLine);
+					}
 				}
 			}
-			
-			//Create product (non-packing material) lines
+
+			// Create product (non-packing material) lines
 			{
 				// Iterate the product storages of this HU and create/update the inout lines
 				final IHUStorageFactory huStorageFactory = handlingUnitsBL.getStorageFactory();
@@ -162,12 +167,11 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 		}
 
 		final List<HUPackingMaterialDocumentLineCandidate> pmCandidates = collector.getAndClearCandidates();
-		
-		for(HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates)
+
+		for (HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates)
 		{
 			final I_M_HU_PackingMaterial packingMaterial = huPackingMaterialDAO.retrivePackingMaterialOfProduct(pmCandidate.getM_Product());
 
-			
 			addPackingMaterial(packingMaterial, pmCandidate.getQty().intValueExact());
 		}
 		// Step 3: Create the packing material lines that were prepared
