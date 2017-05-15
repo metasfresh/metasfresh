@@ -32,12 +32,12 @@ import java.util.concurrent.TimeUnit;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.Msg;
 
 import de.metas.contracts.subscription.ISubscriptionDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_SubscriptionProgress;
 import de.metas.flatrate.model.X_C_SubscriptionProgress;
+import de.metas.i18n.Msg;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 

@@ -24,8 +24,8 @@ import org.compiere.model.MQuery;
 import org.compiere.model.X_AD_PInstance_Log;
 import org.compiere.print.MPrintTableFormat;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 
+import de.metas.i18n.Msg;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoLog;
 

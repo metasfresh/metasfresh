@@ -42,7 +42,6 @@ import org.compiere.model.MGoal;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.DialShape;
@@ -51,6 +50,8 @@ import org.jfree.chart.plot.MeterPlot;
 import org.jfree.data.Range;
 import org.jfree.data.general.DefaultValueDataset;
 import org.jfree.ui.RectangleInsets;
+
+import de.metas.i18n.Msg;
 
 /**
  * 	Performance Indicator

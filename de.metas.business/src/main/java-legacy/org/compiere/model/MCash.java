@@ -32,11 +32,11 @@ import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
 
 /**

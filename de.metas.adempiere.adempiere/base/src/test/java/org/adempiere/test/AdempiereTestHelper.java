@@ -47,8 +47,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
 
-import com.google.common.base.Suppliers;
-
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.util.cache.CacheInterceptor;
@@ -136,7 +134,7 @@ public class AdempiereTestHelper
 
 		//
 		// Base Language
-		Language.setBaseLanguage(Suppliers.ofInstance(Language.getLanguage(AD_LANGUAGE)));
+		Language.setBaseLanguage(() -> AD_LANGUAGE);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, AD_LANGUAGE);
 		
 		//

@@ -61,10 +61,10 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.commission.util.CommissionConstants;
+import de.metas.i18n.Msg;
 
 /**
  * @author ts, used a work of Carlos Ruiz as reference

@@ -61,7 +61,7 @@ public class C_Invoice_Candidate_Misc_FacetCollector extends SingleFacetCategory
 		facetApprovalForInvoicing = Facet.<I_C_Invoice_Candidate> builder()
 				.setFacetCategory(getFacetCategory())
 				.setDisplayName(msgBL.translate(Env.getCtx(), I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing))
-				.setFilter(new TypedSqlQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing + "='Y'"))
+				.setFilter(TypedSqlQueryFilter.of(I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing + "='Y'"))
 				.build();
 
 	}

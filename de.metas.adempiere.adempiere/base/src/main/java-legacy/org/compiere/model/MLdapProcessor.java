@@ -21,11 +21,13 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
+import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 
 
 /**
@@ -110,6 +112,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	 * 	Get Server ID
 	 *	@return id
 	 */
+	@Override
 	public String getServerID ()
 	{
 		return "Ldap" + get_ID();
@@ -130,6 +133,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	 *	@param requery requery
 	 *	@return date next run
 	 */
+	@Override
 	public Timestamp getDateNextRun (boolean requery)
 	{
 		if (requery)
@@ -141,6 +145,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	 * 	Get Logs
 	 *	@return logs
 	 */
+	@Override
 	public AdempiereProcessorLog[] getLogs ()
 	{
 		ArrayList<MLdapProcessorLog> list = new ArrayList<MLdapProcessorLog>();
@@ -191,6 +196,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	 * 	Get Frequency (n/a)
 	 *	@return 1
 	 */
+	@Override
 	public int getFrequency()
 	{
 		return 1;
@@ -200,6 +206,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	 * 	Get Frequency Type (n/a)
 	 *	@return minute
 	 */
+	@Override
 	public String getFrequencyType()
 	{
 		return X_R_RequestProcessor.FREQUENCYTYPE_Minute;
@@ -209,6 +216,7 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString()
 	{
 		StringBuffer sb = new StringBuffer ("MLdapProcessor[");
@@ -515,13 +523,13 @@ public class MLdapProcessor extends X_AD_LdapProcessor implements AdempiereProce
 			m_ok++;
 		}
 		//
-		MLdapAccess access = new MLdapAccess (getCtx(), 0, null);
-		access.setAD_Client_ID (AD_Client_ID);
+		final I_AD_LdapAccess access = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_LdapAccess.class);
+		InterfaceWrapperHelper.setValue(access, I_AD_LdapAccess.COLUMNNAME_AD_Client_ID, AD_Client_ID);
 		access.setAD_User_ID (AD_User_ID);
 		access.setR_InterestArea_ID (R_InterestArea_ID);
 		access.setIsError (error != null);
 		access.setSummary (info);
-		access.save ();
+		InterfaceWrapperHelper.save(access);
 	}	//	logAccess
 
 }	//	MLdapProcessor

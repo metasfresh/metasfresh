@@ -262,6 +262,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isTransportUnitOrVirtual(I_M_HU hu);
 
 	/**
+	 * @return true if the HU is a TU or an aggregated TU
+	 */
+	boolean isTransportUnitOrAggregate(I_M_HU hu);
+
+	/**
 	 * Checks if given handling unit is top level (i.e. it has no parents)
 	 *
 	 * @param hu
@@ -409,5 +414,4 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return
 	 */
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
-
 }

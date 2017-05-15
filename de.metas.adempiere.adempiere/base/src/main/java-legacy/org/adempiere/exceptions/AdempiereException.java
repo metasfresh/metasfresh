@@ -36,6 +36,7 @@ import com.google.common.collect.ImmutableMap;
 import ch.qos.logback.classic.Level;
 import de.metas.i18n.Language;
 import de.metas.logging.MetasfreshLastError;
+import lombok.NonNull;
 
 /**
  * Any exception that occurs inside the Adempiere core
@@ -428,12 +429,24 @@ public class AdempiereException extends RuntimeException
 		return adIssueId != null;
 	}
 
+	/**
+	 * Sets parameter.
+	 * 
+	 * @param name parameter name
+	 * @param value parameter value or <code>null</code> if you want the parameter to be removed.
+	 */
 	@OverridingMethodsMustInvokeSuper
-	public AdempiereException setParameter(final String name, final Object value)
+	public AdempiereException setParameter(@NonNull final String name, final Object value)
 	{
 		// avoid setting null values because it will fail on getParameters() which is returning an ImmutableMap
 		if (value == null)
 		{
+			// remove the parameter if any
+			if (parameters != null)
+			{
+				parameters.remove(name);
+			}
+
 			return this;
 		}
 

@@ -1,5 +1,7 @@
 package de.metas.event;
 
+import java.util.function.Consumer;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -57,6 +59,13 @@ public interface IEventBus
 	void subscribe(IEventListener listener);
 
 	/**
+	 * Subscribe to this bus.
+	 * 
+	 * @param eventConsumer
+	 */
+	void subscribe(Consumer<Event> eventConsumer);
+
+	/**
 	 * Subscribe to this bus. Same as {@link #subscribe(IEventListener)} but this will register a weak reference to listener, so as long as the listener is no longer referenced, it will auto-magically
 	 * unregistered from this bus.
 	 *
@@ -75,5 +84,4 @@ public interface IEventBus
 	 * @return true if the bus was destroyed and it no longer accepts events.
 	 */
 	boolean isDestroyed();
-
 }

@@ -163,14 +163,27 @@ public class InterfaceWrapperHelper
 	/**
 	 * Convenient method to create a new instance of given class, using current context and current transaction.
 	 *
-	 * @param cl
+	 * @param modelClass
 	 */
-	public static <T> T newInstance(final Class<T> cl)
+	public static <T> T newInstance(final Class<T> modelClass)
 	{
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		return create(ctx, cl, trxName);
+		return create(ctx, modelClass, trxName);
 	}
+	
+	/**
+	 * Convenient method to create a new instance of given class, using current context and no transaction.
+	 *
+	 * @param modelClass
+	 */
+	public static <T> T newInstanceOutOfTrx(final Class<T> modelClass)
+	{
+		final Properties ctx = Env.getCtx();
+		final String trxName = ITrx.TRXNAME_None;
+		return create(ctx, modelClass, trxName);
+	}
+
 
 	/**
 	 * This method is heavily used throughout metasfresh and allows us to do the following things:
