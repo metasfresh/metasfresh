@@ -70,7 +70,6 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.form.action.PopupAction;
 import org.eevolution.form.action.ZoomMenuAction;
 import org.eevolution.form.bom.BOMTreeFactory;
@@ -85,6 +84,8 @@ import org.eevolution.model.wrapper.BOMLineWrapper;
 import org.eevolution.model.wrapper.BOMWrapper;
 import org.eevolution.tools.swing.SwingTool;
 import org.eevolution.tools.worker.SingleWorker;
+
+import de.metas.i18n.Msg;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany

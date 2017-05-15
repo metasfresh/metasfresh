@@ -67,6 +67,11 @@ public interface IRoleDAO extends ISingletonService
 	List<I_AD_Role> retrieveAllRolesWithAutoMaintenance(Properties ctx);
 
 	/**
+	 * @return all roles on which current user has access
+	 */
+	List<I_AD_Role> retrieveAllRolesWithUserAccess(Properties ctx);
+
+	/**
 	 * @param ctx
 	 * @param adClientId AD_Client_ID
 	 * @return all roles of given AD_Client_ID
@@ -82,11 +87,9 @@ public interface IRoleDAO extends ISingletonService
 	 */
 	String retrieveRoleName(Properties ctx, int adRoleId);
 
-	/**
-	 * @param ctx
-	 * @param adUserId
-	 * @param adRoleId
-	 * @return true if there is an AD_User_Roles entry for the given role and user, false otherwise.
-	 */
-	boolean hasUserRoleAssignment(Properties ctx, int adUserId, int adRoleId);
+	List<Integer> retrieveUserIdsForRoleId(int adRoleId);
+
+	int retrieveFirstRoleIdForUserId(int adUserId);
+
+	void createUserRoleAssignmentIfMissing(int adUserId, int adRoleId);
 }

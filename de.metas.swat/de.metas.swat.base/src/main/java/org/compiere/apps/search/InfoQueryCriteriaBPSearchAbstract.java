@@ -35,9 +35,9 @@ import org.compiere.model.I_AD_InfoColumn;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.util.Permutation;
+import de.metas.i18n.Msg;
 
 /**
  * @author cg

@@ -21,7 +21,8 @@ import java.util.Properties;
 
 import org.compiere.model.MQuery;
 import org.compiere.print.MPrintTableFormat;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  *	Parameter Table

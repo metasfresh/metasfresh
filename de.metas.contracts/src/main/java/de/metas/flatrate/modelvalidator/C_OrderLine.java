@@ -31,9 +31,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.contracts.subscription.model.I_C_OrderLine;
+import de.metas.i18n.Msg;
 
 /**
  *

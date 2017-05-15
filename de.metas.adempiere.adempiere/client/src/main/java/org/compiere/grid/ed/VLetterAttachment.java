@@ -41,8 +41,9 @@ import org.compiere.apps.LetterDialog;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
+
+import de.metas.i18n.Msg;
 
 /**
  * @author teo_sarca

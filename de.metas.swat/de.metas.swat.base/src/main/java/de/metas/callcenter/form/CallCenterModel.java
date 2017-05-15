@@ -48,7 +48,6 @@ import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -59,6 +58,7 @@ import de.metas.callcenter.model.I_R_Group_Prospect;
 import de.metas.callcenter.model.I_R_Request;
 import de.metas.callcenter.model.I_R_RequestUpdate;
 import de.metas.callcenter.model.MRGroupProspect;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

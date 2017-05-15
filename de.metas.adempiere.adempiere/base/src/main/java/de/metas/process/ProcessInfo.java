@@ -618,7 +618,7 @@ public final class ProcessInfo implements Serializable
 		}
 		else
 		{
-			whereFilter = new TypedSqlQueryFilter<>(whereClause);
+			whereFilter = TypedSqlQueryFilter.of(whereClause);
 		}
 
 		// https://github.com/metasfresh/metasfresh/issues/1348
@@ -626,9 +626,9 @@ public final class ProcessInfo implements Serializable
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		final TypedSqlQueryFilter<T> orgFilter = new TypedSqlQueryFilter<>(role.getOrgWhere(null, true));
+		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
 
-		final TypedSqlQueryFilter<T> clientFilter = new TypedSqlQueryFilter<>(role.getClientWhere(true));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		

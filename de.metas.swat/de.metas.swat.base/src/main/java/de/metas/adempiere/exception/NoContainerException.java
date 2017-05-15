@@ -27,7 +27,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.compiere.model.MWarehouse;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 public class NoContainerException extends AdempiereException {
 

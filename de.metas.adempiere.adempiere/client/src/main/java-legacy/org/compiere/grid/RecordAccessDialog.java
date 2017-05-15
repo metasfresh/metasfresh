@@ -1,184 +1,155 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.grid;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 
-import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;
 import org.compiere.apps.ConfirmPanel;
-import org.compiere.model.MRecordAccess;
+import org.compiere.model.I_AD_Record_Access;
+import org.compiere.model.I_AD_Role;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.util.DB;
+import org.compiere.swing.ListComboBoxModel;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
+import org.compiere.util.Util.ArrayKey;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.Msg;
 
 /**
- * 	Record Access Dialog
- *	
- *  @author Jorg Janke
- *  @version $Id: RecordAccessDialog.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
+ * Record Access Dialog
+ *
+ * @author Jorg Janke
+ * @version $Id: RecordAccessDialog.java,v 1.3 2006/07/30 00:51:28 jjanke Exp $
  */
 public class RecordAccessDialog extends CDialog
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5208621373205009190L;
+	private final int m_AD_Table_ID;
+	private final int m_Record_ID;
+	private final List<I_AD_Record_Access> _recordAccesses = new ArrayList<>();
+	//
+	private int _currentRowIndex = 0;
+	private I_AD_Record_Access _currentRecordAccess = null;
 
-	/**
-	 * 	Record Access Dialog
-	 *	@param owner owner
-	 *	@param AD_Table_ID table
-	 *	@param Record_ID record
-	 */
-	public RecordAccessDialog(JFrame owner, int AD_Table_ID, int Record_ID)
+	//
+	// UI
+	private final CComboBox<KeyNamePair> roleField = new CComboBox<>();
+	private final CCheckBox cbExclude = new CCheckBox(Msg.translate(Env.getCtx(), "IsExclude"));
+	private final CCheckBox cbReadOnly = new CCheckBox(Msg.translate(Env.getCtx(), "IsReadOnly"));
+	private final CCheckBox cbDependent = new CCheckBox(Msg.translate(Env.getCtx(), "IsDependentEntities"));
+	private final CButton bDelete = AEnv.getButton("Delete");
+	private final CButton bNew = AEnv.getButton("New");
+	private final JLabel rowNoLabel = new JLabel();
+	private final CButton bUp = AEnv.getButton("Previous");
+	private final CButton bDown = AEnv.getButton("Next");
+
+	public RecordAccessDialog(final JFrame owner, final int AD_Table_ID, final int Record_ID)
 	{
 		super(owner, Msg.translate(Env.getCtx(), "RecordAccessDialog"));
-		log.info("AD_Table_ID=" + AD_Table_ID + ", Record_ID=" + Record_ID);
 		m_AD_Table_ID = AD_Table_ID;
 		m_Record_ID = Record_ID;
-		try
-		{
-			dynInit();
-			jbInit();
-		}
-		catch (Exception e)
-		{
-			log.error("", e);
-		}
+
+		dynInit();
+		jbInit();
+
 		AEnv.showCenterWindow(owner, this);
-	}	//	RecordAccessDialog
-
-	private int				m_AD_Table_ID;
-	private int				m_Record_ID;
-	private ArrayList<MRecordAccess>	m_recordAccesss = new ArrayList<MRecordAccess>();
-	private int				m_currentRow = 0;
-	private MRecordAccess	m_currentData = null;
-	private Logger			log = LogManager.getLogger(getClass());
-
-	private CPanel centerPanel = new CPanel(new ALayout());
-	private BorderLayout mainLayout = new BorderLayout();
-	
-	private CLabel roleLabel = new CLabel(Msg.translate(Env.getCtx(), "AD_Role_ID"));
-	private CComboBox roleField = null;	
-	private CCheckBox cbActive = new CCheckBox(Msg.translate(Env.getCtx(), "IsActive"));
-	private CCheckBox cbExclude = new CCheckBox(Msg.translate(Env.getCtx(), "IsExclude"));
-	private CCheckBox cbReadOnly = new CCheckBox(Msg.translate(Env.getCtx(), "IsReadOnly"));
-	private CCheckBox cbDependent = new CCheckBox(Msg.translate(Env.getCtx(), "IsDependentEntities"));
-	private CButton bDelete = AEnv.getButton("Delete");
-	private CButton bNew = AEnv.getButton("New");
-	private JLabel rowNoLabel = new JLabel();
-
-	private CButton bUp = AEnv.getButton("Previous");
-	private CButton bDown = AEnv.getButton("Next");
-
-	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+	}	// RecordAccessDialog
 
 	/**
-	 * 	Dynamic Init
+	 * Dynamic Init
 	 */
 	private void dynInit()
 	{
-		//	Load Roles
-		String sql = Env.getUserRolePermissions().addAccessSQL(
-			"SELECT AD_Role_ID, Name FROM AD_Role ORDER BY 2", 
-			"AD_Role", IUserRolePermissions.SQL_NOTQUALIFIED, IUserRolePermissions.SQL_RO);
-		roleField = new CComboBox(DB.getKeyNamePairs(sql, false));
-		
-		//	Load Record Access for all roles
-		sql = "SELECT * FROM AD_Record_Access "
-			+ "WHERE AD_Table_ID=? AND Record_ID=? AND AD_Client_ID=?";
-		PreparedStatement pstmt = null;
-		try
+		final Properties ctx = Env.getCtx();
+
+		//
+		// Load Roles
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_AD_Table_ID);
-			pstmt.setInt(2, m_Record_ID);
-			pstmt.setInt(3, Env.getAD_Client_ID(Env.getCtx()));
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-				m_recordAccesss.add(new MRecordAccess(Env.getCtx(), rs, null));
-			rs.close();
-			pstmt.close();
-			pstmt = null;
+			final List<KeyNamePair> roles = Services.get(IRoleDAO.class).retrieveAllRolesWithUserAccess(ctx)
+					.stream()
+					.map(adRole -> KeyNamePair.of(adRole.getAD_Role_ID(), adRole.getName()))
+					.sorted(Comparator.comparing(KeyNamePair::getName))
+					.collect(ImmutableList.toImmutableList());
+			roleField.setModel(ListComboBoxModel.ofNullable(roles));
 		}
-		catch (Exception e)
+
+		// Load Record Access for all roles
 		{
-			log.error(sql, e);
+			final int adClientId = Env.getAD_Client_ID(ctx);
+			final List<I_AD_Record_Access> recordAccesses = Services.get(IUserRolePermissionsDAO.class).retrieveRecordAccesses(m_AD_Table_ID, m_Record_ID, adClientId);
+			setRecordAccesses(recordAccesses);
 		}
-		try
-		{
-			if (pstmt != null)
-				pstmt.close();
-			pstmt = null;
-		}
-		catch (Exception e)
-		{
-			pstmt = null;
-		}
-		log.debug("#" + m_recordAccesss.size());
+
 		setLine(0, false);
-	}	//	dynInit
+	}	// dynInit
 
 	/**
-	 * 	Static Init
-	 *	@throws Exception
+	 * Static Init
 	 */
-	private void jbInit() throws Exception
+	private void jbInit()
 	{
-		this.getContentPane().setLayout(mainLayout);
-		this.getContentPane().add(centerPanel, BorderLayout.CENTER);
-		this.getContentPane().add(confirmPanel, BorderLayout.SOUTH);
+		final BorderLayout mainLayout = new BorderLayout();
+		final CPanel centerPanel = new CPanel(new ALayout());
+		final CLabel roleLabel = new CLabel(Msg.translate(Env.getCtx(), "AD_Role_ID"));
+		final ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
+
+		getContentPane().setLayout(mainLayout);
+		getContentPane().add(centerPanel, BorderLayout.CENTER);
+		getContentPane().add(confirmPanel, BorderLayout.SOUTH);
 		//
-		centerPanel.add(bUp, new ALayoutConstraint(0,0));
-		centerPanel.add(bNew, new ALayoutConstraint(0,6));
-		centerPanel.add(roleLabel, new ALayoutConstraint(1,0));
+		centerPanel.add(bUp, new ALayoutConstraint(0, 0));
+		centerPanel.add(bNew, new ALayoutConstraint(0, 6));
+		centerPanel.add(roleLabel, new ALayoutConstraint(1, 0));
 		centerPanel.add(roleField, null);
-		centerPanel.add(cbActive, null);
 		centerPanel.add(cbExclude, null);
 		centerPanel.add(cbReadOnly, null);
 		centerPanel.add(cbDependent, null);
 		centerPanel.add(bDelete, null);
-		centerPanel.add(bDown, new ALayoutConstraint(2,0));
-		centerPanel.add(rowNoLabel, new ALayoutConstraint(2,6));
+		centerPanel.add(bDown, new ALayoutConstraint(2, 0));
+		centerPanel.add(rowNoLabel, new ALayoutConstraint(2, 6));
 		//
-		Dimension size = centerPanel.getPreferredSize();
+		final Dimension size = centerPanel.getPreferredSize();
 		size.width = 600;
 		centerPanel.setPreferredSize(size);
 		//
@@ -187,174 +158,263 @@ public class RecordAccessDialog extends CDialog
 		bDelete.addActionListener(this);
 		bNew.addActionListener(this);
 		confirmPanel.setActionListener(this);
-	}	//	jbInit
+	}	// jbInit
 
 	/**
-	 * 	Set Line
-	 *	@param rowDelta delta to current row
-	 *	@param newRecord new
+	 * Set Line
+	 *
+	 * @param rowDelta delta to current row
+	 * @param newRecord new
 	 */
-	private void setLine (int rowDelta, boolean newRecord)
+	private void setLine(final int rowDelta, boolean newRecord)
 	{
-		log.debug("delta=" + rowDelta + ", new=" + newRecord
-			+ " - currentRow=" + m_currentRow + ", size=" + m_recordAccesss.size());
-		int maxIndex = 0;
-		//	nothing defined
-		if (m_recordAccesss.size() == 0)
+		final int recordAccessesCount = getRecordAccessesCount();
+		int maxIndex;
+		int rowIndex;
+
+		// nothing defined
+		if (recordAccessesCount == 0)
 		{
-			m_currentRow = 0;
+			rowIndex = 0;
 			maxIndex = 0;
 			newRecord = true;
-			setLine(null);
+			setLine(null, rowIndex);
 		}
 		else if (newRecord)
 		{
-			m_currentRow = m_recordAccesss.size();
-			maxIndex = m_currentRow;
-			setLine(null);
+			rowIndex = recordAccessesCount - 1 + 1;
+			maxIndex = rowIndex;
+			setLine(null, rowIndex);
 		}
 		else
 		{
-			m_currentRow += rowDelta;
-			maxIndex = m_recordAccesss.size() - 1;
-			if (m_currentRow < 0)
-				m_currentRow = 0;
-			else if (m_currentRow > maxIndex)
-				m_currentRow = maxIndex;
+			rowIndex = getCurrentRowIndex() + rowDelta;
+			maxIndex = recordAccessesCount - 1;
+			if (rowIndex < 0)
+			{
+				rowIndex = 0;
+			}
+			else if (rowIndex > maxIndex)
+			{
+				rowIndex = maxIndex;
+			}
 			//
-			MRecordAccess ra = m_recordAccesss.get(m_currentRow);
-			setLine(ra);
+			final I_AD_Record_Access ra = getRecordAccessByIndex(rowIndex);
+			setLine(ra, rowIndex);
 		}
-		//	Label
-		StringBuffer txt = new StringBuffer();
-		if (newRecord)
-			txt.append("+");
-		txt.append(m_currentRow+1).append("/").append(maxIndex+1);
-		rowNoLabel.setText(txt.toString());
-		//	set up/down
-		bUp.setEnabled(m_currentRow > 0);
-		bDown.setEnabled(m_currentRow < maxIndex);			
-	}	//	setLine
+
+		//
+		// Label
+		{
+			final StringBuilder txt = new StringBuilder();
+			if (newRecord)
+			{
+				txt.append("+");
+			}
+			txt.append(rowIndex + 1).append("/").append(maxIndex + 1);
+			rowNoLabel.setText(txt.toString());
+		}
+
+		//
+		// set up/down
+		bUp.setEnabled(rowIndex > 0);
+		bDown.setEnabled(rowIndex < maxIndex);
+	}	// setLine
 
 	/**
-	 * 	Set Selection
-	 *	@param ra record access
+	 * Set Selection
+	 *
+	 * @param ra record access
 	 */
-	private void setLine (MRecordAccess ra)
+	private void setLine(final I_AD_Record_Access ra, final int rowIndex)
 	{
 		int AD_Role_ID = 0;
-		boolean active = true;
 		boolean exclude = true;
 		boolean readonly = false;
 		boolean dependent = false;
-		//
 		if (ra != null)
 		{
 			AD_Role_ID = ra.getAD_Role_ID();
-			active = ra.isActive();
 			exclude = ra.isExclude();
 			readonly = ra.isReadOnly();
 			dependent = ra.isDependentEntities();
 		}
-		cbActive.setSelected(active);
+
 		cbExclude.setSelected(exclude);
 		cbReadOnly.setSelected(readonly);
 		cbDependent.setSelected(dependent);
 		bDelete.setEnabled(ra != null);
+
 		//
-		KeyNamePair selection = null;
+		KeyNamePair roleToSelect = null;
 		for (int i = 0; i < roleField.getItemCount(); i++)
 		{
-			KeyNamePair pp = (KeyNamePair)roleField.getItemAt(i);
+			final KeyNamePair pp = roleField.getItemAt(i);
 			if (pp.getKey() == AD_Role_ID)
-				selection = pp;		
+			{
+				roleToSelect = pp;
+			}
 		}
-		if (selection != null && ra != null)
+
+		if (roleToSelect != null && ra != null)
 		{
-			roleField.setSelectedItem(selection);
-			m_currentData = ra;
-			log.debug("" + ra);
+			roleField.setSelectedItem(roleToSelect);
+			_currentRecordAccess = ra;
+			_currentRowIndex = rowIndex;
+
 		}
 		else
-			m_currentData = null;
-	}	//	setLine
+		{
+			_currentRecordAccess = null;
+			_currentRowIndex = rowIndex;
+		}
+	}	// setLine
+
+	private void setRecordAccesses(final Collection<I_AD_Record_Access> recordAccesses)
+	{
+		_recordAccesses.clear();
+		_recordAccesses.addAll(recordAccesses);
+	}
+
+	private int getRecordAccessesCount()
+	{
+		return _recordAccesses.size();
+	}
+
+	private I_AD_Record_Access getRecordAccessByIndex(final int index)
+	{
+		return _recordAccesses.get(index);
+	}
 
 	/**
-	 * 	Action Listener
-	 *	@param e event
+	 * @param ra
+	 * @return row index
+	 */
+	private int addRecordAccess(final I_AD_Record_Access ra)
+	{
+		_recordAccesses.add(ra);
+		return _recordAccesses.size() - 1;
+	}
+
+	private void removeRecordAccess(final I_AD_Record_Access recordAccessToDelete)
+	{
+		final ArrayKey key = mkKey(recordAccessToDelete);
+		_recordAccesses.removeIf(ra -> Objects.equals(key, mkKey(ra)));
+	}
+
+	private static final ArrayKey mkKey(final I_AD_Record_Access ra)
+	{
+		final int adRoleId = ra.getAD_Role_ID();
+		final int adTableId = ra.getAD_Table_ID();
+		final int recordId = ra.getRecord_ID();
+		return ArrayKey.of(adRoleId, adTableId, recordId);
+
+	}
+
+	private I_AD_Record_Access getCurrentRecordAccess()
+	{
+		return _currentRecordAccess;
+	}
+
+	public int getCurrentRowIndex()
+	{
+		return _currentRowIndex;
+	}
+
+	/**
+	 * Action Listener
+	 *
+	 * @param event event
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent event)
 	{
-		if (e.getSource() == bUp)
-			setLine(-1, false);
-		else if (e.getSource() == bDown)
-			setLine(+1, false);
-		else if (e.getSource() == bNew)
-			setLine(0, true);
-		else
+		try
 		{
-			if (e.getSource() == bDelete)
-				cmd_delete();
-			else if (e.getActionCommand().equals(ConfirmPanel.A_OK))
+			if (event.getSource() == bUp)
 			{
-				if (!cmd_save())
-					return;
+				setLine(-1, false);
 			}
-			dispose();
-		}
-	}	//	actionPerformed
+			else if (event.getSource() == bDown)
+			{
+				setLine(+1, false);
+			}
+			else if (event.getSource() == bNew)
+			{
+				setLine(0, true);
+			}
+			else
+			{
+				if (event.getSource() == bDelete)
+				{
+					cmd_delete();
+				}
+				else if (event.getActionCommand().equals(ConfirmPanel.A_OK))
+				{
+					cmd_save();
+				}
 
-	/**
-	 * 	Save Command
-	 *	@return true if saved
-	 */
-	private boolean cmd_save()
-	{
-		KeyNamePair pp = (KeyNamePair)roleField.getSelectedItem();
-		roleField.setBackground(pp == null);
-		if (pp == null)
-			return false;
-		int AD_Role_ID = pp.getKey();
-		//
-		boolean isActive = cbActive.isSelected();
-		boolean isExclude = cbExclude.isSelected();
-		boolean isReadOnly = cbReadOnly.isSelected();
-		boolean isDependentEntities = cbDependent.isSelected();
-		//
-		if (m_currentData == null)
+				dispose();
+			}
+		}
+		catch (final Exception ex)
 		{
-			m_currentData = new MRecordAccess (Env.getCtx(), AD_Role_ID, m_AD_Table_ID, m_Record_ID, null);
-			m_recordAccesss.add(m_currentData);
-			m_currentRow = m_recordAccesss.size()-1;
+			ADialog.error(Env.WINDOW_None, this, ex);
 		}
-		m_currentData.setIsActive(isActive);
-		m_currentData.setIsExclude(isExclude);
-		m_currentData.setIsReadOnly(isReadOnly);
-		m_currentData.setIsDependentEntities(isDependentEntities);
-		boolean success = m_currentData.save();
-		//
-		log.debug("Success=" + success);
-		return success;
-	}	//	cmd_save
+	}	// actionPerformed
 
 	/**
-	 * 	Delete Command
-	 *	@return true if deleted
+	 * Save Command
 	 */
-	private boolean cmd_delete()
+	private void cmd_save()
 	{
-		boolean success = false;
-		if (m_currentData == null)
-			log.error("No data");
+		final KeyNamePair roleKNP = roleField.getSelectedItem();
+		roleField.setBackground(roleKNP == null);
+		if (roleKNP == null)
+		{
+			throw new FillMandatoryException("AD_Role_ID");
+		}
+		final I_AD_Role role = Services.get(IRoleDAO.class).retrieveRole(Env.getCtx(), roleKNP.getKey());
+
+		//
+		final boolean isExclude = cbExclude.isSelected();
+		final boolean isReadOnly = cbReadOnly.isSelected();
+		final boolean isDependentEntities = cbDependent.isSelected();
+
+		final I_AD_Record_Access currentRecordAccess = getCurrentRecordAccess();
+		final boolean isNew = currentRecordAccess == null;
+
+		Services.get(IUserRolePermissionsDAO.class).changeRecordAccess(role, m_AD_Table_ID, m_Record_ID, recordAccess -> {
+			recordAccess.setIsActive(true);
+			recordAccess.setIsExclude(isExclude);
+			recordAccess.setIsReadOnly(isReadOnly);
+			recordAccess.setIsDependentEntities(isDependentEntities);
+		});
+
+		//
+		if (isNew)
+		{
+			final int rowIndex = addRecordAccess(currentRecordAccess);
+			setLine(currentRecordAccess, rowIndex);
+		}
+	}	// cmd_save
+
+	/**
+	 * Delete Command
+	 */
+	private void cmd_delete()
+	{
+		final I_AD_Record_Access currentRecordAccess = getCurrentRecordAccess();
+		if (currentRecordAccess == null)
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
 		else
 		{
-			success = m_currentData.delete(true);
-			m_currentData = null;
-			m_recordAccesss.remove(m_currentRow);
-			log.debug("Success=" + success);
+			InterfaceWrapperHelper.delete(currentRecordAccess);
+			removeRecordAccess(currentRecordAccess);
+			setLine(null, 0);
 		}
-		return success;
-	}	//	cmd_delete
+	}	// cmd_delete
 
-}	//	RecordAccessDialog
+}	// RecordAccessDialog

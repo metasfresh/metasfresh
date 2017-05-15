@@ -8,7 +8,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBNoConnectionException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Language;
@@ -30,6 +33,13 @@ public class LanguageDAO implements ILanguageDAO
 	private static final String SQL_retriveBaseLanguage_1P = "SELECT " + I_AD_Language.COLUMNNAME_AD_Language
 			+ " FROM " + I_AD_Language.Table_Name
 			+ " WHERE " + I_AD_Language.COLUMNNAME_IsBaseLanguage + "=?";
+
+	/**	Add						*/
+	public static String	MAINTENANCEMODE_Add = "A";
+	/** Delete					*/
+	public static String	MAINTENANCEMODE_Delete = "D";
+	/** Re-Create				*/
+	public static String	MAINTENANCEMODE_ReCreate = "R";
 
 	@Override
 	@Cached(cacheName = I_AD_Language.Table_Name)
@@ -65,6 +75,13 @@ public class LanguageDAO implements ILanguageDAO
 	{
 		// IMPORTANT: because this method is called right after database connection is established
 		// we cannot use the Query API which is requiring MLanguage.getBaseLanguage() to be set
+		
+		// metas: 03362: Load BaseLanguage only if we have database connection.
+		// Could happen, if we invoke this method in early steps of initialization/startup to not have database connection yet
+		if (!DB.isConnected())
+		{
+			throw new DBNoConnectionException();
+		}
 
 		final String baseADLanguage = DB.getSQLValueStringEx(ITrx.TRXNAME_None, SQL_retriveBaseLanguage_1P, true);
 		Check.assumeNotEmpty(baseADLanguage, "Base AD_Language shall be defined in database");
@@ -92,6 +109,53 @@ public class LanguageDAO implements ILanguageDAO
 				.endOrderBy()
 				.create()
 				.listDistinct(I_AD_Table.COLUMNNAME_TableName, String.class);
+	}
+	
+	@Override
+	public void maintainTranslations(@NonNull I_AD_Language language, @NonNull final String maintenanceMode)
+	{
+		logger.info("Mode={},  language={}", maintenanceMode, language);
+		
+		if (language.isBaseLanguage())
+		{
+			throw new AdempiereException("Base Language has no Translations: " + language);
+		}
+		
+		int deleteNo = 0;
+		int insertNo = 0;
+		
+		//	Delete
+		if (MAINTENANCEMODE_Delete.equals(maintenanceMode)
+			|| MAINTENANCEMODE_ReCreate.equals(maintenanceMode))
+		{
+			deleteNo = removeTranslations(language);
+		}
+		
+		//	Add
+		if (MAINTENANCEMODE_Add.equals(maintenanceMode)
+			|| MAINTENANCEMODE_ReCreate.equals(maintenanceMode))
+		{
+			if (language.isActive() && language.isSystemLanguage())
+			{
+				insertNo = addMissingTranslations(language);
+			}
+			else
+			{
+				throw new AdempiereException("Language not active System Language: " + language);
+			}
+		}
+		
+		//	Delete
+		if (MAINTENANCEMODE_Delete.equals(maintenanceMode))
+		{
+			if (language.isSystemLanguage())
+			{
+				language.setIsSystemLanguage(false);
+				InterfaceWrapperHelper.save(language);
+			}
+		}
+		
+		Loggables.get().addLog("@Deleted@=" + deleteNo + " - @Inserted@=" + insertNo);
 	}
 
 	@Override

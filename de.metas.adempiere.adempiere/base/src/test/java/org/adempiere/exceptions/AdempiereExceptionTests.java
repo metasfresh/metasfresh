@@ -10,18 +10,17 @@ package org.adempiere.exceptions;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class AdempiereExceptionTests
 {
@@ -108,4 +108,37 @@ public class AdempiereExceptionTests
 		final Throwable throwableBoxed = (Throwable)exceptionClass.getConstructor(Throwable.class).newInstance(throwable);
 		return box(throwableBoxed, depth - 1);
 	}
+
+	@Test
+	public void test_setParameter_null()
+	{
+		final AdempiereException ex = new AdempiereException()
+				.setParameter("param", null);
+		Assert.assertEquals(ImmutableMap.of(), ex.getParameters());
+	}
+
+	@Test
+	public void test_setParameters_nullAndNotNull()
+	{
+		final AdempiereException ex = new AdempiereException()
+				.setParameter("param1", null)
+				.setParameter("param2", "value2")
+				.setParameter("param3", null)
+				.setParameter("param4", "value4");
+		Assert.assertEquals(ImmutableMap.of("param2", "value2", "param4", "value4"), ex.getParameters());
+	}
+
+	@Test
+	public void test_setParameters_removeParameter()
+	{
+		final AdempiereException ex = new AdempiereException()
+				.setParameter("param1", "value1")
+				.setParameter("param2", "value2");
+		Assert.assertEquals(ImmutableMap.of("param1", "value1", "param2", "value2"), ex.getParameters());
+
+		// Remove "param1" and test
+		ex.setParameter("param1", null);
+		Assert.assertEquals(ImmutableMap.of("param2", "value2"), ex.getParameters());
+	}
+
 }

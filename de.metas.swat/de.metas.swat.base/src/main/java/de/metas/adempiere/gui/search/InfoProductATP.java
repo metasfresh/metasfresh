@@ -29,6 +29,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Vector;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import de.metas.logging.LogManager;
@@ -37,7 +39,6 @@ import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 public class InfoProductATP implements IInfoProductDetail
 {

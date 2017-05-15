@@ -33,7 +33,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 public class MCFlatrateConditions extends X_C_Flatrate_Conditions implements DocAction
 {

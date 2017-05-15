@@ -28,14 +28,13 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_Role;
-import de.metas.process.IADProcessDAO;
 
 @Interceptor(I_AD_Process.class)
 public class AD_Process
@@ -45,13 +44,13 @@ public class AD_Process
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void addAccessToRolesWithAutomaticMaintenance(final I_AD_Process process)
 	{
-		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 		
 		final Properties ctx = InterfaceWrapperHelper.getCtx(process);
 		for (final I_AD_Role role : Services.get(IRoleDAO.class).retrieveAllRolesWithAutoMaintenance(ctx))
 		{
-			final I_AD_Process_Access pa = adProcessDAO.createProcessAccessDraft(ctx, process.getAD_Process_ID(), role);
-			InterfaceWrapperHelper.save(pa);
+			final boolean readWrite = true;
+			permissionsDAO.createProcessAccess(role, process.getAD_Process_ID(), readWrite);
 		}
 
 	}

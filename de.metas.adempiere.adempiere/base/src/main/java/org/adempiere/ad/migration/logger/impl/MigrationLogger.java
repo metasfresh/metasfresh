@@ -50,6 +50,8 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.I_AD_Form_Access;
+import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Ref_List;
@@ -58,6 +60,8 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task_Access;
+import org.compiere.model.I_AD_Window_Access;
+import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -158,14 +162,14 @@ public class MigrationLogger implements IMigrationLogger
 		// Do not log *Access records - teo_Sarca BF [ 2782095 ]
 		// NOTE: Only if we are running as system. If user is logged in regular Tenant, we want to log them (07122)
 		_tablesIgnoreSystem.addAll(Arrays.asList(
-				"AD_PROCESS_ACCESS",
-				"AD_WINDOW_ACCESS",
-				"AD_WORKFLOW_ACCESS",
-				"AD_FORM_ACCESS",
+				I_AD_Window_Access.Table_Name.toUpperCase(),
+				I_AD_Process_Access.Table_Name.toUpperCase(),
+				I_AD_Workflow_Access.Table_Name.toUpperCase(),
+				I_AD_Form_Access.Table_Name.toUpperCase(),
+				I_AD_Task_Access.Table_Name.toUpperCase(),
 				I_AD_Document_Action_Access.Table_Name.toUpperCase(),
 				I_AD_Table_Access.Table_Name.toUpperCase(),
-				I_AD_Column_Access.Table_Name.toUpperCase(),
-				I_AD_Task_Access.Table_Name.toUpperCase()
+				I_AD_Column_Access.Table_Name.toUpperCase()
 				));
 	}
 

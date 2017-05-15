@@ -18,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import de.metas.logging.LogManager;
@@ -30,7 +32,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
-import org.compiere.util.Msg;
 
 /**
  * Export button consequences

@@ -88,7 +88,7 @@ public class C_Invoice_Candidate_BillBPartner_FacetCollector extends SingleFacet
 		final Facet<I_C_Invoice_Candidate> facet = Facet.<I_C_Invoice_Candidate> builder()
 				.setFacetCategory(facetCategoryBPartners)
 				.setDisplayName(bpartnerName)
-				.setFilter(new TypedSqlQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID + "=" + bpartnerId))
+				.setFilter(TypedSqlQueryFilter.of(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID + "=" + bpartnerId))
 				.build();
 		return facet;
 	}

@@ -18,9 +18,9 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 
 /**

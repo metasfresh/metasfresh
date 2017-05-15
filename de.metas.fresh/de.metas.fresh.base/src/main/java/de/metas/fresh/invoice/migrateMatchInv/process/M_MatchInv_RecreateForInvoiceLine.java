@@ -47,8 +47,8 @@ import org.compiere.process.DocAction;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.printing.esb.base.util.Check;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 {
@@ -134,13 +134,13 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 		// Skip invoice lines that are already fully matched
 		{
 			final String wc = "C_InvoiceLine.QtyInvoiced<>(SELECT COALESCE(SUM(mi.Qty), 0) FROM M_MatchInv mi  WHERE mi.C_InvoiceLine_ID=C_InvoiceLine.C_InvoiceLine_ID)";
-			queryBuilder.filter(new TypedSqlQueryFilter<I_C_InvoiceLine>(wc));
+			queryBuilder.filter(TypedSqlQueryFilter.of(wc));
 		}
 
 		// Add custom WHERE clause if any
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			queryBuilder.filter(new TypedSqlQueryFilter<I_C_InvoiceLine>(p_WhereClause));
+			queryBuilder.filter(TypedSqlQueryFilter.of(p_WhereClause));
 		}
 
 		//

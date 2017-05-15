@@ -25,6 +25,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.WindowConstants;
@@ -35,7 +37,6 @@ import org.compiere.swing.CPanel;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  *	Queries how many days back history is displayed as current
