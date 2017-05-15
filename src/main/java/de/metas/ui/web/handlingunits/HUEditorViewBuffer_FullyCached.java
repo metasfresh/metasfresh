@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -14,9 +13,7 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
@@ -171,20 +168,6 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	public HUEditorRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
 		return getRows().getById(rowId);
-	}
-
-	@Override
-	public Set<DocumentId> getRowIdsMatchingBarcode(@NonNull final String barcode)
-	{
-		if (Check.isEmpty(barcode, true))
-		{
-			throw new IllegalArgumentException("Invalid barcode");
-		}
-
-		return streamAllRecursive()
-				.filter(row -> row.matchesBarcode(barcode))
-				.map(HUEditorRow::getId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override

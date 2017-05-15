@@ -101,7 +101,7 @@ public class HUEditorViewRepository
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
-				.map(hu -> createHUEditorRow(hu))
+				.map(hu -> createHUEditorRow(hu, true))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -121,7 +121,7 @@ public class HUEditorViewRepository
 		// TODO: check if the huId is part of our collection
 
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
-		return createHUEditorRow(hu);
+		return createHUEditorRow(hu, true);
 	}
 
 	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> huIds)
@@ -147,7 +147,7 @@ public class HUEditorViewRepository
 				.list();
 	}
 
-	private HUEditorRow createHUEditorRow(final I_M_HU hu)
+	private HUEditorRow createHUEditorRow(final I_M_HU hu, final boolean topLevel)
 	{
 		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
@@ -171,8 +171,9 @@ public class HUEditorViewRepository
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRow.rowIdFromM_HU_ID(huId))
 				.setType(huRecordType)
-				.setAttributesProvider(attributesProvider)
+				.setTopLevel(topLevel)
 				.setProcessed(processed)
+				.setAttributesProvider(attributesProvider)
 				//
 				.setHUId(huId)
 				.setCode(hu.getValue())
@@ -209,7 +210,7 @@ public class HUEditorViewRepository
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
-					.map(includedHU -> createHUEditorRow(includedHU))
+					.map(includedHU -> createHUEditorRow(includedHU, false))
 					.forEach(huEditorRow::addIncludedRow);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
@@ -298,6 +299,7 @@ public class HUEditorViewRepository
 		return HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRow.rowIdFromM_HU_Storage(huId, product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
+				.setTopLevel(false)
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProviderEffective)
 				//

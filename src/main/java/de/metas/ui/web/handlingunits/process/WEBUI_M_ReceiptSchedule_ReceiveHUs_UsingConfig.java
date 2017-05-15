@@ -44,7 +44,13 @@ import de.metas.process.Param;
  * #L%
  */
 
-public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base implements IProcessDefaultParametersProvider
+/**
+ * Receive planning HUs using given configuration (parameters).
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_ReceiptSchedule_ReceiveHUs_Base implements IProcessDefaultParametersProvider
 {
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
@@ -151,10 +157,6 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 		final BigDecimal qtyCU = p_QtyCU;
 		final BigDecimal qtyTU = p_QtyTU;
 		final BigDecimal qtyLU = p_QtyLU;
-		if (M_LU_HU_PI_ID <= 0)
-		{
-			throw new FillMandatoryException(PARAM_M_LU_HU_PI_ID);
-		}
 		if (M_HU_PI_Item_Product_ID <= 0)
 		{
 			throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
@@ -166,10 +168,6 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 		if (qtyTU == null || qtyTU.signum() <= 0)
 		{
 			throw new FillMandatoryException(PARAM_QtyTU);
-		}
-		if (qtyLU == null || qtyLU.signum() <= 0)
-		{
-			throw new FillMandatoryException(PARAM_QtyLU);
 		}
 
 		final I_M_HU_LUTU_Configuration lutuConfigurationNew = InterfaceWrapperHelper.copy()
@@ -193,6 +191,11 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 		// LU
 		if (M_LU_HU_PI_ID > 0)
 		{
+			if (qtyLU == null || qtyLU.signum() <= 0)
+			{
+				throw new FillMandatoryException(PARAM_QtyLU);
+			}
+
 			final I_M_HU_PI luPI = InterfaceWrapperHelper.create(getCtx(), M_LU_HU_PI_ID, I_M_HU_PI.class, ITrx.TRXNAME_None);
 
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -212,7 +215,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 		{
 			lutuConfigurationNew.setM_LU_HU_PI(null);
 			lutuConfigurationNew.setM_LU_HU_PI_Item(null);
-			lutuConfigurationNew.setQtyLU(null);
+			lutuConfigurationNew.setQtyLU(BigDecimal.ZERO);
 		}
 
 		// InterfaceWrapperHelper.save(lutuConfigurationNew); // expected to not be saved (important)

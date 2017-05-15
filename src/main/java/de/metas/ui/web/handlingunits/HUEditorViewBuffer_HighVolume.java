@@ -14,24 +14,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
@@ -316,58 +307,4 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		// FIXME: fails if not top level ...
 		return huEditorRepo.retrieveForHUId(huId);
 	}
-
-	@Override
-	public Set<DocumentId> getRowIdsMatchingBarcode(final String barcode)
-	{
-		if (Check.isEmpty(barcode, true))
-		{
-			throw new IllegalArgumentException("Invalid barcode");
-		}
-
-		//
-		// Search by SSCC
-		{
-			final Set<DocumentId> rowIdsBySSCC = createInSelectionHUQueryBuilder()
-					.addOnlyWithAttribute(Constants.ATTR_SSCC18_Value, barcode)
-					.createQuery()
-					.listIds()
-					.stream()
-					.map(huId -> HUEditorRow.rowIdFromM_HU_ID(huId))
-					.collect(ImmutableSet.toImmutableSet());
-			if (!rowIdsBySSCC.isEmpty())
-			{
-				return rowIdsBySSCC;
-			}
-		}
-
-		//
-		// Search by value
-		{
-			final Set<DocumentId> rowIdsByValue = createInSelectionHUQueryBuilder()
-					.addFilter(new EqualsQueryFilter<>(I_M_HU.COLUMN_Value, barcode))
-					.createQuery()
-					.listIds()
-					.stream()
-					.map(huId -> HUEditorRow.rowIdFromM_HU_ID(huId))
-					.collect(ImmutableSet.toImmutableSet());
-			if (!rowIdsByValue.isEmpty())
-			{
-				return rowIdsByValue;
-			}
-		}
-
-		return ImmutableSet.of();
-	}
-
-	private final IHUQueryBuilder createInSelectionHUQueryBuilder()
-	{
-		final String selectionId = getDefaultSelection().getSelectionId();
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		return handlingUnitsDAO.createHUQueryBuilder()
-				.setContext(PlainContextAware.createUsingOutOfTransaction())
-				.addFilter(viewSelectionFactory.createQueryFilter(selectionId));
-	}
-
 }

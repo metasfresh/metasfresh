@@ -1,12 +1,12 @@
 package de.metas.ui.web.pporder;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -90,12 +90,23 @@ public final class PPOrderHUsToIssueActions
 
 			final DocumentId rowId = selectedDocumentIds.iterator().next();
 			final HUEditorRow row = HUEditorRow.cast(view.getById(rowId));
-			if (!row.isLU() && !row.isTU())
+
+			if (row.isLU())
+			{
+				return ProcessPreconditionsResolution.accept();
+			}
+			else if (row.isTU())
+			{
+				if (row.isTopLevel())
+				{
+					return ProcessPreconditionsResolution.reject("top level TU");
+				}
+				return ProcessPreconditionsResolution.accept();
+			}
+			else
 			{
 				return ProcessPreconditionsResolution.reject("LU or TU shall be selected");
 			}
-
-			return ProcessPreconditionsResolution.accept();
 		}
 	}
 
@@ -133,6 +144,11 @@ public final class PPOrderHUsToIssueActions
 			, @ViewActionParam(caption = "QtyTU", widgetType = DocumentFieldWidgetType.Integer) final Integer qtyTUs //
 	)
 	{
+		if(qtyTUs == null || qtyTUs <= 0)
+		{
+			throw new FillMandatoryException("QtyTU");
+		}
+		
 		final PPOrderLinesView ppOrderView = getPPOrderView(husView).get();
 		final int ppOrderId = ppOrderView.getPP_Order_ID();
 
@@ -142,7 +158,7 @@ public final class PPOrderHUsToIssueActions
 		final I_M_HU sourceLUorTU = row.getM_HU();
 
 		final List<I_M_HU> extractedTUs = HUTransferService.get(Env.getCtx())
-				.tuToNewTUs(sourceLUorTU, BigDecimal.valueOf(qtyTUs), sourceLUorTU.isHUPlanningReceiptOwnerPM());
+				.huExtractTUs(sourceLUorTU, qtyTUs, sourceLUorTU.isHUPlanningReceiptOwnerPM());
 		if (extractedTUs.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");

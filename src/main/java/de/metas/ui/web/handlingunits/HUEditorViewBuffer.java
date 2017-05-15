@@ -2,7 +2,6 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -75,6 +74,4 @@ interface HUEditorViewBuffer
 	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
-
-	Set<DocumentId> getRowIdsMatchingBarcode(String barcode);
 }
