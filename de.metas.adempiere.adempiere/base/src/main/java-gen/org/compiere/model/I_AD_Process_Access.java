@@ -69,6 +69,29 @@ public interface I_AD_Process_Access
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Process Access.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Process_Access_ID (int AD_Process_Access_ID);
+
+	/**
+	 * Get Process Access.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Process_Access_ID();
+
+    /** Column definition for AD_Process_Access_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process_Access, Object> COLUMN_AD_Process_Access_ID = new org.adempiere.model.ModelColumn<I_AD_Process_Access, Object>(I_AD_Process_Access.class, "AD_Process_Access_ID", null);
+    /** Column name AD_Process_Access_ID */
+    public static final String COLUMNNAME_AD_Process_Access_ID = "AD_Process_Access_ID";
+
+	/**
 	 * Set Prozess.
 	 * Process or Report
 	 *
