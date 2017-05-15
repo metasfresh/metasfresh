@@ -116,41 +116,10 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 
 			final I_M_HU hu = huAssignment.getM_HU();
 
-			final boolean isHUTU = handlingUnitsBL.isTransportUnit(hu);
-			final boolean isHULU = handlingUnitsBL.isLoadingUnit(hu);
-
-			final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(hu);
-
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huAssignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
-			if (isHUTU)
-			{
-				collector.addTU(hu, inOutLine);
-			}
-			else if (isHULU)
-			{
-				collector.addLU(hu, inOutLine);
-
-			}
-			else
-			{
-				final I_M_HU_PI_Item_Product huPIItemProduct = hu.getM_HU_PI_Item_Product();
-
-				// not a virtual HU
-				if (! (huPIItemProduct == null))
-				{
-					// check if there is any aggregated HU in the top level HU.
-					final I_M_HU_PI_Item huPIItem = hu.getM_HU_PI_Item_Product().getM_HU_PI_Item();
-
-					final I_M_HU_Item item = handlingUnitsDAO.retrieveAggregatedItemOrNull(topLevelParent, huPIItem);
-					if (item != null)
-					{
-						final I_M_HU_PI huPI = handlingUnitsBL.getEffectivePIVersion(hu).getM_HU_PI();
-						collector.addM_HU_PI(huPI, item.getQty().intValueExact(), inOutLine);
-					}
-				}
-			}
+			collector.addHURecursively(hu, inOutLine);
 
 			// Create product (non-packing material) lines
 			{
@@ -163,7 +132,6 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 					inoutLinesBuilder.addHUProductStorage(productStorage, inOutLine);
 				}
 			}
-
 		}
 
 		final List<HUPackingMaterialDocumentLineCandidate> pmCandidates = collector.getAndClearCandidates();
@@ -213,25 +181,6 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return this;
 	}
 
-	/**
-	 * Take out the given HU from it's parent (if it's not already a top level HU)
-	 *
-	 * @param hu
-	 */
-	private void extractHUFromParentIfNeeded(final I_M_HU hu)
-	{
 
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		if (handlingUnitsBL.isTopLevel(hu))
-		{
-			return;
-		}
-
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
-		final I_M_HU_Item parentHUItem = null; // no parent
-		huTrxBL.setParentHU(huContext, parentHUItem, hu);
-	}
 
 }
