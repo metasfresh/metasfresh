@@ -67,7 +67,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
-import org.compiere.model.MPrivateAccess;
+import org.compiere.model.I_AD_Private_Access;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -1066,15 +1066,13 @@ class UserRolePermissions implements IUserRolePermissions
 		// Don't ignore Privacy Access
 		if (!isPersonalAccess())
 		{
-			final String lockedIDs = MPrivateAccess.getLockedRecordWhere(AD_Table_ID, getAD_User_ID());
-			if (lockedIDs != null)
+			final String lockedIDs = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
+					+ " WHERE AD_Table_ID = " + AD_Table_ID + " AND AD_User_ID <> " + getAD_User_ID() + " AND IsActive = 'Y' )";
+			if (sb.length() > 0)
 			{
-				if (sb.length() > 0)
-				{
-					sb.append(" AND ");
-				}
-				sb.append(keyColumnName).append(lockedIDs);
+				sb.append(" AND ");
 			}
+			sb.append(keyColumnName).append(lockedIDs);
 		}
 		//
 		return sb.toString();

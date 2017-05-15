@@ -21,20 +21,22 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Services;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.AdempiereUserError;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -45,7 +47,10 @@ import de.metas.logging.MetasfreshLastError;
  * 
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
  * 			<li>FR [ 1795384 ] Setup: create default accounts records is too rigid
+ * 
+ * @deprecated Scheduled to be removed because we are not using it
  */
+@Deprecated
 public final class MSetup
 {
 	/**
@@ -195,51 +200,31 @@ public final class MSetup
 		 *  - User
 		 */
 		name = m_clientName + " Admin";
-		MRole admin = new MRole(m_ctx, 0, m_trx.getTrxName());
-		admin.setClientOrg(m_client);
+		final I_AD_Role admin = InterfaceWrapperHelper.newInstance(I_AD_Role.class, PlainContextAware.newWithTrxName(m_ctx, m_trx.getTrxName()), true);
+		admin.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_System);
 		admin.setName(name);
-		admin.setUserLevel(MRole.USERLEVEL_ClientPlusOrganization);
-		admin.setPreferenceType(MRole.PREFERENCETYPE_Client);
+		admin.setUserLevel(X_AD_Role.USERLEVEL_ClientPlusOrganization);
+		admin.setPreferenceType(X_AD_Role.PREFERENCETYPE_Client);
 		admin.setIsShowAcct(true);
-		if (!admin.save())
-		{
-			String err = "Admin Role A NOT inserted";
-			log.error(err);
-			m_info.append(err);
-			m_trx.rollback();
-			m_trx.close();
-			return false;
-		}
+		InterfaceWrapperHelper.save(admin);
+		
 		//	OrgAccess x, 0
-		MRoleOrgAccess adminClientAccess = new MRoleOrgAccess (admin, 0);
-		if (!adminClientAccess.save())
-			log.error("Admin Role_OrgAccess 0 NOT created");
+		Services.get(IUserRolePermissionsDAO.class).createOrgAccess(admin.getAD_Role_ID(), Env.CTXVALUE_AD_Org_ID_System);
 		//  OrgAccess x,y
-		MRoleOrgAccess adminOrgAccess = new MRoleOrgAccess (admin, m_org.getAD_Org_ID());
-		if (!adminOrgAccess.save())
-			log.error("Admin Role_OrgAccess NOT created");
+		Services.get(IUserRolePermissionsDAO.class).createOrgAccess(admin.getAD_Role_ID(), m_org.getAD_Org_ID());
 		
 		//  Info - Admin Role
 		m_info.append(Msg.translate(m_lang, "AD_Role_ID")).append("=").append(name).append("\n");
 
 		//
 		name = m_clientName + " User";
-		MRole user = new MRole (m_ctx, 0, m_trx.getTrxName());
-		user.setClientOrg(m_client);
+		final I_AD_Role user = InterfaceWrapperHelper.newInstance(I_AD_Role.class, PlainContextAware.newWithTrxName(m_ctx, m_trx.getTrxName()), true);
+		user.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_System);
 		user.setName(name);
-		if (!user.save())
-		{
-			String err = "User Role A NOT inserted";
-			log.error(err);
-			m_info.append(err);
-			m_trx.rollback();
-			m_trx.close();
-			return false;
-		}
+		InterfaceWrapperHelper.save(user);
+		
 		//  OrgAccess x,y
-		MRoleOrgAccess userOrgAccess = new MRoleOrgAccess (user, m_org.getAD_Org_ID());
-		if (!userOrgAccess.save())
-			log.error("User Role_OrgAccess NOT created");
+		Services.get(IUserRolePermissionsDAO.class).createOrgAccess(user.getAD_Role_ID(), m_org.getAD_Org_ID());
 		
 		//  Info - Client Role
 		m_info.append(Msg.translate(m_lang, "AD_Role_ID")).append("=").append(name).append("\n");

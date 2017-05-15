@@ -29,6 +29,7 @@ import java.util.Map;
 import org.adempiere.util.Check;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**

@@ -29,11 +29,11 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Msg;
 
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Matching;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
+import de.metas.i18n.Msg;
 
 public class FlatrateMatchingValidator implements ModelValidator
 {

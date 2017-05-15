@@ -30,12 +30,12 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Msg;
 
 import de.metas.commission.model.I_C_AdvComDoc;
 import de.metas.commission.model.MCAdvComDoc;
 import de.metas.commission.model.X_C_AdvComDoc;
 import de.metas.commission.service.ICommissionFactCandBL;
+import de.metas.i18n.Msg;
 
 public class ComDocValidator implements ModelValidator
 {

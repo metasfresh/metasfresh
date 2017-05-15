@@ -31,6 +31,8 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 
 public interface IHUPPOrderQtyDAO extends ISingletonService
 {
+	I_PP_Order_Qty retrieveById(int ppOrderQtyId);
+	
 	void save(final I_PP_Order_Qty ppOrderQty);
 
 	void delete(I_PP_Order_Qty ppOrderQty);
@@ -52,5 +54,4 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	{
 		return retrieveOrderQtys(ppOrderId).stream();
 	}
-
 }

@@ -384,6 +384,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isTransportUnitOrAggregate(final I_M_HU hu)
+	{
+		return isAggregateHU(hu) || isTransportUnit(hu);
+	}
+
+	@Override
 	public boolean isTransportUnit(final I_M_HU hu)
 	{
 		final boolean strict = true; // consider TU only what is TU only

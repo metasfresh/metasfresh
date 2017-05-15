@@ -29,7 +29,8 @@ import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CCheckBox;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 /**
  *  Checkbox Control

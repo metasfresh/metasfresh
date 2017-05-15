@@ -57,10 +57,9 @@ import org.compiere.model.GridTab;
 import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
+import de.metas.i18n.Msg;
 import de.metas.letters.model.I_AD_Column;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlateVar;

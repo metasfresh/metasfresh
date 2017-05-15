@@ -51,6 +51,7 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Adempiere Cache Management
@@ -561,15 +562,20 @@ public final class CacheMgt
 	public void addCacheResetListener(final String tableName, final ICacheResetListener cacheResetListener)
 	{
 		final Boolean registerWeak = Boolean.FALSE;
-		register(new CacheResetListener2CacheInterface(tableName, cacheResetListener), registerWeak);
+		register(CacheResetListener2CacheInterface.of(tableName, cacheResetListener), registerWeak);
 	}
-
+	
 	private static final class CacheResetListener2CacheInterface implements ITableAwareCacheInterface
 	{
+		public static final CacheResetListener2CacheInterface of(@NonNull final String tableName, @NonNull final ICacheResetListener listener)
+		{
+			return new CacheResetListener2CacheInterface(tableName, listener);
+		}
+		
 		private final String tableName;
 		private final ICacheResetListener listener;
 
-		public CacheResetListener2CacheInterface(final String tableName, final ICacheResetListener listener)
+		private CacheResetListener2CacheInterface(final String tableName, final ICacheResetListener listener)
 		{
 			super();
 			Check.assumeNotEmpty(tableName, "tableName not empty");

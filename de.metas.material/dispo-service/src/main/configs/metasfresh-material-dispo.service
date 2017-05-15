@@ -1,0 +1,16 @@
+#
+# systemd service file for metasfresh-material-dispo
+# to install it, copy it to /etc/systemd/system and chmod it to 0644
+# 
+[Unit]
+Description=metasfresh-material-dispo
+After=syslog.target
+
+[Service]
+User=metasfresh
+ExecStart=/opt/metasfresh/metasfresh-material-dispo/metasfresh-material-dispo.jar
+SuccessExitStatus=143
+PIDFile=/opt/metasfresh/metasfresh-material-dispo/metasfresh-material-dispo/metasfresh-material-dispo.service.pid
+
+[Install]
+WantedBy=multi-user.target

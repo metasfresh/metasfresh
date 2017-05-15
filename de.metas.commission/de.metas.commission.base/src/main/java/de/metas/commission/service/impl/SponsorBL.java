@@ -58,7 +58,6 @@ import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -93,6 +92,7 @@ import de.metas.commission.service.ISponsorDAO;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.commission.util.CommissionTools;
 import de.metas.commission.util.Messages;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

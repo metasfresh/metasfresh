@@ -32,9 +32,9 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MPayment;
 import org.compiere.model.Query;
 import org.compiere.util.AdempiereUserError;
-import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 
 /**

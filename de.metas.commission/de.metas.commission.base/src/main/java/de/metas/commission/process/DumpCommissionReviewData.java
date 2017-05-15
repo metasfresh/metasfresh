@@ -43,7 +43,6 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.commission.interfaces.IAdvComInstance;
 import de.metas.commission.model.I_C_AdvCommissionPayrollLine;
@@ -53,6 +52,7 @@ import de.metas.commission.model.MCAdvCommissionPayrollLine;
 import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.IHierarchyBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 
 public class DumpCommissionReviewData extends JavaProcess

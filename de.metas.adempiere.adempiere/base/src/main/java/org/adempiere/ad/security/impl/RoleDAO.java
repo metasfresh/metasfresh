@@ -13,15 +13,14 @@ package org.adempiere.ad.security.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Date;
 import java.util.List;
@@ -30,6 +29,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IRolesTreeNode;
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -37,7 +38,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Role_Included;
 import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.model.MRole;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -65,12 +65,14 @@ public class RoleDAO implements IRoleDAO
 			return null;
 		}
 		// special Handling for System Role because of ID=ZERO
-		else if (AD_Role_ID == 0)
+		else if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID)
 		{
-			// FIXME: check if it's really needed
-			final MRole role = new MRole(ctx, AD_Role_ID, ITrx.TRXNAME_None);
-			role.load(ITrx.TRXNAME_None);
-			return InterfaceWrapperHelper.create(role, I_AD_Role.class);
+			// TODO: check retrieving from cache first
+			return Services.get(IQueryBL.class)
+					.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
+					.addEqualsFilter(I_AD_Role.COLUMNNAME_AD_Role_ID, IUserRolePermissions.SYSTEM_ROLE_ID)
+					.create()
+					.firstOnlyNotNull(I_AD_Role.class);
 		}
 		else
 		// if (AD_Role_ID > 0)
@@ -165,6 +167,18 @@ public class RoleDAO implements IRoleDAO
 	}
 
 	@Override
+	public List<I_AD_Role> retrieveAllRolesWithUserAccess(final Properties ctx)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Role.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_Role.COLUMNNAME_IsManual, false)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.setApplyAccessFilterRW(IUserRolePermissions.SQL_RO)
+				.list(I_AD_Role.class);
+	}
+
+	@Override
 	public List<I_AD_Role> retrieveRolesForClient(final Properties ctx, final int adClientId)
 	{
 		return Services.get(IQueryBL.class)
@@ -181,12 +195,51 @@ public class RoleDAO implements IRoleDAO
 		final I_AD_Role role = retrieveRole(ctx, adRoleId);
 		return role == null ? "<" + adRoleId + ">" : role.getName();
 	}
-	
-	@Override	
-	public boolean hasUserRoleAssignment(final Properties ctx, final int adUserId, final int adRoleId)
+
+	@Override
+	// @Cached(cacheName = I_AD_User_Roles.Table_Name + "#by#AD_Role_ID", expireMinutes = 0) // not sure if caching is needed...
+	public List<Integer> retrieveUserIdsForRoleId(final int adRoleId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_User_Roles.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_AD_User_Roles.COLUMNNAME_AD_User_ID, Integer.class);
+	}
+
+	@Override
+	public int retrieveFirstRoleIdForUserId(final int adUserId)
+	{
+		final Integer firstRoleId = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Roles.class)
+				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_User_ID, adUserId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.first(I_AD_User_Roles.COLUMNNAME_AD_Role_ID, Integer.class);
+		return firstRoleId == null ? -1 : firstRoleId;
+	}
+
+	@Override
+	public void createUserRoleAssignmentIfMissing(final int adUserId, final int adRoleId)
+	{
+		if(hasUserRoleAssignment(adUserId, adRoleId))
+		{
+			return;
+		}
+		
+		final I_AD_User_Roles userRole = InterfaceWrapperHelper.newInstance(I_AD_User_Roles.class);
+		userRole.setAD_User_ID(adUserId);
+		userRole.setAD_Role_ID(adRoleId);
+		InterfaceWrapperHelper.save(userRole);
+		
+		Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
+	}
+
+	private boolean hasUserRoleAssignment(final int adUserId, final int adRoleId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User_Roles.class)
 				.addEqualsFilter(I_AD_User_Roles.COLUMNNAME_AD_User_ID, adUserId)
 				.addEqualsFilter(I_AD_User_Roles.COLUMN_AD_Role_ID, adRoleId)
 				.addOnlyActiveRecordsFilter()

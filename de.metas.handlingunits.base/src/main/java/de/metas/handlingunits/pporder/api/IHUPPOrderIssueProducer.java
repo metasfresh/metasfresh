@@ -89,4 +89,5 @@ public interface IHUPPOrderIssueProducer
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLine(I_PP_Order_BOMLine targetOrderBOMLine);
 
+	void reverseDraftIssue(final I_PP_Order_Qty candidate);
 }

@@ -35,7 +35,6 @@ import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
@@ -44,6 +43,7 @@ import de.metas.commission.model.I_C_Sponsor_CondLine;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorCondition;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 public class SponsorCondValidator implements ModelValidator

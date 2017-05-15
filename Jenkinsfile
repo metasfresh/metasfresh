@@ -345,16 +345,31 @@ node('agent && linux')
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				} // if(params.MF_SKIP_TO_DIST)
+			}
+			stage('Build metasfresh docker image(s)')
+			{
+				if(params.MF_SKIP_TO_DIST)
+				{
+					echo "params.MF_SKIP_TO_DIST=true so don't build metasfresh and esb jars and don't invoke downstream jobs"
+				}
+				else
+				{
+				// now create and publish some docker image..well, 1 docker image for starts
+				final dockerWorkDir='docker-build/metasfresh-material-dispo'
+				sh "mkdir -p ${dockerWorkDir}"
 
+ 				// copy the files so they can be handled by the docker build
+				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-service-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
+				sh "cp -R de.metas.material/dispo-service/src/main/docker/* ${dockerWorkDir}"
+				sh "cp -R de.metas.material/dispo-service/src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
-					sh "cp de.metas.material/dispo/target/metasfresh-material-dispo-${BUILD_VERSION}.jar src/main/docker/metasfresh-material-dispo.jar"
-
-					final app = docker.build 'metasfresh/metasfresh-material-dispo', 'src/main/docker';
+					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
+					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
 					app.push "${MF_UPSTREAM_BRANCH}-latest";
 					app.push "${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}";
 				}
-
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
@@ -380,7 +395,7 @@ node('agent && linux')
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
-    		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 				} // if(params.MF_SKIP_TO_DIST)
 			} // stage
 
@@ -393,7 +408,7 @@ node('agent && linux')
 		} // withMaven
 	} // configFileProvider
 
-	// clean up the workspace after (successfull) builds; let's see if this works well
+	// clean up the workspace after (successfull) builds
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
 
 } // node

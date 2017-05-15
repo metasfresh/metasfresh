@@ -23,8 +23,9 @@ import java.util.Properties;
 import org.compiere.model.MCalendar;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
+
+import de.metas.i18n.Msg;
 
 /**
  *	MHRYear Year for a Payroll
