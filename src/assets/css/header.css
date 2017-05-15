@@ -204,6 +204,13 @@
     color: inherit;
 }
 
+.subheader-caption {
+    position: relative;
+    width: 100%;
+    padding: .75rem 1.25rem;
+    margin-left: -.5rem;
+}
+
 .subheader-additional-box{
     position:absolute;
     display: flex;

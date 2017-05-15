@@ -386,7 +386,8 @@ class DocumentList extends Component {
 
     handleFilterChange = (filters) => {
         this.setState({
-            filters: filters
+            filters: filters,
+            page: 1
         }, () => {
             this.fetchLayoutAndData(true);
         })
@@ -396,7 +397,7 @@ class DocumentList extends Component {
 
     redirectToDocument = (id) => {
         const {
-            dispatch, isModal, windowType, isSideListShow, closeSideList
+            dispatch, isModal, windowType, isSideListShow
         } = this.props;
         const {page, viewId, sort} = this.state;
 
@@ -406,9 +407,7 @@ class DocumentList extends Component {
 
         dispatch(push('/window/' + windowType + '/' + id));
 
-        if(isSideListShow) {
-            closeSideList();
-        }else{
+        if(!isSideListShow){
             // Caching last settings
             dispatch(setPagination(page, windowType));
             dispatch(setSorting(sort, windowType));

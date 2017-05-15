@@ -106,7 +106,7 @@ class Table extends Component {
     getIndentData = (selectFirst) => {
         const {rowData, tabid, indentSupported} = this.props;
 
-        if(indentSupported){
+        if(indentSupported && rowData[tabid]){
             let rowsData = [];
 
             rowData[tabid].map(item => {
@@ -321,7 +321,7 @@ class Table extends Component {
         const {selected, rows} = this.state;
 
         const {
-            onDoubleClick, closeOverlays, open
+            onDoubleClick, closeOverlays
         } = this.props;
 
         const selectRange = e.shiftKey;
@@ -377,14 +377,10 @@ class Table extends Component {
                    onDoubleClick(selected[selected.length-1]);
                 }
 
-                if(open) {
-                    closeOverlays();
-                }
                 break;
             case 'Escape':
-                if(open){
-                    closeOverlays();
-                }
+                closeOverlays();
+
                 break;
             case 'Tab': {
                 e.preventDefault();

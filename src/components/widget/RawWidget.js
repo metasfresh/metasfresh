@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
@@ -140,7 +139,7 @@ class RawWidget extends Component {
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
-            listenOnKeysFalse, closeTableField
+            listenOnKeysFalse, closeTableField, handleZoomInto
         } = this.props;
 
         const {isEdited} = this.state;
@@ -651,6 +650,23 @@ class RawWidget extends Component {
                         readonly={widgetData[0].readonly || disabled}
                     />
                 )
+            case 'ZoomIntoButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ?
+                                'tag-disabled disabled ' : '')
+                        }
+                        onClick={() => handleZoomInto(
+                                fields[0].field)}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
+                    </button>
+                )
             default:
                 return false;
         }
@@ -659,7 +675,7 @@ class RawWidget extends Component {
     render() {
         const {
             caption, fields, type, noLabel, widgetData, rowId, isModal,
-            handlePatch, widgetType
+            handlePatch, widgetType, handleZoomInto
         } = this.props;
 
         const {errorPopup} = this.state;
@@ -702,7 +718,13 @@ class RawWidget extends Component {
                         }
                         title={caption}
                     >
-                        {caption}
+                        {fields[0].supportZoomInto ?
+                        <span
+                            className="zoom-into"
+                            onClick={() => handleZoomInto(
+                                fields[0].field)}>
+                            {caption}
+                        </span> : caption}
                     </div>
                 }
                 <div
