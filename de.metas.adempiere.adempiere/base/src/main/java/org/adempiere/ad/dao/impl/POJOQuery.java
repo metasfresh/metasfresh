@@ -822,6 +822,25 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 
 		return result;
 	}
+	
+	@Override
+	public <AT> AT first(final String columnName, final Class<AT> valueType)
+	{
+		final List<T> records = list();
+		if(records.isEmpty())
+		{
+			return null;
+		}
+		
+		final T record = records.get(0);
+
+		final Object valueObj = InterfaceWrapperHelper.getValue(record, columnName).orNull();
+
+		@SuppressWarnings("unchecked")
+		final AT value = (AT)valueObj;
+		return value;
+	}
+
 
 	@Override
 	public void addUnion(final IQuery<T> query, final boolean distinct)

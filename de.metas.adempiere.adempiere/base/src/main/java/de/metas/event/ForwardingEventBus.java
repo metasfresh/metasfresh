@@ -1,5 +1,7 @@
 package de.metas.event;
 
+import java.util.function.Consumer;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -69,6 +71,12 @@ abstract class ForwardingEventBus implements IEventBus
 	public void subscribe(final IEventListener listener)
 	{
 		delegate().subscribe(listener);
+	}
+	
+	@Override
+	public void subscribe(final Consumer<Event> eventConsumer)
+	{
+		delegate().subscribe(eventConsumer);
 	}
 
 	@Override

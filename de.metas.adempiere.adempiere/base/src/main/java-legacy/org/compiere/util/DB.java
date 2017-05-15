@@ -58,7 +58,6 @@ import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
 import org.compiere.model.POInfo;
@@ -153,28 +152,13 @@ public final class DB
 
 		// Role update
 		log.info("After migration: running role access update for all roles");
-		String sql = "SELECT * FROM AD_Role";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final MRole role = new MRole(ctx, rs, null);
-				Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-			}
+			Services.get(IUserRolePermissionsDAO.class).updateAccessRecordsForAllRoles();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			log.error("Role access update failed. Ignored.", e);
-		}
-		finally
-		{
-			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+			log.error("Role access update failed. Ignored.", ex);
 		}
 
 		// Release Specif stuff & Print Format

@@ -13,25 +13,24 @@ package org.adempiere.ad.security.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.MRoleOrgAccess;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -50,8 +49,9 @@ public class AD_Org
 	public void addAccessToRolesWithAutomaticMaintenance(final I_AD_Org org)
 	{
 		final int orgClientId = org.getAD_Client_ID();
-		
+
 		int orgAccessCreatedCounter = 0;
+		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(org);
 		for (final I_AD_Role role : Services.get(IRoleDAO.class).retrieveAllRolesWithAutoMaintenance(ctx))
 		{
@@ -63,23 +63,21 @@ public class AD_Org
 
 			// Don't create org access for roles which are not defined on system level nor on org's AD_Client_ID level
 			final int roleClientId = role.getAD_Client_ID();
-			if(roleClientId != orgClientId && roleClientId != Env.CTXVALUE_AD_Client_ID_System)
+			if (roleClientId != orgClientId && roleClientId != Env.CTXVALUE_AD_Client_ID_System)
 			{
 				continue;
 			}
-			
-			MRoleOrgAccess orgAccess = new MRoleOrgAccess(org, role.getAD_Role_ID());
-			if (orgAccess.save())
-			{
-				orgAccessCreatedCounter++;
-			}
+
+			permissionsDAO.createOrgAccess(role.getAD_Role_ID(), org.getAD_Org_ID());
+			orgAccessCreatedCounter++;
 		}
 		logger.info("{} - created #{} role org access entries", org, orgAccessCreatedCounter);
 
 		// Reset role permissions, just to make sure we are on the safe side
-		if (orgAccessCreatedCounter > 0)
-		{
-			Env.resetUserRolePermissions();
-		}
+		// NOTE: not needed shall be triggered automatically
+		// if (orgAccessCreatedCounter > 0)
+		// {
+		// Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
+		// }
 	}
 }
