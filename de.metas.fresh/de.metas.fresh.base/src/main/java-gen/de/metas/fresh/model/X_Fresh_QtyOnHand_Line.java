@@ -16,7 +16,7 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1624532669L;
+	private static final long serialVersionUID = 1396857293L;
 
     /** Standard Constructor */
     public X_Fresh_QtyOnHand_Line (Properties ctx, int Fresh_QtyOnHand_Line_ID, String trxName)
@@ -30,7 +30,7 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 			setFresh_QtyOnHand_Line_ID (0);
 			setM_Product_ID (0);
 			setPP_Plant_ID (0);
-			setQtyCount (Env.ZERO);
+			setQtyCount (BigDecimal.ZERO);
 			setSeqNo (0);
 // 0
         } */
@@ -154,9 +154,9 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -167,8 +167,8 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -304,7 +304,7 @@ public class X_Fresh_QtyOnHand_Line extends org.compiere.model.PO implements I_F
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyCount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

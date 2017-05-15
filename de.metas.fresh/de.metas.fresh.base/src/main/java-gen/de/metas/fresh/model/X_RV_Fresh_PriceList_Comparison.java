@@ -16,7 +16,7 @@ public class X_RV_Fresh_PriceList_Comparison extends org.compiere.model.PO imple
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1102885216L;
+	private static final long serialVersionUID = 2043015214L;
 
     /** Standard Constructor */
     public X_RV_Fresh_PriceList_Comparison (Properties ctx, int RV_Fresh_PriceList_Comparison_ID, String trxName)
@@ -91,7 +91,7 @@ public class X_RV_Fresh_PriceList_Comparison extends org.compiere.model.PO imple
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AltPriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -258,7 +258,7 @@ public class X_RV_Fresh_PriceList_Comparison extends org.compiere.model.PO imple
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceStd);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

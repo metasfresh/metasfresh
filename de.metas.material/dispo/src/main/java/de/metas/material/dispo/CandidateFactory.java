@@ -46,7 +46,12 @@ public class CandidateFactory
 	 * If there is no such next-younger stock candidate (i.e. if this is the very first stock candidate to be created for the given product and locator), then a quantity of zero is taken.
 	 *
 	 * @param candidate
-	 * @return
+	 * @return a candidate with
+	 *         <ul>
+	 *         <li>type = {@link Type#STOCK}</li>
+	 *         <li>qty = qty of the given {@code candidate} plus the next younger candidate's quantity
+	 *         <li>groupId of the next younger-candidate (or null if there is none)
+	 *         </ul>
 	 */
 	public Candidate createStockCandidate(@NonNull final Candidate candidate)
 	{

@@ -45,8 +45,7 @@ import de.metas.material.event.MaterialEventService;
  * @author metas-dev <dev@metasfresh.com>
  */
 @SpringBootApplication( //
-		scanBasePackages = { "de.metas", "org.adempiere" },  //
-		excludeName = "de.metas.SwingUIApplication" // exclude the SwingUIApplication, just in case it's on classpath when running (usually when started from eclipse)
+		scanBasePackages = { "de.metas", "org.adempiere" }  //
 )
 public class Application
 {
@@ -65,23 +64,25 @@ public class Application
 	}
 
 	@Autowired
-	private MDEventListener eventListener;
+	private MaterialEventService eventService;
 
 	@Autowired
-	private MaterialEventService eventService;
+	private MDEventListener mdEventListener;
 
 	@Bean
 	@Profile("!test")
 	public Adempiere adempiere()
 	{
 		// as of right now, we are not interested in loading any model validator whatsoever within this service
+		// therefore we don't e.g. have to deal with the async-processor. It just won't be started.
 		ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
 
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
-		eventService.registerListener(eventListener);
+		eventService.registerListener(mdEventListener);
+		eventService.subscribeToEventBus();
 
 		return adempiere;
 	}

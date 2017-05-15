@@ -1,5 +1,7 @@
 package de.metas.material.dispo;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.junit.Assert.assertThat;
 
@@ -9,6 +11,7 @@ import java.util.Date;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -46,6 +49,8 @@ public class CandidateFactoryTests
 	private final Date earlier = TimeUtil.addMinutes(now, -10);
 	private final Date later = TimeUtil.addMinutes(now, 10);
 
+	private I_AD_Org org;
+
 	private I_C_UOM uom;
 
 	private I_M_Product product;
@@ -61,6 +66,9 @@ public class CandidateFactoryTests
 	{
 		AdempiereTestHelper.get().init();
 
+		org = newInstance(I_AD_Org.class);
+		save(org);
+
 		uom = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 		InterfaceWrapperHelper.save(uom);
 
@@ -73,16 +81,16 @@ public class CandidateFactoryTests
 
 		candidateRepository = new CandidateRepository();
 		candidateFactory = new CandidateFactory(candidateRepository);
-		
+
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.quantity(new BigDecimal("10"))
 				.date(now)
 				.build();
-		candidateRepository.addOrReplace(stockCandidate);
+		candidateRepository.addOrUpdate(stockCandidate);
 	}
 
 	/**
@@ -93,7 +101,7 @@ public class CandidateFactoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(earlier)
@@ -112,7 +120,7 @@ public class CandidateFactoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
-				.orgId(1)
+				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
 				.date(later)

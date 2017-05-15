@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
@@ -50,6 +51,8 @@ public class MaterialEventService
 	/** Topic used to send notifications about sales and purchase orders that were generated/reversed asynchronously */
 	private final Topic eventBusTopic;
 
+	private boolean subscribedToEventBus = false;
+
 	private final IEventListener internalListener = new IEventListener()
 	{
 		@Override
@@ -75,16 +78,43 @@ public class MaterialEventService
 				.setName(MaterialEventBus.EVENTBUS_TOPIC_NAME)
 				.setType(eventType)
 				.build();
-
-		getEventBus().subscribe(internalListener);
 	}
 
-	public void registerListener(final MaterialEventListener materialDemandListener)
+	/**
+	 * With a "non-local" eventService, we can't directly get the event-bus on startup, because at that time, metasfresh is not yet ready.
+	 * More concretely, the problem is that the registerListener method will invoke {@link ISysConfigBL} which will try an look into the DB.
+	 * <p>
+	 * Therefore, we have this particular method to be called whenever we know that it's now safe to call it. In old-school scenarios, that is probably a model validator.
+	 * Note that this method can be called often, but only the first call makes a difference.
+	 */
+	public synchronized void subscribeToEventBus()
 	{
-		Preconditions.checkNotNull(materialDemandListener, "Param materialDemandListener is null");
-		listeners.add(materialDemandListener);
+		if(subscribedToEventBus)
+		{
+			return; // nothing to do
+		}
+		getEventBus().subscribe(internalListener);
+		subscribedToEventBus = true;
 	}
 
+	/**
+	 * Register the given {@code listener} to this service.
+	 * This can be done before {@link #subscribeToEventBus()} was called, but the registered listener then won't yet be invoked by the framework.
+	 *
+	 * @param materialDemandListener
+	 */
+	public void registerListener(final MaterialEventListener listener)
+	{
+		Preconditions.checkNotNull(listener, "Param listener is null");
+		listeners.add(listener);
+	}
+
+	/**
+	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #fireEvent(MaterialEvent)} when the given {@code trxName} is committed.
+	 *
+	 * @param event
+	 * @param trxName
+	 */
 	public void fireEventAfterCommit(final MaterialEvent event, final String trxName)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -94,8 +124,15 @@ public class MaterialEventService
 				.onAfterCommit(() -> fireEvent(event));
 	}
 
+	/**
+	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thorwn.
+	 *
+	 * @param event
+	 */
 	public void fireEvent(final MaterialEvent event)
 	{
+		Preconditions.checkState(subscribedToEventBus, "The method subscribeToEventBus() was no yet called on this instance; this=%s", this);
+
 		final String eventStr = MaterialEventSerializer.get().serialize(event);
 
 		final Event realEvent = Event.builder()
@@ -112,5 +149,4 @@ public class MaterialEventService
 		final IEventBus eventBus = eventBusFactory.getEventBus(eventBusTopic);
 		return eventBus;
 	}
-
 }

@@ -36,6 +36,7 @@ import org.compiere.model.I_S_Resource;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_ReportLine;
+import de.metas.fresh.ordercheckup.OrderCheckupBarcode;
 
 /**
  * {@link I_C_Order_MFGWarehouse_Report} builder.
@@ -103,6 +104,7 @@ public class OrderCheckupBuilder
 			reportLine.setAD_Org_ID(orderLine.getAD_Org_ID());
 			reportLine.setC_OrderLine(orderLine);
 			reportLine.setM_Product_ID(orderLine.getM_Product_ID());
+			reportLine.setBarcode(OrderCheckupBarcode.ofC_OrderLine_ID(reportLine.getC_OrderLine_ID()).toBarcodeString());
 			InterfaceWrapperHelper.save(reportLine);
 		}
 		

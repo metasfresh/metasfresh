@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 
+import de.metas.material.dispo.model.X_MD_Candidate;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -37,21 +38,29 @@ import lombok.experimental.Wither;
 @Wither
 public class Candidate
 {
+	/**
+	 * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_TYPE_AD_Reference_ID}
+	 */
 	public enum Type
 	{
 		DEMAND, SUPPLY, STOCK
 	};
 
 	/**
-	 * the supply type is relevant if the candidate's type is {@link Type#SUPPLY}.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
-	 *
+	 * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_SUBTYPE_AD_Reference_ID}
 	 */
 	public enum SubType
 	{
 		DISTRIBUTION, PRODUCTION, RECEIPT, SHIPMENT
 	};
+
+	/**
+	 * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_STATUS_AD_Reference_ID}
+	 */
+	public enum Status
+	{
+		doc_planned, doc_created, doc_completed, doc_closed, unexpected
+	}
 
 	@NonNull
 	private final Integer orgId;
@@ -60,7 +69,7 @@ public class Candidate
 	private final Integer productId;
 
 	private final Integer attributeSetInstanceId;
-	
+
 	@NonNull
 	private final Integer warehouseId;
 
@@ -80,6 +89,8 @@ public class Candidate
 	 */
 	private final SubType subType;
 
+	private final Status status;
+
 	private final TableRecordReference reference;
 
 	private final Integer id;
@@ -94,6 +105,11 @@ public class Candidate
 	 * Used for additional infos if this candidate has the sub type {@link SubType#PRODUCTION}.
 	 */
 	private final ProductionCandidateDetail productionDetail;
+
+	/**
+	 * Used for additional infos if this candidate relates to particular demand
+	 */
+	private final DemandCandidateDetail demandDetail;
 
 	/**
 	 * The projected date at which we expect this candidate's {@link #getQuantity()}.

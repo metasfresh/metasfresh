@@ -43,6 +43,13 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 {
 	@Override
+	public I_PP_Order_Qty retrieveById(final int ppOrderQtyId)
+	{
+		Preconditions.checkArgument(ppOrderQtyId > 0, "ppOrderQtyId > 0");
+		
+		return InterfaceWrapperHelper.load(ppOrderQtyId, I_PP_Order_Qty.class);
+	}
+	@Override
 	public void save(final I_PP_Order_Qty ppOrderQty)
 	{
 		InterfaceWrapperHelper.save(ppOrderQty);
