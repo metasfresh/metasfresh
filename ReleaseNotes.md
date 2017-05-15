@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1474](https://github.com/metasfresh/metasfresh/issues/1474) New Window Handling Unit Packing Instruction in WebUI
+    * Creates a new Packing Instruction window in WebUI.
   * [#1485](https://github.com/metasfresh/metasfresh/issues/1485) New Window Distribution Order in WebUI
     * Adding the Distribution Order window to WebUI.
   * [#1489](https://github.com/metasfresh/metasfresh/issues/1489) Disable/delete legacy Cockpit window
