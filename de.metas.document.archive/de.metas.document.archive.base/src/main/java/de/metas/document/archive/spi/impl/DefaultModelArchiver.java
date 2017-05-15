@@ -23,7 +23,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
 import org.compiere.print.ReportEngine;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -36,6 +35,7 @@ import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /*

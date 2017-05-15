@@ -18,8 +18,11 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1305](https://github.com/metasfresh/metasfresh/issues/1305) Jasper Document for Vendor Returns
+    * Created a new Jasper Document that allows to Vendor Return Confirmation.
   * [#1320](https://github.com/metasfresh/metasfresh/issues/1320) Translation for nl_NL in WebUI
+    * Initial Translation for nl_NL for multiple WebUI Windows and elements. Thanks to @Arjanvb for this contribution.
   * [#1460](https://github.com/metasfresh/metasfresh/issues/1460) The Bestellkontrolle barcodes shall be generated and persisted in database
+    * New Barcode Generator for the Order Control report in Manufacuring. This Barcode is needed to the scan possibility in Manufacturing when starting the action issue and receipt workflow in WebUI.
   * [#1463](https://github.com/metasfresh/metasfresh/issues/1463) Add Window for S_Resource_Ressource to WebUI
     * Adding a new window to WebUI to allow maintaining Manufacturing Resources.
   * [#1464](https://github.com/metasfresh/metasfresh/issues/1464) New Window for Manufacturing Workflow in WebUI
@@ -31,6 +34,7 @@ Here come the actual release notes:
   * [#1467](https://github.com/metasfresh/metasfresh/issues/1467) New Window for Product Planning Data in WebUI
     * Including the Window Product Planning Data to WebUI, to allow the user to maintain Manufacturing dependant data for products.
   * [#1471](https://github.com/metasfresh/metasfresh/issues/1471) Provide material-dispo and spring-boot-admin as services
+    * New Material Disposition Framework alowing to start the "Make or Buy" decision nearly just-in-time. This implementation is preparing the gound for the furture metasfresh microservices framewor
   * [#1473](https://github.com/metasfresh/metasfresh/issues/1473) New Window for Node Transitions in webUI
     * Creating a new Window in WebUI for Node Transition maintenance in Manufacturing Workflow.
   * [#1478](https://github.com/metasfresh/metasfresh/issues/1478) New Window for InvoiceSchedule in WebUI
@@ -42,7 +46,9 @@ Here come the actual release notes:
   * [#1494](https://github.com/metasfresh/metasfresh/issues/1494) Add HU_PI_Item to Product Price Window in WebUI
     * Adding the Field Handling Unit Packing Instruction to Product Price Window. Minor Adjustments in Layout.
   * [#1499](https://github.com/metasfresh/metasfresh/issues/1499) Update to spring-boot 1.5.3
+    * Updating spring-boot from 1.4.2 to version 1.5.3
   * [#1502](https://github.com/metasfresh/metasfresh/issues/1502) Drop the CU-TU assignment for "No PI" (M_HU_ID=100)
+    * Dropping the Customer Unit/Transport Unit assignment creation for "No Packing Instructions2 Handling Units.
 
 * metasfresh-webui-api
   * [#280](https://github.com/metasfresh/metasfresh-webui-api/issues/280) Scan of Barcode "Bestellkontrolle" for Manufacturing execution

@@ -40,7 +40,6 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.MLanguage;
 import org.compiere.util.DB;
-import org.compiere.util.Language;
 import org.compiere.util.Msg;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
@@ -48,6 +47,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.metas.i18n.ILanguageDAO;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

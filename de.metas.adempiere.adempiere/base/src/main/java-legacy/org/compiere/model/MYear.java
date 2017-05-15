@@ -27,8 +27,8 @@ import java.util.StringTokenizer;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.process.DocumentTypeVerify;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
+import de.metas.i18n.Language;
 import de.metas.process.JavaProcess;
 
 

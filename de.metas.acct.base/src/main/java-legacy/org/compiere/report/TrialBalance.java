@@ -23,6 +23,8 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -31,7 +33,6 @@ import org.compiere.model.MAcctSchemaElement;
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
-import org.compiere.util.Language;
 
 
 /**

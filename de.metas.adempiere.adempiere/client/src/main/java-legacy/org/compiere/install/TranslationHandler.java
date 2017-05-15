@@ -19,9 +19,10 @@ package org.compiere.install;
 import java.sql.Timestamp;
 
 import org.slf4j.Logger;
+
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import org.compiere.util.DB;
-import org.compiere.util.Language;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
