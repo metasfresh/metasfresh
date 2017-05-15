@@ -16,16 +16,16 @@
 		
 		<!-- the main spring-boot jar which shall further down be copied into the lib folder -->
 		<mainJar>${project.name}-${project.version}.jar</mainJar>
-		
+
 		<start-class>de.metas.SwingUIApplication</start-class>
-		
+
 		<!-- Changing from JarLauncher to PropertiesLauncher, because that way we can specify external jars
 			Issue: https://github.com/metasfresh/metasfresh/issues/695 
 		    Also see https://docs.spring.io/spring-boot/docs/current/reference/html/executable-jar.html#executable-jar-property-launcher-features -->
 		<spring.jarLauncherClass>org.springframework.boot.loader.PropertiesLauncher</spring.jarLauncherClass>
 
 		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>5.8.0.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
+		<launch4j.versionInfo>5.9.0.${BUILD_NUMBER_NUMERIC}</launch4j.versionInfo>
 		<launch4j.preCp></launch4j.preCp>
 		
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
@@ -118,6 +118,15 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
+		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
+		<dependency>
+			<groupId>de.metas.material</groupId>
+			<artifactId>metasfresh-material-dispo</artifactId>
+			<version>${metasfresh.version}</version>
+			<type>jar</type>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -183,8 +192,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			
-
 
 			<plugin>
 				<!--  
