@@ -1293,21 +1293,8 @@ public class HUEditorModel implements IDisposable
 		{
 			//
 			// Refresh the HUKeys
-			{
-				// Remove huKeys from their parents
-				for (final HUKey huKey : getSelectedHUKeys())
-				{
-					removeHUKeyFromParentRecursivelly(huKey);
-				}
-
-				// Move back to Root HU Key
-				setRootHUKey(getRootHUKey());
-
-				//
-				// Clear (attribute) cache (because it could be that we changed the attributes too)
-				clearCache();
-			}
-
+			refreshSelectedHUKeys();
+			
 			//
 			// Send notifications
 			ReturnInOutProcessedEventBus.newInstance()
@@ -1397,6 +1384,7 @@ public class HUEditorModel implements IDisposable
 	 */
 	public void refreshSelectedHUKeys()
 	{
+		
 
 		// Remove huKeys from their parents
 		for (final HUKey huKey : getSelectedHUKeys())
@@ -1519,14 +1507,14 @@ public class HUEditorModel implements IDisposable
 			return Collections.emptyList();
 		}
 
+		final List<I_M_Movement> movementsToQualityWarehouse =  returnsWarehouseModel.getMovements();
 		//
-		// Remove previous selection
-		clearSelectedKeyIds();
-
-		//
-		// Navigate back to root
-		setCurrentHUKey(getRootHUKey());
-
+		// Refresh the HUKeys
+		if(!movementsToQualityWarehouse.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
+		
 		return returnsWarehouseModel.getMovements();
 
 	}
