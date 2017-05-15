@@ -21,5 +21,8 @@ de.metas.endcustomer.mf15/metasfresh.properties
 *.log
 
 /de.metas.elasticsearch/data/
+
+# https://github.com/metasfresh/metasfresh/pull/1520
+# ignore eclipse data. Also see http://stackoverflow.com/a/33783023/1012103
 /.metadata
 /.recommenders
