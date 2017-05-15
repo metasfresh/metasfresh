@@ -17,6 +17,10 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1485](https://github.com/metasfresh/metasfresh/issues/1485) New Window Distribution Order in WebUI
+    * Adding the Distribution Order window to WebUI.
+  * [#1501](https://github.com/metasfresh/metasfresh/issues/1501) Rename "No Handling Unit" and "Virtual PI" PIs
+    * Renames the internal Packing Items (former Virtual PI, No Handling Unit) to names that describe what these Items really are.
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
     * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
   * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
