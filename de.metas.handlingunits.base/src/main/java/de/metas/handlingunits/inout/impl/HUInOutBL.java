@@ -243,8 +243,10 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_InOut createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	public List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
+
+		final List<de.metas.handlingunits.model.I_M_InOut> returnInOuts = new ArrayList<>();
 
 		// services
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
@@ -275,7 +277,7 @@ public class HUInOutBL implements IHUInOutBL
 					huAssignmentsForPartner = new ArrayList<I_M_HU_Assignment>();
 					partnerstoHUAssignments.put(bpartnerID, huAssignmentsForPartner);
 				}
-				
+
 				huAssignmentsForPartner.add(assignment);
 			}
 		}
@@ -284,22 +286,21 @@ public class HUInOutBL implements IHUInOutBL
 
 		Set<Integer> keySet = partnerstoHUAssignments.keySet();
 
-		I_M_InOut inOut = null;
-
 		for (final int partnerId : keySet)
 		{
-			inOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
+			final I_M_InOut returnInOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
+
+			de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(returnInOut, de.metas.handlingunits.model.I_M_InOut.class);
+			Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(huInOut, hus, ITrx.TRXNAME_ThreadInherited);
+
+			returnInOuts.add(huInOut);
+
 		}
 
 		// return the last inout that was created
-		de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(inOut, de.metas.handlingunits.model.I_M_InOut.class);
 
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(huInOut, hus, ITrx.TRXNAME_ThreadInherited);
-
-		return huInOut;
+		return returnInOuts;
 	}
-	
-	
 
 	/**
 	 * Create vendor return producer, set the details and use it to create the vendor return inout.
@@ -329,8 +330,7 @@ public class HUInOutBL implements IHUInOutBL
 
 		// There will be one return inout for each partner
 		// The return inout lines will be created based on the origin inoutlines (from receipts)
-	
-		
+
 		//
 		// Create Shipment document and return it
 		final I_M_InOut inOut = producer.create();

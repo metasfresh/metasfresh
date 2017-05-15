@@ -1264,7 +1264,7 @@ public class HUEditorModel implements IDisposable
 	{
 
 		// the resulting vendor return inout
-		final I_M_InOut[] result = new I_M_InOut[] { null };
+		final List<I_M_InOut> returnInuts = new ArrayList<>();
 
 		trxManager.run(new TrxRunnable2()
 		{
@@ -1272,7 +1272,7 @@ public class HUEditorModel implements IDisposable
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				result[0] = createVendorReturn0(warehouseFrom, localTrxName);
+				returnInuts.addAll(createVendorReturn0(warehouseFrom, localTrxName));
 
 			}
 
@@ -1289,10 +1289,7 @@ public class HUEditorModel implements IDisposable
 			}
 		});
 
-		//
-		// Open window with return document if it was created successfully
-		final I_M_InOut inOut = result[0];
-		if (inOut != null)
+		if (!returnInuts.isEmpty())
 		{
 			//
 			// Refresh the HUKeys
@@ -1315,7 +1312,7 @@ public class HUEditorModel implements IDisposable
 			// Send notifications
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
-					.notify(inOut);
+					.notify(returnInuts);
 
 			// not needed TODO
 			// // zoom into the created vendor return (return to customer not implemented yet)
@@ -1457,7 +1454,7 @@ public class HUEditorModel implements IDisposable
 	 * @param trxName
 	 * @return
 	 */
-	public I_M_InOut createVendorReturn0(final I_M_Warehouse warehousefrom, final String trxName)
+	public List<I_M_InOut> createVendorReturn0(final I_M_Warehouse warehousefrom, final String trxName)
 	{
 
 		// services
@@ -1488,15 +1485,17 @@ public class HUEditorModel implements IDisposable
 		for (final HUKey huKey : huKeys)
 		{
 			final I_M_HU hu = huKey.getM_HU();
-			hus.add(hu);
+
+			final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
+			hus.add(topLevelHU);
 		}
 
 		// movement date for inout
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
 
-		final I_M_InOut returnInOut = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
+		final List<I_M_InOut> returnInOuts = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
 
-		return returnInOut;
+		return returnInOuts;
 	}
 
 	public List<I_M_Movement> doMoveToQualityWarehouse(Predicate<ReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)

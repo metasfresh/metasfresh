@@ -24,6 +24,11 @@ Here come the actual release notes:
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
 
+## Fixes
+
+* metasfresh-backend
+  * [#1515](https://github.com/metasfresh/metasfresh/issues/1515) Project "de.metas.material.dispo" shall not be part of Swing client
+
 # metasfresh 5.9 (2017-19)
 
 ## Features
