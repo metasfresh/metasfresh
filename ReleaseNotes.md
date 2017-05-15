@@ -19,6 +19,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1485](https://github.com/metasfresh/metasfresh/issues/1485) New Window Distribution Order in WebUI
     * Adding the Distribution Order window to WebUI.
+  * [#1489](https://github.com/metasfresh/metasfresh/issues/1489) Disable/delete legacy Cockpit window
+    * Disabling the legacy Buisness Partner Cockpit window.
   * [#1501](https://github.com/metasfresh/metasfresh/issues/1501) Rename "No Handling Unit" and "Virtual PI" PIs
     * Renames the internal Packing Items (former Virtual PI, No Handling Unit) to names that describe what these Items really are.
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
