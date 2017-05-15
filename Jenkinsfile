@@ -360,7 +360,7 @@ node('agent && linux')
 				sh "mkdir -p ${dockerWorkDir}"
 
  				// copy the files so they can be handled by the docker build
-				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
+				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-service-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
 				sh "cp -R de.metas.material/dispo-service/src/main/docker/* ${dockerWorkDir}"
 				sh "cp -R de.metas.material/dispo-service/src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
