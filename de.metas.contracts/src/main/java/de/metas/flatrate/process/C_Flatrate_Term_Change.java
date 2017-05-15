@@ -66,7 +66,7 @@ public class C_Flatrate_Term_Change extends JavaProcess
 		
 		final I_C_Flatrate_Term currentTerm = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_C_Flatrate_Term.class, get_TrxName());
 
-		Services.get(IContractChangeBL.class).cancelContract(currentTerm, changeDate);
+		Services.get(IContractChangeBL.class).cancelContract(currentTerm, changeDate, true);
 
 		return "@Success@";
 	}

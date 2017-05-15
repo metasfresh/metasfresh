@@ -63,7 +63,8 @@ public class ContractChangeBL implements IContractChangeBL
 	@Override
 	public void cancelContract(
 			final I_C_Flatrate_Term currentTerm,
-			final Timestamp changeDate)
+			final Timestamp changeDate,
+			final boolean isCloseInvoiceCandidate)
 	{
 		Check.assumeNotNull(currentTerm, "Param 'currentTerm' not null");
 		Check.assumeNotNull(changeDate, "Param 'changeDate' not null");
@@ -134,10 +135,12 @@ public class ContractChangeBL implements IContractChangeBL
 			currentTerm.setContractStatus(X_C_Flatrate_Term.CONTRACTSTATUS_Gekuendigt);
 		}
 
+		currentTerm.setIsCloseInvoiceCandidate(isCloseInvoiceCandidate); 
+		
 		if (currentTerm.getC_FlatrateTerm_Next_ID() > 0)
 		{
 			// the canceled term has already been extended, so we need to cancel the next term as well
-			cancelContract(currentTerm.getC_FlatrateTerm_Next(), changeDate);
+			cancelContract(currentTerm.getC_FlatrateTerm_Next(), changeDate, isCloseInvoiceCandidate);
 		}
 		else
 		{

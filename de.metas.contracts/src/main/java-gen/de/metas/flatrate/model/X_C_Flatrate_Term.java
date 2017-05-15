@@ -16,7 +16,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1460095801L;
+	private static final long serialVersionUID = -821091243L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -41,7 +41,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 // N
 			setIsSimulation (false);
 // N
-			setPlannedQtyPerUnit (Env.ZERO);
+			setPlannedQtyPerUnit (BigDecimal.ZERO);
 			setProcessing (false);
 // N
 			setStartDate (new Timestamp( System.currentTimeMillis() ));
@@ -374,6 +374,39 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
+	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.flatrate.model.I_C_Flatrate_Transition.class);
+	}
+
+	@Override
+	public void setC_Flatrate_Transition(de.metas.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.flatrate.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
+	}
+
+	/** Set Vertragsverlängerung/-übergang.
+		@param C_Flatrate_Transition_ID 
+		Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	  */
+	@Override
+	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID)
+	{
+		throw new IllegalArgumentException ("C_Flatrate_Transition_ID is virtual column");	}
+
+	/** Get Vertragsverlängerung/-übergang.
+		@return Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	  */
+	@Override
+	public int getC_Flatrate_Transition_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Transition_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.flatrate.model.I_C_Flatrate_Term getC_FlatrateTerm_Next() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_FlatrateTerm_Next_ID, de.metas.flatrate.model.I_C_Flatrate_Term.class);
@@ -408,33 +441,177 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	}
 
 	@Override
-	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException
+	public org.compiere.model.I_C_Order getC_Order_Term() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.flatrate.model.I_C_Flatrate_Transition.class);
+		return get_ValueAsPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Transition(de.metas.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition)
+	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.flatrate.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
+		set_ValueFromPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class, C_Order_Term);
 	}
 
-	/** Set Vertragsverlängerung/-übergang.
-		@param C_Flatrate_Transition_ID 
-		Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	/** Set Vertrags-Auftrag.
+		@param C_Order_Term_ID 
+		Auftrag, mit der der Vertrag abgeschlossen wurde
 	  */
 	@Override
-	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID)
+	public void setC_Order_Term_ID (int C_Order_Term_ID)
 	{
-		throw new IllegalArgumentException ("C_Flatrate_Transition_ID is virtual column");	}
+		throw new IllegalArgumentException ("C_Order_Term_ID is virtual column");	}
 
-	/** Get Vertragsverlängerung/-übergang.
-		@return Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	/** Get Vertrags-Auftrag.
+		@return Auftrag, mit der der Vertrag abgeschlossen wurde
 	  */
 	@Override
-	public int getC_Flatrate_Transition_ID () 
+	public int getC_Order_Term_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Transition_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_Order_TermChange() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order_TermChange(org.compiere.model.I_C_Order C_Order_TermChange)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class, C_Order_TermChange);
+	}
+
+	/** Set Änderungs-Auftrag.
+		@param C_Order_TermChange_ID 
+		Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	  */
+	@Override
+	public void setC_Order_TermChange_ID (int C_Order_TermChange_ID)
+	{
+		throw new IllegalArgumentException ("C_Order_TermChange_ID is virtual column");	}
+
+	/** Get Änderungs-Auftrag.
+		@return Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	  */
+	@Override
+	public int getC_Order_TermChange_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_TermChange_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_Term);
+	}
+
+	/** Set Vertrags-Auftragszeile.
+		@param C_OrderLine_Term_ID 
+		Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	  */
+	@Override
+	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID)
+	{
+		if (C_OrderLine_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLine_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLine_Term_ID, Integer.valueOf(C_OrderLine_Term_ID));
+	}
+
+	/** Get Vertrags-Auftragszeile.
+		@return Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	  */
+	@Override
+	public int getC_OrderLine_Term_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_Term_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class);
+	}
+
+	@Override
+	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_TermChange);
+	}
+
+	/** Set Änderungs-Auftragszeile.
+		@param C_OrderLine_TermChange_ID 
+		Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	  */
+	@Override
+	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID)
+	{
+		if (C_OrderLine_TermChange_ID < 1) 
+			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, Integer.valueOf(C_OrderLine_TermChange_ID));
+	}
+
+	/** Get Änderungs-Auftragszeile.
+		@return Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	  */
+	@Override
+	public int getC_OrderLine_TermChange_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_TermChange_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -490,183 +667,6 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getContractStatus () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_TermChange_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_TermChange);
-	}
-
-	/** Set Änderungs-Auftragszeile.
-		@param C_OrderLine_TermChange_ID 
-		Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	@Override
-	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID)
-	{
-		if (C_OrderLine_TermChange_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_OrderLine_TermChange_ID, Integer.valueOf(C_OrderLine_TermChange_ID));
-	}
-
-	/** Get Änderungs-Auftragszeile.
-		@return Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	@Override
-	public int getC_OrderLine_TermChange_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_TermChange_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_Term_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine_Term);
-	}
-
-	/** Set Vertrags-Auftragszeile.
-		@param C_OrderLine_Term_ID 
-		Auftragszeile, mit der der Vertrag abgeschlossen wurde
-	  */
-	@Override
-	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID)
-	{
-		if (C_OrderLine_Term_ID < 1) 
-			set_Value (COLUMNNAME_C_OrderLine_Term_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_OrderLine_Term_ID, Integer.valueOf(C_OrderLine_Term_ID));
-	}
-
-	/** Get Vertrags-Auftragszeile.
-		@return Auftragszeile, mit der der Vertrag abgeschlossen wurde
-	  */
-	@Override
-	public int getC_OrderLine_Term_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_Term_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Order getC_Order_TermChange() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order_TermChange(org.compiere.model.I_C_Order C_Order_TermChange)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_TermChange_ID, org.compiere.model.I_C_Order.class, C_Order_TermChange);
-	}
-
-	/** Set Änderungs-Auftrag.
-		@param C_Order_TermChange_ID 
-		Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	@Override
-	public void setC_Order_TermChange_ID (int C_Order_TermChange_ID)
-	{
-		throw new IllegalArgumentException ("C_Order_TermChange_ID is virtual column");	}
-
-	/** Get Änderungs-Auftrag.
-		@return Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	  */
-	@Override
-	public int getC_Order_TermChange_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_TermChange_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Order getC_Order_Term() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_Term_ID, org.compiere.model.I_C_Order.class, C_Order_Term);
-	}
-
-	/** Set Vertrags-Auftrag.
-		@param C_Order_Term_ID 
-		Auftrag, mit der der Vertrag abgeschlossen wurde
-	  */
-	@Override
-	public void setC_Order_Term_ID (int C_Order_Term_ID)
-	{
-		throw new IllegalArgumentException ("C_Order_Term_ID is virtual column");	}
-
-	/** Get Vertrags-Auftrag.
-		@return Auftrag, mit der der Vertrag abgeschlossen wurde
-	  */
-	@Override
-	public int getC_Order_Term_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_Term_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
-	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
-	}
-
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
-	@Override
-	public int getC_UOM_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
 	}
 
 	/** 
@@ -1013,6 +1013,29 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 		return false;
 	}
 
+	/** Set Rechnungskandidat schließen.
+		@param IsCloseInvoiceCandidate Rechnungskandidat schließen	  */
+	@Override
+	public void setIsCloseInvoiceCandidate (boolean IsCloseInvoiceCandidate)
+	{
+		set_Value (COLUMNNAME_IsCloseInvoiceCandidate, Boolean.valueOf(IsCloseInvoiceCandidate));
+	}
+
+	/** Get Rechnungskandidat schließen.
+		@return Rechnungskandidat schließen	  */
+	@Override
+	public boolean isCloseInvoiceCandidate () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCloseInvoiceCandidate);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Gegenüberstellung mit erbr. Leist..
 		@param IsClosingWithActualSum 
 		Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
@@ -1264,7 +1287,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PlannedQtyPerUnit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1305,7 +1328,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceActual);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
