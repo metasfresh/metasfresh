@@ -6,6 +6,7 @@ import java.util.function.Function;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -27,6 +28,7 @@ import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
@@ -39,12 +41,16 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
@@ -54,7 +60,9 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -104,7 +112,7 @@ public class WindowRestController
 
 	@Autowired
 	private DocumentReferencesService documentReferencesService;
-	
+
 	@Autowired
 	private MenuTreeRepository menuTreeRepository;
 
@@ -124,8 +132,8 @@ public class WindowRestController
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
-//		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions()); // FIXME commented for debugging
-		
+		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
+
 		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 
 		final JSONOptions jsonOpts = newJSONOptions()
@@ -145,9 +153,10 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentLayoutDescriptor layout = documentCollection.getDocumentDescriptorFactory()
-				.getDocumentDescriptor(windowId)
-				.getLayout();
+		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
+		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
+
+		final DocumentLayoutDescriptor layout = descriptor.getLayout();
 
 		final JSONOptions jsonOpts = newJSONOptions()
 				.setShowAdvancedFields(advanced)
@@ -441,6 +450,87 @@ public class WindowRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
+	@ApiOperation("field current value's window layout to zoom into")
+	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/zoomInto")
+	public JSONZoomInto getDocumentFieldZoomInto(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
+		return getDocumentFieldZoomInto(documentPath, fieldName);
+	}
+
+	@ApiOperation("field current value's window layout to zoom into")
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/zoomInto")
+	public JSONZoomInto getDocumentFieldZoomInto(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
+		return getDocumentFieldZoomInto(documentPath, fieldName);
+	}
+
+	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
+	{
+		userSession.assertLoggedIn();
+
+		final ITableRecordReference zoomInfoTableRecordRef = documentCollection.forDocumentReadonly(documentPath, document -> {
+			final IDocumentFieldView field = document.getFieldView(fieldName);
+
+			// Generic ZoomInto button
+			if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.ZoomIntoButton)
+			{
+				final ButtonFieldActionDescriptor buttonActionDescriptor = field.getDescriptor().getButtonActionDescriptor();
+				final String zoomIntoTableIdFieldName = buttonActionDescriptor.getZoomIntoTableIdFieldName();
+
+				final Integer adTableId = document.getFieldView(zoomIntoTableIdFieldName).getValueAs(Integer.class);
+				if (adTableId == null || adTableId <= 0)
+				{
+					throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No AD_Table_ID.")
+							.setParameter("documentPath", documentPath)
+							.setParameter("fieldName", fieldName)
+							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
+				}
+
+				final Integer recordId = field.getValueAs(Integer.class);
+				if (recordId == null)
+				{
+					throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value. No Record_ID.")
+							.setParameter("documentPath", documentPath)
+							.setParameter("fieldName", fieldName)
+							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
+				}
+
+				return TableRecordReference.of(adTableId, recordId);
+			}
+			// Regular lookup value
+			else
+			{
+				return field.getValueAs(ITableRecordReference.class);
+			}
+		});
+		if (zoomInfoTableRecordRef == null)
+		{
+			throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value")
+					.setParameter("documentPath", documentPath)
+					.setParameter("fieldName", fieldName);
+		}
+
+		final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomInfoTableRecordRef);
+		return JSONZoomInto.builder()
+				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
+				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
+				.build();
+	}
+
 	@GetMapping("/{windowId}/{documentId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
 			@PathVariable("windowId") final String windowIdStr //
@@ -472,7 +562,7 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
-		if(documentReferences.isEmpty())
+		if (documentReferences.isEmpty())
 		{
 			return JSONDocumentReferencesGroupList.EMPTY;
 		}
@@ -547,7 +637,7 @@ public class WindowRestController
 			{
 				throw new AdempiereException("Not saved");
 			}
-			
+
 			final int newRecordId = newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document);

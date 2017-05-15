@@ -510,7 +510,7 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @return existing TUs that are available in the current HU editor context, sorted by ID.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true, lookupTableName = I_M_HU.Table_Name)
 	private LookupValuesList getTULookupValues()
 	{
 		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
@@ -533,7 +533,7 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @return existing LUs that are available in the current HU editor context, sorted by ID.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true, lookupTableName = I_M_HU.Table_Name)
 	private LookupValuesList getLULookupValues()
 	{
 		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
@@ -568,7 +568,7 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = PARAM_Action, numericKey = true)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_Product_ID, dependsOn = PARAM_Action, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
 	private LookupValuesList getM_HU_PI_Item_Products()
 	{
 		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);
@@ -605,7 +605,7 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @return a list of HU PI items that link the currently selected TU with a TUperLU-qty and a LU packing instruction.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = { PARAM_Action }, numericKey = true)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = { PARAM_Action }, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
 	private LookupValuesList getM_HU_PI_Item_ID()
 	{
 		final ActionType actionType = p_Action == null ? null : ActionType.valueOf(p_Action);

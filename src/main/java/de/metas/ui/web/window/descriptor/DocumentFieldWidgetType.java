@@ -21,11 +21,11 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -72,6 +72,7 @@ public enum DocumentFieldWidgetType
 	, Button(LayoutAlign.Left, null) //
 	, ActionButton(LayoutAlign.Left, null) //
 	, ProcessButton(LayoutAlign.Left, String.class) //
+	, ZoomIntoButton(LayoutAlign.Left, Integer.class) //
 
 	//
 	;
@@ -119,20 +120,30 @@ public enum DocumentFieldWidgetType
 	{
 		return TYPES_Date.contains(this);
 	}
-	
+
 	public final boolean isNumeric()
 	{
 		return TYPES_Numeric.contains(this);
 	}
-	
+
 	public final boolean isText()
 	{
 		return this == Text || this == LongText || this == Password;
 	}
-	
+
 	public final boolean isButton()
 	{
-		return this == Button || this == ActionButton || this == ProcessButton;
+		return this == Button || this == ActionButton || this == ProcessButton || this == ZoomIntoButton;
+	}
+
+	public final boolean isLookup()
+	{
+		return this == Lookup || this == List;
+	}
+	
+	public final boolean isSupportZoomInto()
+	{
+		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton;
 	}
 
 	/**

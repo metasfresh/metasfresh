@@ -123,11 +123,11 @@ public class ASIDescriptorFactory
 			, final List<MAttribute> attributes //
 	)
 	{
-		if(attributes.isEmpty())
+		if (attributes.isEmpty())
 		{
 			throw new EntityNotFoundException("Attributes not allowed");
 		}
-		
+
 		final DocumentEntityDescriptor.Builder attributeSetDescriptor = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.ProductAttributes, asiDescriptorId)
 				.setCaption(name)
@@ -247,7 +247,8 @@ public class ASIDescriptorFactory
 				.setWidgetType(fieldDescriptor.getWidgetType())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
 						.setLookupSource(fieldDescriptor.getLookupSourceType())
-						.setPublicField(true));
+						.setPublicField(true)
+						.setSupportZoomInto(fieldDescriptor.getWidgetType().isSupportZoomInto()));
 	}
 
 	private static class ASIDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder

@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
+import java.util.function.UnaryOperator;
 
 import org.compiere.util.NamePair;
 
@@ -20,11 +21,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,6 +39,18 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 public final class Values
 {
 	public static final Object valueToJsonObject(final Object value)
+	{
+		return valueToJsonObject(value, UnaryOperator.identity());
+	}
+
+	/**
+	 * Convert value to JSON.
+	 * 
+	 * @param value
+	 * @param fallbackMapper mapper called when value could not be converted to JSON; takes as input the <code>value</code>
+	 * @return JSON value
+	 */
+	public static final Object valueToJsonObject(final Object value, final UnaryOperator<Object> fallbackMapper)
 	{
 		if (value == null)
 		{
@@ -70,10 +83,10 @@ public final class Values
 		}
 		else
 		{
-			return value;
+			return fallbackMapper.apply(value);
 		}
 	}
-	
+
 	private Values()
 	{
 		throw new UnsupportedOperationException();

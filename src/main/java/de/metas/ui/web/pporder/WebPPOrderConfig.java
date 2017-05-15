@@ -62,6 +62,7 @@ public class WebPPOrderConfig
 			};
 			//
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.class).build());
+			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ReverseCandidate.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Planning.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Review.class).build());
 			adProcessDAO.registerTableProcess(newDescriptorBuilder.apply(de.metas.ui.web.pporder.process.WEBUI_PP_Order_ChangePlanningStatus_Complete.class).build());

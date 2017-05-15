@@ -6,10 +6,12 @@ import java.util.Properties;
 
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -19,6 +21,7 @@ import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
  * #%L
@@ -80,6 +83,14 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				.initializeAsExistingRecord(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters));
 	}
 
+	@Override
+	public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor, final DocumentQuery childDocumentQuery)
+	{
+		throw new EntityNotFoundException("Process documents does not have parents")
+				.setParameter("parentEntityDescriptor", parentEntityDescriptor)
+				.setParameter("childDocumentQuery", childDocumentQuery);
+	}
+
 	private static Object extractParameterValue(final Map<String, ProcessInfoParameter> processInfoParameters, final DocumentFieldDescriptor parameterDescriptor)
 	{
 		final String fieldName = parameterDescriptor.getFieldName();
@@ -91,7 +102,21 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		final Object parameterValue = processInfoParameter.getParameter();
 		final String parameterDisplay = processInfoParameter.getInfo();
-		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, id -> LookupValue.fromObject(id, parameterDisplay));
+		final Object parameterValueConv = parameterDescriptor.convertToValueClass(parameterValue, new LookupValueByIdSupplier()
+		{
+
+			@Override
+			public ITableRecordReference toTableRecordReference(int id)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public LookupValue findById(Object id)
+			{
+				return LookupValue.fromObject(id, parameterDisplay);
+			}
+		});
 		return parameterValueConv;
 	}
 

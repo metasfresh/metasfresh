@@ -178,6 +178,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 		//
 		// CU
 		lutuConfigurationNew.setQtyCU(qtyCU);
+		lutuConfigurationNew.setIsInfiniteQtyCU(false);
 
 		//
 		// TU
@@ -186,6 +187,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 		lutuConfigurationNew.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfigurationNew.setM_TU_HU_PI(tuPI);
 		lutuConfigurationNew.setQtyTU(qtyTU);
+		lutuConfigurationNew.setIsInfiniteQtyTU(false);
 
 		//
 		// LU
@@ -204,6 +206,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingConfig extends WEB
 			lutuConfigurationNew.setM_LU_HU_PI(luPI);
 			lutuConfigurationNew.setM_LU_HU_PI_Item(luPI_Item);
 			lutuConfigurationNew.setQtyLU(qtyLU);
+			lutuConfigurationNew.setIsInfiniteQtyLU(false);
 		}
 		else
 		{

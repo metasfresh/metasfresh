@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -27,6 +28,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -59,7 +61,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
 
-	private final String lookupTableName;
+	private final @NonNull String lookupTableName;
+	private final @NonNull Optional<String> lookupTableNameAsOptional;
 	private final boolean numericKey;
 	private final int entityTypeIndex;
 
@@ -77,7 +80,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 		Preconditions.checkNotNull(lookupDescriptor);
 		final SqlLookupDescriptor sqlLookupDescriptor = lookupDescriptor.cast(SqlLookupDescriptor.class);
-		lookupTableName = sqlLookupDescriptor.getTableName().get();
+		lookupTableNameAsOptional = sqlLookupDescriptor.getTableName();
+		lookupTableName = lookupTableNameAsOptional.get();
 		numericKey = sqlLookupDescriptor.isNumericKey();
 		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
@@ -103,6 +107,12 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	{
 		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
 		return lookupTableName;
+	}
+	
+	@Override
+	public Optional<String> getLookupTableName()
+	{
+		return lookupTableNameAsOptional;
 	}
 	
 	@Override

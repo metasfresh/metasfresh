@@ -96,6 +96,11 @@ public final class ViewCreateRequest
 	{
 		return windowId;
 	}
+	
+	public ViewActionDescriptorsList getActions()
+	{
+		return actions;
+	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
 	{

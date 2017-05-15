@@ -35,6 +35,11 @@ public enum JSONLayoutType
 {
 	/** Primary layout: it will render the label and beneath the field */
 	primary,
+	/**
+	 * Same as {@link #primary} but will advice the frontend to render long labels.
+	 * At the moment it's used for filter checkboxes
+	 */
+	primaryLongLabels,
 	/** Secondary layout: it will render the label and the field on same line */
 	secondary;
 
