@@ -652,6 +652,8 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	public static final String CONTRACTSTATUS_Info = "In";
 	/** Noch nicht begonnen = Wa */
 	public static final String CONTRACTSTATUS_NochNichtBegonnen = "Wa";
+	/** EndingContract = Ec */
+	public static final String CONTRACTSTATUS_EndingContract = "Ec";
 	/** Set Vertrags-Status.
 		@param ContractStatus Vertrags-Status	  */
 	@Override
