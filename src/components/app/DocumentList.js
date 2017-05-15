@@ -33,7 +33,8 @@ import {
 
 import {
     createViewRequest,
-    browseViewRequest
+    browseViewRequest,
+    filterViewRequest
 } from '../../actions/AppActions';
 
 class DocumentList extends Component {
@@ -267,7 +268,11 @@ class DocumentList extends Component {
                 if(viewId && !isNewFilter){
                     this.browseView();
                 }else{
-                    this.createView();
+                    if(viewId){
+                        this.filterView();
+                    } else {
+                        this.createView();
+                    }
                 }
                 setModalTitle && setModalTitle(response.data.caption)
             })
@@ -282,6 +287,7 @@ class DocumentList extends Component {
             })
         })
     }
+
     /*
      *  If viewId exist, than browse that view.
      */
@@ -306,6 +312,25 @@ class DocumentList extends Component {
 
         dispatch(createViewRequest(
             windowType, type, this.pageLength, filters, refType, refId
+        )).then(response => {
+            this.mounted && this.setState({
+                data: response.data,
+                viewId: response.data.viewId
+            }, () => {
+                this.getData(response.data.viewId, page, sort);
+            })
+        })
+    }
+
+    filterView = () => {
+        const {
+            dispatch, windowType
+        } = this.props;
+
+        const {page, sort, filters, viewId} = this.state;
+
+        dispatch(filterViewRequest(
+            windowType, viewId, filters
         )).then(response => {
             this.mounted && this.setState({
                 data: response.data,

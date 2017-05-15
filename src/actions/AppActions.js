@@ -93,6 +93,13 @@ export function createViewRequest(
     });
 }
 
+export function filterViewRequest(windowType, viewId, filters){
+    return () => axios.post(config.API_URL + '/documentView/' + windowType +
+    '/'+viewId+'/filter', {
+        'filters': filters
+    });
+}
+
 export function addNotification(title, msg, time, notifType, shortMsg){
     return {
         type: types.ADD_NOTIFICATION,
