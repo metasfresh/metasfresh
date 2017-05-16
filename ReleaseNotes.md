@@ -29,11 +29,13 @@ Here come the actual release notes:
     * Renames the internal Packing Items (former Virtual PI, No Handling Unit) to names that describe what these Items really are.
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
     * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
+  * [#1520](https://github.com/metasfresh/metasfresh/pull/1520) add .metadata/ and .recommenders/ to .gitignore
+    * Thx to @homebeaver
   * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
     * New window in WebUI to allow the Print Format maintenance.
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
-
+ 
 ## Fixes
 
 * metasfresh-backend
