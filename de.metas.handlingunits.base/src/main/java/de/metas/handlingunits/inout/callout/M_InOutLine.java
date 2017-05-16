@@ -52,6 +52,7 @@ public class M_InOutLine
 	})
 	private void updateShipmentLineQtyEnteredTU(final I_M_InOutLine shipmentLine, final ICalloutField field)
 	{
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 		if (shipmentLine == null)
 		{
 			return;
@@ -62,10 +63,17 @@ public class M_InOutLine
 		{
 			return;
 		}
+		
+		// Make sure we are not dealing with customer returns
+		final I_M_InOut inout = shipmentLine.getM_InOut();
+		if(huInOutBL.isCustomerReturn(inout))
+		{
+			return;
+		}
 
 		//
 		// Make sure our effective values are up2date
-		Services.get(IHUInOutBL.class).updateEffectiveValues(shipmentLine);
+			huInOutBL.updateEffectiveValues(shipmentLine);
 
 		// Update QtyCU, but only if we deal with Manual Packing Materials,
 		// else don't touch it!

@@ -1,6 +1,5 @@
 package de.metas.handlingunits.inout;
 
-
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -32,6 +31,7 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -73,7 +73,6 @@ public interface IHUInOutBL extends ISingletonService
 
 	HUShipmentPackingMaterialLinesBuilder createHUShipmentPackingMaterialLinesBuilder(I_M_InOut shipment);
 
-
 	/**
 	 * Create an instance <code>of de.metas.handlingunits.inout.impl.EmptiesInOutProducer</code>
 	 * 
@@ -81,7 +80,6 @@ public interface IHUInOutBL extends ISingletonService
 	 * @return
 	 */
 	IReturnsInOutProducer createEmptiesInOutProducer(Properties ctx);
-
 
 	/**
 	 * Gets TU PI from inout line.
@@ -125,5 +123,22 @@ public interface IHUInOutBL extends ISingletonService
 	 * @return
 	 */
 	List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
+
+	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines);
+
+	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(I_M_InOutLine inOutLine);
+
+	/**
+	 * @param customerReturn
+	 * @return True if the given inOut is a Customer Return, False otherwise
+	 */
+	boolean isCustomerReturn(I_M_InOut customerReturn);
+
+	/**
+	 * @param customerReturn
+	 */
+	void createHUsForCustomerReturn(I_M_InOut customerReturn);
+
+	void createHUsForCustomerReturn(I_M_InOutLine customerReturnLine);
 
 }
