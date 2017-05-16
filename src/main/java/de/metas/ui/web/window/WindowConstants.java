@@ -76,6 +76,8 @@ public final class WindowConstants
 	public static final String FIELDNAME_DocumentSummary = "V$DocumentSummary";
 
 	public static final String CONTEXTVAR_NextLineNo = "CtxVar_NextLineNo";
+	
+	public static final String TABLENAME_AD_Ref_List = "AD_Ref_List";
 
 	private WindowConstants()
 	{
