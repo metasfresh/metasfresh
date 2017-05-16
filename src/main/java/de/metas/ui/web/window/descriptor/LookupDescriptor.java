@@ -5,6 +5,7 @@ import java.util.Set;
 
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
@@ -33,6 +34,11 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 public interface LookupDescriptor
 {
 	default Optional<String> getTableName()
+	{
+		return Optional.empty();
+	}
+	
+	default Optional<WindowId> getZoomIntoWindowId()
 	{
 		return Optional.empty();
 	}

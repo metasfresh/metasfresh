@@ -21,6 +21,7 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -240,4 +241,10 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 		return IntegerLookupValue.of(regionRecord.getC_Region_ID(), regionRecord.getName());
 	}
 
+
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return Optional.empty();
+	}
 }

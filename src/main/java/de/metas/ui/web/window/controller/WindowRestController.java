@@ -6,7 +6,9 @@ import java.util.function.Function;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
+import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -482,7 +484,7 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final ITableRecordReference zoomInfoTableRecordRef = documentCollection.forDocumentReadonly(documentPath, document -> {
+		final IPair<ITableRecordReference, WindowId> zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -509,14 +511,21 @@ public class WindowRestController
 							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
 				}
 
-				return TableRecordReference.of(adTableId, recordId);
+				final ITableRecordReference recordRef = TableRecordReference.of(adTableId, recordId);
+				final WindowId windowId = null;
+				return ImmutablePair.of(recordRef, windowId);
 			}
 			// Regular lookup value
 			else
 			{
-				return field.getValueAs(ITableRecordReference.class);
+				final ITableRecordReference recordRef = field.getValueAs(ITableRecordReference.class);
+				final WindowId zoomIntoWindowId = field.getZoomIntoWindowId().orElse(null);
+				return ImmutablePair.of(recordRef, zoomIntoWindowId);
 			}
 		});
+		
+		final ITableRecordReference zoomInfoTableRecordRef = zoomIntoInfo.getLeft();
+		final WindowId zoomIntoWindowId = zoomIntoInfo.getRight();
 		if (zoomInfoTableRecordRef == null)
 		{
 			throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value")
@@ -524,7 +533,7 @@ public class WindowRestController
 					.setParameter("fieldName", fieldName);
 		}
 
-		final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomInfoTableRecordRef);
+		final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomInfoTableRecordRef, zoomIntoWindowId);
 		return JSONZoomInto.builder()
 				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
 				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
