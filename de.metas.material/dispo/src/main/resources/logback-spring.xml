@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	metasfresh-material-dispo default logback configuration which is used when none is present in server's home folder.
+	
+	Please consider just using this configuration (and not adding a local one) in order to avoid configuration drift.
+	Note that we need the file name to be "logback-spring.xml" (as opposed to simply "logback.xml") 
+	to enable the <springProperty ..> tags in the defaults.xml.
+-->
+<configuration scan="true" scanPeriod="30 seconds" debug="true">
+	<include resource="de/metas/material/dispo/logging/defaults.xml" />
+</configuration>
