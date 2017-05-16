@@ -98,4 +98,16 @@ public class DefaultFlatrateHandler implements IFlatrateHandler
 	{
 		// nothing
 	}
+	
+	@Override
+	public void afterFlatrateTermEnded(I_C_Flatrate_Term term)
+	{
+		// nothing
+	}
+
+	@Override
+	public void beforeFlatrateTermCreated(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
+	{
+		// nothing
+	}
 }
