@@ -14,7 +14,8 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>dispo</module>
+		<module>dispo-commons</module>
+		<module>dispo-service</module>
 		<module>event</module>
 		<module>planning</module>
 	</modules>
