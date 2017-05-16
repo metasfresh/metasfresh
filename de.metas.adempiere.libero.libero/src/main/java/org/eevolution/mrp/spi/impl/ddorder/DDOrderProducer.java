@@ -123,7 +123,7 @@ public class DDOrderProducer
 
 		InterfaceWrapperHelper.save(ddOrder);
 
-		for (final DDOrderLine linePojo : pojo.getDdOrderLines())
+		for (final DDOrderLine linePojo : pojo.getLines())
 		{
 			//
 			// Create DD Order Line

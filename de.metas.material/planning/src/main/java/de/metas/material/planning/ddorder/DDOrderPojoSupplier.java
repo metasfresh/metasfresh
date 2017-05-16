@@ -207,7 +207,8 @@ public class DDOrderPojoSupplier
 							.plantId(plant.getS_Resource_ID())
 							.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 							.datePromised(supplyDateFinishSchedule)
-							.shipperId(networkLine.getM_Shipper_ID());
+							.shipperId(networkLine.getM_Shipper_ID())
+							.createDDrder(productPlanningData.isCreatePlan());
 
 					builders.add(orderBuilder);
 					addToCache(orderBuilder);
@@ -219,7 +220,7 @@ public class DDOrderPojoSupplier
 			// Crate DD order line
 			final BigDecimal qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getPercent());
 			final DDOrderLine ddOrderLine = createDD_OrderLine(mrpContext, networkLine, qtyToMove, supplyDateFinishSchedule, request);
-			orderBuilder.ddOrderLine(ddOrderLine);
+			orderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
 		} // end of the for-loop over networkLines

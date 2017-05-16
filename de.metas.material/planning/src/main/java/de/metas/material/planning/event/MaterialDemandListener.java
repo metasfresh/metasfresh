@@ -129,7 +129,7 @@ public class MaterialDemandListener implements MaterialEventListener
 
 			for (final DDOrder ddOrder : ddOrders)
 			{
-				for (final DDOrderLine ddOrderLine : ddOrder.getDdOrderLines())
+				for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 				{
 					final I_DD_NetworkDistributionLine networkLine = InterfaceWrapperHelper.create(mrpContext.getCtx(), ddOrderLine.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, mrpContext.getTrxName());
 									

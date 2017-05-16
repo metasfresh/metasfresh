@@ -26,6 +26,7 @@ import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateService;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
 
@@ -97,7 +98,11 @@ public class SupplyProposalEvaluatorTests
 
 		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
 
-		distributionPlanEventHandler = new DistributionPlanEventHandler(candidateRepository, candidateChangeHandler, supplyProposalEvaluator);
+		distributionPlanEventHandler = new DistributionPlanEventHandler(
+				candidateRepository, 
+				candidateChangeHandler, 
+				supplyProposalEvaluator,
+				new CandidateService(candidateRepository, materialEventService));
 	}
 
 	/**

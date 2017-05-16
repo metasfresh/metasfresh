@@ -36,6 +36,9 @@ public class DDOrderLine
 	@NonNull
 	private final Integer productId;
 
+	
+	private final int attributeSetInstanceId;;
+	
 	@NonNull
 	private final BigDecimal qty;
 
@@ -47,4 +50,7 @@ public class DDOrderLine
 	
 	@NonNull
 	private final Integer networkDistributionLineId;
+	
+	@NonNull
+	private final Integer ddOrderLineId;
 }

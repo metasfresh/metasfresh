@@ -26,6 +26,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
@@ -111,7 +112,8 @@ public class DistributionPlanEventHandlerTests
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
 				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService),
-				supplyProposalEvaluator);
+				supplyProposalEvaluator,
+				new CandidateService(candidateRepository, materialEventService));
 	}
 
 	/**
@@ -132,7 +134,7 @@ public class DistributionPlanEventHandlerTests
 				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)
-						.ddOrderLine(DDOrderLine.builder()
+						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
@@ -146,20 +148,23 @@ public class DistributionPlanEventHandlerTests
 		assertThat(allRecords.size(), is(4));
 
 		// all four shall have the same product
-		allRecords.forEach(r -> {
-			assertThat(r.getM_Product_ID(), is(productId));
-		});
+		allRecords.forEach(r ->
+			{
+				assertThat(r.getM_Product_ID(), is(productId));
+			});
 
 		// all four shall have the same org
-		allRecords.forEach(r -> {
-			assertThat(r.getAD_Org_ID(), is(org.getAD_Org_ID()));
-		});
+		allRecords.forEach(r ->
+			{
+				assertThat(r.getAD_Org_ID(), is(org.getAD_Org_ID()));
+			});
 
 		// all four shall have the same reference
-		allRecords.forEach(r -> {
-			final TableRecordReference ofReferenced = TableRecordReference.ofReferenced(r);
-			assertThat(ofReferenced, is(reference));
-		});
+		allRecords.forEach(r ->
+			{
+				final TableRecordReference ofReferenced = TableRecordReference.ofReferenced(r);
+				assertThat(ofReferenced, is(reference));
+			});
 
 		assertThat(DispoTestUtils.filter(Type.SUPPLY).size(), is(1));
 		assertThat(DispoTestUtils.filter(Type.STOCK).size(), is(2));
@@ -226,7 +231,7 @@ public class DistributionPlanEventHandlerTests
 				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t1)
-						.ddOrderLine(DDOrderLine.builder()
+						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
@@ -247,7 +252,7 @@ public class DistributionPlanEventHandlerTests
 				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)
-						.ddOrderLine(DDOrderLine.builder()
+						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
 								.durationDays(2)

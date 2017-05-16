@@ -56,6 +56,16 @@ final @Builder public class DDOrder
 	@NonNull
 	private final Integer shipperId;
 
+	/**
+	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
+	 */
+	private final boolean createDDrder;
+
+	
 	@Singular
-	private final List<DDOrderLine> ddOrderLines;
+	private final List<DDOrderLine> lines;
+
+	private final int ddOrderId;
+
+	private final String docStatus;
 }

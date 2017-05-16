@@ -1,15 +1,20 @@
 package de.metas.material.dispo.service.event;
 
 import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import de.metas.material.dispo.Candidate;
+import de.metas.material.dispo.Candidate.Status;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
+import de.metas.material.dispo.DistributionCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.DistributionPlanEvent;
@@ -43,13 +48,22 @@ public class DistributionPlanEventHandler
 {
 	private final CandidateRepository candidateRepository;
 	private final SupplyProposalEvaluator supplyProposalEvaluator;
-	private CandidateChangeHandler candidateChangeHandler;
+	private final CandidateChangeHandler candidateChangeHandler;
+	private final CandidateService candidateService;
 
+	/**
+	 * 
+	 * @param candidateRepository
+	 * @param candidateChangeHandler
+	 * @param supplyProposalEvaluator
+	 */
 	public DistributionPlanEventHandler(
 			@NonNull final CandidateRepository candidateRepository,
 			@NonNull final CandidateChangeHandler candidateChangeHandler,
-			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator)
+			@NonNull final SupplyProposalEvaluator supplyProposalEvaluator,
+			@NonNull final CandidateService candidateService)
 	{
+		this.candidateService = candidateService;
 		this.candidateChangeHandler = candidateChangeHandler;
 		this.candidateRepository = candidateRepository;
 		this.supplyProposalEvaluator = supplyProposalEvaluator;
@@ -57,10 +71,22 @@ public class DistributionPlanEventHandler
 
 	void handleDistributionPlanEvent(final DistributionPlanEvent event)
 	{
-		//final MaterialDescriptor materialDescr = event.getMaterialDescr();
+		// final MaterialDescriptor materialDescr = event.getMaterialDescr();
 
 		final DDOrder ddOrder = event.getDdOrder();
-		for (final DDOrderLine ddOrderLine : ddOrder.getDdOrderLines())
+		final Candidate.Status candidateStatus;
+		if (ddOrder.getDdOrderId() <= 0)
+		{
+			candidateStatus = Status.doc_planned;
+		}
+		else
+		{
+			candidateStatus = EventUtil.getCandidateStatus(ddOrder.getDocStatus());
+		}
+
+		final Set<Integer> groupIdsWithRequestedPPOrders = new HashSet<>();
+
+		for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 		{
 			final Timestamp orderLineStartDate = TimeUtil.addDays(ddOrder.getDatePromised(), ddOrderLine.getDurationDays() * -1);
 
@@ -81,6 +107,7 @@ public class DistributionPlanEventHandler
 
 			final Candidate supplyCandidate = Candidate.builder()
 					.type(Type.SUPPLY)
+					.status(candidateStatus)
 					.subType(SubType.DISTRIBUTION)
 					.date(ddOrder.getDatePromised())
 					.orgId(ddOrder.getOrgId())
@@ -90,6 +117,11 @@ public class DistributionPlanEventHandler
 					.reference(event.getReference())
 					.demandDetail(DemandCandidateDetail.builder()
 							.orderLineId(ddOrderLine.getSalesOrderLineId())
+							.build())
+					.distributionDetail(DistributionCandidateDetail.builder()
+							.ddOrderDocStatus(ddOrder.getDocStatus())
+							.ddOrderId(ddOrder.getDdOrderId())
+							.ddOrderLineId(ddOrderLine.getDdOrderLineId())
 							.build())
 					.build();
 
@@ -104,10 +136,12 @@ public class DistributionPlanEventHandler
 			// *but* it might also be the case that the demandCandidate attaches to an existing stock and in that case would need to get another SeqNo
 			final int expectedSeqNoForDemandCandidate = supplyCandidateWithId.getSeqNo() + 1;
 
+			final Integer groupId = supplyCandidateWithId.getGroupId();
+
 			final Candidate demandCandidate = supplyCandidate
 					.withType(Type.DEMAND)
 					.withSubType(SubType.DISTRIBUTION)
-					.withGroupId(supplyCandidateWithId.getGroupId())
+					.withGroupId(groupId)
 					.withParentId(supplyCandidateWithId.getId())
 					.withQuantity(supplyCandidateWithId.getQuantity()) // what was added as supply in the destination warehouse needs to be registered as demand in the source warehouse
 					.withDate(orderLineStartDate)
@@ -116,20 +150,24 @@ public class DistributionPlanEventHandler
 
 			// this might cause 'candidateChangeHandler' to trigger another event
 			final Candidate demandCandidateWithId = candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
-			if (expectedSeqNoForDemandCandidate == demandCandidateWithId.getSeqNo())
+
+			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
 			{
-				return; // we are done
+				// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
+				candidateRepository.addOrUpdate(supplyCandidateWithId
+						.withSeqNo(demandCandidateWithId.getSeqNo() - 1),
+						false);
+
+				candidateRepository.addOrUpdate(candidateRepository
+						.retrieve(supplyCandidateWithId.getParentId())
+						.withSeqNo(demandCandidateWithId.getSeqNo() - 2),
+						false);
 			}
 
-			// update/override the SeqNo of both supplyCandidate and supplyCandidate's stock candidate.
-			candidateRepository.addOrUpdate(supplyCandidateWithId
-					.withSeqNo(demandCandidateWithId.getSeqNo() - 1),
-					false);
-
-			candidateRepository.addOrUpdate(candidateRepository
-					.retrieve(supplyCandidateWithId.getParentId())
-					.withSeqNo(demandCandidateWithId.getSeqNo() - 2),
-					false);
+			if (ddOrder.isCreateDDrder() && groupIdsWithRequestedPPOrders.add(groupId))
+			{
+				candidateService.requestMaterialOrder(groupId);
+			}
 		}
 	}
 }

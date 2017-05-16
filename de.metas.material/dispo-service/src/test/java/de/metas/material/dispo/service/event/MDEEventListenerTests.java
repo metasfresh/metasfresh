@@ -111,7 +111,11 @@ public class MDEEventListenerTests
 
 		mdEventListener = new MDEventListener(
 				candidateChangeHandler,
-				new DistributionPlanEventHandler(candidateRepository, candidateChangeHandler, supplyProposalEvaluator),
+				new DistributionPlanEventHandler(
+						candidateRepository,
+						candidateChangeHandler,
+						supplyProposalEvaluator,
+						new CandidateService(candidateRepository, materialEventService)),
 				new ProductionPlanEventHandler(candidateChangeHandler, candidateService));
 	}
 
@@ -171,7 +175,7 @@ public class MDEEventListenerTests
 						.productPlanningId(810)
 						.shipperId(820)
 						.datePromised(t1)
-						.ddOrderLine(DDOrderLine.builder()
+						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
 								.durationDays(0)

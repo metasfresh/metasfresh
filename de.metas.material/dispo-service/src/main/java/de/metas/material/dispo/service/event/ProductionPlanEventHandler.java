@@ -42,6 +42,11 @@ public class ProductionPlanEventHandler
 	private final CandidateChangeHandler candidateChangeHandler;
 	private final CandidateService candidateService;
 
+	/**
+	 * 
+	 * @param candidateChangeHandler
+	 * @param candidateService needed in case we directly request a {@link ProductionPlanEvent}'s proposed PP_Order to be created.
+	 */
 	public ProductionPlanEventHandler(
 			@NonNull final CandidateChangeHandler candidateChangeHandler,
 			@NonNull final CandidateService candidateService)
@@ -55,25 +60,15 @@ public class ProductionPlanEventHandler
 		final PPOrder ppOrder = event.getPpOrder();
 
 		final Candidate.Status candidateStatus;
+		final String docStatus = ppOrder.getDocStatus();
+
 		if (ppOrder.getPpOrderId() <= 0)
 		{
 			candidateStatus = Status.doc_planned;
 		}
-		else if ("DR".equals(ppOrder.getDocStatus())||"IP".equals(ppOrder.getDocStatus()))
-		{
-			candidateStatus = Status.doc_created;
-		}
-		else if ("CO".equals(ppOrder.getDocStatus()))
-		{
-			candidateStatus = Status.doc_completed;
-		}
-		else if ("CL".equals(ppOrder.getDocStatus()))
-		{
-			candidateStatus = Status.doc_closed;
-		}
 		else
 		{
-			candidateStatus = Status.unexpected;
+			candidateStatus = EventUtil.getCandidateStatus(docStatus);
 		}
 
 		final Candidate supplyCandidate = Candidate.builder()
@@ -91,7 +86,7 @@ public class ProductionPlanEventHandler
 						.plantId(ppOrder.getPlantId())
 						.productPlanningId(ppOrder.getProductPlanningId())
 						.ppOrderId(ppOrder.getPpOrderId())
-						.ppOrderDocStatus(ppOrder.getDocStatus())
+						.ppOrderDocStatus(docStatus)
 						.build())
 				.demandDetail(DemandCandidateDetail.builder()
 						.orderLineId(ppOrder.getOrderLineId())
@@ -122,7 +117,7 @@ public class ProductionPlanEventHandler
 							.productBomLineId(ppOrderLine.getProductBomLineId())
 							.description(ppOrderLine.getDescription())
 							.ppOrderId(ppOrder.getPpOrderId())
-							.ppOrderDocStatus(ppOrder.getDocStatus())
+							.ppOrderDocStatus(docStatus)
 							.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 							.build())
 					.demandDetail(DemandCandidateDetail.builder()
@@ -139,4 +134,5 @@ public class ProductionPlanEventHandler
 			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
+
 }

@@ -151,7 +151,7 @@ public class CandidateServiceTests
 		assertThat(ddOrder.getProductPlanningId(), is(220));
 		assertThat(ddOrder.getPlantId(), is(230));
 		assertThat(ddOrder.getShipperId(), is(240));
-		assertThat(ddOrder.getDdOrderLines().isEmpty(), is(false));
+		assertThat(ddOrder.getLines().isEmpty(), is(false));
 
 	}
 

@@ -196,7 +196,7 @@ public class CandidateService
 		return DDOrderRequestedEvent.builder()
 				.eventDescr(new EventDescr())
 				.ddOrder(ddOrderBuilder
-						.ddOrderLine(ddOrderLineBuilder.build())
+						.line(ddOrderLineBuilder.build())
 						.build())
 				.reference(group.get(0).getReference())
 				.build();
