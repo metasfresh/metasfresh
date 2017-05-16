@@ -2,10 +2,8 @@ package de.metas.handlingunits.inout.impl;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -14,24 +12,19 @@ import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.empties.EmptiesInOutLinesProducer;
-import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
 /*
  * #%L
@@ -66,6 +59,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  */
 public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
+	private HUPackingMaterialsCollector collector = null;
 
 	/**
 	 * Builder for lines with products that are not packing materials
@@ -79,13 +73,13 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHUPackingMaterialDAO huPackingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 	/**
 	 * List of handling units that have to be returned to vendor
 	 */
-	//private List<I_M_HU> husToReturn = new ArrayList<>();
-	
+	// private List<I_M_HU> husToReturn = new ArrayList<>();
+
 	private final List<I_M_HU_Assignment> huAssignments;
 
 	public QualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
@@ -96,83 +90,30 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 		setCtx(ctx);
 
 		this.huAssignments = huAssignments;
-		
-		//husToReturn = Collections.unmodifiableList(hus);
+
 	}
 
 	@Override
 	protected void createLines()
 	{
 
+		if (collector == null)
+		{
+			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx());
+			collector = new HUPackingMaterialsCollector(huContext);
+		}
+
 		for (final I_M_HU_Assignment huAssignment : huAssignments)
 		{
-			
-			final I_M_HU hu = handlingUnitsBL.getTopLevelParent(huAssignment.getM_HU());
-			
+
+			final I_M_HU hu = huAssignment.getM_HU();
+
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huAssignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
-			// Step 1: Prepare the packing material lines based on the HU configuration
-			{
-				// take the details from the LU-TU configuration
-				final I_M_HU_LUTU_Configuration luTuConfiguration = hu.getM_HU_LUTU_Configuration();
+			collector.addHURecursively(hu, inOutLine);
 
-				// add LU if exists
-				final I_M_HU_PI luHUPI = luTuConfiguration.getM_LU_HU_PI();
-
-				if (luHUPI != null)
-				{
-					// get the packing material item of the LU HU_PI. Note that each HU-PI should only have one active item that is a packing material
-					final List<I_M_HU_PI_Item> materialItems = handlingUnitsDAO
-							.retrievePIItems(luHUPI, inoutRef.getValue().getC_BPartner()).stream()
-							.filter(i -> X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(i.getItemType()))
-							.collect(Collectors.toList());
-
-					final I_M_HU_PackingMaterial luPackingMaterial = materialItems.get(0).getM_HU_PackingMaterial();
-
-					if (luPackingMaterial != null)
-					{
-						// if the packing material was found, set it as a source for the packing material lines
-						addPackingMaterial(luPackingMaterial, luTuConfiguration.getQtyLU().intValue());
-					}
-				}
-
-				// add TU if exists
-				final I_M_HU_PI tuHUPI = luTuConfiguration.getM_TU_HU_PI();
-
-				if (tuHUPI != null)
-				{
-					// get the packing material item of the TU HU_PI. Note that each HU-PI should only have one active item that is a packing material
-
-					final List<I_M_HU_PI_Item> materialItems = handlingUnitsDAO
-							.retrievePIItems(tuHUPI, inoutRef.getValue().getC_BPartner()).stream()
-							.filter(i -> X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(i.getItemType()))
-							.collect(Collectors.toList());
-
-					if (!materialItems.isEmpty())
-					{
-						final I_M_HU_PackingMaterial huPackingMaterial = materialItems.get(0).getM_HU_PackingMaterial();
-
-						if (huPackingMaterial != null)
-						{
-							// if the packing material was found, set it as a source for the packing material lines
-							addPackingMaterial(huPackingMaterial, luTuConfiguration.getQtyTU().intValue());
-						}
-					}
-				}
-
-				//
-				// Take out the HU from it's parent if needed
-				extractHUFromParentIfNeeded(hu);
-
-				// At this point we assume our HU is top level
-				if (!handlingUnitsBL.isTopLevel(hu))
-				{
-					throw new HUException("@M_HU_ID@ @TopLevel@=@N@: " + hu);
-				}
-			}
-
-			// Step 2: Create product (non-packing material) lines
+			// Create product (non-packing material) lines
 			{
 				// Iterate the product storages of this HU and create/update the inout lines
 				final IHUStorageFactory huStorageFactory = handlingUnitsBL.getStorageFactory();
@@ -183,9 +124,16 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 					inoutLinesBuilder.addHUProductStorage(productStorage, inOutLine);
 				}
 			}
-
 		}
 
+		final List<HUPackingMaterialDocumentLineCandidate> pmCandidates = collector.getAndClearCandidates();
+
+		for (HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates)
+		{
+			final I_M_HU_PackingMaterial packingMaterial = huPackingMaterialDAO.retrivePackingMaterialOfProduct(pmCandidate.getM_Product());
+
+			addPackingMaterial(packingMaterial, pmCandidate.getQty().intValueExact());
+		}
 		// Step 3: Create the packing material lines that were prepared
 		packingMaterialInoutLinesBuilder.create();
 
@@ -225,25 +173,6 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return this;
 	}
 
-	/**
-	 * Take out the given HU from it's parent (if it's not already a top level HU)
-	 *
-	 * @param hu
-	 */
-	private void extractHUFromParentIfNeeded(final I_M_HU hu)
-	{
 
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		if (handlingUnitsBL.isTopLevel(hu))
-		{
-			return;
-		}
-
-		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
-		final I_M_HU_Item parentHUItem = null; // no parent
-		huTrxBL.setParentHU(huContext, parentHUItem, hu);
-	}
 
 }

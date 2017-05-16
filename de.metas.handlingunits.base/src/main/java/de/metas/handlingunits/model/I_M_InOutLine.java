@@ -91,4 +91,22 @@ public interface I_M_InOutLine extends de.metas.materialtracking.model.I_M_InOut
 	public void setM_HU_PI_Item_Product_Override(I_M_HU_PI_Item_Product M_HU_PI_Item_Product_Override) throws RuntimeException;
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product_Override() throws RuntimeException;
 	// @formatter:on
+	
+	
+	
+	// @formatter:off
+		public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
+		public void setM_HU_LUTU_Configuration_ID(int M_HU_LUTU_Configuration_ID);
+		public void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration);
+		public int getM_HU_LUTU_Configuration_ID();
+		public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
+		// @formatter:on
+
+	// TODO
+		// @formatter:off
+		// task: http://dewiki908/mediawiki/index.php/08228_Packvorschrift_%C3%A4nderbar_in_Lieferschen_plus_Recalc_plus_Abweichende_Menge_plus_Prozess_plus_Rolle_Spedition
+		public static final String COLUMNNAME_IsHUPrepared = "IsHUPrepared";
+		public void setIsHUPrepared(boolean IsHUPrepared);
+		public boolean IsHUPrepared();
+		// @formatter:on
 }

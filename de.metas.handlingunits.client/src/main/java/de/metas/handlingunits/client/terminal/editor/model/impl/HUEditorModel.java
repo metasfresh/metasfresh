@@ -157,7 +157,7 @@ public class HUEditorModel implements IDisposable
 		@Override
 		public boolean evaluate(final IHUKey huKey)
 		{
-			// guard agaist null
+			// guard against null
 			if (huKey == null)
 			{
 				return false;
@@ -1293,30 +1293,13 @@ public class HUEditorModel implements IDisposable
 		{
 			//
 			// Refresh the HUKeys
-			{
-				// Remove huKeys from their parents
-				for (final HUKey huKey : getSelectedHUKeys())
-				{
-					removeHUKeyFromParentRecursivelly(huKey);
-				}
-
-				// Move back to Root HU Key
-				setRootHUKey(getRootHUKey());
-
-				//
-				// Clear (attribute) cache (because it could be that we changed the attributes too)
-				clearCache();
-			}
-
+			refreshSelectedHUKeys();
+			
 			//
 			// Send notifications
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 					.notify(returnInuts);
-
-			// not needed TODO
-			// // zoom into the created vendor return (return to customer not implemented yet)
-			// AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
 		}
 	}
 
@@ -1397,6 +1380,7 @@ public class HUEditorModel implements IDisposable
 	 */
 	public void refreshSelectedHUKeys()
 	{
+		
 
 		// Remove huKeys from their parents
 		for (final HUKey huKey : getSelectedHUKeys())
@@ -1485,9 +1469,7 @@ public class HUEditorModel implements IDisposable
 		for (final HUKey huKey : huKeys)
 		{
 			final I_M_HU hu = huKey.getM_HU();
-
-			final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-			hus.add(topLevelHU);
+			hus.add(hu);
 		}
 
 		// movement date for inout
@@ -1521,14 +1503,14 @@ public class HUEditorModel implements IDisposable
 			return Collections.emptyList();
 		}
 
+		final List<I_M_Movement> movementsToQualityWarehouse =  returnsWarehouseModel.getMovements();
 		//
-		// Remove previous selection
-		clearSelectedKeyIds();
-
-		//
-		// Navigate back to root
-		setCurrentHUKey(getRootHUKey());
-
+		// Refresh the HUKeys
+		if(!movementsToQualityWarehouse.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
+		
 		return returnsWarehouseModel.getMovements();
 
 	}

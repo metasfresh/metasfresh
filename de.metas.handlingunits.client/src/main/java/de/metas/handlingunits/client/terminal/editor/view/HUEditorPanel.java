@@ -76,7 +76,6 @@ import de.metas.handlingunits.client.terminal.report.model.HUReportModel;
 import de.metas.handlingunits.client.terminal.report.view.HUReportPanel;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.interfaces.I_M_Movement;
 
 public class HUEditorPanel
 		extends TerminalDialogListenerAdapter
@@ -496,7 +495,7 @@ public class HUEditorPanel
 	 */
 	protected void doMoveToQualityWarehouse()
 	{
-		final List<I_M_Movement> movementsToQualityWarehouse = model.doMoveToQualityWarehouse(new Predicate<ReturnsWarehouseModel>()
+		model.doMoveToQualityWarehouse(new Predicate<ReturnsWarehouseModel>()
 		{
 			@Override
 			public boolean evaluate(final ReturnsWarehouseModel returnWarehouseModel)
@@ -521,13 +520,6 @@ public class HUEditorPanel
 			}
 		},
 				getCurrentWarehouse());
-
-		//
-		// Refresh the HUKeys
-		if(!movementsToQualityWarehouse.isEmpty())
-		{
-			model.refreshSelectedHUKeys();
-		}
 
 	}
 
