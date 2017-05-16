@@ -127,14 +127,17 @@ import de.metas.logging.LogManager;
 				//
 				+ "\n , t.TableName "
 				+ "\n FROM AD_Table t "
-				+ "\n INNER JOIN AD_Window w_so ON (t.AD_Window_ID=w_so.AD_Window_ID)"
+				+ "\n INNER JOIN AD_Window w_so ON (t.AD_Window_ID=w_so.AD_Window_ID) AND w_so.IsActive='Y'" // gh #1489 : only consider active windows
 				+ "\n LEFT OUTER JOIN AD_Window_Trl w_so_trl ON (w_so_trl.AD_Window_ID=w_so.AD_Window_ID)"
-				+ "\n LEFT OUTER JOIN AD_Window w_po ON (t.PO_Window_ID=w_po.AD_Window_ID)"
+				+ "\n LEFT OUTER JOIN AD_Window w_po ON (t.PO_Window_ID=w_po.AD_Window_ID) AND w_po.IsActive='Y'" // gh #1489 : only consider active windows
 				+ "\n LEFT OUTER JOIN AD_Window_Trl w_po_trl ON (w_po_trl.AD_Window_ID=w_po.AD_Window_ID AND w_po_trl.AD_Language=w_so_trl.AD_Language)";
 
 		//
 		//@formatter:off
 		sql += "WHERE t.TableName NOT LIKE 'I%'" // No Import
+
+				+ " AND t.IsActive='Y'" // gh #1489 : only consider active tables
+
 				//
 				// Consider first window tab or any tab if our column has AllowZoomTo set
 				+ " AND EXISTS ("
@@ -158,7 +161,7 @@ import de.metas.logging.LogManager;
 						+ " AND t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='Record_ID' AND IsKey='N' AND IsParent='N' AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')"
 					+ ") "
 				+ ") "
-				
+
 				//
 				+ "ORDER BY 2"; // FIXME ORDER BY!
 		//@formatter:on
