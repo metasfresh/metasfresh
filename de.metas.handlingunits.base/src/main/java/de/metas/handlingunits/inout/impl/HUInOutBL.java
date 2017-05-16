@@ -248,11 +248,14 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
-
-		final List<de.metas.handlingunits.model.I_M_InOut> returnInOuts = new ArrayList<>();
-
-		// services
+		//services
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
+		// return inouts
+		final List<de.metas.handlingunits.model.I_M_InOut> returnInOuts = new ArrayList<>();
+	
+		// map partners to huAssignments
 		final Map<Integer, List<I_M_HU_Assignment>> partnerstoHUAssignments = new HashMap<>();
 
 		// inoutline table id
@@ -269,10 +272,11 @@ public class HUInOutBL implements IHUInOutBL
 			
 			if(inOutLineHUAssignments.isEmpty())
 			{
-				final I_M_HU topLevelHU = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
+				final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
 				
 				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, topLevelHU);
 			}
+			
 			// search for the bpartner (vendor) based on the hu assignments of the receipt
 			for (final I_M_HU_Assignment assignment : inOutLineHUAssignments)
 			{
@@ -295,7 +299,7 @@ public class HUInOutBL implements IHUInOutBL
 		}
 
 		// there will be as many return inouts as there are partners
-
+		
 		Set<Integer> keySet = partnerstoHUAssignments.keySet();
 
 		for (final int partnerId : keySet)
@@ -312,11 +316,9 @@ public class HUInOutBL implements IHUInOutBL
 			}
 			
 			returnInOuts.add(huInOut);
-
 		}
 
-		// return the last inout that was created
-
+		// return the created inouts
 		return returnInOuts;
 	}
 	/**

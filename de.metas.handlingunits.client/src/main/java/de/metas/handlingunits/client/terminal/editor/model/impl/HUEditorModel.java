@@ -157,7 +157,7 @@ public class HUEditorModel implements IDisposable
 		@Override
 		public boolean evaluate(final IHUKey huKey)
 		{
-			// guard agaist null
+			// guard against null
 			if (huKey == null)
 			{
 				return false;
@@ -1300,10 +1300,6 @@ public class HUEditorModel implements IDisposable
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 					.notify(returnInuts);
-
-			// not needed TODO
-			// // zoom into the created vendor return (return to customer not implemented yet)
-			// AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
 		}
 	}
 
