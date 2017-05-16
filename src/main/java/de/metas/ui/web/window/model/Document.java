@@ -60,6 +60,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentStateException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentField.FieldInitializationMode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -111,8 +112,10 @@ public final class Document
 	private boolean _deleted;
 	private final boolean _writable;
 	private boolean _initializing = false;
-	private DocumentValidStatus _valid = DocumentValidStatus.documentInitiallyInvalid();
-	private DocumentSaveStatus _saveStatus = DocumentSaveStatus.unknown();
+	private DocumentValidStatus _valid;
+	private final DocumentValidStatus _validOnCheckout;
+	private DocumentSaveStatus _saveStatus;
+	private final DocumentSaveStatus _saveStatusOnCheckout;
 	private final DocumentStaleState _staleStatus;
 	private final ReentrantReadWriteLock _lock;
 
@@ -170,6 +173,12 @@ public final class Document
 		_staleStatus = new DocumentStaleState();
 		_lock = builder.createLock();
 
+		_validOnCheckout = DocumentValidStatus.documentInitiallyInvalid();
+		_valid = _validOnCheckout;
+
+		_saveStatusOnCheckout = DocumentSaveStatus.unknown();
+		_saveStatus = _saveStatusOnCheckout;
+
 		//
 		// Create document fields
 		{
@@ -206,7 +215,7 @@ public final class Document
 			for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntities())
 			{
 				final DetailId detailId = includedEntityDescriptor.getDetailId();
-				final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this);
+				final IIncludedDocumentsCollection includedDocumentsForDetailId = includedEntityDescriptor.createIncludedDocumentsCollection(this, builder.getChangesCollector());
 				includedDocuments.put(detailId, includedDocumentsForDetailId);
 			}
 			this.includedDocuments = includedDocuments.build();
@@ -255,10 +264,25 @@ public final class Document
 
 		_new = from._new;
 		_deleted = from._deleted;
-		_valid = from._valid;
-		_saveStatus = from._saveStatus;
 		_staleStatus = new DocumentStaleState(from._staleStatus);
 		_lock = from._lock; // always share the same lock
+
+		_valid = from._valid;
+		_saveStatus = from._saveStatus;
+		switch (copyMode)
+		{
+			case CheckInReadonly:
+				_validOnCheckout = from._valid;
+				_saveStatusOnCheckout = from._saveStatus;
+				break;
+			case CheckOutWritable:
+				_validOnCheckout = from._validOnCheckout;
+				_saveStatusOnCheckout = from._saveStatusOnCheckout;
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown copy mode: " + copyMode);
+				// break;
+		}
 
 		if (from._parentDocument != null)
 		{
@@ -338,12 +362,22 @@ public final class Document
 		logger.trace("Created COPY document instance: {} as a copy of {}", this, from); // keep it last
 	}
 
+	private boolean isInitializing()
+	{
+		return _initializing;
+	}
+
+	private boolean isInitializingNewDocument()
+	{
+		return isInitializing() && isNew();
+	}
+
 	/* package */boolean isWritable()
 	{
 		return _writable;
 	}
 
-	private final void initializeFields(final FieldInitializationMode mode, final DocumentValuesSupplier documentValuesSupplier)
+	private final void initializeFields(final FieldInitializationMode mode, final DocumentValuesSupplier documentValuesSupplier, final IDocumentChangesCollector changesCollector)
 	{
 		logger.trace("Initializing fields: mode={}", mode);
 
@@ -354,13 +388,15 @@ public final class Document
 		_initializing = true;
 		try
 		{
+			//
+			// Actually initialize document fields
 			for (final IDocumentField documentField : getFields())
 			{
-				initializeField(documentField, mode, documentValuesSupplier);
+				initializeField(documentField, mode, documentValuesSupplier, changesCollector);
 			}
 
 			//
-			// Initializing a new document
+			// Fire callouts
 			if (FieldInitializationMode.NewDocument == mode)
 			{
 				// FIXME: i think it would be better to trigger the callouts when setting the initial value
@@ -374,32 +410,16 @@ public final class Document
 				}
 
 				documentCallout.onNew(asCalloutRecord());
-
-				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollectorOrNull());
 			}
-			//
-			// Initializing an existing loaded document
-			else if (FieldInitializationMode.Load == mode)
-			{
-				updateAllFieldsFlags(NullDocumentChangesCollector.instance);
-			}
-			//
-			// Document refresh
 			else if (FieldInitializationMode.Refresh == mode)
 			{
 				documentCallout.onRefresh(asCalloutRecord());
-
-				updateAllFieldsFlags(Execution.getCurrentDocumentChangesCollectorOrNull());
-			}
-			//
-			// Unknown initialization mode
-			else
-			{
-				throw new IllegalArgumentException("Unknown mode: " + mode);
 			}
 
 			//
-			updateValidIfStaled();
+			// Finally, update status
+			updateAllFieldsFlags(changesCollector);
+			updateValidIfStaled(changesCollector);
 			getStale().markNotStaled(documentValuesSupplier.getVersion());
 
 		}
@@ -416,7 +436,7 @@ public final class Document
 	 * @param mode initialization mode
 	 * @param fieldValueSupplier initial value supplier
 	 */
-	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final DocumentValuesSupplier fieldValueSupplier)
+	private void initializeField(final IDocumentField documentField, final FieldInitializationMode mode, final DocumentValuesSupplier fieldValueSupplier, final IDocumentChangesCollector changesCollector)
 	{
 		boolean valueSet = false;
 		Object valueOld = null;
@@ -433,7 +453,7 @@ public final class Document
 			if (initialValue != DocumentValuesSupplier.NO_VALUE)
 			{
 				valueOld = documentField.getValue();
-				documentField.setInitialValue(initialValue);
+				documentField.setInitialValue(initialValue, changesCollector);
 			}
 
 			valueSet = true;
@@ -456,8 +476,7 @@ public final class Document
 		if (FieldInitializationMode.NewDocument == mode)
 		{
 			// Collect the change event, even if there was no change because we just set the initial value
-			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-			documentChangesCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
+			changesCollector.collectValueChanged(documentField, REASON_Value_NewDocument);
 
 			// NOTE: don't update fields flags which depend on this field because we will do it all together after all fields are initialized
 			// NOTE: don't call callouts because we will do it all together after all fields are initialized
@@ -475,8 +494,7 @@ public final class Document
 
 			if (valueSet)
 			{
-				final IDocumentChangesCollector eventsCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-				eventsCollector.collectValueIfChanged(documentField, valueOld, REASON_Value_Refreshing);
+				changesCollector.collectValueIfChanged(documentField, valueOld, REASON_Value_Refreshing);
 			}
 		}
 	}
@@ -704,7 +722,7 @@ public final class Document
 
 	/* package */final void assertWritable()
 	{
-		if (_initializing)
+		if (isInitializing())
 		{
 			return;
 		}
@@ -732,7 +750,7 @@ public final class Document
 	 */
 	public void refreshFromSupplier(final DocumentValuesSupplier documentValuesSupplier)
 	{
-		initializeFields(FieldInitializationMode.Refresh, documentValuesSupplier);
+		initializeFields(FieldInitializationMode.Refresh, documentValuesSupplier, Execution.getCurrentDocumentChangesCollectorOrNull());
 	}
 
 	@Override
@@ -750,7 +768,9 @@ public final class Document
 				.add("windowNo", windowNo)
 				.add("writable", _writable)
 				.add("valid", _valid)
+				.add("validOnCheckout", _validOnCheckout)
 				.add("saveStatus", _saveStatus)
+				.add("saveStatusOnCheckout", _saveStatusOnCheckout)
 				// .add("fields", fieldsByName.values()) // skip because it's too long
 				.toString();
 	}
@@ -933,7 +953,7 @@ public final class Document
 	public Object getDocumentIdAsJson()
 	{
 		final DocumentId documentId = getDocumentId();
-		if(documentId.isInt())
+		if (documentId.isInt())
 		{
 			return documentId.toInt();
 		}
@@ -962,7 +982,12 @@ public final class Document
 		return _deleted;
 	}
 
-	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged)
+	public DocumentValidStatus getValidStatus()
+	{
+		return _valid;
+	}
+
+	private final DocumentValidStatus setValidStatusAndReturn(final DocumentValidStatus valid, final OnValidStatusChanged onValidStatusChanged, final IDocumentChangesCollector changesCollector)
 	{
 		Preconditions.checkNotNull(valid, "valid"); // shall not happen
 
@@ -975,17 +1000,25 @@ public final class Document
 
 		_valid = valid;
 
-		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentValidStatusChanged(getDocumentPath(), valid);
+		if (!isInitializingNewDocument() && !Objects.equals(valid, _validOnCheckout))
+		{
+			changesCollector.collectDocumentValidStatusChanged(getDocumentPath(), valid);
+		}
 
 		if (!valid.isValid())
 		{
-			onValidStatusChanged.onInvalidStatus(this, valid);
+			onValidStatusChanged.onInvalidStatus(this, valid, changesCollector);
 		}
 
 		return valid;
 	}
 
-	private final DocumentSaveStatus setSaveStatusAndReturn(final DocumentSaveStatus saveStatus)
+	public DocumentSaveStatus getSaveStatus()
+	{
+		return _saveStatus;
+	}
+
+	private final DocumentSaveStatus setSaveStatusAndReturn(final DocumentSaveStatus saveStatus, final IDocumentChangesCollector changesCollector)
 	{
 		Preconditions.checkNotNull(saveStatus, "saveStatus");
 
@@ -997,7 +1030,12 @@ public final class Document
 		// }
 
 		_saveStatus = saveStatus;
-		Execution.getCurrentDocumentChangesCollectorOrNull().collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
+
+		if (!isInitializingNewDocument() && !Objects.equals(saveStatus, _saveStatusOnCheckout))
+		{
+			changesCollector.collectDocumentSaveStatusChanged(getDocumentPath(), saveStatus);
+		}
+
 		return _saveStatus;
 	}
 
@@ -1026,7 +1064,8 @@ public final class Document
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
 
-		setValue(documentField, value, reason);
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		setValue(documentField, value, reason, changesCollector);
 
 		// FIXME: hardcoded DocAction processing
 		if (WindowConstants.FIELDNAME_DocAction.equals(fieldName))
@@ -1054,11 +1093,12 @@ public final class Document
 	{
 		assertWritable();
 
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		final IDocumentField docActionField = getField(WindowConstants.FIELDNAME_DocAction);
 
 		//
 		// Make sure it's saved
-		saveIfValidAndHasChanges();
+		saveIfValidAndHasChanges(changesCollector);
 		if (hasChangesRecursivelly())
 		{
 			final String docAction = null; // not relevant
@@ -1100,15 +1140,16 @@ public final class Document
 	/* package */void setValue(final String fieldName, final Object value, final ReasonSupplier reason)
 	{
 		final IDocumentField documentField = getField(fieldName);
-		setValue(documentField, value, reason);
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		setValue(documentField, value, reason, changesCollector);
 	}
 
-	private final void setValue(final IDocumentField documentField, final Object value, final ReasonSupplier reason)
+	private final void setValue(final IDocumentField documentField, final Object value, final ReasonSupplier reason, final IDocumentChangesCollector changesCollector)
 	{
 		assertWritable();
 
 		final Object valueOld = documentField.getValue();
-		documentField.setValue(value);
+		documentField.setValue(value, changesCollector);
 
 		// Check if changed. If not, stop here.
 		final Object valueNew = documentField.getValue();
@@ -1118,11 +1159,10 @@ public final class Document
 		}
 
 		// collect changed value
-		final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-		documentChangesCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
+		changesCollector.collectValueChanged(documentField, reason != null ? reason : REASON_Value_DirectSetOnDocument);
 
 		// Update all dependencies
-		updateFieldsWhichDependsOn(documentField.getFieldName(), documentChangesCollector);
+		updateFieldsWhichDependsOn(documentField.getFieldName(), changesCollector);
 
 		// Callouts
 		fieldCalloutExecutor.execute(documentField.asCalloutField());
@@ -1181,20 +1221,6 @@ public final class Document
 		}
 	}
 
-	private final void updateFieldMandatory(final IDocumentField documentField)
-	{
-		final ILogicExpression mandatoryLogic = documentField.getDescriptor().getMandatoryLogic();
-		try
-		{
-			final LogicExpressionResult mandatory = mandatoryLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
-			documentField.setMandatory(mandatory);
-		}
-		catch (final Exception e)
-		{
-			logger.warn("Failed evaluating mandatory logic {} for {}. Preserving {}", mandatoryLogic, documentField, documentField.getMandatory(), e);
-		}
-	}
-
 	private final void updateFieldDisplayed(final IDocumentField documentField)
 	{
 		LogicExpressionResult displayed = LogicExpressionResult.FALSE; // default false, i.e. not displayed
@@ -1245,7 +1271,7 @@ public final class Document
 			)
 	{
 		final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
-		
+
 		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
 		{
 			final LogicExpressionResult valueOld = documentField.getReadonly();
@@ -1256,7 +1282,16 @@ public final class Document
 		else if (DependencyType.MandatoryLogic == triggeringDependencyType)
 		{
 			final LogicExpressionResult valueOld = documentField.getMandatory();
-			updateFieldMandatory(documentField);
+			final ILogicExpression mandatoryLogic = documentField.getDescriptor().getMandatoryLogic();
+			try
+			{
+				final LogicExpressionResult mandatory = mandatoryLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
+				documentField.setMandatory(mandatory, documentChangesCollector);
+			}
+			catch (final Exception e)
+			{
+				logger.warn("Failed evaluating mandatory logic {} for {}. Preserving {}", mandatoryLogic, documentField, documentField.getMandatory(), e);
+			}
 
 			documentChangesCollector.collectMandatoryIfChanged(documentField, valueOld, reason);
 		}
@@ -1276,20 +1311,19 @@ public final class Document
 				documentChangesCollector.collectLookupValuesStaled(documentField, reason);
 			}
 		}
-		else if(DependencyType.FieldValue == triggeringDependencyType)
+		else if (DependencyType.FieldValue == triggeringDependencyType)
 		{
 			final IDocumentFieldValueProvider valueProvider = documentField.getDescriptor().getVirtualFieldValueProvider().orElse(null);
-			if(valueProvider != null)
+			if (valueProvider != null)
 			{
 				try
 				{
 					final Object valueOld = documentField.getValue();
 					final Object valueNew = valueProvider.calculateValue(this);
-					
-					documentField.setInitialValue(valueNew);
-					documentField.setValue(valueNew);
-					documentField.updateValid(); // make sure is still valid
-					
+
+					documentField.setInitialValue(valueNew, documentChangesCollector);
+					documentField.setValue(valueNew, documentChangesCollector);
+
 					documentChangesCollector.collectValueIfChanged(documentField, valueOld, reason);
 				}
 				catch (Exception ex)
@@ -1305,14 +1339,14 @@ public final class Document
 		}
 	}
 
-	private void updateValidIfStaled()
+	private void updateValidIfStaled(final IDocumentChangesCollector changesCollector)
 	{
-		for (final IDocumentField field : getFields())
-		{
-			field.updateValid();
-		}
+		// for (final IDocumentField field : getFields())
+		// {
+		// field.updateValid();
+		// }
 
-		checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
+		checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING, changesCollector);
 	}
 
 	public LookupValuesList getFieldLookupValues(final String fieldName)
@@ -1492,22 +1526,22 @@ public final class Document
 
 	/* package */ static interface OnValidStatusChanged
 	{
-		public static final OnValidStatusChanged DO_NOTHING = (document, invalidStatus) -> {
+		public static final OnValidStatusChanged DO_NOTHING = (document, invalidStatus, changesCollector) -> {
 		};
 
-		public static final OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus) -> {
-			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus));
+		public static final OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus, changesCollector) -> {
+			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus), changesCollector);
 		};
 
-		void onInvalidStatus(Document document, DocumentValidStatus invalidStatus);
+		void onInvalidStatus(Document document, DocumentValidStatus invalidStatus, IDocumentChangesCollector changesCollector);
 	}
 
 	/**
 	 * Checks document's valid status, sets it and returns it.
 	 */
-	public DocumentValidStatus checkAndGetValidStatus()
+	public DocumentValidStatus checkAndGetValidStatus(final IDocumentChangesCollector changesCollector)
 	{
-		return checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
+		return checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING, changesCollector);
 	}
 
 	/**
@@ -1515,23 +1549,23 @@ public final class Document
 	 * 
 	 * @param onValidStatusChanged callback to be called when the valid state of this document or of any of it's included documents was changed
 	 */
-	/* package */ final DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
+	/* package */ final DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged, final IDocumentChangesCollector changesCollector)
 	{
 		//
 		// Check document fields
 		for (final IDocumentField documentField : getFields())
 		{
 			// skip virtual fields, those does not matter
-			if(documentField.isVirtualField())
+			if (documentField.isVirtualField())
 			{
 				continue;
 			}
-			
+
 			final DocumentValidStatus validState = documentField.getValidStatus();
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", documentField, validState);
-				return setValidStatusAndReturn(validState, onValidStatusChanged);
+				return setValidStatusAndReturn(validState, onValidStatusChanged, changesCollector);
 			}
 		}
 
@@ -1539,25 +1573,15 @@ public final class Document
 		// Check included documents
 		for (final IIncludedDocumentsCollection includedDocumentsPerDetailId : includedDocuments.values())
 		{
-			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus(onValidStatusChanged);
+			final DocumentValidStatus validState = includedDocumentsPerDetailId.checkAndGetValidStatus(onValidStatusChanged, changesCollector);
 			if (!validState.isValid())
 			{
 				logger.trace("Considering document invalid because {} is not valid: {}", includedDocumentsPerDetailId, validState);
-				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument(), onValidStatusChanged);
+				return setValidStatusAndReturn(DocumentValidStatus.invalidIncludedDocument(), onValidStatusChanged, changesCollector);
 			}
 		}
 
-		return setValidStatusAndReturn(DocumentValidStatus.documentValid(), onValidStatusChanged); // valid
-	}
-
-	public DocumentValidStatus getValidStatus()
-	{
-		return _valid;
-	}
-
-	public DocumentSaveStatus getSaveStatus()
-	{
-		return _saveStatus;
+		return setValidStatusAndReturn(DocumentValidStatus.documentValid(), onValidStatusChanged, changesCollector); // valid
 	}
 
 	/**
@@ -1619,12 +1643,12 @@ public final class Document
 
 	}
 
-	/* package */void updateIncludedDetailsStatus()
+	/* package */void updateIncludedDetailsStatus(final IDocumentChangesCollector changesCollector)
 	{
-		includedDocuments.values().forEach(IIncludedDocumentsCollection::updateStatusFromParent);
+		includedDocuments.values().forEach(includedDocumentsCol -> includedDocumentsCol.updateStatusFromParent(changesCollector));
 	}
 
-	public DocumentSaveStatus saveIfValidAndHasChanges()
+	public DocumentSaveStatus saveIfValidAndHasChanges(final IDocumentChangesCollector changesCollector)
 	{
 		//
 		// Update parent link field
@@ -1634,35 +1658,42 @@ public final class Document
 			final Document parentDocument = getParentDocument();
 			if (parentDocument != null)
 			{
-				setValue(parentLinkField, parentDocument.getDocumentIdAsInt(), REASON_Value_ParentLinkUpdateOnSave);
+				final int parentLinkValueOld = parentLinkField.getValueAsInt(-1);
+				final int parentLinkValueNew = parentDocument.getDocumentIdAsInt();
+				if (parentLinkValueOld != parentLinkValueNew)
+				{
+					logger.warn("Updating parent link value: {} -> {}", parentLinkValueOld, parentLinkValueNew);
+					setValue(parentLinkField, parentLinkValueNew, REASON_Value_ParentLinkUpdateOnSave, changesCollector);
+				}
 			}
 		}
 
 		//
 		// Check if valid for saving
-		final DocumentValidStatus validState = checkAndGetValidStatus(OnValidStatusChanged.MARK_NOT_SAVED);
+		final DocumentValidStatus validState = checkAndGetValidStatus(OnValidStatusChanged.MARK_NOT_SAVED, changesCollector);
+		// FIXME: i think this is no longer needed because we use OnValidStatusChanged.MARK_NOT_SAVED
 		if (!validState.isValid())
 		{
 			logger.debug("Skip saving because document {} is not valid: {}", this, validState);
-			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(validState));
+			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(validState), changesCollector);
 		}
 
 		//
 		// Try saving it
 		try
 		{
-			return saveIfHasChanges();
+			return saveIfHasChanges(changesCollector);
 		}
 		catch (final Exception saveEx)
 		{
 			// NOTE: usually if we do the right checks we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
-			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
-			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
+			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING, changesCollector);
+			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx), changesCollector);
 		}
 	}
 
-	/* package */DocumentSaveStatus saveIfHasChanges() throws RuntimeException
+	/* package */DocumentSaveStatus saveIfHasChanges(final IDocumentChangesCollector changesCollector) throws RuntimeException
 	{
 		boolean wasNew = isNew();
 
@@ -1686,7 +1717,7 @@ public final class Document
 		// Try also saving the included documents
 		for (final IIncludedDocumentsCollection includedDocumentsForDetailId : includedDocuments.values())
 		{
-			includedDocumentsForDetailId.saveIfHasChanges();
+			includedDocumentsForDetailId.saveIfHasChanges(changesCollector);
 
 			// If document was new we need to invalidate all included documents.
 			// NOTE: Usually this has no real effect besides some corner cases like BPartner window where Vendor and Customer tabs are referencing exactly the same record as the header.
@@ -1696,7 +1727,7 @@ public final class Document
 			}
 		}
 
-		return setSaveStatusAndReturn(DocumentSaveStatus.saved());
+		return setSaveStatusAndReturn(DocumentSaveStatus.saved(), changesCollector);
 	}
 
 	/* package */void deleteFromRepository()
@@ -1769,19 +1800,19 @@ public final class Document
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-	
+
 	public int getAD_Client_ID()
 	{
 		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Client_ID);
 		return field != null ? field.getValueAsInt(-1) : -1;
 	}
-	
+
 	public int getAD_Org_ID()
 	{
 		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Org_ID);
 		return field != null ? field.getValueAsInt(-1) : -1;
 	}
-	
+
 	private final class DocumentStaleState
 	{
 		private boolean staled;
@@ -1851,61 +1882,94 @@ public final class Document
 
 	public static final class Builder
 	{
-		private final DocumentEntityDescriptor entityDescriptor;
-		private Document parentDocument;
-		private FieldInitializationMode fieldInitializerMode;
-		private DocumentValuesSupplier documentValuesSupplier;
+		private final DocumentEntityDescriptor _entityDescriptor;
+		private Document _parentDocument;
+		private FieldInitializationMode _fieldInitializerMode;
+		private DocumentValuesSupplier _documentValuesSupplier;
 
 		private DocumentPath _documentPath;
 
 		private Integer _windowNo;
-		private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
+		private static final AtomicInteger _nextWindowNo = new AtomicInteger(1);
 
-		private Builder(final DocumentEntityDescriptor entityDescriptor)
+		private Builder(@NonNull final DocumentEntityDescriptor entityDescriptor)
 		{
-			super();
-			Preconditions.checkNotNull(entityDescriptor, "entityDescriptor");
-			this.entityDescriptor = entityDescriptor;
+			_entityDescriptor = entityDescriptor;
 		}
 
 		public Document build()
 		{
 			final Document document = new Document(this);
 
+			final DocumentEntityDescriptor entityDescriptor = getEntityDescriptor();
 			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
 
-			DocumentValuesSupplier documentValuesSupplierEffective = documentValuesSupplier;
 			//
-			// Initialize the fields
-			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
-			{
-				documentValuesSupplierEffective = new InitialFieldValueSupplier(document, documentValuesSupplier);
-			}
-
+			// Initialize document fields
+			final IDocumentChangesCollector changesCollector = getChangesCollector();
+			final FieldInitializationMode fieldInitializerMode = getFieldInitializerMode();
+			final DocumentValuesSupplier documentValuesSupplierEffective = getDocumentValuesSupplierEffective(document);
 			if (documentValuesSupplierEffective != null)
 			{
-				document.initializeFields(fieldInitializerMode, documentValuesSupplierEffective);
+				document.initializeFields(fieldInitializerMode, documentValuesSupplierEffective, changesCollector);
 			}
 
 			//
 			// Update document's valid status
-			document.checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING);
-			document.updateIncludedDetailsStatus();
+			document.checkAndGetValidStatus(OnValidStatusChanged.DO_NOTHING, changesCollector);
+			document.updateIncludedDetailsStatus(changesCollector);
 
 			//
 			// Update document's save status
 			if (fieldInitializerMode == FieldInitializationMode.NewDocument)
 			{
-				document.setSaveStatusAndReturn(DocumentSaveStatus.notSavedJustCreated());
+				document.setSaveStatusAndReturn(DocumentSaveStatus.notSavedJustCreated(), changesCollector);
 			}
 			else if (fieldInitializerMode == FieldInitializationMode.Load
 					|| fieldInitializerMode == FieldInitializationMode.Refresh)
 			{
-				document.setSaveStatusAndReturn(DocumentSaveStatus.savedJustLoaded());
+				document.setSaveStatusAndReturn(DocumentSaveStatus.savedJustLoaded(), changesCollector);
 			}
 
 			return document;
+		}
+
+		private IDocumentChangesCollector getChangesCollector()
+		{
+			final FieldInitializationMode mode = getFieldInitializerMode();
+			// Determine changes collector to be used.
+			// i.e. if we want to collect the changes to current collector or if we don't want to collect them at all.
+			if (FieldInitializationMode.NewDocument == mode)
+			{
+				// TODO: not sure why is not null... but preserving old logic for now
+				return Execution.getCurrentDocumentChangesCollectorOrNull();
+			}
+			else if (FieldInitializationMode.Load == mode)
+			{
+				return NullDocumentChangesCollector.instance;
+			}
+			else if (FieldInitializationMode.Refresh == mode)
+			{
+				return Execution.getCurrentDocumentChangesCollectorOrNull();
+			}
+			else
+			{
+				throw new IllegalArgumentException("Unknown mode: " + mode);
+			}
+		}
+
+		private DocumentValuesSupplier getDocumentValuesSupplierEffective(final Document document)
+		{
+			DocumentValuesSupplier documentValuesSupplierEffective = _documentValuesSupplier;
+			//
+			// Initialize the fields
+			if (isNewDocument())
+			{
+				documentValuesSupplierEffective = new InitialFieldValueSupplier(document, _documentValuesSupplier);
+			}
+
+			return documentValuesSupplierEffective;
 		}
 
 		private DocumentField buildField(final DocumentFieldDescriptor descriptor, final Document document)
@@ -1915,20 +1979,19 @@ public final class Document
 
 		private DocumentEntityDescriptor getEntityDescriptor()
 		{
-			return entityDescriptor;
+			return _entityDescriptor;
 		}
 
 		public Builder setParentDocument(final Document parentDocument)
 		{
-			this.parentDocument = parentDocument;
+			this._parentDocument = parentDocument;
 			return this;
 		}
 
-		public Document initializeAsNewDocument(final DocumentValuesSupplier documentValuesSupplier)
+		public Document initializeAsNewDocument(@NonNull final DocumentValuesSupplier documentValuesSupplier)
 		{
-			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
-			fieldInitializerMode = FieldInitializationMode.NewDocument;
-			this.documentValuesSupplier = documentValuesSupplier;
+			_fieldInitializerMode = FieldInitializationMode.NewDocument;
+			_documentValuesSupplier = documentValuesSupplier;
 			return build();
 		}
 
@@ -1950,30 +2013,41 @@ public final class Document
 			return this;
 		}
 
-		private boolean isNewDocument()
+		public Document initializeAsExistingRecord(@NonNull final DocumentValuesSupplier documentValuesSupplier)
 		{
-			return fieldInitializerMode == FieldInitializationMode.NewDocument;
-		}
-
-		public Document initializeAsExistingRecord(final DocumentValuesSupplier documentValuesSupplier)
-		{
-			Preconditions.checkNotNull(documentValuesSupplier, "documentValuesSupplier");
-			fieldInitializerMode = FieldInitializationMode.Load;
-			this.documentValuesSupplier = documentValuesSupplier;
+			_fieldInitializerMode = FieldInitializationMode.Load;
+			_documentValuesSupplier = documentValuesSupplier;
 
 			return build();
 		}
 
+		private final DocumentId getDocumentId()
+		{
+			return _documentValuesSupplier.getDocumentId();
+		}
+
+		private FieldInitializationMode getFieldInitializerMode()
+		{
+			return _fieldInitializerMode;
+		}
+
+		private boolean isNewDocument()
+		{
+			return _fieldInitializerMode == FieldInitializationMode.NewDocument;
+		}
+
 		private Document getParentDocument()
 		{
-			return parentDocument;
+			return _parentDocument;
 		}
 
 		private DocumentPath getDocumentPath()
 		{
 			if (_documentPath == null)
 			{
-				final DocumentId documentId = documentValuesSupplier.getDocumentId();
+				final DocumentEntityDescriptor entityDescriptor = getEntityDescriptor();
+				final DocumentId documentId = getDocumentId();
+				final Document parentDocument = getParentDocument();
 				if (parentDocument == null)
 				{
 					_documentPath = DocumentPath.rootDocumentPath(entityDescriptor.getDocumentType(), entityDescriptor.getDocumentTypeId(), documentId);
@@ -1990,9 +2064,10 @@ public final class Document
 		{
 			if (_windowNo == null)
 			{
+				final Document parentDocument = getParentDocument();
 				if (parentDocument == null)
 				{
-					_windowNo = nextWindowNo.incrementAndGet();
+					_windowNo = _nextWindowNo.incrementAndGet();
 				}
 				else
 				{
@@ -2004,6 +2079,7 @@ public final class Document
 
 		private boolean isWritable()
 		{
+			final Document parentDocument = getParentDocument();
 			if (parentDocument == null)
 			{
 				return isNewDocument();
@@ -2017,12 +2093,14 @@ public final class Document
 		private ReentrantReadWriteLock createLock()
 		{
 			// don't create locks for any other entity which is not window
+			final DocumentEntityDescriptor entityDescriptor = getEntityDescriptor();
 			if (entityDescriptor.getDocumentType() != DocumentType.Window)
 			{
 				return null;
 			}
 
 			//
+			final Document parentDocument = getParentDocument();
 			if (parentDocument == null)
 			{
 				return new ReentrantReadWriteLock();

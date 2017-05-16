@@ -46,6 +46,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.Doc
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
 import de.metas.ui.web.window.model.IncludedDocumentsCollection;
@@ -291,9 +292,9 @@ public class DocumentEntityDescriptor
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument)
+	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument, final IDocumentChangesCollector changesCollector)
 	{
-		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this);
+		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this, changesCollector);
 	}
 
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()
@@ -629,7 +630,7 @@ public class DocumentEntityDescriptor
 			{
 				if (getReadonlyLogic().isConstantTrue())
 				{
-					return HighVolumeReadonlyIncludedDocumentsCollection::new;
+					return (parentDocument, entityDescriptor, changesCollector) -> new HighVolumeReadonlyIncludedDocumentsCollection(parentDocument, entityDescriptor);
 				}
 				else
 				{
@@ -639,7 +640,7 @@ public class DocumentEntityDescriptor
 			}
 
 			// Fallback
-			return IncludedDocumentsCollection::new;
+			return (parentDocument, entityDescriptor, changesCollector) -> IncludedDocumentsCollection.newInstance(parentDocument, entityDescriptor, changesCollector);
 		}
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)

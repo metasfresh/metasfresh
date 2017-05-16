@@ -27,6 +27,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -91,7 +92,7 @@ public class AddressRepository
 					});
 		}
 
-		addressDoc.checkAndGetValidStatus();
+		addressDoc.checkAndGetValidStatus(NullDocumentChangesCollector.instance);
 
 		logger.trace("Created from C_Location_ID={}: {}", fromC_Location_ID, addressDoc);
 

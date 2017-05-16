@@ -20,6 +20,7 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -168,7 +169,7 @@ import lombok.ToString;
 		// Validate parameters, if any
 		if (parametersDocument != null)
 		{
-			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus();
+			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus(Execution.getCurrentDocumentChangesCollectorOrNull());
 			if (!validStatus.isValid())
 			{
 				throw new AdempiereException(validStatus.getReason());

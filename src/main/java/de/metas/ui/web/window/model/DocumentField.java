@@ -14,7 +14,6 @@ import com.google.common.base.Preconditions;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -25,6 +24,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -111,7 +111,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 				break;
 			default:
 				break;
-
 		}
 	}
 
@@ -167,7 +166,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	 * @param initialValue
 	 */
 	@Override
-	public void setInitialValue(final Object initialValue)
+	public void setInitialValue(final Object initialValue, final IDocumentChangesCollector changesCollector)
 	{
 		final Object initialValueConv = convertToValueClassAndCorrect(initialValue);
 		if (logger.isTraceEnabled())
@@ -181,43 +180,28 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		_valueOnCheckout = initialValueConv;
 
 		//
-		// Update the current value too, if needed
-		final Object valueOld = _value;
-		if (DataTypes.equals(initialValueConv, valueOld))
-		{
-			return;
-		}
+		// Update the current value too
+		// final Object valueOld = _value;
 		_value = initialValueConv;
 
-		//
-		// Set valid state to Staled
-		final DocumentValidStatus validOld = _validStatus;
-		final DocumentValidStatus validNew = DocumentValidStatus.fieldInitiallyStaled();
-		_validStatus = validNew;
-		if (logger.isDebugEnabled() && !Objects.equals(validOld, validNew))
-		{
-			logger.debug("setInitialValue: {}: {} <- {}", getFieldName(), validNew, validOld);
-		}
+		// Update valid status
+		// NOTE: usually this method is called on initialization
+		updateValid(changesCollector);
 	}
 
 	@Override
-	public void setValue(final Object value)
+	public void setValue(final Object value, final IDocumentChangesCollector changesCollector)
 	{
 		final Object valueNew = convertToValueClassAndCorrect(value);
 		final Object valueOld = _value;
-
-		if (DataTypes.equals(valueNew, valueOld))
-		{
-			return;
-		}
-
 		_value = valueNew;
-		if (logger.isTraceEnabled())
+		
+		if (logger.isTraceEnabled() && !DataTypes.equals(valueNew, valueOld))
 		{
 			logger.trace("setValue: {} = {} <- {}", getFieldName(), valueNew, valueOld);
 		}
 
-		updateValid();
+		updateValid(changesCollector);
 	}
 
 	@Override
@@ -230,25 +214,25 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	public Object getValueAsJsonObject(final String adLanguage)
 	{
 		Object value = getValue();
-		if(value == null)
+		if (value == null)
 		{
 			return null;
 		}
-		
+
 		//
 		// If we are dealing with a lookup value, make, sure it's translated (see https://github.com/metasfresh/metasfresh-webui-api/issues/311 )
 		final LookupDataSource lookupDataSource = getLookupDataSource();
-		if(lookupDataSource != null && value instanceof LookupValue)
+		if (lookupDataSource != null && value instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
-			if(!displayNameTrl.isTranslatedTo(adLanguage))
+			if (!displayNameTrl.isTranslatedTo(adLanguage))
 			{
 				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
 				value = lookupValueNew;
 			}
 		}
-		
+
 		return Values.valueToJsonObject(value);
 	}
 
@@ -340,19 +324,16 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	}
 
 	@Override
-	public void setMandatory(final LogicExpressionResult mandatory)
+	public void setMandatory(@NonNull final LogicExpressionResult mandatory, final IDocumentChangesCollector changesCollector)
 	{
-		if (mandatory == null)
-		{
-			throw new NullPointerException("mandatory");
-		}
-
 		final LogicExpressionResult mandatoryOld = _mandatory;
 		_mandatory = mandatory;
 
+		//
+		// Update validStatus if mandatory flag changed
 		if (!mandatoryOld.equalsByValue(mandatory))
 		{
-			updateValid();
+			updateValid(changesCollector);
 		}
 	}
 
@@ -453,33 +434,26 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		return _calloutField;
 	}
 
-	@Override
-	public void updateValid()
+	private void updateValid(final IDocumentChangesCollector changesCollector)
 	{
 		final DocumentValidStatus validStatusOld = _validStatus;
-		final DocumentValidStatus validStatusNew = checkValid();
+		final DocumentValidStatus validStatusNew = computeValidStatus();
 		_validStatus = validStatusNew;
 
 		// Collect validStatus changed event
-		if (!Objects.equals(validStatusOld, validStatusNew))
+		if (!NullDocumentChangesCollector.isNull(changesCollector) && !Objects.equals(validStatusOld, validStatusNew))
 		{
 			// logger.debug("updateValid: {}: {} <- {}", getFieldName(), validNew, validOld);
-			Execution.getCurrentDocumentChangesCollectorOrNull().collectValidStatus(this);
+			changesCollector.collectValidStatus(this);
 		}
 	}
 
-	@Override
-	public void updateValidIfStaled()
-	{
-		if (!_validStatus.isStaled())
-		{
-			return;
-		}
-
-		updateValid();
-	}
-
-	private final DocumentValidStatus checkValid()
+	/**
+	 * Computes field's validStatus.
+	 * 
+	 * IMPORTANT: this method is not updating the status, it's not computing it.
+	 */
+	private final DocumentValidStatus computeValidStatus()
 	{
 		// Consider virtual fields as valid because there is nothing we can do about them
 		if (isVirtualField())
@@ -496,9 +470,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 	}
 
-	/**
-	 * @return field's valid state; never return null
-	 */
 	@Override
 	public DocumentValidStatus getValidStatus()
 	{

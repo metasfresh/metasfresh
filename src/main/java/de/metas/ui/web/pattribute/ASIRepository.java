@@ -21,6 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pattribute.ASIDescriptorFactory.ASIAttributeFieldBinding;
 import de.metas.ui.web.pattribute.json.JSONCreateASIRequest;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -31,6 +32,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -98,7 +100,7 @@ public class ASIRepository
 
 		//
 		// Validate, log and add the new ASI document to our index
-		asiDocData.checkAndGetValidStatus();
+		asiDocData.checkAndGetValidStatus(NullDocumentChangesCollector.instance);
 		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
@@ -144,7 +146,7 @@ public class ASIRepository
 
 		//
 		// Validate, log and add the new ASI document to our index
-		asiDocData.checkAndGetValidStatus();
+		asiDocData.checkAndGetValidStatus(Execution.getCurrentDocumentChangesCollectorOrNull());
 		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);

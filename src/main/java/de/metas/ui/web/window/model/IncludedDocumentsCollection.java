@@ -55,6 +55,13 @@ import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
 
 public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 {
+	public static final IncludedDocumentsCollection newInstance(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor, final IDocumentChangesCollector changesCollector)
+	{
+		final IncludedDocumentsCollection col = new IncludedDocumentsCollection(parentDocument, entityDescriptor);
+		col.updateStatusFromParent(changesCollector);
+		return col;
+	}
+
 	private static final transient Logger logger = LogManager.getLogger(IncludedDocumentsCollection.class);
 
 	private static final LogicExpressionResult LOGICRESULT_FALSE_ParentDocumentProcessed = LogicExpressionResult.namedConstant("ParentDocumentProcessed", false);
@@ -72,7 +79,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	private LogicExpressionResult _allowNew = DISALLOW_Initially;
 	private LogicExpressionResult _allowDelete = DISALLOW_Initially;
 
-	public IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
+	private IncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor)
 	{
 		this.parentDocument = Preconditions.checkNotNull(parentDocument);
 		this.entityDescriptor = Preconditions.checkNotNull(entityDescriptor);
@@ -80,7 +87,6 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 		// State
 		_fullyLoaded = false;
 		_staleDocumentIds = new HashSet<>();
-		updateStatusFromParent();
 
 		// Documents map
 		_documents = new LinkedHashMap<>();
@@ -302,7 +308,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
-	public void updateStatusFromParent()
+	public void updateStatusFromParent(final IDocumentChangesCollector changesCollector)
 	{
 		updateAndGetAllowCreateNewDocument();
 		updateAndGetAllowDeleteDocument();
@@ -533,11 +539,11 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
-	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
+	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged, final IDocumentChangesCollector changesCollector)
 	{
 		for (final Document document : getInnerDocumentsNoLoad())
 		{
-			final DocumentValidStatus validState = document.checkAndGetValidStatus(onValidStatusChanged);
+			final DocumentValidStatus validState = document.checkAndGetValidStatus(onValidStatusChanged, changesCollector);
 			if (!validState.isValid())
 			{
 				logger.trace("Considering included documents collection {} as invalid for saving because {} is not valid", this, document, validState);
@@ -565,11 +571,11 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
-	public void saveIfHasChanges()
+	public void saveIfHasChanges(final IDocumentChangesCollector changesCollector)
 	{
 		for (final Document document : getInnerDocumentsNoLoad())
 		{
-			document.saveIfHasChanges();
+			document.saveIfHasChanges(changesCollector);
 			// TODO: if saved and refreshed, we shall mark it as not stale !!!
 		}
 	}
@@ -594,7 +600,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 			{
 				document.deleteFromRepository();
 			}
-			
+
 			document.markAsDeleted();
 
 			// Delete it from our documents map

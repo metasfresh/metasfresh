@@ -49,6 +49,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -57,6 +58,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -250,9 +252,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	{
 		assertNotExecuted();
 
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+
 		//
 		// Make sure it's saved in database
-		if (!saveIfValidAndHasChanges(true))
+		if (!saveIfValidAndHasChanges(true, changesCollector))
 		{
 			// shall not happen because the method throws the exception in case of failure
 			throw new ProcessExecutionException("Instance could not be saved because it's not valid");
@@ -488,10 +492,10 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return DocumentPath.rootDocumentPath(WindowId.of(adWindowId), documentId);
 	}
 
-	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
+	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx, final IDocumentChangesCollector changesCollector)
 	{
 		final Document parametersDocument = getParametersDocument();
-		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges();
+		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges(changesCollector);
 		final boolean saved = parametersSaveStatus.isSaved();
 		if (!saved && throwEx)
 		{

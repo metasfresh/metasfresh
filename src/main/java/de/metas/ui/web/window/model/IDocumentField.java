@@ -20,16 +20,16 @@ import de.metas.ui.web.window.model.Document.CopyMode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/interface IDocumentField extends IDocumentFieldView
+/* package */interface IDocumentField extends IDocumentFieldView
 {
 	public static enum FieldInitializationMode
 	{
@@ -45,18 +45,24 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	}
 
 	/**
-	 * @param initialValue initial value / last saved value
+	 * Sets initial value / last saved value.
+	 * 
+	 * This method is also:
+	 * <ul>
+	 * <li>updating the field value (see {@link #setValue(Object)}).
+	 * <li>setting the validStatus to {@link DocumentValidStatus#fieldInitiallyStaled()}
+	 * </ul>
 	 */
-	void setInitialValue(Object initialValue);
+	void setInitialValue(Object initialValue, IDocumentChangesCollector changesCollector);
 
 	/**
 	 * Set field's current value.
 	 *
 	 * @param value
 	 */
-	void setValue(Object value);
+	void setValue(Object value, IDocumentChangesCollector changesCollector);
 
-	void setMandatory(LogicExpressionResult mandatory);
+	void setMandatory(LogicExpressionResult mandatory, final IDocumentChangesCollector changesCollector);
 
 	void setReadonly(LogicExpressionResult readonly);
 
@@ -70,10 +76,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	ICalloutField asCalloutField();
 
-	void updateValid();
-
-	void updateValidIfStaled();
-
+	/** @return field's valid state; never return null */
 	@Override
 	DocumentValidStatus getValidStatus();
 

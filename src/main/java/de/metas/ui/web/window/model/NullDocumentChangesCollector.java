@@ -34,17 +34,22 @@ import de.metas.ui.web.window.descriptor.DetailId;
 
 public final class NullDocumentChangesCollector implements IDocumentChangesCollector
 {
+	public static final boolean isNull(final IDocumentChangesCollector changesCollector)
+	{
+		return changesCollector == null || changesCollector instanceof NullDocumentChangesCollector;
+	}
+
 	public static final transient NullDocumentChangesCollector instance = new NullDocumentChangesCollector();
+
+	private NullDocumentChangesCollector()
+	{
+		super();
+	}
 
 	@Override
 	public void setPrimaryChange(final DocumentPath documentPath)
 	{
 		// do nothing
-	}
-
-	private NullDocumentChangesCollector()
-	{
-		super();
 	}
 
 	@Override

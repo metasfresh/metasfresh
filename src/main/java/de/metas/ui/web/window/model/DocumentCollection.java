@@ -186,6 +186,7 @@ public class DocumentCollection
 	{
 		final DocumentPath rootDocumentPathOrNew = documentPathOrNew.getRootDocumentPath();
 
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		final Document lockHolder;
 		final boolean isNewRootDocument;
 		final DocumentKey rootDocumentKey;
@@ -231,7 +232,7 @@ public class DocumentCollection
 			}
 			else
 			{
-				commitRootDocument(rootDocument);
+				commitRootDocument(rootDocument, changesCollector);
 			}
 
 			// Return the result
@@ -300,7 +301,7 @@ public class DocumentCollection
 		rootDocuments.cleanUp();
 	}
 
-	private void commitRootDocument(@NonNull final Document rootDocument)
+	private void commitRootDocument(@NonNull final Document rootDocument, final IDocumentChangesCollector changesCollector)
 	{
 		Preconditions.checkState(rootDocument.isRootDocument(), "{} is not a root document", rootDocument);
 
@@ -308,12 +309,12 @@ public class DocumentCollection
 
 		//
 		// Try saving it if possible
-		rootDocument.saveIfValidAndHasChanges();
+		rootDocument.saveIfValidAndHasChanges(changesCollector);
 
 		//
 		// Make sure all included detail (tab) statuses are up2date.
 		// IMPORTANT: we have to do this after saving because some of the logics depends on if they are any new included documents or not
-		rootDocument.updateIncludedDetailsStatus();
+		rootDocument.updateIncludedDetailsStatus(changesCollector);
 
 		//
 		// Add the saved and changed document back to index

@@ -64,7 +64,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		return this;
 	}
-	
+
 	@Override
 	public DetailId getDetailId()
 	{
@@ -96,9 +96,9 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 
 		return document;
 	}
-	
+
 	@Override
-	public void updateStatusFromParent()
+	public void updateStatusFromParent(final IDocumentChangesCollector changesCollector)
 	{
 		// nothing
 	}
@@ -108,7 +108,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
 	}
-	
+
 	@Override
 	public LogicExpressionResult getAllowCreateNewDocument()
 	{
@@ -120,7 +120,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
 	}
-	
+
 	@Override
 	public LogicExpressionResult getAllowDeleteDocument()
 	{
@@ -134,7 +134,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
+	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged, final IDocumentChangesCollector changesCollector)
 	{
 		return DocumentValidStatus.documentValid();
 	}
@@ -146,7 +146,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public void saveIfHasChanges()
+	public void saveIfHasChanges(final IDocumentChangesCollector changesCollector)
 	{
 	}
 

@@ -38,6 +38,7 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -45,6 +46,7 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import lombok.NonNull;
 
 /*
@@ -326,7 +328,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				final R result = processor.apply(processInstance);
 
 				// Actually put it back
-				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
+				final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+				processInstance.saveIfValidAndHasChanges(false, changesCollector); // throwEx=false
 				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
 
 				return result;

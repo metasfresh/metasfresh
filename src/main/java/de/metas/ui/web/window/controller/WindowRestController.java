@@ -632,7 +632,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
 		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, document -> {
-			document.saveIfValidAndHasChanges();
+			document.saveIfValidAndHasChanges(Execution.getCurrentDocumentChangesCollector());
 			if (document.hasChangesRecursivelly())
 			{
 				throw new AdempiereException("Not saved");
