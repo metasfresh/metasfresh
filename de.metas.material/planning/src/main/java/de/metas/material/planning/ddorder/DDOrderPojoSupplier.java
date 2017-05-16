@@ -296,7 +296,7 @@ public class DDOrderPojoSupplier
 	{
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final int durationDays = calculateDurationDays(mrpContext, networkLine);
+		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
 				.salesOrderLineId(request.getMRPDemandOrderLineSOId())
@@ -307,27 +307,5 @@ public class DDOrderPojoSupplier
 				.build();
 
 		return ddOrderline;
-	}
-
-	private int calculateDurationDays(final IMaterialPlanningContext mrpContext, final I_DD_NetworkDistributionLine networkLine)
-	{
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-
-		//
-		// Leadtime
-		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
-		Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
-
-		//
-		// Transfer time
-		int transferTime = networkLine.getTransfertTime().intValueExact();
-		if (transferTime <= 0)
-		{
-			transferTime = productPlanningData.getTransfertTime().intValueExact();
-		}
-		Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
-
-		final int durationTotalDays = leadtimeDays + transferTime;
-		return durationTotalDays;
 	}
 }

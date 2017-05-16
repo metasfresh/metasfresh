@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.compiere.model.I_S_Resource;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -32,7 +33,9 @@ import lombok.Singular;
  * #L%
  */
 @Data
-final @Builder public class DDOrder
+@Builder
+@AllArgsConstructor // used by jackson when it deserializes a string
+final public class DDOrder
 {
 
 	/**
@@ -61,7 +64,6 @@ final @Builder public class DDOrder
 	 */
 	private final boolean createDDrder;
 
-	
 	@Singular
 	private final List<DDOrderLine> lines;
 

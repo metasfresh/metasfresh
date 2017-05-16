@@ -82,7 +82,14 @@ public class CandidateChangeHandler
 		}
 	}
 
-	public Candidate onDemandCandidateNewOrChange(@NonNull final Candidate demandCandidate)
+	/**
+	 * Persists (updates or creates) the given demand candidate and also it's <b>child</b> stock candidate.
+	 * 
+	 * @param demandCandidate
+	 * @return
+	 */
+	@VisibleForTesting
+	Candidate onDemandCandidateNewOrChange(@NonNull final Candidate demandCandidate)
 	{
 		Preconditions.checkArgument(demandCandidate.getType() == Type.DEMAND, "Given parameter 'demandCandidate' has type=%s; demandCandidate=%s", demandCandidate.getType(), demandCandidate);
 
@@ -97,19 +104,43 @@ public class CandidateChangeHandler
 		// this is the seqno which the new stock candidate shall get according to the demand candidate
 		final int expectedStockSeqNo = demandCandidateWithId.getSeqNo() + 1;
 
-		final Candidate stockWithDemand = addOrUpdateStock(demandCandidate
-				.withSeqNo(expectedStockSeqNo)
-				.withQuantity(demandCandidateWithId.getQuantity().negate())
-				.withParentId(demandCandidateWithId.getId()));
+		final Candidate childStockWithDemand;
+
+		final Optional<Candidate> possibleChildStockCandidate = candidateRepository.retrieveSingleChild(demandCandidateWithId.getId());
+		if (possibleChildStockCandidate.isPresent())
+		{
+			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
+			childStockWithDemand = updateStock(
+					demandCandidateWithId, () ->
+						{
+							// don't check if we might create a new stock candidate, because we know we don't.
+							// Instead we might run into trouble with CandidateRepository.retrieveExact() and multiple matching records.
+							// So get the one that we know already exists and just update its quantity
+							final Candidate childStockCandidate = possibleChildStockCandidate.get();
+							return candidateRepository.updateQty(
+									childStockCandidate
+											.withQuantity(
+													childStockCandidate.getQuantity().subtract(demandCandidateWithId.getQuantity())));
+						});
+		}
+
+		else
+		{
+			childStockWithDemand = addOrUpdateStock(
+					demandCandidate
+							.withSeqNo(expectedStockSeqNo)
+							.withQuantity(demandCandidateWithId.getQuantity().negate())
+							.withParentId(demandCandidateWithId.getId()));
+		}
 
 		final Candidate demandCandidateToReturn;
 
-		if (stockWithDemand.getSeqNo() != expectedStockSeqNo)
+		if (childStockWithDemand.getSeqNo() != expectedStockSeqNo)
 		{
 			// there was already a stock candidate which already had a seqNo.
 			// keep it and in turn update the demandCandidate's seqNo accordingly
 			demandCandidateToReturn = demandCandidate
-					.withSeqNo(stockWithDemand.getSeqNo() - 1);
+					.withSeqNo(childStockWithDemand.getSeqNo() - 1);
 			candidateRepository.addOrUpdate(demandCandidateToReturn);
 		}
 		else
@@ -117,7 +148,7 @@ public class CandidateChangeHandler
 			demandCandidateToReturn = demandCandidateWithId;
 		}
 
-		if (stockWithDemand.getQuantity().signum() < 0)
+		if (childStockWithDemand.getQuantity().signum() < 0)
 		{
 			// there would be no more stock left, so
 			// notify whoever is in charge that we have a demand to balance
@@ -125,12 +156,11 @@ public class CandidateChangeHandler
 
 			final MaterialDemandEvent materialDemandEvent = MaterialDemandEvent
 					.builder()
-					.eventDescr(new EventDescr())
+					.eventDescr(new EventDescr(demandCandidate.getClientId(), demandCandidate.getOrgId()))
 					.descr(MaterialDescriptor.builder()
-							.orgId(demandCandidate.getOrgId())
 							.productId(demandCandidate.getProductId())
 							.date(demandCandidate.getDate())
-							.qty(stockWithDemand.getQuantity().negate())
+							.qty(childStockWithDemand.getQuantity().negate())
 							.warehouseId(demandCandidate.getWarehouseId())
 							.build())
 					.reference(demandCandidate.getReference())
@@ -151,7 +181,8 @@ public class CandidateChangeHandler
 	 *
 	 * @param supplyCandidate
 	 */
-	public Candidate onSupplyCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
+	@VisibleForTesting
+	Candidate onSupplyCandidateNewOrChange(@NonNull final Candidate supplyCandidate)
 	{
 		Preconditions.checkArgument(supplyCandidate.getType() == Type.SUPPLY, "Given parameter 'supplyCandidate' has type=%s; supplyCandidate=%s", supplyCandidate.getType(), supplyCandidate);
 
@@ -166,16 +197,17 @@ public class CandidateChangeHandler
 		final Candidate parentStockCandidateWithId;
 		if (supplyCandidateDeltaWithId.getParentIdNotNull() > 0)
 		{
-			// this supply candidate is not new and already has a stock candidate as its parent
+			// this supply candidate is not new and already has a stock candidate as its parent. be sure to update exactly *that* scandidate
 			parentStockCandidateWithId = updateStock(
 					supplyCandidateDeltaWithId,
-					() -> {
-						// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
-						final Candidate stockCandidate = candidateRepository.retrieve(supplyCandidateDeltaWithId.getParentId());
-						return candidateRepository.updateQty(
-								stockCandidate.withQuantity(
-										stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
-					});
+					() ->
+						{
+							// don't check if we might create a new stock candidate, because we know we don't. Get the one that already exists and just update its quantity
+							final Candidate stockCandidate = candidateRepository.retrieve(supplyCandidateDeltaWithId.getParentId());
+							return candidateRepository.updateQty(
+									stockCandidate.withQuantity(
+											stockCandidate.getQuantity().add(supplyCandidateDeltaWithId.getQuantity())));
+						});
 		}
 		else
 		{
@@ -203,6 +235,13 @@ public class CandidateChangeHandler
 		// now has -21
 	}
 
+	/**
+	 * Updates the qty for the stock candidate returned by the given {@code stockCandidateToUpdate} and it's later stock candidates
+	 * 
+	 * @param relatedCanidateWithDelta
+	 * @param stockCandidateToUpdate
+	 * @return
+	 */
 	private Candidate updateStock(
 			@NonNull final Candidate relatedCanidateWithDelta,
 			@NonNull final Supplier<Candidate> stockCandidateToUpdate)
@@ -246,14 +285,15 @@ public class CandidateChangeHandler
 	{
 		return updateStock(
 				candidate,
-				() -> {
-					final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
+				() ->
+					{
+						final Candidate stockCandidateToPersist = candidateFactory.createStockCandidate(candidate);
 
-					final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
-					final Candidate persistedStockCandidate = candidateRepository.addOrUpdate(stockCandidateToPersist, preserveExistingSeqNo);
+						final boolean preserveExistingSeqNo = true; // there there is a stock record with a seqNo, then don't override it, because we will need to adapt to it in order to put our new data into the right sequence.
+						final Candidate persistedStockCandidate = candidateRepository.addOrUpdate(stockCandidateToPersist, preserveExistingSeqNo);
 
-					return persistedStockCandidate;
-				});
+						return persistedStockCandidate;
+					});
 	}
 
 	public void onCandidateDelete(@NonNull final TableRecordReference recordReference)

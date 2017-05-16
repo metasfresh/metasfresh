@@ -63,6 +63,9 @@ public class Candidate
 	}
 
 	@NonNull
+	private final Integer clientId;
+	
+	@NonNull
 	private final Integer orgId;
 
 	@NonNull

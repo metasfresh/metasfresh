@@ -94,7 +94,7 @@ public class DDOrderProducer
 
 		final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(Env.getCtx(), pojo.getOrgId());
 		final int orgBPartnerLocationId = DDOrderUtil.retrieveOrgBPartnerLocationId(Env.getCtx(), pojo.getOrgId());
-		
+
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ddOrder.setAD_Org_ID(pojo.getOrgId());
 		ddOrder.setMRP_Generated(true);
@@ -105,12 +105,12 @@ public class DDOrderProducer
 		ddOrder.setC_BPartner_Location_ID(orgBPartnerLocationId);
 		ddOrder.setAD_User_ID(productPlanning.getPlanner_ID()); // FIXME: improve performances/cache and retrive Primary BP's User
 		ddOrder.setSalesRep_ID(productPlanning.getPlanner_ID());
-		
+
 		ddOrder.setC_DocType_ID(getC_DocType_ID(pojo.getOrgId()));
-		
+
 		final int inTransitWarehouseId = DDOrderUtil.retrieveInTransitWarehouseId(Env.getCtx(), pojo.getOrgId());
 		ddOrder.setM_Warehouse_ID(inTransitWarehouseId);
-		
+
 		ddOrder.setDocStatus(X_DD_Order.DOCSTATUS_Drafted);
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(new Timestamp(dateOrdered.getTime()));
@@ -137,6 +137,8 @@ public class DDOrderProducer
 			}
 
 			final I_DD_NetworkDistributionLine networkDistributionLine = InterfaceWrapperHelper.create(Env.getCtx(), linePojo.getNetworkDistributionLineId(), I_DD_NetworkDistributionLine.class, ITrx.TRXNAME_ThreadInherited);
+
+			ddOrderline.setDD_NetworkDistributionLine_ID(networkDistributionLine.getDD_NetworkDistributionLine_ID());
 
 			// get supply source warehouse and locator
 			final I_M_Warehouse warehouseFrom = networkDistributionLine.getM_WarehouseSource();

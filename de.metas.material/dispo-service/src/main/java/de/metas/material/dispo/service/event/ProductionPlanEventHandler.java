@@ -10,6 +10,7 @@ import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -71,13 +72,15 @@ public class ProductionPlanEventHandler
 			candidateStatus = EventUtil.getCandidateStatus(docStatus);
 		}
 
+		final EventDescr eventDescr = event.getEventDescr();
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
 				.status(candidateStatus)
 
 				.date(ppOrder.getDatePromised())
-				.orgId(ppOrder.getOrgId())
+				.clientId(eventDescr.getClientId())
+				.orgId(eventDescr.getOrgId())
 				.productId(ppOrder.getProductId())
 				.quantity(ppOrder.getQuantity())
 				.warehouseId(ppOrder.getWarehouseId())
@@ -94,7 +97,7 @@ public class ProductionPlanEventHandler
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
-		final Candidate candidateWithGroupId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
@@ -107,13 +110,18 @@ public class ProductionPlanEventHandler
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 
 					.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
-					.orgId(ppOrder.getOrgId())
+
+					.clientId(eventDescr.getClientId())
+					.orgId(eventDescr.getOrgId())
+
 					.productId(ppOrderLine.getProductId())
 					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())
 					.quantity(ppOrderLine.getQtyRequired())
 					.warehouseId(ppOrder.getWarehouseId())
 					.reference(event.getReference())
 					.productionDetail(ProductionCandidateDetail.builder()
+							.plantId(ppOrder.getPlantId())
+							.productPlanningId(ppOrder.getProductPlanningId())
 							.productBomLineId(ppOrderLine.getProductBomLineId())
 							.description(ppOrderLine.getDescription())
 							.ppOrderId(ppOrder.getPpOrderId())

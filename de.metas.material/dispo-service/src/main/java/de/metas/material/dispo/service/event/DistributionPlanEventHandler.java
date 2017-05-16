@@ -18,6 +18,7 @@ import de.metas.material.dispo.DistributionCandidateDetail;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.event.DistributionPlanEvent;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderLine;
 import lombok.NonNull;
@@ -71,8 +72,6 @@ public class DistributionPlanEventHandler
 
 	void handleDistributionPlanEvent(final DistributionPlanEvent event)
 	{
-		// final MaterialDescriptor materialDescr = event.getMaterialDescr();
-
 		final DDOrder ddOrder = event.getDdOrder();
 		final Candidate.Status candidateStatus;
 		if (ddOrder.getDdOrderId() <= 0)
@@ -88,7 +87,7 @@ public class DistributionPlanEventHandler
 
 		for (final DDOrderLine ddOrderLine : ddOrder.getLines())
 		{
-			final Timestamp orderLineStartDate = TimeUtil.addDays(ddOrder.getDatePromised(), ddOrderLine.getDurationDays() * -1);
+			final Timestamp orderLineStartDate = TimeUtil.addDaysExact(ddOrder.getDatePromised(), ddOrderLine.getDurationDays() * -1);
 
 			final SupplyProposal proposal = SupplyProposal.builder()
 					.date(orderLineStartDate)
@@ -105,12 +104,15 @@ public class DistributionPlanEventHandler
 				return;
 			}
 
+			final EventDescr eventDescr = event.getEventDescr();
+			
 			final Candidate supplyCandidate = Candidate.builder()
 					.type(Type.SUPPLY)
 					.status(candidateStatus)
 					.subType(SubType.DISTRIBUTION)
 					.date(ddOrder.getDatePromised())
-					.orgId(ddOrder.getOrgId())
+					.clientId(eventDescr.getClientId())
+					.orgId(eventDescr.getOrgId())
 					.productId(ddOrderLine.getProductId())
 					.quantity(ddOrderLine.getQty())
 					.warehouseId(event.getToWarehouseId())
@@ -122,10 +124,14 @@ public class DistributionPlanEventHandler
 							.ddOrderDocStatus(ddOrder.getDocStatus())
 							.ddOrderId(ddOrder.getDdOrderId())
 							.ddOrderLineId(ddOrderLine.getDdOrderLineId())
+							.networkDistributionLineId(ddOrderLine.getNetworkDistributionLineId())
+							.plantId(ddOrder.getPlantId())
+							.productPlanningId(ddOrder.getProductPlanningId())
+							.shipperId(ddOrder.getShipperId())
 							.build())
 					.build();
 
-			final Candidate supplyCandidateWithId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+			final Candidate supplyCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 			if (supplyCandidateWithId.getQuantity().signum() == 0)
 			{
 				// nothing was added as supply in the destination warehouse, so there is no demand to register either
@@ -149,7 +155,7 @@ public class DistributionPlanEventHandler
 					.withWarehouseId(event.getFromWarehouseId());
 
 			// this might cause 'candidateChangeHandler' to trigger another event
-			final Candidate demandCandidateWithId = candidateChangeHandler.onDemandCandidateNewOrChange(demandCandidate);
+			final Candidate demandCandidateWithId = candidateChangeHandler.onCandidateNewOrChange(demandCandidate);
 
 			if (expectedSeqNoForDemandCandidate != demandCandidateWithId.getSeqNo())
 			{

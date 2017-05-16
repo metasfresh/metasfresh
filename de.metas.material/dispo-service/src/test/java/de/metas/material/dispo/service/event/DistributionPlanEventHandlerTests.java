@@ -74,12 +74,12 @@ public class DistributionPlanEventHandlerTests
 	/**
 	 * {@link #t1} plus one day, so that we can work/test with {@link DDOrderLine#getDurationDays()}.
 	 */
-	private static final Date t2 = TimeUtil.addDays(t0, 1);
+	private static final Date t2 = TimeUtil.addDaysExact(t1, 1);
 
 	/**
 	 * {@link #t2} plus two days so that we can work/test with {@link DDOrderLine#getDurationDays()}.
 	 */
-	private static final Date t3 = TimeUtil.addDays(t0, 3);
+	private static final Date t3 = TimeUtil.addDaysExact(t2, 2);
 
 	public static final int fromWarehouseId = 10;
 	public static final int intermediateWarehouseId = 20;
@@ -91,6 +91,14 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int rawProduct2Id = 55;
 
+	public static final int productPlanningId = 65;
+	
+	public static final int plantId = 75;
+
+	public static final int networkDistributionLineId = 85;
+
+	public static final int shipperId = 95;
+	
 	private I_AD_Org org;
 
 	private DistributionPlanEventHandler distributionPlanEventHandler;
@@ -128,16 +136,20 @@ public class DistributionPlanEventHandlerTests
 	{
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
 								.durationDays(1)
+								.networkDistributionLineId(networkDistributionLineId)
 								.build())
 						.build())
 				.reference(reference)
@@ -213,6 +225,8 @@ public class DistributionPlanEventHandlerTests
 		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
 	}
 
+	// TODO: test in reversed order
+	
 	/**
 	 * Contains the actual test for {@link #testTwoDistibutionPlanEvents()}. I moved this into a static method because i want to use the code to set the stage for other tests.
 	 *
@@ -225,16 +239,20 @@ public class DistributionPlanEventHandlerTests
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 
 		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(intermediateWarehouseId)
 				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.datePromised(t1)
+						.datePromised(t2) // => expected date of the supply candidate
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
-								.durationDays(1)
+								.networkDistributionLineId(networkDistributionLineId)
+								.durationDays(1) // => t2 minus 1day = t1 (expected date of the demand candidate)
 								.build())
 						.build())
 				.reference(reference)
@@ -246,16 +264,20 @@ public class DistributionPlanEventHandlerTests
 		assertThat(DispoTestUtils.filter(Type.STOCK).size(), is(2)); // one stock record per supply/demand record
 
 		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(intermediateWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.datePromised(t2)
+						.datePromised(t3) // => expected date of the supply candidate
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
 						.line(DDOrderLine.builder()
 								.productId(productId)
 								.qty(BigDecimal.TEN)
-								.durationDays(2)
+								.durationDays(2) // => t3 minus 2days = t2 (expected date of the demand candidate)
+								.networkDistributionLineId(networkDistributionLineId)
 								.build())
 						.build())
 				.reference(reference)

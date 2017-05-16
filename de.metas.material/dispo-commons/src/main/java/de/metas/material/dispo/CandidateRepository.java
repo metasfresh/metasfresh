@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,10 +16,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Org;
+import org.apache.ecs.xhtml.code;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -89,24 +87,6 @@ public class CandidateRepository
 	 *         </ul>
 	 */
 	public Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
-	{
-		//
-		// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
-		final Properties copyCtx = Env.copyCtx(Env.getCtx());
-
-		final I_AD_Org org = InterfaceWrapperHelper.create(copyCtx, candidate.getOrgId(), I_AD_Org.class, ITrx.TRXNAME_None);
-
-		Env.setContext(copyCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
-		Env.setContext(copyCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
-
-		try (final IAutoCloseable c = Env.switchContext(copyCtx))
-		{
-			return addOrUpdate0(candidate, preserveExistingSeqNo);
-		}
-	}
-
-	@VisibleForTesting
-	Candidate addOrUpdate0(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
 	{
 		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
 
@@ -308,6 +288,30 @@ public class CandidateRepository
 	}
 
 	/**
+	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
+	 * 
+	 * @param parentId
+	 * @return
+	 */
+	public Optional<Candidate> retrieveSingleChild(@NonNull final Integer parentId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_MD_Candidate candidateRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, parentId)
+				.create()
+				.firstOnly(I_MD_Candidate.class);
+
+		if (candidateRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		return fromCandidateRecord(Optional.of(candidateRecord));
+	}
+
+	/**
 	 *
 	 * @param groupId
 	 * @return
@@ -339,8 +343,10 @@ public class CandidateRepository
 	 * <li>date</li>
 	 * <li>tableId and record (only if set)</li>
 	 * <li>demand details</li>
-	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.
-	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (like pporder ID and pporder BOM line ID which can change for zero to an actual reference)</li>
+	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.<br>
+	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ppOrder ID and ppOrder BOM line ID which can change from zero to an actual reference)</li>
+	 * <li>distribution details:if {@link Candidate#getDistributionDetail()} is {@link code null}, then only records without product detail are selected.<br>
+	 * If it's not null and either a product plan ID or network distribution line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ddOrder ID and ddOrderLine ID which can change from zero to an actual reference)</li>
 	 * </ul>
 	 *
 	 * @param candidate
@@ -391,7 +397,7 @@ public class CandidateRepository
 			}
 		}
 
-		// filter by productionDetail; if there is none, *don't* ignore, but filter my "not-existing"
+		// filter by productionDetail; if there is none, *don't* ignore, but filter for "not-existing"
 		{
 			final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
 
@@ -423,7 +429,7 @@ public class CandidateRepository
 			}
 		}
 
-		// filter by distributionDetail; if there is none, *don't* ignore, but filter my "not-existing"
+		// filter by distributionDetail; if there is none, *don't* ignore, but filter for "not-existing"
 		{
 			final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
 
@@ -548,6 +554,7 @@ public class CandidateRepository
 
 		final CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
+				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
 				.productId(candidateRecord.getM_Product_ID())
 				.quantity(candidateRecord.getQty())

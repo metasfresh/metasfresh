@@ -113,6 +113,7 @@ public class CandiateRepositoryTests
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -123,6 +124,7 @@ public class CandiateRepositoryTests
 
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -133,6 +135,7 @@ public class CandiateRepositoryTests
 
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -174,6 +177,7 @@ public class CandiateRepositoryTests
 				.type(Type.DEMAND)
 				.subType(SubType.PRODUCTION)
 				.date(now)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(23)
 				.attributeSetInstanceId(35)
@@ -297,6 +301,7 @@ public class CandiateRepositoryTests
 				.type(Type.DEMAND)
 				.subType(SubType.DISTRIBUTION)
 				.date(now)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(23)
 				.attributeSetInstanceId(35)
@@ -413,6 +418,7 @@ public class CandiateRepositoryTests
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
 				.date(now)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(23)
 				.attributeSetInstanceId(35)

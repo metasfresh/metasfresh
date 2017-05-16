@@ -1,13 +1,13 @@
 package de.metas.material.event;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import java.util.List;
+
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import lombok.experimental.Wither;
 
 /*
  * #%L
@@ -30,21 +30,24 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+
 @Data
 @Builder
 @AllArgsConstructor
-@Wither
-public class MaterialDescriptor
+public class DemandHandlerAuditEvent implements MaterialEvent
 {
-	@NonNull
-	private final Integer warehouseId;
+	public static final String TYPE = "NoPlanFoundEvent";
 
 	@NonNull
-	private final Integer productId;
-
+	private final EventDescr eventDescr;
+	
 	@NonNull
-	private final BigDecimal qty;
+	private final MaterialDescriptor descr;
 
-	@NonNull
-	private final Date date;
+	private final TableRecordReference reference;
+
+	private int orderLineId;
+
+	private final List<String> messages; 
 }

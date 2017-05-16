@@ -1,7 +1,9 @@
 package de.metas.material.dispo;
 
+import java.util.Date;
 import java.util.List;
 
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -144,10 +146,13 @@ public class CandidateService
 								.build());
 			}
 		}
+
+		final Candidate firstGroupMember = group.get(0);
+
 		return PPOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
-				.reference(group.get(0).getReference())
+				.reference(firstGroupMember.getReference())
 				.build();
 	}
 
@@ -165,18 +170,26 @@ public class CandidateService
 		final DDOrderBuilder ddOrderBuilder = DDOrder.builder();
 		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
 
+		Date startDate = null;
+		Date endDate = null;
+
 		for (final Candidate groupMember : group)
 		{
 			ddOrderBuilder.orgId(groupMember.getOrgId());
 			if (groupMember.getType() == Type.SUPPLY)
 			{
+				endDate = groupMember.getDate();
 				ddOrderBuilder.datePromised(groupMember.getDate());
+			}
+			else
+			{
+				startDate = groupMember.getDate();
 			}
 
 			ddOrderLineBuilder
 					.productId(groupMember.getProductId())
 					.qty(groupMember.getQuantity());
-			
+
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
 			{
 				ddOrderLineBuilder.salesOrderLineId(groupMember.getDemandDetail().getOrderLineId());
@@ -193,12 +206,18 @@ public class CandidateService
 
 		}
 
+		final int durationDays = TimeUtil.getDaysBetween(startDate, endDate);
+
+		final Candidate firstGroupMember = group.get(0);
+
 		return DDOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ddOrder(ddOrderBuilder
-						.line(ddOrderLineBuilder.build())
+						.line(ddOrderLineBuilder
+								.durationDays(durationDays)
+								.build())
 						.build())
-				.reference(group.get(0).getReference())
+				.reference(firstGroupMember.getReference())
 				.build();
 	}
 }

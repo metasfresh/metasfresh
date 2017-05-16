@@ -69,7 +69,7 @@ import mockit.Mocked;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MDEEventListenerTests
+public class MDEventListenerTests
 {
 	private static final int orderLineId = 86;
 
@@ -126,10 +126,9 @@ public class MDEEventListenerTests
 	public void testShipmentScheduleEvent()
 	{
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t1)
-						.orgId(org.getAD_Org_ID())
 						.productId(productId)
 						.qty(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
@@ -166,7 +165,7 @@ public class MDEEventListenerTests
 		// create a DistributionPlanEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()

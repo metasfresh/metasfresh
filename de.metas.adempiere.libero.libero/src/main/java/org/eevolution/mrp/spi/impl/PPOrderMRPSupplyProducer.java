@@ -119,7 +119,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		}
 		if (!matches)
 		{
-			notAppliesReason.setValue(loggable.getString());
+			notAppliesReason.setValue(loggable.getConcatenatedMessages());
 		}
 		return matches;
 	}

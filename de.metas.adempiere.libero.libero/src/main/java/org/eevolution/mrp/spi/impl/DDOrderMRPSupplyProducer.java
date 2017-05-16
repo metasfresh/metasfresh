@@ -105,7 +105,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		}
 		if (!matches)
 		{
-			notAppliesReason.setValue(loggable.getString());
+			notAppliesReason.setValue(loggable.getConcatenatedMessages());
 		}
 		return matches;
 	}

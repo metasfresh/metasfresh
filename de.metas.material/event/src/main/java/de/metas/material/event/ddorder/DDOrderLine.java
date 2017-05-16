@@ -2,6 +2,7 @@ package de.metas.material.event.ddorder;
 
 import java.math.BigDecimal;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -29,6 +30,7 @@ import lombok.NonNull;
  */
 @Data
 @Builder
+@AllArgsConstructor // used by jackson when it deserializes a string
 public class DDOrderLine
 {
 	private final int salesOrderLineId;
@@ -51,6 +53,5 @@ public class DDOrderLine
 	@NonNull
 	private final Integer networkDistributionLineId;
 	
-	@NonNull
-	private final Integer ddOrderLineId;
+	private final int ddOrderLineId;
 }
