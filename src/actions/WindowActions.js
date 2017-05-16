@@ -597,7 +597,7 @@ export function getZoomIntoWindow(windowId, docId, field, tabId, rowId) {
         (rowId ? '/' + rowId : '') +
         '/attribute' +
         '/' + field +
-        '/zoomInto'
+        '/zoomInto?showError=true'
     );
 }
 

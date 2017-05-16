@@ -74,8 +74,18 @@ axios.interceptors.response.use(function (response) {
             );
         }
     }
+    if(error.response.request.responseURL.includes('showError=true')){
+        const {
+            data
+        } = error.response;
 
-    return Promise.reject(error);
+        store.dispatch(addNotification(
+            'Error: ' + data.message.split(' ', 4).join(' ') + '...',
+            data.message, 5000, 'error', '')
+        );
+    } else {
+        return Promise.reject(error);
+    }
 });
 
 export default class App extends Component {
