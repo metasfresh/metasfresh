@@ -441,7 +441,7 @@ input:checked + .input-slider:before {
 }
 
 .input-error {
-    border-color: $brand-danger-color;
+    border-color: $brand-danger-light-color;
 }
 
 .input-error input {
@@ -655,7 +655,19 @@ input:checked + .input-slider:before {
 }
 
 .raw-lookup-wrapper-bcg:hover {
-    background: $brand-pulse-effect;
+    background-color: $brand-border-color;
+}
+
+.input-error .raw-lookup-wrapper-bcg:hover {
+    background-color: $brand-danger-color !important;
+    color: $brand-super-light-color;
+}
+
+.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown,
+.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown input,
+.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown-container {
+    background-color: $brand-danger-color !important;
+    color: $brand-super-light-color;
 }
 
 .raw-lookup-wrapper .input-dropdown-container {
