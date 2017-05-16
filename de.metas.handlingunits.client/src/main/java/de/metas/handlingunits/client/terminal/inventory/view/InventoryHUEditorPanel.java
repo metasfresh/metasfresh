@@ -128,7 +128,6 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 	 */
 	private final void doDirectMoveToWarehouse()
 	{
-
 		final boolean exceptionIfNull = false;
 		//
 		// Generate the movement
@@ -140,16 +139,15 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		// Warehouse to: we are moving the warehouses for direct movements
 		final I_M_Warehouse warehouseTo = huMovementBL.getDirectMove_Warehouse(getTerminalContext().getCtx(), exceptionIfNull);
 		Check.assumeNotNull(warehouseTo, "warehouseTo not null"); // shall not happen, because if it's null the action button shall be hidden
-	
+
 		final List<I_M_HU> hus = getSelectedHUs(warehouseFrom);
 		final List<I_M_Movement> movements = huMovementBL.doDirectMoveToWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
 		if (movements.isEmpty())
 		{
 			return;
 		}
-		
+
 		getHUEditorModel().refreshSelectedHUKeys();
-		
 
 		//
 		// Inform the user about which movement was created
@@ -198,7 +196,7 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 						hu, hu.getM_Locator(), huWarehouseID, warehouseFrom.getM_Warehouse_ID(), warehouseFrom);
 			}
 		}
-		
+
 		return hus;
 	}
 
