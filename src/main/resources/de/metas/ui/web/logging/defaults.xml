@@ -72,8 +72,11 @@
 	<springProperty scope="context" name="LOGSTASH_ENABLED" source="logstash.enabled" defaultValue="false" />
 
 	<!-- Include the config for a logstash appender; see https://github.com/metasfresh/metasfresh/issues/1504 -->
-	<include resource="de/metas/ui/web/logging/STASH.xml" />
-
+    <if condition='Boolean.parseBoolean(property("LOGSTASH_ENABLED"))'>
+        <then>
+            <include resource="de/metas/ui/web/logging/STASH.xml" />
+        </then>
+    </if>
 
 	<!-- Configure root logger -->
 	<root level="INFO">
