@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,10 +16,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Org;
+import org.apache.ecs.xhtml.code;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +31,7 @@ import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import lombok.NonNull;
 
@@ -89,24 +88,6 @@ public class CandidateRepository
 	 */
 	public Candidate addOrUpdate(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
 	{
-		//
-		// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
-		final Properties copyCtx = Env.copyCtx(Env.getCtx());
-
-		final I_AD_Org org = InterfaceWrapperHelper.create(copyCtx, candidate.getOrgId(), I_AD_Org.class, ITrx.TRXNAME_None);
-
-		Env.setContext(copyCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
-		Env.setContext(copyCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
-
-		try (final IAutoCloseable c = Env.switchContext(copyCtx))
-		{
-			return addOrUpdate0(candidate, preserveExistingSeqNo);
-		}
-	}
-
-	@VisibleForTesting
-	Candidate addOrUpdate0(@NonNull final Candidate candidate, final boolean preserveExistingSeqNo)
-	{
 		final Optional<I_MD_Candidate> oldCandidateRecord = retrieveExact(candidate);
 
 		final BigDecimal oldqty = oldCandidateRecord.isPresent() ? oldCandidateRecord.get().getQty() : BigDecimal.ZERO;
@@ -130,6 +111,11 @@ public class CandidateRepository
 		if (candidate.getSubType() == SubType.PRODUCTION && candidate.getProductionDetail() != null)
 		{
 			addOrRecplaceProductionDetail(candidate, synchedRecord);
+		}
+
+		if (candidate.getSubType() == SubType.DISTRIBUTION && candidate.getDistributionDetail() != null)
+		{
+			addOrRecplaceDistributionDetail(candidate, synchedRecord);
 		}
 
 		if (candidate.getDemandDetail() != null)
@@ -200,12 +186,49 @@ public class CandidateRepository
 		InterfaceWrapperHelper.save(detailRecordToUpdate);
 	}
 
-	private I_MD_Candidate_Prod_Detail retrieveProductionDetail(@NonNull final I_MD_Candidate synchedRecord)
+	private void addOrRecplaceDistributionDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final I_MD_Candidate_Dist_Detail detailRecordToUpdate;
+		final I_MD_Candidate_Dist_Detail existingDetail = retrieveDistributionDetail(synchedRecord);
+		if (existingDetail == null)
+		{
+			detailRecordToUpdate = InterfaceWrapperHelper.newInstance(I_MD_Candidate_Dist_Detail.class, synchedRecord);
+			detailRecordToUpdate.setMD_Candidate(synchedRecord);
+		}
+		else
+		{
+			detailRecordToUpdate = existingDetail;
+		}
+		final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
+		detailRecordToUpdate.setDD_NetworkDistributionLine_ID(distributionDetail.getNetworkDistributionLineId());
+		detailRecordToUpdate.setPP_Plant_ID(distributionDetail.getPlantId());
+		detailRecordToUpdate.setPP_Product_Planning_ID(distributionDetail.getProductPlanningId());
+		detailRecordToUpdate.setDD_Order_ID(distributionDetail.getDdOrderId());
+		detailRecordToUpdate.setDD_OrderLine_ID(distributionDetail.getDdOrderLineId());
+		detailRecordToUpdate.setDD_Order_DocStatus(distributionDetail.getDdOrderDocStatus());
+		detailRecordToUpdate.setM_Shipper_ID(distributionDetail.getShipperId());
+		InterfaceWrapperHelper.save(detailRecordToUpdate);
+	}
+
+	private I_MD_Candidate_Dist_Detail retrieveDistributionDetail(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final I_MD_Candidate_Dist_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
+				.create()
+				.firstOnly(I_MD_Candidate_Dist_Detail.class); // we have a UC in place..
+		return existingDetail;
+	}
+
+	private I_MD_Candidate_Prod_Detail retrieveProductionDetail(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final I_MD_Candidate_Prod_Detail existingDetail = queryBL.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, synchedRecord.getMD_Candidate_ID())
+				.addEqualsFilter(I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, candidateRecord.getMD_Candidate_ID())
 				.create()
 				.firstOnly(I_MD_Candidate_Prod_Detail.class); // we have a UC in place..
 		return existingDetail;
@@ -265,6 +288,30 @@ public class CandidateRepository
 	}
 
 	/**
+	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
+	 * 
+	 * @param parentId
+	 * @return
+	 */
+	public Optional<Candidate> retrieveSingleChild(@NonNull final Integer parentId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final I_MD_Candidate candidateRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, parentId)
+				.create()
+				.firstOnly(I_MD_Candidate.class);
+
+		if (candidateRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		return fromCandidateRecord(Optional.of(candidateRecord));
+	}
+
+	/**
 	 *
 	 * @param groupId
 	 * @return
@@ -296,8 +343,10 @@ public class CandidateRepository
 	 * <li>date</li>
 	 * <li>tableId and record (only if set)</li>
 	 * <li>demand details</li>
-	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.
-	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (like pporder ID and pporder BOM line ID which can change for zero to an actual reference)</li>
+	 * <li>production details: if {@link Candidate#getProductionDetail()} is {@code null}, then only records without product detail are selected.<br>
+	 * If it's not null and either a product plan ID or BOM line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ppOrder ID and ppOrder BOM line ID which can change from zero to an actual reference)</li>
+	 * <li>distribution details:if {@link Candidate#getDistributionDetail()} is {@link code null}, then only records without product detail are selected.<br>
+	 * If it's not null and either a product plan ID or network distribution line ID is set, then only records with a matching detail record are selected. Note that those two don't change (unlike ddOrder ID and ddOrderLine ID which can change from zero to an actual reference)</li>
 	 * </ul>
 	 *
 	 * @param candidate
@@ -323,6 +372,7 @@ public class CandidateRepository
 			builder.addEqualsFilter(I_MD_Candidate.COLUMN_Record_ID, referencedRecord.getRecord_ID());
 		}
 
+		// filter by demand detail ignore if there is none!
 		final DemandCandidateDetail demandDetail = candidate.getDemandDetail();
 		if (demandDetail != null && demandDetail.getOrderLineId() != 0)
 		{
@@ -347,6 +397,7 @@ public class CandidateRepository
 			}
 		}
 
+		// filter by productionDetail; if there is none, *don't* ignore, but filter for "not-existing"
 		{
 			final ProductionCandidateDetail productionDetail = candidate.getProductionDetail();
 
@@ -374,6 +425,38 @@ public class CandidateRepository
 				if (doFilter)
 				{
 					builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Prod_Detail.COLUMN_MD_Candidate_ID, productDetailSubQueryBuilder.create());
+				}
+			}
+		}
+
+		// filter by distributionDetail; if there is none, *don't* ignore, but filter for "not-existing"
+		{
+			final DistributionCandidateDetail distributionDetail = candidate.getDistributionDetail();
+
+			final IQueryBuilder<I_MD_Candidate_Dist_Detail> distDetailSubQueryBuilder = queryBL
+					.createQueryBuilder(I_MD_Candidate_Dist_Detail.class)
+					.addOnlyActiveRecordsFilter();
+
+			if (distributionDetail == null)
+			{
+				builder.addNotInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
+			}
+			else
+			{
+				boolean doFilter = false;
+				if (distributionDetail.getProductPlanningId() > 0)
+				{
+					distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_PP_Product_Planning_ID, distributionDetail.getProductPlanningId());
+					doFilter = true;
+				}
+				if (distributionDetail.getNetworkDistributionLineId() > 0)
+				{
+					distDetailSubQueryBuilder.addEqualsFilter(I_MD_Candidate_Dist_Detail.COLUMN_DD_NetworkDistributionLine_ID, distributionDetail.getNetworkDistributionLineId());
+					doFilter = true;
+				}
+				if (doFilter)
+				{
+					builder.addInSubQueryFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, I_MD_Candidate_Dist_Detail.COLUMN_MD_Candidate_ID, distDetailSubQueryBuilder.create());
 				}
 			}
 		}
@@ -469,8 +552,9 @@ public class CandidateRepository
 			return Optional.empty();
 		}
 
-		CandidateBuilder builder = Candidate.builder()
+		final CandidateBuilder builder = Candidate.builder()
 				.id(candidateRecord.getMD_Candidate_ID())
+				.clientId(candidateRecord.getAD_Client_ID())
 				.orgId(candidateRecord.getAD_Org_ID())
 				.productId(candidateRecord.getM_Product_ID())
 				.quantity(candidateRecord.getQty())
@@ -486,34 +570,50 @@ public class CandidateRepository
 
 		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
 		{
-			builder = builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
+			builder.parentId(candidateRecord.getMD_Candidate_Parent_ID());
 		}
 
 		if (candidateRecord.getRecord_ID() > 0)
 		{
-			builder = builder.reference(TableRecordReference.ofReferenced(candidateRecord));
+			builder.reference(TableRecordReference.ofReferenced(candidateRecord));
 		}
 
 		SubType subType = null;
 		if (!Check.isEmpty(candidateRecord.getMD_Candidate_SubType()))
 		{
 			subType = SubType.valueOf(candidateRecord.getMD_Candidate_SubType());
-			builder = builder.subType(subType);
+			builder.subType(subType);
 		}
 		if (subType == SubType.PRODUCTION)
 		{
-			final I_MD_Candidate_Prod_Detail productiondetail = retrieveProductionDetail(candidateRecord);
-			if (productiondetail != null)
+			final I_MD_Candidate_Prod_Detail productionDetail = retrieveProductionDetail(candidateRecord);
+			if (productionDetail != null)
 			{
 				builder.productionDetail(ProductionCandidateDetail.builder()
-						.description(productiondetail.getDescription())
-						.plantId(productiondetail.getPP_Plant_ID())
-						.productBomLineId(productiondetail.getPP_Product_BOMLine_ID())
-						.productPlanningId(productiondetail.getPP_Product_Planning_ID())
-						.uomId(productiondetail.getC_UOM_ID())
-						.ppOrderId(productiondetail.getPP_Order_ID())
-						.ppOrderLineId(productiondetail.getPP_Order_BOMLine_ID())
-						.ppOrderDocStatus(productiondetail.getPP_Order_DocStatus())
+						.description(productionDetail.getDescription())
+						.plantId(productionDetail.getPP_Plant_ID())
+						.productBomLineId(productionDetail.getPP_Product_BOMLine_ID())
+						.productPlanningId(productionDetail.getPP_Product_Planning_ID())
+						.uomId(productionDetail.getC_UOM_ID())
+						.ppOrderId(productionDetail.getPP_Order_ID())
+						.ppOrderLineId(productionDetail.getPP_Order_BOMLine_ID())
+						.ppOrderDocStatus(productionDetail.getPP_Order_DocStatus())
+						.build());
+			}
+		}
+		else if (subType == SubType.DISTRIBUTION)
+		{
+			final I_MD_Candidate_Dist_Detail distributionDetail = retrieveDistributionDetail(candidateRecord);
+			if (distributionDetail != null)
+			{
+				builder.distributionDetail(DistributionCandidateDetail.builder()
+						.networkDistributionLineId(distributionDetail.getDD_NetworkDistributionLine_ID())
+						.productPlanningId(distributionDetail.getPP_Product_Planning_ID())
+						.plantId(distributionDetail.getPP_Plant_ID())
+						.ddOrderId(distributionDetail.getDD_Order_ID())
+						.ddOrderLineId(distributionDetail.getDD_OrderLine_ID())
+						.ddOrderDocStatus(distributionDetail.getDD_Order_DocStatus())
+						.shipperId(distributionDetail.getM_Shipper_ID())
 						.build());
 			}
 		}

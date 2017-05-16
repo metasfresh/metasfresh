@@ -173,7 +173,7 @@ public class ProdcutionPlanEventHandlerTests
 	private ProductionPlanEvent createProductionPlanEvent()
 	{
 		final ProductionPlanEvent productionPlanEvent = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.ppOrder(PPOrder.builder()
 						.orgId(org.getAD_Org_ID())
 						.datePromised(t2)

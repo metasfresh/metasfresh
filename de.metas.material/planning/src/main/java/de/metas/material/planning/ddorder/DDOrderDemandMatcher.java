@@ -53,8 +53,14 @@ public class DDOrderDemandMatcher implements IMaterialDemandMatcher
 			return false;
 		}
 
-		// Check distribution network
 		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		if (productPlanning == null)
+		{
+			Loggables.get().addLog("Given MRP context has no PP_Product_Planning; mrpContext={}", mrpContext);
+			return false;
+		}
+
+		// Check if there is a distribution network
 		if (productPlanning.getDD_NetworkDistribution_ID() <= 0)
 		{
 			Loggables.get().addLog("No distribution network configured in product data planning og given mrp context; productPlanning={}; mrpContext={}", productPlanning, mrpContext);

@@ -62,13 +62,11 @@ public class ManufactoringEventSerializerTests
 		InterfaceWrapperHelper.save(someOtherTable);
 
 		final ReceiptScheduleEvent evt = ReceiptScheduleEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(1,2))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(SystemTime.asDate())
-						.orgId(10)
 						.productId(13)
 						.warehouseId(15)
-						.orgId(67)
 						.qty(BigDecimal.TEN)
 						.build())
 				.receiptScheduleDeleted(false)
@@ -106,13 +104,12 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = TransactionEvent
 				.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(1,2))
 				.materialDescr(MaterialDescriptor.builder()
 						.productId(14)
 						.qty(BigDecimal.TEN)
 						.date(SystemTime.asDate())
 						.warehouseId(12)
-						.orgId(66)
 						.build())
 				.reference(TableRecordReference.of(1, 2))
 				.build();
@@ -123,7 +120,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionOrderEvent()
 	{
 		final PPOrderRequestedEvent event = PPOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(1,2))
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())
@@ -166,7 +163,7 @@ public class ManufactoringEventSerializerTests
 	public void testProductionPlanEvent()
 	{
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(1,2))
 				.reference(TableRecordReference.of("table", 24))
 				.ppOrder(PPOrder.builder()
 						.datePromised(SystemTime.asDate())

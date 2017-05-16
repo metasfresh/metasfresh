@@ -1,16 +1,17 @@
-package de.metas.material.dispo.service.event;
+package de.metas.material.event;
 
-import java.sql.Timestamp;
+import java.util.List;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-import de.metas.material.dispo.model.I_MD_EventStore;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventListener;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
 
 /*
  * #%L
- * metasfresh-material-dispo
+ * metasfresh-material-event
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -30,18 +31,23 @@ import de.metas.material.event.MaterialEventListener;
  * #L%
  */
 
-public class EventStoreListener implements MaterialEventListener
+
+@Data
+@Builder
+@AllArgsConstructor
+public class DemandHandlerAuditEvent implements MaterialEvent
 {
+	public static final String TYPE = "NoPlanFoundEvent";
 
-	@Override
-	public void onEvent(MaterialEvent event)
-	{
-		final I_MD_EventStore eventStoreRecord = InterfaceWrapperHelper.newInstance(I_MD_EventStore.class);
+	@NonNull
+	private final EventDescr eventDescr;
+	
+	@NonNull
+	private final MaterialDescriptor descr;
 
-		eventStoreRecord.setEventTime(Timestamp.from(event.getEventDescr().getWhen()));
+	private final TableRecordReference reference;
 
-		// TODO Auto-generated method stub
+	private int orderLineId;
 
-	}
-
+	private final List<String> messages; 
 }

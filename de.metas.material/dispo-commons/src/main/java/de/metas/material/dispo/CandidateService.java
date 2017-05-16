@@ -1,7 +1,9 @@
 package de.metas.material.dispo;
 
+import java.util.Date;
 import java.util.List;
 
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -9,9 +11,14 @@ import com.google.common.base.Preconditions;
 
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.event.DDOrderRequestedEvent;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.PPOrderRequestedEvent;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
+import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.event.ddorder.DDOrderLine.DDOrderLineBuilder;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -52,7 +59,7 @@ public class CandidateService
 		this.candidateRepository = candidateRepository;
 	}
 
-	public void requestPPOrder(@NonNull final Integer groupId)
+	public void requestMaterialOrder(@NonNull final Integer groupId)
 	{
 		final List<Candidate> group = candidateRepository.retrieveGroup(groupId);
 		if (group.isEmpty())
@@ -65,7 +72,9 @@ public class CandidateService
 			case PRODUCTION:
 				requestProductionOrder(group);
 				break;
-
+			case DISTRIBUTION:
+				requestDistributionOrder(group);
+				break;
 			default:
 				break;
 		}
@@ -82,12 +91,12 @@ public class CandidateService
 
 	private void requestProductionOrder(@NonNull final List<Candidate> group)
 	{
-		final PPOrderRequestedEvent ppOrderRequestEvent = createRequestEvent(group);
+		final PPOrderRequestedEvent ppOrderRequestEvent = createPPOrderRequestEvent(group);
 		materialEventService.fireEvent(ppOrderRequestEvent);
 	}
 
 	@VisibleForTesting
-	PPOrderRequestedEvent createRequestEvent(final List<Candidate> group)
+	PPOrderRequestedEvent createPPOrderRequestEvent(final List<Candidate> group)
 	{
 		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
 
@@ -97,14 +106,14 @@ public class CandidateService
 		{
 			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
 			{
-				ppOrderBuilder = ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
+				ppOrderBuilder.orderLineId(groupMember.getDemandDetail().getOrderLineId());
 			}
 
 			final ProductionCandidateDetail prodDetail = groupMember.getProductionDetail();
-			if (prodDetail.getPlantId() > 0)
+			if (prodDetail.getProductBomLineId() <= 0)
 			{
 				// we talk about a ppOrder (header)
-				ppOrderBuilder = ppOrderBuilder
+				ppOrderBuilder
 						.productPlanningId(prodDetail.getProductPlanningId())
 						.datePromised(groupMember.getDate())
 						.orgId(groupMember.getOrgId())
@@ -137,11 +146,78 @@ public class CandidateService
 								.build());
 			}
 		}
+
+		final Candidate firstGroupMember = group.get(0);
+
 		return PPOrderRequestedEvent.builder()
-				.eventDescr(new EventDescr())
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
 				.ppOrder(ppOrderBuilder.build())
-				.reference(group.get(0).getReference())
+				.reference(firstGroupMember.getReference())
+				.build();
+	}
+
+	private void requestDistributionOrder(@NonNull final List<Candidate> group)
+	{
+		final DDOrderRequestedEvent ddOrderRequestEvent = createDDOrderRequestEvent(group);
+		materialEventService.fireEvent(ddOrderRequestEvent);
+	}
+
+	@VisibleForTesting
+	DDOrderRequestedEvent createDDOrderRequestEvent(@NonNull final List<Candidate> group)
+	{
+		Preconditions.checkArgument(!group.isEmpty(), "Param 'group' is an empty list");
+
+		final DDOrderBuilder ddOrderBuilder = DDOrder.builder();
+		final DDOrderLineBuilder ddOrderLineBuilder = DDOrderLine.builder();
+
+		Date startDate = null;
+		Date endDate = null;
+
+		for (final Candidate groupMember : group)
+		{
+			ddOrderBuilder.orgId(groupMember.getOrgId());
+			if (groupMember.getType() == Type.SUPPLY)
+			{
+				endDate = groupMember.getDate();
+				ddOrderBuilder.datePromised(groupMember.getDate());
+			}
+			else
+			{
+				startDate = groupMember.getDate();
+			}
+
+			ddOrderLineBuilder
+					.productId(groupMember.getProductId())
+					.qty(groupMember.getQuantity());
+
+			if (groupMember.getDemandDetail() != null && groupMember.getDemandDetail().getOrderLineId() > 0)
+			{
+				ddOrderLineBuilder.salesOrderLineId(groupMember.getDemandDetail().getOrderLineId());
+			}
+
+			final DistributionCandidateDetail distributionDetail = groupMember.getDistributionDetail();
+			ddOrderBuilder
+					.plantId(distributionDetail.getPlantId())
+					.productPlanningId(distributionDetail.getProductPlanningId())
+					.shipperId(distributionDetail.getShipperId());
+
+			ddOrderLineBuilder
+					.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId());
+
+		}
+
+		final int durationDays = TimeUtil.getDaysBetween(startDate, endDate);
+
+		final Candidate firstGroupMember = group.get(0);
+
+		return DDOrderRequestedEvent.builder()
+				.eventDescr(new EventDescr(firstGroupMember.getClientId(), firstGroupMember.getOrgId()))
+				.ddOrder(ddOrderBuilder
+						.line(ddOrderLineBuilder
+								.durationDays(durationDays)
+								.build())
+						.build())
+				.reference(firstGroupMember.getReference())
 				.build();
 	}
 }

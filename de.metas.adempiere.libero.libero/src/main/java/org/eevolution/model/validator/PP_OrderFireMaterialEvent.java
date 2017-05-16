@@ -69,7 +69,7 @@ public class PP_OrderFireMaterialEvent
 		}
 
 		final ProductionPlanEvent event = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(EventDescr.createNew(ppOrder))
 				.ppOrder(ppOrderPojoBuilder.build())
 				// .reference(reference) // we don't know the reference here, but we expect that the event-receiver (i.e. material-dispo) will be able to sort out which record(s) to update via date, orderLineId etc
 				.build();
