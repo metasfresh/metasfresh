@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -22,14 +6,15 @@ import java.util.Properties;
 
 /** Generated Model for AD_Window_Access
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Window_Access extends org.compiere.model.PO implements I_AD_Window_Access, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1015854001L;
 
     /** Standard Constructor */
     public X_AD_Window_Access (Properties ctx, int AD_Window_Access_ID, String trxName)
@@ -38,6 +23,7 @@ public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Pers
       /** if (AD_Window_Access_ID == 0)
         {
 			setAD_Role_ID (0);
+			setAD_Window_Access_ID (0);
 			setAD_Window_ID (0);
 			setIsReadWrite (false);
         } */
@@ -49,37 +35,32 @@ public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Pers
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Window_Access[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
+	}
 
-	public I_AD_Role getAD_Role() throws RuntimeException
-    {
-		return (I_AD_Role)MTable.get(getCtx(), I_AD_Role.Table_Name)
-			.getPO(getAD_Role_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class, AD_Role);
+	}
 
-	/** Set Role.
+	/** Set Rolle.
 		@param AD_Role_ID 
 		Responsibility Role
 	  */
+	@Override
 	public void setAD_Role_ID (int AD_Role_ID)
 	{
 		if (AD_Role_ID < 0) 
@@ -88,9 +69,10 @@ public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Pers
 			set_ValueNoCheck (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
 	}
 
-	/** Get Role.
+	/** Get Rolle.
 		@return Responsibility Role
 	  */
+	@Override
 	public int getAD_Role_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
@@ -99,15 +81,45 @@ public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Pers
 		return ii.intValue();
 	}
 
-	public I_AD_Window getAD_Window() throws RuntimeException
-    {
-		return (I_AD_Window)MTable.get(getCtx(), I_AD_Window.Table_Name)
-			.getPO(getAD_Window_ID(), get_TrxName());	}
+	/** Set AD_Window_Access.
+		@param AD_Window_Access_ID AD_Window_Access	  */
+	@Override
+	public void setAD_Window_Access_ID (int AD_Window_Access_ID)
+	{
+		if (AD_Window_Access_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Window_Access_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Window_Access_ID, Integer.valueOf(AD_Window_Access_ID));
+	}
 
-	/** Set Window.
+	/** Get AD_Window_Access.
+		@return AD_Window_Access	  */
+	@Override
+	public int getAD_Window_Access_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_Access_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
+	}
+
+	@Override
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
+	}
+
+	/** Set Fenster.
 		@param AD_Window_ID 
 		Data entry or display window
 	  */
+	@Override
 	public void setAD_Window_ID (int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
@@ -116,9 +128,10 @@ public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Pers
 			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
 	}
 
-	/** Get Window.
+	/** Get Fenster.
 		@return Data entry or display window
 	  */
+	@Override
 	public int getAD_Window_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
@@ -127,18 +140,20 @@ public class X_AD_Window_Access extends PO implements I_AD_Window_Access, I_Pers
 		return ii.intValue();
 	}
 
-	/** Set Read Write.
+	/** Set Lesen und Schreiben.
 		@param IsReadWrite 
 		Field is read / write
 	  */
+	@Override
 	public void setIsReadWrite (boolean IsReadWrite)
 	{
 		set_Value (COLUMNNAME_IsReadWrite, Boolean.valueOf(IsReadWrite));
 	}
 
-	/** Get Read Write.
+	/** Get Lesen und Schreiben.
 		@return Field is read / write
 	  */
+	@Override
 	public boolean isReadWrite () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsReadWrite);

@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for AD_Record_Access
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Record_Access extends org.compiere.model.PO implements I_AD_Record_Access, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -755033266L;
 
     /** Standard Constructor */
     public X_AD_Record_Access (Properties ctx, int AD_Record_Access_ID, String trxName)
@@ -55,37 +39,32 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Record_Access[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
+	}
 
-	public I_AD_Role getAD_Role() throws RuntimeException
-    {
-		return (I_AD_Role)MTable.get(getCtx(), I_AD_Role.Table_Name)
-			.getPO(getAD_Role_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class, AD_Role);
+	}
 
-	/** Set Role.
+	/** Set Rolle.
 		@param AD_Role_ID 
 		Responsibility Role
 	  */
+	@Override
 	public void setAD_Role_ID (int AD_Role_ID)
 	{
 		if (AD_Role_ID < 0) 
@@ -94,9 +73,10 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 			set_ValueNoCheck (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
 	}
 
-	/** Get Role.
+	/** Get Rolle.
 		@return Responsibility Role
 	  */
+	@Override
 	public int getAD_Role_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
@@ -105,15 +85,23 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 		return ii.intValue();
 	}
 
-	public I_AD_Table getAD_Table() throws RuntimeException
-    {
-		return (I_AD_Table)MTable.get(getCtx(), I_AD_Table.Table_Name)
-			.getPO(getAD_Table_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
 
-	/** Set Table.
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
 		@param AD_Table_ID 
 		Database Table information
 	  */
+	@Override
 	public void setAD_Table_ID (int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
@@ -122,9 +110,10 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
 	}
 
-	/** Get Table.
+	/** Get DB-Tabelle.
 		@return Database Table information
 	  */
+	@Override
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
@@ -133,18 +122,11 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getAD_Table_ID()));
-    }
-
 	/** Set Dependent Entities.
 		@param IsDependentEntities 
 		Also check access in dependent entities
 	  */
+	@Override
 	public void setIsDependentEntities (boolean IsDependentEntities)
 	{
 		set_Value (COLUMNNAME_IsDependentEntities, Boolean.valueOf(IsDependentEntities));
@@ -153,6 +135,7 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 	/** Get Dependent Entities.
 		@return Also check access in dependent entities
 	  */
+	@Override
 	public boolean isDependentEntities () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsDependentEntities);
@@ -165,18 +148,20 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 		return false;
 	}
 
-	/** Set Exclude.
+	/** Set Ausschluß.
 		@param IsExclude 
 		Exclude access to the data - if not selected Include access to the data
 	  */
+	@Override
 	public void setIsExclude (boolean IsExclude)
 	{
 		set_Value (COLUMNNAME_IsExclude, Boolean.valueOf(IsExclude));
 	}
 
-	/** Get Exclude.
+	/** Get Ausschluß.
 		@return Exclude access to the data - if not selected Include access to the data
 	  */
+	@Override
 	public boolean isExclude () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsExclude);
@@ -189,18 +174,20 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 		return false;
 	}
 
-	/** Set Read Only.
+	/** Set Schreibgeschützt.
 		@param IsReadOnly 
 		Field is read only
 	  */
+	@Override
 	public void setIsReadOnly (boolean IsReadOnly)
 	{
 		set_Value (COLUMNNAME_IsReadOnly, Boolean.valueOf(IsReadOnly));
 	}
 
-	/** Get Read Only.
+	/** Get Schreibgeschützt.
 		@return Field is read only
 	  */
+	@Override
 	public boolean isReadOnly () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsReadOnly);
@@ -213,10 +200,11 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 		return false;
 	}
 
-	/** Set Record ID.
+	/** Set Datensatz-ID.
 		@param Record_ID 
 		Direct internal record ID
 	  */
+	@Override
 	public void setRecord_ID (int Record_ID)
 	{
 		if (Record_ID < 0) 
@@ -225,9 +213,10 @@ public class X_AD_Record_Access extends PO implements I_AD_Record_Access, I_Pers
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
-	/** Get Record ID.
+	/** Get Datensatz-ID.
 		@return Direct internal record ID
 	  */
+	@Override
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);

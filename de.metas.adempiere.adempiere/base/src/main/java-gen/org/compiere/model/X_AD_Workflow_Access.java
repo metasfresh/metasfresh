@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -22,14 +6,15 @@ import java.util.Properties;
 
 /** Generated Model for AD_Workflow_Access
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_Workflow_Access extends org.compiere.model.PO implements I_AD_Workflow_Access, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 1624986497L;
 
     /** Standard Constructor */
     public X_AD_Workflow_Access (Properties ctx, int AD_Workflow_Access_ID, String trxName)
@@ -38,6 +23,7 @@ public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_
       /** if (AD_Workflow_Access_ID == 0)
         {
 			setAD_Role_ID (0);
+			setAD_Workflow_Access_ID (0);
 			setAD_Workflow_ID (0);
 			setIsReadWrite (false);
         } */
@@ -49,37 +35,32 @@ public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 6 - System - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_Workflow_Access[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_Role getAD_Role() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class);
+	}
 
-	public I_AD_Role getAD_Role() throws RuntimeException
-    {
-		return (I_AD_Role)MTable.get(getCtx(), I_AD_Role.Table_Name)
-			.getPO(getAD_Role_ID(), get_TrxName());	}
+	@Override
+	public void setAD_Role(org.compiere.model.I_AD_Role AD_Role)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Role_ID, org.compiere.model.I_AD_Role.class, AD_Role);
+	}
 
-	/** Set Role.
+	/** Set Rolle.
 		@param AD_Role_ID 
 		Responsibility Role
 	  */
+	@Override
 	public void setAD_Role_ID (int AD_Role_ID)
 	{
 		if (AD_Role_ID < 0) 
@@ -88,9 +69,10 @@ public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_
 			set_ValueNoCheck (COLUMNNAME_AD_Role_ID, Integer.valueOf(AD_Role_ID));
 	}
 
-	/** Get Role.
+	/** Get Rolle.
 		@return Responsibility Role
 	  */
+	@Override
 	public int getAD_Role_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
@@ -99,15 +81,45 @@ public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_
 		return ii.intValue();
 	}
 
-	public I_AD_Workflow getAD_Workflow() throws RuntimeException
-    {
-		return (I_AD_Workflow)MTable.get(getCtx(), I_AD_Workflow.Table_Name)
-			.getPO(getAD_Workflow_ID(), get_TrxName());	}
+	/** Set AD_Workflow_Access.
+		@param AD_Workflow_Access_ID AD_Workflow_Access	  */
+	@Override
+	public void setAD_Workflow_Access_ID (int AD_Workflow_Access_ID)
+	{
+		if (AD_Workflow_Access_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Workflow_Access_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Workflow_Access_ID, Integer.valueOf(AD_Workflow_Access_ID));
+	}
+
+	/** Get AD_Workflow_Access.
+		@return AD_Workflow_Access	  */
+	@Override
+	public int getAD_Workflow_Access_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_Access_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Workflow getAD_Workflow() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class);
+	}
+
+	@Override
+	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Workflow_ID, org.compiere.model.I_AD_Workflow.class, AD_Workflow);
+	}
 
 	/** Set Workflow.
 		@param AD_Workflow_ID 
 		Workflow or combination of tasks
 	  */
+	@Override
 	public void setAD_Workflow_ID (int AD_Workflow_ID)
 	{
 		if (AD_Workflow_ID < 1) 
@@ -119,6 +131,7 @@ public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_
 	/** Get Workflow.
 		@return Workflow or combination of tasks
 	  */
+	@Override
 	public int getAD_Workflow_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Workflow_ID);
@@ -127,18 +140,20 @@ public class X_AD_Workflow_Access extends PO implements I_AD_Workflow_Access, I_
 		return ii.intValue();
 	}
 
-	/** Set Read Write.
+	/** Set Lesen und Schreiben.
 		@param IsReadWrite 
 		Field is read / write
 	  */
+	@Override
 	public void setIsReadWrite (boolean IsReadWrite)
 	{
 		set_Value (COLUMNNAME_IsReadWrite, Boolean.valueOf(IsReadWrite));
 	}
 
-	/** Get Read Write.
+	/** Get Lesen und Schreiben.
 		@return Field is read / write
 	  */
+	@Override
 	public boolean isReadWrite () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsReadWrite);
