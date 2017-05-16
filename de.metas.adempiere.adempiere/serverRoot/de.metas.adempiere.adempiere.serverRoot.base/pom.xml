@@ -60,8 +60,8 @@
 			<exclusions>
 				<!-- excluded to avoid maven-enforcer-plugin error: Duplicate classes found: org.ow2.asm:asm:jar:5.0.3:test, net.minidev:accessors-smart:jar:1.1:test -->
 				<exclusion>
-				    <groupId>org.ow2.asm</groupId>
-   					<artifactId>asm</artifactId>
+					<groupId>org.ow2.asm</groupId>
+					<artifactId>asm</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -102,23 +102,36 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-
-		<dependency>
 			<!-- Required for org.compiere.server.AcctProcessor -->
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- workaound, see 06687 Get rid of calls to non-API (107116288996) -->
-		<!-- if you are using badly written maven plugins then blame them and add 
-			<scope>provided</scope> -->
-		<!-- <dependency> <groupId>org.codehaus.mojo</groupId> <artifactId>animal-sniffer-annotations</artifactId> 
-			<version>1.11</version> <optional>true</optional> </dependency> -->
+		<!-- Logging -->
+		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
+		<dependency>
+			<groupId>net.logstash.logback</groupId>
+			<artifactId>logstash-logback-encoder</artifactId>
+			<version>4.9</version>
+			<!--
+			<exclusions>
+				<exclusion>
+					<groupId>ch.qos.logback</groupId>
+					<artifactId>logback-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
+				</exclusion>
+			</exclusions>
+			-->
+		</dependency>
+		<!-- we need janino for the conditional that we have in the logback config -->
+		<dependency>
+			<groupId>org.codehaus.janino</groupId>
+			<artifactId>janino</artifactId>
+		</dependency>
 
 	</dependencies>
 
