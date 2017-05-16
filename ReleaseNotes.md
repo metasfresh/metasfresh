@@ -12,7 +12,7 @@ Here come the actual release notes:
 
 # metasfresh 5.10 (2017-20)
 
-**upcoming release for week 2017-19**
+**upcoming release for week 2017-20**
 
 ## Features
 
