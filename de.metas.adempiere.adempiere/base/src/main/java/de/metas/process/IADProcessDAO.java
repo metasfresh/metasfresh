@@ -31,9 +31,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
-import org.compiere.model.I_AD_Role;
 
 public interface IADProcessDAO extends ISingletonService
 {
@@ -158,12 +156,6 @@ public interface IADProcessDAO extends ISingletonService
 	 * @param durationMillisToAdd
 	 */
 	void addProcessStatistics(Properties ctx, int adProcessId, int adClientId, long durationMillisToAdd);
-
-	I_AD_Process_Access retrieveProcessAccessOrCreateDraft(Properties ctx, int adProcessId, I_AD_Role role);
-
-	I_AD_Process_Access createProcessAccessDraft(Properties ctx, int adProcessId, I_AD_Role role);
-
-	I_AD_Process_Access retrieveProcessAccess(Properties ctx, int adProcessId, int adRoleId);
 
 	/**
 	 * Copy settings from another process

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
@@ -22,14 +6,15 @@ import java.util.Properties;
 
 /** Generated Model for AD_UserBPAccess
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_AD_UserBPAccess extends org.compiere.model.PO implements I_AD_UserBPAccess, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 1577156915L;
 
     /** Standard Constructor */
     public X_AD_UserBPAccess (Properties ctx, int AD_UserBPAccess_ID, String trxName)
@@ -37,8 +22,8 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
       super (ctx, AD_UserBPAccess_ID, trxName);
       /** if (AD_UserBPAccess_ID == 0)
         {
-			setAD_UserBPAccess_ID (0);
 			setAD_User_ID (0);
+			setAD_UserBPAccess_ID (0);
 			setBPAccessType (null);
         } */
     }
@@ -49,32 +34,57 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 2 - Client 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_AD_UserBPAccess[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_AD_User getAD_User() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setAD_User(org.compiere.model.I_AD_User AD_User)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_User_ID, org.compiere.model.I_AD_User.class, AD_User);
+	}
+
+	/** Set Ansprechpartner.
+		@param AD_User_ID 
+		User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public void setAD_User_ID (int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+	}
+
+	/** Get Ansprechpartner.
+		@return User within the system - Internal or Business Partner Contact
+	  */
+	@Override
+	public int getAD_User_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	/** Set User BP Access.
 		@param AD_UserBPAccess_ID 
 		User/concat access to Business Partner information and resources
 	  */
+	@Override
 	public void setAD_UserBPAccess_ID (int AD_UserBPAccess_ID)
 	{
 		if (AD_UserBPAccess_ID < 1) 
@@ -86,6 +96,7 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
 	/** Get User BP Access.
 		@return User/concat access to Business Partner information and resources
 	  */
+	@Override
 	public int getAD_UserBPAccess_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_UserBPAccess_ID);
@@ -94,35 +105,10 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
 		return ii.intValue();
 	}
 
-	public I_AD_User getAD_User() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getAD_User_ID(), get_TrxName());	}
-
-	/** Set User/Contact.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
-	public void setAD_User_ID (int AD_User_ID)
-	{
-		if (AD_User_ID < 1) 
-			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
-	}
-
-	/** Get User/Contact.
-		@return User within the system - Internal or Business Partner Contact
-	  */
-	public int getAD_User_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** BPAccessType AD_Reference_ID=358 */
+	/** 
+	 * BPAccessType AD_Reference_ID=358
+	 * Reference name: AD_User BP AccessType
+	 */
 	public static final int BPACCESSTYPE_AD_Reference_ID=358;
 	/** Business Documents = B */
 	public static final String BPACCESSTYPE_BusinessDocuments = "B";
@@ -134,7 +120,8 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
 		@param BPAccessType 
 		Type of Access of the user/contact to Business Partner information and resources
 	  */
-	public void setBPAccessType (String BPAccessType)
+	@Override
+	public void setBPAccessType (java.lang.String BPAccessType)
 	{
 
 		set_Value (COLUMNNAME_BPAccessType, BPAccessType);
@@ -143,76 +130,89 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
 	/** Get Access Type.
 		@return Type of Access of the user/contact to Business Partner information and resources
 	  */
-	public String getBPAccessType () 
+	@Override
+	public java.lang.String getBPAccessType () 
 	{
-		return (String)get_Value(COLUMNNAME_BPAccessType);
+		return (java.lang.String)get_Value(COLUMNNAME_BPAccessType);
 	}
 
-	/** DocBaseType AD_Reference_ID=183 */
+	/** 
+	 * DocBaseType AD_Reference_ID=183
+	 * Reference name: C_DocType DocBaseType
+	 */
 	public static final int DOCBASETYPE_AD_Reference_ID=183;
-	/** GL Journal = GLJ */
+	/** GLJournal = GLJ */
 	public static final String DOCBASETYPE_GLJournal = "GLJ";
-	/** GL Document = GLD */
+	/** GLDocument = GLD */
 	public static final String DOCBASETYPE_GLDocument = "GLD";
-	/** AP Invoice = API */
+	/** APInvoice = API */
 	public static final String DOCBASETYPE_APInvoice = "API";
-	/** AP Payment = APP */
+	/** APPayment = APP */
 	public static final String DOCBASETYPE_APPayment = "APP";
-	/** AR Invoice = ARI */
+	/** ARInvoice = ARI */
 	public static final String DOCBASETYPE_ARInvoice = "ARI";
-	/** AR Receipt = ARR */
+	/** ARReceipt = ARR */
 	public static final String DOCBASETYPE_ARReceipt = "ARR";
-	/** Sales Order = SOO */
+	/** SalesOrder = SOO */
 	public static final String DOCBASETYPE_SalesOrder = "SOO";
-	/** AR Pro Forma Invoice = ARF */
+	/** ARProFormaInvoice = ARF */
 	public static final String DOCBASETYPE_ARProFormaInvoice = "ARF";
-	/** Material Delivery = MMS */
+	/** MaterialDelivery = MMS */
 	public static final String DOCBASETYPE_MaterialDelivery = "MMS";
-	/** Material Receipt = MMR */
+	/** MaterialReceipt = MMR */
 	public static final String DOCBASETYPE_MaterialReceipt = "MMR";
-	/** Material Movement = MMM */
+	/** MaterialMovement = MMM */
 	public static final String DOCBASETYPE_MaterialMovement = "MMM";
-	/** Purchase Order = POO */
+	/** PurchaseOrder = POO */
 	public static final String DOCBASETYPE_PurchaseOrder = "POO";
-	/** Purchase Requisition = POR */
+	/** PurchaseRequisition = POR */
 	public static final String DOCBASETYPE_PurchaseRequisition = "POR";
-	/** Material Physical Inventory = MMI */
+	/** MaterialPhysicalInventory = MMI */
 	public static final String DOCBASETYPE_MaterialPhysicalInventory = "MMI";
-	/** AP Credit Memo = APC */
+	/** APCreditMemo = APC */
 	public static final String DOCBASETYPE_APCreditMemo = "APC";
-	/** AR Credit Memo = ARC */
+	/** ARCreditMemo = ARC */
 	public static final String DOCBASETYPE_ARCreditMemo = "ARC";
-	/** Bank Statement = CMB */
+	/** BankStatement = CMB */
 	public static final String DOCBASETYPE_BankStatement = "CMB";
-	/** Cash Journal = CMC */
+	/** CashJournal = CMC */
 	public static final String DOCBASETYPE_CashJournal = "CMC";
-	/** Payment Allocation = CMA */
+	/** PaymentAllocation = CMA */
 	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
-	/** Material Production = MMP */
+	/** MaterialProduction = MMP */
 	public static final String DOCBASETYPE_MaterialProduction = "MMP";
-	/** Match Invoice = MXI */
+	/** MatchInvoice = MXI */
 	public static final String DOCBASETYPE_MatchInvoice = "MXI";
-	/** Match PO = MXP */
+	/** MatchPO = MXP */
 	public static final String DOCBASETYPE_MatchPO = "MXP";
-	/** Project Issue = PJI */
+	/** ProjectIssue = PJI */
 	public static final String DOCBASETYPE_ProjectIssue = "PJI";
-	/** Maintenance Order = MOF */
+	/** MaintenanceOrder = MOF */
 	public static final String DOCBASETYPE_MaintenanceOrder = "MOF";
-	/** Manufacturing Order = MOP */
+	/** ManufacturingOrder = MOP */
 	public static final String DOCBASETYPE_ManufacturingOrder = "MOP";
-	/** Quality Order = MQO */
+	/** QualityOrder = MQO */
 	public static final String DOCBASETYPE_QualityOrder = "MQO";
 	/** Payroll = HRP */
 	public static final String DOCBASETYPE_Payroll = "HRP";
-	/** Distribution Order = DOO */
+	/** DistributionOrder = DOO */
 	public static final String DOCBASETYPE_DistributionOrder = "DOO";
-	/** Manufacturing Cost Collector = MCC */
+	/** ManufacturingCostCollector = MCC */
 	public static final String DOCBASETYPE_ManufacturingCostCollector = "MCC";
+	/** Gehaltsrechnung (Angestellter) = AEI */
+	public static final String DOCBASETYPE_GehaltsrechnungAngestellter = "AEI";
+	/** Interne Rechnung (Lieferant) = AVI */
+	public static final String DOCBASETYPE_InterneRechnungLieferant = "AVI";
+	/** Speditionsauftrag/Ladeliste = MST */
+	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
+	/** CustomerContract = CON */
+	public static final String DOCBASETYPE_CustomerContract = "CON";
 	/** Set Document BaseType.
 		@param DocBaseType 
 		Logical type of document
 	  */
-	public void setDocBaseType (String DocBaseType)
+	@Override
+	public void setDocBaseType (java.lang.String DocBaseType)
 	{
 
 		set_Value (COLUMNNAME_DocBaseType, DocBaseType);
@@ -221,20 +221,29 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
 	/** Get Document BaseType.
 		@return Logical type of document
 	  */
-	public String getDocBaseType () 
+	@Override
+	public java.lang.String getDocBaseType () 
 	{
-		return (String)get_Value(COLUMNNAME_DocBaseType);
+		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
 	}
 
-	public I_R_RequestType getR_RequestType() throws RuntimeException
-    {
-		return (I_R_RequestType)MTable.get(getCtx(), I_R_RequestType.Table_Name)
-			.getPO(getR_RequestType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_R_RequestType getR_RequestType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_R_RequestType_ID, org.compiere.model.I_R_RequestType.class);
+	}
 
-	/** Set Request Type.
+	@Override
+	public void setR_RequestType(org.compiere.model.I_R_RequestType R_RequestType)
+	{
+		set_ValueFromPO(COLUMNNAME_R_RequestType_ID, org.compiere.model.I_R_RequestType.class, R_RequestType);
+	}
+
+	/** Set Anfrageart.
 		@param R_RequestType_ID 
 		Type of request (e.g. Inquiry, Complaint, ..)
 	  */
+	@Override
 	public void setR_RequestType_ID (int R_RequestType_ID)
 	{
 		if (R_RequestType_ID < 1) 
@@ -243,9 +252,10 @@ public class X_AD_UserBPAccess extends PO implements I_AD_UserBPAccess, I_Persis
 			set_Value (COLUMNNAME_R_RequestType_ID, Integer.valueOf(R_RequestType_ID));
 	}
 
-	/** Get Request Type.
+	/** Get Anfrageart.
 		@return Type of request (e.g. Inquiry, Complaint, ..)
 	  */
+	@Override
 	public int getR_RequestType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_R_RequestType_ID);

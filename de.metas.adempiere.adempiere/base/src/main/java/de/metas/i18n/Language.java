@@ -8,6 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
@@ -313,12 +314,35 @@ public final class Language implements Serializable
 	/**
 	 * Set the actual base language. Do not call this method because this is part of internal API.
 	 * 
-	 * @param languageSupplier base language supplier
+	 * @param baseADLanguageSupplier base language supplier
 	 */
-	public static void setBaseLanguage(final Supplier<Language> languageSupplier)
+	public static void setBaseLanguage(final Supplier<String> baseADLanguageSupplier)
 	{
-		Check.assumeNotNull(languageSupplier, "languageSupplier not null");
-		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(languageSupplier);
+		Check.assumeNotNull(baseADLanguageSupplier, "baseADLanguageSupplier not null");
+		_baseLanguageSupplier = ExtendedMemorizingSupplier.of(()->{
+			final String baseADLanguage = baseADLanguageSupplier.get();
+			final Language language = getLanguage(baseADLanguage);
+			if (language == null)
+			{
+				// metas: 03362: If there is no Language object for database configured base language,
+				// that is a big error and we need to throw an exception, instead of just returning
+				throw new AdempiereException("No " + Language.class + " defined for " + baseADLanguage);
+				// return;
+			}
+			log.info("Found base language: {}", language);
+
+			//
+			// Update current context
+			// TODO: consider removing this part because we shall not update the context from here. it's not expected at all.
+			final Properties ctx = Env.getCtx();
+			if (Check.isEmpty(Env.getContext(ctx, Env.CTXNAME_AD_Language), true))
+			{
+				Env.setContext(ctx, Env.CTXNAME_AD_Language, language.getAD_Language());
+			}
+			
+			return language;
+			
+		});
 	}
 
 	/**

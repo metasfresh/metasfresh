@@ -82,12 +82,12 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

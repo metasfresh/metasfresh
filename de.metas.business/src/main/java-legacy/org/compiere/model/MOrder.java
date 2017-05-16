@@ -44,7 +44,6 @@ import org.compiere.print.ReportEngine;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderDAO;
@@ -54,6 +53,7 @@ import de.metas.document.documentNo.IDocumentNoBL;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.Msg;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;

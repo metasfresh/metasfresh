@@ -239,16 +239,11 @@ public class VTabbedPane extends CTabbedPane
 	}
 
 	//hengsin, bug [ 1637763 ]
-	private static boolean isDisplay(GridController gc)
+	private static boolean isDisplay(final GridController gc)
 	{
 		final ILogicExpression displayLogic = gc.getDisplayLogic();
 		final boolean display = displayLogic.evaluate(gc, true); // ignoreUnparsable=true
-		if (!display)
-		{
-			log.info("Not displayed: {}", displayLogic);
-			return false;
-		}
-		return true;
+		return display;
 	}
 	
 	/**
@@ -361,7 +356,6 @@ public class VTabbedPane extends CTabbedPane
 			
 		if (process)
 		{
-			log.info(columnName == null ? "" : columnName);
 			for (int i = 0; i < components.size(); i++)
 			{
 				Component c = components.get(i);

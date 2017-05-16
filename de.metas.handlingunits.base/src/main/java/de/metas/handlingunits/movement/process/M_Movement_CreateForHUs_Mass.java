@@ -24,6 +24,7 @@ package de.metas.handlingunits.movement.process;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -41,8 +42,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.api.impl.HUMovementBuilder;
 import de.metas.interfaces.I_M_Movement;
-import de.metas.process.RunOutOfTrx;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 
 /**
  * Move selected HUs to to {@link IHUMovementBL#getDirectMove_Warehouse(java.util.Properties, boolean)}.
@@ -121,7 +122,7 @@ public class M_Movement_CreateForHUs_Mass extends JavaProcess
 		// Only for given SQL where clause
 		if (!Check.isEmpty(p_huWhereClause, true))
 		{
-			huQueryBuilder.addFilter(new TypedSqlQueryFilter<I_M_HU>(p_huWhereClause));
+			huQueryBuilder.addFilter(TypedSqlQueryFilter.of(p_huWhereClause));
 		}
 
 		// Fetch the HUs iterator

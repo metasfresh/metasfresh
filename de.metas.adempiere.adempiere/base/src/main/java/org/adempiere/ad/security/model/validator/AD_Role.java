@@ -1,29 +1,5 @@
 package org.adempiere.ad.security.model.validator;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
 import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.dao.cache.ITableCacheConfig;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
@@ -35,15 +11,11 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.impl.AD_Role_POCopyRecordSupport;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.MUserRoles;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_AD_Role;
 import org.compiere.util.CCache.CacheMapType;
@@ -97,28 +69,19 @@ public class AD_Role
 	{
 		// services:
 		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-		final String trxName = InterfaceWrapperHelper.getTrxName(role);
 
 		//
 		// Automatically assign new role to SuperUser and to the user who created it.
 		if (changeType.isNew())
 		{
 			// Add Role to SuperUser
-			final Properties ctx = InterfaceWrapperHelper.getCtx(role);
-
-			if (!roleDAO.hasUserRoleAssignment(ctx, IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID()))
-			{
-				final MUserRoles su = new MUserRoles(ctx, IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID(), trxName);
-				InterfaceWrapperHelper.save(su);
-			}
+			roleDAO.createUserRoleAssignmentIfMissing(IUserDAO.SUPERUSER_USER_ID, role.getAD_Role_ID());
 
 			// Add Role to User which created this record
 			final int createdByUserId = role.getCreatedBy();
-			
-			if ((createdByUserId != IUserDAO.SUPERUSER_USER_ID) && !roleDAO.hasUserRoleAssignment(ctx, createdByUserId, role.getAD_Role_ID()))
+			if (createdByUserId != IUserDAO.SUPERUSER_USER_ID)
 			{
-				final MUserRoles ur = new MUserRoles(ctx, createdByUserId, role.getAD_Role_ID(), trxName);
-				InterfaceWrapperHelper.save(ur);
+				roleDAO.createUserRoleAssignmentIfMissing(createdByUserId, role.getAD_Role_ID());
 			}
 		}
 
@@ -132,16 +95,8 @@ public class AD_Role
 
 		//
 		// Reset the cached role permissions after the transaction is commited.
-		Services.get(ITrxManager.class)
-				.getTrxListenerManager(trxName)
-				.registerListener(new TrxListenerAdapter()
-				{
-					@Override
-					public void afterCommit(final ITrx trx)
-					{
-						Env.resetUserRolePermissions();
-					}
-				});
+		// NOTE: not needed because it's performed automatically
+		//Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
 	}	// afterSave
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)

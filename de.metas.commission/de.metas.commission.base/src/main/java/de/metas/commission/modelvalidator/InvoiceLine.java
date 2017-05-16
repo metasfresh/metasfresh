@@ -37,13 +37,13 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
 import de.metas.commission.interfaces.I_C_InvoiceLine;
 import de.metas.commission.interfaces.I_C_OrderLine;
 import de.metas.commission.model.IInstanceTrigger;
 import de.metas.commission.service.IInstanceTriggerBL;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 public class InvoiceLine implements ModelValidator

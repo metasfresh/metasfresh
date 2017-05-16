@@ -80,4 +80,12 @@ public interface IHUAndItemsDAO
 	 * @see IHandlingUnitsDAO#createAggregateHUItem(I_M_HU)
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);
+
+	/**
+	 * Retrieve the Aggregated Item from an HU in case it has one
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu);
 }

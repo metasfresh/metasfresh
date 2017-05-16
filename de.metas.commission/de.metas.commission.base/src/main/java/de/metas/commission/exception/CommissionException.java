@@ -27,9 +27,9 @@ import java.util.Arrays;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.commission.util.Messages;
+import de.metas.i18n.Msg;
 
 public class CommissionException extends AdempiereException
 {

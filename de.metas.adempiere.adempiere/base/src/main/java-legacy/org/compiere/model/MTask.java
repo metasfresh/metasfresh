@@ -19,8 +19,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Task;
+
+import de.metas.i18n.Msg;
 
 /**
  * 	Operating Task Model

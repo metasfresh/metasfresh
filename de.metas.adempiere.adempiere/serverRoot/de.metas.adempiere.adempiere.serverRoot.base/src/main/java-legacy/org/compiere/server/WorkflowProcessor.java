@@ -22,15 +22,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 
+import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.util.Services;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrgInfo;
-import org.compiere.model.MUserRoles;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
 import org.compiere.process.StateEngine;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.compiere.wf.MWFActivity;
 import org.compiere.wf.MWFNode;
@@ -38,6 +39,8 @@ import org.compiere.wf.MWFProcess;
 import org.compiere.wf.MWFResponsible;
 import org.compiere.wf.MWorkflowProcessor;
 import org.compiere.wf.MWorkflowProcessorLog;
+
+import de.metas.i18n.Msg;
 
 
 /**
@@ -417,7 +420,7 @@ public class WorkflowProcessor extends AdempiereServer
 	/**
 	 * 	Send Alert To Responsible
 	 *	@param responsible responsible
-	 *	@param list list of already sent users
+	 *	@param alreadyNotifiedUserIds list of already sent users
 	 *	@param process process
 	 *	@param subject subject
 	 *	@param message message
@@ -425,7 +428,7 @@ public class WorkflowProcessor extends AdempiereServer
 	 *	@return number of mail sent
 	 */
 	private int sendAlertToResponsible (MWFResponsible responsible, 
-		ArrayList<Integer> list, MWFProcess process,
+		ArrayList<Integer> alreadyNotifiedUserIds, MWFProcess process,
 		String subject, String message, File pdf)
 	{
 		int counter = 0;
@@ -433,12 +436,12 @@ public class WorkflowProcessor extends AdempiereServer
 			;
 		//	Human
 		else if (MWFResponsible.RESPONSIBLETYPE_Human.equals(responsible.getResponsibleType())
-			&& responsible.getAD_User_ID() != 0
-			&& !list.contains(new Integer(responsible.getAD_User_ID())))
+			&& responsible.getAD_User_ID() > 0
+			&& !alreadyNotifiedUserIds.contains(responsible.getAD_User_ID()))
 		{
 			if (m_client.sendEMail(responsible.getAD_User_ID(), subject, message, pdf))
 				counter++;
-			list.add (new Integer(responsible.getAD_User_ID()));
+			alreadyNotifiedUserIds.add(responsible.getAD_User_ID());
 		}
 		//	Org of the Document
 		else if (MWFResponsible.RESPONSIBLETYPE_Organization.equals(responsible.getResponsibleType()))
@@ -447,31 +450,27 @@ public class WorkflowProcessor extends AdempiereServer
 			if (document != null)
 			{
 				MOrgInfo org = MOrgInfo.get (getCtx(), document.getAD_Org_ID());
-				if (org.getSupervisor_ID() != 0
-					&& !list.contains(new Integer(org.getSupervisor_ID())))
+				if (org.getSupervisor_ID() > 0
+					&& !alreadyNotifiedUserIds.contains(org.getSupervisor_ID()))
 				{
 					if (m_client.sendEMail(org.getSupervisor_ID(), subject, message, pdf))
 						counter++;
-					list.add (new Integer(org.getSupervisor_ID()));
+					alreadyNotifiedUserIds.add(org.getSupervisor_ID());
 				}
 			}
 		}
 		//	Role
 		else if (MWFResponsible.RESPONSIBLETYPE_Role.equals(responsible.getResponsibleType())
-			&& responsible.getAD_Role_ID() != 0)
+			&& responsible.getAD_Role_ID() > 0)
 		{
-			MUserRoles[] userRoles = MUserRoles.getOfRole(getCtx(), responsible.getAD_Role_ID());
-			for (int i = 0; i < userRoles.length; i++)
+			final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(responsible.getAD_Role_ID());
+			for (final int adUserId : allRoleUserIds)
 			{
-				MUserRoles roles = userRoles[i];
-				if (!roles.isActive())
-					continue;
-				int AD_User_ID = roles.getAD_User_ID();
-				if (!list.contains(new Integer(AD_User_ID)))
+				if (!alreadyNotifiedUserIds.contains(adUserId))
 				{
-					if (m_client.sendEMail(AD_User_ID, subject, message, pdf))
+					if (m_client.sendEMail(adUserId, subject, message, pdf))
 						counter++;
-					list.add (new Integer(AD_User_ID));
+					alreadyNotifiedUserIds.add(adUserId);
 				}
 			}
 		}

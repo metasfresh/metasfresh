@@ -54,7 +54,6 @@ import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.commission.interfaces.I_C_BPartner_Location;
@@ -62,6 +61,7 @@ import de.metas.commission.model.I_C_Invoice_VAT_Corr_Candidates_v1;
 import de.metas.commission.service.IBPartnerDAO;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.document.IDocumentPA;
+import de.metas.i18n.Msg;
 import de.metas.tax.api.ITaxBL;
 
 /**
