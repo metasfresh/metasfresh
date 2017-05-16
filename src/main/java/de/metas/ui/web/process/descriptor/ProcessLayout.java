@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -49,27 +49,9 @@ public class ProcessLayout
 		return new Builder();
 	}
 
-	public static enum ProcessLayoutType
-	{
-		Panel("panel"), SingleOverlayField("singleOverlayField");
-
-		private final String json;
-
-		private ProcessLayoutType(final String json)
-		{
-			this.json = json;
-		}
-
-		@JsonValue
-		public String toJson()
-		{
-			return json;
-		}
-	};
-
 	private final ProcessId processId;
 
-	private final ProcessLayoutType layoutType;
+	private final PanelLayoutType layoutType;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
@@ -102,7 +84,7 @@ public class ProcessLayout
 				.toString();
 	}
 
-	public ProcessLayoutType getLayoutType()
+	public PanelLayoutType getLayoutType()
 	{
 		return layoutType;
 	}
@@ -135,7 +117,7 @@ public class ProcessLayout
 	public static final class Builder
 	{
 		private ProcessId processId;
-		private ProcessLayoutType layoutType = ProcessLayoutType.Panel;
+		private PanelLayoutType layoutType = PanelLayoutType.Panel;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 
@@ -167,7 +149,7 @@ public class ProcessLayout
 			return this;
 		}
 
-		public Builder setLayoutType(final ProcessLayoutType layoutType)
+		public Builder setLayoutType(final PanelLayoutType layoutType)
 		{
 			this.layoutType = layoutType;
 			return this;

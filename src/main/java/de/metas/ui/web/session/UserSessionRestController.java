@@ -1,6 +1,5 @@
 package de.metas.ui.web.session;
 
-import org.compiere.util.Language;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -8,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.metas.i18n.Language;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.json.JSONUserSession;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;

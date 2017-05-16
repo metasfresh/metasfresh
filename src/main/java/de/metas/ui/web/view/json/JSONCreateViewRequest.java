@@ -44,7 +44,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @lombok.Data
-public final class JSONViewCreateRequest implements Serializable
+public final class JSONCreateViewRequest implements Serializable
 {
 	@JsonProperty("documentType")
 	private final WindowId windowId;
@@ -71,7 +71,7 @@ public final class JSONViewCreateRequest implements Serializable
 	private final int queryPageLength;
 
 	@JsonCreator
-	private JSONViewCreateRequest(
+	private JSONCreateViewRequest(
 			@JsonProperty("documentType") final WindowId windowId //
 			, @JsonProperty("viewType") final JSONViewDataType viewType //
 			, @JsonProperty("referencing") final JSONReferencing referencing //
@@ -81,7 +81,6 @@ public final class JSONViewCreateRequest implements Serializable
 			, @JsonProperty("queryPageLength") final int queryPageLength //
 	)
 	{
-		super();
 		this.windowId = windowId;
 		this.viewType = viewType;
 
@@ -111,7 +110,7 @@ public final class JSONViewCreateRequest implements Serializable
 				.map(id -> DocumentPath.rootDocumentPath(windowId, id))
 				.collect(GuavaCollectors.toImmutableSet());
 	}
-
+	
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Data
 	public static final class JSONReferencing implements Serializable

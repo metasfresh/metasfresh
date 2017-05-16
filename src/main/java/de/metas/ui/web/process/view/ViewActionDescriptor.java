@@ -15,12 +15,12 @@ import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.view.ViewAction.Precondition;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import lombok.Builder;
@@ -69,7 +69,7 @@ public final class ViewActionDescriptor
 	private final Class<? extends Precondition> preconditionClass;
 	private final Precondition preconditionSharedInstance;
 
-	private final @NonNull ProcessLayoutType layoutType;
+	private final @NonNull PanelLayoutType layoutType;
 
 	@Singular
 	private final ImmutableList<ViewActionParamDescriptor> viewActionParamDescriptors;

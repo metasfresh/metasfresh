@@ -75,6 +75,10 @@ public final class JSONViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilter> filters;
 
+	@JsonProperty(value = "stickyFilters")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONDocumentFilter> stickyFilters;
+
 	//
 	// Page informations (optional)
 	// NOTE: important to distinguish between "empty" and "null", i.e.
@@ -121,6 +125,8 @@ public final class JSONViewResult implements Serializable
 		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
 
+		// NOTE: stickyFilters are not used by frontend but we are adding them to ease the troubleshooting
+		stickyFilters = JSONDocumentFilter.ofList(viewResult.getStickyFilters());
 		filters = JSONDocumentFilter.ofList(viewResult.getFilters());
 		orderBy = JSONViewOrderBy.ofList(viewResult.getOrderBys());
 
@@ -155,6 +161,7 @@ public final class JSONViewResult implements Serializable
 			//
 			, @JsonProperty("size") final Long size //
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
+			, @JsonProperty(value = "stickyFilters") final List<JSONDocumentFilter> stickyFilters //
 			, @JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy //
 			//
 			, @JsonProperty("result") final List<JSONViewRow> result //
@@ -178,6 +185,7 @@ public final class JSONViewResult implements Serializable
 		//
 		this.size = size;
 		this.filters = filters == null ? ImmutableList.of() : filters;
+		this.stickyFilters = stickyFilters == null ? ImmutableList.of() : stickyFilters;
 		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
 
 		//

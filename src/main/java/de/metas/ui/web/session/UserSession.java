@@ -11,13 +11,13 @@ import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;

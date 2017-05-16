@@ -19,6 +19,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
@@ -66,6 +67,9 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 
 	@JsonProperty("frequent")
 	private final boolean frequentUsed;
+
+	@JsonProperty("parametersLayoutType")
+	private final PanelLayoutType parametersLayoutType;
 	
 	@JsonProperty("parameters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -79,6 +83,8 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 		filterId = filter.getFilterId();
 		caption = filter.getDisplayName(jsonOpts.getAD_Language());
 		frequentUsed = filter.isFrequentUsed();
+		
+		parametersLayoutType = filter.getParametersLayoutType();
 		parameters = JSONDocumentFilterParamDescriptor.ofCollection(filter.getParameters(), jsonOpts);
 
 		debugProperties = filter.getDebugProperties();
@@ -89,13 +95,17 @@ public final class JSONDocumentFilterDescriptor implements Serializable
 			@JsonProperty("filterId") final String filterId //
 			, @JsonProperty("caption") final String caption //
 			, @JsonProperty("frequent") final boolean frequentUsed //
+			, @JsonProperty("parametersLayoutType") final PanelLayoutType parametersLayoutType //
 			, @JsonProperty("parameters") final List<JSONDocumentFilterParamDescriptor> parameters //
 	)
 	{
 		this.filterId = filterId;
 		this.caption = caption;
 		this.frequentUsed = frequentUsed;
+		
+		this.parametersLayoutType = parametersLayoutType == null ? PanelLayoutType.Panel : parametersLayoutType;
 		this.parameters = parameters;
+		
 		debugProperties = new LinkedHashMap<>();
 	}
 

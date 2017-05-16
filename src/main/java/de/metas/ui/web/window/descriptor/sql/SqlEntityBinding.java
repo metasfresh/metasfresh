@@ -2,6 +2,9 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -43,6 +46,9 @@ public interface SqlEntityBinding
 		return getFieldByFieldName(fieldName).getSqlOrderBy();
 	}
 
-
-
+	/** @return registered document filter to SQL converters */
+	default SqlDocumentFilterConvertersList getFilterConverters()
+	{
+		return SqlDocumentFilterConverters.emptyList();
+	}
 }

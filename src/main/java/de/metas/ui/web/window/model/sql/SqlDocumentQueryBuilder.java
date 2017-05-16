@@ -23,7 +23,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFiltersBuilder;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -396,9 +396,8 @@ public class SqlDocumentQueryBuilder
 		//
 		// Document filters
 		{
-			final String sqlFilters = SqlDocumentFiltersBuilder.newInstance(entityBinding)
-					.addFilters(getDocumentFilters())
-					.buildSqlWhereClause(sqlParams);
+			final String sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
+					.getSql(sqlParams, getDocumentFilters());
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
