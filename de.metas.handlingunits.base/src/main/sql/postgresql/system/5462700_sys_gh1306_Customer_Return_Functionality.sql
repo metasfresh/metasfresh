@@ -33,225 +33,7 @@ UPDATE AD_Field SET SeqNo=41, SeqNoGrid=41,Updated=TO_TIMESTAMP('2017-05-16 18:3
 UPDATE AD_Field SET SeqNo=42, SeqNoGrid=42,Updated=TO_TIMESTAMP('2017-05-16 18:31:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558494
 ;
 
--- 2017-05-16T18:36:48.496
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-AND M_HU_PI_Item_Product.ValidFrom <= COALESCE(''@DateOrdered@'', ''@MovementDate@'') AND ( COALESCE(''@DateOrdered@'', ''@MovementDate@'') <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
 
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=  COALESCE(''@DateOrdered@'', ''@MovementDate@'')
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-',Updated=TO_TIMESTAMP('2017-05-16 18:36:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
-
--- 2017-05-16T18:47:11.942
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowpisicAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-AND M_HU_PI_Item_Product.ValidFrom <= COALESCE(''@DateOrdered@'', ''@MovementDate@'') AND ( COALESCE(''@DateOrdered@'', ''@MovementDate@'') <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
-
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=  COALESCE(''@DateOrdered@'', ''@MovementDate@'')
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-',Updated=TO_TIMESTAMP('2017-05-16 18:47:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
-
--- 2017-05-16T18:50:03.680
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Prodpisicuct.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-AND M_HU_PI_Item_Product.ValidFrom <= COALESCE(''@DateOrdered@'', ''@MovementDate@'') AND ( COALESCE(''@DateOrdered@'', ''@MovementDate@'') <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
-
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=  COALESCE(''@DateOrdered@'', ''@MovementDate@'')
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-',Updated=TO_TIMESTAMP('2017-05-16 18:50:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
-
--- 2017-05-16T18:51:50.120
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-AND M_HU_PI_Item_Product.ValidFrom <= COALESCE(''@DateOrdered@'', ''@MovementDate@'') AND ( COALESCE(''@DateOrdered@'', ''@MovementDate@'') <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
-
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=  COALESCE(''@DateOrdered@'', ''@MovementDate@'')
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-',Updated=TO_TIMESTAMP('2017-05-16 18:51:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
 
 -- 2017-05-16T18:52:36.223
 -- URL zum Konzept
@@ -313,180 +95,7 @@ ALTER TABLE M_InOutLine ADD CONSTRAINT MHULUTUConfiguration_MInOutLin FOREIGN KE
 
 
 
--- 2017-05-16T20:49:02.826
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-AND M_HU_PI_Item_Product.ValidFrom <= COALESCE(''@DateOrdered@'', ''@MovementDate@'') ::date AND ( COALESCE(''@DateOrdered@'', ''@MovementDate@'')::date <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
 
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=  COALESCE(''@DateOrdered@'', ''@MovementDate@'')::date
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-',Updated=TO_TIMESTAMP('2017-05-16 20:49:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
-
--- 2017-05-16T20:52:43.566
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-AND (
-(M_HU_PI_Item_Product.ValidFrom <= ''@DateOrdered@''  AND ''@DateOrdered@'' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
-
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=''@DateOrdered@''
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-)
-OR(@C_DocType_ID/-1@ = 1000015)
-',Updated=TO_TIMESTAMP('2017-05-16 20:52:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
-
--- 2017-05-16T20:59:28.944
--- URL zum Konzept
-UPDATE AD_Val_Rule SET Code='-- GENERAL
-M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
-AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
-AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
-
-AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
-	( SELECT i.M_HU_PI_Item_ID 
-	FROM M_HU_PI_Item i 
-	WHERE i.M_HU_PI_Version_ID IN
-		(SELECT v.M_HU_PI_Version_ID 
-		FROM M_HU_PI_Version v 
-		WHERE v.HU_UnitType = ''TU''
-		)
-	)
-AND( (
-(M_HU_PI_Item_Product.ValidFrom <= ''@DateOrdered@''  AND ''@DateOrdered@'' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
-
-	
--- Price list
-AND
-(
-	-- AUFTRAG
-	(
-		''@IsSOTrx@'' = ''Y''
-	)
-
-	-- BESTELLUNG
-	OR
-	(
-		''@IsSOTrx@'' = ''N''
-		AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID IN
-		(
-			SELECT pp.M_HU_PI_Item_Product_ID
-			FROM M_ProductPrice pp
-			WHERE pp.M_Product_ID = @M_Product_ID@ AND pp.IsActive = ''Y''
-			AND pp.M_PriceList_Version_ID =
-			(
-				SELECT M_PriceList_Version.M_PriceList_Version_ID
-				FROM M_PriceList_Version
-				WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-				AND M_PriceList_Version.IsActive = ''Y''
-				AND M_PriceList_Version.ValidFrom =
-				(
-					SELECT MAX(M_PriceList_Version.ValidFrom)
-					FROM M_PriceList_Version
-					WHERE M_PriceList_Version.M_PriceList_ID = @M_PriceList_ID@
-					AND M_PriceList_Version.ValidFrom <=''@DateOrdered@''
-					GROUP BY M_PriceList_ID
-				)
-			)
-		)
-	)
-)
-)
-OR(@C_DocType_ID/-1@ = 1000015))
-',Updated=TO_TIMESTAMP('2017-05-16 20:59:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540199
-;
 
 commit;
 -- 2017-05-16T21:01:38.851
@@ -509,6 +118,33 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 -- 2017-05-16T21:31:06.042
 -- URL zum Konzept
 UPDATE AD_Field SET SeqNo=199, SeqNoGrid=199,Updated=TO_TIMESTAMP('2017-05-16 21:31:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558495
+;
+
+-- 2017-05-16T22:04:21.344
+-- URL zum Konzept
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540355,'-- GENERAL
+M_HU_PI_Item_Product.AD_Org_ID IN (0, @AD_Org_ID@)
+AND (M_HU_PI_Item_Product.M_Product_ID=@M_Product_ID@ OR (M_HU_PI_Item_Product.isAllowAnyProduct=''Y'' AND M_HU_PI_Item_Product.M_HU_PI_Item_Product_ID not in (100)))
+AND ( M_HU_PI_Item_Product.C_BPartner_ID = @C_BPartner_ID@ OR M_HU_PI_Item_Product.C_BPartner_ID IS NULL)
+
+AND M_HU_PI_Item_Product.M_HU_PI_Item_ID IN
+	( SELECT i.M_HU_PI_Item_ID 
+	FROM M_HU_PI_Item i 
+	WHERE i.M_HU_PI_Version_ID IN
+		(SELECT v.M_HU_PI_Version_ID 
+		FROM M_HU_PI_Version v 
+		WHERE v.HU_UnitType = ''TU''
+		)
+	)
+AND 
+(M_HU_PI_Item_Product.ValidFrom <= ''@MovementDate@''  AND ''@MovementDate@'' <= M_HU_PI_Item_Product.ValidTo OR M_HU_PI_Item_Product.ValidTo IS NULL )
+
+',TO_TIMESTAMP('2017-05-16 22:04:21','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','M_HU_PI_Item_Product_For_Org_and_Product_and_MovementDate','S',TO_TIMESTAMP('2017-05-16 22:04:21','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-16T22:04:32.079
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Val_Rule_ID=540355,Updated=TO_TIMESTAMP('2017-05-16 22:04:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=551521
 ;
 
 
