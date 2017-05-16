@@ -37,6 +37,8 @@ Here come the actual release notes:
     * New window in WebUI to allow the Print Format maintenance.
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
+  * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
+    * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
  
 ## Fixes
 
