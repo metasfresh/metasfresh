@@ -92,9 +92,13 @@ class FiltersItem extends Component {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
 
-        applyFilters(filter, () => {
-            closeFilterMenu();
-        });
+        if(filter && !filter.parameters[0].value){
+            this.handleClear();
+        }else {
+            applyFilters(filter, () => {
+                closeFilterMenu();
+            });
+        }
     }
 
     handleClear = () => {
