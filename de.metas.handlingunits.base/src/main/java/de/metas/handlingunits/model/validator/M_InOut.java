@@ -108,6 +108,12 @@ public class M_InOut
 		{
 			return;
 		}
+		
+		// make sure we are not dealing with a customer return
+		if(Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
+		{
+			return;
+		}
 
 		Services.get(IHUShipmentAssignmentBL.class).updateHUsOnShipmentComplete(shipment);
 	}
@@ -261,8 +267,15 @@ public class M_InOut
 			return;
 		}
 
-		// create HUs based on the lines inthe customer return inout
-		huInOutBL.createHUsForCustomerReturn(customerReturn);
+		final List<org.compiere.model.I_M_InOutLine> lines = Services.get(IInOutDAO.class).retrieveLines(customerReturn);
+
+		for (final org.compiere.model.I_M_InOutLine line : lines)
+		{
+
+			final I_M_InOutLine customerReturnLine = InterfaceWrapperHelper.create(line, I_M_InOutLine.class);
+			// create HUs based on the lines inthe customer return inout
+			huInOutBL.createHUsForCustomerReturn(customerReturnLine);
+		}
 	}
 
 }

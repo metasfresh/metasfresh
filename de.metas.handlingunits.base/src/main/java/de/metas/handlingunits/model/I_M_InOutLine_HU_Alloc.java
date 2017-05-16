@@ -35,7 +35,7 @@ public interface I_M_InOutLine_HU_Alloc extends de.metas.inout.model.I_M_InOutLi
 
 	// @formatter:off
  	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
- 	// void setM_TU_HU_ID(int M_TU_HU_ID); // commented out because it's descouraged
+ 	// void setM_TU_HU_ID(int M_TU_HU_ID); // commented out because it's discouraged
  	int getM_TU_HU_ID();
  	de.metas.handlingunits.model.I_M_HU getM_TU_HU() throws RuntimeException;
  	void setM_TU_HU(de.metas.handlingunits.model.I_M_HU M_HU);

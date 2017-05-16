@@ -139,4 +139,6 @@ public interface IHUInOutBL extends ISingletonService
 	 */
 	void createHUsForCustomerReturn(I_M_InOut customerReturn);
 
+	void createHUsForCustomerReturn(I_M_InOutLine customerReturnLine);
+
 }

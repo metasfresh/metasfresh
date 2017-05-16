@@ -3,12 +3,12 @@ package de.metas.handlingunits.inout;
 import java.math.BigDecimal;
 
 import org.adempiere.model.IContextAware;
+import org.compiere.model.I_C_UOM;
 
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleAllocBuilder;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_InOutLine_HU_Alloc;
-import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
-import de.metas.inoutcandidate.api.impl.ReceiptScheduleAllocBuilder;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 
 /*
  * #%L
@@ -39,9 +39,24 @@ public interface IHUCustomerReturnAllocBuilder
 
 	I_M_InOutLine_HU_Alloc buildAndSave();
 
-	ReceiptScheduleAllocBuilder setContext(IContextAware context);
+	IHUCustomerReturnAllocBuilder setContext(IContextAware context);
 
-	IReceiptScheduleAllocBuilder setQtyToAllocate(BigDecimal qtyToAllocate);
+	IHUCustomerReturnAllocBuilder setQtyToAllocate(BigDecimal qtyToAllocate);
 
-	IReceiptScheduleAllocBuilder setM_InOutLine(I_M_InOutLine receiptLine);
+	IHUCustomerReturnAllocBuilder setM_InOutLine(I_M_InOutLine receiptLine);
+
+	I_M_InOutLine_HU_Alloc build(I_M_InOutLine_HU_Alloc huAlloc);
+
+	IHUCustomerReturnAllocBuilder setHU_QtyAllocated(BigDecimal qtyAllocated);
+
+	IHUCustomerReturnAllocBuilder setHU_QtyAllocated(BigDecimal qtyAllocated, I_C_UOM uom);
+	
+	IHUCustomerReturnAllocBuilder setM_LU_HU(I_M_HU luHU);
+
+	void setQtyWithIssues(BigDecimal zero);
+
+	IHUCustomerReturnAllocBuilder setM_TU_HU(I_M_HU tuHUActual);
+
+	IHUCustomerReturnAllocBuilder setVHU(I_M_HU vhu);
+
 }
