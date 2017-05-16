@@ -64,6 +64,8 @@ class MasterWidget extends Component {
     }
 
     handlePatch = (property, value) => {
+        console.log('property');
+        console.log(property);
         const {
             isModal, widgetType, dataId, windowType, dispatch, rowId, tabId,
             onChange, relativeDocId, isAdvanced = false, entity

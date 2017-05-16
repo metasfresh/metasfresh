@@ -654,12 +654,23 @@ input:checked + .input-slider:before {
     padding: .3rem .50rem;
 }
 
+.raw-lookup-disabled .input-dropdown-container {
+    cursor: not-allowed;
+}
+
+.raw-lookup-disabled .input-dropdown {
+    cursor: not-allowed;
+}
+
 .raw-lookup-wrapper-bcg:hover {
     background-color: $brand-border-color;
 }
 
 .input-error .raw-lookup-wrapper-bcg:hover {
     background-color: $brand-danger-color !important;
+}
+
+.input-error  .raw-lookup-wrapper-bcg:hover .input-dropdown-container .input-dropdown {
     color: $brand-super-light-color;
 }
 

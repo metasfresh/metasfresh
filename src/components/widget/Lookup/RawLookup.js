@@ -62,6 +62,8 @@ class RawLookup extends Component {
             getNextDropdown, setNextProperty
         } = this.props;
 
+        
+
         this.setState({
             selected: null
         }, () => {
@@ -75,7 +77,6 @@ class RawLookup extends Component {
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
-
                     onChange(
                         mainProperty[0].field, select, this.getAllDropdowns
                     );
@@ -264,7 +265,7 @@ class RawLookup extends Component {
 
     render() {
         const { handleAddNew, onClickOutside, disableOnClickOutside, isModal, rank, updated, filterWidget, mandatory, validStatus, align,
-        creatingNewDisabled, newRecordCaption, placeholder, readonly, tabIndex, item, mainProperty} = this.props;
+        creatingNewDisabled, newRecordCaption, placeholder, readonly, disabled, tabIndex, item, mainProperty} = this.props;
 
         const {
             propertiesCopy, isInputEmpty, list, query, loading, selected,
@@ -272,7 +273,11 @@ class RawLookup extends Component {
         } = this.state;
 
         return (
-        <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg">
+        <div className={"raw-lookup-wrapper raw-lookup-wrapper-bcg "+
+            (disabled ? 'raw-lookup-disabled':'')
+        }  
+                                
+        >
             <div className={
                     'input-dropdown input-block' 
                     
@@ -289,9 +294,9 @@ class RawLookup extends Component {
                                 onFocus={this.handleFocus}
                                 ref={(c) => this.inputSearch = c}
                                 placeholder={placeholder}
-                                disabled={readonly}
+                                disabled={readonly && !disabled}
                                 tabIndex={tabIndex}
-                        
+                                
                             />
 
                     </div>

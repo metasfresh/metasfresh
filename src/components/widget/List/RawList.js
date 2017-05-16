@@ -264,6 +264,7 @@ class RawList extends Component {
     }
 
     getRow = (index, option, label) => {
+        const {defaultValue} = this.props;
         const {selected} = this.state;
 
         return (
@@ -272,6 +273,8 @@ class RawList extends Component {
                 className={'input-dropdown-list-option'  +
                     (
                         this.areOptionsEqual(selected, option) ?
+                        ' input-dropdown-list-option-key-on' :
+                        defaultValue === option[Object.keys(option)[0]] ?
                         ' input-dropdown-list-option-key-on' :
                         ''
                     )

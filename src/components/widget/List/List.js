@@ -41,9 +41,13 @@ class List extends Component {
     }
 
     handleSelect = (option) => {
-        const {onChange, lookupList, properties, setNextProperty, mainProperty} = this.props;
+        const {onChange, lookupList, properties, setNextProperty, mainProperty, children} = this.props;
+
+        console.log(properties);
+        console.log(children);
 
         if(lookupList){
+            onChange(children, null);
             onChange(properties[0].field, option);
             this.setState({
                 selectedItem: option

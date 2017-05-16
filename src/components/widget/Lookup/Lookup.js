@@ -130,6 +130,9 @@ class Lookup extends Component {
 
             {
                 properties && properties.map((item, index) => {
+                        const disabled = isInputEmpty && index != 0;
+                        const children = properties.slice(index+1, properties.length);
+                        console.log('properties');
                         if(item.source === 'lookup'){
                             return <RawLookup
                                 key={index}
@@ -157,6 +160,8 @@ class Lookup extends Component {
                                 item={item}
                                 handleInputEmptyStatus={this.handleInputEmptyStatus}
                                 setNextProperty={this.setNextProperty}
+                                disabled={disabled}
+                                children={children}
                             />
 
                         } else if (item.source === 'list') {
@@ -165,7 +170,9 @@ class Lookup extends Component {
                                 defaultValue, 'field', item.field
                             )[0].value;
 
-                            return <div className="raw-lookup-wrapper raw-lookup-wrapper-bcg" key={index}>
+                            return <div className={
+                                'raw-lookup-wrapper raw-lookup-wrapper-bcg ' + 
+                                (disabled ? 'raw-lookup-disabled':'')} key={index}>
                                     <List
                                         dataId={dataId}
                                         entity={entity}
@@ -184,6 +191,8 @@ class Lookup extends Component {
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}
                                         blur={!property?true:false}
+                                        readonly={disabled}
+                                        children={children}
                                     />
                                 </div>
                         }
