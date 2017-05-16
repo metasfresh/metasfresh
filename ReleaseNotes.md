@@ -27,6 +27,8 @@ Here come the actual release notes:
     * Disabling the legacy Buisness Partner Cockpit window.
   * [#1501](https://github.com/metasfresh/metasfresh/issues/1501) Rename "No Handling Unit" and "Virtual PI" PIs
     * Renames the internal Packing Items (former Virtual PI, No Handling Unit) to names that describe what these Items really are.
+  * [#1504](https://github.com/metasfresh/metasfresh/issues/1504) Configure our services for logstash
+    * Add an option to have metasfresh-backend, -admin, -material-dispo and -webui-api send log messages to an ELK Stack
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
     * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
   * [#1520](https://github.com/metasfresh/metasfresh/pull/1520) add .metadata/ and .recommenders/ to .gitignore
