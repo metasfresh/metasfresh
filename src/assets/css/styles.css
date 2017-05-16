@@ -81,6 +81,10 @@ body {
     justify-content: flex-start;
 }
 
+.process-wrapper {
+    padding-top: 1.5rem;
+}
+
 .sections-wrapper {
     flex-grow: 0;
 }
