@@ -23,8 +23,9 @@ import javax.swing.JFrame;
 
 import org.compiere.apps.ADialog;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.tools.swing.SwingTool;
+
+import de.metas.i18n.Msg;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany

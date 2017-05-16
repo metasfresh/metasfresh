@@ -40,7 +40,8 @@ import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
+
+import de.metas.i18n.Msg;
 
 public class PackingV extends MvcVGenPanel implements IPackingView
 {

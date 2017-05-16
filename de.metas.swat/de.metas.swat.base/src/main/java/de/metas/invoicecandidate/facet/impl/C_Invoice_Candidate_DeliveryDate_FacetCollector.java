@@ -90,7 +90,7 @@ public class C_Invoice_Candidate_DeliveryDate_FacetCollector extends SingleFacet
 		return Facet.<I_C_Invoice_Candidate> builder()
 				.setFacetCategory(facetCategoryDeliveryDates)
 				.setDisplayName(dateFormat.format(deliveryDate))
-				.setFilter(new TypedSqlQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate + "=" + DB.TO_DATE(deliveryDate)))
+				.setFilter(TypedSqlQueryFilter.of(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate + "=" + DB.TO_DATE(deliveryDate)))
 				.build();
 	}
 

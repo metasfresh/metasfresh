@@ -29,10 +29,10 @@ import org.compiere.model.MPeriod;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
-import org.compiere.util.Msg;
 
 import de.metas.process.ProcessInfoParameter;
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
 import de.metas.process.JavaProcess;
 
 /**

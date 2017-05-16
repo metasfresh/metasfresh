@@ -65,10 +65,10 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.jdesktop.swingx.JXTaskPane;
 
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

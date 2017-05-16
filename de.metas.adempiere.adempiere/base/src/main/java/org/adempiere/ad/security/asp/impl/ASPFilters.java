@@ -33,7 +33,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.SqlQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.security.asp.IASPFilters;
 import org.adempiere.ad.trx.api.ITrx;
@@ -75,7 +75,7 @@ final class ASPFilters implements IASPFilters
 		final ImmutableMap.Builder<String, IQueryFilter<?>> aspFiltersBuilder = ImmutableMap.builder();
 
 		aspFiltersBuilder.put(I_AD_Window_Access.Table_Name
-				, new TypedSqlQueryFilter<>("(   AD_Window_ID IN ( "
+				, TypedSqlQueryFilter.of("(   AD_Window_ID IN ( "
 						// Just ASP subscribed windows for client "
 						+ "              SELECT w.AD_Window_ID "
 						+ "                FROM ASP_Window w, ASP_Level l, ASP_ClientLevel cl "
@@ -110,7 +110,7 @@ final class ASPFilters implements IASPFilters
 				));
 
 		aspFiltersBuilder.put(I_AD_Process_Access.Table_Name
-				, new TypedSqlQueryFilter<>("(   AD_Process_ID IN ( "
+				, TypedSqlQueryFilter.of("(   AD_Process_ID IN ( "
 						// Just ASP subscribed processes for client "
 						+ "              SELECT p.AD_Process_ID "
 						+ "                FROM ASP_Process p, ASP_Level l, ASP_ClientLevel cl "
@@ -143,7 +143,7 @@ final class ASPFilters implements IASPFilters
 				));
 
 		aspFiltersBuilder.put(I_AD_Task_Access.Table_Name
-				, new TypedSqlQueryFilter<>("(   AD_Task_ID IN ( "
+				, TypedSqlQueryFilter.of("(   AD_Task_ID IN ( "
 						// Just ASP subscribed tasks for client "
 						+ "              SELECT t.AD_Task_ID "
 						+ "                FROM ASP_Task t, ASP_Level l, ASP_ClientLevel cl "
@@ -174,7 +174,7 @@ final class ASPFilters implements IASPFilters
 				));
 
 		aspFiltersBuilder.put(I_AD_Form_Access.Table_Name
-				, new TypedSqlQueryFilter<>("(   AD_Form_ID IN ( "
+				, TypedSqlQueryFilter.of("(   AD_Form_ID IN ( "
 						// Just ASP subscribed forms for client "
 						+ "              SELECT f.AD_Form_ID "
 						+ "                FROM ASP_Form f, ASP_Level l, ASP_ClientLevel cl "
@@ -205,7 +205,7 @@ final class ASPFilters implements IASPFilters
 				));
 
 		aspFiltersBuilder.put(I_AD_Workflow_Access.Table_Name
-				, new TypedSqlQueryFilter<>("(   AD_Workflow_ID IN ( "
+				, TypedSqlQueryFilter.of("(   AD_Workflow_ID IN ( "
 						// Just ASP subscribed workflows for client "
 						+ "              SELECT w.AD_Workflow_ID "
 						+ "                FROM ASP_Workflow w, ASP_Level l, ASP_ClientLevel cl "
@@ -236,7 +236,7 @@ final class ASPFilters implements IASPFilters
 				));
 
 		aspFiltersBuilder.put(I_AD_Tab.Table_Name
-				, new TypedSqlQueryFilter<>(" (   AD_Tab_ID IN ( "
+				, TypedSqlQueryFilter.of(" (   AD_Tab_ID IN ( "
 						// Just ASP subscribed tabs for client "
 						+ "              SELECT t.AD_Tab_ID "
 						+ "                FROM ASP_Tab t, ASP_Window w, ASP_Level l, ASP_ClientLevel cl "
@@ -274,7 +274,7 @@ final class ASPFilters implements IASPFilters
 		// Currently we need it because ProcessParameterPanelModel.createFields() is using it.
 		// Else the AD_Process_Para_ID would be ambiguous when AD_Process_Param_Trl is used.
 		aspFiltersBuilder.put(I_AD_Process_Para.Table_Name
-				, new TypedSqlQueryFilter<>("(   p.AD_Process_Para_ID IN ( "
+				, TypedSqlQueryFilter.of("(   p.AD_Process_Para_ID IN ( "
 						// Just ASP subscribed process parameters for client "
 						+ "              SELECT pp.AD_Process_Para_ID "
 						+ "                FROM ASP_Process_Para pp, ASP_Process p, ASP_Level l, ASP_ClientLevel cl "
@@ -332,9 +332,9 @@ final class ASPFilters implements IASPFilters
 	public <AccessTableType> String getSQLWhereClause(final Class<AccessTableType> accessTableClass)
 	{
 		final IQueryFilter<AccessTableType> filter = getFilter(accessTableClass);
-		if (filter instanceof SqlQueryFilter)
+		if (filter instanceof ISqlQueryFilter)
 		{
-			final SqlQueryFilter sqlFilter = (SqlQueryFilter)filter;
+			final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter);
 			final String sqlWhereClause = sqlFilter.getSql();
 			final List<Object> sqlParams = sqlFilter.getSqlParams(Env.getCtx());
 			if (sqlParams != null && !sqlParams.isEmpty())

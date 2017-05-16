@@ -28,8 +28,9 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MOrg;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
+
+import de.metas.i18n.Msg;
 
 public final class OrgHasNoBPartnerLinkException extends AdempiereException
 {

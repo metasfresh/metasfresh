@@ -80,7 +80,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 import org.compiere.util.Splash;
 import org.compiere.wf.IADWorkflowBL;
 import org.slf4j.Logger;
@@ -88,6 +87,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**

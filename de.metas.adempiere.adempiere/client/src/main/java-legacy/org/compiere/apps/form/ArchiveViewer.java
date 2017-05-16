@@ -29,6 +29,8 @@ import java.beans.VetoableChangeListener;
 import java.io.InputStream;
 import java.sql.Timestamp;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
@@ -58,7 +60,6 @@ import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
 /**

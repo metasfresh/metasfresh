@@ -12,11 +12,11 @@ import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.compiere.util.Language;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 
 /*

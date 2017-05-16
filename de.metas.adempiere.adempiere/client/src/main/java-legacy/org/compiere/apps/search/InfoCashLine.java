@@ -38,8 +38,9 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
+
+import de.metas.i18n.Msg;
 
 /**
  *  Info Payment

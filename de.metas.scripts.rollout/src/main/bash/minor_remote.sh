@@ -11,16 +11,10 @@ else
 	exit 1
 fi
 
-
-LOCAL_DIR=$(dirname $0)
-
-if [ "$LOCAL_DIR" == "." ]; then
-	LOCAL_DIR=$(pwd)
-fi
-
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
 #Thanks to http://stackoverflow.com/questions/6643853/how-to-convert-in-path-names-to-absolute-name-in-a-bash-script for the readlink tip
-ROLLOUT_DIR=$(readlink -m $LOCAL_DIR/..)
+LOCAL_DIR=$(readlink -m $(dirname $0))
+ROLLOUT_DIR=$(readlink -m ${LOCAL_DIR}/..)
 
 SOURCES_DIR=$ROLLOUT_DIR/sources
 
@@ -109,13 +103,13 @@ prompt_superuser_script()
 	local service_name="$1"
 	local message="$2"
 	
-	trace install_${service_name} "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	trace install_${service_name} "!! PLEASE READ THE FOLLOWING !!"
-	trace install_${service_name} "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-	trace install_${service_name} "${message}"
-	trace install_${service_name} "To perform this task and possible others, please run the following shell script as SUPER USER. Then rerun this script."
+	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo "!! PLEASE READ THE FOLLOWING !!"
+	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo "${message}"
+	echo "To perform this task and possible others, please run the following shell script as SUPER USER. Then rerun this script."
 	echo ""
-	echo "$(pwd)/prepare_services_superuser.sh"
+	echo "${LOCAL_DIR}/prepare_services_superuser.sh -s ${LOCAL_SETTINGS_FILE} -d ${ROLLOUT_DIR}"
 	echo ""
 }
 
@@ -172,8 +166,14 @@ install_service()
 		fi
 	fi
 	
-	trace install_${service_name} "Stopping service"
-	sudo systemctl stop ${service_name}.service
+	# check if service is running. if it is, it's safe to assume stopping/starting during rollout
+	#
+	local service_isactive=NOTSET
+    if [[ $(systemctl status ${service_name}.service | grep "running" | wc -l) -gt "0" ]]; then
+        trace install_${service_name} "Stopping service"
+        service_isactive=yes
+        sudo systemctl stop ${service_name}.service
+    fi
 	
 	mkdir -p ${METASFRESH_HOME}/${service_name}
 	
@@ -188,8 +188,17 @@ install_service()
 	trace install_${service_name} "Making sure that the main jar shall only be accessible for its owner"
 	chmod 500 ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	
-	trace install_${service_name} "Starting service"
-	sudo systemctl start ${service_name}.service
+    # if system was running before rollout, start it back up
+    #
+    if [[ ${service_isactive} = "yes" ]]; then
+    	trace install_${service_name} "Starting service"
+        sudo systemctl start ${service_name}.service
+    fi
+    
+    if [[ ${service_name} = "metasfresh-webui-api" ]] || [[ ${service_name} = "metasfresh-material-dispo" ]]; then
+        sudo systemctl restart ${service_name}.service
+    fi 
+    
 	
 	trace install_${service_name} END
 }

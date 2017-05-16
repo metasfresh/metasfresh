@@ -34,7 +34,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
@@ -43,6 +42,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_C_Flatrate_Transition;
 import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_Transition;
+import de.metas.i18n.Msg;
 import de.metas.inoutcandidate.api.IInOutCandidateConfig;
 
 @Validator(I_C_Flatrate_Conditions.class)

@@ -124,6 +124,6 @@ public interface IHUInOutBL extends ISingletonService
 	 * @param movementDate
 	 * @return
 	 */
-	de.metas.handlingunits.model.I_M_InOut createReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
+	List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
 
 }

@@ -33,11 +33,11 @@ import java.text.SimpleDateFormat;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.gui.search.SponsorNoAutoCompleter;
 import de.metas.adempiere.gui.search.SponsorNoObject;
+import de.metas.i18n.Msg;
 
 /**
  * @author metas GmbH, m.ostermann@metas.de

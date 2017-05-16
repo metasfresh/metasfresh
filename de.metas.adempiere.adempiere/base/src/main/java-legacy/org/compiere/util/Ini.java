@@ -45,6 +45,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**

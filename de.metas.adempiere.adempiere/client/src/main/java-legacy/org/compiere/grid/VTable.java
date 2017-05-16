@@ -31,9 +31,10 @@ import org.compiere.model.GridTable;
 import org.compiere.swing.CColumnControlButton;
 import org.compiere.swing.CTable;
 import org.compiere.swing.CTableModelRowSorter;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.jdesktop.swingx.action.BoundAction;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * Table Grid based on CTable.
@@ -99,20 +100,17 @@ public final class VTable extends CTable
 	@Override
 	public void propertyChange(PropertyChangeEvent evt)
 	{
-	//	log.info(evt);
 		if (evt.getPropertyName().equals(GridTab.PROPERTY))
 		{
-			int row = ((Integer)evt.getNewValue()).intValue();
-			int selRow = getSelectedRow();
+			final int row = ((Integer)evt.getNewValue()).intValue();
+			final int selRow = getSelectedRow();
 			if (row == selRow)
 				return;
-			log.info(GridTab.PROPERTY + "=" + row + " from " + selRow);
 			setRowSelectionInterval(row,row);
 			setColumnSelectionInterval(0, 0);
 		    Rectangle cellRect = getCellRect(row, 0, false);
 		    if (cellRect != null)
 		    	scrollRectToVisible(cellRect);
-			log.info(GridTab.PROPERTY + "=" + row + " from " + selRow);
 		}
 	}   //  propertyChange
 	
@@ -142,8 +140,6 @@ public final class VTable extends CTable
 				{
 					//  other sort columns
 					final boolean sortAscending = addToSortColumnsAndRemoveOtherColumns(modelColumnIndex);
-					log.info("#" + modelColumnIndex + " - rows=" + rows + ", asc=" + sortAscending);
-			
 					gridTable.sort(modelColumnIndex, sortAscending);
 				}
 				finally

@@ -18,6 +18,8 @@ package org.compiere.process;
 
 import java.math.BigDecimal;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -25,7 +27,6 @@ import de.metas.process.JavaProcess;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  *	Validate Invoice Payment Schedule

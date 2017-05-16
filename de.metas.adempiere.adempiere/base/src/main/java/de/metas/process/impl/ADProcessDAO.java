@@ -20,10 +20,8 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
-import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Table_Process;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
@@ -298,44 +296,6 @@ public class ADProcessDAO implements IADProcessDAO
 		{
 			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}. Ignored.", adProcessId, adClientId, durationMillisToAdd, ex);
 		}
-	}
-
-	@Override
-	public I_AD_Process_Access retrieveProcessAccessOrCreateDraft(final Properties ctx, final int adProcessId, final I_AD_Role role)
-	{
-		I_AD_Process_Access pa = retrieveProcessAccess(ctx, adProcessId, role.getAD_Role_ID());
-		if (pa == null)
-		{
-			pa = createProcessAccessDraft(ctx, adProcessId, role);
-		}
-		return pa;
-	}
-
-	@Override
-	public I_AD_Process_Access retrieveProcessAccess(final Properties ctx, final int adProcessId, final int adRoleId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process_Access.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Process_ID, adProcessId)
-				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Role_ID, adRoleId)
-				.create()
-				.firstOnly(I_AD_Process_Access.class);
-	}
-
-	@Override
-	public I_AD_Process_Access createProcessAccessDraft(final Properties ctx, final int adProcessId, final I_AD_Role role)
-	{
-		final I_AD_Process_Access pa = InterfaceWrapperHelper.create(ctx, I_AD_Process_Access.class, ITrx.TRXNAME_ThreadInherited);
-		InterfaceWrapperHelper.setValue(pa, I_AD_Process_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
-		pa.setAD_Org_ID(role.getAD_Org_ID());
-
-		pa.setAD_Process_ID(adProcessId);
-		pa.setAD_Role(role);
-
-		pa.setIsActive(true);
-		pa.setIsReadWrite(true);
-
-		return pa;
 	}
 
 	@Override

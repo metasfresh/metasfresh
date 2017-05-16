@@ -32,6 +32,8 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
@@ -394,6 +396,15 @@ public interface IQuery<T>
 	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
+
+	/**
+	 * 
+	 * @param columnName
+	 * @param valueType
+	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned. 
+	 */
+	@Nullable
+	<AT> AT first(final String columnName, final Class<AT> valueType);
 
 	/**
 	 * Gets an immutable {@link Map} of records.

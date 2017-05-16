@@ -55,13 +55,10 @@ import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.junit.Assert;
 import org.junit.rules.TestName;
-
-import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.service.IPrinterRoutingDAO;
@@ -70,6 +67,7 @@ import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.impl.PlainDocOutboundDAO;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.engine.impl.PlainDocActionBL;
+import de.metas.i18n.Language;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.impl.PlainLockManager;
 import de.metas.lock.spi.impl.PlainLockDatabase;
@@ -203,7 +201,7 @@ public class Helper
 
 		//
 		// Base Language
-		Language.setBaseLanguage(Suppliers.ofInstance(Language.getLanguage("de_DE")));
+		Language.setBaseLanguage(() -> "de_DE");
 	}
 
 	public Properties getCtx()

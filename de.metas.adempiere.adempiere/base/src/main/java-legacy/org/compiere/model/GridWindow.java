@@ -47,10 +47,10 @@ import org.apache.ecs.xhtml.tr;
 import org.compiere.plaf.CompiereColor;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.WebDoc;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

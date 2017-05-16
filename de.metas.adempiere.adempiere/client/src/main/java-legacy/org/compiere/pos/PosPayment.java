@@ -57,10 +57,10 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.Msg;
 
 public class PosPayment extends CDialog implements PosKeyListener, VetoableChangeListener, ActionListener {
 
