@@ -45,12 +45,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.server.MetasJRXlsExporter;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfoParameter;

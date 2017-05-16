@@ -74,6 +74,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 					.valueName(item.getValueName())
 					.name(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Name, item.getName()))
 					.description(itemTrl.getColumnTrl(I_AD_Ref_List.COLUMNNAME_Description, item.getDescription()))
+					.refListId(item.getAD_Ref_List_ID())
 					.build());
 		}
 

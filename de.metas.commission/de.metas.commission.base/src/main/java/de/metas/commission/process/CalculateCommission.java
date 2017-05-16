@@ -45,7 +45,6 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.MTable;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 import de.metas.commission.custom.type.ICommissionType;
 import de.metas.commission.interfaces.IAdvComInstance;
@@ -70,6 +69,7 @@ import de.metas.commission.service.ICommissionTypeBL;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;

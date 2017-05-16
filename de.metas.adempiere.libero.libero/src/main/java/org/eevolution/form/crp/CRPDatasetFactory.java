@@ -57,7 +57,6 @@ import org.compiere.model.MUOM;
 import org.compiere.model.MUOMConversion;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPOrderNode;
 import org.eevolution.model.MPPOrderWorkflow;
@@ -65,6 +64,7 @@ import org.eevolution.model.reasoner.CRPReasoner;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 
+import de.metas.i18n.Msg;
 import de.metas.material.planning.IResourceProductService;
 
 /**

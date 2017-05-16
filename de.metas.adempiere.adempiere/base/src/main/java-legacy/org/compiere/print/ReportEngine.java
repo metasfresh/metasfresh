@@ -77,14 +77,14 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
-import org.compiere.util.Msg;
 import org.compiere.util.Util;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 

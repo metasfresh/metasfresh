@@ -14,7 +14,7 @@ public class X_AD_Process_Access extends org.compiere.model.PO implements I_AD_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1919779620L;
+	private static final long serialVersionUID = 500429489L;
 
     /** Standard Constructor */
     public X_AD_Process_Access (Properties ctx, int AD_Process_Access_ID, String trxName)
@@ -22,6 +22,7 @@ public class X_AD_Process_Access extends org.compiere.model.PO implements I_AD_P
       super (ctx, AD_Process_Access_ID, trxName);
       /** if (AD_Process_Access_ID == 0)
         {
+			setAD_Process_Access_ID (0);
 			setAD_Process_ID (0);
 			setAD_Role_ID (0);
 			setIsReadWrite (false);
@@ -42,6 +43,28 @@ public class X_AD_Process_Access extends org.compiere.model.PO implements I_AD_P
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Process Access.
+		@param AD_Process_Access_ID Process Access	  */
+	@Override
+	public void setAD_Process_Access_ID (int AD_Process_Access_ID)
+	{
+		if (AD_Process_Access_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Process_Access_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Process_Access_ID, Integer.valueOf(AD_Process_Access_ID));
+	}
+
+	/** Get Process Access.
+		@return Process Access	  */
+	@Override
+	public int getAD_Process_Access_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_Access_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Process getAD_Process() throws RuntimeException

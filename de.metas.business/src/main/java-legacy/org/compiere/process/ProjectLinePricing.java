@@ -18,6 +18,8 @@ package org.compiere.process;
 
 
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
@@ -25,7 +27,6 @@ import de.metas.process.JavaProcess;
 import org.compiere.model.MProductPricing;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
-import org.compiere.util.Msg;
 
 /**
  *  Price Project Line.

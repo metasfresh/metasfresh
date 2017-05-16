@@ -43,6 +43,8 @@ public interface IADReferenceDAO extends ISingletonService
 		private final String valueName;
 		private final ITranslatableString name;
 		private final ITranslatableString description;
+		/** AD_Ref_List_ID */
+		private final int refListId;
 	}
 
 	/**

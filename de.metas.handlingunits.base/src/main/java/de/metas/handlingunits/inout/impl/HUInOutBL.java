@@ -25,6 +25,7 @@ package de.metas.handlingunits.inout.impl;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +55,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.empties.impl.EmptiesInOutProducer;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -63,6 +65,7 @@ import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -248,8 +251,10 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_InOut createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	public List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
+
+		final List<de.metas.handlingunits.model.I_M_InOut> returnInOuts = new ArrayList<>();
 
 		// services
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
@@ -262,8 +267,18 @@ public class HUInOutBL implements IHUInOutBL
 		{
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
-			final List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
-
+			 List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
+			
+			// if the given HU does not have any inout line  HU assignments, it might be that it is an aggregated HU. 
+			// fallback on the HU assignments of the top level HU
+			
+			if(inOutLineHUAssignments.isEmpty())
+			{
+				final I_M_HU topLevelHU = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
+				
+				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, topLevelHU);
+			}
+			
 			// search for the bpartner (vendor) based on the hu assignments of the receipt
 			for (final I_M_HU_Assignment assignment : inOutLineHUAssignments)
 			{
@@ -286,22 +301,52 @@ public class HUInOutBL implements IHUInOutBL
 		}
 
 		// there will be as many return inouts as there are partners
-
+		
 		Set<Integer> keySet = partnerstoHUAssignments.keySet();
-
-		I_M_InOut inOut = null;
 
 		for (final int partnerId : keySet)
 		{
-			inOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
+			final I_M_InOut returnInOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
+
+			de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(returnInOut, de.metas.handlingunits.model.I_M_InOut.class);
+			
+			for(final I_M_HU hu: hus)
+			{
+				extractHUFromParentIfNeeded(hu);
+				Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(huInOut, Collections.singletonList(hu), ITrx.TRXNAME_ThreadInherited);
+
+			}
+			
+			returnInOuts.add(huInOut);
 		}
 
-		// return the last inout that was created
-		de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(inOut, de.metas.handlingunits.model.I_M_InOut.class);
+		// return the created inouts
+		return returnInOuts;
+	}
+	/**
+	 * Take out the given HU from it's parent (if it's not already a top level HU)
+	 *
+	 * @param hu
+	 */
+	private void extractHUFromParentIfNeeded(final I_M_HU hu)
+	{
 
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(huInOut, hus, ITrx.TRXNAME_ThreadInherited);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		if (handlingUnitsBL.isTopLevel(hu))
+		{
+			return;
+		}
+		
+		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
-		return huInOut;
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+	
+
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
+		final I_M_HU_Item parentHUItem = null; // no parent
+		huTrxBL.setParentHU(huContext, parentHUItem, hu);
 	}
 
 	/**
@@ -338,6 +383,7 @@ public class HUInOutBL implements IHUInOutBL
 		final I_M_InOut inOut = producer.create();
 		return inOut;
 	}
+
 
 	@Override
 	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines)
@@ -393,5 +439,4 @@ public class HUInOutBL implements IHUInOutBL
 		
 		
 	}
-
 }

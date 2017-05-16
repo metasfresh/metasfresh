@@ -3,6 +3,8 @@
  */
 package org.adempiere.process;
 
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -27,13 +29,11 @@ package org.adempiere.process;
 
 
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_AD_Role;
+import org.adempiere.util.Services;
 import org.compiere.model.MRolePermRequest;
-import org.compiere.util.CacheMgt;
-import org.compiere.util.Env;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Grant Permission
@@ -85,8 +85,7 @@ public class AD_Role_GrantPermission extends JavaProcess
 	{
 		if (success)
 		{
-			CacheMgt.get().reset(I_AD_Role.Table_Name);
-			Env.resetUserRolePermissions();
+			Services.get(IUserRolePermissionsDAO.class).resetCacheAfterTrxCommit();
 		}
 	}
 }

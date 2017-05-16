@@ -14,7 +14,6 @@ import java.util.ResourceBundle;
 import org.adempiere.util.Check;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.jxls.area.Area;
 import org.jxls.builder.AreaBuilder;
 import org.jxls.builder.xls.XlsCommentAreaBuilder;
@@ -29,6 +28,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /*

@@ -28,12 +28,12 @@ import org.compiere.model.MStore;
 import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.i18n.Msg;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 

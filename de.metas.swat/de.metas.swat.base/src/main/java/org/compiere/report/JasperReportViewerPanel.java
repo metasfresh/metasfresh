@@ -55,7 +55,6 @@ import org.compiere.apps.ADialog;
 import org.compiere.apps.EMailDialog;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PrintFormat;
-import org.compiere.model.MRole;
 import org.compiere.model.PrintInfo;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.report.email.service.IEmailParameters;
@@ -91,7 +90,7 @@ class JasperReportViewerPanel extends JRViewer
 	private static final long serialVersionUID = -7988455595896562947L;
 
 	/**
-	 * This SQL fragment is digestible by {@link MRole#addAccessSQL(String, String, boolean, boolean)}.
+	 * This SQL fragment is digestible by {@link IUserRolePermissions#addAccessSQL(String, String, boolean, boolean)}.
 	 */
 	private final static String SQL_ALTERNATE_REPORTS_PART1 = "SELECT JasperProcess_ID, Name, Description "
 			+ "FROM  " //
@@ -101,8 +100,8 @@ class JasperReportViewerPanel extends JRViewer
 			+ "   AND IsActive='Y'";
 
 	/**
-	 * Together with this SQL fragment, {{@value #SQL_ALTERNATE_REPORTS_PART1} would not be digestible by {@link MRole#addAccessSQL(String, String, boolean, boolean)}, because it contains a sub
-	 * select.
+	 * Together with this SQL fragment, {{@value #SQL_ALTERNATE_REPORTS_PART1} would not be digestible by {@link IUserRolePermissions#addAccessSQL(String, String, boolean, boolean)},
+	 * because it contains a sub select.
 	 */
 	private final static String SQL_ALTERNATE_REPORTS_PART2 = //
 			"   AND (" //

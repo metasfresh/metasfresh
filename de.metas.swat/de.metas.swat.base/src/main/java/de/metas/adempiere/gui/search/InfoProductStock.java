@@ -34,9 +34,9 @@ import org.compiere.minigrid.MiniTable;
 import org.compiere.swing.CTextArea;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.slf4j.Logger;
 
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 public class InfoProductStock implements IInfoProductDetail

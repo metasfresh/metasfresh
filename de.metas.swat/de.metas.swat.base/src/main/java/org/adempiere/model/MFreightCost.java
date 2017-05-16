@@ -37,12 +37,12 @@ import org.compiere.model.MInOut;
 import org.compiere.model.MOrder;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_OrderOrInOut;
 import de.metas.adempiere.service.impl.OrderBL;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.Msg;
 
 /**
  * 

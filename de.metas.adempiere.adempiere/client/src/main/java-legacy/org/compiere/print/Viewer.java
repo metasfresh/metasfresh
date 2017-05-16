@@ -65,7 +65,6 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
@@ -86,7 +85,6 @@ import org.compiere.apps.search.Find;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_Language;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTreeNode;
@@ -101,15 +99,13 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.ExtensionFileFilter;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
@@ -1266,12 +1262,7 @@ public class Viewer extends CFrame
 	private void cmd_translate()
 	{
 		final List<ValueNamePair> availableLanguageNames = new ArrayList<>();
-		final List<I_AD_Language> availableLanguages = Services.get(ILanguageBL.class).getAvailableLanguages(m_ctx);
-		for (final I_AD_Language language : availableLanguages)
-		{
-			final ValueNamePair languageVNP = new ValueNamePair(language.getAD_Language(), language.getName());
-			availableLanguageNames.add(languageVNP);
-		}
+		availableLanguageNames.addAll(Services.get(ILanguageBL.class).getAvailableLanguages().toValueNamePairs());
 		if (availableLanguageNames.isEmpty())
 		{
 			ADialog.warn(m_WindowNo, this, "NoTranslation");

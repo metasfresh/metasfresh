@@ -38,7 +38,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.Msg;
 import org.eevolution.model.MHREmployee;
 import org.slf4j.Logger;
 
@@ -50,6 +49,7 @@ import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.MCAdvComSystem;
 import de.metas.commission.service.ISponsorBL;
 import de.metas.commission.service.ISponsorDAO;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**

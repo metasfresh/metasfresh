@@ -229,6 +229,11 @@ public class PPOrderUtil
 	{
 		return !isReceipt(bomLineComponentType);
 	}
+	
+	public boolean isReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
+	{
+		return isReceipt(bomLine.getComponentType());
+	}
 
 	/**
 	 * Asserts given <code>bomLine</code> is receipt.
@@ -239,12 +244,12 @@ public class PPOrderUtil
 	 */
 	public void assertReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		Check.assume(isReceipt(bomLine.getComponentType()), MrpException.class, "BOM Line shall be of type receipt: {}", bomLine);
+		Check.assume(isReceipt(bomLine), MrpException.class, "BOM Line shall be of type receipt: {}", bomLine);
 	}
 
 	public void assertIssue(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
-		Check.assume(!isReceipt(bomLine.getComponentType()), MrpException.class, "BOM Line shall be of type issue: {}", bomLine);
+		Check.assume(!isReceipt(bomLine), MrpException.class, "BOM Line shall be of type issue: {}", bomLine);
 	}
 
 	public boolean isComponent(@NonNull final I_PP_Order_BOMLine bomLine)

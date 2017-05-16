@@ -157,7 +157,7 @@ public class HUEditorModel implements IDisposable
 		@Override
 		public boolean evaluate(final IHUKey huKey)
 		{
-			// guard agaist null
+			// guard against null
 			if (huKey == null)
 			{
 				return false;
@@ -1264,7 +1264,7 @@ public class HUEditorModel implements IDisposable
 	{
 
 		// the resulting vendor return inout
-		final I_M_InOut[] result = new I_M_InOut[] { null };
+		final List<I_M_InOut> returnInuts = new ArrayList<>();
 
 		trxManager.run(new TrxRunnable2()
 		{
@@ -1272,7 +1272,7 @@ public class HUEditorModel implements IDisposable
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				result[0] = createVendorReturn0(warehouseFrom, localTrxName);
+				returnInuts.addAll(createVendorReturn0(warehouseFrom, localTrxName));
 
 			}
 
@@ -1289,37 +1289,17 @@ public class HUEditorModel implements IDisposable
 			}
 		});
 
-		//
-		// Open window with return document if it was created successfully
-		final I_M_InOut inOut = result[0];
-		if (inOut != null)
+		if (!returnInuts.isEmpty())
 		{
 			//
 			// Refresh the HUKeys
-			{
-				// Remove huKeys from their parents
-				for (final HUKey huKey : getSelectedHUKeys())
-				{
-					removeHUKeyFromParentRecursivelly(huKey);
-				}
-
-				// Move back to Root HU Key
-				setRootHUKey(getRootHUKey());
-
-				//
-				// Clear (attribute) cache (because it could be that we changed the attributes too)
-				clearCache();
-			}
-
+			refreshSelectedHUKeys();
+			
 			//
 			// Send notifications
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
-					.notify(inOut);
-
-			// not needed TODO
-			// // zoom into the created vendor return (return to customer not implemented yet)
-			// AEnv.zoom(I_M_InOut.Table_Name, inOut.getM_InOut_ID(), WINDOW_CUSTOMER_RETURN, WINDOW_RETURN_TO_VENDOR);
+					.notify(returnInuts);
 		}
 	}
 
@@ -1400,6 +1380,7 @@ public class HUEditorModel implements IDisposable
 	 */
 	public void refreshSelectedHUKeys()
 	{
+		
 
 		// Remove huKeys from their parents
 		for (final HUKey huKey : getSelectedHUKeys())
@@ -1457,7 +1438,7 @@ public class HUEditorModel implements IDisposable
 	 * @param trxName
 	 * @return
 	 */
-	public I_M_InOut createVendorReturn0(final I_M_Warehouse warehousefrom, final String trxName)
+	public List<I_M_InOut> createVendorReturn0(final I_M_Warehouse warehousefrom, final String trxName)
 	{
 
 		// services
@@ -1494,9 +1475,9 @@ public class HUEditorModel implements IDisposable
 		// movement date for inout
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
 
-		final I_M_InOut returnInOut = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
+		final List<I_M_InOut> returnInOuts = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
 
-		return returnInOut;
+		return returnInOuts;
 	}
 
 	public List<I_M_Movement> doMoveToQualityWarehouse(Predicate<ReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
@@ -1522,14 +1503,14 @@ public class HUEditorModel implements IDisposable
 			return Collections.emptyList();
 		}
 
+		final List<I_M_Movement> movementsToQualityWarehouse =  returnsWarehouseModel.getMovements();
 		//
-		// Remove previous selection
-		clearSelectedKeyIds();
-
-		//
-		// Navigate back to root
-		setCurrentHUKey(getRootHUKey());
-
+		// Refresh the HUKeys
+		if(!movementsToQualityWarehouse.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
+		
 		return returnsWarehouseModel.getMovements();
 
 	}

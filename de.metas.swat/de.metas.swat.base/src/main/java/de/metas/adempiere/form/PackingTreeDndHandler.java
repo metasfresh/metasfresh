@@ -33,6 +33,8 @@ import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
@@ -44,7 +46,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  * 

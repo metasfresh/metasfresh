@@ -120,7 +120,7 @@ public class C_Invoice_Candidate_HUPackingMaterials_FacetCollector extends Singl
 				.setFacetCategory(facetCategory)
 				.setId(facetCategory.getDisplayName() + "_" + productId)
 				.setDisplayName(packingMaterialInfo)
-				.setFilter(new TypedSqlQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID + "=" + productId))
+				.setFilter(TypedSqlQueryFilter.of(I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID + "=" + productId))
 				.build();
 	}
 }

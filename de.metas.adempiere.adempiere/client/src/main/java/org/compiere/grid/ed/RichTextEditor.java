@@ -52,8 +52,8 @@ import org.compiere.apps.ADialogDialog;
 import org.compiere.print.ReportEngine;
 import org.compiere.swing.CPanel;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
+import de.metas.i18n.Msg;
 import de.metas.letters.model.MADBoilerPlate;
 
 /**

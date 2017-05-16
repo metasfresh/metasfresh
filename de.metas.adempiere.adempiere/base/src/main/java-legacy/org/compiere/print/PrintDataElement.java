@@ -23,8 +23,9 @@ import org.compiere.model.MLocation;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.NamePair;
+
+import de.metas.i18n.Language;
 
 /**
  *	Print Data Element

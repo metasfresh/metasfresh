@@ -63,6 +63,8 @@ import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Locale;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import de.metas.logging.LogManager;
@@ -80,7 +82,6 @@ import org.compiere.model.Lookup;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  * VTableExcelAdapter enables Copy Clipboard functionality on VTables.

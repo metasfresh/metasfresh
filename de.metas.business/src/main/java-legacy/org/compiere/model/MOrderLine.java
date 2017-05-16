@@ -33,13 +33,13 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.util.DB;
-import org.compiere.util.Msg;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IOrderBL;
 import de.metas.adempiere.service.IOrderLineBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 

@@ -57,22 +57,14 @@ public class NotQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	@Override
 	public String getSql()
 	{
-		if (!(filter instanceof ISqlQueryFilter))
-		{
-			throw new IllegalStateException("Filter " + filter + " does not implement " + ISqlQueryFilter.class);
-		}
-		final ISqlQueryFilter sqlFilter = (ISqlQueryFilter)filter;
+		final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter);
 		return "NOT (" + sqlFilter.getSql() + ")";
 	}
 
 	@Override
 	public List<Object> getSqlParams(final Properties ctx)
 	{
-		if (!(filter instanceof ISqlQueryFilter))
-		{
-			throw new IllegalStateException("Filter " + filter + " does not implement " + ISqlQueryFilter.class);
-		}
-		final ISqlQueryFilter sqlFilter = (ISqlQueryFilter)filter;
+		final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter);
 		return sqlFilter.getSqlParams(ctx);
 	}
 }

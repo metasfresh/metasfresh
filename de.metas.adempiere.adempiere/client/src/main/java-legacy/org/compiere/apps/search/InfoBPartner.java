@@ -40,9 +40,9 @@ import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.util.Permutation;
+import de.metas.i18n.Msg;
 
 /**
  * Search Business Partner and return selection

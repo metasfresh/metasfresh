@@ -81,13 +81,13 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 import org.slf4j.Logger;
 
 import de.metas.callcenter.model.I_RV_R_Group_Prospect;
 import de.metas.callcenter.model.I_R_Request;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 /**
