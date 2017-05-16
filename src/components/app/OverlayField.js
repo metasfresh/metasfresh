@@ -72,6 +72,7 @@ class OverlayField extends Component {
                     noLabel={false}
                     filterWidget={true}
                     autoFocus={index === 0}
+                    textSelected={true}
                     {...{handlePatch, handleChange, windowType, onShow, onHide,
                         viewId}}
                 />
