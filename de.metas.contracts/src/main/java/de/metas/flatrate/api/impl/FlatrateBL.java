@@ -1241,7 +1241,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			// gh #549: notify that handler so it might do additional things. In the case of this task, it shall create C_Flatrate_DataEntry records
 			flatrateHandlersService
-					.getHandler(nextTerm.getType_Conditions())
+					.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
 					.afterExtendFlatrateTermCreated(currentTerm, nextTerm);
 
 			// gh #549: if forceComplete was set, then use it; otherwise fall back to the setting of currentTransition
