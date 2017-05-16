@@ -1,7 +1,6 @@
 package de.metas.ui.web.menu;
 
 import java.util.Enumeration;
-import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
@@ -13,13 +12,13 @@ import org.adempiere.util.Services;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import com.google.common.base.Preconditions;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.process.ProcessId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,7 +42,7 @@ import de.metas.ui.web.process.ProcessId;
  * #L%
  */
 
-public final class MenuTreeLoader
+final class MenuTreeLoader
 {
 	/* package */static MenuTreeLoader newInstance()
 	{
@@ -57,26 +56,14 @@ public final class MenuTreeLoader
 	private static final int DEPTH_Root = 0;
 	private static final int DEPTH_RootChildren = 1;
 
-	private Properties _ctx;
 	private UserRolePermissionsKey _userRolePermissionsKey;
 	private IUserRolePermissions _userRolePermissions; // lazy
 	private String _adLanguage;
+	private long _version = -1;
 
 	private MenuTreeLoader()
 	{
 		super();
-	}
-
-	public MenuTreeLoader setCtx(final Properties ctx)
-	{
-		_ctx = ctx;
-		return this;
-	}
-
-	private Properties getCtx()
-	{
-		Preconditions.checkNotNull(_ctx, "ctx");
-		return _ctx;
 	}
 
 	public MenuTreeLoader setUserRolePermissionsKey(final UserRolePermissionsKey userRolePermissionsKey)
@@ -85,11 +72,17 @@ public final class MenuTreeLoader
 		return this;
 	}
 
+	@NonNull
+	private UserRolePermissionsKey getUserRolePermissionsKey()
+	{
+		return _userRolePermissionsKey;
+	}
+
 	private IUserRolePermissions getUserRolePermissions()
 	{
 		if (_userRolePermissions == null)
 		{
-			final UserRolePermissionsKey userRolePermissionsKey = _userRolePermissionsKey != null ? _userRolePermissionsKey : UserRolePermissionsKey.of(getCtx());
+			final UserRolePermissionsKey userRolePermissionsKey = getUserRolePermissionsKey();
 			_userRolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(userRolePermissionsKey);
 		}
 		return _userRolePermissions;
@@ -109,7 +102,8 @@ public final class MenuTreeLoader
 			throw new IllegalStateException("No root menu node available"); // shall not happen
 		}
 
-		return MenuTree.of(rootNode);
+		final long version = getVersion();
+		return MenuTree.of(version, rootNode);
 	}
 
 	private MenuNode createMenuNodeRecursivelly(final MTreeNode nodeModel, final int depth)
@@ -237,7 +231,7 @@ public final class MenuTreeLoader
 		}
 
 		final MTree mTree = MTree.builder()
-				.setCtx(getCtx())
+				.setCtx(Env.getCtx())
 				.setTrxName(ITrx.TRXNAME_None)
 				.setAD_Tree_ID(adTreeId)
 				.setEditable(false)
@@ -265,8 +259,18 @@ public final class MenuTreeLoader
 		return this;
 	}
 
+	@NonNull
 	private String getAD_Language()
 	{
 		return _adLanguage;
+	}
+
+	private long getVersion()
+	{
+		if (_version < 0)
+		{
+			_version = userRolePermissionsDAO.getCacheVersion();
+		}
+		return _version;
 	}
 }
