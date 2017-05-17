@@ -192,7 +192,8 @@ public class SqlDocumentQueryBuilder
 			final List<Object> sqlWhereParams = sqlWhereAndParams.getRight();
 
 			sqlSelectLinkColumnName
-					.append("SELECT " + linkColumnName + " FROM " + entityBinding.getTableName())
+					.append("SELECT " + linkColumnName)
+					.append(" FROM " + entityBinding.getTableName() + " " + entityBinding.getTableAlias()) // NOTE: we need table alias because the where clause is using it
 					.append("\n WHERE ").append(sqlWhere);
 			sqlSelectLinkColumnNameParams.addAll(sqlWhereParams);
 		}
