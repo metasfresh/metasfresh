@@ -52,7 +52,7 @@ public interface IFlatrateHandler
 	
 	
 	/**
-	 * Invoked by {@link IFlatrateBL#de.metas.flatrate.api.impl.FlatrateBL.extendContract0(I_C_Flatrate_Term, boolean, boolean, I_C_OrderLine, String)} after the given <code>term</code> was checked.
+	 * Invoked by {@link IFlatrateBL#de.metas.flatrate.api.impl.FlatrateBL.extendContract0(I_C_Flatrate_Term, boolean, boolean, I_C_OrderLine, String)} after the given <code>term</code> was checked if does need to be renew
 	 *
 	 * @param term the term that is ended
 	 * 

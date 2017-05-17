@@ -58,6 +58,7 @@ public interface IContractChangeBL extends ISingletonService
 	
 	/**
 	 * ending naturally a contract
+	 * Actually is just setting the status to Ending contract 
 	 * @param term
 	 */
 	void endContract(I_C_Flatrate_Term term);
