@@ -4,9 +4,11 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
+import org.adempiere.util.Services;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +17,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
 
 /*
@@ -42,6 +45,8 @@ import de.metas.ui.web.session.UserSession;
 @Repository
 public class MenuTreeRepository
 {
+	private static final transient Logger logger = LogManager.getLogger(MenuTreeRepository.class);
+
 	@Autowired
 	private UserSession userSession;
 
@@ -54,7 +59,6 @@ public class MenuTreeRepository
 				public MenuTree load(final MenuTreeKey key) throws Exception
 				{
 					return MenuTreeLoader.newInstance()
-							.setCtx(Env.getCtx())
 							.setUserRolePermissionsKey(key.getUserRolePermissionsKey())
 							.setAD_Language(key.getAD_Language())
 							.load();
@@ -73,7 +77,29 @@ public class MenuTreeRepository
 		try
 		{
 			final MenuTreeKey key = new MenuTreeKey(userRolePermissionsKey, adLanguage);
-			return menuTrees.get(key);
+			MenuTree menuTree = menuTrees.get(key);
+
+			//
+			// If menuTree's version is not the current one, try re-acquiring it.
+			int retry = 3;
+			final long currentVersion = Services.get(IUserRolePermissionsDAO.class).getCacheVersion();
+			while (menuTree.getVersion() != currentVersion)
+			{
+				menuTrees.invalidate(key);
+				menuTree = menuTrees.get(key);
+
+				retry--;
+				if (retry <= 0)
+				{
+					break;
+				}
+			}
+			if (menuTree.getVersion() != currentVersion)
+			{
+				logger.warn("Could not acquire menu tree version {}. Returning what we got... \nmenuTree: {}\nkey={}", currentVersion, menuTree, key);
+			}
+
+			return menuTree;
 		}
 		catch (final ExecutionException e)
 		{
