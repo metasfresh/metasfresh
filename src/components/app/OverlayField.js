@@ -84,14 +84,13 @@ class OverlayField extends Component {
             <div
                 className="overlay-field js-not-unselect"
                 onKeyDown={e => this.handleKeyDown(e)}
+                tabIndex={-1}
             >
-            {
-                filter ?
-                this.renderParameters(layout) :
-                layout && layout.elements &&
-                this.renderElements(layout, data, type)
-            }
-
+                {filter ?
+                    this.renderParameters(layout) :
+                    layout && layout.elements &&
+                        this.renderElements(layout, data, type)
+                }
             </div>
         )
     }
