@@ -2,10 +2,13 @@ package de.metas.material.event;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Preconditions;
@@ -61,7 +64,17 @@ public class MaterialEventService
 			final String lightWeigthEventStr = event.getProperty(MANUFACTURING_DISPOSITION_EVENT);
 			final MaterialEvent lightWeightEvent = MaterialEventSerializer.get().deserialize(lightWeigthEventStr);
 
-			listeners.forEach(l -> l.onEvent(lightWeightEvent));
+			//
+			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
+			final Properties copyCtx = Env.copyCtx(Env.getCtx());
+
+			Env.setContext(copyCtx, Env.CTXNAME_AD_Client_ID, lightWeightEvent.getEventDescr().getClientId());
+			Env.setContext(copyCtx, Env.CTXNAME_AD_Org_ID, lightWeightEvent.getEventDescr().getOrgId());
+
+			try (final IAutoCloseable c = Env.switchContext(copyCtx))
+			{
+				listeners.forEach(l -> l.onEvent(lightWeightEvent));
+			}
 		}
 	};
 

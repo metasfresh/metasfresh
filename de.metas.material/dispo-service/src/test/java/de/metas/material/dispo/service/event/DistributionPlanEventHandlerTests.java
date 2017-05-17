@@ -26,17 +26,16 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DispoTestUtils;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.service.CandidateFactory;
-import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
-import de.metas.material.dispo.service.event.MDEventListener;
-import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.DistributionPlanEvent;
 import de.metas.material.event.EventDescr;
-import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
 import lombok.NonNull;
 import mockit.Mocked;
 
@@ -72,9 +71,15 @@ public class DistributionPlanEventHandlerTests
 
 	private static final Date t1 = TimeUtil.addMinutes(t0, 10);
 
-	private static final Date t2 = TimeUtil.addMinutes(t0, 20);
+	/**
+	 * {@link #t1} plus one day, so that we can work/test with {@link DDOrderLine#getDurationDays()}.
+	 */
+	private static final Date t2 = TimeUtil.addDaysExact(t1, 1);
 
-	private static final Date t3 = TimeUtil.addMinutes(t0, 30);
+	/**
+	 * {@link #t2} plus two days so that we can work/test with {@link DDOrderLine#getDurationDays()}.
+	 */
+	private static final Date t3 = TimeUtil.addDaysExact(t2, 2);
 
 	public static final int fromWarehouseId = 10;
 	public static final int intermediateWarehouseId = 20;
@@ -86,6 +91,14 @@ public class DistributionPlanEventHandlerTests
 
 	public static final int rawProduct2Id = 55;
 
+	public static final int productPlanningId = 65;
+	
+	public static final int plantId = 75;
+
+	public static final int networkDistributionLineId = 85;
+
+	public static final int shipperId = 95;
+	
 	private I_AD_Org org;
 
 	private DistributionPlanEventHandler distributionPlanEventHandler;
@@ -107,7 +120,8 @@ public class DistributionPlanEventHandlerTests
 		distributionPlanEventHandler = new DistributionPlanEventHandler(
 				candidateRepository,
 				new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService),
-				supplyProposalEvaluator);
+				supplyProposalEvaluator,
+				new CandidateService(candidateRepository, materialEventService));
 	}
 
 	/**
@@ -122,15 +136,21 @@ public class DistributionPlanEventHandlerTests
 	{
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
-				.distributionStart(t1)
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t2)
+				.toWarehouseId(toWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.datePromised(t2)
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
+						.line(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(1)
+								.networkDistributionLineId(networkDistributionLineId)
+								.build())
 						.build())
 				.reference(reference)
 				.build();
@@ -140,20 +160,23 @@ public class DistributionPlanEventHandlerTests
 		assertThat(allRecords.size(), is(4));
 
 		// all four shall have the same product
-		allRecords.forEach(r -> {
-			assertThat(r.getM_Product_ID(), is(productId));
-		});
+		allRecords.forEach(r ->
+			{
+				assertThat(r.getM_Product_ID(), is(productId));
+			});
 
 		// all four shall have the same org
-		allRecords.forEach(r -> {
-			assertThat(r.getAD_Org_ID(), is(org.getAD_Org_ID()));
-		});
+		allRecords.forEach(r ->
+			{
+				assertThat(r.getAD_Org_ID(), is(org.getAD_Org_ID()));
+			});
 
 		// all four shall have the same reference
-		allRecords.forEach(r -> {
-			final TableRecordReference ofReferenced = TableRecordReference.ofReferenced(r);
-			assertThat(ofReferenced, is(reference));
-		});
+		allRecords.forEach(r ->
+			{
+				final TableRecordReference ofReferenced = TableRecordReference.ofReferenced(r);
+				assertThat(ofReferenced, is(reference));
+			});
 
 		assertThat(DispoTestUtils.filter(Type.SUPPLY).size(), is(1));
 		assertThat(DispoTestUtils.filter(Type.STOCK).size(), is(2));
@@ -202,6 +225,8 @@ public class DistributionPlanEventHandlerTests
 		performTestTwoDistibutionPlanEvents(distributionPlanEventHandler, org);
 	}
 
+	// TODO: test in reversed order
+	
 	/**
 	 * Contains the actual test for {@link #testTwoDistibutionPlanEvents()}. I moved this into a static method because i want to use the code to set the stage for other tests.
 	 *
@@ -214,15 +239,21 @@ public class DistributionPlanEventHandlerTests
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 
 		final DistributionPlanEvent event1 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
-				.distributionStart(t1)
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t2)
+				.toWarehouseId(intermediateWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(intermediateWarehouseId)
+						.datePromised(t2) // => expected date of the supply candidate
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
+						.line(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.networkDistributionLineId(networkDistributionLineId)
+								.durationDays(1) // => t2 minus 1day = t1 (expected date of the demand candidate)
+								.build())
 						.build())
 				.reference(reference)
 				.build();
@@ -233,15 +264,21 @@ public class DistributionPlanEventHandlerTests
 		assertThat(DispoTestUtils.filter(Type.STOCK).size(), is(2)); // one stock record per supply/demand record
 
 		final DistributionPlanEvent event2 = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
-				.distributionStart(t2)
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(intermediateWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t3)
+				.toWarehouseId(toWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.datePromised(t3) // => expected date of the supply candidate
+						.plantId(plantId)
+						.productPlanningId(productPlanningId)
+						.shipperId(shipperId)
+						.line(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(2) // => t3 minus 2days = t2 (expected date of the demand candidate)
+								.networkDistributionLineId(networkDistributionLineId)
+								.build())
 						.build())
 				.reference(reference)
 				.build();

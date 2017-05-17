@@ -37,9 +37,13 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
 		@JsonSubTypes.Type(name = MaterialDemandEvent.TYPE, value = MaterialDemandEvent.class),
+		
 		@JsonSubTypes.Type(name = DistributionPlanEvent.TYPE, value = DistributionPlanEvent.class),
 		@JsonSubTypes.Type(name = ProductionPlanEvent.TYPE, value = ProductionPlanEvent.class),
+		@JsonSubTypes.Type(name = DemandHandlerAuditEvent.TYPE, value = DemandHandlerAuditEvent.class),
+		
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderRequestedEvent.TYPE, value = DDOrderRequestedEvent.class),
 		@JsonSubTypes.Type(name = ReceiptScheduleEvent.TYPE, value = ReceiptScheduleEvent.class),
 		@JsonSubTypes.Type(name = ShipmentScheduleEvent.TYPE, value = ShipmentScheduleEvent.class),
 		@JsonSubTypes.Type(name = TransactionEvent.TYPE, value = TransactionEvent.class)

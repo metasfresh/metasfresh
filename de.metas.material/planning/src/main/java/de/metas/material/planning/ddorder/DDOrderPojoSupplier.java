@@ -10,13 +10,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -30,7 +28,8 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMRPNotesCollector;
 import de.metas.material.planning.IMaterialPlanningContext;
@@ -153,8 +152,8 @@ public class DDOrderPojoSupplier
 
 			//
 			// Get the warehouse in transit
-			final I_M_Warehouse warehouseInTrasit = retrieveInTransitWarehouse(ctx, warehouseFrom.getAD_Org_ID());
-			if (warehouseInTrasit == null)
+			final int warehouseInTrasitId = DDOrderUtil.retrieveInTransitWarehouseId(ctx, warehouseFrom.getAD_Org_ID());
+			if (warehouseInTrasitId <= 0)
 			{
 				// DRP-010: Do not exist Transit Warehouse to this Organization
 				mrpNotesCollector.newMRPNoteBuilder(mrpContext, ErrorCodes.ERR_DRP_010_InTransitWarehouseNotFound)
@@ -179,29 +178,26 @@ public class DDOrderPojoSupplier
 			if (M_Shipper_ID != networkLine.getM_Shipper_ID()) // this is also the case on our first iteration since we initialized M_Shipper_ID := -1
 			{
 				// Org Must be linked to BPartner
-				final I_AD_Org locatorToOrg = locatorTo.getAD_Org();
-				final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-				final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(locatorToOrg);
-				if (orgBPartner == null)
+				final int orgBPartnerId = DDOrderUtil.retrieveOrgBPartnerId(ctx, locatorTo.getAD_Org_ID());
+				if (orgBPartnerId <= 0)
 				{
 					// DRP-020: Target Org has no BP linked to it
+					final I_AD_Org locatorToOrg = InterfaceWrapperHelper.create(Env.getCtx(), locatorTo.getAD_Org_ID(), I_AD_Org.class, ITrx.TRXNAME_None);
 					mrpNotesCollector.newMRPNoteBuilder(mrpContext, "DRP-020")
 							.addParameter(I_AD_Org.COLUMNNAME_AD_Org_ID, locatorToOrg.getName())
 							.collect();
 					//
 					continue;
 				}
-
-				final I_C_BPartner_Location orgBPLocation = bpartnerOrgBL.retrieveOrgBPLocation(mrpContext.getCtx(), locatorToOrg.getAD_Org_ID(), ITrx.TRXNAME_None);
-
+				
 				//
 				// Try found some DD_Order with Shipper , Business Partner and Doc Status = Draft
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				orderBuilder = getDDOrderFromCache(org,
 						plant,
-						warehouseInTrasit,
+						warehouseInTrasitId,
 						networkLine.getM_Shipper_ID(),
-						orgBPartner.getC_BPartner_ID(),
+						orgBPartnerId,
 						request.getDemandDate());
 
 				if (orderBuilder == null)
@@ -209,13 +205,10 @@ public class DDOrderPojoSupplier
 					orderBuilder = DDOrder.builder()
 							.orgId(warehouseTo.getAD_Org_ID())
 							.plantId(plant.getS_Resource_ID())
-							.bPartnerId(orgBPartner.getC_BPartner_ID())
-							.bPartnerLocationId(orgBPLocation.getC_BPartner_Location_ID())
-							.plannerId(productPlanningData.getPlanner_ID())
-							.inTransitWarehouseId(warehouseInTrasit.getM_Warehouse_ID())
-							.dateOrdered(mrpContext.getDate())
+							.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 							.datePromised(supplyDateFinishSchedule)
-							.shipperId(networkLine.getM_Shipper_ID());
+							.shipperId(networkLine.getM_Shipper_ID())
+							.createDDrder(productPlanningData.isCreatePlan());
 
 					builders.add(orderBuilder);
 					addToCache(orderBuilder);
@@ -226,8 +219,8 @@ public class DDOrderPojoSupplier
 			//
 			// Crate DD order line
 			final BigDecimal qtyToMove = calculateQtyToMove(qtyToSupplyRemaining, networkLine.getPercent());
-			final DDOrderLine ddOrderLine = createDD_OrderLine(mrpContext, networkLine, locatorFrom, locatorTo, qtyToMove, supplyDateFinishSchedule, request);
-			orderBuilder.ddOrderLine(ddOrderLine);
+			final DDOrderLine ddOrderLine = createDD_OrderLine(mrpContext, networkLine, qtyToMove, supplyDateFinishSchedule, request);
+			orderBuilder.line(ddOrderLine);
 
 			qtyToSupplyRemaining = qtyToSupplyRemaining.subtract(qtyToMove);
 		} // end of the for-loop over networkLines
@@ -250,15 +243,9 @@ public class DDOrderPojoSupplier
 				.collect(Collectors.toList());
 	}
 
-	private I_M_Warehouse retrieveInTransitWarehouse(final Properties ctx, final int adOrgId)
-	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-		return warehouseDAO.retrieveWarehouseInTransitForOrg(ctx, adOrgId);
-	}
-
 	private DDOrder.DDOrderBuilder getDDOrderFromCache(final I_AD_Org org,
 			final I_S_Resource plant,
-			final I_M_Warehouse warehouseInTrasit,
+			final int warehouseInTrasitId,
 			final int shipperId,
 			final int bpartnerId,
 			final Date demandDate)
@@ -303,50 +290,22 @@ public class DDOrderPojoSupplier
 	private DDOrderLine createDD_OrderLine(
 			final IMaterialPlanningContext mrpContext,
 			final I_DD_NetworkDistributionLine networkLine,
-			final I_M_Locator locatorFrom,
-			final I_M_Locator locatorTo,
 			final BigDecimal qtyToMove,
 			final Timestamp supplyDateFinishSchedule,
 			final IMaterialRequest request)
 	{
 		final I_M_Product product = mrpContext.getM_Product();
 
-		final int durationDays = calculateDurationDays(mrpContext, networkLine);
+		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
 
 		final DDOrderLine ddOrderline = DDOrderLine.builder()
-				.demandBPartnerId(request.getMRPDemandBPartnerId())
 				.salesOrderLineId(request.getMRPDemandOrderLineSOId())
-				.fromLocatorId(locatorFrom.getM_Locator_ID())
-				.toLocatorId(locatorTo.getM_Locator_ID())
 				.productId(product.getM_Product_ID())
 				.qty(qtyToMove)
-				.allowPush(networkLine.isDD_AllowPush())
-				.keepTargetPlant(networkLine.isKeepTargetPlant())
+				.networkDistributionLineId(networkLine.getDD_NetworkDistributionLine_ID())
 				.durationDays(durationDays)
 				.build();
 
 		return ddOrderline;
-	}
-
-	private int calculateDurationDays(final IMaterialPlanningContext mrpContext, final I_DD_NetworkDistributionLine networkLine)
-	{
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-
-		//
-		// Leadtime
-		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
-		Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
-
-		//
-		// Transfer time
-		int transferTime = networkLine.getTransfertTime().intValueExact();
-		if (transferTime <= 0)
-		{
-			transferTime = productPlanningData.getTransfertTime().intValueExact();
-		}
-		Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
-
-		final int durationTotalDays = leadtimeDays + transferTime;
-		return durationTotalDays;
 	}
 }

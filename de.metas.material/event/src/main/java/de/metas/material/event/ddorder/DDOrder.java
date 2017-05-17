@@ -1,10 +1,11 @@
-package de.metas.material.planning.ddorder;
+package de.metas.material.event.ddorder;
 
 import java.util.Date;
 import java.util.List;
 
 import org.compiere.model.I_S_Resource;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -32,9 +33,14 @@ import lombok.Singular;
  * #L%
  */
 @Data
-final @Builder public class DDOrder
+@Builder
+@AllArgsConstructor // used by jackson when it deserializes a string
+final public class DDOrder
 {
 
+	/**
+	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
+	 */
 	@NonNull
 	private final Integer orgId;
 
@@ -45,19 +51,7 @@ final @Builder public class DDOrder
 	private final Integer plantId;
 
 	@NonNull
-	private final Integer bPartnerId;
-
-	@NonNull
-	private final Integer bPartnerLocationId;
-
-	@NonNull
-	private final Integer plannerId;
-
-	@NonNull
-	private final Integer inTransitWarehouseId;
-
-	@NonNull
-	private final Date dateOrdered;
+	private final Integer productPlanningId;
 
 	@NonNull
 	private final Date datePromised;
@@ -65,6 +59,15 @@ final @Builder public class DDOrder
 	@NonNull
 	private final Integer shipperId;
 
+	/**
+	 * If {@code true}, then this event advises the recipient to directly request an actual DD_Order to be created.
+	 */
+	private final boolean createDDrder;
+
 	@Singular
-	private final List<DDOrderLine> ddOrderLines;
+	private final List<DDOrderLine> lines;
+
+	private final int ddOrderId;
+
+	private final String docStatus;
 }

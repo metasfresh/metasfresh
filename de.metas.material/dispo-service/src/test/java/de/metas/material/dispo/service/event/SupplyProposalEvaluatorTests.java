@@ -26,6 +26,7 @@ import de.metas.material.dispo.service.event.DistributionPlanEventHandler;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator.SupplyProposal;
 import de.metas.material.dispo.CandidateRepository;
+import de.metas.material.dispo.CandidateService;
 import de.metas.material.event.MaterialEventService;
 import mockit.Mocked;
 
@@ -67,7 +68,7 @@ public class SupplyProposalEvaluatorTests
 
 	private static final int DEMAND_WAREHOUSE_ID = 6;
 
-	//private MDEventListener mdEventListener;
+	// private MDEventListener mdEventListener;
 
 	private DistributionPlanEventHandler distributionPlanEventHandler;
 
@@ -97,7 +98,11 @@ public class SupplyProposalEvaluatorTests
 
 		final CandidateChangeHandler candidateChangeHandler = new CandidateChangeHandler(candidateRepository, new CandidateFactory(candidateRepository), materialEventService);
 
-		distributionPlanEventHandler = new DistributionPlanEventHandler(candidateRepository, candidateChangeHandler, supplyProposalEvaluator);
+		distributionPlanEventHandler = new DistributionPlanEventHandler(
+				candidateRepository,
+				candidateChangeHandler,
+				supplyProposalEvaluator,
+				new CandidateService(candidateRepository, materialEventService));
 	}
 
 	/**
@@ -178,6 +183,7 @@ public class SupplyProposalEvaluatorTests
 	private void addSimpleSupplyDemand()
 	{
 		final Candidate supplyCandidate = Candidate.builder()
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.date(t3)
 				.productId(3)
@@ -189,6 +195,7 @@ public class SupplyProposalEvaluatorTests
 		final Candidate supplyCandidateWithId = candidateRepository.addOrUpdate(supplyCandidate);
 
 		final Candidate demandCandidate = Candidate.builder()
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.date(t2)
 				.parentId(supplyCandidateWithId.getId())
@@ -212,27 +219,27 @@ public class SupplyProposalEvaluatorTests
 		// propose what would create an additional demand on A and an additional supply on B. nothing wrong with that
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEEventListenerTests.fromWarehouseId)
-				.destWarehouseId(MDEEventListenerTests.intermediateWarehouseId)
-				.productId(MDEEventListenerTests.productId)
+				.sourceWarehouseId(MDEventListenerTests.fromWarehouseId)
+				.destWarehouseId(MDEventListenerTests.intermediateWarehouseId)
+				.productId(MDEventListenerTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(true));
 
 		// propose what would create an additional demand on B and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal2 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEEventListenerTests.intermediateWarehouseId)
-				.destWarehouseId(MDEEventListenerTests.toWarehouseId)
-				.productId(MDEEventListenerTests.productId)
+				.sourceWarehouseId(MDEventListenerTests.intermediateWarehouseId)
+				.destWarehouseId(MDEventListenerTests.toWarehouseId)
+				.productId(MDEventListenerTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal2), is(true));
 
 		// propose what would create an additional demand on A and an additional supply on C. nothing wrong with that either
 		final SupplyProposal supplyProposal3 = SupplyProposal.builder()
 				.date(t1)
-				.sourceWarehouseId(MDEEventListenerTests.fromWarehouseId)
-				.destWarehouseId(MDEEventListenerTests.toWarehouseId)
-				.productId(MDEEventListenerTests.productId)
+				.sourceWarehouseId(MDEventListenerTests.fromWarehouseId)
+				.destWarehouseId(MDEventListenerTests.toWarehouseId)
+				.productId(MDEventListenerTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal3), is(true));
 	}
@@ -250,10 +257,10 @@ public class SupplyProposalEvaluatorTests
 		// now assume that the planner would create create another DistibutionPlanEvent that suggests to balance the -10 in "fromWarehouseId" with the +10 in "toWarehouseId"
 		// note that we don't need to look at the qty at all
 		final SupplyProposal supplyProposal1 = SupplyProposal.builder()
-				.date(MDEEventListenerTests.t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
-				.sourceWarehouseId(MDEEventListenerTests.toWarehouseId)
-				.destWarehouseId(MDEEventListenerTests.fromWarehouseId)
-				.productId(MDEEventListenerTests.productId)
+				.date(MDEventListenerTests.t0) // the proposal needs to be made for the time before the two DistibutionPlanEvents occured
+				.sourceWarehouseId(MDEventListenerTests.toWarehouseId)
+				.destWarehouseId(MDEventListenerTests.fromWarehouseId)
+				.productId(MDEventListenerTests.productId)
 				.build();
 		assertThat(supplyProposalEvaluator.evaluateSupply(supplyProposal1), is(false));
 	}
