@@ -1,6 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -15,6 +14,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -82,7 +82,7 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	default List<? extends IViewRow> getByIds(final Set<DocumentId> rowId)
+	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowId)
 	{
 		return streamByIds(rowId).collect(ImmutableList.toImmutableList());
 	}
@@ -105,17 +105,17 @@ public interface IView
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
 
-	String getSqlWhereClause(Collection<DocumentId> rowIds);
+	String getSqlWhereClause(DocumentIdsSelection rowIds);
 
 	boolean hasAttributesSupport();
 
-	<T> List<T> retrieveModelsByIds(Collection<DocumentId> rowIds, Class<T> modelClass);
+	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 *         If a {@link IViewRow} was not found for given ID, this method simply ignores it.
 	 */
-	Stream<? extends IViewRow> streamByIds(Collection<DocumentId> rowIds);
+	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
 
 	/**
 	 * Notify the view that given record(s) has changed.

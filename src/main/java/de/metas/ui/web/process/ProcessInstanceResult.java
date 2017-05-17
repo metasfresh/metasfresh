@@ -2,7 +2,6 @@ package de.metas.ui.web.process;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
@@ -12,6 +11,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -157,14 +157,13 @@ public final class ProcessInstanceResult implements Serializable
 		@NonNull
 		private final ViewId viewId;
 	}
-	
+
 	@lombok.Value
 	@lombok.Builder
 	public static class OpenIncludedViewAction implements ResultAction
 	{
 		private final ViewId viewId;
 	}
-
 
 	@lombok.Value
 	@lombok.Builder
@@ -174,13 +173,13 @@ public final class ProcessInstanceResult implements Serializable
 		private final DocumentPath documentPath;
 		private final boolean modal;
 	}
-	
+
 	@lombok.Value
 	@lombok.Builder
 	public static final class SelectViewRowsAction implements ResultAction
 	{
-		private final ViewId viewId;
-		private final Set<DocumentId> rowIds;
+		private @NonNull final ViewId viewId;
+		private @NonNull final DocumentIdsSelection rowIds;
 	}
 
 	public static final class Builder

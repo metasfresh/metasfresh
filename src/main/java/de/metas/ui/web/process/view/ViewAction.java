@@ -6,11 +6,10 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Set;
 
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
 /*
@@ -53,7 +52,7 @@ public @interface ViewAction
 
 	public interface Precondition
 	{
-		ProcessPreconditionsResolution matches(IView view, Set<DocumentId> selectedDocumentIds);
+		ProcessPreconditionsResolution matches(IView view, DocumentIdsSelection selectedDocumentIds);
 	}
 
 	public static final class AlwaysAllowPrecondition implements Precondition
@@ -61,7 +60,7 @@ public @interface ViewAction
 		public static final transient ViewAction.AlwaysAllowPrecondition instance = new ViewAction.AlwaysAllowPrecondition();
 
 		@Override
-		public ProcessPreconditionsResolution matches(IView view, Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(IView view, DocumentIdsSelection selectedDocumentIds)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}

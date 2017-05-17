@@ -13,7 +13,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -59,7 +59,7 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	
 	protected final List<HUEditorRow> getSelectedRows()
 	{
-		final Set<DocumentId> selectedDocumentIds = getSelectedDocumentIds();
+		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
 		return getView().getByIds(selectedDocumentIds);
 	}
 	

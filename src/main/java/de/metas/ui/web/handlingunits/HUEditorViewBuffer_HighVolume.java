@@ -30,7 +30,9 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -127,7 +129,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		final Set<DocumentId> rowIdsToAdd = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToAdd);
+		final DocumentIdsSelection rowIdsToAdd = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToAdd);
 		if (rowIdsToAdd.isEmpty())
 		{
 			return false;
@@ -144,7 +146,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		final Set<DocumentId> rowIdsToRemove = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToRemove);
+		final DocumentIdsSelection rowIdsToRemove = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToRemove);
 
 		rowIdsToRemove.forEach(rowId -> cache_huRowsById.remove(rowId));
 
@@ -154,7 +156,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	@Override
 	public boolean containsAnyOfHUIds(final Collection<Integer> huIdsToCheck)
 	{
-		final Set<DocumentId> rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToCheck);
+		final DocumentIdsSelection rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToCheck);
 		return viewSelectionFactory.containsAnyOfRowIds(getDefaultSelection().getSelectionId(), rowIds);
 	}
 
@@ -172,7 +174,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final Collection<DocumentId> rowIds)
+	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds == null || rowIds.isEmpty())
 		{
@@ -182,18 +184,24 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return streamByIds(rowIds);
 	}
 
-	private Stream<HUEditorRow> streamByIds(final Collection<DocumentId> rowIds)
+	private Stream<HUEditorRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{
 			return Stream.empty();
 		}
 
+		// TODO: implement support for ALL rowIds
+		if (rowIds.isAll())
+		{
+			throw new UnsupportedOperationException("streaming all rowIds is not supported");
+		}
+
 		final HUEditorRow[] rows = new HUEditorRow[rowIds.size()];
 		final Map<DocumentId, Integer> rowIdToLoad2index = new HashMap<>();
 		{
 			int idx = 0;
-			for (final DocumentId rowId : rowIds)
+			for (final DocumentId rowId : rowIds.toSet())
 			{
 				final HUEditorRow row = cache_huRowsById.get(rowId);
 				if (row == null)
@@ -237,7 +245,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	public Stream<HUEditorRow> streamPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Set<Integer> huIds = retrieveHUIdsByPage(firstRow, pageLength, orderBys);
-		final Set<DocumentId> rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIds);
+		final DocumentIdsSelection rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIds);
 		return streamByIds(rowIds);
 	}
 
@@ -306,5 +314,13 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		final int huId = rowId.toInt();
 		// FIXME: fails if not top level ...
 		return huEditorRepo.retrieveForHUId(huId);
+	}
+
+	@Override
+	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	{
+		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
+		final String selectionId = getViewId().getViewId();
+		return SqlViewSelectionQueryBuilder.buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds.toDocumentIdsSelectionWithOnlyIntegerDocumentIds());
 	}
 }

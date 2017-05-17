@@ -1,6 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -39,6 +38,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -181,13 +181,13 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		if (viewId != null)
 		{
 			final IView view = viewsRepo.getView(viewId);
-			final Set<DocumentId> viewDocumentIds = request.getViewDocumentIds();
-			viewSelectedIdsAsStr = DocumentId.toCommaSeparatedString(viewDocumentIds);
+			final DocumentIdsSelection viewDocumentIds = request.getViewDocumentIds();
+			viewSelectedIdsAsStr = viewDocumentIds.toCommaSeparatedString();
 			tableName = view.getTableName();
 
-			if (viewDocumentIds.size() == 1)
+			if (viewDocumentIds.isSingleDocumentId())
 			{
-				final DocumentId singleDocumentId = viewDocumentIds.iterator().next();
+				final DocumentId singleDocumentId = viewDocumentIds.getSingleDocumentId();
 				recordId = singleDocumentId.toIntOr(-1);
 			}
 			else
@@ -282,7 +282,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.of(viewWindowId, viewIdStr);
 			//
 			final String viewSelectedIdsStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewSelectedIds);
-			final Set<DocumentId> viewSelectedIds = DocumentId.ofCommaSeparatedString(viewSelectedIdsStr);
+			final DocumentIdsSelection viewSelectedIds = DocumentIdsSelection.ofCommaSeparatedString(viewSelectedIdsStr);
 
 			//
 			return ADProcessInstanceController.builder()

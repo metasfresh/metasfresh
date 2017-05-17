@@ -48,7 +48,7 @@ public class WEBUI_PP_Order_ReverseCandidate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedDocumentIds().size() != 1)
+		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.reject("Select one line");
 		}

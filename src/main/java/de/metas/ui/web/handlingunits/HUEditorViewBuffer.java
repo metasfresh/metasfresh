@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -69,9 +70,11 @@ interface HUEditorViewBuffer
 	 * </ul>
 	 * 
 	 */
-	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(Collection<DocumentId> rowIds);
+	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(DocumentIdsSelection rowIds);
 
 	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
+
+	String getSqlWhereClause(DocumentIdsSelection rowIds);
 }

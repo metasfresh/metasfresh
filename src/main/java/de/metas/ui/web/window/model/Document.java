@@ -43,6 +43,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -1365,7 +1366,7 @@ public final class Document
 		return includedDocuments.createNewDocument();
 	}
 
-	/* package */ void deleteIncludedDocuments(final DetailId detailId, final Set<DocumentId> rowIds)
+	/* package */ void deleteIncludedDocuments(final DetailId detailId, final DocumentIdsSelection rowIds)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		includedDocuments.deleteDocuments(rowIds);

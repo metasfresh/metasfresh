@@ -29,6 +29,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -81,9 +82,9 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return DocumentId.of(huId);
 	}
 
-	public static Set<DocumentId> rowIdsFromM_HU_IDs(final Collection<Integer> huIds)
+	public static DocumentIdsSelection rowIdsFromM_HU_IDs(final Collection<Integer> huIds)
 	{
-		return DocumentId.ofIntSet(huIds);
+		return DocumentIdsSelection.ofIntSet(huIds);
 	}
 
 	public static DocumentId rowIdFromM_HU_Storage(final int huId, final int productId)
@@ -93,7 +94,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 
 	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
 	{
-		return DocumentId.toIntSet(rowIds);
+		return DocumentIdsSelection.of(rowIds).toIntSet();
 	}
 
 	private final DocumentPath documentPath;

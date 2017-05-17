@@ -240,7 +240,7 @@ public class WEBUI_M_HU_Transform
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedDocumentIds().size() != 1)
+		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}

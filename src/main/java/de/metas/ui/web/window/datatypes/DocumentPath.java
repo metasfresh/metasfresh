@@ -12,7 +12,6 @@ import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
@@ -93,7 +92,8 @@ public final class DocumentPath
 			return ImmutableList.of();
 		}
 
-		return DocumentId.streamFromCommaSeparatedString(documentIdsListStr)
+		return DocumentIdsSelection.ofCommaSeparatedString(documentIdsListStr)
+				.stream()
 				.map(documentId -> rootDocumentPath(windowId, documentId))
 				.collect(GuavaCollectors.toImmutableList());
 	}
@@ -116,7 +116,7 @@ public final class DocumentPath
 				.setRowId(rowIdStr)
 				.build();
 	}
-	
+
 	public static final DocumentPath includedDocumentPath(@NonNull final WindowId windowId, @NonNull final DocumentId documentId, @NonNull final DetailId detailId, @NonNull final DocumentId rowId)
 	{
 		return builder()
@@ -126,7 +126,6 @@ public final class DocumentPath
 				.setRowId(rowId)
 				.build();
 	}
-
 
 	public static final DocumentPath includedDocumentPath(final WindowId windowId, final String idStr, final String detailId)
 	{
@@ -160,8 +159,7 @@ public final class DocumentPath
 	private final DocumentId documentTypeId;
 	private final DocumentId documentId;
 	private final DetailId detailId;
-	private final Set<DocumentId> rowIds;
-	private final transient DocumentId singleRowId;
+	private final DocumentIdsSelection rowIds;
 
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
@@ -179,40 +177,19 @@ public final class DocumentPath
 		this.documentId = documentId;
 
 		detailId = null;
-		rowIds = ImmutableSet.of();
-		singleRowId = null;
+		rowIds = DocumentIdsSelection.EMPTY;
 	}
 
 	/** Multiple rowIds constructor */
-	private DocumentPath(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId, final DetailId detailId, final Set<DocumentId> rowIds)
+	private DocumentPath(@NonNull final DocumentType documentType, @NonNull final DocumentId documentTypeId, final DocumentId documentId, final DetailId detailId, @NonNull final DocumentIdsSelection rowIds)
 	{
-		super();
-
-		Preconditions.checkNotNull(documentType, "documentType shall not be null");
-		Preconditions.checkNotNull(documentTypeId, "documentTypeId shall not be null");
-
 		this.documentType = documentType;
 		this.documentTypeId = documentTypeId;
 		this.documentId = documentId;
 
 		this.detailId = detailId;
 
-		if (rowIds == null || rowIds.isEmpty())
-		{
-			this.rowIds = ImmutableSet.of();
-			singleRowId = null;
-		}
-		else if (rowIds.size() == 1)
-		{
-			this.rowIds = ImmutableSet.copyOf(rowIds);
-			singleRowId = this.rowIds.iterator().next();
-		}
-		else
-		{
-			this.rowIds = ImmutableSet.copyOf(rowIds);
-			singleRowId = null;
-
-		}
+		this.rowIds = rowIds;
 	}
 
 	/** Single rowId constructor */
@@ -228,8 +205,7 @@ public final class DocumentPath
 		this.documentId = documentId;
 
 		this.detailId = detailId;
-		this.singleRowId = singleRowId;
-		rowIds = singleRowId == null ? ImmutableSet.of() : ImmutableSet.of(singleRowId);
+		rowIds = DocumentIdsSelection.fromNullable(singleRowId);
 	}
 
 	@Override
@@ -244,9 +220,9 @@ public final class DocumentPath
 				sb.append("/T").append(detailId);
 			}
 
-			if (singleRowId != null)
+			if (rowIds.isSingleDocumentId())
 			{
-				sb.append("/R").append(singleRowId);
+				sb.append("/R").append(rowIds.getSingleDocumentId());
 			}
 			else if (!rowIds.isEmpty())
 			{
@@ -341,14 +317,10 @@ public final class DocumentPath
 
 	public DocumentId getSingleRowId()
 	{
-		if (singleRowId == null)
-		{
-			throw new InvalidDocumentPathException(this, "There is no single rowId");
-		}
-		return singleRowId;
+		return rowIds.getSingleDocumentId();
 	}
 
-	public Set<DocumentId> getRowIds()
+	public DocumentIdsSelection getRowIds()
 	{
 		return rowIds;
 	}
@@ -365,7 +337,18 @@ public final class DocumentPath
 			return false;
 		}
 
-		return singleRowId != null && !singleRowId.isNew();
+		if (!rowIds.isSingleDocumentId())
+		{
+			return false;
+		}
+
+		final DocumentId singleRowId = rowIds.getSingleDocumentId();
+		if (singleRowId.isNew())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isSingleNewIncludedDocument()
@@ -375,7 +358,18 @@ public final class DocumentPath
 			return false;
 		}
 
-		return singleRowId != null && singleRowId.isNew();
+		if (!rowIds.isSingleDocumentId())
+		{
+			return false;
+		}
+
+		final DocumentId singleRowId = rowIds.getSingleDocumentId();
+		if (!singleRowId.isNew())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
 	public boolean isAnyIncludedDocument()
@@ -427,7 +421,7 @@ public final class DocumentPath
 		if (isRootDocument())
 		{
 			final DocumentId rootDocumentIdNew = id;
-			if (Objects.equals(this.documentId, rootDocumentIdNew))
+			if (Objects.equals(documentId, rootDocumentIdNew))
 			{
 				return this;
 			}
@@ -446,7 +440,7 @@ public final class DocumentPath
 			}
 			else
 			{
-				return new DocumentPath(documentType, documentTypeId, this.documentId, detailId, rowIdNew);
+				return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowIdNew);
 			}
 		}
 	}
@@ -523,13 +517,13 @@ public final class DocumentPath
 
 			//
 			// Create & return the document path
-			return new DocumentPath(documentType, documentTypeId, documentId, detailId, rowIds);
+			return new DocumentPath(documentType, documentTypeId, documentId, detailId, DocumentIdsSelection.of(rowIds));
 		}
 
 		public Builder setDocumentType(@NonNull final WindowId windowId)
 		{
-			this.documentType = DocumentType.Window;
-			this.documentTypeId = windowId.toDocumentId();
+			documentType = DocumentType.Window;
+			documentTypeId = windowId.toDocumentId();
 			return this;
 		}
 
@@ -584,7 +578,7 @@ public final class DocumentPath
 		public Builder setRowIdsList(final String rowIdsListStr)
 		{
 			rowIds.clear();
-			rowIds.addAll(DocumentId.ofCommaSeparatedString(rowIdsListStr));
+			rowIds.addAll(DocumentIdsSelection.ofCommaSeparatedString(rowIdsListStr).toSet());
 
 			return this;
 		}

@@ -1,12 +1,11 @@
 package de.metas.ui.web.process;
 
 import java.util.Objects;
-import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,14 +48,14 @@ public final class CreateProcessInstanceRequest
 	private final DocumentPath singleDocumentPath;
 
 	private ViewId viewId;
-	private Set<DocumentId> viewDocumentIds;
+	private DocumentIdsSelection viewDocumentIds;
 
 	@Builder
 	private CreateProcessInstanceRequest( //
 			@NonNull final ProcessId processId //
 			, final DocumentPath singleDocumentPath //
 			, final ViewId viewId //
-			, final Set<DocumentId> viewDocumentIds //
+			, final DocumentIdsSelection viewDocumentIds //
 	)
 	{
 		this.processId = processId;

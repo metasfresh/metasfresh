@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -575,16 +576,16 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
-	public synchronized void deleteDocuments(final Set<DocumentId> documentIds)
+	public synchronized void deleteDocuments(final DocumentIdsSelection documentIds)
 	{
-		if (documentIds == null || documentIds.isEmpty())
+		if (documentIds.isEmpty())
 		{
 			throw new IllegalArgumentException("At least one rowId shall be specified when deleting included documents");
 		}
 
 		assertWritable();
 
-		for (final DocumentId documentId : documentIds)
+		for (final DocumentId documentId : documentIds.toSet())
 		{
 			final Document document = getDocumentById(documentId);
 			assertDeleteDocumentAllowed(document);

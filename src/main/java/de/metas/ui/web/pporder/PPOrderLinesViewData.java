@@ -1,8 +1,6 @@
 package de.metas.ui.web.pporder;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
@@ -12,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 
 /*
@@ -48,9 +47,9 @@ import lombok.NonNull;
 	private final String planningStatus;
 
 	/** Top level records list */
-	private final List<PPOrderLineRow> records;
+	private final ImmutableList<PPOrderLineRow> records;
 	/** All records (included ones too) indexed by DocumentId */
-	private final Map<DocumentId, PPOrderLineRow> allRecordsById;
+	private final ImmutableMap<DocumentId, PPOrderLineRow> allRecordsById;
 
 	PPOrderLinesViewData(@NonNull final String planningStatus, final List<PPOrderLineRow> records)
 	{
@@ -75,11 +74,16 @@ import lombok.NonNull;
 		return record;
 	}
 
-	public Stream<PPOrderLineRow> streamByIds(final Collection<DocumentId> documentIds)
+	public Stream<PPOrderLineRow> streamByIds(final DocumentIdsSelection documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
 		{
 			return Stream.empty();
+		}
+
+		if (documentIds.isAll())
+		{
+			return records.stream();
 		}
 
 		return documentIds.stream()

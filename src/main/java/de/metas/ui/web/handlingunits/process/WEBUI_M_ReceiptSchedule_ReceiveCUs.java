@@ -94,15 +94,9 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		// NOTE: we shall allow one line only
-		// if (context.getSelectionSize() <= 1)
-		// {
-		// return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
-		// }
-
 		//
 		// Check if we are allowed to select multiple lines
-		if (!allowMultipleReceiptsSchedules && context.getSelectionSize() > 1)
+		if (!allowMultipleReceiptsSchedules && context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only one line");
 		}

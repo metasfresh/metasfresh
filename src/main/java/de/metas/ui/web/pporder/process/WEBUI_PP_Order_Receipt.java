@@ -139,7 +139,7 @@ public class WEBUI_PP_Order_Receipt
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedDocumentIds().size() != 1)
+		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}

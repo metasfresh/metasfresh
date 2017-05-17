@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.IQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -158,11 +160,16 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 
 	private Set<I_M_HU> retrieveHUsToReceive()
 	{
-		final List<I_M_HU> hus = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, this)
+		final IQuery<I_M_HU> query = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, this)
 				.filter(getProcessInfo().getQueryFilter())
 				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_M_HU.class);
+				.create();
+		final List<I_M_HU> hus = query.list(I_M_HU.class);
+		if (hus.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@ @M_HU_ID@")
+					.setParameter("query", query);
+		}
 
 		return ImmutableSet.copyOf(hus);
 	}
