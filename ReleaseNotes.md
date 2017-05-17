@@ -42,6 +42,7 @@ Here come the actual release notes:
   * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
   * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
+  * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
  
 ## Fixes
 
