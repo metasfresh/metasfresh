@@ -654,6 +654,10 @@ input:checked + .input-slider:before {
     padding: .3rem .50rem;
 }
 
+.input-secondary .raw-lookup-wrapper {
+    padding: .1rem .50rem;
+}
+
 .raw-lookup-disabled .input-dropdown-container {
     cursor: not-allowed;
 }
