@@ -1,8 +1,11 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Optional;
+
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -85,4 +88,7 @@ public interface IDocumentFieldView
 
 	/** @return field's valid state; never return null */
 	DocumentValidStatus getValidStatus();
+	
+	/** @return optional WindowId to be used when zooming into */
+	Optional<WindowId> getZoomIntoWindowId();
 }

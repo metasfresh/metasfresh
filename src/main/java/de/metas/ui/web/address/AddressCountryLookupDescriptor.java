@@ -20,6 +20,7 @@ import de.metas.adempiere.service.ICountryDAO;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -193,5 +194,11 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 				.translateColumn(I_C_Country.COLUMNNAME_Name, adLanguage)
 				.orElse(countryRecord.getName());
 		return IntegerLookupValue.of(countryId, countryName);
+	}
+
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return Optional.empty();
 	}
 }

@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model;
 
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -19,6 +20,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
@@ -146,10 +148,20 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		return descriptor;
 	}
 
-	private LookupDataSource getLookupDataSource()
+	private LookupDataSource getLookupDataSourceOrNull()
 	{
 		return _lookupDataSource;
 	}
+	
+	private LookupDataSource getLookupDataSource()
+	{
+		if (_lookupDataSource == null)
+		{
+			throw new DocumentFieldNotLookupException(getFieldName());
+		}
+		return _lookupDataSource;
+	}
+
 
 	@Override
 	public Document getDocument()
@@ -237,7 +249,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 		
 		//
 		// If we are dealing with a lookup value, make, sure it's translated (see https://github.com/metasfresh/metasfresh-webui-api/issues/311 )
-		final LookupDataSource lookupDataSource = getLookupDataSource();
+		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
 		if(lookupDataSource != null && value instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)value;
@@ -330,7 +342,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 
 	private final <T> T convertToValueClass(final Object value, final DocumentFieldWidgetType widgetType, final Class<T> targetType)
 	{
-		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSource());
+		return descriptor.convertToValueClass(value, widgetType, targetType, getLookupDataSourceOrNull());
 	}
 
 	@Override
@@ -391,7 +403,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean isLookupValuesStale()
 	{
-		final LookupDataSource lookupDataSource = getLookupDataSource();
+		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
 		if (lookupDataSource == null)
 		{
 			return false;
@@ -402,7 +414,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	@Override
 	public boolean setLookupValuesStaled(final String triggeringFieldName)
 	{
-		final LookupDataSource lookupDataSource = getLookupDataSource();
+		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
 		if (lookupDataSource == null)
 		{
 			return false;
@@ -418,11 +430,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	public LookupValuesList getLookupValues()
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
-		if (lookupDataSource == null)
-		{
-			throw new DocumentFieldNotLookupException(getFieldName());
-		}
-
 		final Evaluatee ctx = getDocument().asEvaluatee();
 		final LookupValuesList values = lookupDataSource.findEntities(ctx);
 		lookupValuesStaled = false;
@@ -433,10 +440,6 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	public LookupValuesList getLookupValuesForQuery(final String query)
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
-		if (lookupDataSource == null)
-		{
-			throw new DocumentFieldNotLookupException(getFieldName());
-		}
 		final Evaluatee ctx = getDocument().asEvaluatee();
 		final LookupValuesList values = lookupDataSource.findEntities(ctx, query);
 		lookupValuesStaled = false;
@@ -519,5 +522,17 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 	private boolean isInitialValue()
 	{
 		return DataTypes.equals(_value, _initialValue);
+	}
+	
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
+		if(lookupDataSource == null)
+		{
+			return Optional.empty();
+		}
+		
+		return lookupDataSource.getZoomIntoWindowId();
 	}
 }

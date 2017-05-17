@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
@@ -77,7 +78,7 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 				return lookupValue;
 			};
 		}
-		
+
 		lookupTableName = builder.lookupTableName;
 	}
 
@@ -100,7 +101,7 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 	{
 		return dependsOnFieldNames;
 	}
-	
+
 	@Override
 	public Optional<String> getLookupTableName()
 	{
@@ -119,6 +120,18 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		return lookupValues.apply(evalCtx);
 	}
 
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return Optional.empty();
+	}
+
+	//
+	//
+	//
+	//
+	//
+
 	public static class Builder
 	{
 		private Function<LookupDataSourceContext, LookupValuesList> lookupValues;
@@ -128,7 +141,7 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		private Set<String> dependsOnFieldNames;
 
 		private Optional<String> lookupTableName = Optional.empty();
-		
+
 		private Builder()
 		{
 		}
