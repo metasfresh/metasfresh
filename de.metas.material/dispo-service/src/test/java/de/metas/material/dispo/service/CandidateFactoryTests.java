@@ -87,6 +87,7 @@ public class CandidateFactoryTests
 
 		final Candidate stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -104,6 +105,7 @@ public class CandidateFactoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -123,6 +125,7 @@ public class CandidateFactoryTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())

@@ -1,7 +1,8 @@
-package de.metas.material.planning.ddorder;
+package de.metas.material.event.ddorder;
 
 import java.math.BigDecimal;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -29,35 +30,28 @@ import lombok.NonNull;
  */
 @Data
 @Builder
+@AllArgsConstructor // used by jackson when it deserializes a string
 public class DDOrderLine
 {
-
-	private final Integer demandBPartnerId;
-
-	private final Integer salesOrderLineId;
-
-	@NonNull
-	private final Integer fromLocatorId;
-
-	@NonNull
-	private final Integer toLocatorId;
+	private final int salesOrderLineId;
 
 	@NonNull
 	private final Integer productId;
 
+	
+	private final int attributeSetInstanceId;;
+	
 	@NonNull
 	private final BigDecimal qty;
-
-	@NonNull
-	private final Boolean allowPush;
-
-	@NonNull
-	private final Boolean keepTargetPlant;
 
 	/**
 	 * {@link DDOrder#getDatePromised()} minus this number of days tells us when the distribution for this particular line needs to start
 	 */
 	@NonNull
 	private final Integer durationDays;
-
+	
+	@NonNull
+	private final Integer networkDistributionLineId;
+	
+	private final int ddOrderLineId;
 }

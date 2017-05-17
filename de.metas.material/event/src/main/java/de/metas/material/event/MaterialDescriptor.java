@@ -37,9 +37,6 @@ import lombok.experimental.Wither;
 public class MaterialDescriptor
 {
 	@NonNull
-	final Integer orgId;
-
-	@NonNull
 	private final Integer warehouseId;
 
 	@NonNull
@@ -50,5 +47,4 @@ public class MaterialDescriptor
 
 	@NonNull
 	private final Date date;
-
 }

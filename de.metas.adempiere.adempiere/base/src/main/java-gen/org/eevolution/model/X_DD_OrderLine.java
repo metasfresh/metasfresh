@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
@@ -32,7 +16,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -475492467L;
+	private static final long serialVersionUID = -1094193134L;
 
     /** Standard Constructor */
     public X_DD_OrderLine (Properties ctx, int DD_OrderLine_ID, String trxName)
@@ -41,7 +25,6 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
       /** if (DD_OrderLine_ID == 0)
         {
 			setC_UOM_ID (0);
-// @#C_UOM_ID@
 			setDD_AllowPush (false);
 // N
 			setDD_Order_ID (0);
@@ -51,6 +34,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 			setIsDescription (false);
 // N
 			setIsInvoiced (false);
+// N
 			setIsKeepTargetPlant (false);
 // N
 			setLine (0);
@@ -59,12 +43,14 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 // @M_Locator_ID@
 			setM_LocatorTo_ID (0);
 // @M_LocatorTo_ID@
+			setM_Product_ID (0);
 			setProcessed (false);
-			setQtyEntered (Env.ZERO);
+// N
+			setQtyEntered (BigDecimal.ZERO);
 // 1
-			setQtyInTransit (Env.ZERO);
+			setQtyInTransit (BigDecimal.ZERO);
 // 0
-			setQtyOrdered (Env.ZERO);
+			setQtyOrdered (BigDecimal.ZERO);
 // 1
         } */
     }
@@ -82,14 +68,6 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_DD_OrderLine[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -406,7 +384,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ConfirmedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -494,6 +472,40 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	}
 
 	@Override
+	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class);
+	}
+
+	@Override
+	public void setDD_NetworkDistributionLine(org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_NetworkDistributionLine_ID, org.eevolution.model.I_DD_NetworkDistributionLine.class, DD_NetworkDistributionLine);
+	}
+
+	/** Set Network Distribution Line.
+		@param DD_NetworkDistributionLine_ID Network Distribution Line	  */
+	@Override
+	public void setDD_NetworkDistributionLine_ID (int DD_NetworkDistributionLine_ID)
+	{
+		if (DD_NetworkDistributionLine_ID < 1) 
+			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_DD_NetworkDistributionLine_ID, Integer.valueOf(DD_NetworkDistributionLine_ID));
+	}
+
+	/** Get Network Distribution Line.
+		@return Network Distribution Line	  */
+	@Override
+	public int getDD_NetworkDistributionLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DD_NetworkDistributionLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.eevolution.model.I_DD_Order getDD_Order() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_DD_Order_ID, org.eevolution.model.I_DD_Order.class);
@@ -565,6 +577,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
+	
 	/** Set Frachtbetrag.
 		@param FreightAmt 
 		Freight Amount 
@@ -583,7 +596,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -754,7 +767,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineNetAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -770,9 +783,9 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -783,8 +796,8 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -958,7 +971,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PickedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1040,7 +1053,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1062,7 +1075,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1081,7 +1094,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyInTransit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1103,7 +1116,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1125,7 +1138,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1147,7 +1160,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ScrappedQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1169,7 +1182,7 @@ public class X_DD_OrderLine extends org.compiere.model.PO implements I_DD_OrderL
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TargetQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -46,7 +46,6 @@ final public class ProductionPlanEvent implements MaterialEvent
 	@NonNull
 	private final EventDescr eventDescr;
 
-
 	private final TableRecordReference reference;
 
 	@NonNull

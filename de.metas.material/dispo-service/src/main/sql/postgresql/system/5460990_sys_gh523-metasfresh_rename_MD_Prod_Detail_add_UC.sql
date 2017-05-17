@@ -50,7 +50,7 @@ UPDATE AD_PrintFormatItem pi SET PrintName='Dispo-Produktionsdetail', Name='Disp
 
 -- 2017-04-28T18:21:54.392
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540398,0,540810,TO_TIMESTAMP('2017-04-28 18:21:54','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','Y','MD_Candidate_Prod_Detail_UC','N',TO_TIMESTAMP('2017-04-28 18:21:54','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540398,0,540810,TO_TIMESTAMP('2017-04-28 18:21:54','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','Y','MD_Candidate_Prod_Detail_UC','N',TO_TIMESTAMP('2017-04-28 18:21:54','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
 ;
 
 -- 2017-04-28T18:21:54.399
@@ -60,7 +60,7 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 
 -- 2017-04-28T18:22:09.282
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,556531,540798,540398,0,TO_TIMESTAMP('2017-04-28 18:22:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y',10,TO_TIMESTAMP('2017-04-28 18:22:09','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,556531,540798,540398,0,TO_TIMESTAMP('2017-04-28 18:22:09','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y',10,TO_TIMESTAMP('2017-04-28 18:22:09','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 

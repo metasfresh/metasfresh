@@ -30,10 +30,9 @@ public class M_ReceiptSchedule
 	{
 		final boolean deleted = timing == ModelValidator.TYPE_AFTER_DELETE;
 		final ReceiptScheduleEvent event = ReceiptScheduleEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(EventDescr.createNew(schedule))
 				.reference(TableRecordReference.of(schedule))
 				.materialDescr(MaterialDescriptor.builder()
-						.orgId(schedule.getAD_Org_ID())
 						.productId(schedule.getM_Product_ID())
 						.warehouseId(schedule.getM_Warehouse_ID())
 						.date(schedule.getMovementDate())

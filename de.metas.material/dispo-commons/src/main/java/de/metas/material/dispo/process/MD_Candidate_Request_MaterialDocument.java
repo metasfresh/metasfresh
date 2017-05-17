@@ -1,5 +1,7 @@
 package de.metas.material.dispo.process;
 
+import java.util.function.Predicate;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
@@ -35,13 +37,21 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 
 /**
- * Invokes {@link CandidateService#requestPPOrder(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link CandidateService#requestMaterialOrder(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MD_Candidate_Request_PP_Order extends JavaProcess implements IProcessPrecondition
+public class MD_Candidate_Request_MaterialDocument extends JavaProcess implements IProcessPrecondition
 {
+
+	private final Predicate<I_MD_Candidate> subTypePredicate = r ->
+		{
+			final String subType = r.getMD_Candidate_SubType();
+
+			return X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION.equals(subType)
+					|| X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION.equals(subType);
+		};
 
 	@Override
 	protected String doIt() throws Exception
@@ -53,12 +63,15 @@ public class MD_Candidate_Request_PP_Order extends JavaProcess implements IProce
 				.addOnlyActiveRecordsFilter()
 				.filter(getProcessInfo().getQueryFilter())
 				.create().list()
-				.stream().map(r -> r.getMD_Candidate_GroupId())
+				.stream()
+				.filter(subTypePredicate)
+				.map(r -> r.getMD_Candidate_GroupId())
 				.distinct()
 				.peek(groupId -> addLog("Calling {}.requestOrder() for groupId={}", CandidateService.class.getSimpleName(), groupId))
-				.forEach(groupId -> {
-					service.requestPPOrder(groupId);
-				});
+				.forEach(groupId ->
+					{
+						service.requestMaterialOrder(groupId);
+					});
 
 		return MSG_OK;
 	}
@@ -71,18 +84,19 @@ public class MD_Candidate_Request_PP_Order extends JavaProcess implements IProce
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		boolean atLeastOneProductionCandidateSelected = false;
+		boolean atLeastOneMaterialDocCandidateSelected = false;
 		for (final I_MD_Candidate selectedRecord : context.getSelectedModels(I_MD_Candidate.class))
 		{
-			if (X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION.equals(selectedRecord.getMD_Candidate_SubType()))
+			if (subTypePredicate.test(selectedRecord))
 			{
-				atLeastOneProductionCandidateSelected = true;
+				atLeastOneMaterialDocCandidateSelected = true;
 				break;
 			}
 		}
-		if (!atLeastOneProductionCandidateSelected)
+
+		if (!atLeastOneMaterialDocCandidateSelected)
 		{
-			return ProcessPreconditionsResolution.reject("None of the selected records had subtype=X_MD_Candidate.MD_CANDIDATE_SUBTYPE_PRODUCTION");
+			return ProcessPreconditionsResolution.reject("None of the selected records had subtype=PRODUCTION or DISTRIBUTION");
 		}
 
 		// todo: also check the candidates' status

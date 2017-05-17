@@ -1,13 +1,9 @@
 package de.metas.material.planning.pporder;
 
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
 
-import de.metas.material.event.EventDescr;
 import de.metas.material.event.PPOrderRequestedEvent;
-import de.metas.material.event.ProductionPlanEvent;
-import de.metas.material.event.ProductionPlanEvent.ProductionPlanEventBuilder;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
 import lombok.NonNull;
@@ -52,15 +48,4 @@ public class PPOrderPojoConverter
 		return event.getPpOrder();
 	}
 
-	public ProductionPlanEvent asProductionPlanEvent(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final TableRecordReference reference)
-	{
-		final ProductionPlanEventBuilder builder = ProductionPlanEvent.builder()
-				.eventDescr(new EventDescr())
-				.reference(reference)
-				.ppOrder(ppOrder);
-
-		return builder.build();
-	}
 }

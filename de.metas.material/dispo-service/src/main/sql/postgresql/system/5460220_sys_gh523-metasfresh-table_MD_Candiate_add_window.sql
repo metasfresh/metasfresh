@@ -1,7 +1,7 @@
 
 -- 2017-04-13T17:12:33.919
 -- URL zum Konzept
-INSERT INTO AD_Window (AD_Client_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsOneInstanceOnly,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth) VALUES (0,0,540334,TO_TIMESTAMP('2017-04-13 17:12:33','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','N','N','N','Y','Materialdisposition','N',TO_TIMESTAMP('2017-04-13 17:12:33','YYYY-MM-DD HH24:MI:SS'),100,'T',0,0)
+INSERT INTO AD_Window (AD_Client_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsOneInstanceOnly,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth) VALUES (0,0,540334,TO_TIMESTAMP('2017-04-13 17:12:33','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','N','N','N','Y','Materialdisposition','N',TO_TIMESTAMP('2017-04-13 17:12:33','YYYY-MM-DD HH24:MI:SS'),100,'T',0,0)
 ;
 
 -- 2017-04-13T17:12:33.925
@@ -11,7 +11,7 @@ INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTr
 
 -- 2017-04-13T17:13:21.797
 -- URL zum Konzept
-INSERT INTO AD_Tab (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,HasTree,ImportFields,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,0,540802,540808,540334,TO_TIMESTAMP('2017-04-13 17:13:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','N','N','Y','N','Y','N','N','N','Y','Y','N','N','Y','Y','N','N','N',0,'Materialdispo','N',10,0,TO_TIMESTAMP('2017-04-13 17:13:21','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,HasTree,ImportFields,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,0,540802,540808,540334,TO_TIMESTAMP('2017-04-13 17:13:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','N','N','Y','N','Y','N','N','N','Y','Y','N','N','Y','Y','N','N','N',0,'Materialdispo','N',10,0,TO_TIMESTAMP('2017-04-13 17:13:21','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:13:21.802
@@ -31,7 +31,7 @@ UPDATE AD_Tab SET IsReadOnly='N',Updated=TO_TIMESTAMP('2017-04-13 17:13:51','YYY
 
 -- 2017-04-13T17:14:01.399
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556466,558120,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.',10,'de.metas.material.dispo.service','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','Y','N','N','N','N','N','Mandant',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556466,558120,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.',10,'de.metas.material.dispo','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','Y','N','N','N','N','N','Mandant',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.403
@@ -41,7 +41,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.493
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556467,558121,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten',10,'de.metas.material.dispo.service','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','Y','N','N','N','N','N','Sektion',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556467,558121,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten',10,'de.metas.material.dispo','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','Y','N','N','N','N','N','Sektion',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.494
@@ -51,7 +51,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.572
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556470,558122,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv',1,'de.metas.material.dispo.service','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','Y','Y','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556470,558122,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv',1,'de.metas.material.dispo','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','Y','Y','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.573
@@ -61,7 +61,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.648
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556473,558123,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo.service','Y','Y','N','N','N','N','N','N','N','Dispositionskandidat',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556473,558123,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo','Y','Y','N','N','N','N','N','N','N','Dispositionskandidat',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.649
@@ -71,7 +71,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.721
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556474,558124,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, Leistung, Artikel',10,'de.metas.material.dispo.service','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','Y','Y','N','N','N','N','N','Produkt',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556474,558124,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, Leistung, Artikel',10,'de.metas.material.dispo','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','Y','Y','N','N','N','N','N','Produkt',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.722
@@ -81,7 +81,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.794
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556476,558125,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Menge',10,'de.metas.material.dispo.service','Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','Y','Y','N','N','N','N','N','Menge',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556476,558125,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Menge',10,'de.metas.material.dispo','Menge bezeichnet die Anzahl eines bestimmten Produktes oder Artikels für dieses Dokument.','Y','Y','Y','N','N','N','N','N','Menge',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.795
@@ -91,7 +91,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.878
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556477,558126,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,7,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Plandatum',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556477,558126,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,7,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Plandatum',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.879
@@ -101,7 +101,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:01.949
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556478,558127,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Database Table information',10,'de.metas.material.dispo.service','The Database Table provides the information of the table definition','Y','Y','Y','N','N','N','N','N','DB-Tabelle',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556478,558127,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Database Table information',10,'de.metas.material.dispo','The Database Table provides the information of the table definition','Y','Y','Y','N','N','N','N','N','DB-Tabelle',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:01.950
@@ -111,7 +111,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:02.021
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556479,558128,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Direct internal record ID',22,'de.metas.material.dispo.service','The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.','Y','Y','Y','N','N','N','N','N','Datensatz-ID',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556479,558128,0,540802,TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100,'Direct internal record ID',22,'de.metas.material.dispo','The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.','Y','Y','Y','N','N','N','N','N','Datensatz-ID',TO_TIMESTAMP('2017-04-13 17:14:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:02.022
@@ -121,7 +121,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:02.094
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556481,558129,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Typ',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556481,558129,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Typ',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:02.095
@@ -131,7 +131,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:02.165
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556482,558130,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,'Lager oder Ort für Dienstleistung',10,'de.metas.material.dispo.service','Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.','Y','Y','Y','N','N','N','N','N','Lager',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556482,558130,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,'Lager oder Ort für Dienstleistung',10,'de.metas.material.dispo','Das Lager identifiziert ein einzelnes Lager für Artikel oder einen Standort an dem Dienstleistungen geboten werden.','Y','Y','Y','N','N','N','N','N','Lager',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:02.166
@@ -141,7 +141,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:02.237
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556483,558131,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Elterndatensatz',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556483,558131,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Elterndatensatz',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:02.238
@@ -151,7 +151,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-13T17:14:02.307
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556485,558132,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,15,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Untertyp',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556485,558132,0,540802,TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100,15,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Untertyp',TO_TIMESTAMP('2017-04-13 17:14:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-13T17:14:02.308
@@ -436,7 +436,7 @@ UPDATE AD_Window SET InternalName='MD_Candidate',Updated=TO_TIMESTAMP('2017-04-1
 
 -- 2017-04-13T17:19:38.835
 -- URL zum Konzept
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,540801,0,540334,TO_TIMESTAMP('2017-04-13 17:19:38','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','MD_Candidate','Y','N','N','N','N','Materialdisposition',TO_TIMESTAMP('2017-04-13 17:19:38','YYYY-MM-DD HH24:MI:SS'),100,'Materialdisposition')
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,540801,0,540334,TO_TIMESTAMP('2017-04-13 17:19:38','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','MD_Candidate','Y','N','N','N','N','Materialdisposition',TO_TIMESTAMP('2017-04-13 17:19:38','YYYY-MM-DD HH24:MI:SS'),100,'Materialdisposition')
 ;
 
 -- 2017-04-13T17:19:38.841

@@ -55,7 +55,7 @@ UPDATE AD_Table SET AD_Window_ID=540334,Updated=TO_TIMESTAMP('2017-04-26 14:49:1
 
 -- 2017-04-26T14:49:50.787
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556508,558146,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Menge Abw.',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556508,558146,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Menge Abw.',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-26T14:49:50.792
@@ -65,7 +65,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-26T14:49:50.884
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556509,558147,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,'Merkmals Ausprägungen zum Produkt',10,'de.metas.material.dispo.service','The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','Y','Y','N','N','N','N','N','Merkmale',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556509,558147,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,'Merkmals Ausprägungen zum Produkt',10,'de.metas.material.dispo','The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','Y','Y','N','N','N','N','N','Merkmale',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-26T14:49:50.885
@@ -75,7 +75,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-26T14:49:50.965
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556510,558148,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,14,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Gruppen-ID',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556510,558148,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,14,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Gruppen-ID',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-26T14:49:50.966
@@ -85,7 +85,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-26T14:49:51.049
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556511,558149,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Planmenge',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556511,558149,0,540802,TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Planmenge',TO_TIMESTAMP('2017-04-26 14:49:50','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-26T14:49:51.050
@@ -95,7 +95,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-04-26T14:49:51.131
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556512,558150,0,540802,TO_TIMESTAMP('2017-04-26 14:49:51','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo.service','Y','Y','Y','N','N','N','N','N','Status',TO_TIMESTAMP('2017-04-26 14:49:51','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsCentrallyMaintained,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556512,558150,0,540802,TO_TIMESTAMP('2017-04-26 14:49:51','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.material.dispo','Y','Y','Y','N','N','N','N','N','Status',TO_TIMESTAMP('2017-04-26 14:49:51','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-04-26T14:49:51.132
