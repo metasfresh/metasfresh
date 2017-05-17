@@ -7,6 +7,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
 import de.metas.ui.web.window.model.Document;
 import lombok.NonNull;
 
@@ -56,6 +57,29 @@ public class JSONDocumentPermissions
 
 		// TODO: check column level access
 	}
+	
+	public void apply(final DocumentPath documentPath, final JSONDocumentField jsonField)
+	{
+		// TODO: apply JSONDocumentPermissions to fields
+		// atm it's not so important because user cannot reach in that situation,
+		// because he/she cannot update the document in that case.
+	}
+
+
+	public void apply(final Document document, final JSONIncludedTabInfo jsonIncludedTabInfo)
+	{
+		if(isReadonly(document))
+		{
+			jsonIncludedTabInfo.setAllowCreateNew(false, "no document access");
+			jsonIncludedTabInfo.setAllowDelete(false, "no document access");
+		}
+	}
+	
+	public void apply(final DocumentPath documentPath, final JSONIncludedTabInfo jsonIncludedTabInfo)
+	{
+		// TODO: implement... but it's not so critical atm
+	}
+
 
 	private boolean isReadonly(final Document document)
 	{

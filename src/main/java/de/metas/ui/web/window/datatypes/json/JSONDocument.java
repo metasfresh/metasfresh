@@ -103,7 +103,8 @@ public final class JSONDocument extends JSONDocumentBase
 		document.getIncludedDocumentsCollections()
 				.stream()
 				.map(JSONIncludedTabInfo::new)
-				.forEach(jsonDocument::setIncludedTabInfo);
+				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
+				.forEach(jsonDocument::addIncludedTabInfo);
 
 		//
 		// Set debugging info
@@ -144,10 +145,11 @@ public final class JSONDocument extends JSONDocumentBase
 			return null;
 		}
 
-		final JSONDocument jsonDocument = new JSONDocument(documentChangedEvents.getDocumentPath());
+		final DocumentPath documentPath = documentChangedEvents.getDocumentPath();
+		final JSONDocument jsonDocument = new JSONDocument(documentPath);
 
 		// If the document was deleted, we just need to export that flag. All the other changes are not relevant.
-		if(documentChangedEvents.isDeleted())
+		if (documentChangedEvents.isDeleted())
 		{
 			jsonDocument.setDeleted();
 			return jsonDocument;
@@ -156,10 +158,6 @@ public final class JSONDocument extends JSONDocumentBase
 		//
 		// Fields
 		{
-			// TODO: apply JSONDocumentPermissions to fields
-			// atm it's not so important because user cannot reach in that situation,
-			// because he/she cannot update the document in that case.
-			
 			final List<JSONDocumentField> jsonFields = new ArrayList<>();
 			documentChangedEvents.getFieldChangesList()
 					.stream()
@@ -172,7 +170,9 @@ public final class JSONDocument extends JSONDocumentBase
 						}
 
 						// Append the other fields
-						jsonFields.add(JSONDocumentField.ofDocumentFieldChangedEvent(field));
+						final JSONDocumentField jsonField = JSONDocumentField.ofDocumentFieldChangedEvent(field);
+						jsonOpts.getDocumentPermissions().apply(documentPath, jsonField); // apply permissions
+						jsonFields.add(jsonField);
 					});
 			jsonDocument.setFields(jsonFields);
 		}
@@ -198,12 +198,12 @@ public final class JSONDocument extends JSONDocumentBase
 		documentChangedEvents.getIncludedDetailInfos()
 				.stream()
 				.map(JSONIncludedTabInfo::new)
-				.forEach(jsonDocument::setIncludedTabInfo);
+				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(documentPath, jsonIncludedTabInfo))
+				.forEach(jsonDocument::addIncludedTabInfo);
 
 		return jsonDocument;
 	}
 
-	
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentValidStatus validStatus;
@@ -222,7 +222,7 @@ public final class JSONDocument extends JSONDocumentBase
 	{
 		super(documentPath);
 	}
-	
+
 	private void setValidStatus(final DocumentValidStatus validStatus)
 	{
 		this.validStatus = validStatus;
@@ -242,8 +242,8 @@ public final class JSONDocument extends JSONDocumentBase
 	{
 		return saveStatus;
 	}
-	
-	private void setIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
+
+	private void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
 	{
 		if (includedTabsInfo == null)
 		{
@@ -252,15 +252,13 @@ public final class JSONDocument extends JSONDocumentBase
 		includedTabsInfo.put(tabInfo.tabid, tabInfo);
 	}
 
-
-
 	//
 	//
 	//
 	//
 	//
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-	private static final class JSONIncludedTabInfo
+	public static final class JSONIncludedTabInfo
 	{
 		@JsonProperty("tabid")
 		private final String tabid;
@@ -271,17 +269,17 @@ public final class JSONDocument extends JSONDocumentBase
 
 		@JsonProperty("allowCreateNew")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final Boolean allowCreateNew;
+		private Boolean allowCreateNew;
 		@JsonProperty("allowCreateNewReason")
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
-		private final String allowCreateNewReason;
+		private String allowCreateNewReason;
 
 		@JsonProperty("allowDelete")
 		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final Boolean allowDelete;
+		private Boolean allowDelete;
 		@JsonProperty("allowDeleteReason")
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
-		private final String allowDeleteReason;
+		private String allowDeleteReason;
 
 		private JSONIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
 		{
@@ -345,6 +343,18 @@ public final class JSONDocument extends JSONDocumentBase
 				this.allowDelete = null;
 				allowDeleteReason = null;
 			}
+		}
+
+		public void setAllowCreateNew(final boolean allowCreateNew, final String reason)
+		{
+			this.allowCreateNew = allowCreateNew;
+			allowCreateNewReason = reason;
+		}
+
+		public void setAllowDelete(final boolean allowDelete, final String reason)
+		{
+			this.allowDelete = allowDelete;
+			allowDeleteReason = reason;
 		}
 	}
 }
