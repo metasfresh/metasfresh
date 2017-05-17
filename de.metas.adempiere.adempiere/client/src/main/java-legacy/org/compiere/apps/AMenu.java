@@ -845,7 +845,7 @@ public final class AMenu extends CFrame
 			return -1;
 		}
 
-		return userRolePermissions.getMenu_Tree_ID();
+		return userRolePermissions.getMenuInfo().getAD_Tree_ID();
 	}
 
 	public FormFrame startForm(final int AD_Form_ID)
