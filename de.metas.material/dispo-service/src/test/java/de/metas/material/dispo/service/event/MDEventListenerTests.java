@@ -37,6 +37,8 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ShipmentScheduleEvent;
+import de.metas.material.event.ddorder.DDOrder;
+import de.metas.material.event.ddorder.DDOrderLine;
 import mockit.Mocked;
 
 /*
@@ -67,7 +69,7 @@ import mockit.Mocked;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class MDEEventListenerTests
+public class MDEventListenerTests
 {
 	private static final int orderLineId = 86;
 
@@ -109,7 +111,11 @@ public class MDEEventListenerTests
 
 		mdEventListener = new MDEventListener(
 				candidateChangeHandler,
-				new DistributionPlanEventHandler(candidateRepository, candidateChangeHandler, supplyProposalEvaluator),
+				new DistributionPlanEventHandler(
+						candidateRepository,
+						candidateChangeHandler,
+						supplyProposalEvaluator,
+						new CandidateService(candidateRepository, materialEventService)),
 				new ProductionPlanEventHandler(candidateChangeHandler, candidateService));
 	}
 
@@ -120,10 +126,9 @@ public class MDEEventListenerTests
 	public void testShipmentScheduleEvent()
 	{
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.materialDescr(MaterialDescriptor.builder()
 						.date(t1)
-						.orgId(org.getAD_Org_ID())
 						.productId(productId)
 						.qty(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
@@ -160,15 +165,21 @@ public class MDEEventListenerTests
 		// create a DistributionPlanEvent event which matches the shipmentscheduleEvent that we processed in testShipmentScheduleEvent()
 		final TableRecordReference reference = TableRecordReference.of("someTable", 4);
 		final DistributionPlanEvent event = DistributionPlanEvent.builder()
-				.eventDescr(new EventDescr())
-				.distributionStart(t1)
+				.eventDescr(new EventDescr(org.getAD_Client_ID(), org.getAD_Org_ID()))
 				.fromWarehouseId(fromWarehouseId)
-				.materialDescr(MaterialDescriptor.builder()
-						.date(t1)
+				.toWarehouseId(toWarehouseId)
+				.ddOrder(DDOrder.builder()
 						.orgId(org.getAD_Org_ID())
-						.productId(productId)
-						.qty(BigDecimal.TEN)
-						.warehouseId(toWarehouseId)
+						.plantId(800)
+						.productPlanningId(810)
+						.shipperId(820)
+						.datePromised(t1)
+						.line(DDOrderLine.builder()
+								.productId(productId)
+								.qty(BigDecimal.TEN)
+								.durationDays(0)
+								.networkDistributionLineId(900)
+								.build())
 						.build())
 				.reference(reference)
 				.build();

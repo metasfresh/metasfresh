@@ -3,6 +3,9 @@ package de.metas.material.event;
 import java.time.Instant;
 import java.util.UUID;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IClientOrgAware;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
@@ -20,11 +23,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,9 +36,9 @@ import lombok.NonNull;
 public class EventDescr
 {
 
-	public EventDescr()
+	public EventDescr(final int clientId, final int orgId)
 	{
-		this(Instant.now(), UUID.randomUUID());
+		this(Instant.now(), UUID.randomUUID(), clientId, orgId);
 	}
 
 	@NonNull
@@ -43,4 +46,29 @@ public class EventDescr
 
 	@NonNull
 	private final UUID uuid;
+
+	@NonNull
+	private final Integer clientId;
+
+	@NonNull
+	private final Integer orgId;
+
+	public EventDescr createNew()
+	{
+		return new EventDescr(clientId, orgId);
+	}
+
+	/**
+	 * 
+	 * @param clientOrgAware model which can be made into a {@link IClientOrgAware} via {@link InterfaceWrapperHelper#asColumnReferenceAwareOrNull(Object, Class)}.
+	 * @return
+	 */
+	public static EventDescr createNew(final Object clientOrgAware)
+	{
+		final IClientOrgAware clientOrgAwareToUse = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(clientOrgAware, IClientOrgAware.class);
+
+		return new EventDescr(
+				clientOrgAwareToUse.getAD_Client_ID(),
+				clientOrgAwareToUse.getAD_Org_ID());
+	}
 }

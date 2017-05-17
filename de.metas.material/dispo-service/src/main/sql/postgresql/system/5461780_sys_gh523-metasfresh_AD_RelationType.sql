@@ -5,7 +5,7 @@
 
 -- 2017-05-04T16:28:40.500
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540720,TO_TIMESTAMP('2017-05-04 16:28:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','N','MD_Candidate_Target_For_C_Order',TO_TIMESTAMP('2017-05-04 16:28:40','YYYY-MM-DD HH24:MI:SS'),100,'T')
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540720,TO_TIMESTAMP('2017-05-04 16:28:40','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','N','MD_Candidate_Target_For_C_Order',TO_TIMESTAMP('2017-05-04 16:28:40','YYYY-MM-DD HH24:MI:SS'),100,'T')
 ;
 
 -- 2017-05-04T16:28:40.508
@@ -15,7 +15,7 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 
 -- 2017-05-04T16:29:27.323
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy,WhereClause) VALUES (0,556473,0,540720,540808,540334,TO_TIMESTAMP('2017-05-04 16:29:27','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','N',TO_TIMESTAMP('2017-05-04 16:29:27','YYYY-MM-DD HH24:MI:SS'),100,'exists
+INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsValueDisplayed,Updated,UpdatedBy,WhereClause) VALUES (0,556473,0,540720,540808,540334,TO_TIMESTAMP('2017-05-04 16:29:27','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','N',TO_TIMESTAMP('2017-05-04 16:29:27','YYYY-MM-DD HH24:MI:SS'),100,'exists
 (
 	select 1
 	from MD_Candidate_Demand_Detail cdd
@@ -27,12 +27,12 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 
 -- 2017-05-04T16:30:03.029
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsDirected,Name,Updated,UpdatedBy) VALUES (0,0,540666,540720,540178,TO_TIMESTAMP('2017-05-04 16:30:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','Y','C_Order -> MD_Candidate',TO_TIMESTAMP('2017-05-04 16:30:02','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Reference_Target_ID,AD_RelationType_ID,Created,CreatedBy,EntityType,IsActive,IsDirected,Name,Updated,UpdatedBy) VALUES (0,0,540666,540720,540178,TO_TIMESTAMP('2017-05-04 16:30:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','Y','C_Order -> MD_Candidate',TO_TIMESTAMP('2017-05-04 16:30:02','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-05-05T14:07:06.926
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540721,TO_TIMESTAMP('2017-05-05 14:07:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','N','MD_Candidate_Production_Target_For_C_Order',TO_TIMESTAMP('2017-05-05 14:07:06','YYYY-MM-DD HH24:MI:SS'),100,'T')
+INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,540721,TO_TIMESTAMP('2017-05-05 14:07:06','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','N','MD_Candidate_Production_Target_For_C_Order',TO_TIMESTAMP('2017-05-05 14:07:06','YYYY-MM-DD HH24:MI:SS'),100,'T')
 ;
 
 -- 2017-05-05T14:07:06.942
@@ -68,7 +68,7 @@ INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_Reference_Source_ID,AD_Re
 
 -- 2017-05-05T14:45:08.236
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541272,53331,TO_TIMESTAMP('2017-05-05 14:45:08','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','Materialdispo (Produktion)',TO_TIMESTAMP('2017-05-05 14:45:08','YYYY-MM-DD HH24:MI:SS'),100,'MD_Candidate_PRODUCTION','MD_Candidate_PRODUCTION')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541272,53331,TO_TIMESTAMP('2017-05-05 14:45:08','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','Materialdispo (Produktion)',TO_TIMESTAMP('2017-05-05 14:45:08','YYYY-MM-DD HH24:MI:SS'),100,'MD_Candidate_PRODUCTION','MD_Candidate_PRODUCTION')
 ;
 
 -- 2017-05-05T14:45:08.241
@@ -78,7 +78,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- 2017-05-05T14:45:45.840
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_RelationType SET EntityType='de.metas.material.dispo.service', Role_Target='MD_Candidate_PRODUCTION',Updated=TO_TIMESTAMP('2017-05-05 14:45:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540179
+UPDATE AD_RelationType SET EntityType='de.metas.material.dispo', Role_Target='MD_Candidate_PRODUCTION',Updated=TO_TIMESTAMP('2017-05-05 14:45:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540179
 ;
 
 -- 2017-05-05T14:45:51.936
@@ -100,6 +100,6 @@ UPDATE AD_RelationType SET IsActive='N', Name='C_Order -> MD_Candidate_all',Upda
 
 -- 2017-05-05T16:06:06.198
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_Table SET EntityType='de.metas.material.dispo.service',Updated=TO_TIMESTAMP('2017-05-05 16:06:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540721
+UPDATE AD_Ref_Table SET EntityType='de.metas.material.dispo',Updated=TO_TIMESTAMP('2017-05-05 16:06:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=540721
 ;
 

@@ -48,10 +48,15 @@ public class PPOrderDemandMatcher implements IMaterialDemandMatcher
 	@Override
 	public boolean matches(final IMaterialPlanningContext mrpContext)
 	{
+		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+		if (productPlanning == null)
+		{
+			Loggables.get().addLog("Given MRP context has no PP_Product_Planning; mrpContext={}", mrpContext);
+			return false;
+		}
+		
 		final I_M_Product product = mrpContext.getM_Product();
-		final I_PP_Product_Planning productDataPlanning = mrpContext.getProductPlanning();
-
-		final boolean isManufactured = X_PP_Product_Planning.ISMANUFACTURED_Yes.equals(productDataPlanning.getIsManufactured());
+		final boolean isManufactured = X_PP_Product_Planning.ISMANUFACTURED_Yes.equals(productPlanning.getIsManufactured());
 		if (!isManufactured)
 		{
 			Loggables.get().addLog("Product {}_{} is configured to not be manufactured; product={}", product.getValue(), product.getName(), product);

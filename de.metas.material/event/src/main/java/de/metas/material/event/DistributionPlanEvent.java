@@ -1,10 +1,9 @@
 package de.metas.material.event;
 
-import java.util.Date;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_DD_Order;
 
+import de.metas.material.event.ddorder.DDOrder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,14 +48,18 @@ public class DistributionPlanEvent implements MaterialEvent
 	private final TableRecordReference reference;
 
 	@NonNull
+	private final DDOrder ddOrder;
+
+
+	/**
+	 * Note: this field is a bit redundant because the {@link #getPpOrder()}'s lines contain a network distribution line with this info. However, the material-dispo code doesn't know or care about how to get to that information.
+	 */
+	@NonNull
 	private final Integer fromWarehouseId;
 
+	/**
+	 * Also check the note about {@link #getFromWarehouseId()}.
+	 */
 	@NonNull
-	private final Date distributionStart;
-
-	@NonNull
-	private final MaterialDescriptor materialDescr;
-
-	private int orderLineId;
-
+	private final Integer toWarehouseId;
 }

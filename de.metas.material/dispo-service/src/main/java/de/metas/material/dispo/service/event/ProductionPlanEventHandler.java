@@ -10,6 +10,7 @@ import de.metas.material.dispo.service.CandidateChangeHandler;
 import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.DemandCandidateDetail;
 import de.metas.material.dispo.ProductionCandidateDetail;
+import de.metas.material.event.EventDescr;
 import de.metas.material.event.ProductionPlanEvent;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderLine;
@@ -42,6 +43,11 @@ public class ProductionPlanEventHandler
 	private final CandidateChangeHandler candidateChangeHandler;
 	private final CandidateService candidateService;
 
+	/**
+	 * 
+	 * @param candidateChangeHandler
+	 * @param candidateService needed in case we directly request a {@link ProductionPlanEvent}'s proposed PP_Order to be created.
+	 */
 	public ProductionPlanEventHandler(
 			@NonNull final CandidateChangeHandler candidateChangeHandler,
 			@NonNull final CandidateService candidateService)
@@ -55,34 +61,26 @@ public class ProductionPlanEventHandler
 		final PPOrder ppOrder = event.getPpOrder();
 
 		final Candidate.Status candidateStatus;
+		final String docStatus = ppOrder.getDocStatus();
+
 		if (ppOrder.getPpOrderId() <= 0)
 		{
 			candidateStatus = Status.doc_planned;
 		}
-		else if ("DR".equals(ppOrder.getDocStatus())||"IP".equals(ppOrder.getDocStatus()))
-		{
-			candidateStatus = Status.doc_created;
-		}
-		else if ("CO".equals(ppOrder.getDocStatus()))
-		{
-			candidateStatus = Status.doc_completed;
-		}
-		else if ("CL".equals(ppOrder.getDocStatus()))
-		{
-			candidateStatus = Status.doc_closed;
-		}
 		else
 		{
-			candidateStatus = Status.unexpected;
+			candidateStatus = EventUtil.getCandidateStatus(docStatus);
 		}
 
+		final EventDescr eventDescr = event.getEventDescr();
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
 				.status(candidateStatus)
 
 				.date(ppOrder.getDatePromised())
-				.orgId(ppOrder.getOrgId())
+				.clientId(eventDescr.getClientId())
+				.orgId(eventDescr.getOrgId())
 				.productId(ppOrder.getProductId())
 				.quantity(ppOrder.getQuantity())
 				.warehouseId(ppOrder.getWarehouseId())
@@ -91,7 +89,7 @@ public class ProductionPlanEventHandler
 						.plantId(ppOrder.getPlantId())
 						.productPlanningId(ppOrder.getProductPlanningId())
 						.ppOrderId(ppOrder.getPpOrderId())
-						.ppOrderDocStatus(ppOrder.getDocStatus())
+						.ppOrderDocStatus(docStatus)
 						.build())
 				.demandDetail(DemandCandidateDetail.builder()
 						.orderLineId(ppOrder.getOrderLineId())
@@ -99,7 +97,7 @@ public class ProductionPlanEventHandler
 				.build();
 
 		// this might cause 'candidateChangeHandler' to trigger another event
-		final Candidate candidateWithGroupId = candidateChangeHandler.onSupplyCandidateNewOrChange(supplyCandidate);
+		final Candidate candidateWithGroupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);
 
 		for (final PPOrderLine ppOrderLine : ppOrder.getLines())
 		{
@@ -112,17 +110,22 @@ public class ProductionPlanEventHandler
 					.seqNo(candidateWithGroupId.getSeqNo() + 1)
 
 					.date(ppOrderLine.isReceipt() ? ppOrder.getDatePromised() : ppOrder.getDateStartSchedule())
-					.orgId(ppOrder.getOrgId())
+
+					.clientId(eventDescr.getClientId())
+					.orgId(eventDescr.getOrgId())
+
 					.productId(ppOrderLine.getProductId())
 					.attributeSetInstanceId(ppOrderLine.getAttributeSetInstanceId())
 					.quantity(ppOrderLine.getQtyRequired())
 					.warehouseId(ppOrder.getWarehouseId())
 					.reference(event.getReference())
 					.productionDetail(ProductionCandidateDetail.builder()
+							.plantId(ppOrder.getPlantId())
+							.productPlanningId(ppOrder.getProductPlanningId())
 							.productBomLineId(ppOrderLine.getProductBomLineId())
 							.description(ppOrderLine.getDescription())
 							.ppOrderId(ppOrder.getPpOrderId())
-							.ppOrderDocStatus(ppOrder.getDocStatus())
+							.ppOrderDocStatus(docStatus)
 							.ppOrderLineId(ppOrderLine.getPpOrderLineId())
 							.build())
 					.demandDetail(DemandCandidateDetail.builder()
@@ -136,7 +139,8 @@ public class ProductionPlanEventHandler
 
 		if (ppOrder.isCreatePPOrder())
 		{
-			candidateService.requestPPOrder(candidateWithGroupId.getGroupId());
+			candidateService.requestMaterialOrder(candidateWithGroupId.getGroupId());
 		}
 	}
+
 }

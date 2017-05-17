@@ -26,6 +26,8 @@ import java.util.GregorianCalendar;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
+import lombok.NonNull;
+
 /**
  * Time Utilities
  *
@@ -456,7 +458,7 @@ public class TimeUtil
 	 * @param end end date
 	 * @return number of days (0 = same)
 	 */
-	static public int getDaysBetween(Date start, Date end)
+	static public int getDaysBetween(@NonNull Date start, @NonNull Date end)
 	{
 		boolean negative = false;
 		if (end.before(start))
@@ -467,13 +469,14 @@ public class TimeUtil
 			end = temp;
 		}
 		//
-		GregorianCalendar cal = new GregorianCalendar();
+		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(start);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		GregorianCalendar calEnd = new GregorianCalendar();
+
+		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTime(end);
 		calEnd.set(Calendar.HOUR_OF_DAY, 0);
 		calEnd.set(Calendar.MINUTE, 0);
@@ -594,7 +597,7 @@ public class TimeUtil
 	 * 
 	 * @param day Day
 	 * @param offset day offset
-	 * @return Day + offset at 00:00
+	 * @return day + offset at 00:00
 	 */
 	static public Timestamp addDays(Date day, final int offset)
 	{
@@ -618,6 +621,22 @@ public class TimeUtil
 		cal.add(Calendar.DAY_OF_YEAR, offset);			// may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
 	}	// addDays
+
+	/**
+	 * Similar to {@link #addDays(Date, int)}, but the given {@code day} may not be {@code null},
+	 * and the return value has the same hours, minutes, records and milliseconds as the given day (i.e. it's not 00:00).
+	 * 
+	 * @param day
+	 * @param offset day offset
+	 * @return day + offset
+	 */
+	static public Timestamp addDaysExact(@NonNull final Date day, final int offset)
+	{
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(day);
+		cal.add(Calendar.DAY_OF_YEAR, offset);
+		return new Timestamp(cal.getTimeInMillis());
+	}
 
 	/**
 	 * Return DateTime + offset in minutes

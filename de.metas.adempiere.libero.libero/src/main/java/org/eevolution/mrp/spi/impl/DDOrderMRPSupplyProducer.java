@@ -39,7 +39,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.X_C_DocType;
 import org.eevolution.api.IDDOrderBL;
 import org.eevolution.api.IDDOrderDAO;
 import org.eevolution.model.I_DD_Order;
@@ -55,8 +54,8 @@ import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
 import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
 
+import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.ddorder.DDOrder;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 
@@ -106,7 +105,7 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		}
 		if (!matches)
 		{
-			notAppliesReason.setValue(loggable.getString());
+			notAppliesReason.setValue(loggable.getConcatenatedMessages());
 		}
 		return matches;
 	}
@@ -376,19 +375,16 @@ public class DDOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	@Override
 	public void createSupply(final IMRPCreateSupplyRequest request)
 	{
-		final IMaterialPlanningContext mrpContext = request.getMRPContext();
 		final IMRPExecutor executor = request.getMRPExecutor();
 
 		final List<DDOrder> ddOrderPojos = new DDOrderPojoSupplier()
 				.supplyPojos(request,
 						executor.getMRPNotesCollector());
 
-		final int docTypeDO_ID = getC_DocType_ID(mrpContext, X_C_DocType.DOCBASETYPE_DistributionOrder);
-
 		final DDOrderProducer ddOrderProducer = new DDOrderProducer();
 		for (final DDOrder ddOrderPojo : ddOrderPojos)
 		{
-			final I_DD_Order ddOrder = ddOrderProducer.createDDOrder(ddOrderPojo, request, docTypeDO_ID);
+			final I_DD_Order ddOrder = ddOrderProducer.createDDOrder(ddOrderPojo, request);
 			executor.addGeneratedSupplyDocument(ddOrder);
 		}
 	}

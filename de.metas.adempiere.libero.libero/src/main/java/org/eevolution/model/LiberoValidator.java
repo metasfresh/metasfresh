@@ -71,7 +71,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(), client);
-		engine.addModelValidator(new org.eevolution.model.validator.PP_OrderFireMaterialEvent(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.PP_OrderFireMaterialEvent(), client); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product(), client);
@@ -80,6 +80,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		//
 		// DRP
 		engine.addModelValidator(new org.eevolution.model.validator.DD_Order(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent(), client); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine(), client);
 		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement(), client);
 

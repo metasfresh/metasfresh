@@ -43,6 +43,7 @@ import de.metas.material.dispo.Candidate.Type;
 import de.metas.material.dispo.CandidatesSegment.DateOperator;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 
@@ -112,6 +113,7 @@ public class CandiateRepositoryTests
 		// this not-stock candidate needs to be ignored
 		final Candidate someOtherCandidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -122,6 +124,7 @@ public class CandiateRepositoryTests
 
 		stockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -132,6 +135,7 @@ public class CandiateRepositoryTests
 
 		laterStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -173,6 +177,7 @@ public class CandiateRepositoryTests
 				.type(Type.DEMAND)
 				.subType(SubType.PRODUCTION)
 				.date(now)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(23)
 				.attributeSetInstanceId(35)
@@ -286,6 +291,126 @@ public class CandiateRepositoryTests
 		assertThat(expectedRecordWithoutProdDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
 	}
 
+	/**
+	 * Verifies that {@link DistributionCandidateDetail} data is also persisted
+	 */
+	@Test
+	public void addOrReplace_with_DistributionDetail()
+	{
+		final Candidate distributionCandidate = Candidate.builder()
+				.type(Type.DEMAND)
+				.subType(SubType.DISTRIBUTION)
+				.date(now)
+				.clientId(org.getAD_Client_ID())
+				.orgId(org.getAD_Org_ID())
+				.productId(23)
+				.attributeSetInstanceId(35)
+				.quantity(BigDecimal.TEN)
+				.reference(TableRecordReference.of("someTable", 40))
+				.warehouseId(50)
+				.distributionDetail(DistributionCandidateDetail.builder()
+						.productPlanningId(80)
+						.plantId(85)
+						.networkDistributionLineId(90)
+						.ddOrderId(100)
+						.ddOrderLineId(110)
+						.shipperId(120)
+						.ddOrderDocStatus("ddOrderDocStatus")
+						.build())
+				.build();
+		final Candidate addOrReplaceResult = candidateRepository.addOrUpdate(distributionCandidate);
+
+		final List<I_MD_Candidate> filtered = DispoTestUtils.filter(Type.DEMAND, now, 23);
+		assertThat(filtered.size(), is(1));
+
+		final I_MD_Candidate record = filtered.get(0);
+		assertThat(record.getMD_Candidate_ID(), is(addOrReplaceResult.getId()));
+		assertThat(record.getMD_Candidate_SubType(), is(distributionCandidate.getSubType().toString()));
+		assertThat(record.getM_Product_ID(), is(distributionCandidate.getProductId()));
+
+		final I_MD_Candidate_Dist_Detail distributionDetailRecord = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate_Dist_Detail.class).create().firstOnly(I_MD_Candidate_Dist_Detail.class);
+		assertThat(distributionDetailRecord, notNullValue());
+		assertThat(distributionDetailRecord.getPP_Product_Planning_ID(), is(80));
+		assertThat(distributionDetailRecord.getPP_Plant_ID(), is(85));
+		assertThat(distributionDetailRecord.getDD_NetworkDistributionLine_ID(), is(90));
+		assertThat(distributionDetailRecord.getDD_Order_ID(), is(100));
+		assertThat(distributionDetailRecord.getDD_OrderLine_ID(), is(110));
+		assertThat(distributionDetailRecord.getM_Shipper_ID(), is(120));
+		assertThat(distributionDetailRecord.getDD_Order_DocStatus(), is("ddOrderDocStatus"));
+	}
+
+	@Test
+	public void retrieve_with_DistributionDetail()
+	{
+		perform_retrieve_with_DistributionDetail();
+	}
+
+	private IPair<Candidate, I_MD_Candidate> perform_retrieve_with_DistributionDetail()
+	{
+		final I_MD_Candidate record = newInstance(I_MD_Candidate.class);
+		record.setM_Product_ID(24);
+		record.setM_Warehouse_ID(51);
+		record.setDateProjected(new Timestamp(now.getTime()));
+		record.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		record.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION);
+		save(record);
+
+		final I_MD_Candidate_Dist_Detail distributionDetailRecord = newInstance(I_MD_Candidate_Dist_Detail.class);
+		distributionDetailRecord.setDD_NetworkDistributionLine_ID(71);
+		distributionDetailRecord.setPP_Product_Planning_ID(81);
+		distributionDetailRecord.setMD_Candidate(record);
+		distributionDetailRecord.setDD_Order_ID(101);
+		distributionDetailRecord.setDD_OrderLine_ID(111);
+		distributionDetailRecord.setDD_Order_DocStatus("ddOrderDocStatus1");
+		distributionDetailRecord.setM_Shipper_ID(121);
+		save(distributionDetailRecord);
+
+		final Candidate cand = candidateRepository.retrieve(record.getMD_Candidate_ID());
+		assertThat(cand, notNullValue());
+		assertThat(cand.getProductId(), is(24));
+		assertThat(cand.getWarehouseId(), is(51));
+		assertThat(cand.getDate(), is(now));
+		assertThat(cand.getProductionDetail(), nullValue());
+		assertThat(cand.getDistributionDetail(), notNullValue());
+		assertThat(cand.getDistributionDetail().getNetworkDistributionLineId(), is(71));
+		assertThat(cand.getDistributionDetail().getProductPlanningId(), is(81));
+		assertThat(cand.getDistributionDetail().getDdOrderId(), is(101));
+		assertThat(cand.getDistributionDetail().getDdOrderLineId(), is(111));
+		assertThat(cand.getDistributionDetail().getShipperId(), is(121));
+		assertThat(cand.getDistributionDetail().getDdOrderDocStatus(), is("ddOrderDocStatus1"));
+
+		return ImmutablePair.of(cand, record);
+	}
+
+	/**
+	 * Verifies that demand details are also used as filter criterion
+	 * If this one fails, i recommend to first check if {@link #retrieve_with_DistributionDetail()} works.
+	 */
+	@Test
+	public void retrieve_with_DistributionDetail_filtered()
+	{
+		final IPair<Candidate, I_MD_Candidate> pair = perform_retrieve_with_ProductionDetail();
+		final Candidate cand = pair.getLeft();
+		final I_MD_Candidate record = pair.getRight();
+
+		// make another record, just like "record", but without a demandDetailRecord
+		final I_MD_Candidate otherRecord = newInstance(I_MD_Candidate.class);
+		otherRecord.setM_Product_ID(24);
+		otherRecord.setM_Warehouse_ID(51);
+		otherRecord.setDateProjected(new Timestamp(now.getTime()));
+		otherRecord.setMD_Candidate_Type(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND);
+		otherRecord.setMD_Candidate_SubType(X_MD_Candidate.MD_CANDIDATE_SUBTYPE_DISTRIBUTION);
+		save(otherRecord);
+
+		final Optional<I_MD_Candidate> expectedRecordWithDistDetails = candidateRepository.retrieveExact(cand);
+		assertThat(expectedRecordWithDistDetails.isPresent(), is(true));
+		assertThat(expectedRecordWithDistDetails.get().getMD_Candidate_ID(), is(record.getMD_Candidate_ID()));
+
+		final Optional<I_MD_Candidate> expectedRecordWithoutDistDetails = candidateRepository.retrieveExact(cand.withProductionDetail(null));
+		assertThat(expectedRecordWithoutDistDetails.isPresent(), is(true));
+		assertThat(expectedRecordWithoutDistDetails.get().getMD_Candidate_ID(), is(otherRecord.getMD_Candidate_ID()));
+	}
+
 	@Test
 	public void addOrReplace_with_DemandDetail()
 	{
@@ -293,6 +418,7 @@ public class CandiateRepositoryTests
 				.type(Type.DEMAND)
 				.subType(SubType.SHIPMENT)
 				.date(now)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(23)
 				.attributeSetInstanceId(35)

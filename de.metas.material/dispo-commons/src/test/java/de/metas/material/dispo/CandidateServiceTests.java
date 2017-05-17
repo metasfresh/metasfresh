@@ -18,8 +18,10 @@ import de.metas.material.dispo.CandidateService;
 import de.metas.material.dispo.ProductionCandidateDetail;
 import de.metas.material.dispo.Candidate.SubType;
 import de.metas.material.dispo.Candidate.Type;
+import de.metas.material.event.DDOrderRequestedEvent;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.PPOrderRequestedEvent;
+import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.pporder.PPOrder;
 
 /*
@@ -47,12 +49,10 @@ import de.metas.material.event.pporder.PPOrder;
 public class CandidateServiceTests
 {
 	@Test
-	public void testReqestPPOrder()
+	public void testcreatePPOrderRequestEvent()
 	{
-
-		final CandidateRepository candidateRepository = new CandidateRepository();
-
 		final Candidate candidate = Candidate.builder()
+				.clientId(20)
 				.orgId(30)
 				.type(Type.SUPPLY)
 				.subType(SubType.PRODUCTION)
@@ -73,6 +73,8 @@ public class CandidateServiceTests
 				.withProductId(310)
 				.withQuantity(BigDecimal.valueOf(20))
 				.withProductionDetail(ProductionCandidateDetail.builder()
+						.plantId(210)
+						.productPlanningId(220)
 						.productBomLineId(500)
 						.build());
 
@@ -81,19 +83,86 @@ public class CandidateServiceTests
 				.withProductId(320)
 				.withQuantity(BigDecimal.valueOf(10))
 				.withProductionDetail(ProductionCandidateDetail.builder()
+						.plantId(210)
+						.productPlanningId(220)
 						.productBomLineId(600)
 						.build());
 
-		final CandidateService candidateService = new CandidateService(candidateRepository, new MaterialEventService(de.metas.event.Type.LOCAL));
+		final CandidateService candidateService = new CandidateService(new CandidateRepository(), new MaterialEventService(de.metas.event.Type.LOCAL));
 
-		final PPOrderRequestedEvent productionOrderEvent = candidateService.createRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		final PPOrderRequestedEvent productionOrderEvent = candidateService.createPPOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
 		assertThat(productionOrderEvent, notNullValue());
+		assertThat(productionOrderEvent.getEventDescr(), notNullValue());
+
+		assertThat(productionOrderEvent.getEventDescr().getClientId(), is(20));
+		assertThat(productionOrderEvent.getEventDescr().getOrgId(), is(30));
 
 		final PPOrder ppOrder = productionOrderEvent.getPpOrder();
 		assertThat(ppOrder, notNullValue());
 		assertThat(ppOrder.getOrgId(), is(30));
 		assertThat(ppOrder.getProductId(), is(300));
 		assertThat(ppOrder.getLines().size(), is(2));
+	}
+
+	@Test
+	public void testcreateDDOrderRequestEvent()
+	{
+		final Candidate candidate = Candidate.builder()
+				.clientId(20)
+				.orgId(30)
+				.type(Type.SUPPLY)
+				.subType(SubType.DISTRIBUTION)
+				.productId(300)
+				.warehouseId(400)
+				.date(SystemTime.asDate())
+				.quantity(BigDecimal.valueOf(15))
+				.reference(TableRecordReference.of("someTable", 23))
+				.distributionDetail(DistributionCandidateDetail.builder()
+						.productPlanningId(220)
+						.plantId(230)
+						.shipperId(240)
+						.build())
+				.build();
+
+		final Candidate candidate2 = candidate
+				.withType(Type.DEMAND)
+				.withProductId(310)
+				.withQuantity(BigDecimal.valueOf(20))
+				.withDistributionDetail(DistributionCandidateDetail.builder()
+						.productPlanningId(220)
+						.plantId(230)
+						.shipperId(240)
+						.networkDistributionLineId(500)
+						.build());
+
+		final Candidate candidate3 = candidate
+				.withType(Type.DEMAND)
+				.withProductId(320)
+				.withQuantity(BigDecimal.valueOf(10))
+				.withDistributionDetail(DistributionCandidateDetail.builder()
+						.productPlanningId(220)
+						.plantId(230)
+						.shipperId(240)
+						.networkDistributionLineId(501)
+						.build());
+
+		final CandidateService candidateService = new CandidateService(new CandidateRepository(), new MaterialEventService(de.metas.event.Type.LOCAL));
+
+		final DDOrderRequestedEvent distributionOrderEvent = candidateService.createDDOrderRequestEvent(ImmutableList.of(candidate, candidate2, candidate3));
+		assertThat(distributionOrderEvent, notNullValue());
+
+		assertThat(distributionOrderEvent.getEventDescr(), notNullValue());
+		assertThat(distributionOrderEvent.getEventDescr().getClientId(), is(20));
+		assertThat(distributionOrderEvent.getEventDescr().getOrgId(), is(30));
+		
+		final DDOrder ddOrder = distributionOrderEvent.getDdOrder();
+		assertThat(ddOrder, notNullValue());
+		assertThat(ddOrder.getOrgId(), is(30));
+		assertThat(ddOrder.getProductPlanningId(), is(220));
+		assertThat(ddOrder.getPlantId(), is(230));
+		assertThat(ddOrder.getShipperId(), is(240));
+		assertThat(ddOrder.getLines().isEmpty(), is(false));
 
 	}
+
 }

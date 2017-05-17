@@ -3,14 +3,11 @@ package de.metas.material.planning.pporder.impl;
 import java.sql.Timestamp;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 
 import de.metas.material.event.pporder.PPOrder;
 import lombok.experimental.UtilityClass;

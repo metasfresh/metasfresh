@@ -15,7 +15,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2017-04-30T08:47:32.240
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('1',0,0,540784,'Y','N',TO_TIMESTAMP('2017-04-30 08:47:32','YYYY-MM-DD HH24:MI:SS'),100,'','de.metas.material.dispo.service','Y','N','N','N','N','N','N','Y',0,'Produktionsaufträge zur Auswahl erstellen','N','Y','Java',TO_TIMESTAMP('2017-04-30 08:47:32','YYYY-MM-DD HH24:MI:SS'),100,'MD_Candidate_Request_PP_Orders')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('1',0,0,540784,'Y','N',TO_TIMESTAMP('2017-04-30 08:47:32','YYYY-MM-DD HH24:MI:SS'),100,'','de.metas.material.dispo','Y','N','N','N','N','N','N','Y',0,'Produktionsaufträge zur Auswahl erstellen','N','Y','Java',TO_TIMESTAMP('2017-04-30 08:47:32','YYYY-MM-DD HH24:MI:SS'),100,'MD_Candidate_Request_PP_Orders')
 ;
 
 -- 2017-04-30T08:47:32.246
@@ -30,7 +30,7 @@ UPDATE AD_Process SET Value='MD_Candidate_Request_PP_Order',Updated=TO_TIMESTAMP
 
 -- 2017-04-30T11:55:14.139
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540784,540808,TO_TIMESTAMP('2017-04-30 11:55:14','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y',TO_TIMESTAMP('2017-04-30 11:55:14','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y')
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540784,540808,TO_TIMESTAMP('2017-04-30 11:55:14','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y',TO_TIMESTAMP('2017-04-30 11:55:14','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y')
 ;
 
 -- 2017-05-03T14:59:14.905
