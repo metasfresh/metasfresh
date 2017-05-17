@@ -313,15 +313,6 @@ Method BackFlush: The component are delivered based in BOM, The  delivered quant
 Use the field Backflush Group for grouping the component in a Backflush Method.','Y','N','N','Y','N','Issue Method',0,200,0,TO_TIMESTAMP('2017-05-17 19:46:44','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2017-05-17T19:46:44.308
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,53503,0,53029,540444,544416,TO_TIMESTAMP('2017-05-17 19:46:44','YYYY-MM-DD HH24:MI:SS'),100,'There are two methods for issue the components to Manufacturing Order','Method Issue: The component are delivered one for one and is necessary indicate the delivered quantity for each component.
-
-Method BackFlush: The component are delivered based in BOM, The  delivered quantity for each component is based in BOM or Formula and Manufacturing Order Quantity.
-
-Use the field Backflush Group for grouping the component in a Backflush Method.','Y','N','N','Y','N','Issue Method',0,200,0,TO_TIMESTAMP('2017-05-17 19:46:44','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- 2017-05-17T19:51:17.694
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540272,540445,TO_TIMESTAMP('2017-05-17 19:51:17','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-05-17 19:51:17','YYYY-MM-DD HH24:MI:SS'),100)
