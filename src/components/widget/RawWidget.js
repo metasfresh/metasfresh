@@ -114,8 +114,10 @@ class RawWidget extends Component {
             (icon ? 'input-icon-container ' : '') +
             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
             ((widgetData[0].mandatory &&
-                ((widgetData[0].value && widgetData[0].value.length === 0) ||
-                    !widgetData[0].value)) ? 'input-mandatory ' : '') +
+                (
+                    (widgetData[0].value && widgetData[0].value.length === 0) ||
+                    (!widgetData[0].value && widgetData[0].value !== 0))
+                ) ? 'input-mandatory ' : '') +
             ((widgetData[0].validStatus &&
                 (
                     !widgetData[0].validStatus.valid &&

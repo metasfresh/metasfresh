@@ -208,7 +208,7 @@ class TablePagination extends Component {
         return (
             <div className="hidden-sm-down">
                 <div>{selected.length > 0 ?
-                        (selected[0] === 'all' ? size : selected.length) + 
+                        (selected[0] === 'all' ? size : selected.length) +
                         ' items selected'
                         : 'No items selected'
                      }
