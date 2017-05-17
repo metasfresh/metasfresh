@@ -136,7 +136,7 @@ import de.metas.logging.LogManager;
 		//@formatter:off
 		sql += "WHERE t.TableName NOT LIKE 'I%'" // No Import
 
-				+ " AND t.IsActive='Y'" // gh #1489 : only active tables
+				+ " AND t.IsActive='Y'" // gh #1489 : only consider active tables
 
 				//
 				// Consider first window tab or any tab if our column has AllowZoomTo set
@@ -161,7 +161,7 @@ import de.metas.logging.LogManager;
 						+ " AND t.AD_Table_ID IN (SELECT AD_Table_ID FROM AD_Column WHERE ColumnName='Record_ID' AND IsKey='N' AND IsParent='N' AND "+I_AD_Column.COLUMNNAME_AllowZoomTo+"='Y')"
 					+ ") "
 				+ ") "
-				
+
 				//
 				+ "ORDER BY 2"; // FIXME ORDER BY!
 		//@formatter:on
