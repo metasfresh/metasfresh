@@ -832,7 +832,6 @@ class Table extends Component {
                                 orderBy={orderBy}
                                 deselect={this.deselectAllProducts}
                                 queryLimitHit={queryLimitHit}
-                                compressed={isIncluded}
                                 disablePaginationShortcuts=
                                     {disablePaginationShortcuts}
                             />
