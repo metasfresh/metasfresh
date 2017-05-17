@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -32,7 +16,7 @@ public interface I_DD_Order
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -1022,7 +1006,7 @@ public interface I_DD_Order
     public static final String COLUMNNAME_IsInTransit = "IsInTransit";
 
 	/**
-	 * Set Gedruckt.
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1032,7 +1016,7 @@ public interface I_DD_Order
 	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Gedruckt.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1353,6 +1337,33 @@ public interface I_DD_Order
     public static final org.adempiere.model.ModelColumn<I_DD_Order, org.compiere.model.I_S_Resource> COLUMN_PP_Plant_ID = new org.adempiere.model.ModelColumn<I_DD_Order, org.compiere.model.I_S_Resource>(I_DD_Order.class, "PP_Plant_ID", org.compiere.model.I_S_Resource.class);
     /** Column name PP_Plant_ID */
     public static final String COLUMNNAME_PP_Plant_ID = "PP_Plant_ID";
+
+	/**
+	 * Set Product Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
+
+	/**
+	 * Get Product Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Product_Planning_ID();
+
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
+
+	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
+
+    /** Column definition for PP_Product_Planning_ID */
+    public static final org.adempiere.model.ModelColumn<I_DD_Order, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new org.adempiere.model.ModelColumn<I_DD_Order, org.eevolution.model.I_PP_Product_Planning>(I_DD_Order.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
+    /** Column name PP_Product_Planning_ID */
+    public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
 	 * Set Priorität.

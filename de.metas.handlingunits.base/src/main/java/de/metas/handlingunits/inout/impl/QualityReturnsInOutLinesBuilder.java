@@ -200,6 +200,8 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 		newInOutLine.setM_InOut_ID(inout.getM_InOut_ID());
 
 		newInOutLine.setM_Product(originInOutLine.getM_Product());
+		
+		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
 		newInOutLine.setVendorReturn_Origin_InOutLine(originInOutLine);
 

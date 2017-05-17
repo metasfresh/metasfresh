@@ -29,6 +29,7 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- needed because de.metas.business currently contains IAttributeSet -->
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>

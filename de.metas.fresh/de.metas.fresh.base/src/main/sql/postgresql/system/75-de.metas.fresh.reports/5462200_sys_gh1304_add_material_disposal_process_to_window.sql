@@ -1,0 +1,10 @@
+﻿-- 2017-05-09T10:56:08.054
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Process_ID=NULL,Updated=TO_TIMESTAMP('2017-05-09 10:56:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=682
+;
+
+-- 2017-05-09T11:00:46.205
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Process_ID=540789,Updated=TO_TIMESTAMP('2017-05-09 11:00:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=682
+;
+
