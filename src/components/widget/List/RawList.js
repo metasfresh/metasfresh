@@ -18,8 +18,6 @@ class RawList extends Component {
     componentDidMount = () => {
         const {autofocus} = this.props;
 
-        
-
         (this.dropdown && autofocus) && this.dropdown.focus();
     }
 
@@ -276,7 +274,9 @@ class RawList extends Component {
                         ' input-dropdown-list-option-key-on' :
                         defaultValue === option[Object.keys(option)[0]] ?
                         ' input-dropdown-list-option-key-on' :
-                        !defaultValue && !selected && index == 1 ? ' input-dropdown-list-option-key-on':'' 
+                        !defaultValue && !selected && index == 1 ?
+                        ' input-dropdown-list-option-key-on':
+                        ''
                     )
                 }
                 onMouseEnter={() => this.handleSwitch(option)}

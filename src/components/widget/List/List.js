@@ -41,7 +41,10 @@ class List extends Component {
     }
 
     handleSelect = (option) => {
-        const {onChange, lookupList, properties, setNextProperty, mainProperty, children} = this.props;
+        const {
+            onChange, lookupList, properties, setNextProperty, mainProperty,
+            children
+        } = this.props;
 
         if(lookupList){
             onChange(children, null);
@@ -53,13 +56,13 @@ class List extends Component {
         } else {
             onChange(option);
         }
-        
     }
 
     render() {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
-            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus, blur
+            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
+            blur
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 

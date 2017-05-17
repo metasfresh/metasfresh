@@ -1,19 +1,10 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-
-import update from 'immutability-helper';
 
 import onClickOutside from 'react-onclickoutside';
 
 import {
-    autocompleteRequest,
-    dropdownRequest
-} from '../../../actions/GenericActions';
-
-import {
-    getItemsByProperty,
-    openModal
+    getItemsByProperty
 } from '../../../actions/WindowActions';
 
 import RawLookup from './RawLookup';
@@ -41,7 +32,7 @@ class Lookup extends Component {
         this.checkIfDefaultValue();
     }
 
-    componentDidUpdate(prevProps) {
+    componentDidUpdate() {
         const {defaultValue, properties} = this.props;
         const {property} = this.state;
 
