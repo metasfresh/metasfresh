@@ -15,6 +15,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.expression.api.IExpression;
@@ -531,7 +533,6 @@ public final class Document
 	{
 		// Parameters
 		private final DocumentValuesSupplier parentSupplier;
-		private final Properties ctx;
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
 		private final IDocumentEvaluatee _evaluatee;
@@ -541,8 +542,6 @@ public final class Document
 		{
 			super();
 			this.parentSupplier = parentSupplier;
-
-			ctx = document.getCtx();
 
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			documentType = entityDescriptor.getDocumentType();
@@ -643,6 +642,7 @@ public final class Document
 			// Window User Preferences (only if it's not a virtual field)
 			if (documentType == DocumentType.Window && !fieldDescriptor.isVirtualField())
 			{
+				final Properties ctx = Env.getCtx();
 				final int adWindowId = documentTypeId.toInt();
 				final String fieldName = fieldDescriptor.getFieldName();
 
@@ -934,7 +934,7 @@ public final class Document
 	public Object getDocumentIdAsJson()
 	{
 		final DocumentId documentId = getDocumentId();
-		if(documentId.isInt())
+		if (documentId.isInt())
 		{
 			return documentId.toInt();
 		}
@@ -1243,10 +1243,10 @@ public final class Document
 			, final String triggeringFieldName //
 			, final DependencyType triggeringDependencyType //
 			, final IDocumentChangesCollector documentChangesCollector //
-			)
+	)
 	{
 		final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
-		
+
 		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
 		{
 			final LogicExpressionResult valueOld = documentField.getReadonly();
@@ -1277,20 +1277,20 @@ public final class Document
 				documentChangesCollector.collectLookupValuesStaled(documentField, reason);
 			}
 		}
-		else if(DependencyType.FieldValue == triggeringDependencyType)
+		else if (DependencyType.FieldValue == triggeringDependencyType)
 		{
 			final IDocumentFieldValueProvider valueProvider = documentField.getDescriptor().getVirtualFieldValueProvider().orElse(null);
-			if(valueProvider != null)
+			if (valueProvider != null)
 			{
 				try
 				{
 					final Object valueOld = documentField.getValue();
 					final Object valueNew = valueProvider.calculateValue(this);
-					
+
 					documentField.setInitialValue(valueNew);
 					documentField.setValue(valueNew);
 					documentField.updateValid(); // make sure is still valid
-					
+
 					documentChangesCollector.collectValueIfChanged(documentField, valueOld, reason);
 				}
 				catch (Exception ex)
@@ -1523,11 +1523,11 @@ public final class Document
 		for (final IDocumentField documentField : getFields())
 		{
 			// skip virtual fields, those does not matter
-			if(documentField.isVirtualField())
+			if (documentField.isVirtualField())
 			{
 				continue;
 			}
-			
+
 			final DocumentValidStatus validState = documentField.getValidStatus();
 			if (!validState.isValid())
 			{
@@ -1770,19 +1770,19 @@ public final class Document
 			logger.debug("Released write lock for {}: {}", this, writeLock);
 		};
 	}
-	
+
 	public int getAD_Client_ID()
 	{
 		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Client_ID);
 		return field != null ? field.getValueAsInt(-1) : -1;
 	}
-	
+
 	public int getAD_Org_ID()
 	{
 		final IDocumentField field = getFieldOrNull(WindowConstants.FIELDNAME_AD_Org_ID);
 		return field != null ? field.getValueAsInt(-1) : -1;
 	}
-	
+
 	private final class DocumentStaleState
 	{
 		private boolean staled;
@@ -1860,6 +1860,7 @@ public final class Document
 		private DocumentPath _documentPath;
 
 		private Integer _windowNo;
+		private IDocumentEvaluatee shadowParentDocumentEvaluatee;
 		private static final AtomicInteger nextWindowNo = new AtomicInteger(1);
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
@@ -1872,6 +1873,11 @@ public final class Document
 		public Document build()
 		{
 			final Document document = new Document(this);
+
+			if (shadowParentDocumentEvaluatee != null)
+			{
+				document.setShadowParentDocumentEvaluatee(shadowParentDocumentEvaluatee);
+			}
 
 			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 			document.documentCallout = ExceptionHandledTabCallout.wrapIfNeeded(documentCallout);
@@ -1922,6 +1928,12 @@ public final class Document
 		public Builder setParentDocument(final Document parentDocument)
 		{
 			this.parentDocument = parentDocument;
+			return this;
+		}
+
+		public Builder setShadowParentDocumentEvaluatee(@Nullable final IDocumentEvaluatee shadowParentDocumentEvaluatee)
+		{
+			this.shadowParentDocumentEvaluatee = shadowParentDocumentEvaluatee;
 			return this;
 		}
 

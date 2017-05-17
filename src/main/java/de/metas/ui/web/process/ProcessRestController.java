@@ -32,8 +32,11 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -124,7 +127,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public JSONProcessLayout getLayout(
 			@PathVariable("processId") final String adProcessIdStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -139,16 +142,28 @@ public class ProcessRestController
 	{
 		userSession.assertLoggedIn();
 
+		final ViewId viewId = jsonRequest.getViewId();
+		final DocumentIdsSelection viewDocumentIds = jsonRequest.getViewDocumentIds();
+
+		// Get the effective singleDocumentPath, i.e.
+		// * if provided, use it
+		// * if not provided and we have a single selected row in the view, use that row
+		DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
+		if (singleDocumentPath == null && viewDocumentIds.isSingleDocumentId())
+		{
+			singleDocumentPath = DocumentPath.rootDocumentPath(viewId.getWindowId(), viewDocumentIds.getSingleDocumentId());
+		}
+
 		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
 				.processId(ProcessId.fromJson(processIdStr))
-				.singleDocumentPath(jsonRequest.getSingleDocumentPath())
-				.viewId(jsonRequest.getViewId())
-				.viewDocumentIds(jsonRequest.getViewDocumentIds())
+				.singleDocumentPath(singleDocumentPath)
+				.viewId(viewId)
+				.viewDocumentIds(viewDocumentIds)
 				.build();
-		// Validate request's AD_Process_ID 
+		// Validate request's AD_Process_ID
 		// (we are not using it, but just for consistency)
 		request.assertProcessIdEquals(jsonRequest.getProcessId());
-		
+
 		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
@@ -161,7 +176,7 @@ public class ProcessRestController
 	public JSONProcessInstance getInstance(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -178,7 +193,7 @@ public class ProcessRestController
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -200,7 +215,7 @@ public class ProcessRestController
 	public JSONProcessInstanceResult startProcess(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -224,7 +239,7 @@ public class ProcessRestController
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("filename") final String filename //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -255,7 +270,7 @@ public class ProcessRestController
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -273,7 +288,7 @@ public class ProcessRestController
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("parameterName") final String parameterName //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 

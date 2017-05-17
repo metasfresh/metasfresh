@@ -20,6 +20,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
@@ -126,11 +127,10 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		throw new UnsupportedOperationException();
 	}
 
-	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
 	{
-		//
-		// Build the parameters (as document)
 		return Document.builder(parametersDescriptor)
+				.setShadowParentDocumentEvaluatee(evalCtx)
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 
