@@ -45,7 +45,7 @@ import lombok.NonNull;
 @Builder
 public class PPOrderRequestedEvent implements MaterialEvent
 {
-	public static final String TYPE = "ProductionOrderEvent";
+	public static final String TYPE = "PPOrderRequestedEvent";
 
 	@NonNull
 	private final EventDescr eventDescr;

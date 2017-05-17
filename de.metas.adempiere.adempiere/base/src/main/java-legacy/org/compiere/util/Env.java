@@ -405,7 +405,7 @@ public final class Env
 			}
 			if (value == null)
 			{
-				continue; // the given ctx might have null values, so this chack is crucial
+				continue; // the given ctx might have null values, so this check is crucial
 			}
 			newCtx.put(key, value);
 		}

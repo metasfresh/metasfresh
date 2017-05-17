@@ -31,6 +31,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Product_BOMLine;
 import org.eevolution.model.validator.PP_Order;
+import org.eevolution.mrp.spi.impl.ddorder.DDOrderProducer;
 import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
 import org.junit.Before;
 import org.junit.Test;
@@ -167,7 +168,7 @@ public class MaterialDocumentListenerTests
 	public void testOnlyPPOrder()
 	{
 
-		final I_PP_Order ppOrder = new MaterialDocumentListener(new PPOrderProducer())
+		final I_PP_Order ppOrder = new MaterialDocumentListener(new PPOrderProducer(), new DDOrderProducer())
 				.createProductionOrder(ppOrderPojo, SystemTime.asDate());
 
 		verifyPPOrder(ppOrder);
@@ -200,7 +201,7 @@ public class MaterialDocumentListenerTests
 	{
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(), null); // enable the MI supposed to supplement lines
 
-		final I_PP_Order ppOrder = new MaterialDocumentListener(new PPOrderProducer())
+		final I_PP_Order ppOrder = new MaterialDocumentListener(new PPOrderProducer(), new DDOrderProducer())
 				.createProductionOrder(ppOrderPojo, SystemTime.asDate());
 
 		verifyPPOrder(ppOrder);
