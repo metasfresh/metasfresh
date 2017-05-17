@@ -221,7 +221,7 @@ class TablePagination extends Component {
                     }}
                 >
                     {selectedWholePage ?
-                        'Select all ' + size + ' items on this page' :
+                        'Select all ' + size + ' items' :
                         'Select all on this page'
                     }
                 </div>

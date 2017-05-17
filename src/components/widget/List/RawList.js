@@ -187,30 +187,46 @@ class RawList extends Component {
         });
 
         const next = up ? selectedIndex + 1 : selectedIndex - 1;
-
         this.setState({
             selected: (next >= 0 && next <= dropdownList.length-1) ?
                 dropdownList[next] : selected
         })
 
     }
-    
+
     navigateToAlphanumeric = (char) => {
-        const {isOpen} = this.state;
+        const {isOpen, selected} = this.state;
         const {list} = this.props;
-        
+
         if(!isOpen){
             this.setState({
                 isOpen: true
             })
         }
-        
-        
+
+        const caption = item => item[Object.keys(item)[0]];
+        const items = list.filter(item =>
+            caption(item)[0].toUpperCase() === char.toUpperCase()
+        );
+
+        const selectedIndex = items.indexOf(selected);
+
+        const item = selectedIndex > -1 ?
+            items[selectedIndex + 1] :
+            items[0];
+
+        if(!item) {
+            return;
+        }
+
+        this.setState({
+            selected: item
+        })
     }
 
     handleKeyDown = (e) => {
         const {selected, isOpen} = this.state;
-        
+
         if(e.keyCode > 47 && e.keyCode < 123){
             this.navigateToAlphanumeric(e.key);
         }else{
