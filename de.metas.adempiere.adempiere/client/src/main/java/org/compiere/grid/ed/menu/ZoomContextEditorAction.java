@@ -199,7 +199,7 @@ public class ZoomContextEditorAction extends AbstractContextMenuAction
 			zoomQuery.setRecordCount(1); // guess
 		}
 
-		int AD_Window_ID = lookup.getZoom(zoomQuery);
+		int AD_Window_ID = lookup.getZoomAD_Window_ID(zoomQuery);
 
 		log.info(columnName + " - AD_Window_ID=" + AD_Window_ID + " - Query=" + zoomQuery + " - Value=" + value);
 
