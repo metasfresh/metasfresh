@@ -40,6 +40,7 @@ Here come the actual release notes:
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
   * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
+  * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
  
 ## Fixes
 
