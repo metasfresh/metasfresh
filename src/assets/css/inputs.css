@@ -646,6 +646,7 @@ input:checked + .input-slider:before {
 .lookup-wrapper {
     display: flex;
     padding: 0;
+    justify-content: space-between;
 }
 
 .raw-lookup-wrapper {

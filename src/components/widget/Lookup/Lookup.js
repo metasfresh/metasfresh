@@ -4,6 +4,8 @@ import {connect} from 'react-redux';
 
 import update from 'immutability-helper';
 
+import onClickOutside from 'react-onclickoutside';
+
 import {
     autocompleteRequest,
     dropdownRequest
@@ -28,7 +30,8 @@ class Lookup extends Component {
         this.state = {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
-            property: ''
+            property: '',
+            fireClickOutside: false
         }
     }
 
@@ -50,6 +53,17 @@ class Lookup extends Component {
             this.setNextProperty(property);
         }
      
+    }
+
+    handleClickOutside = () => {
+        this.setState({
+            fireClickOutside: true,
+            property: ''
+        }, () => {
+            this.setState({
+                fireClickOutside: false
+            })
+        })
     }
 
     handleInputEmptyStatus = (isEmpty) => {
@@ -106,11 +120,10 @@ class Lookup extends Component {
             subentity, subentityId, viewId
         } = this.props;
 
-        const {isInputEmpty, property} = this.state;
+        const {isInputEmpty, property, fireClickOutside} = this.state;
 
         return (
             <div
-                onKeyDown={this.handleKeyDown}
                 ref={(c) => this.dropdown = c}
                 className={
                     'input-dropdown-container lookup-wrapper input-' +
@@ -132,7 +145,7 @@ class Lookup extends Component {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
                         const children = properties.slice(index+1, properties.length);
-                        console.log('properties');
+
                         if(item.source === 'lookup'){
                             return <RawLookup
                                 key={index}
@@ -162,6 +175,7 @@ class Lookup extends Component {
                                 setNextProperty={this.setNextProperty}
                                 disabled={disabled}
                                 children={children}
+                                fireClickOutside={fireClickOutside}
                             />
 
                         } else if (item.source === 'list') {
@@ -215,5 +229,7 @@ class Lookup extends Component {
         )
     }
 }
+
+Lookup = connect()(onClickOutside(Lookup))
 
 export default Lookup

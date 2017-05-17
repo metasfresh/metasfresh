@@ -31,7 +31,7 @@ class RawLookup extends Component {
     }
 
     componentDidMount() {
-        const {selected} = this.props;
+        const {selected, defaultValue} = this.props;
 
         this.handleValueChanged();
 
@@ -40,12 +40,14 @@ class RawLookup extends Component {
         }else{
             this.handleBlur(this.clearState);
         }
+
+        
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         this.handleValueChanged();
 
-        const {autoFocus, defaultValue} = this.props;
+        const {autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus} = this.props;
         const {isInputEmpty, shouldBeFocused} = this.state;
 
         if(autoFocus && isInputEmpty && shouldBeFocused){
@@ -54,20 +56,27 @@ class RawLookup extends Component {
                 shouldBeFocused: false
             });
         }
+
+        defaultValue && prevProps.defaultValue !== defaultValue && handleInputEmptyStatus(false);
+
+        if(fireClickOutside && prevProps.fireClickOutside !==  fireClickOutside) {
+            if(defaultValue && defaultValue[Object.keys(defaultValue)[0]] !== this.inputSearch.value){
+                this.inputSearch.value = defaultValue[Object.keys(defaultValue)[0]];
+            }
+        }
     }
 
     handleSelect = (select) => {
         const {
             onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus, mainProperty,
-            getNextDropdown, setNextProperty
+            getNextDropdown, setNextProperty, children
         } = this.props;
-
-        
 
         this.setState({
             selected: null
         }, () => {
             if(filterWidget) {
+                onChange(children, null);
                 onChange(parameterName, select);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
@@ -77,15 +86,14 @@ class RawLookup extends Component {
                 this.handleBlur();
             } else {
                 // handling selection when main is not set or set.
-                    onChange(
-                        mainProperty[0].field, select, this.getAllDropdowns
-                    );
+                onChange(children, null);
+                onChange(mainProperty[0].field, select);
 
-                    this.inputSearch.value = select[Object.keys(select)[0]];
-                    handleInputEmptyStatus(false);
-                    setNextProperty(mainProperty[0].field);
+                this.inputSearch.value = select[Object.keys(select)[0]];
+                handleInputEmptyStatus(false);
+                setNextProperty(mainProperty[0].field);
 
-                    this.handleBlur();
+                this.handleBlur();
                 
             }
         });
@@ -234,7 +242,7 @@ class RawLookup extends Component {
 
     handleValueChanged = () => {
         const {defaultValue, filterWidget} = this.props;
-        const {oldValue} = this.state;
+        const {oldValue, isInputEmpty} = this.state;
 
         if(!filterWidget && !!defaultValue && this.inputSearch) {
             const init = defaultValue;
@@ -246,7 +254,13 @@ class RawLookup extends Component {
                 this.setState({
                     oldValue: inputValue,
                     isInputEmpty: false,
-                    validLocal: true
+                    validLocal: true,
+                    list: [init]
+                });
+            } else if(isInputEmpty){
+                this.setState({
+                    isInputEmpty: false,
+                    list: [init]
                 });
             }
 
@@ -273,7 +287,9 @@ class RawLookup extends Component {
         } = this.state;
 
         return (
-        <div className={"raw-lookup-wrapper raw-lookup-wrapper-bcg "+
+        <div 
+            onKeyDown={this.handleKeyDown}
+            className={"raw-lookup-wrapper raw-lookup-wrapper-bcg "+
             (disabled ? 'raw-lookup-disabled':'')
         }  
                                 
