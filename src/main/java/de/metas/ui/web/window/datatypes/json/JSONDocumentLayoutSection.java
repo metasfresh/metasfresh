@@ -1,9 +1,6 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.io.Serializable;
 import java.util.List;
-
-import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -29,51 +27,36 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @ApiModel("section")
-@SuppressWarnings("serial")
-public final class JSONDocumentLayoutSection implements Serializable
+public final class JSONDocumentLayoutSection
 {
 	static List<JSONDocumentLayoutSection> ofSectionsList(final List<DocumentLayoutSectionDescriptor> sections, final JSONOptions jsonOpts)
 	{
 		return sections.stream()
-				.map(section -> of(section, jsonOpts))
-				.collect(GuavaCollectors.toImmutableList());
+				.map(section -> new JSONDocumentLayoutSection(section, jsonOpts))
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static JSONDocumentLayoutSection of(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
+	/** @return a section with one column contains all the elements */
+	public static JSONDocumentLayoutSection ofElements(List<DocumentLayoutElementDescriptor> elements, JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutSection(section, jsonOpts);
+		final JSONDocumentLayoutColumn column = JSONDocumentLayoutColumn.oneColumn(elements, jsonOpts);
+		return new JSONDocumentLayoutSection(ImmutableList.of(column));
 	}
 
 	static List<JSONDocumentLayoutSection> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(detailLayout, jsonOpts);
-		return ImmutableList.of(section);
-	}
-
-	/**
-	 * Build the layout sections for advanced view.
-	 *
-	 * @param advancedViewLayout
-	 * @param jsonOpts
-	 *
-	 * @task https://github.com/metasfresh/metasfresh-webui/issues/26
-	 */
-	static List<JSONDocumentLayoutSection> ofAdvancedView(final DocumentLayoutDetailDescriptor advancedViewLayout, final JSONOptions jsonOpts)
-	{
-		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(
-				JSONDocumentLayoutColumn.oneColumn(advancedViewLayout, jsonOpts) //
-		);
-
+		final List<JSONDocumentLayoutColumn> columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonOpts);
+		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(columns);
 		return ImmutableList.of(section);
 	}
 
@@ -83,20 +66,7 @@ public final class JSONDocumentLayoutSection implements Serializable
 
 	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
 	{
-		super();
 		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
-	}
-
-	/**
-	 * From detail tab constructor
-	 *
-	 * @param detailLayout
-	 * @param jsonOpts
-	 */
-	private JSONDocumentLayoutSection(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
-	{
-		super();
-		columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonOpts);
 	}
 
 	@JsonCreator
@@ -104,12 +74,6 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		super();
 		this.columns = columns == null ? ImmutableList.of() : ImmutableList.copyOf(columns);
-	}
-
-	private JSONDocumentLayoutSection(final JSONDocumentLayoutColumn... columns)
-	{
-		super();
-		this.columns = ImmutableList.copyOf(columns);
 	}
 
 	@Override
@@ -124,5 +88,4 @@ public final class JSONDocumentLayoutSection implements Serializable
 	{
 		return columns;
 	}
-
 }

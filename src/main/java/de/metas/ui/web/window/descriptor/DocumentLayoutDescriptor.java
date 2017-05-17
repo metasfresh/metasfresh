@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
@@ -39,11 +38,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -64,16 +63,13 @@ public final class DocumentLayoutDescriptor implements Serializable
 	/** Special element: DocStatus/DocAction */
 	private final DocumentLayoutElementDescriptor docActionElement;
 
-	/** Single row layout: header sections */
-	private final List<DocumentLayoutSectionDescriptor> sections;
-	private final DocumentLayoutDetailDescriptor advancedView;
+	private final DocumentLayoutHeader singleRowLayout;
 	private final ViewLayout gridView;
 	/** Side list layout */
 	private final ViewLayout sideListView;
 
 	/** Single row layout: included tabs */
 	private final Map<DetailId, DocumentLayoutDetailDescriptor> details;
-
 
 	/** Misc debugging properties */
 	private final Map<String, String> debugProperties;
@@ -89,11 +85,10 @@ public final class DocumentLayoutDescriptor implements Serializable
 		documentSummaryElement = builder.documentSummaryElement;
 		docActionElement = builder.docActionElement;
 
-		sections = ImmutableList.copyOf(builder.buildSections());
-		gridView = builder.getGridView()
+		singleRowLayout = builder.getSingleRowLayout()
 				.setWindowId(windowId)
 				.build();
-		advancedView = builder.getAdvancedView()
+		gridView = builder.getGridView()
 				.setWindowId(windowId)
 				.build();
 		details = ImmutableMap.copyOf(builder.buildDetails());
@@ -108,9 +103,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("windowId", windowId)
-				.add("sections", sections.isEmpty() ? null : sections)
+				.add("singleRowLayout", singleRowLayout)
 				.add("gridView", gridView)
-				.add("advancedView", advancedView)
 				.add("details", details.isEmpty() ? null : details)
 				.add("sideList", sideListView)
 				.toString();
@@ -120,7 +114,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return windowId;
 	}
-	
+
 	public String getCaption(final String adLanguage)
 	{
 		return caption.translate(adLanguage);
@@ -135,13 +129,10 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return docActionElement;
 	}
-
-	/**
-	 * @return layout sections
-	 */
-	public List<DocumentLayoutSectionDescriptor> getSections()
+	
+	public DocumentLayoutHeader getSingleRowLayout()
 	{
-		return sections;
+		return singleRowLayout;
 	}
 
 	/**
@@ -157,13 +148,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 		return sideListView;
 	}
 
-	/**
-	 * @return the layout for advanced editing (for header documents)
-	 */
-	public DocumentLayoutDetailDescriptor getAdvancedView()
-	{
-		return advancedView;
-	}
 
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
 	{
@@ -202,9 +186,8 @@ public final class DocumentLayoutDescriptor implements Serializable
 		private DocumentLayoutElementDescriptor documentSummaryElement;
 		private DocumentLayoutElementDescriptor docActionElement;
 
-		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
+		private DocumentLayoutHeader.Builder singleRowLayout;
 		private ViewLayout.Builder _gridView;
-		private DocumentLayoutDetailDescriptor.Builder _advancedView;
 		private ViewLayout _sideListView;
 
 		private final List<DocumentLayoutDetailDescriptor.Builder> detailsBuilders = new ArrayList<>();
@@ -239,37 +222,37 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return new DocumentLayoutDescriptor(this);
 		}
 
-		private List<DocumentLayoutSectionDescriptor> buildSections()
-		{
-			return sectionBuilders
-					.stream()
-					.filter(sectionBuilder -> checkValid(sectionBuilder))
-					.map(sectionBuilder -> sectionBuilder.build())
-					.filter(section -> checkValid(section))
-					.collect(GuavaCollectors.toImmutableList());
-		}
-
-		private boolean checkValid(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
-		{
-			if (sectionBuilder.isInvalid())
-			{
-				logger.trace("Skip adding {} to {} because it's not valid", sectionBuilder, this);
-				return false;
-			}
-
-			return true;
-		}
-
-		private final boolean checkValid(final DocumentLayoutSectionDescriptor section)
-		{
-			if (!section.hasColumns())
-			{
-				logger.trace("Skip adding {} to {} because it does not have columns", section, this);
-				return false;
-			}
-
-			return true;
-		}
+		// private List<DocumentLayoutSectionDescriptor> buildSections()
+		// {
+		// return sectionBuilders
+		// .stream()
+		// .filter(sectionBuilder -> checkValid(sectionBuilder))
+		// .map(sectionBuilder -> sectionBuilder.build())
+		// .filter(section -> checkValid(section))
+		// .collect(ImmutableList.toImmutableList());
+		// }
+		//
+		// private boolean checkValid(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
+		// {
+		// if (sectionBuilder.isInvalid())
+		// {
+		// logger.trace("Skip adding {} to {} because it's not valid", sectionBuilder, this);
+		// return false;
+		// }
+		//
+		// return true;
+		// }
+		//
+		// private final boolean checkValid(final DocumentLayoutSectionDescriptor section)
+		// {
+		// if (!section.hasColumns())
+		// {
+		// logger.trace("Skip adding {} to {} because it does not have columns", section, this);
+		// return false;
+		// }
+		//
+		// return true;
+		// }
 
 		private Map<DetailId, DocumentLayoutDetailDescriptor> buildDetails()
 		{
@@ -287,7 +270,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 			this.windowId = windowId;
 			return this;
 		}
-		
+
 		public Builder setCaption(ITranslatableString caption)
 		{
 			this.caption = caption == null ? ImmutableTranslatableString.empty() : caption;
@@ -306,66 +289,32 @@ public final class DocumentLayoutDescriptor implements Serializable
 			return this;
 		}
 
-		public Builder addSection(final DocumentLayoutSectionDescriptor.Builder sectionBuilder)
-		{
-			Check.assumeNotNull(sectionBuilder, "Parameter sectionBuilder is not null");
-			sectionBuilders.add(sectionBuilder);
-			return this;
-		}
-
-		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionsBuilders)
-		{
-			sectionBuilders.addAll(sectionsBuilders);
-			return this;
-		}
-
-		private final DocumentLayoutElementDescriptor.Builder findSectionElementBuilderByFieldName(final String fieldName)
-		{
-			for (final DocumentLayoutSectionDescriptor.Builder sectionBuilder : sectionBuilders)
-			{
-				final DocumentLayoutElementDescriptor.Builder elementBuilder = sectionBuilder.findElementBuilderByFieldName(fieldName);
-				if (elementBuilder == null)
-				{
-					continue;
-				}
-
-				return elementBuilder;
-			}
-
-			return null;
-		}
-
-		public boolean isAdvancedSectionField(final String fieldName)
-		{
-			final DocumentLayoutElementDescriptor.Builder elementBuilder = findSectionElementBuilderByFieldName(fieldName);
-			return elementBuilder != null && elementBuilder.isAdvancedField();
-		}
-
-		public boolean hasSectionElement(final String fieldName)
-		{
-			return findSectionElementBuilderByFieldName(fieldName) != null;
-		}
+		// public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionsBuilders)
+		// {
+		// sectionBuilders.addAll(sectionsBuilders);
+		// return this;
+		// }
 
 		public Builder setGridView(final ViewLayout.Builder gridView)
 		{
 			this._gridView = gridView;
 			return this;
 		}
-		
-		private ViewLayout.Builder getGridView()
-		{
-			return _gridView;
-		}
 
-		public Builder setAdvancedView(DocumentLayoutDetailDescriptor.Builder advancedView)
+		public Builder setSingleRowLayout(DocumentLayoutHeader.Builder singleRowLayout)
 		{
-			this._advancedView = advancedView;
+			this.singleRowLayout = singleRowLayout;
 			return this;
 		}
 		
-		private DocumentLayoutDetailDescriptor.Builder getAdvancedView()
+		private DocumentLayoutHeader.Builder getSingleRowLayout()
 		{
-			return _advancedView;
+			return singleRowLayout;
+		}
+
+		private ViewLayout.Builder getGridView()
+		{
+			return _gridView;
 		}
 
 		/**

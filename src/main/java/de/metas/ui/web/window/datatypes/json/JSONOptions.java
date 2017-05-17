@@ -2,8 +2,10 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
@@ -31,11 +33,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -52,7 +54,7 @@ public final class JSONOptions
 	{
 		return new Builder(userSession);
 	}
-	
+
 	public static final JSONOptions of(final UserSession userSession)
 	{
 		return new Builder(userSession).build();
@@ -75,7 +77,126 @@ public final class JSONOptions
 
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
-	private final JSONDocumentPermissions documentPermissions;
+	private final Supplier<JSONDocumentPermissions> documentPermissionsSupplier;
+
+	private JSONOptions(final Builder builder)
+	{
+		super();
+		adLanguage = builder.getAD_Language();
+		showAdvancedFields = builder.isShowAdvancedFields();
+		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
+		debugShowColumnNamesForCaption = builder.isShowColumnNamesForCaption(false);
+
+		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
+
+		final IUserRolePermissions userRolePermissions = builder.getPermissionsOrNull();
+		if (userRolePermissions == null)
+		{
+			documentPermissionsSupplier = () -> null;
+		}
+		else
+		{
+			documentPermissionsSupplier = ExtendedMemorizingSupplier.of(() -> new JSONDocumentPermissions(userRolePermissions));
+		}
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("showAdvancedFields", showAdvancedFields)
+				.add("dataFieldsListStr", dataFieldsListStr)
+				.add("debugShowColumnNamesForCaption", debugShowColumnNamesForCaption)
+				.toString();
+	}
+
+	public String getAD_Language()
+	{
+		return adLanguage;
+	}
+
+	public boolean isShowAdvancedFields()
+	{
+		return showAdvancedFields;
+	}
+	
+	public boolean isDebugShowColumnNamesForCaption()
+	{
+		return debugShowColumnNamesForCaption;
+	}
+
+	public boolean isProtocolDebugging()
+	{
+		return WindowConstants.isProtocolDebugging();
+	}
+
+	public Predicate<DocumentLayoutElementDescriptor> documentLayoutElementFilter()
+	{
+		if (_documentLayoutElementFilter == null)
+		{
+			_documentLayoutElementFilter = showAdvancedFields ? FILTER_DocumentLayoutElementDescriptor_ALL : FILTER_DocumentLayoutElementDescriptor_BASIC;
+		}
+		return _documentLayoutElementFilter;
+	}
+
+	public Predicate<IDocumentFieldView> documentFieldFilter()
+	{
+		if (_documentFieldFilter == null)
+		{
+			_documentFieldFilter = createDocumentFieldFilter();
+		}
+		return _documentFieldFilter;
+	}
+
+	private Predicate<IDocumentFieldView> createDocumentFieldFilter()
+	{
+		final Predicate<IDocumentFieldView> filter = showAdvancedFields ? FILTER_DocumentFieldView_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldView_BASIC_PUBLIC_FIELDS;
+
+		final Set<String> dataFieldNamesSet = Check.isEmpty(dataFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(dataFieldsListStr));
+		if (dataFieldNamesSet.isEmpty() || dataFieldNamesSet.contains("*"))
+		{
+			return filter;
+		}
+
+		return new FILTER_DocumentFieldView_ByFieldNamesSet(dataFieldNamesSet, filter);
+	}
+
+	public Predicate<DocumentFieldChange> documentFieldChangeFilter()
+	{
+		if (_documentFieldChangeFilter == null)
+		{
+			_documentFieldChangeFilter = createDocumentFieldChangeFilter();
+		}
+
+		return _documentFieldChangeFilter;
+	}
+
+	private Predicate<DocumentFieldChange> createDocumentFieldChangeFilter()
+	{
+		final Predicate<DocumentFieldChange> filter = showAdvancedFields ? FILTER_DocumentFieldChange_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldChange_BASIC_PUBLIC_FIELDS;
+
+		final Set<String> dataFieldNamesSet = Check.isEmpty(dataFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(dataFieldsListStr));
+		if (dataFieldNamesSet.isEmpty() || dataFieldNamesSet.contains("*"))
+		{
+			return filter;
+		}
+
+		return new FILTER_DocumentFieldChange_ByFieldNamesSet(dataFieldNamesSet, filter);
+	}
+
+	/**
+	 * @return NewRecordDescriptorsProvider or null
+	 */
+	public NewRecordDescriptorsProvider getNewRecordDescriptorsProvider()
+	{
+		return newRecordDescriptorsProvider;
+	}
+
+	public JSONDocumentPermissions getDocumentPermissions()
+	{
+		return documentPermissionsSupplier.get();
+	}
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_BASIC = new Predicate<DocumentLayoutElementDescriptor>()
 	{
@@ -227,118 +348,6 @@ public final class JSONOptions
 		}
 	};
 
-	private JSONOptions(final Builder builder)
-	{
-		super();
-		adLanguage = builder.getAD_Language();
-		showAdvancedFields = builder.showAdvancedFields;
-		dataFieldsListStr = Strings.emptyToNull(builder.dataFieldsListStr);
-		debugShowColumnNamesForCaption = builder.isShowColumnNamesForCaption(false);
-		
-		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
-		
-		final IUserRolePermissions userRolePermissions = builder.getPermissionsOrNull();
-		documentPermissions = userRolePermissions == null ? null : new JSONDocumentPermissions(userRolePermissions);
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("showAdvancedFields", showAdvancedFields)
-				.add("dataFieldsListStr", dataFieldsListStr)
-				.add("debugShowColumnNamesForCaption", debugShowColumnNamesForCaption)
-				.toString();
-	}
-
-	public String getAD_Language()
-	{
-		return adLanguage;
-	}
-
-	public boolean isShowAdvancedFields()
-	{
-		return showAdvancedFields;
-	}
-
-	public boolean isDebugShowColumnNamesForCaption()
-	{
-		return debugShowColumnNamesForCaption;
-	}
-
-	public boolean isProtocolDebugging()
-	{
-		return WindowConstants.isProtocolDebugging();
-	}
-
-	public Predicate<DocumentLayoutElementDescriptor> documentLayoutElementFilter()
-	{
-		if (_documentLayoutElementFilter == null)
-		{
-			_documentLayoutElementFilter = showAdvancedFields ? FILTER_DocumentLayoutElementDescriptor_ALL : FILTER_DocumentLayoutElementDescriptor_BASIC;
-		}
-		return _documentLayoutElementFilter;
-	}
-
-	public Predicate<IDocumentFieldView> documentFieldFilter()
-	{
-		if (_documentFieldFilter == null)
-		{
-			_documentFieldFilter = createDocumentFieldFilter();
-		}
-		return _documentFieldFilter;
-	}
-
-	private Predicate<IDocumentFieldView> createDocumentFieldFilter()
-	{
-		final Predicate<IDocumentFieldView> filter = showAdvancedFields ? FILTER_DocumentFieldView_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldView_BASIC_PUBLIC_FIELDS;
-
-		final Set<String> dataFieldNamesSet = Check.isEmpty(dataFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(dataFieldsListStr));
-		if (dataFieldNamesSet.isEmpty() || dataFieldNamesSet.contains("*"))
-		{
-			return filter;
-		}
-
-		return new FILTER_DocumentFieldView_ByFieldNamesSet(dataFieldNamesSet, filter);
-	}
-
-	public Predicate<DocumentFieldChange> documentFieldChangeFilter()
-	{
-		if (_documentFieldChangeFilter == null)
-		{
-			_documentFieldChangeFilter = createDocumentFieldChangeFilter();
-		}
-
-		return _documentFieldChangeFilter;
-	}
-
-	private Predicate<DocumentFieldChange> createDocumentFieldChangeFilter()
-	{
-		final Predicate<DocumentFieldChange> filter = showAdvancedFields ? FILTER_DocumentFieldChange_ALL_PUBLIC_FIELDS : FILTER_DocumentFieldChange_BASIC_PUBLIC_FIELDS;
-
-		final Set<String> dataFieldNamesSet = Check.isEmpty(dataFieldsListStr, true) ? ImmutableSet.of() : ImmutableSet.copyOf(FIELDS_LIST_SPLITTER.splitToList(dataFieldsListStr));
-		if (dataFieldNamesSet.isEmpty() || dataFieldNamesSet.contains("*"))
-		{
-			return filter;
-		}
-
-		return new FILTER_DocumentFieldChange_ByFieldNamesSet(dataFieldNamesSet, filter);
-	}
-	
-	/**
-	 * @return NewRecordDescriptorsProvider or null
-	 */
-	public NewRecordDescriptorsProvider getNewRecordDescriptorsProvider()
-	{
-		return newRecordDescriptorsProvider;
-	}
-	
-	public JSONDocumentPermissions getDocumentPermissions()
-	{
-		return documentPermissions;
-	}
-
 	//
 	//
 	//
@@ -368,22 +377,22 @@ public final class JSONOptions
 			this.adLanguage = adLanguage;
 			return this;
 		}
-		
+
 		private String getAD_Language()
 		{
-			if(adLanguage != null)
+			if (adLanguage != null)
 			{
 				return adLanguage;
 			}
-			
-			if(_userSession != null)
+
+			if (_userSession != null)
 			{
 				return _userSession.getAD_Language();
 			}
-			
+
 			throw new IllegalStateException("Cannot detect the AD_Language");
 		}
-		
+
 		private IUserRolePermissions getPermissionsOrNull()
 		{
 			return _userSession == null ? null : _userSession.getUserRolePermissions();
@@ -394,28 +403,33 @@ public final class JSONOptions
 			this.showAdvancedFields = showAdvancedFields;
 			return this;
 		}
+		
+		private boolean isShowAdvancedFields()
+		{
+			return showAdvancedFields;
+		}
 
 		public Builder setDataFieldsList(final String dataFieldsListStr)
 		{
 			this.dataFieldsListStr = dataFieldsListStr;
 			return this;
 		}
-		
+
 		private boolean isShowColumnNamesForCaption(final boolean defaultValue)
 		{
-			if(_userSession != null)
+			if (_userSession != null)
 			{
 				return _userSession.isShowColumnNamesForCaption();
 			}
-			
+
 			return defaultValue;
 		}
-		
+
 		private NewRecordDescriptorsProvider getNewRecordDescriptorsProvider()
 		{
 			return newRecordDescriptorsProvider;
 		}
-		
+
 		public Builder setNewRecordDescriptorsProvider(NewRecordDescriptorsProvider newRecordDescriptorsProvider)
 		{
 			this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;

@@ -1,0 +1,180 @@
+package de.metas.ui.web.window.descriptor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.adempiere.util.Check;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.window.datatypes.WindowId;
+
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2017 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public class DocumentLayoutHeader
+{
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
+	private final WindowId windowId;
+	private final ITranslatableString caption;
+	private final ITranslatableString description;
+
+	private final List<DocumentLayoutSectionDescriptor> sections;
+	private transient List<DocumentLayoutElementDescriptor> _elements = null;
+
+	private DocumentLayoutHeader(final Builder builder)
+	{
+		windowId = builder.windowId;
+		Check.assumeNotNull(windowId, "Parameter windowId is not null");
+
+		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
+		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
+		sections = ImmutableList.copyOf(builder.buildSections());
+	}
+
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("caption", caption)
+				.add("sections", sections.isEmpty() ? null : sections)
+				.toString();
+	}
+
+	public WindowId getWindowId()
+	{
+		return windowId;
+	}
+
+	public String getCaption(final String adLanguage)
+	{
+		return caption.translate(adLanguage);
+	}
+
+	public String getDescription(final String adLanguage)
+	{
+		return description.translate(adLanguage);
+	}
+
+	public List<DocumentLayoutSectionDescriptor> getSections()
+	{
+		return sections;
+	}
+
+	public List<DocumentLayoutElementDescriptor> getElements()
+	{
+		List<DocumentLayoutElementDescriptor> elements = _elements;
+		if (elements == null)
+		{
+			elements = sections.stream()
+					.flatMap(section -> section.getColumns().stream())
+					.flatMap(column -> column.getElementGroups().stream())
+					.flatMap(elementGroup -> elementGroup.getElementLines().stream())
+					.flatMap(elementLine -> elementLine.getElements().stream())
+					.collect(ImmutableList.toImmutableList());
+		}
+		_elements = elements;
+		return elements;
+	}
+
+	public boolean isEmpty()
+	{
+		return sections.isEmpty();
+	}
+
+	public static final class Builder
+	{
+		public WindowId windowId;
+		private ITranslatableString caption;
+		private ITranslatableString description;
+
+		private final List<DocumentLayoutSectionDescriptor.Builder> sectionBuilders = new ArrayList<>();
+
+		private Builder()
+		{
+			super();
+		}
+
+		public DocumentLayoutHeader build()
+		{
+			return new DocumentLayoutHeader(this);
+		}
+
+		private List<DocumentLayoutSectionDescriptor> buildSections()
+		{
+			return sectionBuilders
+					.stream()
+					.filter(sectionBuilder -> sectionBuilder.isValid())
+					.map(sectionBuilder -> sectionBuilder.build())
+					.filter(section -> section.hasColumns())
+					.collect(ImmutableList.toImmutableList());
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this)
+					.add("caption", caption)
+					.add("sections-count", sectionBuilders.size())
+					.toString();
+		}
+
+		public Builder setWindowId(final WindowId windowId)
+		{
+			this.windowId = windowId;
+			return this;
+		}
+
+		public Builder setCaption(final ITranslatableString caption)
+		{
+			this.caption = caption;
+			return this;
+		}
+
+		public Builder setDescription(final ITranslatableString description)
+		{
+			this.description = description;
+			return this;
+		}
+
+		public Builder addSections(final Collection<DocumentLayoutSectionDescriptor.Builder> sectionBuildersToAdd)
+		{
+			sectionBuildersToAdd.forEach(sectionBuilders::add);
+			return this;
+		}
+
+		public boolean isEmpty()
+		{
+			return sectionBuilders.isEmpty();
+		}
+	}
+
+}

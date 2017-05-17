@@ -42,6 +42,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Fi
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutHeader;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
 
@@ -107,7 +108,7 @@ public class LayoutFactory
 
 	//
 	// Build parameters
-	private IWindowUIElementsProvider _uiProvider;
+	private final IWindowUIElementsProvider _uiProvider;
 	private final List<I_AD_UI_Section> _uiSections;
 
 	private LayoutFactory(final GridWindowVO gridWindowVO, final GridTabVO gridTabVO, final GridTabVO parentTab)
@@ -184,7 +185,27 @@ public class LayoutFactory
 	/**
 	 * Single row layout: sections list
 	 */
-	public List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList()
+	public DocumentLayoutHeader.Builder layoutSingleRow()
+	{
+		// NOTE, according to (FRESH-686 #26), we are putting all elements in one list, one after another, no sections, no columns etc
+		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
+		logger.trace("Generating single row layout for {}", entityDescriptor);
+
+		// If the tab is never displayed then don't create the layout
+		final ILogicExpression tabDisplayLogic = descriptorsFactory.getTabDisplayLogic();
+		if (tabDisplayLogic.isConstantFalse())
+		{
+			logger.warn("Skip creating single row layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
+			return null;
+		}
+
+		return DocumentLayoutHeader.builder()
+				.setCaption(entityDescriptor.getCaption())
+				.setDescription(entityDescriptor.getDescription())
+				.addSections(layoutSectionsList());
+	}
+	
+	private List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList()
 	{
 		final List<I_AD_UI_Section> uiSections = getUISections();
 		logger.trace("Generating layout sections list for {}", uiSections);
@@ -546,43 +567,6 @@ public class LayoutFactory
 		}
 
 		return layoutDetail;
-	}
-
-	/**
-	 * Build the layout for advanced view (for header documents).
-	 *
-	 * @task https://github.com/metasfresh/metasfresh-webui/issues/26
-	 */
-	public DocumentLayoutDetailDescriptor.Builder layoutAdvancedView()
-	{
-		// NOTE, according to (FRESH-686 #26), we are putting all elements in one list, one after another, no sections, no columns etc
-		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
-		logger.trace("Generating advanced view layout for {}", entityDescriptor);
-
-		// If the detail is never displayed then don't add it to layout
-		final ILogicExpression tabDisplayLogic = descriptorsFactory.getTabDisplayLogic();
-		if (tabDisplayLogic.isConstantFalse())
-		{
-			logger.trace("Skip adding advanced view layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
-			return null;
-		}
-
-		final Stream<DocumentLayoutElementDescriptor.Builder> layoutElements = streamAD_UI_Elements()
-				.filter(uiElement -> uiElement.isDisplayed())
-				.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNo))
-				.map(uiElement -> layoutElement(uiElement).setNotGridElement())
-				.filter(uiElement -> uiElement != null);
-
-		final DocumentLayoutDetailDescriptor.Builder advancedViewLayout = DocumentLayoutDetailDescriptor.builder()
-				.setDetailId(entityDescriptor.getDetailId())
-				.setCaption(entityDescriptor.getCaption())
-				.setDescription(entityDescriptor.getDescription())
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setQueryOnActivate(entityDescriptor.isHighVolume())
-				.addElements(layoutElements);
-
-		return advancedViewLayout;
 	}
 
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final DocumentFieldDescriptor.Builder field)
