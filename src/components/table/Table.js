@@ -657,7 +657,8 @@ class Table extends Component {
                             changeListenOnFalse={() => this.changeListen(false)}
                             newRow={i === keys.length-1 ? newRow : false}
                             isSelected={
-                                selected.indexOf(item[key][keyProp]) > -1
+                                selected.indexOf(item[key][keyProp]) > -1 ||
+                                selected[0] === 'all'
                             }
                             handleSelect={this.selectRangeProduct}
                             indentSupported={indentSupported}
@@ -822,6 +823,7 @@ class Table extends Component {
                             <TablePagination
                                 handleChangePage={handleChangePage}
                                 handleSelectAll={this.selectAll}
+                                handleSelectRange={this.selectRangeProduct}
                                 pageLength={pageLength}
                                 size={size}
                                 selected={selected}
