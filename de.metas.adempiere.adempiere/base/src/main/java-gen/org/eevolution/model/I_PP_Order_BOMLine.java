@@ -278,53 +278,7 @@ public interface I_PP_Order_BOMLine
     public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set DLM_Level.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDLM_Level (int DLM_Level);
-
-	/**
-	 * Get DLM_Level.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getDLM_Level();
-
-    /** Column definition for DLM_Level */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_DLM_Level = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "DLM_Level", null);
-    /** Column name DLM_Level */
-    public static final String COLUMNNAME_DLM_Level = "DLM_Level";
-
-	/**
-	 * Set Partition.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setDLM_Partition_ID (int DLM_Partition_ID);
-
-	/**
-	 * Get Partition.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getDLM_Partition_ID();
-
-    /** Column definition for DLM_Partition_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_DLM_Partition_ID = new org.adempiere.model.ModelColumn<I_PP_Order_BOMLine, Object>(I_PP_Order_BOMLine.class, "DLM_Partition_ID", null);
-    /** Column name DLM_Partition_ID */
-    public static final String COLUMNNAME_DLM_Partition_ID = "DLM_Partition_ID";
-
+	
 	/**
 	 * Set Feature.
 	 * Indicated the Feature for Product Configure
