@@ -17,6 +17,7 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1304](https://github.com/metasfresh/metasfresh/issues/1304) Jasper Document for Material disposal
   * [#1306](https://github.com/metasfresh/metasfresh/issues/1306) Customer Returns Functionality
   * [#1474](https://github.com/metasfresh/metasfresh/issues/1474) New Window Handling Unit Packing Instruction in WebUI
     * Creates a new Packing Instruction window in WebUI.
