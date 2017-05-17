@@ -5,6 +5,7 @@ import java.util.Enumeration;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -224,7 +225,8 @@ final class MenuTreeLoader
 
 	private MTreeNode retrieveRootNodeModel()
 	{
-		final int adTreeId = getMenuTree_ID();
+		final UserMenuInfo userMenuInfo = getUserMenuInfo();
+		final int adTreeId = userMenuInfo.getAD_Tree_ID();
 		if (adTreeId < 0)
 		{
 			throw new AdempiereException("Menu tree not found");
@@ -238,19 +240,34 @@ final class MenuTreeLoader
 				.setClientTree(true)
 				.setLanguage(getAD_Language())
 				.build();
+
 		final MTreeNode rootNodeModel = mTree.getRoot();
+		int rootMenuIdEffective = userMenuInfo.getRoot_Menu_ID();
+		if (rootMenuIdEffective > 0)
+		{
+			final MTreeNode rootNodeModelEffective = rootNodeModel.findNode(rootMenuIdEffective);
+			if (rootNodeModelEffective != null)
+			{
+				return rootNodeModelEffective;
+			}
+			else
+			{
+				logger.warn("Cannot find Root_Menu_ID={} in {}", rootMenuIdEffective, mTree);
+			}
+		}
+
 		return rootNodeModel;
 	}
 
-	private int getMenuTree_ID()
+	private UserMenuInfo getUserMenuInfo()
 	{
 		final IUserRolePermissions userRolePermissions = getUserRolePermissions();
 		if (!userRolePermissions.hasPermission(IUserRolePermissions.PERMISSION_MenuAvailable))
 		{
-			return -1;
+			return UserMenuInfo.NONE;
 		}
 
-		return userRolePermissions.getMenu_Tree_ID();
+		return userRolePermissions.getMenuInfo();
 	}
 
 	public MenuTreeLoader setAD_Language(String adLanguage)
