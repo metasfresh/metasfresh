@@ -12,7 +12,7 @@ class OverlayField extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {handleSubmit, closeOverlay, clearData} = this.props;
+        const {handleSubmit, closeOverlay} = this.props;
         switch(e.key) {
             case 'Enter':
                 document.activeElement.blur();
@@ -20,9 +20,6 @@ class OverlayField extends Component {
                 break;
             case 'Escape':
                 closeOverlay();
-                break;
-            case 'Delete':
-                clearData && clearData();
                 break;
         }
     }

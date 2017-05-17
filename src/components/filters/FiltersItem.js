@@ -131,7 +131,6 @@ class FiltersItem extends Component {
                         layout={filter}
                         handlePatch={this.setValue}
                         handleChange={this.setValue}
-                        clearData={isActive && this.handleClear}
                         closeOverlay={outsideClick}
                         handleSubmit={this.handleApply}
                         {...{windowType, onShow, onHide, viewId}}
