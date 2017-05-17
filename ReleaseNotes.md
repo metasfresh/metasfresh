@@ -39,10 +39,16 @@ Here come the actual release notes:
     * New window in WebUI to allow the Print Format maintenance.
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
+  * [#1539](https://github.com/metasfresh/metasfresh/issues/1539) New Window for Product BOM in WebUI
+    * Adding the BOM Product Window to WebUI. Now allowing the easy BOM Configuration via the Web User Interface.
+  * [#1541](https://github.com/metasfresh/metasfresh/issues/1541) New Window for Packing Configuration in WebUI
+    * Adding the Packing Configuration (readonly) window to webUI.
   * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
   * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
   * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
+  * [#1561(https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
+    * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
  
 ## Fixes
 
