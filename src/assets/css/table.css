@@ -414,3 +414,7 @@ $indent-signs-offset: 6px;
 .document-list-table {
     flex: 2.6;
 }
+
+.table-fade-out {
+    opacity: .65;
+}

@@ -539,7 +539,8 @@ class DocumentList extends Component {
                             doesSelectionExist={this.doesSelectionExist}
                             {...{isIncluded, disconnectFromState, autofocus,
                                 open, page, closeOverlays, inBackground,
-                                disablePaginationShortcuts, isModal}}
+                                disablePaginationShortcuts, isModal, hasIncluded
+                            }}
                         >
                             {layout.supportAttributes && !isIncluded &&
                                 !hasIncluded &&

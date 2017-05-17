@@ -710,7 +710,7 @@ class Table extends Component {
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
             queryLimitHit, supportQuickInput, tabInfo, isIncluded,
-            disablePaginationShortcuts
+            disablePaginationShortcuts, hasIncluded
         } = this.props;
 
         const {
@@ -782,7 +782,8 @@ class Table extends Component {
                             className={
                                 'table table-bordered-vertically ' +
                                 'table-striped js-table ' +
-                                (readonly ? 'table-read-only' : '')
+                                (readonly ? 'table-read-only ' : '') +
+                                (hasIncluded ? 'table-fade-out': '')
                             }
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
