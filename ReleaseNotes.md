@@ -17,6 +17,7 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1304](https://github.com/metasfresh/metasfresh/issues/1304) Jasper Document for Material disposal
   * [#1306](https://github.com/metasfresh/metasfresh/issues/1306) Customer Returns Functionality
   * [#1474](https://github.com/metasfresh/metasfresh/issues/1474) New Window Handling Unit Packing Instruction in WebUI
     * Creates a new Packing Instruction window in WebUI.
@@ -40,6 +41,8 @@ Here come the actual release notes:
     * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
   * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
+  * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
+  * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
  
 ## Fixes
 
