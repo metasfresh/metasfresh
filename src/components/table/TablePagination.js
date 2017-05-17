@@ -59,6 +59,12 @@ class TablePagination extends Component {
         });
     }
 
+    handleSelectWholePage = (value) => {
+        this.setState({
+            selectedWholePage: value
+        })
+    }
+
     resetGoToPage = () => {
         this.setState({
             secondDotsState: false,
@@ -195,18 +201,29 @@ class TablePagination extends Component {
     }
 
     renderSelectAll = () => {
-        const {selected, handleSelectAll} = this.props;
+        const {
+            selected, handleSelectAll, handleSelectRange, size, pageLength
+        } = this.props;
+        const selectedWholePage = selected && (selected.length === pageLength);
         return (
             <div className="hidden-sm-down">
-                <div>{selected.length > 0 ? selected.length +
-                         ' items selected' : 'No items selected'
+                <div>{selected.length > 0 ?
+                        (selected[0] === 'all' ? size : selected.length) + 
+                        ' items selected'
+                        : 'No items selected'
                      }
                  </div>
                 <div
                     className="pagination-link pointer"
-                    onClick={handleSelectAll}
+                    onClick={() => {
+                        selectedWholePage ?
+                             handleSelectRange(['all']) : handleSelectAll()
+                    }}
                 >
-                    Select all on this page
+                    {selectedWholePage ?
+                        'Select all ' + size + ' items on this page' :
+                        'Select all on this page'
+                    }
                 </div>
             </div>
         )
