@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-05-16T18:02:25 -->
+<!-- 2017-05-17T09:44:11 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_page_header" pageWidth="534" pageHeight="842" columnWidth="534" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout_customer_returns/report" uuid="3e37de0f-dc4b-413d-8d15-10a99f5ce3f9">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -15,14 +15,11 @@
 	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<parameter name="ad_language" class="java.lang.String"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description ($P{RECORD_ID},  $P{ad_language} );]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description ($P{RECORD_ID},  $P{ad_language} );]]>
 	</queryString>
 	<field name="printname" class="java.lang.String"/>
-	<field name="io_printname" class="java.lang.String"/>
 	<field name="documentno" class="java.lang.String"/>
-	<field name="io_documentno" class="java.lang.String"/>
 	<field name="bp_value" class="java.lang.String"/>
-	<field name="movementdate_io" class="java.sql.Timestamp"/>
 	<field name="movementdate" class="java.sql.Timestamp"/>
 	<background>
 		<band splitType="Stretch"/>
