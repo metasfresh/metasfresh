@@ -63,6 +63,8 @@ Here come the actual release notes:
   * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
   * [#1561](https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
     * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
+  * [#1572](https://github.com/metasfresh/metasfresh/issues/1572) User Window adjustment in WebUI
+    * Adjustment of User Window in WebUI, Harmonizing Look&Feel, important Fields to Main View.
 
 * metasfresh-webui-api
   * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
