@@ -65,6 +65,8 @@ Here come the actual release notes:
     * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
   * [#1572](https://github.com/metasfresh/metasfresh/issues/1572) User Window adjustment in WebUI
     * Adjustment of User Window in WebUI, Harmonizing Look&Feel, important Fields to Main View.
+  * [#1574](https://github.com/metasfresh/metasfresh/issues/1574) New Field for Menu Root Node in Role window of WebUI
+    * Adding a new Field to Role Windo of WebUI, Menu Root Node ID, allowing to define partial Menus as Main Menu for a given Role.
 
 * metasfresh-webui-api
   * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
