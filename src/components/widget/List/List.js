@@ -47,7 +47,6 @@ class List extends Component {
         } = this.props;
 
         if(lookupList){
-            
             if(children.length > 0) {
                 let dataToChange = [];
                 const valuesToSet = [];
@@ -55,7 +54,6 @@ class List extends Component {
                 dataToChange.push(mainProperty[0]);
                 valuesToSet.push(option);
 
-                
                 children.map(item=>{
                         dataToChange.push(item);
                         valuesToSet.push(null);
@@ -65,8 +63,6 @@ class List extends Component {
             } else {
                 onChange(properties[0].field, option);
             }
-            
-
             this.setState({
                 selectedItem: option
             });

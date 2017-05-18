@@ -8,8 +8,6 @@ import {
 } from '../../../actions/WindowActions';
 
 import RawLookup from './RawLookup';
-
-import LookupList from './LookupList';
 import List from '../List/List';
 
 class Lookup extends Component {
@@ -27,13 +25,11 @@ class Lookup extends Component {
     }
 
     componentDidMount() {
-        const {defaultValue, properties} = this.props;
-
         this.checkIfDefaultValue();
     }
 
     componentDidUpdate() {
-        const {defaultValue, properties} = this.props;
+        const {defaultValue} = this.props;
         const {property} = this.state;
 
          const objectValue = property && getItemsByProperty(
@@ -43,7 +39,6 @@ class Lookup extends Component {
         if(objectValue) {
             this.setNextProperty(property);
         }
-     
     }
 
     handleClickOutside = () => {
@@ -68,7 +63,8 @@ class Lookup extends Component {
 
         defaultValue.map((item, index)=>{
                 const nextIndex = index+1;
-                if(nextIndex<defaultValue.length && defaultValue[index].field === prop){
+                if(nextIndex<defaultValue.length &&
+                    defaultValue[index].field === prop){
                     this.setState({
                         property: properties[nextIndex].field
                     })
@@ -78,7 +74,6 @@ class Lookup extends Component {
                         property: ''
                     })
                 }
-                
             })
     }
 
@@ -90,11 +85,10 @@ class Lookup extends Component {
                     isInputEmpty: false
                 })
             }
-            
         });
     }
 
-    handleClear = (e) => {
+    handleClear = () => {
         const {onChange, properties} = this.props;
         onChange(properties, null, false);
         this.setState({
@@ -106,9 +100,9 @@ class Lookup extends Component {
     render() {
         const {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
-            filterWidget, mandatory, rowId, tabIndex, validStatus, recent, onChange,
-            newRecordCaption, properties, windowType, parameterName, entity, dataId, tabId,
-            subentity, subentityId, viewId
+            filterWidget, mandatory, rowId, tabIndex, validStatus, recent,
+            onChange, newRecordCaption, properties, windowType, parameterName,
+            entity, dataId, tabId, subentity, subentityId, viewId
         } = this.props;
 
         const {isInputEmpty, property, fireClickOutside} = this.state;
@@ -135,38 +129,28 @@ class Lookup extends Component {
             {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
-                        const children = properties.slice(index+1, properties.length);
+                        const children = properties.slice(
+                            index+1, properties.length
+                        );
 
                         if(item.source === 'lookup'){
                             return <RawLookup
                                 key={index}
                                 newRecordCaption={newRecordCaption}
-                                defaultValue={getItemsByProperty(
-                                            defaultValue, 'field', item.field)
-                                            [0].value}
+                                defaultValue={
+                                    getItemsByProperty(defaultValue,
+                                            'field', item.field)[0].value
+                                }
                                 mainProperty={[item]}
-                                placeholder={placeholder}
-                                readonly={readonly}
-                                tabIndex={tabIndex}
-                                windowType={windowType}
-                                parameterName={parameterName}
-                                entity={entity}
-                                dataId={dataId}
-                                isModal={isModal}
-                                recent={recent}
-                                rank={rank}
-                                updated={updated}
-                                filterWidget={filterWidget}
-                                mandatory={mandatory}
-                                validStatus={validStatus}
-                                align={align}
-                                onChange={onChange}
-                                item={item}
-                                handleInputEmptyStatus={this.handleInputEmptyStatus}
+                                handleInputEmptyStatus={
+                                    this.handleInputEmptyStatus
+                                }
                                 setNextProperty={this.setNextProperty}
-                                disabled={disabled}
-                                children={children}
-                                fireClickOutside={fireClickOutside}
+                                {...{placeholder, readonly, tabIndex,
+                                windowType, parameterName, entity, dataId,
+                                isModal, recent, rank, updated, filterWidget,
+                                mandatory, validStatus, align, onChange, item,
+                                disabled, children, fireClickOutside}}
                             />
 
                         } else if (item.source === 'list') {
@@ -175,9 +159,13 @@ class Lookup extends Component {
                                 defaultValue, 'field', item.field
                             )[0].value;
 
-                            return <div className={
-                                'raw-lookup-wrapper raw-lookup-wrapper-bcg ' + 
-                                (disabled ? 'raw-lookup-disabled':'')} key={index}>
+                            return <div
+                                className={
+                                    'raw-lookup-wrapper ' +
+                                    'raw-lookup-wrapper-bcg ' +
+                                    (disabled ? 'raw-lookup-disabled':'')
+                                    }
+                                key={index}>
                                     <List
                                         dataId={dataId}
                                         entity={entity}
@@ -191,8 +179,16 @@ class Lookup extends Component {
                                         viewId={viewId}
                                         onChange={onChange}
                                         lookupList={true}
-                                        autofocus={item.field == property ? true : false}
-                                        defaultValue={objectValue ? objectValue[Object.keys(objectValue)[0]] : ''}
+                                        autofocus={
+                                            item.field == property ?
+                                            true : false
+                                        }
+                                        defaultValue={
+                                            objectValue ?
+                                            objectValue[
+                                                Object.keys(objectValue)[0]
+                                            ] : ''
+                                        }
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}
                                         blur={!property?true:false}
@@ -203,7 +199,6 @@ class Lookup extends Component {
                         }
                 })
             }
-    
             {isInputEmpty ?
                 <div className="input-icon input-icon-lg raw-lookup-wrapper">
                     <i className="meta-icon-preview" />
@@ -215,7 +210,6 @@ class Lookup extends Component {
                     />}
                 </div>
             }
-                      
             </div>
         )
     }

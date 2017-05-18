@@ -4,12 +4,10 @@ import {connect} from 'react-redux';
 import LookupList from './LookupList';
 
 import {
-    autocompleteRequest,
-    dropdownRequest
+    autocompleteRequest
 } from '../../../actions/GenericActions';
 
 import {
-    getItemsByProperty,
     openModal
 } from '../../../actions/WindowActions';
 
@@ -31,7 +29,7 @@ class RawLookup extends Component {
     }
 
     componentDidMount() {
-        const {selected, defaultValue} = this.props;
+        const {selected} = this.props;
 
         this.handleValueChanged();
 
@@ -40,14 +38,14 @@ class RawLookup extends Component {
         }else{
             this.handleBlur(this.clearState);
         }
-
-        
     }
 
     componentDidUpdate(prevProps) {
         this.handleValueChanged();
 
-        const {autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus} = this.props;
+        const {
+            autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus
+        } = this.props;
         const {isInputEmpty, shouldBeFocused} = this.state;
 
         if(autoFocus && isInputEmpty && shouldBeFocused){
@@ -57,19 +55,25 @@ class RawLookup extends Component {
             });
         }
 
-        defaultValue && prevProps.defaultValue !== defaultValue && handleInputEmptyStatus(false);
+        defaultValue && prevProps.defaultValue !== defaultValue &&
+        handleInputEmptyStatus(false);
 
-        if(fireClickOutside && prevProps.fireClickOutside !==  fireClickOutside) {
-            if(defaultValue && defaultValue[Object.keys(defaultValue)[0]] !== this.inputSearch.value){
-                this.inputSearch.value = defaultValue[Object.keys(defaultValue)[0]];
+        if(fireClickOutside && prevProps.fireClickOutside !== fireClickOutside)
+         {
+            if(
+                defaultValue && defaultValue[Object.keys(defaultValue)[0]] !==
+                this.inputSearch.value
+            ){
+                this.inputSearch.value =
+                    defaultValue[Object.keys(defaultValue)[0]];
             }
         }
     }
 
     handleSelect = (select) => {
         const {
-            onChange, filterWidget, parameterName, subentity, handleInputEmptyStatus, mainProperty,
-            getNextDropdown, setNextProperty, children
+            onChange, handleInputEmptyStatus, mainProperty, setNextProperty,
+            children, properties
         } = this.props;
 
         this.setState({
@@ -82,7 +86,6 @@ class RawLookup extends Component {
                     dataToChange.push(mainProperty[0]);
                     valuesToSet.push(select);
 
-                    
                     children.map(item=>{
                             dataToChange.push(item);
                             valuesToSet.push(null);
@@ -280,31 +283,29 @@ class RawLookup extends Component {
     }
 
     render() {
-        const { handleAddNew, onClickOutside, disableOnClickOutside, isModal, rank, updated, filterWidget, mandatory, validStatus, align,
-        creatingNewDisabled, newRecordCaption, placeholder, readonly, disabled, tabIndex, item, mainProperty} = this.props;
+        const { isModal, align, newRecordCaption,
+                placeholder, readonly, disabled, tabIndex
+            } = this.props;
 
         const {
-            propertiesCopy, isInputEmpty, list, query, loading, selected,
-            isOpen, validLocal
+            isInputEmpty, list, query, loading, selected,
+            isOpen
         } = this.state;
 
         return (
-        <div 
+        <div
             onKeyDown={this.handleKeyDown}
-            className={"raw-lookup-wrapper raw-lookup-wrapper-bcg "+
+            className={'raw-lookup-wrapper raw-lookup-wrapper-bcg '+
             (disabled ? 'raw-lookup-disabled':'')
-        }  
-                                
+        }
         >
             <div className={
-                    'input-dropdown input-block' 
-                    
+                    'input-dropdown input-block'
                 }>
                     <div className={
                         'input-editable ' +
                         (align ? 'text-xs-' + align + ' ' : '')
                     }>
-                       
                             <input
                                 type="text"
                                 className="input-field js-input-field font-weight-semibold"
@@ -314,13 +315,8 @@ class RawLookup extends Component {
                                 placeholder={placeholder}
                                 disabled={readonly && !disabled}
                                 tabIndex={tabIndex}
-                                
                             />
-
                     </div>
-
-                    
-                    
                 </div>
                 {   isOpen && !isInputEmpty &&
                     <LookupList
@@ -337,9 +333,7 @@ class RawLookup extends Component {
                         newRecordCaption={newRecordCaption}
                     />
                 }
-
             </div>
-            
         )
     }
 }
