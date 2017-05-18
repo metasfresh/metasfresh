@@ -80,10 +80,9 @@ public class ProcessRestController
 
 	@Autowired
 	private UserSession userSession;
-	
+
 	@Autowired
 	private IViewsRepository viewsRepo;
-
 
 	private final ConcurrentHashMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType = new ConcurrentHashMap<>();
 
@@ -153,12 +152,12 @@ public class ProcessRestController
 
 		// Get the effective singleDocumentPath, i.e.
 		// * if provided, use it
-		// * if not provided and we have a single selected row in the view, use that row
+		// * if not provided and we have a single selected row in the view, ask the view's row to provide the effective document path
 		DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
 		if (singleDocumentPath == null && viewDocumentIds.isSingleDocumentId())
 		{
 			final IView view = viewsRepo.getView(viewId);
-			singleDocumentPath = view.getDocumentPathEffective(viewDocumentIds.getSingleDocumentId());
+			singleDocumentPath = view.getById(viewDocumentIds.getSingleDocumentId()).getDocumentPath();
 		}
 
 		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()

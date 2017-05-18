@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
 
@@ -55,7 +55,7 @@ public class JSONViewRow extends JSONDocumentBase
 	{
 		//
 		// Document view record
-		final JSONViewRow jsonRow = new JSONViewRow(row.getDocumentPath());
+		final JSONViewRow jsonRow = new JSONViewRow(row.getId());
 		if (row.isProcessed())
 		{
 			jsonRow.processed = true;
@@ -142,8 +142,8 @@ public class JSONViewRow extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<JSONViewRow> includedDocuments;
 
-	private JSONViewRow(final DocumentPath documentPath)
+	private JSONViewRow(final DocumentId documentId)
 	{
-		super(documentPath);
+		super(documentId);
 	}
 }
