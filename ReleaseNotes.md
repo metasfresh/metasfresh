@@ -99,6 +99,7 @@ Here come the actual release notes:
   * [#749](https://github.com/metasfresh/metasfresh-webui-frontend/issues/749) singleOverlayField: pressing ESC shall close the popup
   * [#751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/751) Initial Setup Wizard does not open after switching language
   * [#755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/755) mandatory numeric field is underlined with blue, even if it's set
+  * [#759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/759) Action button remains gray if the process execution fails with error 404[#759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/759) Action button remains gray if the process execution fails with error 404
 
 # metasfresh 5.9 (2017-19)
 
