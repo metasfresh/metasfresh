@@ -130,11 +130,18 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
 	{
+		final IDocumentEvaluatee evalCtxEffective;
+		if(evalCtx != null)
+		{
+			evalCtxEffective = evalCtx.excludingFields(WindowConstants.FIELDNAME_Processed, WindowConstants.FIELDNAME_Processing, WindowConstants.FIELDNAME_IsActive);
+		}
+		else
+		{
+			evalCtxEffective = null;
+		}
+		
 		return Document.builder(parametersDescriptor)
-				.setShadowParentDocumentEvaluatee(evalCtx.excludingFields(
-						WindowConstants.FIELDNAME_Processed,
-						WindowConstants.FIELDNAME_Processing,
-						WindowConstants.FIELDNAME_IsActive))
+				.setShadowParentDocumentEvaluatee(evalCtxEffective)
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 
