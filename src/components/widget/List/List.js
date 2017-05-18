@@ -47,8 +47,26 @@ class List extends Component {
         } = this.props;
 
         if(lookupList){
-            onChange(children, null);
-            onChange(properties[0].field, option);
+            
+            if(children.length > 0) {
+                let dataToChange = [];
+                const valuesToSet = [];
+
+                dataToChange.push(mainProperty[0]);
+                valuesToSet.push(option);
+
+                
+                children.map(item=>{
+                        dataToChange.push(item);
+                        valuesToSet.push(null);
+                });
+
+                onChange(dataToChange, valuesToSet);
+            } else {
+                onChange(properties[0].field, option);
+            }
+            
+
             this.setState({
                 selectedItem: option
             });
