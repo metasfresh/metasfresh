@@ -136,7 +136,16 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	 */
 	public DocumentPath getDocumentPathEffective()
 	{
-		if (huId > 0)
+		final PPOrderLineType type = getType();
+		if (type == PPOrderLineType.MainProduct)
+		{
+			return DocumentPath.rootDocumentPath(WebPPOrderConfig.AD_WINDOW_ID_PP_Order, getPP_Order_ID());
+		}
+		else if (type.isBOMLine())
+		{
+			return DocumentPath.includedDocumentPath(WebPPOrderConfig.AD_WINDOW_ID_PP_Order, DocumentId.of(getPP_Order_ID()), WebPPOrderConfig.TABID_ID_PP_Order_BOMLine, DocumentId.of(getPP_Order_BOMLine_ID()));
+		}
+		else if (type.isHUOrHUStorage())
 		{
 			return DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, DocumentId.of(huId));
 		}
