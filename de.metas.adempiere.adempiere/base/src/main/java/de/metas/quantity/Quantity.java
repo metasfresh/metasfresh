@@ -13,15 +13,14 @@ package de.metas.quantity;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,7 +49,12 @@ public final class Quantity
 	{
 		return new Quantity(qty, uom);
 	}
-	
+
+	public static boolean isInfinite(final BigDecimal qty)
+	{
+		return QTY_INFINITE.compareTo(qty) == 0;
+	}
+
 	public static final BigDecimal QTY_INFINITE = BigDecimal.valueOf(Long.MAX_VALUE); // NOTE: we need a new instance to make sure it's unique
 
 	// NOTE to dev: all fields shall be final because this is a immutable object. Please keep that logic if u are adding more fields
@@ -205,7 +209,7 @@ public final class Quantity
 	 */
 	public boolean isInfinite()
 	{
-		return QTY_INFINITE.compareTo(qty) == 0;
+		return isInfinite(qty);
 	}
 
 	/**
