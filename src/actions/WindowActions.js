@@ -636,8 +636,9 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     throw err;
                 });
             }
-        }).catch(() => {
+        }).catch(err => {
             dispatch(setProcessSaved());
+            throw err;
         });
     }
 }

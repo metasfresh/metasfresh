@@ -413,6 +413,8 @@ body {
 .document-lists-wrapper {
     display: flex;
     flex-direction: row;
+    min-height: 100%;
+    flex-grow: 1;
 }
 
 .document-lists-wrapper > * {
@@ -429,8 +431,6 @@ body {
 .document-list-included {
     flex: .7;
     margin-left: .1rem;
-    /*overflow: auto;
-    overflow-x: hidden;*/
 }
 
 .document-list-header {
