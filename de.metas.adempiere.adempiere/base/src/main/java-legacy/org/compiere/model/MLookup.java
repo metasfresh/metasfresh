@@ -895,7 +895,7 @@ public final class MLookup extends Lookup implements Serializable
 	@Override
 	public int getZoom()
 	{
-		return m_info.ZoomWindow;
+		return m_info.getZoomSO_Window_ID();
 	}	// getZoom
 
 	/**
@@ -905,13 +905,13 @@ public final class MLookup extends Lookup implements Serializable
 	 * @return Zoom Window
 	 */
 	@Override
-	public int getZoom(MQuery query)
+	public int getZoomAD_Window_ID(final MQuery query)
 	{
 		// Case: there is no ZoomWindowPO or query is null
 		// => return m_info.ZoomWindow directly because there is no point to search forward
-		if (m_info.ZoomWindowPO <= 0 || query == null)
+		if (m_info.getZoomPO_Window_ID() <= 0 || query == null)
 		{
-			return m_info.ZoomWindow;
+			return m_info.getZoomSO_Window_ID();
 		}
 
 		// Need to check SO/PO
@@ -919,9 +919,9 @@ public final class MLookup extends Lookup implements Serializable
 		//
 		if (!isSOTrx)
 		{
-			return m_info.ZoomWindowPO;
+			return m_info.getZoomPO_Window_ID();
 		}
-		return m_info.ZoomWindow;
+		return m_info.getZoomSO_Window_ID();
 	}	// getZoom
 
 	/**

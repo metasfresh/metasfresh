@@ -56,14 +56,14 @@ public final class MLookupInfo implements Serializable, Cloneable
 	 * @param sqlQuery SQL query
 	 * @param tableName table name
 	 * @param keyColumn key column
-	 * @param zoomWindow zoom window
-	 * @param zoomWindowPO PO zoom window
+	 * @param zoomSO_Window_ID zoom window
+	 * @param zoomPO_Window_ID PO zoom window
 	 * @param zoomQuery zoom query
 	 */
 	/* package */ MLookupInfo(
 			final String sqlQuery_BaseLang, final String sqlQuery_Trl //
 			, final String tableName, final String keyColumn //
-			, final int zoomWindow, final int zoomWindowPO, final MQuery zoomQuery //
+			, final int zoomSO_Window_ID, final int zoomPO_Window_ID, final int zoomAD_Window_ID_Override, final MQuery zoomQuery //
 	)
 	{
 		super();
@@ -77,8 +77,9 @@ public final class MLookupInfo implements Serializable, Cloneable
 			throw new IllegalArgumentException("TableName is null");
 		TableName = tableName;
 		KeyColumn = keyColumn;
-		ZoomWindow = zoomWindow;
-		ZoomWindowPO = zoomWindowPO;
+		this.zoomSO_Window_ID = zoomSO_Window_ID;
+		this.zoomPO_Window_ID = zoomPO_Window_ID;
+		this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
 		this.zoomQuery = zoomQuery;
 	}   // MLookupInfo
 
@@ -104,9 +105,10 @@ public final class MLookupInfo implements Serializable, Cloneable
 	/** True if this lookup does not need security validation (e.g. AD_Ref_Lists does not need security validation) */
 	private boolean securityDisabled = false;
 	/** Zoom Window */
-	public final int ZoomWindow;
+	private final int zoomSO_Window_ID;
+	private final int zoomAD_Window_ID_Override;
 	/** Zoom Window */
-	public final int ZoomWindowPO;
+	private final int zoomPO_Window_ID;
 	/** Zoom Query */
 	private final MQuery zoomQuery;
 
@@ -167,6 +169,21 @@ public final class MLookupInfo implements Serializable, Cloneable
 		}
 		return null;
 	}	// clone
+	
+	public int getZoomSO_Window_ID()
+	{
+		return zoomSO_Window_ID;
+	}
+	
+	public int getZoomPO_Window_ID()
+	{
+		return zoomPO_Window_ID;
+	}
+	
+	public int getZoomAD_Window_ID_Override()
+	{
+		return zoomAD_Window_ID_Override;
+	}
 
 	/**
 	 * WARNING: this method is supported to be used EXCLUSIVELLY in Swing UI

@@ -49,4 +49,20 @@ public interface IFlatrateHandler
 	 * @task https://github.com/metasfresh/metasfresh/issues/549
 	 */
 	void afterExtendFlatrateTermCreated(final I_C_Flatrate_Term oldTerm, final I_C_Flatrate_Term newTerm);
+	
+	
+	/**
+	 * Invoked by {@link IFlatrateBL#de.metas.flatrate.api.impl.FlatrateBL.extendContract0(I_C_Flatrate_Term, boolean, boolean, I_C_OrderLine, String)} after the given <code>term</code> was checked if does need to be renew
+	 *
+	 * @param term the term that is ended
+	 * 
+	 */
+	void afterFlatrateTermEnded(final I_C_Flatrate_Term term);
+	
+	/**
+	 * Invoked by {@link IFlatrateBL#de.metas.flatrate.api.impl.FlatrateBL.extendContract0(I_C_Flatrate_Term, boolean, boolean, I_C_OrderLine, String)} after the given <code>nextTerm</code> was created, but not yet saved
+	 * 
+	 * @param term
+	 */
+	void beforeFlatrateTermCreated(final I_C_Flatrate_Term currentTerm, final I_C_Flatrate_Term nextTerm);
 }
