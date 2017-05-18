@@ -63,6 +63,8 @@ Here come the actual release notes:
   * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
   * [#1561](https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
     * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
+  * [#1572](https://github.com/metasfresh/metasfresh/issues/1572) User Window adjustment in WebUI
+    * Adjustment of User Window in WebUI, Harmonizing Look&Feel, important Fields to Main View.
 
 * metasfresh-webui-api
   * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
@@ -102,7 +104,9 @@ Here come the actual release notes:
   * [#386](https://github.com/metasfresh/metasfresh-webui-api/issues/386) Purchase Order from Sales Order Parms not initially filled in WebUI
   * [#375](https://github.com/metasfresh/metasfresh-webui-api/issues/375) Adding Role for User w/o Org_access restricts access totally
   * [#389](https://github.com/metasfresh/metasfresh-webui-api/issues/389) Zoom-Into error for subtab orderline
-
+  * [#392](https://github.com/metasfresh/metasfresh-webui-api/issues/392) barcode field is readonly
+  * [#393](https://github.com/metasfresh/metasfresh-webui-api/issues/393) Manufacturing Issue/Receipt: cannot receive HUs
+  
 * metasfresh-webui-frontend
   * [#706](https://github.com/metasfresh/metasfresh-webui-frontend/issues/706) Manufacturing order - Issue HUs - wrong /quickActions call
   * [#707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/707) Page popup shall be closed when clicking o a page
