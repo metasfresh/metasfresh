@@ -74,7 +74,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		this.huEditorRepo = huEditorRepo;
 		if (filters.isEmpty())
 		{
-			huIdsHolder = () -> new CopyOnWriteArraySet<>(huIds);
+			huIdsHolder = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huIds));
 		}
 		else
 		{
