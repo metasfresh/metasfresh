@@ -22,7 +22,7 @@ Here come the actual release notes:
   * [#1474](https://github.com/metasfresh/metasfresh/issues/1474) New Window Handling Unit Packing Instruction in WebUI
     * Creates a new Packing Instruction window in WebUI.
   * [#1475](https://github.com/metasfresh/metasfresh/issues/1475) New Window for Handling Unit Packing Instruction Item in WebUI
-    * Creates a new Window in WebUI to allow Packing Instruction Versions to be maintained. 
+    * Creates a new Window in WebUI to allow Packing Instruction Versions to be maintained.
   * [#1485](https://github.com/metasfresh/metasfresh/issues/1485) New Window Distribution Order in WebUI
     * Adding the Distribution Order window to WebUI.
   * [#1489](https://github.com/metasfresh/metasfresh/issues/1489) Disable/delete legacy Cockpit window
@@ -47,13 +47,39 @@ Here come the actual release notes:
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
   * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
   * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
-  * [#1561(https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
+  * [#1561](https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
     * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
- 
+
+* metasfresh-webui-api
+  * [#388](https://github.com/metasfresh/metasfresh-webui-api/issues/388) grid view: select "ALL" support
+  * [#390](https://github.com/metasfresh/metasfresh-webui-api/issues/390) Change advanced edit layout
+
+* metasfresh-webui-frontend
+  * [#738](https://github.com/metasfresh/metasfresh-webui-frontend/issues/738) Use Key in long drop down list
+  * [#739](https://github.com/metasfresh/metasfresh-webui-frontend/issues/739) When included view is displayed add an alpha layer over the main view
+  * [#740](https://github.com/metasfresh/metasfresh-webui-frontend/issues/740) When filtering a view please use the newly introduced "/documentView/{windowId}/{viewId}/filter" endpoint
+  * [#742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/742) Filter singleOverlayField support
+  * [#752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/752) Select-all-filtered option in general
+
 ## Fixes
 
 * metasfresh-backend
   * [#1515](https://github.com/metasfresh/metasfresh/issues/1515) Project "de.metas.material.dispo" shall not be part of Swing client
+  * [#1516](https://github.com/metasfresh/metasfresh/issues/1516) HU Transform - split out some TUs from LU does not work correctly with custom LUs
+
+* metasfresh-webui-api
+  * [#302](https://github.com/metasfresh/metasfresh-webui-api/issues/302) jasper processes default values not taken
+  * [#381](https://github.com/metasfresh/metasfresh-webui-api/issues/381) ZoomInto shall consider AD_Ref_List.AD_Reference_ID if any
+  * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/380) readonly permission in webui
+  * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/382) menu is not updating when you change permission
+  * [#386](https://github.com/metasfresh/metasfresh-webui-api/issues/386) Purchase Order from Sales Order Parms not initially filled in WebUI
+  * [#375](https://github.com/metasfresh/metasfresh-webui-api/issues/375) Adding Role for User w/o Org_access restricts access totally
+  * [#389](https://github.com/metasfresh/metasfresh-webui-api/issues/389) Zoom-Into error for subtab orderline
+
+* metasfresh-webui-frontend
+  * [#749](https://github.com/metasfresh/metasfresh-webui-frontend/issues/749) singleOverlayField: pressing ESC shall close the popup
+  * [#751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/751) Initial Setup Wizard does not open after switching language
+  * [#755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/755) mandatory numeric field is underlined with blue, even if it's set
 
 # metasfresh 5.9 (2017-19)
 
@@ -130,7 +156,7 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1179](https://github.com/metasfresh/metasfresh/issues/1179) Process logs are not displayed in Swing
     * Fixes an exception of processe which create process logs in swing client.
-    
+
 * metasfresh-webui-api
   * [#255](https://github.com/metasfresh/metasfresh-webui-api/issues/255) Document fields: when receiving empty string values from frontend, convert them to nulls
     * Converting empty string values to null for document fields.
