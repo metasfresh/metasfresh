@@ -15,7 +15,8 @@ class RawChart extends Component {
 
         this.state = {
             chartData: [],
-            intervalId: null
+            intervalId: null,
+            err: null
         }
     }
 
@@ -26,21 +27,23 @@ class RawChart extends Component {
             return getTargetIndicatorsData(id)()
                 .then(response => {
                     return response.data.datasets[0].values
-                });
+                }).catch(err => {throw err});
         }
 
         return getKPIData(id)()
             .then(response => {
                 return response.data.datasets[0].values
             })
-            .catch(()=>{});
+            .catch(err => {throw err});
     }
 
     fetchData(){
         this.getData()
             .then(chartData => {
-                this.setState({ chartData });
-            });
+                this.setState({ chartData: chartData, err: null });
+            }).catch(err => {
+                this.setState({ err })
+            })
     }
 
     componentDidMount(){
@@ -135,13 +138,13 @@ class RawChart extends Component {
     }
 
     render(){
-        const {chartData} = this.state;
+        const {chartData, err} = this.state;
 
-        if(chartData){
-            return chartData.length > 0 && this.renderChart();
-        } else {
-            return this.renderError();
-        }
+        return err ?
+            this.renderError() :
+            (chartData && chartData.length > 0 ?
+                this.renderChart() : <div>No data</div>)
+
     }
 }
 
