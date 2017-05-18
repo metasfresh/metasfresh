@@ -449,7 +449,7 @@ class DocumentList extends Component {
         const {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
-            includedView, children, isIncluded, disablePaginationShortcuts,
+            includedView, isIncluded, disablePaginationShortcuts,
             notfound, disconnectFromState, autofocus, selectedWindowType
         } = this.props;
 
@@ -476,7 +476,8 @@ class DocumentList extends Component {
                                 {layout.supportNewRecord && !isModal &&
                                     <button
                                         className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
-                                        onClick={() => this.redirectToNewDocument()}
+                                        onClick={() =>
+                                            this.redirectToNewDocument()}
                                         title={layout.newRecordCaption}
                                     >
                                         <i className="meta-icon-add" />
@@ -519,7 +520,8 @@ class DocumentList extends Component {
                                 readonly={true}
                                 keyProperty="id"
                                 onDoubleClick={(id) =>
-                                        !isIncluded && this.redirectToDocument(id)}
+                                        !isIncluded &&
+                                            this.redirectToDocument(id)}
                                 size={data.size}
                                 pageLength={this.pageLength}
                                 handleChangePage={this.handleChangePage}
@@ -536,7 +538,8 @@ class DocumentList extends Component {
                                 doesSelectionExist={this.doesSelectionExist}
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
-                                    disablePaginationShortcuts, isModal, hasIncluded
+                                    disablePaginationShortcuts, isModal,
+                                    hasIncluded
                                 }}
                             >
                                 {layout.supportAttributes && !isIncluded &&

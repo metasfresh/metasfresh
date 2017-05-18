@@ -131,7 +131,8 @@ class DocList extends Component {
                                  processStatus={processStatus}
                                  includedView={includedView}
                                  inBackground={
-                                     includedView.windowType && includedView.viewId
+                                     includedView.windowType &&
+                                        includedView.viewId
                                  }
                              >
                              </DocumentList>
