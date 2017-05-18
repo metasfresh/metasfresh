@@ -24,7 +24,8 @@ import java.awt.Graphics;
 import javax.swing.border.AbstractBorder;
 
 import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.util.Language;
+
+import de.metas.i18n.Language;
 
 /**
  *  Horizontal Line with Text

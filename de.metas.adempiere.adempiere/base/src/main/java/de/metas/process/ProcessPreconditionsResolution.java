@@ -44,26 +44,28 @@ public final class ProcessPreconditionsResolution
 		return REJECTED_UnknownReason;
 	}
 
-	public static final ProcessPreconditionsResolution reject(final String reason)
+	public static final ProcessPreconditionsResolution reject(final String reasonStr)
 	{
-		if (Check.isEmpty(reason, true))
+		if (Check.isEmpty(reasonStr, true))
 		{
 			return REJECTED_UnknownReason;
 		}
 
 		final boolean accepted = false;
+		final ITranslatableString reason = ImmutableTranslatableString.constant(reasonStr);
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
 
-	public static final ProcessPreconditionsResolution rejectWithInternalReason(final String reason)
+	public static final ProcessPreconditionsResolution rejectWithInternalReason(final String reasonStr)
 	{
-		if (Check.isEmpty(reason, true))
+		if (Check.isEmpty(reasonStr, true))
 		{
 			return REJECTED_UnknownReason;
 		}
 
 		final boolean accepted = false;
+		final ITranslatableString reason = ImmutableTranslatableString.constant(reasonStr);
 		final boolean internal = true;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -71,7 +73,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNoSelection()
 	{
 		final boolean accepted = false;
-		final String reason = "no rows selected"; // TODO: trl
+		final ITranslatableString reason = ImmutableTranslatableString.constant("no rows selected"); // TODO: trl
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -79,7 +81,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
 	{
 		final boolean accepted = false;
-		final String reason = "only one row shall be selected"; // TODO: trl
+		final ITranslatableString reason = ImmutableTranslatableString.constant("only one row shall be selected"); // TODO: trl
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -104,11 +106,11 @@ public final class ProcessPreconditionsResolution
 	private static final ProcessPreconditionsResolution REJECTED_UnknownReason = new ProcessPreconditionsResolution(false, null, true);
 
 	private final boolean accepted;
-	private final String reason;
+	private final ITranslatableString reason;
 	private final boolean internal;
 	private final ITranslatableString captionOverride;
 
-	private ProcessPreconditionsResolution(final boolean accepted, final String reason, final boolean internal)
+	private ProcessPreconditionsResolution(final boolean accepted, final ITranslatableString reason, final boolean internal)
 	{
 		this.accepted = accepted;
 		this.reason = reason;
@@ -145,14 +147,14 @@ public final class ProcessPreconditionsResolution
 		return !accepted;
 	}
 
-	public String getReason()
+	public ITranslatableString getRejectReason()
 	{
-		return reason;
-	}
-
-	public String getRejectReason()
-	{
-		return !accepted ? reason : null;
+		if(accepted)
+		{
+			return ImmutableTranslatableString.empty();
+		}
+		
+		return reason != null ? reason : ImmutableTranslatableString.empty();
 	}
 
 	public boolean isInternal()
@@ -173,7 +175,7 @@ public final class ProcessPreconditionsResolution
 	public static final class Builder
 	{
 		private Boolean accepted;
-		private String reason;
+		private ITranslatableString reason;
 		private ITranslatableString captionOverride;
 
 		private Builder()
@@ -192,18 +194,18 @@ public final class ProcessPreconditionsResolution
 			return new ProcessPreconditionsResolution(this);
 		}
 
-		public ProcessPreconditionsResolution.Builder accept()
+		public ProcessPreconditionsResolution accept()
 		{
 			accepted = Boolean.TRUE;
 			reason = null;
-			return this;
+			return build();
 		}
 
-		public ProcessPreconditionsResolution.Builder reject(final String reason)
+		public ProcessPreconditionsResolution reject(final String reason)
 		{
 			accepted = Boolean.FALSE;
-			this.reason = reason;
-			return this;
+			this.reason = ImmutableTranslatableString.constant(reason);
+			return build();
 		}
 
 		private boolean isAccepted()
@@ -212,7 +214,7 @@ public final class ProcessPreconditionsResolution
 			return accepted.booleanValue();
 		}
 
-		private String getReason()
+		private ITranslatableString getReason()
 		{
 			return reason;
 		}

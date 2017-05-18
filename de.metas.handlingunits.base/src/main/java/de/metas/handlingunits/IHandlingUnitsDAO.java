@@ -340,9 +340,19 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	/**
 	 * Create or return a <b>HU</b> item. Other item types generally exist already, or should not exist.
+	 * 
 	 * @param hu
 	 * @param piItem
 	 * @return a pair of the item that was created or retrieved on the left and a boolean that is {@code true} if the item was created and {@code false} if it was retrieved.
 	 */
 	IPair<I_M_HU_Item, Boolean> createHUItemIfNotExists(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	/**
+	 * Retrieve the aggregated item of the given HU if it has one.
+	 * 
+	 * @param hu
+	 * @param piItem
+	 * @return the aggregated item or null.
+	 */
+	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
 }

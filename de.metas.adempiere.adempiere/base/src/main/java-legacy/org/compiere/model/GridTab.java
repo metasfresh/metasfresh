@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.swing.event.EventListenerList;
 
@@ -49,6 +50,7 @@ import org.adempiere.ad.expression.exceptions.ExpressionException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlerRetryRequestException;
 import org.adempiere.ad.persistence.po.NoDataFoundHandlers;
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -68,6 +70,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.StateChangeEvent.StateChangeEventType;
@@ -87,6 +90,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
@@ -230,7 +234,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	/** Chats */
 	private HashMap<Integer, Integer> m_Chats = null;
 	/** Locks */
-	private ArrayList<Integer> m_Lock = null;
+	private final ExtendedMemorizingSupplier<Set<Integer>> lockedRecordIdsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveLockedRecordIds());
 
 	/** Current Row */
 	private int m_currentRow = -1;
@@ -1690,6 +1694,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		Env.setContext(ctx, m_vo.getWindowNo(), m_vo.getTabNo(), CTX_KeyColumnName, keyColumnName);
 
 		attachmentsMap.setKeyColumnName(keyColumnName);
+		lockedRecordIdsSupplier.forget();
 	}
 
 	/**
@@ -2556,59 +2561,25 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 	}	// getCM_ChatID
 
-	/**************************************************************************
-	 * Load Locks for Table and User
-	 */
-	public void loadLocks()
+	/** Retrieve locked recordIds for current user */
+	private Set<Integer> retrieveLockedRecordIds()
 	{
-		final int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
-		log.debug("loadLocks: {}, AD_User_ID={}", this, AD_User_ID);
 		if (!canHaveAttachment())
 		{
-			return;
+			return ImmutableSet.of();
 		}
-
-		final String sql = "SELECT Record_ID "
-				+ "FROM AD_Private_Access "
-				+ "WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive='Y' "
-				+ "ORDER BY Record_ID";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			if (m_Lock == null)
-			{
-				m_Lock = new ArrayList<>();
-			}
-			else
-			{
-				m_Lock.clear();
-			}
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			pstmt.setInt(1, AD_User_ID);
-			pstmt.setInt(2, m_vo.AD_Table_ID);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final Integer key = new Integer(rs.getInt(1));
-				m_Lock.add(key);
-			}
-		}
-		catch (final SQLException e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-		log.debug("#" + m_Lock.size());
-	}	// loadLooks
+		
+		final int adUserId = Env.getAD_User_ID(Env.getCtx());
+		return Services.get(IUserRolePermissionsDAO.class).retrievePrivateAccessRecordIds(adUserId, getAD_Table_ID());
+	}
+	
+	private Set<Integer> getLockedRecordIds()
+	{
+		return lockedRecordIdsSupplier.get();
+	}
 
 	/**
-	 * Record Is Locked
-	 *
-	 * @return true if locked
+	 * @return true if the record is locked
 	 */
 	public boolean isLocked()
 	{
@@ -2616,41 +2587,34 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		{
 			return false;
 		}
-		if (m_Lock == null)
-		{
-			loadLocks();
-		}
-		if (m_Lock == null || m_Lock.isEmpty())
-		{
-			return false;
-		}
-		//
-		final Integer key = new Integer(m_mTable.getKeyID(m_currentRow));
-		return m_Lock.contains(key);
+		
+		return getLockedRecordIds().contains(getRecord_ID());
 	}	// isLocked
 
 	/**
 	 * Lock Record
 	 *
 	 * @param ctx context
-	 * @param Record_ID id
+	 * @param recordId id
 	 * @param lock true if lock, otherwise unlock
 	 */
-	public void lock(final Properties ctx, final int Record_ID, final boolean lock)
+	public void lock(final int recordId, final boolean lock)
 	{
-		final int AD_User_ID = Env.getContextAsInt(ctx, "#AD_User_ID");
-		log.debug("Lock=" + lock + ", AD_User_ID=" + AD_User_ID
-				+ ", AD_Table_ID=" + m_vo.AD_Table_ID + ", Record_ID=" + Record_ID);
-		MPrivateAccess access = MPrivateAccess.get(ctx, AD_User_ID, m_vo.AD_Table_ID, Record_ID);
-		if (access == null)
+		final int adUserId = Env.getAD_User_ID(Env.getCtx());
+		final int adTableId = getAD_Table_ID();
+		
+		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		if(lock)
 		{
-			access = new MPrivateAccess(ctx, AD_User_ID, m_vo.AD_Table_ID, Record_ID);
+			permissionsDAO.createPrivateAccess(adUserId, adTableId, recordId);
 		}
-		access.setIsActive(lock);
-		access.save();
-		//
-		loadLocks();
-	}	// lock
+		else
+		{
+			permissionsDAO.deletePrivateAccess(adUserId, adTableId, recordId);
+		}
+		
+		lockedRecordIdsSupplier.forget();
+	}
 
 	/**************************************************************************
 	 * Data Status Listener from MTable.
@@ -4238,7 +4202,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			return ConstantQueryFilter.of(false);
 		}
 
-		final IQueryFilter<T> gridTabFilter = new TypedSqlQueryFilter<>(sqlWhereClause);
+		final IQueryFilter<T> gridTabFilter = TypedSqlQueryFilter.of(sqlWhereClause);
 		return gridTabFilter;
 	}
 	// metas: end
@@ -4431,6 +4395,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this).addValue(gridTab).toString();
+		}
+		
+		@Override
+		public int getAD_Window_ID()
+		{
+			return gridTab.getAD_Window_ID();
 		}
 
 		@Override

@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
@@ -53,7 +54,6 @@ import org.compiere.model.MOrg;
 import org.compiere.model.MOrgInfo;
 import org.compiere.model.MTable;
 import org.compiere.model.MUser;
-import org.compiere.model.MUserRoles;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.model.X_AD_WF_Activity;
@@ -1163,14 +1163,10 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 					}
 					else if (resp.isRole())
 					{
-						MUserRoles[] urs = MUserRoles.getOfRole(getCtx(), resp.getAD_Role_ID());
-						for (int i = 0; i < urs.length; i++)
+						final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(resp.getAD_Role_ID());
+						if(allRoleUserIds.contains(m_process.getAD_User_ID()))
 						{
-							if (urs[i].getAD_User_ID() == m_process.getAD_User_ID())
-							{
-								autoApproval = true;
-								break;
-							}
+							autoApproval = true;
 						}
 					}
 					else if (resp.isOrganization())

@@ -149,10 +149,10 @@ public class LookupDAO implements ILookupDAO
 		private final boolean translated;
 		private final String whereClause;
 		private final String orderByClause;
-		private final int zoomWindow;
-		private final int zoomWindowPO;
+		private final int zoomSO_Window_ID;
+		private final int zoomPO_Window_ID;
 		private final String displayColumnSQL;
-		private final int overrideZoomWindow;
+		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 
 		private TableRefInfo(final TableRefInfoBuilder builder)
@@ -206,9 +206,9 @@ public class LookupDAO implements ILookupDAO
 				orderByClause = null;
 			}
 
-			zoomWindow = builder.zoomWindow <= 0 ? -1 : builder.zoomWindow;
-			zoomWindowPO = builder.zoomWindowPO <= 0 ? -1 : builder.zoomWindowPO;
-			overrideZoomWindow = builder.overrideZoomWindow <= 0 ? -1 : builder.overrideZoomWindow;
+			zoomSO_Window_ID = builder.zoomSO_Window_ID <= 0 ? -1 : builder.zoomSO_Window_ID;
+			zoomPO_Window_ID = builder.zoomPO_Window_ID <= 0 ? -1 : builder.zoomPO_Window_ID;
+			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override <= 0 ? -1 : builder.zoomAD_Window_ID_Override;
 
 			autoComplete = builder.autoComplete;
 		}
@@ -227,9 +227,9 @@ public class LookupDAO implements ILookupDAO
 					.add("whereClause", whereClause)
 					.add("orderByClause", orderByClause)
 					.add("translated", translated)
-					.add("zoomWindow", zoomWindow)
-					.add("zoomWindowPO", zoomWindowPO)
-					.add("overrideZoomWindow", overrideZoomWindow)
+					.add("zoomWindow", zoomSO_Window_ID)
+					.add("zoomWindowPO", zoomPO_Window_ID)
+					.add("overrideZoomWindow", zoomAD_Window_ID_Override)
 					.add("autoComplete", autoComplete)
 					.toString();
 		}
@@ -246,9 +246,9 @@ public class LookupDAO implements ILookupDAO
 					.append(whereClause)
 					.append(orderByClause)
 					.append(translated)
-					.append(zoomWindow)
-					.append(zoomWindowPO)
-					.append(overrideZoomWindow)
+					.append(zoomSO_Window_ID)
+					.append(zoomPO_Window_ID)
+					.append(zoomAD_Window_ID_Override)
 					.append(autoComplete)
 					.toHashcode();
 		}
@@ -276,9 +276,9 @@ public class LookupDAO implements ILookupDAO
 					.append(whereClause, other.whereClause)
 					.append(orderByClause, other.orderByClause)
 					.append(translated, other.translated)
-					.append(zoomWindow, other.zoomWindow)
-					.append(zoomWindowPO, other.zoomWindowPO)
-					.append(overrideZoomWindow, other.overrideZoomWindow)
+					.append(zoomSO_Window_ID, other.zoomSO_Window_ID)
+					.append(zoomPO_Window_ID, other.zoomPO_Window_ID)
+					.append(zoomAD_Window_ID_Override, other.zoomAD_Window_ID_Override)
 					.append(autoComplete, other.autoComplete)
 					.isEqual();
 		}
@@ -332,28 +332,29 @@ public class LookupDAO implements ILookupDAO
 		}
 
 		@Override
-		public int getZoomWindow()
+		public int getZoomSO_Window_ID()
 		{
-			return zoomWindow;
+			return zoomSO_Window_ID;
 		}
 
 		@Override
-		public int getZoomWindowPO()
+		public int getZoomPO_Window_ID()
 		{
-			return zoomWindowPO;
+			return zoomPO_Window_ID;
 		}
 
+		@Override
+		public int getZoomAD_Window_ID_Override()
+		{
+			return zoomAD_Window_ID_Override;
+		}
+		
 		@Override
 		public String getDisplayColumnSQL()
 		{
 			return displayColumnSQL;
 		}
 
-		@Override
-		public int getOverrideZoomWindow()
-		{
-			return overrideZoomWindow;
-		}
 
 		@Override
 		public boolean isAutoComplete()
@@ -382,9 +383,9 @@ public class LookupDAO implements ILookupDAO
 		private boolean translated = false;
 		private String whereClause = null;
 		private String orderByClause = null;
-		private int zoomWindow = -1;
-		private int zoomWindowPO = -1;
-		private int overrideZoomWindow = -1;
+		private int zoomSO_Window_ID = -1;
+		private int zoomPO_Window_ID = -1;
+		private int zoomAD_Window_ID_Override = -1;
 		private boolean autoComplete = true;
 
 		private TableRefInfoBuilder()
@@ -445,15 +446,21 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		public TableRefInfoBuilder setZoomWindow(final int zoomWindow)
+		public TableRefInfoBuilder setZoomSO_Window_ID(final int zoomPO_Window_ID)
 		{
-			this.zoomWindow = zoomWindow;
+			this.zoomSO_Window_ID = zoomPO_Window_ID;
 			return this;
 		}
 
-		public TableRefInfoBuilder setZoomWindowPO(final int zoomWindowPO)
+		public TableRefInfoBuilder setZoomPO_Window_ID(final int zoomPO_Window_ID)
 		{
-			this.zoomWindowPO = zoomWindowPO;
+			this.zoomPO_Window_ID = zoomPO_Window_ID;
+			return this;
+		}
+		
+		public TableRefInfoBuilder setZoomAD_Window_ID_Override(final int zoomAD_Window_ID_Override)
+		{
+			this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
 			return this;
 		}
 
@@ -463,11 +470,6 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-		public TableRefInfoBuilder setOverrideZoomWindow(final int overrideZoomWindow)
-		{
-			this.overrideZoomWindow = overrideZoomWindow;
-			return this;
-		}
 
 		public TableRefInfoBuilder setAutoComplete(final boolean autoComplete)
 		{
@@ -640,11 +642,11 @@ public class LookupDAO implements ILookupDAO
 				final boolean IsTranslated = "Y".equals(rs.getString(5));
 				final String WhereClause = rs.getString(6);
 				final String OrderByClause = rs.getString(7);
-				final int ZoomWindow = rs.getInt(8);
-				final int ZoomWindowPO = rs.getInt(9);
+				final int zoomSO_Window_ID = rs.getInt(8);
+				final int zoomPO_Window_ID = rs.getInt(9);
 				// AD_Table_ID = rs.getInt(10);
 				final String displayColumnSQL = rs.getString(11);
-				final int overrideZoomWindow = rs.getInt(12);
+				final int zoomAD_Window_ID_Override = rs.getInt(12);
 				final boolean autoComplete = "Y".equals(rs.getString(13));
 				final String referenceName = rs.getString(14);
 
@@ -658,9 +660,9 @@ public class LookupDAO implements ILookupDAO
 						.setTranslated(IsTranslated)
 						.setWhereClause(WhereClause)
 						.setOrderByClause(OrderByClause)
-						.setZoomWindow(ZoomWindow)
-						.setZoomWindowPO(ZoomWindowPO)
-						.setOverrideZoomWindow(overrideZoomWindow)
+						.setZoomSO_Window_ID(zoomSO_Window_ID)
+						.setZoomPO_Window_ID(zoomPO_Window_ID)
+						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
 						.build();
 			}
@@ -854,7 +856,7 @@ public class LookupDAO implements ILookupDAO
 				final LookupDisplayColumn ldc = new LookupDisplayColumn(
 						rs.getString(1) // columnName
 						, rs.getString(7) // ColumnSQL
-						, "Y".equals(rs.getString(2)) // isTranslated
+						, DisplayType.toBoolean(rs.getString(2)) // isTranslated
 						, rs.getInt(3) // AD_Reference_ID
 						, rs.getInt(4) // AD_Reference_Value_ID
 						, rs.getString(8) // FormatPattern

@@ -234,7 +234,7 @@ import org.compiere.model.IQuery;
 			// Case: Pure SQL Filter
 			else if (filter instanceof ISqlQueryFilter)
 			{
-				final ISqlQueryFilter sqlFilter = (ISqlQueryFilter)filter;
+				final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter);
 				sqlFilters = Collections.singletonList(sqlFilter);
 				nonSqlFilters = null;
 			}

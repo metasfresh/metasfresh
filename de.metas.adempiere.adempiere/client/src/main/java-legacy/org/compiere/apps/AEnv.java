@@ -678,6 +678,29 @@ public final class AEnv
 	}
 
 	/**
+	 * Zoom into a given window based on a query
+	 * 
+	 * @param query
+	 * @param adWindowId
+	 */
+	public static void zoom(final MQuery query, final int adWindowId)
+	{
+		if (query == null || query.getTableName() == null || query.getTableName().length() == 0)
+		{
+			return;
+		}
+
+		if (adWindowId <= 0)
+		{
+			log.warn("No AD_Window_ID found for ID {}", adWindowId);
+			return;
+		}
+		
+		zoom(RecordZoomWindowFinder.newInstance(query, adWindowId));
+
+	}
+
+	/**
 	 * Track open frame in window manager
 	 *
 	 * @param frame
@@ -914,8 +937,14 @@ public final class AEnv
 		if (mWindowVO == null)
 		{
 			log.info("create local");
-			final boolean loadAllLanguages = false;
-			mWindowVO = GridWindowVO.create(Env.getCtx(), WindowNo, AD_Window_ID, AD_Menu_ID, loadAllLanguages);
+			mWindowVO = GridWindowVO.builder()
+					.ctx(Env.getCtx())
+					.windowNo(WindowNo)
+					.adWindowId(AD_Window_ID)
+					.adMenuId(AD_Menu_ID)
+					.loadAllLanguages(false)
+					.applyRolePermissions(true)
+					.build();
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(AD_Window_ID, mWindowVO);
 		}   	// from Client
@@ -1232,4 +1261,5 @@ public final class AEnv
 			return null;
 		}
 	}
+
 }	// AEnv

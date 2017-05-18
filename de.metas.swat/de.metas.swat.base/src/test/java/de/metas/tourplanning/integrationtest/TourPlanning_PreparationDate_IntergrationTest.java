@@ -74,7 +74,7 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 				"08.09.2014 23:59:59.999" // date promised
 				);
 		Assert.assertEquals("Invalid order PreparationDate: " + order,
-				toDateTimeTimestamp("07.09.2014 15:00:00.000"),
+				toDateTimeTimestamp("08.09.2014 15:00:00.000"),
 				order.getPreparationDate());
 
 		//
@@ -84,13 +84,13 @@ public class TourPlanning_PreparationDate_IntergrationTest extends TourPlanningT
 				toDateTimeTimestamp("08.09.2014 23:59:59.999"),
 				shipmentSchedule.getDeliveryDate());
 		Assert.assertEquals("Invalid shipment schedule's PreparationDate: " + shipmentSchedule,
-				toDateTimeTimestamp("07.09.2014 15:00:00.000"),
+				toDateTimeTimestamp("08.09.2014 15:00:00.000"),
 				shipmentSchedule.getPreparationDate());
 
 		assertDeliveryDayAlloc(dd2, shipmentSchedule);
 	}
 
-	private I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
+	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours)
 	{
 		final I_M_DeliveryDay deliveryDay = InterfaceWrapperHelper.newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setC_BPartner(bpartner);

@@ -13,11 +13,11 @@ package de.metas.inoutcandidate.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,6 +39,8 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.base.MoreObjects;
+
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -54,6 +56,22 @@ import de.metas.product.IProductBL;
  */
 public final class HUPackingMaterialDocumentLineCandidate
 {
+	/**
+	 * Creates a packing material line for given locator, empties product and empties count.
+	 * 
+	 * @param locator on which locator the empties are
+	 * @param emptiesProduct empties product (e.g. IFCO)
+	 * @param emptiesCount how many empties we have (e.g. 5 IFCOs)
+	 * @return packing material line
+	 */
+	public static final HUPackingMaterialDocumentLineCandidate of(final I_M_Locator locator, final I_M_Product emptiesProduct, final int emptiesCount)
+	{
+		final I_M_Material_Tracking materialTracking = null; // N/A, not needed
+		final HUPackingMaterialDocumentLineCandidate candidate = new HUPackingMaterialDocumentLineCandidate(emptiesProduct, materialTracking, locator);
+		candidate.addQty(emptiesCount);
+		return candidate;
+	}
+
 	public static Comparator<HUPackingMaterialDocumentLineCandidate> comparatorFromProductIds(final Comparator<Integer> productIdsComparator)
 	{
 		if (NullComparator.isNull(productIdsComparator))
@@ -105,19 +123,14 @@ public final class HUPackingMaterialDocumentLineCandidate
 	@Override
 	public String toString()
 	{
-		final StringBuilder builder = new StringBuilder();
-		builder.append("HUPackingMaterialDocumentLineCandidate [product=");
-		builder.append(product);
-		builder.append(", uom=");
-		builder.append(uom);
-		builder.append(", qty=");
-		builder.append(qty);
-		builder.append(", locator=");
-		builder.append(locator);
-		builder.append(", materialTracking=");
-		builder.append(materialTracking);
-		builder.append("]");
-		return builder.toString();
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("product", product)
+				.add("uom", uom)
+				.add("qty", qty)
+				.add("locator", locator)
+				.add("materialTracking", materialTracking)
+				.toString();
 	}
 
 	/**
@@ -180,7 +193,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 
 	protected void subtractQty(final int qtyToSubtract)
 	{
-		qty = qty.add(BigDecimal.valueOf(qtyToSubtract));
+		qty = qty.subtract(BigDecimal.valueOf(qtyToSubtract));
 	}
 
 	/**

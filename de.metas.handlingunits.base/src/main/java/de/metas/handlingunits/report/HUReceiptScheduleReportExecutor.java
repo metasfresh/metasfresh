@@ -12,11 +12,11 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.report.IJasperService;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import com.google.common.base.Preconditions;
 
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.i18n.Language;
 import de.metas.process.ProcessInfo;
 
 /*
@@ -144,6 +144,7 @@ public class HUReceiptScheduleReportExecutor
 				//
 				// Execute report in a new AD_PInstance
 				.buildAndPrepareExecution()
+				.onErrorThrowException()
 				.executeSync();
 	}
 }

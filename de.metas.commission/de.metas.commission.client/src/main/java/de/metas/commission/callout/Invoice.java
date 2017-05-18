@@ -52,11 +52,11 @@ import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Ini;
-import org.compiere.util.Msg;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.commission.util.CommissionConstants;
 import de.metas.document.IDocumentPA;
+import de.metas.i18n.Msg;
 
 /**
  * Shipper Transportation Callout

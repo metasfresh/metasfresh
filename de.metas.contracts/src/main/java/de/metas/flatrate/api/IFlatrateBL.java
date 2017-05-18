@@ -189,4 +189,21 @@ public interface IFlatrateBL extends ISingletonService
 	 * @param term
 	 */
 	void voidIt(I_C_Flatrate_Term term);
+
+	/**
+	 * Check if there are terms for the same that have a time period overlapping with the given term and match with the same product or product category.
+	 * 
+	 * 
+	 * @param term
+	 * @return
+	 */
+	boolean hasOverlappingTerms(final I_C_Flatrate_Term term);
+
+	/**
+	 * Complete the given flatrate term only if it respects some conditions:
+	 * 1) Has not already completed overlapping terms (until now this is the only condition. Implement here if more become needed)
+	 * 
+	 * @param term
+	 */
+	void completeIfValid(I_C_Flatrate_Term term);
 }

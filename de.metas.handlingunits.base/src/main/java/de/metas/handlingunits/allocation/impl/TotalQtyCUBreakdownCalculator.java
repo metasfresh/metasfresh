@@ -28,7 +28,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.lang.EqualsBuilder;
@@ -36,6 +35,7 @@ import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.ObjectUtils;
 
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys.LUQtysBuilder;
+import de.metas.quantity.Quantity;
 
 /**
  * {@link LUQtys} calculator which starts from a given total CUs quantity and exposes methods from subtracting that quantity by one LU.

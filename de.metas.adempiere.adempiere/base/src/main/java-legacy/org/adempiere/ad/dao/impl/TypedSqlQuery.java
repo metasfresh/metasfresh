@@ -650,9 +650,16 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		final List<AT> result = new ArrayList<>();
 
-		final StringBuilder sqlSelect = new StringBuilder("SELECT ").append(sqlFunction).append("(")
-				.append(sqlExpression).append(")")
-				.append(" FROM ").append(getSqlFrom());
+		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
+		if(sqlFunction == null)
+		{
+			sqlSelect.append(sqlExpression);
+		}
+		else
+		{
+			sqlSelect.append(sqlFunction).append("(").append(sqlExpression).append(")");
+		}
+		sqlSelect.append(" FROM ").append(getSqlFrom());
 
 		final String sql = buildSQL(sqlSelect, false);
 		PreparedStatement pstmt = null;
@@ -692,6 +699,18 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	public final <AT> List<AT> listDistinct(final String columnName, final Class<AT> valueType)
 	{
 		return aggregateList(columnName, AGGREGATE_DISTINCT, valueType);
+	}
+	
+	@Override
+	public <AT> AT first(final String columnName, final Class<AT> valueType)
+	{
+		setLimit(1, 0);
+		final List<AT> result = aggregateList(columnName, null, valueType);
+		if(result == null || result.isEmpty())
+		{
+			return null;
+		}
+		return result.get(0);
 	}
 
 	@Override
@@ -1301,7 +1320,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql);
+			throw new DBException(e, sql, getParametersEffective());
 		}
 		finally
 		{

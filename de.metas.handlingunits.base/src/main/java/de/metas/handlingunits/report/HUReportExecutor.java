@@ -13,14 +13,13 @@ import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table_Process;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.Language;
 import de.metas.process.ProcessInfo;
 
 /*
@@ -103,12 +102,11 @@ public class HUReportExecutor
 	/**
 	 * Prepares everything and creates a trx-listener to run the report after the current trx is committed (or right now, if there is no currently open trx).
 	 * 
-	 * @param process the (jasper-)process to be executed
+	 * @param adProcessId the (jasper-)process to be executed
 	 * @param husToProcess the HUs to be processed/shown in the report. These HUs' IDs are added to the {@code T_Select} table and can be accessed by the jasper file.
 	 * @param printCopies number of copies. "1" means one printout
 	 */
-	public void executeHUReportAfterCommit(final I_AD_Process process,
-			final List<I_M_HU> husToProcess)
+	public void executeHUReportAfterCommit(final int adProcessId, final List<I_M_HU> husToProcess)
 	{
 		//
 		// Collect HU's C_BPartner_IDs and M_HU_IDs
@@ -169,6 +167,7 @@ public class HUReportExecutor
 								commitWasDone = true;
 							}
 
+							@Override
 							public void afterClose(final ITrx trx)
 							{
 								if (!commitWasDone)
@@ -177,7 +176,7 @@ public class HUReportExecutor
 								}
 								ProcessInfo.builder()
 										.setCtx(ctx)
-										.setAD_Process(process)
+										.setAD_Process_ID(adProcessId)
 										.setWindowNo(windowNo)
 										.setTableName(I_M_HU.Table_Name)
 										.setReportLanguage(reportLanguage)

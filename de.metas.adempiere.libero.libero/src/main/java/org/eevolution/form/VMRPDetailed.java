@@ -132,12 +132,10 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.compiere.util.ValueNamePair;
-import org.eevolution.api.IProductPlanningDAO;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Order;
@@ -150,11 +148,11 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.eevolution.mrp.api.IMRPNoteBL;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.process.IProcessExecutionListener;
-import de.metas.logging.LogManager;
 
 /**
  * Info MRP
@@ -1405,7 +1403,7 @@ public class VMRPDetailed
 			pp = new MPPProductPlanning(getCtx(), 0, ITrx.TRXNAME_None);
 		}
 
-		final String orderPolicyName = adReferenceDAO.retriveListName(getCtx(), X_PP_Product_Planning.ORDER_POLICY_AD_Reference_ID, pp.getOrder_Policy());
+		final String orderPolicyName = adReferenceDAO.retrieveListNameTrl(X_PP_Product_Planning.ORDER_POLICY_AD_Reference_ID, pp.getOrder_Policy());
 
 		fIsMRP.setSelected(pp.isMPS());
 		fIsRequiredMRP.setSelected(pp.isRequiredMRP());

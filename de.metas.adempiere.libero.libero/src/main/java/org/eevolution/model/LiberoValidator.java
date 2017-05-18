@@ -10,18 +10,17 @@ package org.eevolution.model;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
@@ -29,17 +28,24 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.eevolution.event.MaterialDocumentListener;
 import org.eevolution.mrp.jmx.JMXMRPStatus;
+
+import de.metas.material.event.MaterialEventService;
 
 /**
  * Libero Validator
  *
  * @author Victor Perez
- * @author Trifon Trifonov <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
+ * @author Trifon Trifonov
+ *         <li>[ 2270421 ] Can not complete Shipment (Customer)</li>
  * @author Teo Sarca, www.arhipac.ro
  */
 public final class LiberoValidator extends AbstractModuleInterceptor
@@ -65,6 +71,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 
 		// PP_Order related
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.PP_OrderFireMaterialEvent(), client); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOM(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_BOMLine(), client);
 		engine.addModelValidator(new org.eevolution.model.validator.PP_Order_Node_Product(), client);
@@ -73,6 +80,7 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		//
 		// DRP
 		engine.addModelValidator(new org.eevolution.model.validator.DD_Order(), client);
+		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent(), client); // gh #523
 		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine(), client);
 		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement(), client);
 
@@ -84,9 +92,9 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 		// Register MRP model validators
 		// NOTE: keep this as the last model validators to register
 		// NOTE2: from task 09944 we decided to register the MRP main interceptor from AD_ModelValidator, to be able to disable it.
-		//engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
+		// engine.addModelValidator(org.eevolution.model.validator.MRPInterceptor.instance, client);
 	}
-	
+
 	@Override
 	protected void registerCallouts(IProgramaticCalloutProvider calloutsRegistry)
 	{
@@ -113,5 +121,29 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		Env.setContext(Env.getCtx(), CTX_IsLiberoEnabled, true);
+	}
+
+	@Override
+	protected void onAfterInit()
+	{
+		if(Adempiere.isUnitTestMode())
+		{
+			// for the time being, this stuff does not belong with unit tests!
+			// feel free to revise
+			return;
+		}
+
+		// add ourselves to the eventbus so that we can fire events on PP_Order docActions
+		final MaterialEventService materialEventService = Adempiere.getBean(MaterialEventService.class);
+		materialEventService.subscribeToEventBus();
+
+		if (Ini.getRunMode() != RunMode.BACKEND)
+		{
+			return; // event based material planning can only run in the backend as of now
+		}
+
+		// register ourselves as listeners so we can respond to requests from the disposition framework
+		final MaterialDocumentListener materialDocumentListener = Adempiere.getBean(MaterialDocumentListener.class);
+		materialEventService.registerListener(materialDocumentListener);
 	}
 }	// LiberoValidator

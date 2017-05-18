@@ -26,11 +26,11 @@ package de.metas.edi.sscc18;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Supplier;

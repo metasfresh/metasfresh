@@ -49,13 +49,13 @@ import org.compiere.model.I_AD_PInstance_Para;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessExecutionResult;
@@ -302,7 +302,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		// Check which type of Parameter we have, and if the instPara value differs from the piPara value
 		// apply the piPara Value to the instPara value and save. If not, do nothing.
 
-		if (value instanceof java.util.Date
+		if(value == null && valueTo == null)
+		{
+			hasChanges = true;
+		}
+		else if (value instanceof java.util.Date
 				&& (!value.equals(adPInstanceParam.getP_Date()) || !Objects.equals(valueTo, adPInstanceParam.getP_Date_To())) // value changed
 		)
 		{
@@ -368,7 +372,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
-				+ "ORDER BY Log_ID";
+				// Order chronologically
+				// note: sometimes Log_ID=0, sometimes P_Date is null so we sort by both to make sure we will have a chronologically order.
+				+ "ORDER BY Log_ID, P_Date";
 		final Object[] sqlParams = new Object[] { adPInstanceId };
 
 		PreparedStatement pstmt = null;
@@ -382,8 +388,11 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			final List<ProcessInfoLog> logs = new ArrayList<>();
 			while (rs.next())
 			{
-				// int Log_ID, int P_ID, Timestamp P_Date, BigDecimal P_Number, String P_Msg
-				final ProcessInfoLog log = new ProcessInfoLog(rs.getInt(1), rs.getTimestamp(3), rs.getBigDecimal(4), rs.getString(5));
+				final int logId = rs.getInt(1);
+				final Timestamp date = rs.getTimestamp(2);
+				final BigDecimal number = rs.getBigDecimal(3);
+				final String message = rs.getString(4);
+				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message);
 				log.markAsSavedInDB();
 				logs.add(log);
 			}

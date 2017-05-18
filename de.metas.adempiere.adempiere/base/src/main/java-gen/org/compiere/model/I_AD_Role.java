@@ -1179,8 +1179,35 @@ public interface I_AD_Role
     public static final String COLUMNNAME_PreferenceType = "PreferenceType";
 
 	/**
+	 * Set Root menu node.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setRoot_Menu_ID (int Root_Menu_ID);
+
+	/**
+	 * Get Root menu node.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getRoot_Menu_ID();
+
+	public org.compiere.model.I_AD_Menu getRoot_Menu();
+
+	public void setRoot_Menu(org.compiere.model.I_AD_Menu Root_Menu);
+
+    /** Column definition for Root_Menu_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Menu> COLUMN_Root_Menu_ID = new org.adempiere.model.ModelColumn<I_AD_Role, org.compiere.model.I_AD_Menu>(I_AD_Role.class, "Root_Menu_ID", org.compiere.model.I_AD_Menu.class);
+    /** Column name Root_Menu_ID */
+    public static final String COLUMNNAME_Root_Menu_ID = "Root_Menu_ID";
+
+	/**
 	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
+	 * Zur Bestimmung der Reihenfolge der EintrÃ¤ge;
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer
@@ -1191,7 +1218,7 @@ public interface I_AD_Role
 
 	/**
 	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
+	 * Zur Bestimmung der Reihenfolge der EintrÃ¤ge;
  die kleinste Zahl kommt zuerst
 	 *
 	 * <br>Type: Integer

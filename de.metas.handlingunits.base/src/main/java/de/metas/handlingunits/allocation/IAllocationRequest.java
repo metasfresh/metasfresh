@@ -26,12 +26,12 @@ package de.metas.handlingunits.allocation;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.quantity.Quantity;
 
 /**
  * Allocation Request described what we need to allocate/deallocate. Implementors are immutable. In stead of modifying it (split, create partial requests etc), use {@link IAllocationRequestBuilder} to

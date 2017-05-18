@@ -37,7 +37,6 @@ import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
-import org.adempiere.ad.language.ILanguageDAO;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -59,7 +58,6 @@ import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MRole;
 import org.compiere.model.MSequence;
 import org.compiere.model.MSystem;
 import org.compiere.model.POInfo;
@@ -67,6 +65,7 @@ import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
 import org.slf4j.Logger;
 
+import de.metas.i18n.ILanguageDAO;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IADPInstanceDAO;
@@ -153,28 +152,13 @@ public final class DB
 
 		// Role update
 		log.info("After migration: running role access update for all roles");
-		String sql = "SELECT * FROM AD_Role";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				final MRole role = new MRole(ctx, rs, null);
-				Services.get(IUserRolePermissionsDAO.class).updateAccessRecords(role);
-			}
+			Services.get(IUserRolePermissionsDAO.class).updateAccessRecordsForAllRoles();
 		}
-		catch (Exception e)
+		catch (Exception ex)
 		{
-			log.error("Role access update failed. Ignored.", e);
-		}
-		finally
-		{
-			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+			log.error("Role access update failed. Ignored.", ex);
 		}
 
 		// Release Specif stuff & Print Format
@@ -190,7 +174,7 @@ public final class DB
 
 		// Language check
 		log.info("After migration: Language maintainance");
-		Services.get(ILanguageDAO.class).addAllMissingTranslations(ctx);
+		Services.get(ILanguageDAO.class).addAllMissingTranslations();
 
 		// Sequence check
 		log.info("After migration: Sequence check");
@@ -463,7 +447,7 @@ public final class DB
 		final CConnection s_cc = getCConnection();
 		if (s_cc != null)
 			return s_cc.getDatabase();
-		log.error("No Database Connection");
+		log.error("No Database Connection (getDatabase). Returning null.");
 		return null;
 	}   // getDatabase
 
@@ -480,7 +464,7 @@ public final class DB
 		{
 			return true;
 		}
-		log.error("No Database");
+		log.error("No Database (isPostgreSQL). Returning false.");
 		return false;
 	}
 
@@ -932,6 +916,10 @@ public final class DB
 				// conn.commit();
 			}
 		}
+		catch(final DBException ex)
+		{
+			throw ex;
+		}
 		catch (final Exception ex)
 		{
 			Exception sqlException = DBException.extractSQLExceptionOrNull(ex);
@@ -985,14 +973,14 @@ public final class DB
 			}
 			else if (onFail == OnFail.ThrowException)
 			{
-				throw DBException.wrapIfNeeded(sqlException)
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
 			}
 			// Unknown OnFail option
 			// => throw the exception
 			else
 			{
-				throw DBException.wrapIfNeeded(sqlException)
+				throw DBException.wrapIfNeeded(sqlException != null ? sqlException : ex)
 						.setSqlIfAbsent(sql, params);
 			}
 		}

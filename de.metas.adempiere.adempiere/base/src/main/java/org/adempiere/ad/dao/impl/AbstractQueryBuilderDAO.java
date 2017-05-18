@@ -136,7 +136,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		}
 		else if (filter instanceof ISqlQueryFilter)
 		{
-			sqlFilters = (ISqlQueryFilter)filter;
+			sqlFilters = ISqlQueryFilter.cast(filter);
 			nonSqlFilters = null;
 		}
 		else

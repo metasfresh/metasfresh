@@ -26,20 +26,19 @@ package de.metas.handlingunits.storage.impl;
 import java.math.BigDecimal;
 
 import org.adempiere.uom.api.IUOMConversionBL;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
+import de.metas.quantity.Quantity;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IStatefulHUCapacityDefinition;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.logging.LogManager;
 
 public abstract class AbstractProductStorage implements IProductStorage
 {
@@ -83,6 +82,8 @@ public abstract class AbstractProductStorage implements IProductStorage
 		return _considerForceQtyAllocationFromRequest;
 	}
 
+	/** NOTE: this flag was introduced for backward compatibility (support those storages which does not support considering ForceQtyAllocation) */
+	@Deprecated
 	protected final void setConsiderForceQtyAllocationFromRequest(final boolean considerForceQtyAllocationFromRequest)
 	{
 		_considerForceQtyAllocationFromRequest = considerForceQtyAllocationFromRequest;

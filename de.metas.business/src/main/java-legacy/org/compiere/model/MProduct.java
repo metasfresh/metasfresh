@@ -30,7 +30,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 
 /**
  * Product Model
@@ -100,36 +99,6 @@ public class MProduct extends X_M_Product
 		Query q = new Query(ctx, Table_Name, whereClause, trxName);
 		q.setParameters(new Object[] { Env.getAD_Client_ID(ctx), upc });
 		return (q.list());
-	}
-
-	/**
-	 * Get Product from Cache
-	 *
-	 * @param ctx context
-	 * @param S_Resource_ID resource ID
-	 * @return MProduct or null if not found
-	 * @deprecated Please use {@link IProductDAO#retrieveForResourceId(Properties, int, String)}
-	 */
-	@Deprecated
-	public static MProduct forS_Resource_ID(Properties ctx, int S_Resource_ID)
-	{
-		return forS_Resource_ID(ctx, S_Resource_ID, null);
-	}
-
-	/**
-	 * Get Product from Cache
-	 *
-	 * @param ctx context
-	 * @param S_Resource_ID resource ID
-	 * @param trxName
-	 * @return MProduct or null if not found
-	 * @deprecated Please use {@link IProductDAO#retrieveForResourceId(Properties, int, String)}
-	 */
-	@Deprecated
-	public static MProduct forS_Resource_ID(Properties ctx, int S_Resource_ID, String trxName)
-	{
-		final I_M_Product product = Services.get(IProductDAO.class).retrieveForResourceId(ctx, S_Resource_ID, trxName);
-		return LegacyAdapters.convertToPO(product);
 	}
 
 	/**
@@ -221,20 +190,20 @@ public class MProduct extends X_M_Product
 		setExpenseType(et);
 	}	// MProduct
 
-	/**
-	 * Parent Constructor
-	 *
-	 * @param resource parent
-	 * @param resourceType resource type
-	 */
-	public MProduct(MResource resource, MResourceType resourceType)
-	{
-		this(resource.getCtx(), 0, resource.get_TrxName());
-		setAD_Org_ID(resource.getAD_Org_ID());
-		setProductType(X_M_Product.PRODUCTTYPE_Resource);
-		setResource(resource);
-		setResource(resourceType);
-	}	// MProduct
+//	/**
+//	 * Parent Constructor
+//	 *
+//	 * @param resource parent
+//	 * @param resourceType resource type
+//	 */
+//	public MProduct(MResource resource, MResourceType resourceType)
+//	{
+//		this(resource.getCtx(), 0, resource.get_TrxName());
+//		setAD_Org_ID(resource.getAD_Org_ID());
+//		setProductType(X_M_Product.PRODUCTTYPE_Resource);
+//		setResource(resource);
+//		setResource(resourceType);
+//	}	// MProduct
 
 	/**
 	 * Import Constructor
@@ -322,82 +291,6 @@ public class MProduct extends X_M_Product
 		return changed;
 	}	// setExpenseType
 
-	/**
-	 * Set Resource
-	 *
-	 * @param parent resource
-	 * @return true if changed
-	 */
-	public boolean setResource(MResource parent)
-	{
-		boolean changed = false;
-		if (!PRODUCTTYPE_Resource.equals(getProductType()))
-		{
-			setProductType(PRODUCTTYPE_Resource);
-			changed = true;
-		}
-		if (parent.getS_Resource_ID() != getS_Resource_ID())
-		{
-			setS_Resource_ID(parent.getS_Resource_ID());
-			changed = true;
-		}
-		if (parent.isActive() != isActive())
-		{
-			setIsActive(parent.isActive());
-			changed = true;
-		}
-		//
-		if (!parent.getValue().equals(getValue()))
-		{
-			setValue(parent.getValue());
-			changed = true;
-		}
-		if (!parent.getName().equals(getName()))
-		{
-			setName(parent.getName());
-			changed = true;
-		}
-		if ((parent.getDescription() == null && getDescription() != null)
-				|| (parent.getDescription() != null && !parent.getDescription().equals(getDescription())))
-		{
-			setDescription(parent.getDescription());
-			changed = true;
-		}
-		//
-		return changed;
-	}	// setResource
-
-	/**
-	 * Set Resource Type
-	 *
-	 * @param parent resource type
-	 * @return true if changed
-	 */
-	public boolean setResource(MResourceType parent)
-	{
-		boolean changed = false;
-		if (PRODUCTTYPE_Resource.equals(getProductType()))
-		{
-			setProductType(PRODUCTTYPE_Resource);
-			changed = true;
-		}
-		//
-		if (parent.getC_UOM_ID() != getC_UOM_ID())
-		{
-			setC_UOM_ID(parent.getC_UOM_ID());
-			changed = true;
-		}
-		if (parent.getM_Product_Category_ID() != getM_Product_Category_ID())
-		{
-			setM_Product_Category_ID(parent.getM_Product_Category_ID());
-			changed = true;
-		}
-
-		//
-		// metas 05129 end
-		return changed;
-	}	// setResource
-
 	/** UOM Precision */
 	private Integer m_precision = null;
 
@@ -483,30 +376,6 @@ public class MProduct extends X_M_Product
 		MAssetGroup ag = MAssetGroup.get(getCtx(), pc.getA_Asset_Group_ID());
 		return ag.isOneAssetPerUOM();
 	}	// isOneAssetPerUOM
-
-	/**
-	 * Product is Item
-	 *
-	 * @return true if item
-	 * @deprecated please use {@link IProductBL#isItem(I_M_Product)}
-	 */
-	@Deprecated
-	public boolean isItem()
-	{
-		return Services.get(IProductBL.class).isItem(this);
-	}	// isItem
-
-	/**
-	 * Is Service
-	 *
-	 * @return true if service (resource, online)
-	 * @deprecated Please use {@link IProductBL#isService(I_M_Product)}
-	 */
-	@Deprecated
-	public boolean isService()
-	{
-		return Services.get(IProductBL.class).isService(this);
-	}	// isService
 
 	/**
 	 * Get UOM Symbol

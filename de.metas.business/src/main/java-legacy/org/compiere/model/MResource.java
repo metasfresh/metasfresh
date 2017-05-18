@@ -88,7 +88,6 @@ public class MResource extends X_S_Resource
 	/** Cached Resource Type	*/
 	private MResourceType	m_resourceType = null;
 	/** Cached Product			*/
-	private MProduct		m_product = null;
 	
 	
 	/**
@@ -106,39 +105,10 @@ public class MResource extends X_S_Resource
 		}
 		return m_resourceType;
 	}	//	getResourceType
-	
-	/**
-	 * 	Get Product (use cache)
-	 *	@return product
-	 */
-	public MProduct getProduct()
-	{
-		if (m_product == null)
-		{
-			m_product = MProduct.forS_Resource_ID(getCtx(), getS_Resource_ID(), get_TrxName());
-		}
-		else
-		{
-			m_product.set_TrxName(get_TrxName());
-		}
-		return m_product;
-	}	//	getProduct
-	
-	public int getC_UOM_ID()
-	{
-		return getProduct().getC_UOM_ID();
-	}
-	
+
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
-		if (newRecord)
-		{
-			if (getValue() == null || getValue().length() == 0)
-				setValue(getName());
-			m_product = new MProduct(this, getResourceType());
-			m_product.saveEx(get_TrxName());
-		}
 		//
 		// Validate Manufacturing Resource
 		if (isManufacturingResource()
@@ -150,31 +120,6 @@ public class MResource extends X_S_Resource
 		return true;
 	}	//	beforeSave
 
-	@Override
-	protected boolean afterSave (boolean newRecord, boolean success)
-	{
-		if (!success)
-			return success;
-			
-		MProduct prod = getProduct();
-		if (prod.setResource(this))
-			prod.saveEx(get_TrxName());
-		
-		return success;
-	}	//	afterSave
-	
-	@Override
-	protected boolean beforeDelete()
-	{
-		// Delete product
-		MProduct product = getProduct();
-		if (product != null && product.getM_Product_ID() > 0)
-		{
-			product.setS_Resource_ID(0); // unlink resource
-			product.deleteEx(true);
-		}
-		return true;
-	}
 
 	@Override
 	public String toString()

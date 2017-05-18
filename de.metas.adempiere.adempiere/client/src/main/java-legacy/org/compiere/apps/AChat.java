@@ -22,6 +22,8 @@ import java.awt.Frame;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JSplitPane;
@@ -35,7 +37,6 @@ import org.compiere.swing.CTextPane;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 /**
  * 	Application Chat

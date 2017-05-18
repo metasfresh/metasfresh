@@ -1,93 +1,30 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 import java.util.List;
-import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBOMBL;
-import org.eevolution.model.I_PP_Cost_Collector;
+import org.compiere.util.Env;
+import org.eevolution.model.X_PP_Order;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMultimap;
+
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderIssueProducer;
-import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 
 public class HUPPOrderBL implements IHUPPOrderBL
 {
-	@Override
-	public List<I_M_HU> createReceiptHandlingUnits(final I_PP_Cost_Collector cc)
-	{
-		final IPPOrderReceiptHUProducer producer = createReceiptHUProducer(cc);
-		final List<I_M_HU> createdHUs = producer.createHUs();
-		return createdHUs;
-	}
-
-	private IPPOrderReceiptHUProducer createReceiptHUProducer(final I_PP_Cost_Collector cc)
-	{
-		assertMaterialReceipt(cc);
-
-		final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-		final org.eevolution.model.I_PP_Order_BOMLine ppOrderBOMLine = cc.getPP_Order_BOMLine();
-
-		//
-		// Case: we are receiving co/by-products from a BOM Order Line
-		if (ppOrderBOMLine != null && ppOrderBOMBL.isReceipt(ppOrderBOMLine))
-		{
-			return new CoProductReceiptHUProducer(cc);
-		}
-		//
-		// Case: we are receiving finished goods from a BOM Order Line
-		else
-		{
-			Check.assume(cc.getPP_Order_BOMLine_ID() <= 0, "No Order BOM Line shall be set to cost collector when receiving finished goods: {}", cc);
-			return new FinishedGoodsReceiptHUProducer(cc);
-		}
-	}
-
-	private final void assertMaterialReceipt(final I_PP_Cost_Collector cc)
-	{
-		Check.assumeNotNull(cc, "cc not null");
-		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
-		if (!ppCostCollectorBL.isMaterialReceipt(cc))
-		{
-			throw new HUException("Cost collector shall be of type Receipt"
-					+ "\n @PP_Cost_Collector_ID@: " + cc
-					+ "\n @CostCollectorType@: " + cc.getCostCollectorType());
-		}
-	}
-
 	@Override
 	public IDocumentLUTUConfigurationManager createReceiptLUTUConfigurationManager(final org.eevolution.model.I_PP_Order ppOrder)
 	{
@@ -114,8 +51,80 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public IHUPPOrderIssueProducer createIssueProducer(final Properties ctx)
+	public IHUPPOrderIssueProducer createIssueProducer()
 	{
-		return new HUPPOrderIssueProducer(ctx);
+		return new HUPPOrderIssueProducer();
+	}
+
+	@Override
+	public List<Integer> retrieveHUsAvailableToIssue(final int productId)
+	{
+		return Services.get(IHandlingUnitsDAO.class)
+				.createHUQueryBuilder()
+				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				//
+				// TODO add warehouse filter
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.addOnlyWithProductId(productId)
+				.setOnlyTopLevelHUs()
+				.onlyNotLocked()
+				//
+				.createQuery()
+				.listIds();
+	}
+	
+	private static final ImmutableMultimap<String, String> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<String, String>builder()
+			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Review)
+			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Complete)
+			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Planning)
+			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Complete)
+			.put(X_PP_Order.PLANNINGSTATUS_Complete, X_PP_Order.PLANNINGSTATUS_Planning) // mainly for testing
+			.build();
+
+	@Override
+	public boolean canChangePlanningStatus(final String fromPlanningStatus, final String toPlanningStatus)
+	{
+		return fromPlanningStatus2toPlanningStatusAllowed.get(fromPlanningStatus).contains(toPlanningStatus);
+	}
+
+	@Override
+	public void processPlanning(String targetPlanningStatus, int ppOrderId)
+	{
+		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		
+		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
+		final String planningStatus = ppOrder.getPlanningStatus();
+		if (Objects.equal(planningStatus, targetPlanningStatus))
+		{
+			throw new IllegalStateException("Already " + targetPlanningStatus);
+		}
+		if(!canChangePlanningStatus(planningStatus, targetPlanningStatus))
+		{
+			throw new IllegalStateException("Cannot chagen planning status from "+planningStatus+" to "+targetPlanningStatus);
+		}
+
+		if (X_PP_Order.PLANNINGSTATUS_Planning.equals(targetPlanningStatus))
+		{
+			// nothing
+		}
+		else if (X_PP_Order.PLANNINGSTATUS_Review.equals(targetPlanningStatus))
+		{
+			// nothing
+		}
+		else if (X_PP_Order.PLANNINGSTATUS_Complete.equals(targetPlanningStatus))
+		{
+			HUPPOrderIssueReceiptCandidatesProcessor.newInstance()
+					.setCandidatesToProcessByPPOrderId(ppOrderId)
+					.process();
+		}
+		else
+		{
+			throw new IllegalArgumentException("Unknown target planning status: " + targetPlanningStatus);
+		}
+
+		//
+		// Update ppOrder's planning status
+		ppOrder.setPlanningStatus(targetPlanningStatus);
+		InterfaceWrapperHelper.save(ppOrder);
 	}
 }

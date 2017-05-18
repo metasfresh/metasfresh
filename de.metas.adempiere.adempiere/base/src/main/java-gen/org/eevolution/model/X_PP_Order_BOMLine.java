@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
@@ -32,7 +16,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1637707177L;
+	private static final long serialVersionUID = 1648371520L;
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (Properties ctx, int PP_Order_BOMLine_ID, String trxName)
@@ -51,19 +35,19 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 			setPP_Order_ID (0);
 			setProcessed (false);
 // N
-			setQtyBatch (Env.ZERO);
-			setQtyBeforeClose (Env.ZERO);
+			setQtyBatch (BigDecimal.ZERO);
+			setQtyBeforeClose (BigDecimal.ZERO);
 // 0
-			setQtyBOM (Env.ZERO);
-			setQtyDelivered (Env.ZERO);
-			setQtyDeliveredActual (Env.ZERO);
+			setQtyBOM (BigDecimal.ZERO);
+			setQtyDelivered (BigDecimal.ZERO);
+			setQtyDeliveredActual (BigDecimal.ZERO);
 // 0
-			setQtyPost (Env.ZERO);
-			setQtyReject (Env.ZERO);
-			setQtyRequiered (Env.ZERO);
-			setQtyReserved (Env.ZERO);
-			setQtyScrap (Env.ZERO);
-			setQtyUsageVariance (Env.ZERO);
+			setQtyPost (BigDecimal.ZERO);
+			setQtyReject (BigDecimal.ZERO);
+			setQtyRequiered (BigDecimal.ZERO);
+			setQtyReserved (BigDecimal.ZERO);
+			setQtyScrap (BigDecimal.ZERO);
+			setQtyUsageVariance (BigDecimal.ZERO);
 // 0
 			setValidFrom (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
@@ -104,7 +88,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -140,7 +124,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Assay);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -319,7 +303,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Forecast);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -483,9 +467,9 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -496,8 +480,8 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Product Attribute Set Instance
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -746,6 +730,43 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 		return ii.intValue();
 	}
 
+	@Override
+	public org.eevolution.model.I_PP_Product_BOMLine getPP_Product_BOMLine() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class);
+	}
+
+	@Override
+	public void setPP_Product_BOMLine(org.eevolution.model.I_PP_Product_BOMLine PP_Product_BOMLine)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_BOMLine_ID, org.eevolution.model.I_PP_Product_BOMLine.class, PP_Product_BOMLine);
+	}
+
+	/** Set BOM Line.
+		@param PP_Product_BOMLine_ID 
+		BOM Line
+	  */
+	@Override
+	public void setPP_Product_BOMLine_ID (int PP_Product_BOMLine_ID)
+	{
+		if (PP_Product_BOMLine_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMLine_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Product_BOMLine_ID, Integer.valueOf(PP_Product_BOMLine_ID));
+	}
+
+	/** Get BOM Line.
+		@return BOM Line
+	  */
+	@Override
+	public int getPP_Product_BOMLine_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_BOMLine_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -790,7 +811,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBatch);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -809,7 +830,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBeforeClose);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -831,7 +852,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyBOM);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -853,7 +874,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDelivered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -875,7 +896,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyDeliveredActual);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -897,7 +918,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -916,7 +937,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPost);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -935,7 +956,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReject);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -954,7 +975,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyRequiered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -976,7 +997,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -998,7 +1019,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyScrap);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1017,7 +1038,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyUsageVariance);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1039,7 +1060,7 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Scrap);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

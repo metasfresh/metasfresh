@@ -187,7 +187,7 @@ public class MRGroupProspect extends X_R_Group_Prospect
 		if (!isLocked())
 			return true;
 
-		Timestamp dateExpire = TimeUtil.addMinutess(getLockedDate(), LOCK_EXPIRE_MIN);
+		Timestamp dateExpire = TimeUtil.addMinutes(getLockedDate(), LOCK_EXPIRE_MIN);
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		return dateExpire.before(now);
 	}

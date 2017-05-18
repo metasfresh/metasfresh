@@ -26,6 +26,8 @@ import java.util.GregorianCalendar;
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
+import lombok.NonNull;
+
 /**
  * Time Utilities
  *
@@ -456,7 +458,7 @@ public class TimeUtil
 	 * @param end end date
 	 * @return number of days (0 = same)
 	 */
-	static public int getDaysBetween(Date start, Date end)
+	static public int getDaysBetween(@NonNull Date start, @NonNull Date end)
 	{
 		boolean negative = false;
 		if (end.before(start))
@@ -467,13 +469,14 @@ public class TimeUtil
 			end = temp;
 		}
 		//
-		GregorianCalendar cal = new GregorianCalendar();
+		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(start);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
-		GregorianCalendar calEnd = new GregorianCalendar();
+
+		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTime(end);
 		calEnd.set(Calendar.HOUR_OF_DAY, 0);
 		calEnd.set(Calendar.MINUTE, 0);
@@ -594,7 +597,7 @@ public class TimeUtil
 	 * 
 	 * @param day Day
 	 * @param offset day offset
-	 * @return Day + offset at 00:00
+	 * @return day + offset at 00:00
 	 */
 	static public Timestamp addDays(Date day, final int offset)
 	{
@@ -620,24 +623,54 @@ public class TimeUtil
 	}	// addDays
 
 	/**
+	 * Similar to {@link #addDays(Date, int)}, but the given {@code day} may not be {@code null},
+	 * and the return value has the same hours, minutes, records and milliseconds as the given day (i.e. it's not 00:00).
+	 * 
+	 * @param day
+	 * @param offset day offset
+	 * @return day + offset
+	 */
+	static public Timestamp addDaysExact(@NonNull final Date day, final int offset)
+	{
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(day);
+		cal.add(Calendar.DAY_OF_YEAR, offset);
+		return new Timestamp(cal.getTimeInMillis());
+	}
+
+	/**
 	 * Return DateTime + offset in minutes
 	 * 
 	 * @param dateTime Date and Time
 	 * @param offset minute offset
-	 * @return dateTime + offset in minutes
+	 * @return dateTime + offset in minutes; never returns {@code null}
 	 */
-	static public Timestamp addMinutess(Timestamp dateTime, int offset)
+	public static Date addMinutes(final Date dateTime, final int offset)
 	{
-		if (dateTime == null)
-			dateTime = new Timestamp(System.currentTimeMillis());
+		final Date dateTimeToUse = dateTime == null ? SystemTime.asDate() : dateTime;
+
 		if (offset == 0)
-			return dateTime;
-		//
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTime(dateTime);
+		{
+			return dateTimeToUse;
+		}
+
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(dateTimeToUse);
 		cal.add(Calendar.MINUTE, offset);			// may have a problem with negative
-		return new Timestamp(cal.getTimeInMillis());
-	}	// addMinutes
+		return new Date(cal.getTimeInMillis());
+	}
+
+	/**
+	 * Like {@link #addMinutes(Date, int)}, but takes and returns a {@link Timestamp} and not a {@link Date}.
+	 * 
+	 * @param dateTime
+	 * @param offset
+	 * @return
+	 */
+	public static Timestamp addMinutes(final Timestamp dateTime, final int offset)
+	{
+		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
+	}
 
 	/**
 	 * Return DateTime + offset in hours

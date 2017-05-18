@@ -50,6 +50,7 @@ import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.ICalendarDAO;
 import de.metas.contracts.subscription.ISubscriptionBL;
@@ -57,6 +58,7 @@ import de.metas.document.IDocumentPA;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.api.IFlatrateDAO;
 import de.metas.flatrate.api.IFlatrateHandlersService;
+import de.metas.flatrate.api.impl.FlatrateBL;
 import de.metas.flatrate.interfaces.I_C_DocType;
 import de.metas.flatrate.interfaces.I_C_OLCand;
 import de.metas.flatrate.model.I_C_Contract_Term_Alloc;
@@ -67,6 +69,7 @@ import de.metas.flatrate.model.X_C_Flatrate_Conditions;
 import de.metas.flatrate.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
 
 @Validator(I_C_Flatrate_Term.class)
@@ -78,6 +81,9 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
+
+
+	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	@Init
 	public void initialize(final IModelValidationEngine engine)
@@ -105,8 +111,8 @@ public class C_Flatrate_Term
 			// otherwise both the lookup of existing DocTypes and the creation of new doc types
 			// (MDocType.setGL_Category_ID() ) will fail.
 			final Properties localCtx = Env.deriveCtx(Env.getCtx());
-			Env.setContext(localCtx, "#AD_Client_ID", org.getAD_Client_ID());
-			Env.setContext(localCtx, "#AD_Org_ID", org.getAD_Org_ID());
+			Env.setContext(localCtx, Env.CTXNAME_AD_Client_ID, org.getAD_Client_ID());
+			Env.setContext(localCtx, Env.CTXNAME_AD_Org_ID, org.getAD_Org_ID());
 
 			if (null != documentPA.retrieve(localCtx, org.getAD_Org_ID(), I_C_DocType.DocBaseType_CustomerContract, docSubType, false, null))
 			{
@@ -114,9 +120,8 @@ public class C_Flatrate_Term
 			}
 
 			final POInfo docTypePOInfo = POInfo.getPOInfo(localCtx, I_C_DocType.Table_Name);
-			final String name =
-							Services.get(IADReferenceDAO.class).retrieveListNameTrl(localCtx, docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
-							+ " (" + org.getValue() + ")";
+			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+					+ " (" + org.getValue() + ")";
 			final org.compiere.model.I_C_DocType newType = documentPA.createDocType(localCtx, "de.metas.flatrate",
 					name,
 					name,
@@ -246,8 +251,7 @@ public class C_Flatrate_Term
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final String trxName = InterfaceWrapperHelper.getTrxName(term);
 
-		final List<I_C_Flatrate_Term> predecessorTerms =
-				new Query(ctx, I_C_Flatrate_Term.Table_Name, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID + "=?", trxName)
+		final List<I_C_Flatrate_Term> predecessorTerms = new Query(ctx, I_C_Flatrate_Term.Table_Name, I_C_Flatrate_Term.COLUMNNAME_C_FlatrateTerm_Next_ID + "=?", trxName)
 				.setParameters(term.getC_Flatrate_Term_ID())
 				.setOrderBy(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID)
 				.list(I_C_Flatrate_Term.class);
@@ -284,9 +288,7 @@ public class C_Flatrate_Term
 		}
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
 	public void updatePricingSystem(final I_C_Flatrate_Term term)
 	{
 		if (term.getC_Flatrate_Conditions_ID() > 0)
@@ -471,10 +473,28 @@ public class C_Flatrate_Term
 				.beforeFlatrateTermReactivate(term);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID)
 	public void copyFromConditions(final I_C_Flatrate_Term term)
 	{
 		Services.get(IFlatrateBL.class).updateFromConditions(term);
+	}
+
+	/**
+	 * task #1169
+	 * In case the term to be completed overlaps with other term regarding time period and product the user must be announced about this and the new term shall not be completed
+	 * 
+	 * @param term
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE})
+	public void preventOverlappingTerms_OnComplete(final I_C_Flatrate_Term term)
+	{
+		// services
+		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+
+		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
+		if (hasOverlappingTerms)
+		{
+			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() });
+		}
 	}
 }

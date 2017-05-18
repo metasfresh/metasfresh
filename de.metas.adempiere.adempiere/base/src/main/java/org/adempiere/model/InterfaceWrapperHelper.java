@@ -163,14 +163,27 @@ public class InterfaceWrapperHelper
 	/**
 	 * Convenient method to create a new instance of given class, using current context and current transaction.
 	 *
-	 * @param cl
+	 * @param modelClass
 	 */
-	public static <T> T newInstance(final Class<T> cl)
+	public static <T> T newInstance(final Class<T> modelClass)
 	{
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		return create(ctx, cl, trxName);
+		return create(ctx, modelClass, trxName);
 	}
+	
+	/**
+	 * Convenient method to create a new instance of given class, using current context and no transaction.
+	 *
+	 * @param modelClass
+	 */
+	public static <T> T newInstanceOutOfTrx(final Class<T> modelClass)
+	{
+		final Properties ctx = Env.getCtx();
+		final String trxName = ITrx.TRXNAME_None;
+		return create(ctx, modelClass, trxName);
+	}
+
 
 	/**
 	 * This method is heavily used throughout metasfresh and allows us to do the following things:
@@ -194,7 +207,7 @@ public class InterfaceWrapperHelper
 	 *
 	 * @param model the underlying {@link PO}, {@link GridTab} or POJO for which we need an instance of <code>cl</code>
 	 * @param cl the interface we need an instance of
-	 * @return and instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
+	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
 	public static <T> T create(final Object model, final Class<T> cl)
 	{
@@ -310,6 +323,31 @@ public class InterfaceWrapperHelper
 		}
 		final T bean = POWrapper.create(ctx, tableName, id, cl, trxName);
 		return bean;
+	}
+
+	/**
+	 * Loads given model, out of transaction.
+	 * NOTE: to be used, mainly for loading master data models.
+	 *
+	 * @param id model's ID
+	 * @param modelClass
+	 * @return loaded model
+	 */
+	public static <T> T loadOutOfTrx(final int id, final Class<T> modelClass)
+	{
+		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Loads given model, using thread inherited transaction.
+	 *
+	 * @param id model's ID
+	 * @param modelClass
+	 * @return loaded model
+	 */
+	public static <T> T load(final int id, final Class<T> modelClass)
+	{
+		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -451,27 +489,11 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Set current thread inerited transaction name to given model.
-	 *
-	 * @param model
-	 */
-	public static void setThreadInheritedTrxName(final Object model)
-	{
-		final ITrxManager trxManager = getTrxManager();
-		String trxName = trxManager.getThreadInheritedTrxName();
-		if (trxName == null)
-		{
-			trxName = ITrx.TRXNAME_None;
-		}
-		setTrxName(model, trxName);
-	}
-
-	/**
 	 * Sets trxName to {@link ITrx#TRXNAME_ThreadInherited}.
 	 *
 	 * @param model
 	 */
-	public static void setThreadInheritedTrxNameMarker(final Object model)
+	public static void setThreadInheritedTrxName(final Object model)
 	{
 		setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -488,16 +510,9 @@ public class InterfaceWrapperHelper
 			return;
 		}
 
-		final ITrxManager trxManager = getTrxManager();
-		String trxName = trxManager.getThreadInheritedTrxName();
-		if (trxName == null)
-		{
-			trxName = ITrx.TRXNAME_None;
-		}
-
 		for (final Object model : models)
 		{
-			setTrxName(model, trxName);
+			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -768,7 +783,7 @@ public class InterfaceWrapperHelper
 	 * If the modelClass does not have a table name it will return <code>expectedTableName</code> if that's not null.
 	 * If the modelClass has a table name but it's not matching the expectedTableName (if not null) an exception will be thrown.
 	 * If the modelClass does not hava a table name and <code>expectedTableName</code> is null an exception will be thrown.
-	 * 
+	 *
 	 * @param modelClass
 	 * @param expectedTableName
 	 * @return model table name; never returns null

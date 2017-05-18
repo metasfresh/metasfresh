@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-09-07T13:30:05 -->
+<!-- 2017-03-23T17:18:29 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="07781559-9273-40dd-ab0a-726b6e29bd5a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -61,7 +61,7 @@
 		</band>
 		<band height="24">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean( $F{descriptionbottom} != null || ($R{showdetailsfooter}.equals( "Y" ) && $F{textcenter} !=null ))]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( ($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty()) || ($R{showdetailsfooter}.equals( "Y" ) && $F{textcenter} !=null && !$F{textcenter}.isEmpty() ))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>

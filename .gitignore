@@ -4,8 +4,12 @@
 **/.settings/
 *.cache
 *.diff
-*.project
-*.classpath
+**/.classpath
+**/.project
+
+**/activemq-data/
+**/data/
+**/log/
 
 de.metas.endcustomer.mf15/metasfresh.properties
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/log/
@@ -18,5 +22,7 @@ de.metas.endcustomer.mf15/metasfresh.properties
 
 /de.metas.elasticsearch/data/
 
-
-
+# https://github.com/metasfresh/metasfresh/pull/1520
+# ignore eclipse data folders. Also see http://stackoverflow.com/a/33783023/1012103
+.metadata/
+.recommenders/

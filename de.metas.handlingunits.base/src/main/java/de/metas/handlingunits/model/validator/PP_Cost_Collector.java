@@ -13,21 +13,20 @@ package de.metas.handlingunits.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,32 +38,26 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPCostCollectorBL;
 
-import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUContext;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.IHUContextProcessor;
-import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
-import de.metas.handlingunits.pporder.api.impl.PPOrderHUAssignmentListener;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 
 @Validator(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
 {
-
-	@Init
-	public void init()
-	{
-		Services.get(IHUAssignmentBL.class)
-				.registerHUAssignmentListener(PPOrderHUAssignmentListener.instance);
-	}
-
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseCostCollector(final I_PP_Cost_Collector cc)
 	{
@@ -138,64 +131,73 @@ public class PP_Cost_Collector
 		// Destroy assigned HUs
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(cc);
 		huTrxBL.createHUContextProcessorExecutor(context)
-				.run(new IHUContextProcessor()
-				{
-					@Override
-					public IMutableAllocationResult process(final IHUContext huContext)
+				.run(huContext -> {
+					final MutableBigDecimal huQtySum = new MutableBigDecimal();
+					for (final I_M_HU hu : hus)
 					{
-						final MutableBigDecimal huQtySum = new MutableBigDecimal();
-
-						for (final I_M_HU hu : hus)
+						// Make sure the HU is on the same locator where we received it
+						if (hu.getM_Locator_ID() != receiptLocator.getM_Locator_ID())
 						{
-							// Make sure the HU is on the same locator where we received it
-							if (hu.getM_Locator_ID() != receiptLocator.getM_Locator_ID())
+							throw new HUException("@NotMatched@ @M_Locator_ID@"
+									+ "\n @Expected@: " + receiptLocator
+									+ "\n @Actual@: " + hu.getM_Locator()
+									+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
+						}
+
+						//
+						// Sum up the quantity for our receipt product. We will check it at them end.
+						// Make sure the HUs does contain any other product then our receipt product.
+						final IHUStorage huStorage = huContext.getHUStorageFactory().getStorage(hu);
+						for (final IHUProductStorage productStorage : huStorage.getProductStorages())
+						{
+							// Skip ZERO quantity storages => those are not relevant
+							final BigDecimal qty = productStorage.getQty(receiptQtyUOM);
+							if (qty.signum() == 0)
 							{
-								throw new HUException("@NotMatched@ @M_Locator_ID@"
-										+ "\n @Expected@: " + receiptLocator
-										+ "\n @Actual@: " + hu.getM_Locator()
+								continue;
+							}
+
+							// Make sure we have HU stoarges only about our received product
+							if (productStorage.getM_Product().getM_Product_ID() != receiptProduct.getM_Product_ID())
+							{
+								throw new HUException("@NotMatched@ @M_M_Product_ID@"
+										+ "\n @Expected@: " + receiptProduct
+										+ "\n @Actual@: " + productStorage.getM_Product()
 										+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
 							}
 
-							//
-							// Sum up the quantity for our receipt product. We will check it at them end.
-							// Make sure the HUs does contain any other product then our receipt product.
-							final IHUStorage huStorage = huContext.getHUStorageFactory().getStorage(hu);
-							for (final IHUProductStorage productStorage : huStorage.getProductStorages())
-							{
-								// Skip ZERO quantity storages => those are not relevant
-								final BigDecimal qty = productStorage.getQty(receiptQtyUOM);
-								if (qty.signum() == 0)
-								{
-									continue;
-								}
-
-								// Make sure we have HU stoarges only about our received product
-								if (productStorage.getM_Product().getM_Product_ID() != receiptProduct.getM_Product_ID())
-								{
-									throw new HUException("@NotMatched@ @M_M_Product_ID@"
-											+ "\n @Expected@: " + receiptProduct
-											+ "\n @Actual@: " + productStorage.getM_Product()
-											+ "\n @M_HU_ID@: " + handlingUnitsBL.getDisplayName(hu));
-								}
-
-								// sum up the HU qty for our received product
-								huQtySum.add(qty);
-							}
-
-							handlingUnitsBL.markDestroyed(huContext, hu);
-						} // each HU
-
-						//
-						// Make sure the SUM of all HU storages for our product matches the receipt quantity of this cost collector
-						if (!huQtySum.comparesEqualTo(receiptQty))
-						{
-							throw new HUException("@NotMatched@ @Qty@"
-									+ "\n @Expected@: " + receiptQty
-									+ "\n @Actual@: " + huQtySum);
+							// sum up the HU qty for our received product
+							huQtySum.add(qty);
 						}
+					} // each HU
 
-						return NULL_RESULT;
+					//
+					// Make sure the SUM of all HU storages for our product matches the receipt quantity of this cost collector
+					if (!huQtySum.comparesEqualTo(receiptQty))
+					{
+						throw new HUException("@NotMatched@ @Qty@"
+								+ "\n @Expected@: " + receiptQty
+								+ "\n @Actual@: " + huQtySum);
 					}
+
+					// Destroy the HUs
+					for (final I_M_HU hu : hus)
+					{
+						handlingUnitsBL.markDestroyed(huContext, hu);
+					}
+				});
+
+		//
+		// Delete receipt candidates
+		final Set<Integer> huIds = hus.stream().map(I_M_HU::getM_HU_ID).collect(ImmutableSet.toImmutableSet());
+		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+		huPPOrderQtyDAO
+				.retrieveOrderQtys(cc.getPP_Order_ID())
+				.stream()
+				.filter(receiptCandidate -> huIds.contains(receiptCandidate.getM_HU_ID()))
+				.forEach(receiptCandidate -> {
+					receiptCandidate.setProcessed(false);
+					huPPOrderQtyDAO.delete(receiptCandidate);
 				});
 	}
 
@@ -203,16 +205,44 @@ public class PP_Cost_Collector
 	{
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
+
+		//
+		// Delete issue candidate
+		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(cc.getPP_Order_ID(), cc.getPP_Cost_Collector_ID());
+		if(issueCandidate != null)
+		{
+			//
+			// Make sure the HU is valid
+			final I_M_HU hu = issueCandidate.getM_HU();
+			if(!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+			{
+				throw new HUException("Expected the HU to be active again but it wasn't")
+					.setParameter("HU", hu)
+					.setParameter("HUStatus", hu.getHUStatus())
+					.setParameter("candidate", issueCandidate)
+					.setParameter("costCollector", cc)
+					.appendParametersToMessage();
+			}
+			
+			//candidate.setPP_Cost_Collector(null);
+			issueCandidate.setProcessed(false);
+			huPPOrderQtyDAO.delete(issueCandidate);
+			
+			//
+			// Make sure the HU will be unlocked (if not already)
+			Services.get(IHULockBL.class).unlockOnAfterCommit(hu.getM_HU_ID(), HUPPOrderIssueProducer.lockOwner);
+		}
 	}
-	
+
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
 			ModelValidator.TIMING_BEFORE_CLOSE,
 			ModelValidator.TIMING_BEFORE_VOID
 	})
-	public void  deactivatePPOrderProductAttributes (final I_PP_Cost_Collector costCollector)
+	public void deactivatePPOrderProductAttributes(final I_PP_Cost_Collector costCollector)
 	{
-		Services.get(IPPOrderProductAttributeDAO.class).deactivateForCostCollector(costCollector);
+		Services.get(IPPOrderProductAttributeDAO.class).deactivateForCostCollector(costCollector.getPP_Cost_Collector_ID());
 	}
 }

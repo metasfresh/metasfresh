@@ -35,7 +35,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.util.Evaluatee;
-import org.compiere.util.Language;
 
 import com.google.common.collect.ImmutableList;
 
@@ -44,6 +43,7 @@ import de.metas.aggregation.api.IAggregationAttribute;
 import de.metas.aggregation.api.IAggregationKey;
 import de.metas.aggregation.api.impl.AggregationAttribute_Attribute;
 import de.metas.aggregation.api.impl.AggregationKey;
+import de.metas.i18n.Language;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;

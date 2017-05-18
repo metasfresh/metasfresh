@@ -80,7 +80,6 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 import org.compiere.util.Splash;
 import org.compiere.wf.IADWorkflowBL;
 import org.slf4j.Logger;
@@ -88,6 +87,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -845,7 +845,7 @@ public final class AMenu extends CFrame
 			return -1;
 		}
 
-		return userRolePermissions.getMenu_Tree_ID();
+		return userRolePermissions.getMenuInfo().getAD_Tree_ID();
 	}
 
 	public FormFrame startForm(final int AD_Form_ID)

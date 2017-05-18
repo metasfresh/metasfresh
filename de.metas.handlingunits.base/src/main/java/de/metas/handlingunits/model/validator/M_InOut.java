@@ -13,11 +13,11 @@ package de.metas.handlingunits.model.validator;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -41,6 +41,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
+import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
@@ -107,6 +108,12 @@ public class M_InOut
 		{
 			return;
 		}
+		
+		// make sure we are not dealing with a customer return
+		if(Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
+		{
+			return;
+		}
 
 		Services.get(IHUShipmentAssignmentBL.class).updateHUsOnShipmentComplete(shipment);
 	}
@@ -136,7 +143,26 @@ public class M_InOut
 		{
 			huPickingSlotBL.removeFromPickingSlotQueueRecursivelly(hu);
 		}
+	}
 
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
+	{
+		// do nothing if completing the reversal document
+		if (inout.getReversal_ID() > 0)
+		{
+			return;
+		}
+
+		// do nothing if this is not an empties shipment/receipt
+		final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+		if (!huEmptiesService.isEmptiesInOut(inout))
+		{
+			return;
+		}
+
+		// Actually generate the empties movements
+		huEmptiesService.generateMovementFromEmptiesInout(inout);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_REVERSECORRECT })
@@ -228,6 +254,28 @@ public class M_InOut
 			InterfaceWrapperHelper.save(reversalLine);
 		}
 
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void generateHUsForCustomerReturn(final I_M_InOut customerReturn)
+	{
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+
+		if (!huInOutBL.isCustomerReturn(customerReturn))
+		{
+			// do nothing if the inout is not a customer return
+			return;
+		}
+
+		final List<org.compiere.model.I_M_InOutLine> lines = Services.get(IInOutDAO.class).retrieveLines(customerReturn);
+
+		for (final org.compiere.model.I_M_InOutLine line : lines)
+		{
+
+			final I_M_InOutLine customerReturnLine = InterfaceWrapperHelper.create(line, I_M_InOutLine.class);
+			// create HUs based on the lines inthe customer return inout
+			huInOutBL.createHUsForCustomerReturn(customerReturnLine);
+		}
 	}
 
 }

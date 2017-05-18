@@ -41,8 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -101,16 +99,17 @@ import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.TableCellNone;
 import org.compiere.util.CCache;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicate;
+
+import de.metas.logging.LogManager;
 
 
 /**
@@ -416,7 +415,7 @@ public final class GridController extends CPanel
 	 */
 	public void dispose()
 	{
-		log.info("Disposing: {}", m_mTab);
+		log.debug("Disposing: {}", m_mTab);
 		
 		stopEditor(false);
 		
@@ -562,7 +561,7 @@ public final class GridController extends CPanel
 			final GridWindow mWindow,
 			final boolean lazyInitialization)
 	{
-		log.info("Init: {}", mTab);
+		log.debug("Init: {}", mTab);
 		
 		Check.assumeNotNull(mTab, "mTab not null");
 		m_mTab = mTab;
@@ -1037,9 +1036,7 @@ public final class GridController extends CPanel
 		
 		// look for the AD_Tree_ID in the context (=>if parent tab has an AD_Field, it should be there)
 		int AD_Tree_ID = Env.getContextAsInt (Env.getCtx(), m_WindowNo, treeName);
-		log.info(keyColumnName + " -> " + treeName + " = " + AD_Tree_ID);
-		
-		if (AD_Tree_ID == 0)
+		if (AD_Tree_ID <= 0)
 		{
 			// get the default tree for the current AD_Client and column name
 			AD_Tree_ID = MTree.getDefaultAD_Tree_ID(
@@ -1255,7 +1252,7 @@ public final class GridController extends CPanel
 	//	if (e.getChangedColumn() == 0)
 	//		return;
 		int col = e.getChangedColumn();
-		log.info("(" + m_mTab + ") Col=" + col + ": " + e.toString());
+		log.debug("dataStatusChanged({}) Col={}: {}", m_mTab, col, e);
 
 		//  Process Callout
 		final GridField mField = m_mTab.getField(col);
@@ -1288,7 +1285,7 @@ public final class GridController extends CPanel
 	//	vTable.stopEditor(graphPanel);
 		int rowTable = vTable.getSelectedRow();
 		int rowCurrent = m_mTab.getCurrentRow();
-		log.info("(" + m_mTab.toString() + ") Row in Table=" + rowTable + ", in Model=" + rowCurrent);
+		log.debug("valueChanged({}) Row in Table={}, in Model={}", m_mTab, rowTable, rowCurrent);
 		/* BT [ 1972495 ] Multirow Automatic New Record loses context
 		// FR [ 1757088 ]
 		if(rowCurrent + 1 == vTable.getRowCount() && !isSingleRow() && Env.isAutoNew(Env.getCtx()) && m_mTab.getRecord_ID() != -1)
@@ -1345,8 +1342,6 @@ public final class GridController extends CPanel
 		{
 			return;
 		}
-		
-		log.info(e.getPropertyName() + "=" + value + " - " + value.getClass().toString());
 		
 		if (!(value instanceof MTreeNode))
 		{
@@ -1427,7 +1422,6 @@ public final class GridController extends CPanel
 			final GridField changedField = m_mTab.getField(columnIndex);
 			final String columnName = changedField.getColumnName();
 			final List<GridField> dependants = m_mTab.getDependantFields(columnName);
-			log.info("(" + m_mTab.toString() + ") " + columnName + " - Dependents=" + dependants.size());
 			//	No Dependents and no Callout - Set just Background
 			if (dependants.size() == 0 && !m_mTab.getCalloutExecutor().hasCallouts(changedField))
 			{
@@ -1452,7 +1446,6 @@ public final class GridController extends CPanel
 		//
 		// All Components in vPanel (Single Row)
 		final boolean noData = m_mTab.getRowCount() == 0;
-		log.info(m_mTab.toString() + " - Rows=" + m_mTab.getRowCount());
 		for (final String columnName : vPanel.getEditorColumnNames())
 		{
 			final VEditor editor = vPanel.getEditor(columnName);
@@ -1522,8 +1515,6 @@ public final class GridController extends CPanel
 
 		// hide empty field group based on the environment
 		vPanel.updateVisibleFieldGroups();
-
-		log.info(m_mTab.toString() + " - fini - " + (columnIndex <= 0 ? "complete" : "seletive"));
 	}   //  dynamicDisplay
 
 	/**
@@ -1636,9 +1627,9 @@ public final class GridController extends CPanel
 			}
 		}	//	processed
 		
-		if (log.isInfoEnabled())
+		if (log.isDebugEnabled())
 		{
-			log.info("(" + m_mTab.toString() + ") "
+			log.debug("(" + m_mTab + ") "
 					+ e.getPropertyName() + "=" + e.getNewValue() + " (" + e.getOldValue() + ") "
 					+ (e.getOldValue() == null ? "" : e.getOldValue().getClass().getName()));
 		}		
@@ -1839,12 +1830,12 @@ public final class GridController extends CPanel
 		final VTable vTable = getVTable();
 		if (vTable == null)
 		{
-			log.info("Nothing to be because this component is disposing/disposed");
+			log.debug("stopEditor: Nothing to do because this component is disposing/disposed");
 			return;
 		}
 		
-		if(log.isInfoEnabled())
-			log.info("(" + m_mTab + ") TableEditing=" + vTable.isEditing());
+		if(log.isDebugEnabled())
+			log.debug("stopEditor: tab={}, TableEditing={}", m_mTab, vTable.isEditing());
 
 		//  MultiRow - remove editors
 		vTable.stopEditor(saveValue);

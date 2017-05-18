@@ -28,6 +28,7 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- used to build html strings in some legacy code such as GridWindow.java -->
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.patched-ecs</artifactId>
@@ -47,7 +48,7 @@
 			<artifactId>spring-context</artifactId>
 		</dependency>
 
-		<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#client-applications -->
+		<!-- see http://codecentric.github.io/spring-boot-admin/1.5.0/#client-applications -->
 		<!-- 
 		there are exclusions to avoid dependency version convergence issues
 		(i.e. to satisfy the enforcer plugin)
@@ -55,7 +56,7 @@
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
-			<version>1.3.0</version>
+			<version>1.5.0</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
@@ -290,6 +291,20 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
+		
+		
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		
 
 	</dependencies>
 

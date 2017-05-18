@@ -16,7 +16,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2102788659L;
+	private static final long serialVersionUID = 477090733L;
 
     /** Standard Constructor */
     public X_M_HU_Item (Properties ctx, int M_HU_Item_ID, String trxName)
@@ -45,10 +45,10 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
     }
 
 	/** 
-	 * ItemType AD_Reference_ID=1000000
+	 * ItemType AD_Reference_ID=540699
 	 * Reference name: M_HU_Item_ItemType
 	 */
-	public static final int ITEMTYPE_AD_Reference_ID=1000000;
+	public static final int ITEMTYPE_AD_Reference_ID=540699;
 	/** HandlingUnit = HU */
 	public static final String ITEMTYPE_HandlingUnit = "HU";
 	/** Material = MI */
@@ -216,7 +216,7 @@ public class X_M_HU_Item extends org.compiere.model.PO implements I_M_HU_Item, o
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

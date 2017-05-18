@@ -115,7 +115,7 @@ public class ShipmentScheduleEnqueuer
 				try (final ILockAutoCloseable l = mainLock.asAutocloseableOnTrxClose(localTrxName))
 				{
 					final Result result0 = createWorkpackages0(
-							new PlainContextAware(_ctx, localTrxName),
+							PlainContextAware.newWithTrxName(_ctx, localTrxName),
 							queryFilters,
 							useQtyPickedRecords,
 							completeShipments,

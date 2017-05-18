@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-02T14:37:08 -->
+<!-- 2017-05-08T15:03:52 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -24,6 +24,9 @@
 	</parameter>
 	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
@@ -138,7 +141,8 @@ ORDER BY
 $F{pricelist}+$F{priceactual}+
 $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 		<groupFooter>
-			<band height="34">
+			<band height="39">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<printWhenExpression><![CDATA[new Boolean ( $P{C_BPartner_ID} != null && $P{Date} != null )]]></printWhenExpression>
 				<textField isBlankWhenNull="false">
 					<reportElement key="textField-20" x="470" y="12" width="70" height="13" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
@@ -383,7 +387,8 @@ $F{uomsymbol}+$F{capacity}+$F{container}]]></groupExpression>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="34" splitType="Stretch">
+		<band height="36" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean ( $P{c_order_id} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-13" x="217" y="0" width="150" height="13" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>

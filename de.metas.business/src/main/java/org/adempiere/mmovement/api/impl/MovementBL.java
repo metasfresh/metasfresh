@@ -30,7 +30,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Activity;
@@ -42,6 +41,7 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.product.IProductBL;
 import de.metas.product.acct.api.IProductAcctDAO;
+import de.metas.quantity.Quantity;
 
 public class MovementBL implements IMovementBL
 {
@@ -64,7 +64,7 @@ public class MovementBL implements IMovementBL
 		final I_M_Product product = movementLine.getM_Product();
 		final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
 		
-		return movementQty.convertTo(uomConversionCtx, uom);
+		return uomConversionBL.convertQuantityTo(movementQty, uomConversionCtx, uom);
 	}
 
 	@Override

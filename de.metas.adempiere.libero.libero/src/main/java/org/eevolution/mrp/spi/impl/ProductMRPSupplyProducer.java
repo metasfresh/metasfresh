@@ -29,10 +29,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_M_Product;
 import org.eevolution.exceptions.LiberoException;
-import org.eevolution.mrp.api.IMRPContext;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPSourceEvent;
+
+import de.metas.material.planning.IMaterialPlanningContext;
 
 /**
  * Actually this is a validation rule to not allow user to change product's UOM when there are MRP records
@@ -59,7 +60,7 @@ public class ProductMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
 	{
 		// never apply
 		notAppliesReason.setValue(MSG_ProductMRPSupplyProducerNotApplies);
@@ -103,7 +104,7 @@ public class ProductMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		// nothing
 	}

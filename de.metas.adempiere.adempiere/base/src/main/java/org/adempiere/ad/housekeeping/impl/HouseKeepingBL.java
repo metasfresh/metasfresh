@@ -52,7 +52,15 @@ public class HouseKeepingBL implements IHouseKeepingBL
 	public void registerStartupHouseKeepingTask(final IStartupHouseKeepingTask task)
 	{
 		Check.assumeNotNull(task, "task not null");
-		startupTasks.addIfAbsent(task);
+		final boolean added = startupTasks.addIfAbsent(task);
+		if(added)
+		{
+			logger.info("Registered: {}", task);
+		}
+		else
+		{
+			logger.warn("Skip registering {} because it was already registered", task);
+		}
 	}
 
 	@Override

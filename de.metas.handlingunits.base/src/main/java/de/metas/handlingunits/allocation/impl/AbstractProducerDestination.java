@@ -720,12 +720,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return AllocationUtils.nullResult();
 	}
 
-	@Override
-	public void loadComplete(final IHUContext huContext)
-	{
-		// Do nothing on this level.
-	}
-
 	public final AbstractProducerDestination setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		assertConfigurable();

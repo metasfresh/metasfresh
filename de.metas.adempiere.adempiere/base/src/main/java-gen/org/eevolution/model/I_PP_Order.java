@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -32,7 +16,7 @@ public interface I_PP_Order
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -311,6 +295,41 @@ public interface I_PP_Order
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_DocType> COLUMN_C_DocTypeTarget_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_DocType>(I_PP_Order.class, "C_DocTypeTarget_ID", org.compiere.model.I_C_DocType.class);
     /** Column name C_DocTypeTarget_ID */
     public static final String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+
+	/**
+	 * Set Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Auftrag.
+	 * Auftrag
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_Order_ID();
+
+	@Deprecated
+	public org.compiere.model.I_C_Order getC_Order();
+
+	@Deprecated
+	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+
+    /** Column definition for C_Order_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.compiere.model.I_C_Order>(I_PP_Order.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_ID */
+    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Auftragsposition.
@@ -870,7 +889,7 @@ public interface I_PP_Order
     public static final String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
-	 * Set Gedruckt.
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -880,7 +899,7 @@ public interface I_PP_Order
 	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Gedruckt.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1018,8 +1037,8 @@ public interface I_PP_Order
     public static final String COLUMNNAME_Lot = "Lot";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1028,8 +1047,8 @@ public interface I_PP_Order
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1259,6 +1278,29 @@ public interface I_PP_Order
     public static final String COLUMNNAME_Planner_ID = "Planner_ID";
 
 	/**
+	 * Set Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPlanningStatus (java.lang.String PlanningStatus);
+
+	/**
+	 * Get Planning status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPlanningStatus();
+
+    /** Column definition for PlanningStatus */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, Object> COLUMN_PlanningStatus = new org.adempiere.model.ModelColumn<I_PP_Order, Object>(I_PP_Order.class, "PlanningStatus", null);
+    /** Column name PlanningStatus */
+    public static final String COLUMNNAME_PlanningStatus = "PlanningStatus";
+
+	/**
 	 * Set Verbucht.
 	 * Posting status
 	 *
@@ -1334,6 +1376,33 @@ public interface I_PP_Order
     public static final org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_BOM>(I_PP_Order.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
     /** Column name PP_Product_BOM_ID */
     public static final String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
+
+	/**
+	 * Set Product Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
+
+	/**
+	 * Get Product Planning.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Product_Planning_ID();
+
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning();
+
+	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning);
+
+    /** Column definition for PP_Product_Planning_ID */
+    public static final org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_Planning> COLUMN_PP_Product_Planning_ID = new org.adempiere.model.ModelColumn<I_PP_Order, org.eevolution.model.I_PP_Product_Planning>(I_PP_Order.class, "PP_Product_Planning_ID", org.eevolution.model.I_PP_Product_Planning.class);
+    /** Column name PP_Product_Planning_ID */
+    public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
 	 * Set Bereitstellungsdatum.

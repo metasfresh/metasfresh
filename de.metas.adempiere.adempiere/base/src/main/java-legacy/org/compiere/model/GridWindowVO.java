@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.WindowLoadException;
 import org.adempiere.service.IRolePermLoggingBL;
@@ -38,13 +39,15 @@ import org.adempiere.util.Services;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  *  Model Window Value Object
@@ -54,6 +57,8 @@ import de.metas.logging.LogManager;
  */
 public class GridWindowVO implements Serializable
 {
+	private static final long serialVersionUID = -7888502229983659459L;
+
 	public static final String CTXNAME_BaseTable_ID = "BaseTable_ID";
 
 	private static final transient Logger logger = LogManager.getLogger(GridWindowVO.class);
@@ -61,40 +66,55 @@ public class GridWindowVO implements Serializable
 	/**
 	 *  Create Window Value Object
 	 *  @param ctx context
-	 *  @param WindowNo window no for ctx
-	 *  @param AD_Window_ID window id
+	 *  @param windowNo window no for ctx
+	 *  @param adWindowId window id
 	 *  @return {@link GridWindowVO}; never returns null
 	 *  @see #create(Properties, int, int, int)
 	 */
-	public static GridWindowVO create (Properties ctx, int WindowNo, int AD_Window_ID)
+	public static GridWindowVO create (final Properties ctx, final int windowNo, final int adWindowId)
 	{
-		final int adMenuId = 0; // N/A
-		final boolean loadAllLanguages = false;
-		return create (ctx, WindowNo, AD_Window_ID, adMenuId, loadAllLanguages);
+		return builder()
+				.ctx(ctx)
+				.windowNo(windowNo)
+				.adWindowId(adWindowId)
+				.adMenuId(-1) // N/A
+				.loadAllLanguages(false) // no
+				.applyRolePermissions(true)
+				.build();
 	}   //  create
 
 	/**
 	 * Load {@link GridWindowVO}.
 	 *
 	 * @param ctx
-	 * @param WindowNo
-	 * @param AD_Window_ID
-	 * @param AD_Menu_ID
+	 * @param windowNo
+	 * @param adWindowId
+	 * @param adMenuId
 	 * @return loaded {@link GridWindowVO}; never returns <code>null</code>
 	 * @throws WindowLoadException if window was not found or if there is no access for current logged in role.
 	 */
-	public static GridWindowVO create (final Properties ctx, final int WindowNo, final int AD_Window_ID, final int AD_Menu_ID, final boolean loadAllLanguages)
+	@Builder
+	public static GridWindowVO create ( //
+			@NonNull final Properties ctx //
+			, final int windowNo //
+			, final int adWindowId //
+			, final int adMenuId //
+			, final boolean loadAllLanguages //
+			, final boolean applyRolePermissions //
+			)
 	{
-		logger.debug("WindowNo={} - AD_Window_ID={}; AD_Menu_ID={}", WindowNo, AD_Window_ID, AD_Menu_ID);
-		final GridWindowVO vo = new GridWindowVO (ctx, WindowNo, loadAllLanguages);
-		vo.AD_Window_ID = AD_Window_ID;
+		logger.debug("WindowNo={} - AD_Window_ID={}; AD_Menu_ID={}", windowNo, adWindowId, adMenuId);
 
 		//
-		//  Get AD_Window_ID if required - (used by HTML UI)
-		if (vo.AD_Window_ID <= 0 && AD_Menu_ID > 0)
+		//  If AD_Window_ID not provided, try fetching it from AD_Menu_ID (used by HTML UI)
+		// TODO: not sure if this is still used
+		int adWindowIdEffective = adWindowId;
+		Boolean isSOTrxOverride = null;
+		Boolean readonlyOverride = null;
+		if (adWindowIdEffective <= 0 && adMenuId > 0)
 		{
 			final String sql = "SELECT AD_Window_ID, IsSOTrx, IsReadOnly FROM AD_Menu WHERE AD_Menu_ID=? AND Action='W'";
-			final List<Object> sqlParams = Arrays.<Object>asList(AD_Menu_ID);
+			final List<Object> sqlParams = Arrays.<Object>asList(adMenuId);
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;
 			try
@@ -104,12 +124,9 @@ public class GridWindowVO implements Serializable
 				rs = pstmt.executeQuery();
 				if (rs.next())
 				{
-					vo.AD_Window_ID = rs.getInt(1);
-					final boolean isSOTrx = DisplayType.toBoolean(rs.getString(2));
-					vo.setIsSOTrx(isSOTrx);
-					//
-					final boolean isReadOnly = DisplayType.toBoolean(rs.getString(3));
-					vo.setReadWrite(!isReadOnly);
+					adWindowIdEffective = rs.getInt(1);
+					isSOTrxOverride = DisplayType.toBoolean(rs.getString(2));
+					readonlyOverride = DisplayType.toBoolean(rs.getString(3));
 				}
 			}
 			catch (SQLException e)
@@ -122,13 +139,24 @@ public class GridWindowVO implements Serializable
 				rs = null; pstmt = null;
 			}
 			//
-			if (vo.getAD_Window_ID() <= 0)
+			if (adWindowIdEffective <= 0)
 			{
-				throw new WindowLoadException("@NotFound@ @AD_Menu_ID@="+AD_Menu_ID, "-", "-", vo.getAD_Window_ID());
+				throw new WindowLoadException("@NotFound@ @AD_Menu_ID@=" + adMenuId, "-", "-", adWindowIdEffective);
 			}
 			
-			logger.debug("AD_Window_ID={}", vo.getAD_Window_ID());
+			logger.debug("AD_Window_ID={}", adWindowIdEffective);
 		}
+		
+		final GridWindowVO vo = new GridWindowVO (ctx, windowNo, adWindowId, loadAllLanguages, applyRolePermissions);
+		if(isSOTrxOverride != null)
+		{
+			vo.setIsSOTrx(isSOTrxOverride);
+		}
+		if(readonlyOverride != null)
+		{
+			vo.setReadWrite(!readonlyOverride);
+		}
+
 
 		//
 		//  --  Get Window
@@ -149,10 +177,13 @@ public class GridWindowVO implements Serializable
 			boolean loaded = false;
 			while (rs.next())
 			{
-				windowName = rs.getString("Name");
-				vo.name = windowName;
-				vo.description = Util.coalesce(rs.getString("Description"), "");
-				vo.help = Util.coalesce(rs.getString("Help"), "");
+				if(firstRow)
+				{
+					windowName = rs.getString("Name");
+					vo.name = windowName;
+					vo.description = Util.coalesce(rs.getString("Description"), "");
+					vo.help = Util.coalesce(rs.getString("Help"), "");
+				}
 				
 				if(loadAllLanguages)
 				{
@@ -175,18 +206,26 @@ public class GridWindowVO implements Serializable
 						vo.setHelp(adLanguage, rs.getString("Help"));
 					}
 				}
-				
-				vo.WindowType = rs.getString("WindowType");
-				//
-				vo.AD_Color_ID = rs.getInt("AD_Color_ID");
-				vo.AD_Image_ID = rs.getInt("AD_Image_ID");
-				// vo.IsReadWrite = rs.getString(7); // metas: not needed
-				//
-				vo.WinHeight = rs.getInt("WinHeight");
-				vo.WinWidth = rs.getInt("WinWidth");
-				//
-				vo.setIsSOTrx(DisplayType.toBoolean(rs.getString("IsSOTrx")));
-				vo.IsOneInstanceOnly = DisplayType.toBoolean(rs.getString("IsOneInstanceOnly")); // metas: US831
+
+				if(firstRow)
+				{
+					vo.WindowType = rs.getString("WindowType");
+					//
+					vo.AD_Color_ID = rs.getInt("AD_Color_ID");
+					vo.AD_Image_ID = rs.getInt("AD_Image_ID");
+					// vo.IsReadWrite = rs.getString(7); // metas: not needed
+					//
+					vo.WinHeight = rs.getInt("WinHeight");
+					vo.WinWidth = rs.getInt("WinWidth");
+					//
+					vo.IsOneInstanceOnly = DisplayType.toBoolean(rs.getString("IsOneInstanceOnly")); // metas: US831
+	
+					final boolean isSOTrx = isSOTrxOverride != null ? isSOTrxOverride : DisplayType.toBoolean(rs.getString("IsSOTrx"));
+					vo.setIsSOTrx(isSOTrx);
+					
+					final boolean readWrite = readonlyOverride != null ? !readonlyOverride : !X_AD_Window.WINDOWTYPE_QueryOnly.equals(vo.WindowType);
+					vo.setReadWrite(readWrite);
+				}
 				
 				firstRow = false;
 				loaded = true;
@@ -194,7 +233,7 @@ public class GridWindowVO implements Serializable
 			
 			if(!loaded)
 			{
-				throw new WindowLoadException("@NotFound@", "ID=" + Env.getAD_Role_ID(ctx) + " (does not matter)", windowName, AD_Window_ID);
+				throw new WindowLoadException("@NotFound@", "ID=" + Env.getAD_Role_ID(ctx) + " (does not matter)", windowName, adWindowId);
 			}
 		}
 		catch (SQLException ex)
@@ -209,7 +248,7 @@ public class GridWindowVO implements Serializable
 
 		//
 		// Check for permissions using Role API
-		if (vo != null)
+		if (vo != null && applyRolePermissions)
 		{
 			final IUserRolePermissions role = Env.getUserRolePermissions(ctx);
 			final Boolean windowAccess = role.checkWindowAccess(vo.getAD_Window_ID());
@@ -217,8 +256,8 @@ public class GridWindowVO implements Serializable
 			// no access 
 			if (windowAccess == null)
 			{
-				final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, AD_Window_ID);
-				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), AD_Window_ID, null, ex.getLocalizedMessage());
+				final WindowLoadException ex = new WindowLoadException("@NoAccess@", role.getName(), windowName, adWindowId);
+				Services.get(IRolePermLoggingBL.class).logWindowAccess(role.getAD_Role_ID(), adWindowId, null, ex.getLocalizedMessage());
 				throw ex;
 			}
 			// read-only access
@@ -239,13 +278,13 @@ public class GridWindowVO implements Serializable
 
 		//  Create Tabs
 		final List<GridTabVO> tabs = createTabs(vo);
-		if (tabs == null || tabs.isEmpty())
-		{
-			final String loadErrorMessage = vo.getLoadErrorMessage() == null ? "Window tabs load error" : vo.getLoadErrorMessage();
-			final String roleName = "-";
-			final WindowLoadException ex = new WindowLoadException(loadErrorMessage, roleName, windowName, AD_Window_ID);
-			throw ex;
-		}
+//		if (tabs == null || tabs.isEmpty())
+//		{
+//			final String loadErrorMessage = vo.getLoadErrorMessage() == null ? "Window tabs load error" : vo.getLoadErrorMessage();
+//			final String roleName = "-";
+//			final WindowLoadException ex = new WindowLoadException(loadErrorMessage, roleName, windowName, adWindowId);
+//			throw ex;
+//		}
 		vo._tabs = tabs;
 		vo._BaseTable_ID = tabs.get(0).getAD_Table_ID();
 
@@ -320,9 +359,10 @@ public class GridWindowVO implements Serializable
 	}
 
 	/**
-	 *  Create Window Tabs
-	 *  @param mWindowVO Window Value Object
-	 *  @return true if tabs were created
+	 * Create Window Tabs
+	 * 
+	 * @param mWindowVO Window Value Object
+	 * @return created tabs; never returns null or empty
 	 */
 	private static List<GridTabVO> createTabs (final GridWindowVO mWindowVO)
 	{
@@ -345,13 +385,13 @@ public class GridWindowVO implements Serializable
 			pstmt.setInt(1, adWindowId);
 			rs = pstmt.executeQuery();
 			
-			final LinkedHashMap<Integer, GridTabVO> tabs = new LinkedHashMap<>();
+			final LinkedHashMap<Integer, GridTabVO> tabsByAD_Tab_ID = new LinkedHashMap<>();
 			boolean firstTab = true;
 			while (rs.next())
 			{
 				final int AD_Tab_ID = rs.getInt("AD_Tab_ID");
 				
-				GridTabVO mTabVO = tabs.get(AD_Tab_ID);
+				GridTabVO mTabVO = tabsByAD_Tab_ID.get(AD_Tab_ID);
 				if(mTabVO == null)
 				{
 					//  Create TabVO
@@ -373,7 +413,7 @@ public class GridWindowVO implements Serializable
 					{
 						mTabVO.setReadOnly(true);
 					}
-					tabs.put(AD_Tab_ID, mTabVO);
+					tabsByAD_Tab_ID.put(AD_Tab_ID, mTabVO);
 					TabNo++; //  must be same as mWindow.getTab(x)
 					firstTab = false;
 				}
@@ -384,20 +424,19 @@ public class GridWindowVO implements Serializable
 			}
 			
 			//  No Tabs
-			if (TabNo == 0 || tabs.isEmpty())
+			if (TabNo == 0 || tabsByAD_Tab_ID.isEmpty())
 			{
-				mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
-				logger.error("No Tabs - AD_Window_ID={} - {}", adWindowId, sql);
-				return null;
+				throw new WindowLoadException("No tabs", null, mWindowVO.getName(), mWindowVO.getAD_Window_ID());
+//				mWindowVO.addLoadErrorMessage("No Tabs - AD_Window_ID=" + adWindowId + " - " + sql, true); // metas: 1934
+//				logger.error("No Tabs - AD_Window_ID={} - {}", adWindowId, sql);
+//				return null;
 			}
 
-			return ImmutableList.copyOf(tabs.values());
+			return ImmutableList.copyOf(tabsByAD_Tab_ID.values());
 		}
-		catch (SQLException e)
+		catch (SQLException ex)
 		{
-			final DBException dbEx = new DBException(e, sql, sqlParams);
-			logger.error("Failed creating the tabs", dbEx);
-			return null;
+			throw new DBException(ex, sql, sqlParams);
 		}
 		finally
 		{
@@ -406,30 +445,70 @@ public class GridWindowVO implements Serializable
 		}
 	}   //  createTabs
 
-	/**************************************************************************
-	 *  Private Constructor
-	 *  @param Ctx context
-	 *  @param windowNo window no
-	 * @param loadAllLanguages 
-	 */
-	private GridWindowVO (final Properties Ctx, final int windowNo, final boolean loadAllLanguages)
+	private GridWindowVO (final Properties ctx, final int windowNo, final int adWindowId, final boolean loadAllLanguages, final boolean applyRolePermissions)
 	{
 		super();
-		ctx = Ctx;
-		WindowNo = windowNo;
+		this.ctx = ctx;
+		this.windowNo = windowNo;
+		this.AD_Window_ID = adWindowId;
 		this.loadAllLanguages = loadAllLanguages;
+		this.applyRolePermissions = applyRolePermissions;
+	}
+	
+	private GridWindowVO(final GridWindowVO from, final int windowNo)
+	{
+		this(from.ctx, windowNo, from.AD_Window_ID, from.loadAllLanguages, from.applyRolePermissions);
+		
+		this.name = from.name;
+		this.nameTrls = from.nameTrls == null ? null : new HashMap<>(from.nameTrls);
+		this.description = from.description;
+		this.descriptionTrls = from.descriptionTrls == null ? null : new HashMap<>(from.descriptionTrls);
+		this.help = from.help;
+		this.helpTrls = from.helpTrls == null ? null : new HashMap<>(from.helpTrls);
+		
+		this.WindowType = from.WindowType;
+		this.AD_Image_ID = from.AD_Image_ID;
+		this.AD_Color_ID = from.AD_Color_ID;
+		this._isReadWrite = from._isReadWrite;
+		this.WinWidth = from.WinWidth;
+		this.WinHeight = from.WinHeight;
+		this._isSOTrx = from._isSOTrx;
+		this.IsOneInstanceOnly = from.IsOneInstanceOnly;
+		
+		//
+		// Tabs
+		this._BaseTable_ID = from._BaseTable_ID;
+		//
+		final List<GridTabVO> fromTabs = from._tabs;
+		if (fromTabs != null)
+		{
+			final List<GridTabVO> tabsClone = new ArrayList<GridTabVO>();
+			for (final GridTabVO fromTab : fromTabs)
+			{
+				final GridTabVO cloneTab = fromTab.clone(from.ctx, windowNo);
+				if (cloneTab == null)
+				{
+					throw new AdempiereException("Failed cloning tab: " + fromTab);
+				}
+				tabsClone.add(cloneTab);
+			}
+			
+			this._tabs = ImmutableList.copyOf(tabsClone);
+		}
+		
+		this.updateContext();
 	}
 
-	static final long serialVersionUID = 3802628212531678981L;
-
 	/** Properties      */
-	private Properties   ctx;
+	private Properties   ctx; // FIXME: get rid of GridWindwoVO.ctx
 	/** Window Number	*/
-	private int WindowNo;
+	private final int windowNo; // FIXME: get rid of GridWindwoVO.WindowNo
 
 	/** Window				*/
-	private int AD_Window_ID = 0;
+	private final int AD_Window_ID;
 	private final boolean loadAllLanguages;
+	private final boolean applyRolePermissions;
+	
 	/** Name				*/
 	private String name = "";
 	private Map<String, String> nameTrls = null;
@@ -493,42 +572,7 @@ public class GridWindowVO implements Serializable
 	{
 		try
 		{
-			final GridWindowVO  clone = new GridWindowVO(ctx, windowNo, loadAllLanguages);
-			clone.AD_Window_ID = AD_Window_ID;
-			clone.name = name;
-			clone.description = description;
-			clone.help = help;
-			clone.WindowType = WindowType;
-			clone.AD_Image_ID = AD_Image_ID;
-			clone.AD_Color_ID = AD_Color_ID;
-			clone._isReadWrite = _isReadWrite;
-			clone.WinWidth = WinWidth;
-			clone.WinHeight = WinHeight;
-			clone._isSOTrx = _isSOTrx;
-			clone.IsOneInstanceOnly = this.IsOneInstanceOnly;
-			
-			//
-			// Tabs
-			clone._BaseTable_ID = _BaseTable_ID;
-			//
-			final List<GridTabVO> tabs = getTabs();
-			if (tabs != null)
-			{
-				final List<GridTabVO> tabsClone = new ArrayList<GridTabVO>();
-				for (GridTabVO tab : tabs)
-				{
-					final GridTabVO cloneTab = tab.clone(clone.getCtx(), windowNo);
-					if (cloneTab == null)
-						return null;
-					tabsClone.add(cloneTab);
-				}
-				
-				clone._tabs = ImmutableList.copyOf(tabsClone);
-			}
-			
-			clone.updateContext();
-			
-			return clone;
+			return new GridWindowVO(this, windowNo);
 		}
 		catch (Exception e)
 		{
@@ -584,7 +628,7 @@ public class GridWindowVO implements Serializable
 	
 	public int getWindowNo()
 	{
-		return WindowNo;
+		return windowNo;
 	}
 
 	public Properties getCtx()
@@ -769,9 +813,14 @@ public class GridWindowVO implements Serializable
 		return _BaseTable_ID;
 	}
 	
-	public boolean isLoadAllLanguages()
+	boolean isLoadAllLanguages()
 	{
 		return loadAllLanguages;
+	}
+	
+	boolean isApplyRolePermissions()
+	{
+		return applyRolePermissions;
 	}
 }
 

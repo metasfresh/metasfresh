@@ -332,4 +332,10 @@ public final class TableModelLoader
 		}
 	}
 
+	public void invalidateCache(final String tableName, final int recordId, final String trxName)
+	{
+		final IModelCacheService modelCacheService = Services.get(IModelCacheService.class);
+		modelCacheService.invalidate(tableName, recordId, trxName);
+	}
+
 }

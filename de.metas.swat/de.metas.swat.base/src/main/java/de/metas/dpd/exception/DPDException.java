@@ -29,9 +29,9 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MPackage;
-import org.compiere.util.Msg;
 
 import de.metas.dpd.service.RoutingQuery;
+import de.metas.i18n.Msg;
 import de.metas.inout.model.I_M_InOut;
 
 /**

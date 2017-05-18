@@ -34,24 +34,6 @@
 			<artifactId>de.metas.business</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
-<!-- not needed
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.jbossfacet</artifactId>
-			<version>1.0.0</version>			
-			<scope>runtime</scope>
-		</dependency>			
--->	
-		<!-- 
-			Should be here, but introduce a cyclic dependency. Moved on assemblies 
-		<dependency>
-			<groupId>org.adempiere</groupId>
-			<artifactId>jasperreports-lib</artifactId>
-			<version>${adempiere.version}</version>			
-			<scope>runtime</scope>
-		</dependency>					
-		-->
 		
 		<!-- moved from adempiere-base -->
 		<dependency>

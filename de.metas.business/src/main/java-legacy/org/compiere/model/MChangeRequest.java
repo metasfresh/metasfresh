@@ -20,8 +20,9 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Msg;
 import org.eevolution.model.MPPProductBOM;
+
+import de.metas.i18n.Msg;
 
 /**
  * 	Change Request Model

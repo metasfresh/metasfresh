@@ -47,11 +47,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -136,7 +136,34 @@ public final class ESModelIndexer implements IESModelIndexer
 	}
 
 	@Override
-	public void createUpdateIndex()
+	public void deleteIndex()
+	{
+		final IndicesAdminClient indices = getClient().admin().indices();
+
+		//
+		// Create index if does not exist
+		final String indexName = getIndexName();
+		final boolean indexExists = indices
+				.prepareExists(indexName)
+				.get()
+				.isExists();
+		if (!indexExists)
+		{
+			// nothing to delete
+			return;
+		}
+
+		final boolean acknowledged = indices.prepareDelete(indexName)
+				.get()
+				.isAcknowledged();
+		if (!acknowledged)
+		{
+			throw new AdempiereException("Cannot delete index: " + indexName);
+		}
+	}
+
+	@Override
+	public boolean createUpdateIndex()
 	{
 		final IndicesAdminClient indices = getClient().admin().indices();
 
@@ -150,7 +177,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		if (indexExists)
 		{
 			// stop here
-			return;
+			return false;
 		}
 		else
 		{
@@ -167,6 +194,8 @@ public final class ESModelIndexer implements IESModelIndexer
 		//
 		//
 		createUpdateIndexTypeMapping();
+
+		return true; // index created now
 	}
 
 	private final void createUpdateIndexTypeMapping()

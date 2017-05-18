@@ -23,7 +23,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  */
 
 import java.util.Collection;
-import java.util.concurrent.Callable;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -82,7 +81,7 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 	 *
 	 * @param modelObj
 	 * @return
-	 * 		<ul>
+	 *         <ul>
 	 *         <li>underlying data-type model
 	 *         <li><code>null</code> if this modelObj cannot be handled by this factory
 	 *         <li>a null marker if this modelObj is actually handled by this factory but there is no underlying data-type model for it. In this case {@link #isNullModel(Object)} shall return true for
@@ -138,50 +137,26 @@ public abstract class AbstractModelAttributeStorageFactory<ModelType, AttributeS
 		return false;
 	}
 
-	protected final IAttributeStorage getAttributeStorageForModelIfLoaded(final ModelType model)
-	{
-		final boolean onlyIfPresent = true; // if it's not yet there, then return null
-		return getAttributeStorageForModel(model, onlyIfPresent);
-	}
-
 	protected IAttributeStorage getAttributeStorageForModel(final ModelType model)
-	{
-		final boolean onlyIfPresent = false; // also get it if it's not yet loaded.
-		return getAttributeStorageForModel(model, onlyIfPresent);
-	}
-
-	private IAttributeStorage getAttributeStorageForModel(final ModelType model, final boolean onlyIfPresent)
 	{
 		final ArrayKey key = mkKey(model);
 		try
 		{
-			final IAttributeStorage result;
-			if (onlyIfPresent)
-			{
-				result = key2storage.getIfPresent(key);
-			}
-			else
-			{
-				result = key2storage.get(key, new Callable<AttributeStorageType>()
-				{
-					@Override
-					public AttributeStorageType call() throws Exception
-					{
-						final AttributeStorageType storage = createAttributeStorage(model);
-						Check.assumeNotNull(storage, "storage not null");
+			final IAttributeStorage result = key2storage.get(key, () -> {
+				final AttributeStorageType storage = createAttributeStorage(model);
+				Check.assumeNotNull(storage, "storage not null");
 
-						// Add listeners to our storage
-						addListenersToAttributeStorage(storage);
+				// Add listeners to our storage
+				addListenersToAttributeStorage(storage);
 
-						return storage;
-					}
-				});
-			}
+				return storage;
+			});
 
 			if (result != null)
 			{
 				result.assertNotDisposed();
 			}
+
 			return result;
 		}
 		catch (final Exception e)

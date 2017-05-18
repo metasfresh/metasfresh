@@ -83,6 +83,7 @@ public interface IADPInstanceDAO extends ISingletonService
 
 	void loadResultSummary(ProcessExecutionResult result);
 
+	/** @return process info logs, ordered chronologically */
 	List<ProcessInfoLog> retrieveProcessInfoLogs(int adPInstanceId);
 
 	/**

@@ -24,20 +24,21 @@ package de.metas.handlingunits.impl;
 
 import java.util.Date;
 import java.util.UUID;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
+
 import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.logging.LogManager;
 
 public final class HUTransaction implements IHUTransaction
 {

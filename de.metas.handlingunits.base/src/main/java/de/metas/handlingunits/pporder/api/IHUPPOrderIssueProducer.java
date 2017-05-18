@@ -13,26 +13,26 @@ package de.metas.handlingunits.pporder.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -43,21 +43,12 @@ import de.metas.handlingunits.model.I_PP_Cost_Collector;
 public interface IHUPPOrderIssueProducer
 {
 	/**
-	 * Sets the transaction name that shall be used.
-	 *
-	 * By default, {@link ITrx#TRXNAME_None} is used.
-	 *
-	 * @param trxName
-	 */
-	IHUPPOrderIssueProducer setTrxName(String trxName);
-
-	/**
 	 * Issue given <code>HUs</code> to configured {@link I_PP_Order_BOMLine}s.
 	 *
 	 * @param hus
 	 * @return generated manufacturing order issue cost collectors
 	 */
-	List<I_PP_Cost_Collector> createIssues(final Collection<I_M_HU> hus);
+	List<I_PP_Order_Qty> createIssues(final Collection<I_M_HU> hus);
 
 	/**
 	 * Convenient way of calling {@link #createIssues(Collection)}.
@@ -65,7 +56,10 @@ public interface IHUPPOrderIssueProducer
 	 * @param hu
 	 * @return generated manufacturing order issue cost collectors
 	 */
-	List<I_PP_Cost_Collector> createIssues(I_M_HU hu);
+	default List<I_PP_Order_Qty> createIssues(final I_M_HU hu)
+	{
+		return createIssues(ImmutableSet.of(hu));
+	}
 
 	/**
 	 * Sets movement date to be used in generated underlying {@link I_PP_Cost_Collector}s.
@@ -82,11 +76,11 @@ public interface IHUPPOrderIssueProducer
 	IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines);
 
 	/**
-	 * Consider all BOM lines of given manufacturing order, when issuing.
+	 * Sets all issue BOM lines of given manufacturing order, when issuing.
 	 *
 	 * @param ppOrder
 	 */
-	IHUPPOrderIssueProducer setTargetOrderBOMLines(I_PP_Order ppOrder);
+	IHUPPOrderIssueProducer setTargetOrderBOMLinesByPPOrderId(int ppOrderId);
 
 	/**
 	 * Convenient way of calling {@link #setTargetOrderBOMLines(List)} with one bom line.
@@ -94,4 +88,6 @@ public interface IHUPPOrderIssueProducer
 	 * @param targetOrderBOMLine
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLine(I_PP_Order_BOMLine targetOrderBOMLine);
+
+	void reverseDraftIssue(final I_PP_Order_Qty candidate);
 }

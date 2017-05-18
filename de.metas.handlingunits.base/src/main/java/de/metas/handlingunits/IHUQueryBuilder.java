@@ -392,12 +392,14 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setInSubQueryFilter(IQuery<I_M_HU> huSubQueryFilter);
 
 	/**
-	 * Filter only those HUs which are locked (i.e. which have {@link I_M_HU#isLocked()} set to <code>true</code>).
-	 *
-	 * @param onlyLocked
-	 * @return this
+	 * Filter only those HUs which are locked (by any lock owner)
 	 */
-	IHUQueryBuilder setOnlyLocked(boolean onlyLocked);
+	IHUQueryBuilder onlyLocked();
+
+	/**
+	 * Filter only those HUs which are NOT locked (by any lock owner)
+	 */
+	IHUQueryBuilder onlyNotLocked();
 
 	/**
 	 * Ask this builder to throw an error if there were no HUs retrieved.

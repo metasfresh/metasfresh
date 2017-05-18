@@ -61,9 +61,9 @@ public interface IDLMService extends ISingletonService {
 	/**
 	 * This method is invoked after login, to decided whether or not to activate
 	 * "DLM-filtering" for the given {@code AD_User_ID}.
-	 * 
+	 *
 	 * @param AD_User_ID the user in question
-	 * 
+	 *
 	 * @return true if {@link DLMConnectionCustomizer} should be brought into
 	 *         the game, in order to not "see" archived data records.
 	 *

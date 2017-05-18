@@ -16,7 +16,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -372028688L;
+	private static final long serialVersionUID = 1857829944L;
 
     /** Standard Constructor */
     public X_M_HU_Storage_Snapshot (Properties ctx, int M_HU_Storage_Snapshot_ID, String trxName)
@@ -28,7 +28,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 			setM_HU_ID (0);
 			setM_HU_Storage_Snapshot_ID (0);
 			setM_Product_ID (0);
-			setQty (Env.ZERO);
+			setQty (BigDecimal.ZERO);
 			setSnapshot_UUID (null);
         } */
     }
@@ -230,7 +230,7 @@ public class X_M_HU_Storage_Snapshot extends org.compiere.model.PO implements I_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

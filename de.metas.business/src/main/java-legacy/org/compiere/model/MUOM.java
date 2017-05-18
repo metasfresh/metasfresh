@@ -23,13 +23,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.uom.UOMConstants;
-import org.adempiere.uom.api.IUOMBL;
-import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+
+import de.metas.uom.UOMConstants;
+import de.metas.uom.UOMUtil;
 
 /**
  * Unit Of Measure Model
@@ -54,13 +54,11 @@ public class MUOM extends X_C_UOM
 	{
 		if (Ini.isClient())
 		{
-			final IUOMBL uomBL = Services.get(IUOMBL.class);
-			
 			final Iterator<MUOM> it = s_cache.values().iterator();
 			while (it.hasNext())
 			{
 				final MUOM uom = it.next();
-				if (uomBL.isMinute(uom))
+				if (UOMUtil.isMinute(uom))
 				{
 					return uom.getC_UOM_ID();
 				}

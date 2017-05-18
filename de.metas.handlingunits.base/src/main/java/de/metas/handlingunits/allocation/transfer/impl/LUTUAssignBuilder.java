@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.transfer.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -32,7 +31,6 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.uom.api.Quantity;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -73,6 +71,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.quantity.Quantity;
 
 /**
  * Creates an LU (according to given parameters) and assigns given TUs to it (LU zuteilen).
@@ -409,7 +408,8 @@ public class LUTUAssignBuilder
 
 	private final I_C_BPartner getC_BPartner()
 	{
-		Check.assumeNotNull(_bpartner, "_bpartner not null");
+		// NOTE: allow null bpartner because in some cases, our HUs does not have a BPartner set. (see #1346)
+		// Check.assumeNotNull(_bpartner, "_bpartner not null");
 		return _bpartner;
 	}
 

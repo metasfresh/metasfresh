@@ -33,6 +33,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.product.IProductBL;
+import lombok.Builder;
 
 /*
  * #%L
@@ -70,8 +71,33 @@ public final class ASIEditingInfo
 			, final boolean isSOTrx //
 	)
 	{
-		return new ASIEditingInfo(productId, attributeSetInstanceId, callerTableName, callerColumnId, isSOTrx);
+		return builder()
+				.productId(productId)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.callerTableName(callerTableName)
+				.callerColumnId(callerColumnId)
+				.isSOTrx(isSOTrx)
+				.build();
 	}
+
+	public static final ASIEditingInfo readonlyASI(final int attributeSetInstanceId)
+	{
+		return builder()
+				.type(WindowType.StrictASIAttributes)
+				.isSOTrx(true)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.build();
+	}
+	
+	public static final ASIEditingInfo processParameterASI(final int attributeSetInstanceId)
+	{
+		return builder()
+				.type(WindowType.ProcessParameter)
+				.isSOTrx(true)
+				.attributeSetInstanceId(attributeSetInstanceId)
+				.build();
+	}
+
 
 	// Parameters
 	private final WindowType _type;
@@ -90,14 +116,16 @@ public final class ASIEditingInfo
 	private final boolean isSerNoEnabled;
 	private final boolean isGuaranteeDateEnabled;
 
+	@Builder
 	private ASIEditingInfo( //
+			final WindowType type,
 			final int productId, final int attributeSetInstanceId //
 			, final String callerTableName, final int callerColumnId //
 			, final boolean isSOTrx //
 	)
 	{
 		// Parameters, must be set first
-		_type = extractType(callerTableName, callerColumnId);
+		_type = type != null ? type : extractType(callerTableName, callerColumnId);
 		_productId = productId;
 		_attributeSetInstanceId = attributeSetInstanceId;
 		_callerTableName = callerTableName;
@@ -267,6 +295,12 @@ public final class ASIEditingInfo
 				attributeSet = null;
 				break;
 			}
+			case StrictASIAttributes:
+			{
+				final MAttributeSetInstance asi = getM_AttributeSetInstance();
+				attributeSet = asi == null ? null : asi.getM_AttributeSet();
+				break;
+			}
 			default:
 			{
 				attributeSet = null;
@@ -305,25 +339,44 @@ public final class ASIEditingInfo
 	public boolean isExcludedAttributeSet()
 	{
 		final I_M_AttributeSet attributeSet = getM_AttributeSet();
-		if (attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0)
+		final boolean attributeSetExists = attributeSet != null && attributeSet.getM_AttributeSet_ID() > 0;
+
+		//
+		// Exclude if it was configured to be excluded
+		if (attributeSetExists)
 		{
 			final IAttributeExcludeBL excludeBL = Services.get(IAttributeExcludeBL.class);
 			final I_M_AttributeSetExclude asExclude = excludeBL.getAttributeSetExclude(attributeSet, getCallerColumnId(), isSOTrx());
 			final boolean exclude = asExclude != null && excludeBL.isFullExclude(asExclude);
-			return exclude;
+			if (exclude)
+			{
+				return true; // exclude
+			}
 		}
-
-		// NOTE: at this point attributeSet is null or ID=0
 
 		//
-		// Regular window or product window requires a valid attributeSet
-		final WindowType type = getWindowType();
-		if (type == WindowType.Regular || type == WindowType.ProductWindow)
+		// If no attributeSet, find out a default per each window type
+		if (!attributeSetExists)
 		{
-			return true;
+			// Product window requires a valid attributeSet.
+			final WindowType type = getWindowType();
+			if (type == WindowType.ProductWindow)
+			{
+				return true; // exclude
+			}
+			else if (type == WindowType.Regular)
+			{
+				final boolean asiExists = getM_AttributeSetInstance_ID() > 0;
+				if (!asiExists)
+				{
+					return true; // exclude
+				}
+			}
 		}
 
-		return false;
+		//
+		// Fallback
+		return false; // don't exclude
 	}
 
 	public List<MAttribute> getAvailableAttributes()
@@ -367,6 +420,7 @@ public final class ASIEditingInfo
 			}
 			case ProcessParameter:
 			{
+				// All attributes
 				attributes = Services.get(IQueryBL.class)
 						.createQueryBuilder(MAttribute.class, Env.getCtx(), ITrx.TRXNAME_None)
 						.addOnlyActiveRecordsFilter()
@@ -397,6 +451,12 @@ public final class ASIEditingInfo
 						//
 						.create()
 						.stream(MAttribute.class);
+				break;
+			}
+			case StrictASIAttributes:
+			{
+				attributes = retrieveAvailableAttributeSetAndInstanceAttributes(attributeSet, getM_AttributeSetInstance_ID())
+						.stream();
 				break;
 			}
 			default:
@@ -458,6 +518,6 @@ public final class ASIEditingInfo
 
 	public static enum WindowType
 	{
-		Regular, ProductWindow, ProcessParameter, Pricing,
+		Regular, ProductWindow, ProcessParameter, Pricing, StrictASIAttributes
 	}
 }

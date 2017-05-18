@@ -157,7 +157,7 @@ public class ProcessPreconditionChecker
 
 	public ProcessPreconditionChecker setProcess(final RelatedProcessDescriptor relatedProcess)
 	{
-		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), relatedProcess.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), relatedProcess.getProcessId(), I_AD_Process.class, ITrx.TRXNAME_None);
 		
 		_processClass = null;
 		_preconditionsClass = null;
@@ -214,6 +214,11 @@ public class ProcessPreconditionChecker
 
 	private final Class<?> loadClass(final String classname, final boolean isServerProcess)
 	{
+		if(classname == null)
+		{
+			return null;
+		}
+		
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader == null)
 		{

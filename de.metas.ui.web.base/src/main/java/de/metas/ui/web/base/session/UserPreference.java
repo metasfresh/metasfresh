@@ -26,9 +26,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Preference;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 import com.google.common.base.MoreObjects;
+
+import de.metas.i18n.Language;
 
 /**
  *

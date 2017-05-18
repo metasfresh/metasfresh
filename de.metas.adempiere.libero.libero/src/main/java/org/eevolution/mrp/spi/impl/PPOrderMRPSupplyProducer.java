@@ -13,20 +13,17 @@ package org.eevolution.mrp.spi.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
-import java.util.Properties;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -34,18 +31,14 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
+import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_S_Resource;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderBOMBL;
 import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.exceptions.LiberoException;
 import org.eevolution.model.I_PP_MRP;
@@ -53,18 +46,22 @@ import org.eevolution.model.I_PP_MRP_Alternative;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.RoutingService;
-import org.eevolution.model.RoutingServiceFactory;
 import org.eevolution.model.X_PP_MRP;
 import org.eevolution.model.X_PP_Order;
-import org.eevolution.model.X_PP_Product_Planning;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPContextFactory;
+import org.eevolution.mrp.api.ILiberoMRPContextFactory;
 import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
 import org.eevolution.mrp.api.IMRPExecutor;
 import org.eevolution.mrp.api.IMRPExecutorService;
 import org.eevolution.mrp.api.IMRPSourceEvent;
-import org.eevolution.mrp.api.IMutableMRPContext;
+import org.eevolution.mrp.spi.impl.pporder.PPOrderProducer;
+
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderPojoSupplier;
+import de.metas.material.planning.pporder.PPOrderUtil;
 
 public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 {
@@ -74,7 +71,6 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	public PPOrderMRPSupplyProducer()
 	{
-		super();
 		addSourceColumnNames(I_PP_Order.Table_Name, new String[] {
 				I_PP_Order.COLUMNNAME_AD_Org_ID,
 				I_PP_Order.COLUMNNAME_M_Product_ID,
@@ -113,18 +109,19 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	}
 
 	@Override
-	public boolean applies(final IMRPContext mrpContext, IMutable<String> notAppliesReason)
+	public boolean applies(final IMaterialPlanningContext mrpContext, IMutable<String> notAppliesReason)
 	{
-		final I_M_Product product = mrpContext.getM_Product();
-		final I_PP_Product_Planning productDataPlanning = mrpContext.getProductPlanning();
-		final boolean isManufactured = X_PP_Product_Planning.ISMANUFACTURED_Yes.equals(productDataPlanning.getIsManufactured());
-		if (!isManufactured)
+		final PlainStringLoggable loggable = new PlainStringLoggable();
+		final boolean matches;
+		try (final IAutoCloseable closable = Loggables.temporarySetLoggable(loggable))
 		{
-			notAppliesReason.setValue("Product is configured to not be manufactured: " + product.getValue());
-			return false;
+			matches = new PPOrderDemandMatcher().matches(mrpContext);
 		}
-
-		return true;
+		if (!matches)
+		{
+			notAppliesReason.setValue(loggable.getConcatenatedMessages());
+		}
+		return matches;
 	}
 
 	@Override
@@ -363,10 +360,9 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private String getTypeMRP(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 		final String typeMRP;
 
-		if (orderBOMBL.isReceipt(orderBOMLine))
+		if (PPOrderUtil.isReceipt(orderBOMLine.getComponentType()))
 		{
 			typeMRP = X_PP_MRP.TYPEMRP_Supply;
 		}
@@ -383,7 +379,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 		final BigDecimal qtyTarget;
-		if (orderBOMBL.isReceipt(ppOrderBOMLine))
+		if (PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
 		{
 			qtyTarget = orderBOMBL.getQtyRequiredToReceive(ppOrderBOMLine);
 		}
@@ -408,7 +404,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 
 		final BigDecimal qty;
-		if (orderBOMBL.isReceipt(ppOrderBOMLine))
+		if (PPOrderUtil.isReceipt(ppOrderBOMLine.getComponentType()))
 		{
 			qty = orderBOMBL.getQtyToReceive(ppOrderBOMLine);
 		}
@@ -521,139 +517,37 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 	@Override
 	public void createSupply(final IMRPCreateSupplyRequest request)
 	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
-		final IMRPContext mrpContext = request.getMRPContext();
+		final IMaterialPlanningContext mrpContext = request.getMRPContext();
 		final IMRPExecutor executor = request.getMRPExecutor();
 
+		final PPOrderPojoSupplier ppOrderPojoSupplier = Adempiere.getBean(PPOrderPojoSupplier.class);
+
+		final PPOrder ppOrderPojo = ppOrderPojoSupplier
+				.supplyPPOrderPojo(request,
+						executor.getMRPNotesCollector());
+
+		
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-		final I_M_Product product = mrpContext.getM_Product();
-		final I_C_UOM uom = mrpContext.getC_UOM();
-		final Timestamp demandDateStartSchedule = TimeUtil.asTimestamp(request.getDemandDate());
-		final BigDecimal qtyToSupply = request.getQtyToSupply();
 
+		final PPOrderProducer ppOrderProducer = new PPOrderProducer();
+
+		// note that the PP_OrderBOM and PP_OrderBOMLines are currently created via model interceptor
+		final I_PP_Order ppOrder = ppOrderProducer.createPPOrder(ppOrderPojo, mrpContext.getDate());
+		executor.addGeneratedSupplyDocument(ppOrder);
 		//
-		// BOM
-		final int ppProductBomId = productPlanningData.getPP_Product_BOM_ID();
-		if (ppProductBomId <= 0)
-		{
-			throw new LiberoException("@FillMandatory@ @PP_Product_BOM_ID@ ( @M_Product_ID@=" + product.getValue() + ")");
-		}
-
-		//
-		// Routing (Workflow)
-		final int adWorkflowId = productPlanningData.getAD_Workflow_ID();
-		if (adWorkflowId <= 0)
-		{
-			throw new LiberoException("@FillMandatory@ @AD_Workflow_ID@ ( @M_Product_ID@=" + product.getValue() + ")");
-		}
-
-		//
-		// Calculate duration & Planning dates
-		final int durationDays = calculateDurationDays(mrpContext, qtyToSupply);
-		final Timestamp dateFinishSchedule = demandDateStartSchedule;
-		final Timestamp dateStartSchedule = TimeUtil.addDays(dateFinishSchedule, 0 - durationDays);
-
-		//
-		// Create PP Order
-		final I_PP_Order order = InterfaceWrapperHelper.newInstance(I_PP_Order.class, mrpContext);
-		order.setMRP_Generated(true);
-		order.setMRP_AllowCleanup(true);
-		order.setLine(10);
-
-		//
-		// Planning dimension
-		order.setAD_Org(mrpContext.getAD_Org());
-		order.setS_Resource(mrpContext.getPlant());
-		order.setM_Warehouse(mrpContext.getM_Warehouse());
-		order.setPlanner_ID(productPlanningData.getPlanner_ID());
-
-		//
-		// Document Type & Status
-		final int docTypeMO_ID = getC_DocType_ID(mrpContext, X_C_DocType.DOCBASETYPE_ManufacturingOrder);
-		order.setC_DocTypeTarget_ID(docTypeMO_ID);
-		order.setC_DocType_ID(docTypeMO_ID);
-		order.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
-		order.setDocAction(X_PP_Order.DOCACTION_Complete);
-
-		//
-		// Product, UOM, ASI
-		order.setM_Product(product);
-		order.setC_UOM(uom);
-		order.setM_AttributeSetInstance_ID(0);
-
-		//
-		// BOM & Workflow
-		order.setPP_Product_BOM_ID(ppProductBomId);
-		order.setAD_Workflow_ID(adWorkflowId);
-
-		//
-		// Dates
-		order.setDateOrdered(mrpContext.getDateAsTimestamp());
-		order.setDatePromised(dateFinishSchedule);
-		order.setDateStartSchedule(dateStartSchedule);
-		order.setDateFinishSchedule(dateFinishSchedule);
-
-		//
-		// Qtys
-		ppOrderBL.setQty(order, qtyToSupply);
-		// QtyBatchSize : do not set it, let the MO to take it from workflow
-		order.setYield(Env.ZERO);
-
-		order.setScheduleType(X_PP_MRP.TYPEMRP_Demand);
-		order.setPriorityRule(X_PP_Order.PRIORITYRULE_Medium);
-
-		//
-		// Inherit values from MRP demand
-		order.setC_OrderLine_ID(request.getMRPDemandOrderLineSOId());
-		order.setC_BPartner_ID(request.getMRPDemandBPartnerId());
-
-		//
-		// Save the manufacturing order
-		InterfaceWrapperHelper.save(order);
-
-		//
-		// If we are asked to complete it, enque the MO for completion after MRP runs
+		// If we are asked to complete it, enqueue the MO for completion after MRP runs
 		if (productPlanningData.isDocComplete())
 		{
 			final DocumentsToCompleteAfterMRPExecution scheduler = DocumentsToCompleteAfterMRPExecution.getCreate(executor);
-			scheduler.enqueuePPOrder(order);
+			scheduler.enqueuePPOrder(ppOrder);
 		}
-
 		//
 		// Let the executor know that we generated a new document
-		executor.addGeneratedSupplyDocument(order);
-	}
-
-	private int calculateDurationDays(final IMRPContext mrpContext, final BigDecimal qty)
-	{
-		final int leadtimeDays = calculateLeadtimeDays(mrpContext, qty);
-		final int durationTotalDays = mrpBL.calculateDurationDays(leadtimeDays, mrpContext.getProductPlanning());
-		return durationTotalDays;
-	}
-
-	private int calculateLeadtimeDays(final IMRPContext mrpContext, final BigDecimal qty)
-	{
-		final Properties ctx = mrpContext.getCtx();
-		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-
-		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
-		if (leadtimeDays > 0)
-		{
-			// Leadtime was set in Product Planning
-			// take the leadtime as it is
-			return leadtimeDays;
-		}
-
-		final I_AD_Workflow adWorkflow = productPlanningData.getAD_Workflow();
-		final I_S_Resource plant = productPlanningData.getS_Resource();
-		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService(ctx);
-		final BigDecimal leadtimeCalc = routingService.calculateDuration(adWorkflow, plant, qty);
-		return leadtimeCalc.intValueExact();
+		executor.addGeneratedSupplyDocument(ppOrder);
 	}
 
 	@Override
-	public void cleanup(final IMRPContext mrpContext, final IMRPExecutor executor)
+	public void cleanup(final IMaterialPlanningContext mrpContext, final IMRPExecutor executor)
 	{
 		//
 		// Delete generated manufacturing orders
@@ -739,7 +633,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 			return;
 		}
 
-		final IMRPContextFactory mrpContextFactory = Services.get(IMRPContextFactory.class);
+		final ILiberoMRPContextFactory mrpContextFactory = Services.get(ILiberoMRPContextFactory.class);
 
 		final MRPContextUniquePlanningSegmentsCollector mrpContextsCollector = new MRPContextUniquePlanningSegmentsCollector();
 		mrpContextsCollector.setKeepLastAdded(true);
@@ -776,9 +670,7 @@ public class PPOrderMRPSupplyProducer extends AbstractMRPSupplyProducer
 
 	private final boolean isAlternative(final I_PP_Order_BOMLine orderBOMLine)
 	{
-		final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
-
-		final boolean alternative = orderBOMBL.isVariant(orderBOMLine);
+		final boolean alternative = PPOrderUtil.isVariant(orderBOMLine);
 		return alternative;
 	}
 

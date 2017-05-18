@@ -36,18 +36,18 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.X_PP_MRP;
-import org.eevolution.mrp.api.IMRPContext;
-import org.eevolution.mrp.api.IMRPContextFactory;
 import org.eevolution.mrp.api.IMRPDemand;
 import org.eevolution.mrp.api.IMRPDemandAllocationResult;
 import org.eevolution.mrp.api.IMRPExecutor;
-import org.eevolution.mrp.api.IMRPNotesCollector;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.eevolution.mrp.api.IMRPSuppliesPool;
-import org.eevolution.mrp.api.IMutableMRPContext;
 import org.eevolution.mrp.api.MRPFirmType;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
+
+import de.metas.material.planning.IMRPContextFactory;
+import de.metas.material.planning.IMRPNotesCollector;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMutableMRPContext;
 
 public class MRPSupplyReservator
 {
@@ -79,12 +79,12 @@ public class MRPSupplyReservator
 
 	/**
 	 * 
-	 * NOTE: after running this method, {@link IMRPContext#setQtyProjectOnHand(BigDecimal)} is adjusted by subtracting Projected QtyOnHand that was reserved.
+	 * NOTE: after running this method, {@link IMaterialPlanningContext#setQtyProjectOnHand(BigDecimal)} is adjusted by subtracting Projected QtyOnHand that was reserved.
 	 * 
 	 * @param mrpContext
 	 * @param mrpDemand
 	 */
-	public IMRPDemandAllocationResult reserveMRPSupplies(final IMRPContext mrpContext, final IMRPDemand mrpDemand)
+	public IMRPDemandAllocationResult reserveMRPSupplies(final IMaterialPlanningContext mrpContext, final IMRPDemand mrpDemand)
 	{
 		final IMutable<IMRPDemandAllocationResult> result = new Mutable<>();
 		trxManager.run(mrpContext.getTrxName(), new TrxRunnable()
@@ -105,7 +105,7 @@ public class MRPSupplyReservator
 		return result.getValue();
 	}
 
-	private final IMRPDemandAllocationResult reserveMRPSupplies0(final IMRPContext mrpContext, final IMRPDemand mrpDemand)
+	private final IMRPDemandAllocationResult reserveMRPSupplies0(final IMaterialPlanningContext mrpContext, final IMRPDemand mrpDemand)
 	{
 		trxManager.assertTrxNotNull(mrpContext);
 
@@ -139,7 +139,7 @@ public class MRPSupplyReservator
 	 * @param mrpDemand
 	 * @return true if given MRP demand is valid and we can go on and try to allocate to supplies
 	 */
-	private boolean checkMRPDemand(final IMRPContext mrpContext, final IMRPDemand mrpDemand)
+	private boolean checkMRPDemand(final IMaterialPlanningContext mrpContext, final IMRPDemand mrpDemand)
 	{
 		//
 		// Qty Gross Requirement (i.e. how much we need to allocate, how much is the demand)
@@ -173,7 +173,7 @@ public class MRPSupplyReservator
 	 * 
 	 * @param mrpContext
 	 */
-	public void cancelRemainingMRPSupplies(final IMRPContext mrpContext)
+	public void cancelRemainingMRPSupplies(final IMaterialPlanningContext mrpContext)
 	{
 		final ListMRPSuppliesPool mrpSuppliesPool = new ListMRPSuppliesPool(mrpContext, getMRPExecutor());
 
@@ -188,7 +188,7 @@ public class MRPSupplyReservator
 	 * @param mrpContext
 	 * @return available MRP supplies to be allocated
 	 */
-	private List<IMutableMRPRecordAndQty> retrieveAvailableMRPSuppplies(final IMRPContext mrpContext)
+	private List<IMutableMRPRecordAndQty> retrieveAvailableMRPSuppplies(final IMaterialPlanningContext mrpContext)
 	{
 		final IMRPQueryBuilder mrpQueryBuilder = createSuppliesMRPQueryBuilder(mrpContext);
 		
@@ -217,7 +217,7 @@ public class MRPSupplyReservator
 		return MRPRecordAndQty.asMutableMRPRecordAndQtyList(mrpSupplies);
 	}
 
-	private List<IMRPSuppliesPool> retrieveAvailableMRPSuppliesPools(final IMRPContext mrpContext)
+	private List<IMRPSuppliesPool> retrieveAvailableMRPSuppliesPools(final IMaterialPlanningContext mrpContext)
 	{
 		final QtyOnHandMRPSuppliesPool qtyOnHandMRPSuppliesPool = new QtyOnHandMRPSuppliesPool(mrpContext);
 
@@ -251,7 +251,7 @@ public class MRPSupplyReservator
 		return mrpSuppliesPoolList;
 	}
 
-	private IMRPQueryBuilder createSuppliesMRPQueryBuilder(final IMRPContext mrpContext)
+	private IMRPQueryBuilder createSuppliesMRPQueryBuilder(final IMaterialPlanningContext mrpContext)
 	{
 		final IMRPExecutor mrpExecutor = getMRPExecutor();
 		final IMRPQueryBuilder mrpQueryBuilder = mrpExecutor.createMRPQueryBuilder(mrpContext)
@@ -266,7 +266,7 @@ public class MRPSupplyReservator
 		return mrpQueryBuilder;
 	}
 
-	public void cleanupQuantityOnHandReservations(final IMRPContext mrpContext)
+	public void cleanupQuantityOnHandReservations(final IMaterialPlanningContext mrpContext)
 	{
 		final Logger logger = mrpContext.getLogger();
 		final int countDeleted = createSuppliesMRPQueryBuilder(mrpContext)
@@ -279,7 +279,7 @@ public class MRPSupplyReservator
 		logger.info("Deleted QtyOnHand reservations: #{}", countDeleted);
 	}
 
-	public void markMRPSuppliesAvailable(final IMRPContext mrpContext)
+	public void markMRPSuppliesAvailable(final IMaterialPlanningContext mrpContext)
 	{
 		final Logger logger = mrpContext.getLogger();
 

@@ -41,8 +41,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-
-import junit.framework.Assert;
+import org.junit.Assert;
 
 public class BPOpenBalanceValidator implements ModelValidator
 {

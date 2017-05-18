@@ -306,6 +306,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return getHUAndItemsDAO().retrieveItem(hu, piItem);
 	}
+	
+	@Override
+	public I_M_HU_Item retrieveAggregatedItemOrNull(final I_M_HU hu, final I_M_HU_PI_Item piItem)
+	{
+		return getHUAndItemsDAO().retrieveAggregatedItemOrNull(hu);
+	}
 
 	@Override
 	public List<IPair<I_M_HU_PackingMaterial, Integer>> retrievePackingMaterialAndQtys(final I_M_HU hu)

@@ -16,7 +16,7 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 344313095L;
+	private static final long serialVersionUID = 567598441L;
 
     /** Standard Constructor */
     public X_M_HU_Attribute (Properties ctx, int M_HU_Attribute_ID, String trxName)
@@ -260,7 +260,7 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -282,7 +282,7 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumberInitial);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

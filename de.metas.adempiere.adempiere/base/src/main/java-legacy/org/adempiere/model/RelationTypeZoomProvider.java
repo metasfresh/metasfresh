@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 
 /*
@@ -122,7 +123,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 
-		final String display = target.getRoleDisplayName(adWindowId);
+		final ITranslatableString display = target.getRoleDisplayName(adWindowId);
 
 		final String zoomInfoId = getZoomInfoId();
 		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
@@ -300,9 +301,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		private final int AD_Reference_ID;
 		private final ITableRefInfo tableRefInfo;
-		private final String roleDisplayName;
+		private final ITranslatableString roleDisplayName;
 
-		private ZoomProviderDestination(final int AD_Reference_ID, final ITableRefInfo tableRefInfo, final String roleDisplayName)
+		private ZoomProviderDestination(final int AD_Reference_ID, final ITableRefInfo tableRefInfo, final ITranslatableString roleDisplayName)
 		{
 			super();
 			this.AD_Reference_ID = AD_Reference_ID;
@@ -335,16 +336,16 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return tableRefInfo;
 		}
 
-		public String getRoleDisplayName(final int fallbackAD_Window_ID)
+		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
 		{
-			if (!Check.isEmpty(roleDisplayName))
+			if (roleDisplayName != null)
 			{
 				return roleDisplayName;
 			}
 
 			// Fallback to window name
-			final String windowName = Services.get(IADWindowDAO.class).retrieveWindowName(fallbackAD_Window_ID);
-			Check.errorIf(Check.isEmpty(windowName), "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
+			final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(fallbackAD_Window_ID);
+			Check.errorIf(windowName == null, "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
 			return windowName;
 		}
 
@@ -354,7 +355,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		 */
 		public int getAD_Window_ID(final boolean isSOTrx)
 		{
-			int windowId = tableRefInfo.getOverrideZoomWindow();
+			int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
 			if (windowId > 0)
 			{
 				return windowId;
@@ -362,11 +363,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 			if (isSOTrx)
 			{
-				windowId = tableRefInfo.getZoomWindow();
+				windowId = tableRefInfo.getZoomSO_Window_ID();
 			}
 			else
 			{
-				windowId = tableRefInfo.getZoomWindowPO();
+				windowId = tableRefInfo.getZoomPO_Window_ID();
 			}
 			if (windowId <= 0)
 			{
@@ -413,9 +414,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private int adRelationTypeId;
 
 		private int sourceReferenceId = -1;
-		private String sourceRoleDisplayName;
+		private ITranslatableString sourceRoleDisplayName;
 		private int targetReferenceId = -1;
-		private String targetRoleDisplayName;
+		private ITranslatableString targetRoleDisplayName;
 
 		private Builder()
 		{
@@ -488,13 +489,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return Services.get(ILookupDAO.class).retrieveTableRefInfo(getSource_Reference_ID());
 		}
 
-		public Builder setSourceRoleDisplayName(final String sourceRoleDisplayName)
+		public Builder setSourceRoleDisplayName(final ITranslatableString sourceRoleDisplayName)
 		{
 			this.sourceRoleDisplayName = sourceRoleDisplayName;
 			return this;
 		}
 
-		private String getSourceRoleDisplayName()
+		private ITranslatableString getSourceRoleDisplayName()
 		{
 			return sourceRoleDisplayName;
 		}
@@ -516,13 +517,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return Services.get(ILookupDAO.class).retrieveTableRefInfo(getTarget_Reference_ID());
 		}
 
-		public Builder setTargetRoleDisplayName(final String targetRoleDisplayName)
+		public Builder setTargetRoleDisplayName(final ITranslatableString targetRoleDisplayName)
 		{
 			this.targetRoleDisplayName = targetRoleDisplayName;
 			return this;
 		}
 
-		public String getTargetRoleDisplayName()
+		public ITranslatableString getTargetRoleDisplayName()
 		{
 			return targetRoleDisplayName;
 		}

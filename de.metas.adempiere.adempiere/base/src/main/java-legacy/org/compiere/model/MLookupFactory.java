@@ -33,13 +33,13 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.logging.LogManager;
 
@@ -334,13 +334,15 @@ public class MLookupFactory
 				.append(" ORDER BY ").append(sqlOrderBy);
 
 		//
+		final int AD_REFERENCE_WINDOW_ID = 101;
 		final MLookupInfo lookupInfo = new MLookupInfo(
 				realSQL_BaseLang.toString(),   // Query_BaseLang
 				realSQL_Trl.toString(),   // Query_Trl
-				"AD_Ref_List",   // TableName
-				"AD_Ref_List.Value",   // KeyColumn
-				101,   // zoomWindow
-				101,   // zoomWindowPO
+				I_AD_Ref_List.Table_Name, // TableName
+				I_AD_Ref_List.Table_Name + "." + I_AD_Ref_List.COLUMNNAME_Value,   // KeyColumn
+				AD_REFERENCE_WINDOW_ID,   // zoomSO_Window_ID
+				AD_REFERENCE_WINDOW_ID,   // zoomPO_Window_ID
+				-1, // zoomAD_Window_ID_Override
 				MQuery.getEqualQuery("AD_Reference_ID", AD_Reference_Value_ID) // Zoom Query
 		);
 		lookupInfo.setDisplayColumnSQL(displayColumnSQL_BaseLang, displayColumnSQL_Trl);
@@ -616,23 +618,23 @@ public class MLookupFactory
 
 		//
 		// Zoom AD_Window_IDs
-		int ZoomWindow = tableRefInfo.getZoomWindow();
+		int zoomSO_Window_ID = tableRefInfo.getZoomSO_Window_ID();
 		if (lookupDisplayInfo.getZoomWindow() > 0)
 		{
-			ZoomWindow = lookupDisplayInfo.getZoomWindow();
+			zoomSO_Window_ID = lookupDisplayInfo.getZoomWindow();
 		}
 
-		int ZoomWindowPO = tableRefInfo.getZoomWindowPO();
+		int zoomPO_Window_ID = tableRefInfo.getZoomPO_Window_ID();
 		if (lookupDisplayInfo.getZoomWindowPO() > 0)
 		{
-			ZoomWindowPO = lookupDisplayInfo.getZoomWindowPO();
+			zoomPO_Window_ID = lookupDisplayInfo.getZoomWindowPO();
 		}
 
-		final int overrideZoomWindow = tableRefInfo.getOverrideZoomWindow();
-		if (overrideZoomWindow > 0)
+		final int zoomAD_Window_ID_Override = tableRefInfo.getZoomAD_Window_ID_Override();
+		if (zoomAD_Window_ID_Override > 0)
 		{
-			ZoomWindow = overrideZoomWindow;
-			ZoomWindowPO = 0;
+			zoomSO_Window_ID = zoomAD_Window_ID_Override;
+			zoomPO_Window_ID = 0;
 		}
 
 		//
@@ -640,7 +642,7 @@ public class MLookupFactory
 		final MLookupInfo lookupInfo = new MLookupInfo(
 				sqlQueryFinal_BaseLang.toString(), sqlQueryFinal_Trl.toString() //
 				, TableName, keyColumnFQ //
-				, ZoomWindow, ZoomWindowPO, zoomQuery //
+				, zoomSO_Window_ID, zoomPO_Window_ID, zoomAD_Window_ID_Override, zoomQuery //
 		);
 		lookupInfo.setWindowNo(windowNo);
 		lookupInfo.setDisplayColumns(displayColumns);

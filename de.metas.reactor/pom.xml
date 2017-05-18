@@ -19,8 +19,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>../de.metas.assemblies</module>
-
+		
 		<module>../de.metas.migration</module>
 		<module>../de.metas.scripts.rollout</module>
 		
@@ -75,6 +74,8 @@
 		<module>../de.metas.edi</module>
 
 		<module>../de.metas.materialtracking</module>
+
+		<module>../de.metas.material</module>
 
 		<module>../de.metas.handlingunits.base</module>
 		<module>../de.metas.handlingunits.client</module>

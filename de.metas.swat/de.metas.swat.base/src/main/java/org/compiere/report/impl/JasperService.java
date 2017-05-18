@@ -120,7 +120,8 @@ public final class JasperService extends AbstractJasperService
 		}
 		catch (Exception e)
 		{
-			throw new RuntimeException("Failed printing " + pi, e);
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("processInfo", pi);
 		}
 	}
 

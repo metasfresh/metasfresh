@@ -41,14 +41,14 @@ BEGIN
 	IF v_to_update > 0
 	THEN
 		-- there are records to update, so update the production table and also set the respective massmigrate_records rows to IsDone='Y'
-		RAISE INFO 'update_production_table - %: Going to update % rows to DLM_Level=2', v_config_line.TableName, v_to_update;	
+		RAISE INFO 'update_production_table - %: Going to update % rows to DLM_Level=3 ("DLM_Level_ARCHIVE")', v_config_line.TableName, v_to_update;	
 
 		-- disable DLM-triggers for table v_config_line.TableName
 		PERFORM dlm.disable_dlm_triggers(v_config_line.TableName, true); /*p_silent=true*/
 		
 		v_update_production_table_sql :=	'
 			UPDATE '||v_config_line.TableName||' 
-			SET DLM_Level=2, DLM_Partition_ID='||v_config_line.DLM_Partition_ID||'
+			SET DLM_Level=3, DLM_Partition_ID='||v_config_line.DLM_Partition_ID||'
 			FROM massmigrate_records_temp t 
 			WHERE '||v_config_line.TableName||'_ID=t.Record_ID;';
 		

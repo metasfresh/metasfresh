@@ -16,7 +16,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1340576426L;
+	private static final long serialVersionUID = 969057434L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities_Summary (Properties ctx, int RV_HU_Quantities_Summary_ID, String trxName)
@@ -205,7 +205,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAvailable);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -227,7 +227,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHand);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -249,7 +249,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -271,7 +271,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -49,6 +49,7 @@ import java.util.HashMap;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
+import org.adempiere.util.Services;
 import org.compiere.model.MProduct;
 import org.compiere.model.MResource;
 import org.compiere.model.MResourceType;
@@ -56,13 +57,15 @@ import org.compiere.model.MUOM;
 import org.compiere.model.MUOMConversion;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.eevolution.model.MPPOrder;
 import org.eevolution.model.MPPOrderNode;
 import org.eevolution.model.MPPOrderWorkflow;
 import org.eevolution.model.reasoner.CRPReasoner;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
+
+import de.metas.i18n.Msg;
+import de.metas.material.planning.IResourceProductService;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -173,16 +176,18 @@ public abstract class CRPDatasetFactory extends CRPReasoner implements CRPModel
 	 */
 	private Timestamp[] getDayBorders(Timestamp dateTime, MPPOrderNode node, MResourceType t)
 	{
+		final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
+		
  		// The theoretical latest time on a day, where the work ends, dependent on
 		// the resource type's time slot value
-		Timestamp endDayTime = t.getDayEnd(dateTime);
+		Timestamp endDayTime = resourceProductService.getDayEndForResourceType(t, dateTime);
 		// Initialize the end time to the present, if the work ends at this day.
 		// Otherwise the earliest possible start time for a day is set.
 		endDayTime = (endDayTime.before(node.getDateFinishSchedule())) ? endDayTime : node.getDateFinishSchedule();
 		
  		// The theoretical earliest time on a day, where the work begins, dependent on
 		// the resource type's time slot value
-		Timestamp startDayTime = t.getDayStart(dateTime);
+		Timestamp startDayTime = resourceProductService.getDayStartForResourceType(t, dateTime);
 		// Initialize the start time to the present, if the work begins at this day.
 		// Otherwise the latest possible start time for a day is set.
 		startDayTime = (startDayTime.after(node.getDateStartSchedule())) ? startDayTime : node.getDateStartSchedule();

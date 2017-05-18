@@ -31,6 +31,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 
 /*
  * #%L
@@ -313,8 +314,7 @@ public class ProcessExecutionResult
 		}
 		else
 		{
-			final boolean gridView = true;
-			recordsToOpen = new RecordsToOpen(records, adWindowId, gridView);
+			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
 		}
 	}
 
@@ -327,12 +327,11 @@ public class ProcessExecutionResult
 		else
 		{
 			final int adWindowId = -1;
-			final boolean gridView = true;
-			recordsToOpen = new RecordsToOpen(records, adWindowId, gridView);
+			recordsToOpen = new RecordsToOpen(records, adWindowId, OpenTarget.GridView);
 		}
 	}
 
-	public void setRecordToOpen(final TableRecordReference record, final int adWindowId, final boolean gridView)
+	public void setRecordToOpen(final TableRecordReference record, final int adWindowId, final OpenTarget target)
 	{
 		if (record == null)
 		{
@@ -340,7 +339,7 @@ public class ProcessExecutionResult
 		}
 		else
 		{
-			recordsToOpen = new RecordsToOpen(ImmutableList.of(record), adWindowId, gridView);
+			recordsToOpen = new RecordsToOpen(ImmutableList.of(record), adWindowId, target);
 		}
 	}
 
@@ -469,13 +468,26 @@ public class ProcessExecutionResult
 	 *
 	 * If needed, it will load the logs.
 	 *
-	 * @return logs inner list
+	 * @return logs inner list; never fails
 	 */
 	private final List<ProcessInfoLog> getLogsInnerList()
 	{
 		if (logs == null)
 		{
-			logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
+			try
+			{
+				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
+			}
+			catch(final Exception ex)
+			{
+				// Don't fail log lines failed loading because most of the APIs rely on this.
+				// In case we would propagate the exception we would face:
+				// * worst case would be that it will stop some important execution.
+				// * best case the exception would be lost somewhere without any notification
+				logs = new ArrayList<>();
+				logs.add(ProcessInfoLog.ofMessage("Ops, sorry we failed loading the log lines. (details in console)"));
+				logger.warn("Failed loading log lines for {}", this, ex);
+			}
 		}
 		return logs;
 	}
@@ -611,15 +623,21 @@ public class ProcessExecutionResult
 		@JsonInclude(JsonInclude.Include.NON_NULL)
 		private final Integer adWindowId;
 
-		@JsonProperty("gridView")
-		@JsonInclude(JsonInclude.Include.NON_NULL)
-		private final boolean gridView;
+		public static enum OpenTarget
+		{
+			SingleDocument,
+			SingleDocumentModal,
+			GridView,
+		}
+		
+		@JsonProperty("target")
+		private final OpenTarget target;
 
 		@JsonCreator
 		private RecordsToOpen( //
 				@JsonProperty("records") final Collection<TableRecordReference> records //
 				, @JsonProperty("adWindowId") final Integer adWindowId //
-				, @JsonProperty("gridView") final boolean gridView //
+				, @JsonProperty("target") final OpenTarget target //
 		)
 		{
 			super();
@@ -627,7 +645,7 @@ public class ProcessExecutionResult
 			
 			this.records = ImmutableList.copyOf(records);
 			this.adWindowId = adWindowId > 0 ? adWindowId : null;
-			this.gridView = gridView;
+			this.target = target;
 		}
 
 		@Override
@@ -637,14 +655,14 @@ public class ProcessExecutionResult
 					.omitNullValues()
 					.add("records", records)
 					.add("adWindowId", adWindowId)
-					.add("gridView", gridView)
+					.add("target", target)
 					.toString();
 		}
 
 		@Override
 		public int hashCode()
 		{
-			return Objects.hash(records, adWindowId, gridView);
+			return Objects.hash(records, adWindowId, target);
 		}
 
 		@Override
@@ -659,7 +677,7 @@ public class ProcessExecutionResult
 				final RecordsToOpen other = (RecordsToOpen)obj;
 				return Objects.equals(records, other.records)
 						&& Objects.equals(adWindowId, other.adWindowId)
-						&& Objects.equals(gridView, other.gridView);
+						&& Objects.equals(target, other.target);
 			}
 			else
 			{
@@ -683,9 +701,9 @@ public class ProcessExecutionResult
 			return adWindowId == null ? -1 : adWindowId;
 		}
 
-		public boolean isGridView()
+		public OpenTarget getTarget()
 		{
-			return gridView;
+			return target;
 		}
 	}
 }

@@ -15,11 +15,11 @@ import java.util.List;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,6 +32,11 @@ import java.util.List;
  */
 public interface IProcessPreconditionsContext
 {
+	/**
+	 * @return underlying AD_Window_ID or <code>-1</code> if not available
+	 */
+	int getAD_Window_ID();
+
 	/**
 	 * @return underlying table name or <code>null</code>
 	 */
@@ -50,24 +55,28 @@ public interface IProcessPreconditionsContext
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
 
 	/**
-	 * @return selection size
+	 * Gets how many rows were selected.
+	 * In case the size is not determined, an exception is thrown.
+	 * 
+	 * Instead of calling this method, always consider using {@link #isNoSelection()}, {@link #isSingleSelection()}, {@link #isMoreThanOneSelected()} if applicable.
 	 */
 	int getSelectionSize();
 
-	/**
-	 * @return true if there is no selection
-	 */
+	/** @return true if there is no selected rows */
 	default boolean isNoSelection()
 	{
 		return getSelectionSize() <= 0;
 	}
 
-	/**
-	 * @return true if only one row is selected
-	 */
+	/** @return true if only one row is selected */
 	default boolean isSingleSelection()
 	{
 		return getSelectionSize() == 1;
 	}
 
+	/** @return true if there are more then one selected row */
+	default boolean isMoreThanOneSelected()
+	{
+		return getSelectionSize() > 1;
+	}
 }

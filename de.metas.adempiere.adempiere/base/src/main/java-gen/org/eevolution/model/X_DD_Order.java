@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.eevolution.model;
 
@@ -32,7 +16,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1231095980L;
+	private static final long serialVersionUID = -932939651L;
 
     /** Standard Constructor */
     public X_DD_Order (Properties ctx, int DD_Order_ID, String trxName)
@@ -61,8 +45,11 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 // I
 			setIsApproved (false);
 			setIsInDispute (false);
+// N
 			setIsInTransit (false);
+// N
 			setIsPrinted (false);
+// N
 			setIsSOTrx (false);
 // @IsSOTrx@
 			setM_Warehouse_ID (0);
@@ -93,14 +80,6 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_DD_Order[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -159,7 +138,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -525,7 +504,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -903,7 +882,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1088,7 +1067,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		return false;
 	}
 
-	/** Set Gedruckt.
+	/** Set andrucken.
 		@param IsPrinted 
 		Indicates if this document / line is printed
 	  */
@@ -1098,7 +1077,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		set_Value (COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
 	}
 
-	/** Get Gedruckt.
+	/** Get andrucken.
 		@return Indicates if this document / line is printed
 	  */
 	@Override
@@ -1435,6 +1414,40 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 		return ii.intValue();
 	}
 
+	@Override
+	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
+	}
+
+	@Override
+	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
+	}
+
+	/** Set Product Planning.
+		@param PP_Product_Planning_ID Product Planning	  */
+	@Override
+	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID)
+	{
+		if (PP_Product_Planning_ID < 1) 
+			set_Value (COLUMNNAME_PP_Product_Planning_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Product_Planning_ID, Integer.valueOf(PP_Product_Planning_ID));
+	}
+
+	/** Get Product Planning.
+		@return Product Planning	  */
+	@Override
+	public int getPP_Product_Planning_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Product_Planning_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** 
 	 * PriorityRule AD_Reference_ID=154
 	 * Reference name: _PriorityRule
@@ -1749,7 +1762,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Volume);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1771,7 +1784,7 @@ public class X_DD_Order extends org.compiere.model.PO implements I_DD_Order, org
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Weight);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }

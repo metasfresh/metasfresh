@@ -28,9 +28,9 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.MFormAccess;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.model.I_AD_Form;
@@ -44,12 +44,14 @@ public class AD_Form
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void addAccessToRolesWithAutomaticMaintenance(final I_AD_Form form)
 	{
+		final IUserRolePermissionsDAO permissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		
+		final int adFormId = form.getAD_Form_ID();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(form);
 		for (final I_AD_Role role : Services.get(IRoleDAO.class).retrieveAllRolesWithAutoMaintenance(ctx))
 		{
-			MFormAccess pa = new MFormAccess(form, role);
-			pa.save();
+			final boolean readWrite = true;
+			permissionsDAO.createFormAccess(role, adFormId, readWrite);
 		}
-
 	}
 }

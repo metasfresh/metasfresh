@@ -118,8 +118,8 @@ public class MRPExecutor_CircularDistributionNetwork_Test extends AbstractMRPTes
 
 		//
 		// Run MRP
-		mrpExecutor.setDisallowMRPNotes(true);
-		mrpExecutor.createAllowMRPNodeRule()
+		helper.mrpExecutor.setDisallowMRPNotes(true);
+		helper.mrpExecutor.createAllowMRPNodeRule()
 				.setMRPCode(MRPExecutorService.MRP_ERROR_MRPExecutorMaxIterationsExceeded);
 		helper.newMRPTestRun()
 				.setAssertMRPDemandsNotAvailable(false) // NOTE: in case of cycle detection some MRP demands could be left as they were

@@ -22,6 +22,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 import org.compiere.model.I_AD_PrintFormat;
@@ -31,7 +33,6 @@ import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Language;
 
 /**
  *	Print Format Item Model.

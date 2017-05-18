@@ -11,15 +11,10 @@ else
 	exit 1
 fi
 
-
-LOCAL_DIR=$(dirname $0)
-
-if [ "$LOCAL_DIR" == "." ]; then
-	LOCAL_DIR=$(pwd)
-fi
-
 #Note: ROLLOUT_DIR can be overridden from cmdline using -d
-ROLLOUT_DIR=$LOCAL_DIR/..
+#Thanks to http://stackoverflow.com/questions/6643853/how-to-convert-in-path-names-to-absolute-name-in-a-bash-script for the readlink tip
+LOCAL_DIR=$(readlink -m $(dirname $0))
+ROLLOUT_DIR=$(readlink -m ${LOCAL_DIR}/..)
 
 SOURCES_DIR=$ROLLOUT_DIR/sources
 
@@ -66,8 +61,6 @@ prepare()
 install_metasfresh()
 {	
 	trace install_metasfresh BEGIN
-
-	prepare
 	
 	if [[ -f ${METASFRESH_HOME}/metasfresh_server.conf ]]; then
 		trace install_metasfresh "The local instalation is already spring-bootified"
@@ -90,8 +83,7 @@ install_metasfresh()
 
 	trace main "Making sure that the main jar can be overwritten with our new version"
 	chmod 200 ${METASFRESH_HOME}/metasfresh_server.jar
-	
-	
+		
 	trace install_metasfresh "Copying our files to the metasfresh folder" 
 	cp -Rv ${ROLLOUT_DIR}/deploy/* ${METASFRESH_HOME}
 
@@ -106,38 +98,125 @@ install_metasfresh()
 	trace install_metasfresh END
 }
 
-install_metasfresh-webui-api()
+prompt_superuser_script()
 {
-	trace install_metasfresh-webui-api BEGIN
+	local service_name="$1"
+	local message="$2"
 	
-	# First, check if there is anything to do at all
-	# Thx to http://stackoverflow.com/a/13864829/1012103 on how to check if METASFRESH_WEBUI_FRONTEND_HOME is set
-	if [ -z ${METASFRESH_WEBUI_API_HOME+x} ]; 
+	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo "!! PLEASE READ THE FOLLOWING !!"
+	echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	echo "${message}"
+	echo "To perform this task and possible others, please run the following shell script as SUPER USER. Then rerun this script."
+	echo ""
+	echo "${LOCAL_DIR}/prepare_services_superuser.sh -s ${LOCAL_SETTINGS_FILE} -d ${ROLLOUT_DIR}"
+	echo ""
+}
+
+#
+# Installs a spring-boot service. 
+# Notes:
+#   * installs the service binary from ${ROLLOUT_DIR}/deploy/services
+#   * the binaries name have be <service_name>.jar or <service_name>-service.jar. Anawys, it's installed in the target folder as <service_name>.jar. 
+#     This is consistent with the service's docker image name.
+#   * metasfresh-webui-api and "metasfresh-material-dispo will be restarted. All others (currently just metasfresh-admin) won't. This is a hack and will probably be changed
+#   * install_metasfresh() also installs a service (metasfresh-backend), but is in a separated function for historical reasons.
+#
+install_service()
+{
+	local service_name=$1
+	trace install_${service_name} BEGIN
+
+	local SERVICE_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
+	local SERVICE_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
+
+	local SERVICE_DEPLOY_SOURCE_NAME=NOTSET
+	
+	if [[ -f ${SERVICE_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ]];
 	then
-		trace install_metasfresh-webui-api "Variable METASFRESH_WEBUI_API_HOME is not set. Not installing the webui-api"
-		return
+		SERVICE_DEPLOY_SOURCE_NAME=${service_name}
+	elif [[ -f ${SERVICE_DEPLOY_SOURCE_FOLDER}/${service_name}-service.jar ]];
+	then
+		SERVICE_DEPLOY_SOURCE_NAME=${service_name}-service
+	else
+		trace install_${service_name} "Service binary ${SERVICE_DEPLOY_SOURCE_FOLDER}/${service_name}[-service].jar is not present. Nothing to do."
+		return;
 	fi
+	trace install_${service_name} "Going to install ${SERVICE_DEPLOY_SOURCE_FOLDER}/${SERVICE_DEPLOY_SOURCE_NAME}.jar"	
 	
-	local SRC_JAR="${ROLLOUT_DIR}/deploy/download/metasfresh-webui-api.jar"
-	if [ ! -e ${SRC_JAR} ];
+	if [[ -d /opt/${service_name} ]]; 
 	then
-		trace install_metasfresh-webui-api "File ${SRC_JAR} is not part of this package. Not installing the webui-api"
-		return
+		prompt_superuser_script ${service_name} "The service ${service_name} is currently installed in /opt/${service_name}. It needs to be migrated to $SERVICE_DEPLOY_TARGET_FOLDER"
+		exit 1;
 	fi
 
-	local TARGET_JAR="${METASFRESH_WEBUI_API_HOME}/metasfresh-webui-api.jar"	
-	if [ -x $TARGET_JAR ]; # if TARGET_JAR exists as an executable file, then try to stop it
+	local SYSTEM_SERVICE_FILE=/etc/systemd/system/${service_name}.service
+	if [[ ! -f $SYSTEM_SERVICE_FILE ]]; 
 	then
-		stop_metasfresh-webui-api
+		prompt_superuser_script ${service_name} "The systemd service file $SYSTEM_SERVICE_FILE is not yet installed."
+		exit 1;
+	fi
+
+	local SYSTEM_SUDOERS_FILE="/etc/sudoers.d/${service_name}"
+	if [[ ! -f $SYSTEM_SUDOERS_FILE ]];
+	then
+		prompt_superuser_script ${service_name} "The sudoers.d file $SYSTEM_SUDOERS_FILE is not yet installed. It is required to allow the metasfresh user to start and stop the ${service_name} service."
+		exit 1;
+	fi
+
+	# make sure the service's folder actually exists
+	mkdir -p $SERVICE_DEPLOY_TARGET_FOLDER
+	
+	local SERVICE_CONF_FILE="$SERVICE_DEPLOY_TARGET_FOLDER/${service_name}.conf"
+	if [[ ! -f $SERVICE_CONF_FILE ]];
+	then
+		trace install_${service_name} "The service conf file $SERVICE_CONF_FILE is not yet installed. It is required to customize the services runtime paramters"
+		trace install_${service_name} "Checking if file $(pwd)/${service_name}-configs/configs/${service_name}.conf was already extracted"
+		if [[ ! -d "$(pwd)/${SERVICE_DEPLOY_SOURCE_NAME}-configs/configs" ]];
+		then
+			# if the configs.zip was not yet extracted per our advise, then do it now
+			unzip ${SERVICE_DEPLOY_SOURCE_FOLDER}/${SERVICE_DEPLOY_SOURCE_NAME}-configs.zip -d $(pwd)/${service_name}-configs
+		fi
+		if [[ -f $(pwd)/${service_name}-configs/configs/${service_name}.conf ]];
+		then
+			cp -v $(pwd)/${service_name}-configs/configs/${service_name}.conf ${SERVICE_CONF_FILE}
+		fi
 	fi
 	
-	cp -v $SRC_JAR $TARGET_JAR
-	chmod -v 700 $TARGET_JAR # make it executable
-	chown -v metasfresh: $TARGET_JAR
-		
-	start_metasfresh-webui-api
+	# check if service is running. if it is, it's safe to assume stopping/starting during rollout
+	#
+	local service_isactive=NOTSET
+    if [[ $(systemctl status ${service_name}.service | grep "running" | wc -l) -gt "0" ]]; then
+        trace install_${service_name} "Stopping service"
+        service_isactive=yes
+        sudo systemctl stop ${service_name}.service
+    fi
 	
-	trace install_metasfresh-webui-api END
+	mkdir -p ${METASFRESH_HOME}/${service_name}
+	
+	if [[ -f ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar ]]; 
+	then
+		trace install_${service_name} "Making sure that the existing service jar can be overwritten with our new version"
+		chmod 200 ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+	fi
+
+	cp -v ${SERVICE_DEPLOY_SOURCE_FOLDER}/${SERVICE_DEPLOY_SOURCE_NAME}.jar ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+	
+	trace install_${service_name} "Making sure that the main jar shall only be accessible for its owner"
+	chmod 500 ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+	
+    # if system was running before rollout, start it back up
+    #
+    if [[ ${service_isactive} = "yes" ]]; then
+    	trace install_${service_name} "Starting service"
+        sudo systemctl start ${service_name}.service
+    fi
+    
+    if [[ ${service_name} = "metasfresh-webui-api" ]] || [[ ${service_name} = "metasfresh-material-dispo" ]]; then
+        sudo systemctl restart ${service_name}.service
+    fi 
+	
+	trace install_${service_name} END
 }
 
 install_metasfresh-webui-frontend()
@@ -152,7 +231,7 @@ install_metasfresh-webui-frontend()
 		return
 	fi
 	
-	local SRC_TAR="${ROLLOUT_DIR}/deploy/download/metasfresh-webui-frontend.tar.gz"
+	local SRC_TAR="${ROLLOUT_DIR}/deploy/metasfresh-webui-frontend.tar.gz"
 	if [ ! -e ${SRC_TAR} ];
 	then
 		trace install_metasfresh-webui-frontend "File ${SRC_TAR} is not part of this package. Not installing the webui-frontend"
@@ -210,8 +289,14 @@ while getopts "d:s:n" OPTION; do
 	esac
 done
 
+prepare
+
 install_metasfresh 
-install_metasfresh-webui-api
+
+install_service metasfresh-admin
+install_service metasfresh-material-dispo
+install_service metasfresh-webui-api
+
 install_metasfresh-webui-frontend
 
 # task 06284

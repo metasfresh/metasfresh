@@ -10,7 +10,7 @@
 
 	<artifactId>de.metas.parent</artifactId>
 
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin 
+	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
 		can't set it to another version it -->
 	<version>1.0.0</version>
 
@@ -18,7 +18,7 @@
 
 	<description>metasfresh parent pom with common settings (e.g. java file encoding, enforcer rules, depdendency management) to be used by all metasfreseh maven projects</description>
 
-	<!-- TODO: consider removing jasperreports.version and dependencyManagement 
+	<!-- TODO: consider removing jasperreports.version and dependencyManagement
 		from this pom. It will instead be handled by adempiereJasper-parent -->
 
 	<properties>
@@ -38,19 +38,17 @@
 		<!-- this also happens to be the activeMQ.version used by http://servicemix.apache.org/downloads/servicemix-6.1.0 -->
 		<activeMQ.version>5.12.1</activeMQ.version>
 
-		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
+		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 
-		<!-- this is the spring version from the dependency tree of spring-boot-1.3.3 
-			Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base 
+		<!--
+			Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base
 			for some reason. -->
-		<!-- For versions info, see https://github.com/spring-projects/spring-boot/blob/v1.4.1.RELEASE/spring-boot-dependencies/pom.xml -->
-		<spring.version>4.3.3.RELEASE</spring.version>
+		<!-- For versions info, see https://github.com/spring-projects/spring-boot/blob/v1.5.3.RELEASE/spring-boot-dependencies/pom.xml -->
+		<spring.version>4.3.8.RELEASE</spring.version>
 
 		<guava.version>21.0</guava.version>
-		
-		<lombok.version>1.16.14</lombok.version>
 
-		<!-- The version to be used by metasfresh, as opposed to the ESB's. The 
+		<!-- The version to be used by metasfresh, as opposed to the ESB's. The
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
 
@@ -59,7 +57,7 @@
 
 		<!-- Tells SonarQube to run the unit tests -->
 		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
-		<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test 
+		<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test
 			coverage tool -->
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 
@@ -69,9 +67,9 @@
 
 	</properties>
 
-	<!-- FRESH-271 by declaring those three reactor poms as modules of this parent 
-		pom, we can set all the versions from cmdline, using mvn org.codehaus.mojo:versions-maven-plugin:2.1:revert 
-		-DnewVersion=tst -f de.metas.parent\pom.xml Note that we use version 2.1 
+	<!-- FRESH-271 by declaring those three reactor poms as modules of this parent
+		pom, we can set all the versions from cmdline, using mvn org.codehaus.mojo:versions-maven-plugin:2.1:revert
+		-DnewVersion=tst -f de.metas.parent\pom.xml Note that we use version 2.1
 		because of http://stackoverflow.com/questions/29995139/maven-versions-maven-plugin-versions-plugin-2-2 -->
 	<modules>
 		<module>../de.metas.reactor</module>
@@ -95,7 +93,7 @@
 				<artifactId>jasperreports</artifactId>
 				<version>${jasperreports.version}</version>
 				<exclusions>
-					<!-- excluding Lucene dependencies because they are conflicting with 
+					<!-- excluding Lucene dependencies because they are conflicting with
 						org.elasticsearch:elasticsearch -->
 					<exclusion>
 						<groupId>org.apache.lucene</groupId>
@@ -150,8 +148,8 @@
 				<artifactId>activemq-core</artifactId>
 				<version>${activeMQ.version}</version>
 			</dependency>
-			<!-- note: you probably don't want to use active-mq all, because it's 
-				likely that the enforcer plugin will fail with it. The reason is that it 
+			<!-- note: you probably don't want to use active-mq all, because it's
+				likely that the enforcer plugin will fail with it. The reason is that it
 				also includes 3rd-party classes which we already include otherwise. -->
 			<dependency>
 				<groupId>org.apache.activemq</groupId>
@@ -206,7 +204,7 @@
 			<dependency>
 				<groupId>javax.mail</groupId>
 				<artifactId>mail</artifactId>
-				<!-- Version 1.4.1 would also be available as OSGI bundle for servicemix, 
+				<!-- Version 1.4.1 would also be available as OSGI bundle for servicemix,
 					see http://repo1.maven.org/maven2/org/apache/servicemix/bundles/org.apache.servicemix.bundles.javax.mail -->
 				<version>1.4.3</version>
 			</dependency>
@@ -223,13 +221,6 @@
 				<artifactId>guava</artifactId>
 				<version>${guava.version}</version>
 			</dependency>
-
-			<dependency>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>${lombok.version}</version>
-			</dependency>
-			
 		</dependencies>
 	</dependencyManagement>
 
@@ -327,14 +318,14 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<!-- note: with 1.4.1 we had this problem: https://issues.apache.org/jira/browse/MASSEMBLY-659 
-						https://issues.apache.org/jira/browse/MENFORCER-156 ... solved in 1.3.1 but 
-						aparently came back in 1.4.1 ... Concretely, we got errors like: [...] 00:00:34.798 
-						[INFO] Adding ignorable dependency: null:jmockit:null 00:00:34.799 [INFO] 
-						Adding ignore: org.junit.runner.Runner 00:00:34.800 [WARNING] Could not find 
-						junit:junit:jar:4.11:test at null 00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:3.0.0:compile 
-						at null 00:00:34.802 [WARNING] Could not find org.hamcrest:hamcrest-all:jar:1.3:test 
-						at null 00:00:34.803 [WARNING] Could not find org.jmockit:jmockit:jar:1.20:test 
+					<!-- note: with 1.4.1 we had this problem: https://issues.apache.org/jira/browse/MASSEMBLY-659
+						https://issues.apache.org/jira/browse/MENFORCER-156 ... solved in 1.3.1 but
+						aparently came back in 1.4.1 ... Concretely, we got errors like: [...] 00:00:34.798
+						[INFO] Adding ignorable dependency: null:jmockit:null 00:00:34.799 [INFO]
+						Adding ignore: org.junit.runner.Runner 00:00:34.800 [WARNING] Could not find
+						junit:junit:jar:4.11:test at null 00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:3.0.0:compile
+						at null 00:00:34.802 [WARNING] Could not find org.hamcrest:hamcrest-all:jar:1.3:test
+						at null 00:00:34.803 [WARNING] Could not find org.jmockit:jmockit:jar:1.20:test
 						at null -->
 					<version>1.3.1</version>
 					<dependencies>
@@ -353,7 +344,7 @@
 					<version>2.4.2</version>
 				</plugin>
 
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
+				<!--This plugin's configuration is used to store Eclipse m2e settings
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -456,8 +447,8 @@
 
 		<extensions>
 			<extension>
-				<!-- Enabling the use of external ssh commands to deliver artifacts to 
-					our repo. We are using putty, which means that authentification is done by 
+				<!-- Enabling the use of external ssh commands to deliver artifacts to
+					our repo. We are using putty, which means that authentification is done by
 					pageant :-) -->
 				<groupId>org.apache.maven.wagon</groupId>
 				<artifactId>wagon-ssh-external</artifactId>
@@ -466,8 +457,8 @@
 		</extensions>
 
 		<plugins>
-			<!-- add the gpl-2 license header to our source files. Note that the source 
-				files in java-legacy were not (entirely) created/edited by us and already 
+			<!-- add the gpl-2 license header to our source files. Note that the source
+				files in java-legacy were not (entirely) created/edited by us and already
 				have their own license header with which we don't want to tamper. -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -488,12 +479,12 @@
 								<root>src/test</root>
 							</roots>
 							<excludes>
-								<!-- the license header might be placed right into the preexisting 
-									package-info-javadoc and introdcue a compiler syntax error, so we exclude 
+								<!-- the license header might be placed right into the preexisting
+									package-info-javadoc and introdcue a compiler syntax error, so we exclude
 									this -->
 								<exclude>**/package-info.java</exclude>
-								<!-- our only json files are test samples; we don't need to license 
-									them, but the license header would cause trouble reading/parsing the json 
+								<!-- our only json files are test samples; we don't need to license
+									them, but the license header would cause trouble reading/parsing the json
 									files. that's why we exclude them -->
 								<exclude>**/*.json</exclude>
 								<!-- with xml it's similar as it is with json -->
@@ -555,7 +546,7 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<version>2.6</version>
 				<executions>
-					
+
 					<execution>
 						<id>copy-springboot-properties</id>
 						<phase>process-resources</phase>
@@ -582,10 +573,10 @@
 					</execution>
 				</executions>
 			</plugin>
-			
 
-			<!-- Don't archive a web project's files (i.e. put the classes into WEB-INF/classes), 
-				because we want skinny war to include theirs own classes in that folder (and 
+
+			<!-- Don't archive a web project's files (i.e. put the classes into WEB-INF/classes),
+				because we want skinny war to include theirs own classes in that folder (and
 				their WEB-INF/lib to be empty) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -622,10 +613,10 @@
 				<configuration>
 					<rules>
 
-						<!-- task 08834: We shall not leave the decision about plugin-versions 
-							to maven. Rationale: we had the case that a build stopped working at a *very* 
-							critical moment, because maven picked a more recent version of the jaxb plugin. 
-							That version didn't support the way, we configured it and failed with an 
+						<!-- task 08834: We shall not leave the decision about plugin-versions
+							to maven. Rationale: we had the case that a build stopped working at a *very*
+							critical moment, because maven picked a more recent version of the jaxb plugin.
+							That version didn't support the way, we configured it and failed with an
 							error message. This shall not happen again. -->
 						<requirePluginVersions>
 							<message>!! We need to have the plugin version under control to
@@ -669,7 +660,7 @@
 								<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
 
 								<!-- the following are camel/servicemix related dependencies -->
-								<!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile 
+								<!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
 									net.sf.opencsv:opencsv:jar:2.1:compile -->
 								<ignoreClass>au.com.bytecode.*</ignoreClass>
 
@@ -687,13 +678,13 @@
 								<ignoreClass>repackage.Repackage</ignoreClass>
 								<ignoreClass>repackage.EditBuildScript</ignoreClass>
 
-								<!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile 
+								<!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
 									javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
 								<ignoreClass>javax.servlet.*</ignoreClass>
 							</ignoreClasses>
 
 							<dependencies>
-								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM 
+								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM
 									("JUnit classes in JMockit jar") for background info -->
 								<dependency>
 									<artifactId>jmockit</artifactId>
@@ -702,9 +693,9 @@
 									</ignoreClasses>
 								</dependency>
 
-								<!-- this is a dependency of spring-boot-starter-test 1.4.1 the error 
-									message we are avoiding this was goes like this: ================= Duplicate 
-									classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test 
+								<!-- this is a dependency of spring-boot-starter-test 1.4.1 the error
+									message we are avoiding this was goes like this: ================= Duplicate
+									classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test
 									Duplicate classes: org/objectweb/asm/Type.class [...] ================= -->
 								<dependency>
 									<groupId>net.minidev</groupId>
@@ -746,8 +737,8 @@
 
 	<profiles>
 		<profile>
-			<!-- If there is sql directory, this profile will activate and zip up 
-				the migration SQL files in that directory. Note the property "migration-sql-basedir" 
+			<!-- If there is a sql directory, then this profile will activate and zip up
+				the migration SQL files in that directory. Note the property "migration-sql-basedir"
 				needs to be defined in that case -->
 			<id>postgres</id>
 			<activation>
@@ -761,8 +752,8 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
-								<groupId>de.metas.assemblies</groupId>
-								<artifactId>de.metas.assemblies</artifactId>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
 								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
 								<version>[1.0.0,5.0.0]</version>
 							</dependency>
@@ -787,9 +778,9 @@
 		</profile>
 
 		<profile>
-			<!-- If there is a jasper sources directory, this profile will activate 
-				It will compile those jrxml files and then assemble the jasper files into 
-				a jar. It will *NOT* add src/main/jasperreports as additional source folder, 
+			<!-- If there is a jasper sources directory, this profile will activate
+				It will compile those jrxml files and then assemble the jasper files into
+				a jar. It will *NOT* add src/main/jasperreports as additional source folder,
 				(that's done by the "jasper-source-folder" profile) -->
 			<id>jasper-build</id>
 
@@ -836,7 +827,7 @@
 						</configuration>
 
 						<dependencies>
-							<!-- for whatever reason, if we don't set this version explicitly, 
+							<!-- for whatever reason, if we don't set this version explicitly,
 								the plugin will try to work with 2.1.7.js5-SNAPSHOT -->
 							<dependency>
 								<groupId>com.lowagie</groupId>
@@ -844,7 +835,7 @@
 								<version>${itext.version}</version>
 							</dependency>
 
-							<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't 
+							<!-- note that excluding jasperreports:jasperreports version 1.2 doesn't
 								work even if we don't need it, see http://stackoverflow.com/questions/34193602/how-to-exclude-jasperreports-artifact-from-jasperreports-maven-plugin/34198348 -->
 							<dependency>
 								<groupId>org.codehaus.mojo</groupId>
@@ -858,8 +849,8 @@
 							</dependency>
 
 							<!-- required to compile reports with barcodes -->
-							<!-- FRESH-397: see if we can remove it, too <dependency> <groupId>net.sf.barcode4j</groupId> 
-								<artifactId>barcode4j-fop-ext-complete</artifactId> <version>2.0</version> 
+							<!-- FRESH-397: see if we can remove it, too <dependency> <groupId>net.sf.barcode4j</groupId>
+								<artifactId>barcode4j-fop-ext-complete</artifactId> <version>2.0</version>
 								<type>jar</type> <scope>compile</scope> </dependency> -->
 						</dependencies>
 						<executions>
@@ -875,8 +866,8 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
-								<groupId>de.metas.assemblies</groupId>
-								<artifactId>de.metas.assemblies</artifactId>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
 								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
 								<version>[1.0.0,5.0.0]</version>
 							</dependency>
@@ -913,13 +904,13 @@
 		</profile>
 
 		<profile>
-			<!-- Adds src/main/jasperreports as additional source folder (if the directory 
-				is present) this is only intended to be active when running in eclipse, and 
-				not for *any* actual maven build. we don't want the jasper-stuff to end up 
-				in a "regular" artifact jar! Particularly the properties files need to be 
-				overridden in certain situations, so we can't afford to have an additional 
-				copy in the classpath via regular jars Hint: in eclipse, you can activate 
-				this profile in the projects where you need it, by opening the projects properties 
+			<!-- Adds src/main/jasperreports as additional source folder (if the directory
+				is present) this is only intended to be active when running in eclipse, and
+				not for *any* actual maven build. we don't want the jasper-stuff to end up
+				in a "regular" artifact jar! Particularly the properties files need to be
+				overridden in certain situations, so we can't afford to have an additional
+				copy in the classpath via regular jars Hint: in eclipse, you can activate
+				this profile in the projects where you need it, by opening the projects properties
 				(=>maven). But, then you can't build a proper artifact using eclipse-maven -->
 			<id>jasper-source-folder</id>
 			<build>
@@ -947,7 +938,7 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- If there is a "webapp" directory, this profile will activate and put 
+		<!-- If there is a "webapp" directory, this profile will activate and put
 			the content into a zip file -->
 		<profile>
 			<id>webapp-dir</id>
@@ -962,8 +953,8 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
-								<groupId>de.metas.assemblies</groupId>
-								<artifactId>de.metas.assemblies</artifactId>
+								<groupId>de.metas</groupId>
+								<artifactId>metasfresh-assemblies</artifactId>
 								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
 								<version>[1.0.0,5.0.0]</version>
 							</dependency>
@@ -988,7 +979,7 @@
 		</profile>
 
 		<profile>
-			<!-- If there is a maven java-gen sources directory, this profile will 
+			<!-- If there is a maven java-gen sources directory, this profile will
 				activate and add the directory as another sources directory -->
 			<id>add-source-java-gen</id>
 			<activation>
@@ -999,7 +990,7 @@
 			<build>
 				<plugins>
 					<plugin>
-						<!-- Adds src/main/java-gen as additional source folder (if the directory 
+						<!-- Adds src/main/java-gen as additional source folder (if the directory
 							is present) -->
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
@@ -1023,7 +1014,7 @@
 		</profile>
 
 		<profile>
-			<!-- If there is a maven java-legacy sources directory, this profile will 
+			<!-- If there is a maven java-legacy sources directory, this profile will
 				activate and add the directory as another sources directory -->
 			<id>add-source-java-legacy</id>
 			<activation>
@@ -1034,7 +1025,7 @@
 			<build>
 				<plugins>
 					<plugin>
-						<!-- Adds src/main/java-gen as additional source folder (if the directory 
+						<!-- Adds src/main/java-gen as additional source folder (if the directory
 							is present) -->
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
@@ -1058,15 +1049,15 @@
 		</profile>
 
 		<profile>
-			<!-- If the file KEYSTORE_REQUIRED.txt is present in a child project, 
-				then we assume that some code needs to be signed. Therefore, the parent-pom 
-				profile with id "prepare-code-signing" activates to download our keystores, 
-				unpack them into the "${project.build.directory}/keystore" folder and set 
-				properties so that e.g. the printing client applet can be singned with our 
-				"developement" signature. Note that: *these default properties can be overridden 
-				from outside. *our "development" signature is not verified by a CA and is 
-				therefore not meant to be rolled out at the customer. *the actual signing 
-				does not take place in this profile, because different projects will sign 
+			<!-- If the file KEYSTORE_REQUIRED.txt is present in a child project,
+				then we assume that some code needs to be signed. Therefore, the parent-pom
+				profile with id "prepare-code-signing" activates to download our keystores,
+				unpack them into the "${project.build.directory}/keystore" folder and set
+				properties so that e.g. the printing client applet can be singned with our
+				"developement" signature. Note that: *these default properties can be overridden
+				from outside. *our "development" signature is not verified by a CA and is
+				therefore not meant to be rolled out at the customer. *the actual signing
+				does not take place in this profile, because different projects will sign
 				different files (and might even use the keystore with different plugins). -->
 			<id>prepare-code-signing</id>
 			<activation>
@@ -1075,9 +1066,9 @@
 				</file>
 			</activation>
 			<properties>
-				<!-- This is the developement keystore and its passwords. They are supposed 
-					to make sure that a build on a local dev workstatation won't fail. To sign 
-					a "real" build for production, they need to be overwritten from outside (=>handled 
+				<!-- This is the developement keystore and its passwords. They are supposed
+					to make sure that a build on a local dev workstatation won't fail. To sign
+					a "real" build for production, they need to be overwritten from outside (=>handled
 					by jenkins and/or the RM). -->
 				<keystore.version>1.4.0_dev</keystore.version>
 				<keystore.alias>metas_dev</keystore.alias>
@@ -1097,7 +1088,7 @@
 						<executions>
 							<execution>
 								<id>unpack</id>
-								<!-- choosing an early phase to make sure the keystore files are 
+								<!-- choosing an early phase to make sure the keystore files are
 									there on prepare-package -->
 								<phase>initialize</phase>
 								<goals>
@@ -1123,9 +1114,9 @@
 		</profile>
 
 		<profile>
-			<!-- If the environment variable BUILD_NUMBER is not set, it means that 
-				we are not building on jenkins, so we substitute the value "LOCAL-BUILD" 
-				instead. And we set BUILD_NUMBER_NUMERIC to 0, because some parts of the 
+			<!-- If the environment variable BUILD_NUMBER is not set, it means that
+				we are not building on jenkins, so we substitute the value "LOCAL-BUILD"
+				instead. And we set BUILD_NUMBER_NUMERIC to 0, because some parts of the
 				build (=>launch4j) requiere the build number to always be a number. -->
 			<id>build-number-env-missing</id>
 			<activation>
@@ -1139,7 +1130,7 @@
 			</properties>
 		</profile>
 		<profile>
-			<!-- If the environment variable BUILD_NUMBER is set, we assume that it 
+			<!-- If the environment variable BUILD_NUMBER is set, we assume that it
 				is numeric, and we set BUILD_NUMBER_NUMERIC to that value -->
 			<id>build-number-env-provided</id>
 			<activation>
@@ -1151,7 +1142,7 @@
 				<BUILD_NUMBER_NUMERIC>${env.BUILD_NUMBER}</BUILD_NUMBER_NUMERIC>
 			</properties>
 		</profile>
-		
+
 		<!--this profile is analog to "build-number-env-missing" -->
 		<profile>
 			<id>build-version-env-missing</id>

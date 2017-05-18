@@ -215,7 +215,7 @@ public class ExportHelper
 		if (po.get_KeyColumns().length < 1)
 		{
 			throw new ReplicationException(ImportHelper.MSG_EDIMultiColumnNotSupported)
-					.addParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName());
+					.setParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName());
 		}
 
 		// metas: tsa: validate if this PO respects Export Format's WhereClause
@@ -369,9 +369,9 @@ public class ExportHelper
 			catch (final Exception e)
 			{
 				throw new ExportProcessorException(MSG_EXPFormatLineError, e)
-						.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, exportFormat)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-						.addParameter("masterPO", masterPO);
+						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, exportFormat)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
+						.setParameter("masterPO", masterPO);
 			}
 		}
 	}
@@ -401,8 +401,8 @@ public class ExportHelper
 			catch (final Exception e)
 			{
 				throw new ReplicationException("Encoding failed at line " + formatLine.getName(), e)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
 			}
 
 			final Element newElement = outDocument.createElement(formatLine.getValue());
@@ -439,16 +439,16 @@ public class ExportHelper
 			catch (final Exception e)
 			{
 				throw new ReplicationException("Encoding failed at line " + formatLine.getName(), e)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, column);
 			}
 			if (valueString == null && formatLine.isMandatory())
 			{
 				throw new ExportProcessorException(MSG_EXPFieldMandatory)
-						.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, exportFormat)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, formatLine.getAD_Column_ID())
-						.addParameter("masterPO", masterPO);
+						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, exportFormat)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, formatLine.getAD_Column_ID())
+						.setParameter("masterPO", masterPO);
 			}
 
 			if (valueString != null)
@@ -512,10 +512,10 @@ public class ExportHelper
 			if (embeddedFormat_ID <= 0)
 			{
 				throw new ReplicationException(MSG_EXPFormatNotFound)
-						.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, exportFormat)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_Type, formatLineType)
-						.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_EmbeddedFormat_ID, embeddedFormat_ID) // not found
+						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_EXP_Format_ID, exportFormat)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_Type, formatLineType)
+						.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_EmbeddedFormat_ID, embeddedFormat_ID) // not found
 				;
 			}
 			// get from cache
@@ -548,7 +548,7 @@ public class ExportHelper
 				if (embeddedKeyColumns == null || embeddedKeyColumns.length != 1)
 				{
 					throw new ReplicationException("Embedded table shall have one and only one primary key")
-							.addParameter("AD_Table_ID", embeddedTable);
+							.setParameter("AD_Table_ID", embeddedTable);
 				}
 				embeddedTableName = embeddedTable.getTableName();
 				embeddedKeyColumnName = embeddedKeyColumns[0];
@@ -563,7 +563,7 @@ public class ExportHelper
 				if (embeddedKeyColumns == null || embeddedKeyColumns.length != 1)
 				{
 					throw new ReplicationException("Embedded table shall have one and only one primary key")
-							.addParameter("AD_Table_ID", embeddedTable);
+							.setParameter("AD_Table_ID", embeddedTable);
 				}
 				embeddedKeyColumnName = embeddedKeyColumns[0];
 			}
@@ -617,7 +617,7 @@ public class ExportHelper
 		else
 		{
 			throw new ReplicationException(ImportHelper.MSG_EXPFormatLineNonValidType)
-					.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine.getValue());
+					.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine.getValue());
 		}
 	}
 
@@ -711,10 +711,10 @@ public class ExportHelper
 		if (exportFormat == null || exportFormat.getEXP_Format_ID() <= 0)
 		{
 			throw new ExportProcessorException(MSG_EXPFormatNotFound)
-					.addParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName())
-					.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_AD_Client_ID, m_AD_Client_ID)
-					.addParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version)
-					.addParameter(I_AD_ReplicationTable.Table_Name, replTable);
+					.setParameter(I_AD_Table.COLUMNNAME_TableName, po.get_TableName())
+					.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_AD_Client_ID, m_AD_Client_ID)
+					.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version)
+					.setParameter(I_AD_ReplicationTable.Table_Name, replTable);
 		}
 
 		return exportFormat;
@@ -793,7 +793,7 @@ public class ExportHelper
 		if (adColumnId <= 0)
 		{
 			throw new ExportProcessorException(MSG_EXPColumnMandatory)
-					.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine);
+					.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine);
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(formatLine);
@@ -801,8 +801,8 @@ public class ExportHelper
 		if (column == null)
 		{
 			throw new ExportProcessorException(MSG_EXPColumnMandatory)
-					.addParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-					.addParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, adColumnId);
+					.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
+					.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, adColumnId);
 		}
 
 		return column;

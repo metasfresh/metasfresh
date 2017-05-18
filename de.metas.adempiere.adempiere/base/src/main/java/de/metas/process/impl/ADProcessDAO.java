@@ -1,51 +1,50 @@
 package de.metas.process.impl;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Process_Access;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
-import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_Table_Process;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.SetMultimap;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
+import lombok.ToString;
 
 public class ADProcessDAO implements IADProcessDAO
 {
-	private static final Logger logger = LogManager.getLogger(ADProcessDAO.class);
+	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
-	/**
-	 * Map: AD_Table_ID to list of AD_Process_ID
-	 */
-	private final SetMultimap<Integer, Integer> staticRegisteredProcesses = HashMultimap.create();
+	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
 	@Override
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
@@ -112,124 +111,109 @@ public class ADProcessDAO implements IADProcessDAO
 	}
 
 	@Override
-	public void registerTableProcess(final int adTableId, final int adProcessId)
+	public void registerTableProcess(final int adTableId, final int adWindowId, final int adProcessId)
 	{
-		Check.assume(adTableId > 0, "adTableId > 0");
-		Check.assume(adProcessId > 0, "adProcessId > 0");
-		final boolean added = staticRegisteredProcesses.put(adTableId, adProcessId);
-		if (added)
+		final RelatedProcessDescriptor newDescriptor = staticRelatedProcessDescriptors.register(adTableId, adWindowId, adProcessId);
+
+		if (newDescriptor == null)
 		{
-			logger.info("Registered table process: AD_Table_ID={}, AD_Process_ID={}", adTableId, adProcessId);
+			// NOTE: not sure this shall be a WARN, but for sure is a rare case.
+			logger.warn("Skip because already registered for adTableId={}, adWindowId={}, adProcessId={}", adTableId, adWindowId, adProcessId);
+			return;
+		}
+		else
+		{
+			logger.info("Registered table process: {}", newDescriptor);
+
+			//
 			CacheMgt.get().reset(I_AD_Table_Process.Table_Name);
 		}
 	}
 
 	@Override
-	public void registerTableProcess(final String tableName, final int adProcessId)
+	public void registerTableProcess(final String tableName, final int adWindowId, final int adProcessId)
 	{
-		Check.assumeNotEmpty(tableName, "tableName not empty");
-
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		Check.assume(adTableId > 0, "adTableId > 0 (TableName={})", tableName);
-
-		registerTableProcess(adTableId, adProcessId);
-	}
-
-	/**
-	 * Gets a list of AD_Process_IDs which were statically registered for given table ID.
-	 * 
-	 * @param adTableId
-	 * @return set of AD_Process_IDs
-	 */
-	private Set<Integer> getStaticRegisteredProcessIds(final int adTableId)
-	{
-		final Set<Integer> processIds = staticRegisteredProcesses.get(adTableId);
-		if (processIds == null || processIds.isEmpty())
+		final int adTableId;
+		if (Check.isEmpty(tableName))
 		{
-			return ImmutableSet.of();
+			adTableId = RelatedProcessDescriptorMap.AD_Table_ID_Any;
+		}
+		else
+		{
+			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			Check.assume(adTableId > 0, "adTableId > 0 (TableName={})", tableName);
 		}
 
-		return ImmutableSet.copyOf(processIds);
-	}
-
-	// @Cached
-	@Override
-	public final List<I_AD_Process> retrieveProcessesForTable(final Properties ctx, final int adTableId)
-	{
-		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list(I_AD_Process.class);
+		registerTableProcess(adTableId, adWindowId, adProcessId);
 	}
 
 	@Override
-	public final Set<Integer> retrieveProcessesIdsForTable(final Properties ctx, final int adTableId)
+	public void registerTableProcess(final RelatedProcessDescriptor descriptor)
 	{
-		final Map<Integer, RelatedProcessDescriptor> relatedProcesses = retrieveRelatedProcessesForTableIndexedByProcessId(ctx, adTableId);
-		return relatedProcesses.keySet();
+		final RelatedProcessDescriptor previousDescriptor = staticRelatedProcessDescriptors.register(descriptor);
+
+		if (previousDescriptor != null)
+		{
+			logger.info("Unregistered table process: {}", descriptor);
+		}
+		logger.info("Registered table process: {}", descriptor);
+
+		//
+		CacheMgt.get().reset(I_AD_Table_Process.Table_Name);
 	}
 
 	@Override
 	public final List<I_AD_Process> retrieveReportProcessesForTable(final Properties ctx, final String tableName)
 	{
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		return retrieveProcessesForTableQueryBuilder(ctx, adTableId)
+		final int adWindowId = 0; // any
+		final Map<Integer, RelatedProcessDescriptor> relatedProcesses = retrieveRelatedProcessesForTableIndexedByProcessId(ctx, adTableId, adWindowId);
+		final Set<Integer> relatedProcessIds = relatedProcesses.keySet();
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_AD_Process.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_AD_Process.COLUMN_AD_Process_ID, relatedProcessIds)
 				.addEqualsFilter(I_AD_Process.COLUMN_IsReport, true)
+				//
+				.orderBy()
+				.addColumn(I_AD_Process.COLUMNNAME_Name)
+				.endOrderBy()
+				//
 				.create()
 				.list(I_AD_Process.class);
 	}
 
 	@Override
 	@Cached(cacheName = I_AD_Table_Process.Table_Name + "#RelatedProcessDescriptors")
-	public Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(@CacheCtx final Properties ctx, final int adTableId)
+	public Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(@CacheCtx final Properties ctx, final int adTableId, final int adWindowId)
 	{
 		//
-		// Fetch related processes from database
+		// Get the programmatically registered ones
+		final Map<Integer, RelatedProcessDescriptor> result = new HashMap<>(staticRelatedProcessDescriptors.getIndexedByProcessId(adTableId, adWindowId));
+
+		//
+		// Fetch related processes from database and override the ones which we have registered here
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final Map<Integer, RelatedProcessDescriptor> relatedProcessesMap = queryBL.createQueryBuilder(I_AD_Table_Process.class, ctx, ITrx.TRXNAME_None)
+		queryBL.createQueryBuilder(I_AD_Table_Process.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_AD_Table_Process.COLUMNNAME_AD_Table_ID, adTableId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.map(tableProcess -> createRelatedProcessDescriptor(tableProcess))
-				.collect(Collectors.toMap(RelatedProcessDescriptor::getAD_Process_ID, value -> value));
+				.forEach(relatedProcess -> result.put(relatedProcess.getProcessId(), relatedProcess));
 
-		//
-		// Collect also those programmatically registered
-		getStaticRegisteredProcessIds(adTableId)
-				.stream()
-				.filter(adProcessId -> !relatedProcessesMap.containsKey(adProcessId)) // only those which were not already added
-				.map(adProcessId -> RelatedProcessDescriptor.ofAD_Process_ID(adProcessId))
-				.forEach(relatedProcess -> relatedProcessesMap.put(relatedProcess.getAD_Process_ID(), relatedProcess));
-
-		return ImmutableMap.copyOf(relatedProcessesMap);
+		return ImmutableMap.copyOf(result);
 	}
 
 	private static final RelatedProcessDescriptor createRelatedProcessDescriptor(final I_AD_Table_Process tableProcess)
 	{
 		return RelatedProcessDescriptor.builder()
-				.setAD_Process_ID(tableProcess.getAD_Process_ID())
-				.setWebuiQuickAction(tableProcess.isWEBUI_QuickAction())
-				.setWebuiDefaultQuickAction(tableProcess.isWEBUI_QuickAction_Default())
+				.processId(tableProcess.getAD_Process_ID())
+				.tableId(tableProcess.getAD_Table_ID())
+				.webuiQuickAction(tableProcess.isWEBUI_QuickAction())
+				.webuiDefaultQuickAction(tableProcess.isWEBUI_QuickAction_Default())
 				.build();
-	}
-
-	private IQueryBuilder<I_AD_Process> retrieveProcessesForTableQueryBuilder(final Properties ctx, final int adTableId)
-	{
-		final String trxName = ITrx.TRXNAME_NoneNotNull;
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
-		
-		final Map<Integer, RelatedProcessDescriptor> relatedProcesses = retrieveRelatedProcessesForTableIndexedByProcessId(ctx, adTableId);
-		final Set<Integer> relatedProcessIds = relatedProcesses.keySet();
-
-		return queryBL.createQueryBuilder(I_AD_Process.class, ctx, trxName)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_AD_Process.COLUMN_AD_Process_ID, relatedProcessIds)
-				//
-				.orderBy()
-				.addColumn(I_AD_Process.COLUMNNAME_Name)
-				.endOrderBy();
 	}
 
 	@Override
@@ -312,44 +296,6 @@ public class ADProcessDAO implements IADProcessDAO
 		{
 			logger.error("Failed updating process statistics for AD_Process_ID={}, AD_Client_ID={}, DurationMillisToAdd={}. Ignored.", adProcessId, adClientId, durationMillisToAdd, ex);
 		}
-	}
-
-	@Override
-	public I_AD_Process_Access retrieveProcessAccessOrCreateDraft(final Properties ctx, final int adProcessId, final I_AD_Role role)
-	{
-		I_AD_Process_Access pa = retrieveProcessAccess(ctx, adProcessId, role.getAD_Role_ID());
-		if (pa == null)
-		{
-			pa = createProcessAccessDraft(ctx, adProcessId, role);
-		}
-		return pa;
-	}
-
-	@Override
-	public I_AD_Process_Access retrieveProcessAccess(final Properties ctx, final int adProcessId, final int adRoleId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Process_Access.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Process_ID, adProcessId)
-				.addEqualsFilter(I_AD_Process_Access.COLUMN_AD_Role_ID, adRoleId)
-				.create()
-				.firstOnly(I_AD_Process_Access.class);
-	}
-
-	@Override
-	public I_AD_Process_Access createProcessAccessDraft(final Properties ctx, final int adProcessId, final I_AD_Role role)
-	{
-		final I_AD_Process_Access pa = InterfaceWrapperHelper.create(ctx, I_AD_Process_Access.class, ITrx.TRXNAME_ThreadInherited);
-		InterfaceWrapperHelper.setValue(pa, I_AD_Process_Access.COLUMNNAME_AD_Client_ID, role.getAD_Client_ID());
-		pa.setAD_Org_ID(role.getAD_Org_ID());
-
-		pa.setAD_Process_ID(adProcessId);
-		pa.setAD_Role(role);
-
-		pa.setIsActive(true);
-		pa.setIsReadWrite(true);
-
-		return pa;
 	}
 
 	@Override
@@ -440,4 +386,81 @@ public class ADProcessDAO implements IADProcessDAO
 		return targetPara;
 	}
 
+	@ToString
+	private static final class RelatedProcessDescriptorMap
+	{
+		private static final int AD_Table_ID_Any = 0;
+		private static final int AD_Window_ID_Any = 0;
+		private final Map<ArrayKey, Map<Integer, RelatedProcessDescriptor>> key2processId2descriptor = new ConcurrentHashMap<>();
+
+		/**
+		 * @return newly registered descriptor or null if it was not registered
+		 */
+		public RelatedProcessDescriptor register(final int adTableId, final int adWindowId, final int adProcessId)
+		{
+			// supplies a new descriptor if asked
+			final ExtendedMemorizingSupplier<RelatedProcessDescriptor> newDescriptor = ExtendedMemorizingSupplier.of(() -> RelatedProcessDescriptor.builder()
+					.processId(adProcessId)
+					.tableId(adTableId)
+					.windowId(adWindowId)
+					.build());
+
+			// NOTE: never override
+			final ArrayKey key = mkKey(adTableId, adWindowId);
+			final Map<Integer, RelatedProcessDescriptor> processId2descriptor = key2processId2descriptor.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
+			processId2descriptor.computeIfAbsent(adProcessId, k -> newDescriptor.get());
+
+			return newDescriptor.peek();
+		}
+
+		/**
+		 * @return previous descriptor or null
+		 */
+		public RelatedProcessDescriptor register(final RelatedProcessDescriptor descriptor)
+		{
+			Preconditions.checkNotNull(descriptor, "descriptor not null");
+
+			// NOTE: always override
+			final ArrayKey key = mkKey(descriptor.getTableId(), descriptor.getWindowId());
+			final Map<Integer, RelatedProcessDescriptor> processId2descriptor = key2processId2descriptor.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
+			return processId2descriptor.put(descriptor.getProcessId(), descriptor);
+		}
+
+		private Stream<RelatedProcessDescriptor> streamDescriptorsForKey(final ArrayKey key)
+		{
+			final Map<Integer, RelatedProcessDescriptor> descriptorsMap = key2processId2descriptor.get(key);
+			if (descriptorsMap == null || descriptorsMap.isEmpty())
+			{
+				return Stream.empty();
+			}
+			return descriptorsMap.values().stream();
+		}
+
+		private static final ArrayKey mkKey(final int adTableId, final int adWindowId)
+		{
+			return ArrayKey.of(adTableId > 0 ? adTableId : AD_Table_ID_Any, adWindowId > 0 ? adWindowId : AD_Window_ID_Any);
+		}
+
+		private static final ImmutableSet<ArrayKey> mkKeysFromSpecificToGeneral(final int adTableId, final int adWindowId)
+		{
+			return ImmutableSet.of(
+					mkKey(adTableId, adWindowId) //
+					, mkKey(adTableId, AD_Window_ID_Any) //
+					, mkKey(AD_Table_ID_Any, adWindowId) //
+			// , mkKey(AD_Table_ID_Any, AD_Window_ID_Any) // this case shall not be allowed
+			);
+		}
+
+		public Map<Integer, RelatedProcessDescriptor> getIndexedByProcessId(final int adTableId, final int adWindowId)
+		{
+			return mkKeysFromSpecificToGeneral(adTableId, adWindowId)
+					.stream().sequential()
+					.flatMap(this::streamDescriptorsForKey)
+					// collects RelatedProcessDescriptor(s) indexed by AD_Process_ID
+					// in case of duplicates, first descriptor will be kept,
+					// i.e. the one which was more specifically registered (specific adTableId/adWindowId).
+					.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(desc -> desc.getProcessId()));
+		}
+
+	}
 }

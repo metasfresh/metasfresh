@@ -44,7 +44,7 @@ public class AttributePricing extends PricingRuleAdapter
 		_defaultMatchers.addIfAbsent(matcher);
 		logger.info("Registered default matcher: {}", matcher);
 	}
-	
+
 	/**
 	 * Checks if the attribute pricing rule could be applied. Mainly it checks:
 	 * <ul>
@@ -287,11 +287,11 @@ public class AttributePricing extends PricingRuleAdapter
 		// Get M_AttributeSetInstance_ID and return it.
 		// NOTE: to respect the method contract, ALWAYS return ZERO if it's not set, no matter if the getter returned -1.
 		final int attributeSetInstanceId = asiAware.getM_AttributeSetInstance_ID();
-		if(attributeSetInstanceId <= 0)
+		if (attributeSetInstanceId <= 0)
 		{
 			return null;
 		}
-		
+
 		final I_M_AttributeSetInstance attributeSetInstance = InterfaceWrapperHelper.create(pricingCtx.getCtx(), attributeSetInstanceId, I_M_AttributeSetInstance.class, pricingCtx.getTrxName());
 		return attributeSetInstance;
 	}

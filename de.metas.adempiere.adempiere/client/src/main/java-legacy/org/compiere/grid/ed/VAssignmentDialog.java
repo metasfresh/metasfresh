@@ -31,6 +31,8 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JButton;
@@ -53,7 +55,6 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 
 /**
@@ -327,11 +328,12 @@ public class VAssignmentDialog extends CDialog
 	{
 		log.info("");
 		//	Set AssignDateTo
-		Timestamp assignDateFrom = fDateFrom.getTimestamp();
-		BigDecimal qty = (BigDecimal)fQty.getValue();
-		KeyNamePair uom = m_lookup.get(fResource.getSelectedItem());
-		int minutes = MUOMConversion.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
-		Timestamp assignDateTo = TimeUtil.addMinutess(assignDateFrom, minutes);
+		final Timestamp assignDateFrom = fDateFrom.getTimestamp();
+		final BigDecimal qty = (BigDecimal)fQty.getValue();
+		final KeyNamePair uom = m_lookup.get(fResource.getSelectedItem());
+		final int minutes = MUOMConversion.convertToMinutes(Env.getCtx(), uom.getKey(), qty);
+		
+		final Timestamp assignDateTo = TimeUtil.addMinutes(assignDateFrom, minutes);
 		m_mAssignment.setAssignDateTo (assignDateTo);
 		//
 	//	m_mAssignment.dump();

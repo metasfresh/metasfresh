@@ -16,7 +16,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1540851156L;
+	private static final long serialVersionUID = 1886956406L;
 
     /** Standard Constructor */
     public X_M_HU_Attribute_Snapshot (Properties ctx, int M_HU_Attribute_Snapshot_ID, String trxName)
@@ -279,7 +279,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -301,7 +301,7 @@ public class X_M_HU_Attribute_Snapshot extends org.compiere.model.PO implements 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumberInitial);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 }
