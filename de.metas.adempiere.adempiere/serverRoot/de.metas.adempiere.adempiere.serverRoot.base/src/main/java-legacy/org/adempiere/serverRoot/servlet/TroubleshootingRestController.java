@@ -1,5 +1,7 @@
 package org.adempiere.serverRoot.servlet;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,12 +41,15 @@ public class TroubleshootingRestController
 {
 	private static final Logger logger = LogManager.getLogger(TroubleshootingRestController.class);
 
+	private final AtomicLong nextNotificationId = new AtomicLong(1);
+
 	@GetMapping("/ping/notifications")
-	public static String pingNotifications()
+	public String pingNotifications()
 	{
+		final long id = nextNotificationId.getAndIncrement();
 		final Event event = Event.builder()
 				.setSummary("Notifications system test")
-				.setDetailPlain("Please ignore this message. It was issued by server to check the notifications system.")
+				.setDetailPlain("Please ignore this message. It was issued by server to check the notifications system (#" + id + ").")
 				.build();
 
 		Services.get(IEventBusFactory.class)
