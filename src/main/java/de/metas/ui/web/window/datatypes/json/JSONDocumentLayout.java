@@ -20,6 +20,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutHeader;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -57,7 +58,7 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		return new JSONDocumentLayout(detailLayout, jsonOpts);
 	}
-	
+
 	@JsonProperty("windowId")
 	private final WindowId windowId;
 	@JsonProperty("type")
@@ -71,7 +72,7 @@ public final class JSONDocumentLayout implements Serializable
 	@JsonProperty("tabid")
 	@JsonInclude(Include.NON_NULL)
 	private final DetailId tabid;
-	
+
 	@JsonProperty("caption")
 	@JsonInclude(Include.NON_EMPTY)
 	private final String caption;
@@ -122,23 +123,24 @@ public final class JSONDocumentLayout implements Serializable
 	{
 		this.windowId = layout.getWindowId();
 		type = windowId;
-		
+
 		tabId = null;
 		tabid = tabId;
-		
+
 		caption = layout.getCaption(jsonOpts.getAD_Language());
-		
+
 		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), jsonOpts);
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonOpts);
 
+		final DocumentLayoutHeader singleRowLayout = layout.getSingleRowLayout();
 		if (jsonOpts.isShowAdvancedFields())
 		{
-			final DocumentLayoutDetailDescriptor advancedViewLayout = layout.getAdvancedView();
-			sections = JSONDocumentLayoutSection.ofAdvancedView(advancedViewLayout, jsonOpts);
+			sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
+			// sections = ImmutableList.of(JSONDocumentLayoutSection.ofElements(singleRowLayout.getElements(), jsonOpts)); // one column layout
 		}
 		else
 		{
-			sections = JSONDocumentLayoutSection.ofSectionsList(layout.getSections(), jsonOpts);
+			sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
 		}
 
 		//
@@ -213,16 +215,16 @@ public final class JSONDocumentLayout implements Serializable
 			, @JsonProperty("emptyResultText") final String emptyResultText //
 			, @JsonProperty("emptyResultHint") final String emptyResultHint //
 
-			)
+	)
 	{
 		this.windowId = windowId;
 		type = windowId;
-		
+
 		this.tabId = tabId;
 		tabid = tabId;
-		
+
 		this.caption = caption;
-		
+
 		this.documentSummaryElement = documentSummaryElement;
 		this.docActionElement = docActionElement;
 		this.sections = sections == null ? ImmutableList.of() : ImmutableList.copyOf(sections);

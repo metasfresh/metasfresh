@@ -37,4 +37,11 @@ public interface IDocumentEvaluatee extends Evaluatee
 	 * @return new evaluatee instance which has the given field in scope
 	 */
 	IDocumentEvaluatee fieldInScope(String fieldNameInScope);
+
+	/**
+	 * Creates a new evaluatee which will exclude given field names.
+	 * 
+	 * @param fieldNamesToExclude
+	 */
+	IDocumentEvaluatee excludingFields(String... fieldNamesToExclude);
 }

@@ -7,6 +7,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Services;
 
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -89,6 +90,15 @@ public class DocumentPermissionsHelper
 			return; // OK
 		}
 		
+		// Check if we have window read permission
+		final WindowId windowId = document.getDocumentPath().getWindowId();
+		final int windowIdInt = windowId.toIntOr(-1);
+		if(windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasReadAccess())
+		{
+			throw DocumentPermissionException.of(DocumentPermission.View, "no window read permission");
+		}
+		
+
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
 		{
@@ -129,9 +139,18 @@ public class DocumentPermissionsHelper
 	private static String checkCanEdit(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
 		// In case document type is not Window, return OK because we cannot validate
-		if (document.getDocumentPath().getDocumentType() != DocumentType.Window)
+		final DocumentPath documentPath = document.getDocumentPath();
+		if (documentPath.getDocumentType() != DocumentType.Window)
 		{
 			return null; // OK
+		}
+		
+		// Check if we have window write permission
+		final WindowId windowId = documentPath.getWindowId();
+		final int windowIdInt = windowId.toIntOr(-1);
+		if(windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasWriteAccess())
+		{
+			return "no window edit permission";
 		}
 		
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();

@@ -51,6 +51,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -107,7 +108,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
-	private final Set<DocumentId> viewSelectedDocumentIds;
+	private final DocumentIdsSelection viewSelectedDocumentIds;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
@@ -124,7 +125,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		viewsRepo = builder.viewsRepo;
 		viewId = builder.viewId;
-		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(builder.viewSelectedDocumentIds);
+		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
 
 		executed = false;
 		executionResult = null;
@@ -544,7 +545,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		private IViewsRepository viewsRepo;
 		private ViewId viewId;
-		private Set<DocumentId> viewSelectedDocumentIds;
+		private DocumentIdsSelection viewSelectedDocumentIds;
 		private Object processClassInstance;
 
 		private Builder()
@@ -581,7 +582,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			return this;
 		}
 
-		public Builder setView(final ViewId viewId, final Set<DocumentId> selectedDocumentIds)
+		public Builder setView(final ViewId viewId, final DocumentIdsSelection selectedDocumentIds)
 		{
 			this.viewId = viewId;
 			viewSelectedDocumentIds = selectedDocumentIds;

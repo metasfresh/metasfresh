@@ -1,7 +1,6 @@
 package de.metas.ui.web.view;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -11,7 +10,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
@@ -31,6 +29,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -291,7 +290,7 @@ public class DefaultView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<DocumentId> rowIds)
+	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
 		return viewDataRepository.getSqlWhereClause(getViewId(), rowIds);
 	}
@@ -325,11 +324,15 @@ public class DefaultView implements IView
 	}
 
 	@Override
-	public Stream<? extends IViewRow> streamByIds(final Collection<DocumentId> rowIds)
+	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{
 			return Stream.empty();
+		}
+		else if(rowIds.isAll())
+		{
+			throw new UnsupportedOperationException("Streaming all rows is not supported");
 		}
 
 		// NOTE: we get/retrive one by one because we assume the "selected documents" were recently retrieved,
@@ -350,7 +353,7 @@ public class DefaultView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> rowIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
 		return viewDataRepository.retrieveModelsByIds(getViewId(), rowIds, modelClass);
 	}
@@ -360,10 +363,10 @@ public class DefaultView implements IView
 	{
 		final String viewTableName = getTableName();
 
-		final Set<DocumentId> rowIds = recordRefs.stream()
+		final DocumentIdsSelection rowIds = recordRefs.stream()
 				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))
 				.map(recordRef -> DocumentId.of(recordRef.getRecord_ID()))
-				.collect(GuavaCollectors.toImmutableSet());
+				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 
 		if (rowIds.isEmpty())
 		{

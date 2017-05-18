@@ -1,6 +1,5 @@
 package de.metas.ui.web.pporder;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -8,7 +7,6 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -27,15 +25,16 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -103,8 +102,8 @@ public class PPOrderLinesView implements IView
 
 		this.asiAttributesProvider = asiAttributesProvider;
 
-		final WindowId windowId = viewId.getWindowId();
-		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(windowId)
+		final WindowId viewWindowId = viewId.getWindowId();
+		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(viewWindowId)
 				.asiAttributesProvider(asiAttributesProvider)
 				.build()
 				.retrieveData(ppOrderId));
@@ -142,7 +141,7 @@ public class PPOrderLinesView implements IView
 	{
 		return viewType;
 	}
-	
+
 	@Override
 	public ImmutableSet<DocumentPath> getReferencingDocumentPaths()
 	{
@@ -233,7 +232,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<DocumentId> viewDocumentIds)
+	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds)
 	{
 		return null; // not supported
 	}
@@ -245,13 +244,13 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection documentIds, final Class<T> modelClass)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Stream<PPOrderLineRow> streamByIds(final Collection<DocumentId> documentIds)
+	public Stream<PPOrderLineRow> streamByIds(final DocumentIdsSelection documentIds)
 	{
 		return getData().streamByIds(documentIds);
 	}
@@ -292,9 +291,9 @@ public class PPOrderLinesView implements IView
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
-	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final Set<DocumentId> selectedDocumentIds)
+	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final DocumentIdsSelection selectedDocumentIds)
 	{
-		final DocumentId selectedRowId = ListUtils.singleElement(selectedDocumentIds);
+		final DocumentId selectedRowId = selectedDocumentIds.getSingleDocumentId();
 		final PPOrderLineRow selectedRow = getById(selectedRowId);
 
 		if (!selectedRow.isIssue())
@@ -328,9 +327,9 @@ public class PPOrderLinesView implements IView
 	public static final class IsSingleIssueLine implements ViewAction.Precondition
 	{
 		@Override
-		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(final IView view, final DocumentIdsSelection selectedDocumentIds)
 		{
-			if (selectedDocumentIds.size() != 1)
+			if (!selectedDocumentIds.isSingleDocumentId())
 			{
 				return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 			}
@@ -341,7 +340,7 @@ public class PPOrderLinesView implements IView
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not in planning or in review");
 			}
 
-			final DocumentId selectedDocumentId = ListUtils.singleElement(selectedDocumentIds);
+			final DocumentId selectedDocumentId = selectedDocumentIds.getSingleDocumentId();
 			final PPOrderLineRow ppOrderLine = ppOrder.getById(selectedDocumentId);
 			if (!ppOrderLine.isIssue())
 			{

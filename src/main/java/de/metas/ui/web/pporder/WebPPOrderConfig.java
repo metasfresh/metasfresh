@@ -13,6 +13,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -42,6 +43,8 @@ public class WebPPOrderConfig
 {
 	public static final String AD_WINDOW_ID_IssueReceipt_String = "540328"; // Manufacturing Issue/Receipt
 	public static final WindowId AD_WINDOW_ID_IssueReceipt = WindowId.fromJson("540328"); // Manufacturing Issue/Receipt
+	public static final WindowId AD_WINDOW_ID_PP_Order = WindowId.fromJson("53009"); // Manufacturing order standard window
+	public static final DetailId TABID_ID_PP_Order_BOMLine = DetailId.fromTabNoOrNull(2); // Manufacturing order standard window - BOM line tab
 
 	public WebPPOrderConfig()
 	{

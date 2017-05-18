@@ -1,24 +1,17 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.GuavaCollectors;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 
@@ -52,8 +45,6 @@ public abstract class DocumentId implements Serializable
 	private static final transient int NEW_ID = -1;
 	public static final transient String NEW_ID_STRING = "NEW";
 	private static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
-
-	private static final transient Splitter SPLITTER_DocumentIds = Splitter.on(",").trimResults().omitEmptyStrings();
 
 	@JsonCreator
 	public static final DocumentId of(final String idStr)
@@ -103,62 +94,6 @@ public abstract class DocumentId implements Serializable
 		return new StringDocumentId(idStr);
 	}
 
-	public static Set<DocumentId> ofCommaSeparatedString(final String string)
-	{
-		if (string == null || string.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-		return streamFromCommaSeparatedString(string)
-				.collect(GuavaCollectors.toImmutableSet());
-	}
-
-	public static Stream<DocumentId> streamFromCommaSeparatedString(final String string)
-	{
-		// avoid NPE
-		if (string == null)
-		{
-			return Stream.empty();
-		}
-
-		return SPLITTER_DocumentIds.splitToList(string)
-				.stream()
-				.map(idStr -> DocumentId.fromNullable(idStr))
-				.filter(documentId -> documentId != null);
-
-	}
-
-	public static String toCommaSeparatedString(final Collection<DocumentId> documentIds)
-	{
-		return documentIds.stream()
-				.map(DocumentId::toJson)
-				.collect(Collectors.joining(","));
-	}
-
-	public static Set<DocumentId> ofStringSet(final Collection<String> documentIds)
-	{
-		if (documentIds == null || documentIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-		return documentIds
-				.stream()
-				.map(idStr -> of(idStr))
-				.collect(GuavaCollectors.toImmutableSet());
-	}
-
-	public static Set<DocumentId> ofIntSet(final Collection<Integer> documentIds)
-	{
-		if (documentIds == null || documentIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-		return documentIds
-				.stream()
-				.map(idInt -> of(idInt))
-				.collect(GuavaCollectors.toImmutableSet());
-	}
-
 	public static final DocumentId fromNullable(final String idStr)
 	{
 		if (Check.isEmpty(idStr, true))
@@ -168,44 +103,7 @@ public abstract class DocumentId implements Serializable
 		return of(idStr.trim());
 	}
 
-	public static final Set<Integer> toIntSet(final Collection<DocumentId> documentIds)
-	{
-		if (documentIds == null || documentIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return documentIds.stream()
-				.map(documentId -> documentId.toInt())
-				.collect(GuavaCollectors.toImmutableSet());
-	}
-
-	public static final Set<Integer> toIntSetIgnoringNonInts(final Collection<DocumentId> documentIds)
-	{
-		if (documentIds == null || documentIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return documentIds.stream()
-				.filter(documentId -> documentId != null && documentId.isInt())
-				.map(documentId -> documentId.toInt())
-				.collect(GuavaCollectors.toImmutableSet());
-	}
-
-	public static final Set<String> toStringSet(final Collection<DocumentId> documentIds)
-	{
-		if (documentIds == null || documentIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		return documentIds.stream()
-				.map(documentId -> documentId.toString())
-				.collect(GuavaCollectors.toImmutableSet());
-	}
-
-	public static final Supplier<DocumentId> supplier(IntSupplier intSupplier)
+	public static final Supplier<DocumentId> supplier(final IntSupplier intSupplier)
 	{
 		Check.assumeNotNull(intSupplier, "Parameter intSupplier is not null");
 		return () -> DocumentId.of(intSupplier.getAsInt());

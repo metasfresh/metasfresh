@@ -1,11 +1,11 @@
 package de.metas.ui.web.window.model;
 
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.Document.OnValidStatusChanged;
@@ -52,7 +52,7 @@ public interface IIncludedDocumentsCollection
 
 	Document createNewDocument();
 
-	void deleteDocuments(Set<DocumentId> documentIds);
+	void deleteDocuments(DocumentIdsSelection documentIds);
 
 	DocumentValidStatus checkAndGetValidStatus(OnValidStatusChanged onValidStatusChanged, IDocumentChangesCollector changesCollector);
 

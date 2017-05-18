@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -150,6 +151,9 @@ public class WindowQuickInputRestController
 
 		return Execution.callInNewExecution("quickInput.create", () -> {
 			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
+				// Make sure we can edit our root document. Fail fast.
+				DocumentPermissionsHelper.assertCanEdit(rootDocument, userSession.getUserRolePermissions());
+
 				final DocumentEntityDescriptor includedDocumentDescriptor = rootDocument.getEntityDescriptor().getIncludedEntityByDetailId(detailId);
 
 				final QuickInputDescriptor quickInputDescriptor = quickInputDescriptors.getQuickInputEntityDescriptor(includedDocumentDescriptor);

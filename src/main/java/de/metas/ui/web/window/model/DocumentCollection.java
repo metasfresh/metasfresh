@@ -5,6 +5,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -413,17 +415,38 @@ public class DocumentCollection
 	 */
 	public DocumentPath getDocumentPath(@NonNull final ITableRecordReference tableRecordRef)
 	{
+		final WindowId zoomIntoWindowId = null;
+		return getDocumentPath(tableRecordRef, zoomIntoWindowId);
+	}
+
+	/**
+	 * Retrieves document path for given table/recordId.
+	 * 
+	 * @param tableRecordRef
+	 * @param zoomIntoWindowId optional WindowId to be used; if not provided, this method will search for it.
+	 * @return document path; never returns null
+	 */
+	public DocumentPath getDocumentPath(@NonNull final ITableRecordReference tableRecordRef, @Nullable final WindowId zoomIntoWindowId)
+	{
 		//
 		// Find the root window ID
-		final int zoomInto_adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableRecordRef);
-		if (zoomInto_adWindowId <= 0)
+		final WindowId zoomIntoWindowIdEffective;
+		if (zoomIntoWindowId == null)
 		{
-			throw new EntityNotFoundException("No windowId found")
-					.setParameter("tableRecordRef", tableRecordRef);
+			final int zoomInto_adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableRecordRef);
+			if (zoomInto_adWindowId <= 0)
+			{
+				throw new EntityNotFoundException("No windowId found")
+						.setParameter("tableRecordRef", tableRecordRef);
+			}
+			zoomIntoWindowIdEffective = WindowId.of(zoomInto_adWindowId);
 		}
-		final WindowId zoomIntoWindowId = WindowId.of(zoomInto_adWindowId);
+		else
+		{
+			zoomIntoWindowIdEffective = zoomIntoWindowId;
+		}
 
-		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(zoomIntoWindowId);
+		final DocumentEntityDescriptor rootEntityDescriptor = getDocumentEntityDescriptor(zoomIntoWindowIdEffective);
 		final String zoomIntoTableName = tableRecordRef.getTableName();
 
 		//
@@ -432,7 +455,7 @@ public class DocumentCollection
 		if (Objects.equals(rootEntityDescriptor.getTableName(), zoomIntoTableName))
 		{
 			final DocumentId rootDocumentId = DocumentId.of(tableRecordRef.getRecord_ID());
-			return DocumentPath.rootDocumentPath(zoomIntoWindowId, rootDocumentId);
+			return DocumentPath.rootDocumentPath(zoomIntoWindowIdEffective, rootDocumentId);
 		}
 		//
 		// We are dealing with an included document
@@ -446,7 +469,7 @@ public class DocumentCollection
 			{
 				throw new EntityNotFoundException("Cannot find the detail tab to zoom into")
 						.setParameter("tableRecordRef", tableRecordRef)
-						.setParameter("zoomIntoWindowId", zoomIntoWindowId)
+						.setParameter("zoomIntoWindowId", zoomIntoWindowIdEffective)
 						.setParameter("rootEntityDescriptor", rootEntityDescriptor);
 			}
 			else if (childEntityDescriptors.size() > 1)
@@ -462,7 +485,7 @@ public class DocumentCollection
 					.retrieveParentDocumentId(rootEntityDescriptor);
 
 			//
-			return DocumentPath.includedDocumentPath(zoomIntoWindowId, rootDocumentId, childEntityDescriptor.getDetailId(), rowId);
+			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, childEntityDescriptor.getDetailId(), rowId);
 		}
 	}
 

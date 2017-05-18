@@ -10,11 +10,9 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
@@ -35,6 +33,7 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -110,7 +109,7 @@ public class HUEditorView implements IView
 				.attributesProvider(huAttributesProvider)
 				.sqlViewBinding(builder.getSqlViewBinding())
 				.build();
-		
+
 		viewFilterDescriptors = builder.getSqlViewBinding().getViewFilterDescriptors();
 
 		//
@@ -151,7 +150,7 @@ public class HUEditorView implements IView
 			, final HUEditorViewRepository huEditorRepo //
 			, final List<DocumentFilter> stickyFilters //
 			, final List<DocumentFilter> filters //
-			)
+	)
 	{
 		if (isHighVolume)
 		{
@@ -244,7 +243,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public List<HUEditorRow> getByIds(final Set<DocumentId> rowId)
+	public List<HUEditorRow> getByIds(final DocumentIdsSelection rowId)
 	{
 		return streamByIds(rowId).collect(ImmutableList.toImmutableList());
 	}
@@ -286,13 +285,9 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<DocumentId> rowIds)
+	public String getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
 	{
-		Check.assumeNotEmpty(rowIds, "rowIds is not empty");
-		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
-		final Set<Integer> huIds = DocumentId.toIntSetIgnoringNonInts(rowIds);
-
-		return I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
+		return rowsBuffer.getSqlWhereClause(rowIds);
 	}
 
 	@Override
@@ -387,7 +382,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIds(final Collection<DocumentId> rowIds)
+	public Stream<HUEditorRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		return rowsBuffer.streamByIdsExcludingIncludedRows(rowIds);
 	}
@@ -399,7 +394,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> rowIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
 		final Set<Integer> huIds = streamByIds(rowIds)
 				.filter(HUEditorRow::isPureHU)

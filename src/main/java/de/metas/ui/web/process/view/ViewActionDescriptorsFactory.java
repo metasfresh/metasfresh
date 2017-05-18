@@ -2,7 +2,6 @@ package de.metas.ui.web.process.view;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +23,7 @@ import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionDescriptorBui
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodArgumentExtractor;
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodReturnTypeConverter;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
 
 /*
@@ -192,7 +192,7 @@ public class ViewActionDescriptorsFactory
 		}
 		//
 		// selectedDocumentIds internal parameter
-		else if (Collection.class.isAssignableFrom(parameterType))
+		else if (DocumentIdsSelection.class.isAssignableFrom(parameterType))
 		{
 			return (view, processParameters, selectedDocumentIds) -> selectedDocumentIds;
 		}

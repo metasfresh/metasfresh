@@ -1,13 +1,13 @@
 package de.metas.ui.web.window.model;
 
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -128,7 +128,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public void deleteDocuments(final Set<DocumentId> documentIds)
+	public void deleteDocuments(final DocumentIdsSelection documentIds)
 	{
 		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
 	}

@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.compiere.util.CCache.CCacheStats;
@@ -9,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
@@ -117,4 +119,11 @@ public abstract class SimpleLookupDescriptorTemplate implements LookupDescriptor
 	{
 		return ImmutableList.of();
 	}
+
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return Optional.empty();
+	}
+
 }

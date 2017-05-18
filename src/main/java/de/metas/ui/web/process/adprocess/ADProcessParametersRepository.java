@@ -12,6 +12,7 @@ import org.compiere.util.Env;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -20,6 +21,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
@@ -126,11 +128,20 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		throw new UnsupportedOperationException();
 	}
 
-	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
 	{
-		//
-		// Build the parameters (as document)
+		final IDocumentEvaluatee evalCtxEffective;
+		if(evalCtx != null)
+		{
+			evalCtxEffective = evalCtx.excludingFields(WindowConstants.FIELDNAME_Processed, WindowConstants.FIELDNAME_Processing, WindowConstants.FIELDNAME_IsActive);
+		}
+		else
+		{
+			evalCtxEffective = null;
+		}
+		
 		return Document.builder(parametersDescriptor)
+				.setShadowParentDocumentEvaluatee(evalCtxEffective)
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 

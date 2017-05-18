@@ -54,8 +54,8 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	private final ITranslatableString emptyResultHint;
 
 	private final List<DocumentLayoutElementDescriptor> elements;
+	
 	private final boolean supportQuickInput;
-
 	private final boolean queryOnActivate;
 
 	private DocumentLayoutDetailDescriptor(final Builder builder)
@@ -268,12 +268,6 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 					.stream()
 					.flatMap(element -> element.getFieldNames().stream())
 					.collect(GuavaCollectors.toImmutableSet());
-		}
-
-		public boolean isAdvancedField(final String fieldName)
-		{
-			final DocumentLayoutElementDescriptor.Builder elementBuilder = findElementBuilderByFieldName(fieldName);
-			return elementBuilder != null && elementBuilder.isAdvancedField();
 		}
 
 		public Builder setSupportQuickInput(final boolean supportQuickInput)

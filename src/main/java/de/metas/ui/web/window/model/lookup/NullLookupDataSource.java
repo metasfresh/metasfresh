@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.CCache.CCacheStats;
@@ -12,6 +13,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -86,4 +88,9 @@ public final class NullLookupDataSource implements LookupDataSource
 		return ImmutableList.of();
 	}
 
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return Optional.empty();
+	}
 }

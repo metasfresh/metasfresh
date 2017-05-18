@@ -1,13 +1,11 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.MutableInt;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -73,7 +72,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	private String p_WebuiViewSelectedIdsStr;
 
 	private IView _view;
-	private transient Set<DocumentId> _selectedDocumentIds;
+	private transient DocumentIdsSelection _selectedDocumentIds;
 
 	protected ViewBasedProcessTemplate()
 	{
@@ -115,12 +114,12 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		// Fetch and set view and view selected IDs from autowired process parameters
 		// NOTE: we assume a view ID is always provided
 		final IView view = viewsRepo.getView(p_WebuiViewId);
-		final Set<DocumentId> selectedDocumentIds = DocumentId.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr);
+		final DocumentIdsSelection selectedDocumentIds = DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr);
 		setView(view, selectedDocumentIds);
 	}
 
 	@OverridingMethodsMustInvokeSuper
-	protected void setView(final IView view, final Set<DocumentId> selectedDocumentIds)
+	protected void setView(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		_view = view;
 		_selectedDocumentIds = selectedDocumentIds;
@@ -139,7 +138,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _view;
 	}
 
-	protected final Set<DocumentId> getSelectedDocumentIds()
+	protected final DocumentIdsSelection getSelectedDocumentIds()
 	{
 		Check.assumeNotNull(_selectedDocumentIds, "View loaded");
 		return _selectedDocumentIds;
@@ -148,8 +147,8 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	@OverridingMethodsMustInvokeSuper
 	protected IViewRow getSingleSelectedRow()
 	{
-		final Set<DocumentId> selectedDocumentIds = getSelectedDocumentIds();
-		final DocumentId documentId = ListUtils.singleElement(selectedDocumentIds);
+		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
+		final DocumentId documentId = selectedDocumentIds.getSingleDocumentId();
 		return getView().getById(documentId);
 	}
 	

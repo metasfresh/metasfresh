@@ -19,6 +19,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -38,11 +39,11 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupVal
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -55,7 +56,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		return new ASILookupDescriptor(attributeValuesProvider);
 	}
 
-	private static final Optional<String> LookupTableName = Optional.of(I_M_AttributeValue.Table_Name); 
+	private static final Optional<String> LookupTableName = Optional.of(I_M_AttributeValue.Table_Name);
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
 
 	private final IAttributeValuesProvider attributeValuesProvider;
@@ -75,7 +76,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 				.addValue(attributeValuesProvider)
 				.toString();
 	}
-	
+
 	@Override
 	public Optional<String> getLookupTableName()
 	{
@@ -123,13 +124,13 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	{
 		return attributeValuesProvider.getCachePrefix();
 	}
-	
+
 	@Override
 	public boolean isCached()
 	{
 		return true;
 	}
-	
+
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
@@ -174,7 +175,7 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		final LookupValueFilterPredicate filter = evalCtx.getFilterPredicate();
 		final int limit = evalCtx.getLimit(Integer.MAX_VALUE);
 		final int offset = evalCtx.getOffset(0);
-		
+
 		return attributeValuesProvider.getAvailableValues(evalCtx)
 				.stream()
 				.map(namePair -> StringLookupValue.of(namePair.getID(), namePair.getName()))
@@ -182,5 +183,11 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 				.skip(offset)
 				.limit(limit)
 				.collect(LookupValuesList.collect());
+	}
+
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return Optional.empty();
 	}
 }

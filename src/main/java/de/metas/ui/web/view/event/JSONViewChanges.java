@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
@@ -59,23 +59,26 @@ public final class JSONViewChanges implements Serializable
 	private JSONViewChanges(final ViewChanges changes)
 	{
 		super();
-		
+
 		viewId = changes.getViewId().getViewId();
 		windowId = changes.getViewId().getWindowId();
 
-		changedIds = DocumentId.toStringSet(changes.getChangedRowIds());
-
-		if (changes.isFullyChanged())
+		final DocumentIdsSelection changedRowIds = changes.getChangedRowIds();
+		if (changedRowIds.isAll())
 		{
 			fullyChanged = Boolean.TRUE;
+			this.changedIds = null;
 		}
-		else if (!changedIds.isEmpty())
+		else if (changedRowIds.isEmpty())
 		{
-			fullyChanged = Boolean.FALSE;
+			// TODO: shall we throw an exception in this case? ...because basically it's not valid!
+			fullyChanged = null;
+			changedIds = null;
 		}
 		else
 		{
-			fullyChanged = null;
+			fullyChanged = Boolean.FALSE;
+			this.changedIds = changedRowIds.toJsonSet();
 		}
 	}
 

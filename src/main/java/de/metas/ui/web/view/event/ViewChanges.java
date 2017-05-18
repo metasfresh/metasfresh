@@ -1,14 +1,13 @@
 package de.metas.ui.web.view.event;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -87,28 +86,61 @@ public class ViewChanges
 	{
 		return fullyChanged;
 	}
-
-	public void addChangedRowIds(final Collection<DocumentId> rowIds)
+	
+	public boolean hasChanges()
 	{
+		if(fullyChanged)
+		{
+			return true;
+		}
+		
+		return changedRowIds != null && !changedRowIds.isEmpty();
+	}
+
+	public void addChangedRowIds(final DocumentIdsSelection rowIds)
+	{
+		// Don't collect rowIds if this was already flagged as fully changed.
+		if(fullyChanged)
+		{
+			return;
+		}
+		
 		if (rowIds == null || rowIds.isEmpty())
 		{
 			return;
 		}
-
-		if (changedRowIds == null)
+		
+		else if (rowIds.isAll())
 		{
-			changedRowIds = new HashSet<>();
+			fullyChanged = true;
+			changedRowIds = null;
 		}
-		changedRowIds.addAll(rowIds);
+		else
+		{
+			if (changedRowIds == null)
+			{
+				changedRowIds = new HashSet<>();
+			}
+			changedRowIds.addAll(rowIds.toSet());
+		}
 	}
 
-	public boolean hasChangedRowIds()
+	public DocumentIdsSelection getChangedRowIds()
 	{
-		return changedRowIds != null && !changedRowIds.isEmpty();
-	}
+		final boolean fullyChanged = this.fullyChanged;
+		final Set<DocumentId> changedRowIds = this.changedRowIds;
 
-	public Set<DocumentId> getChangedRowIds()
-	{
-		return changedRowIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(changedRowIds);
+		if (fullyChanged)
+		{
+			return DocumentIdsSelection.ALL;
+		}
+		else if (changedRowIds == null || changedRowIds.isEmpty())
+		{
+			return DocumentIdsSelection.EMPTY;
+		}
+		else
+		{
+			return DocumentIdsSelection.of(changedRowIds);
+		}
 	}
 }

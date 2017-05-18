@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.TranslatableParameterizedString;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -79,6 +80,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	private static final int WINDOWNO_Dummy = 99999;
 
 	private final Optional<String> tableName;
+	private final Optional<WindowId> zoomIntoWindowId;
 	private final ICachedStringExpression sqlForFetchingExpression;
 	private final ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 	private final int entityTypeIndex;
@@ -97,6 +99,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		super();
 
 		tableName = Optional.of(builder.sqlTableName);
+		zoomIntoWindowId = builder.getZoomIntoWindowId();
 		sqlForFetchingExpression = builder.sqlForFetchingExpression;
 		sqlForFetchingDisplayNameByIdExpression = builder.sqlForFetchingDisplayNameByIdExpression;
 		entityTypeIndex = builder.entityTypeIndex;
@@ -188,6 +191,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 	{
 		return tableName;
 	}
+	
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return zoomIntoWindowId;
+	}
 
 	public IStringExpression getSqlForFetchingExpression()
 	{
@@ -262,6 +271,8 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		private ICachedStringExpression sqlForFetchingExpression;
 		private ICachedStringExpression sqlForFetchingDisplayNameByIdExpression;
 		private int entityTypeIndex = -1;
+		
+		private int zoomIntoWindowId = -1;
 
 		private Builder()
 		{
@@ -358,6 +369,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			// Set the SQLs
 			{
 				sqlTableName = lookupInfo.getTableName();
+				zoomIntoWindowId = lookupInfo.getZoomAD_Window_ID_Override();
 				sqlForFetchingExpression = buildSqlForFetching(lookupInfo, sqlWhereFinal, lookup_SqlOrderBy)
 						.caching();
 				sqlForFetchingDisplayNameByIdExpression = buildSqlForFetchingDisplayNameById(lookupInfo)
@@ -577,6 +589,12 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			Check.assumeNotNull(scope, "Parameter scope is not null");
 			this.scope = scope;
 			return this;
+		}
+		
+		public Optional<WindowId> getZoomIntoWindowId()
+		{
+			final WindowId windowId = zoomIntoWindowId > 0 ? WindowId.of(zoomIntoWindowId) : null;
+			return Optional.ofNullable(windowId);
 		}
 
 		private LookupSource getLookupSourceType()

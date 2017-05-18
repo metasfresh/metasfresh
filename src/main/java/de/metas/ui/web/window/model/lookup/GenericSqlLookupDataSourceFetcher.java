@@ -26,6 +26,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import lombok.NonNull;
@@ -72,6 +73,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 
 	private final boolean isTranslatable;
 
+	private final Optional<WindowId> zoomIntoWindowId;
+
 	private GenericSqlLookupDataSourceFetcher(final LookupDescriptor lookupDescriptor)
 	{
 		super();
@@ -89,6 +92,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		postQueryPredicate = sqlLookupDescriptor.getPostQueryPredicate();
 		
 		isTranslatable = sqlForFetchingDisplayNameByIdExpression.requiresParameter(LookupDataSourceContext.PARAM_AD_Language.getName());
+		
+		zoomIntoWindowId = lookupDescriptor.getZoomIntoWindowId();
 	}
 
 	@Override
@@ -113,6 +118,12 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	public Optional<String> getLookupTableName()
 	{
 		return lookupTableNameAsOptional;
+	}
+
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return zoomIntoWindowId;
 	}
 	
 	@Override

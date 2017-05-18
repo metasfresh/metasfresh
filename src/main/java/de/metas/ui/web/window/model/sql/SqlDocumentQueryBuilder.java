@@ -192,7 +192,8 @@ public class SqlDocumentQueryBuilder
 			final List<Object> sqlWhereParams = sqlWhereAndParams.getRight();
 
 			sqlSelectLinkColumnName
-					.append("SELECT " + linkColumnName + " FROM " + entityBinding.getTableName())
+					.append("SELECT " + linkColumnName)
+					.append(" FROM " + entityBinding.getTableName() + " " + entityBinding.getTableAlias()) // NOTE: we need table alias because the where clause is using it
 					.append("\n WHERE ").append(sqlWhere);
 			sqlSelectLinkColumnNameParams.addAll(sqlWhereParams);
 		}
@@ -357,6 +358,9 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// Key column
+		// FIXME: handle AD_Reference/AD_Ref_List(s). In that case the recordId will be AD_Ref_List.Value,
+		// so the SQL where clause which is currently build is AD_Ref_List_ID=<the AD_Ref_List.Value>.
+		// The build SQL where clause shall be something like AD_Reference_ID=<the reference, i think we shall fetch it somehow from Lookup> AND Value=<the value, which currently is the recordId>
 		final DocumentId recordId = getRecordId();
 		if (recordId != null)
 		{

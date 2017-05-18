@@ -1,6 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.exceptions.DBException;
@@ -8,6 +7,7 @@ import org.adempiere.exceptions.DBException;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -44,7 +44,7 @@ public interface IViewDataRepository
 {
 	String getTableName();
 
-	String getSqlWhereClause(ViewId viewId, Collection<DocumentId> rowIds);
+	String getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
 	
 	DocumentFilterDescriptorsProvider getViewFilterDescriptors();
 
@@ -52,7 +52,7 @@ public interface IViewDataRepository
 
 	List<IViewRow> retrievePage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection orderedSelection, int firstRow, int pageLength) throws DBException;
 
-	<T> List<T> retrieveModelsByIds(ViewId viewId, Collection<DocumentId> rowIds, Class<T> modelClass);
+	<T> List<T> retrieveModelsByIds(ViewId viewId, DocumentIdsSelection rowIds, Class<T> modelClass);
 
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters);
 

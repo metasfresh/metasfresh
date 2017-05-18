@@ -1,7 +1,6 @@
 package de.metas.ui.web.process.view;
 
 import java.lang.reflect.Method;
-import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 
@@ -9,16 +8,16 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.view.ViewAction.Precondition;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -123,7 +122,7 @@ public final class ViewActionDescriptor
 	public final WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptor(final ViewAsPreconditionsContext viewContext)
 	{
 		final IView view = viewContext.getView();
-		final Set<DocumentId> selectedDocumentIds = viewContext.getSelectedDocumentIds();
+		final DocumentIdsSelection selectedDocumentIds = viewContext.getSelectedDocumentIds();
 
 		return WebuiRelatedProcessDescriptor.builder()
 				.processId(ViewProcessInstancesRepository.buildProcessId(view.getViewId(), actionId))
@@ -138,7 +137,7 @@ public final class ViewActionDescriptor
 				.build();
 	}
 
-	private final ProcessPreconditionsResolution checkPreconditions(final IView view, final Set<DocumentId> selectedDocumentIds)
+	private final ProcessPreconditionsResolution checkPreconditions(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		try
 		{
@@ -169,7 +168,7 @@ public final class ViewActionDescriptor
 		return viewActionReturnTypeConverter.convert(returnValue);
 	}
 
-	public Object[] extractMethodArguments(final IView view, final Document processParameters, final Set<DocumentId> selectedDocumentIds)
+	public Object[] extractMethodArguments(final IView view, final Document processParameters, final DocumentIdsSelection selectedDocumentIds)
 	{
 		return viewActionParamDescriptors.stream()
 				.map(paramDesc -> paramDesc.extractArgument(view, processParameters, selectedDocumentIds))
@@ -185,6 +184,6 @@ public final class ViewActionDescriptor
 	@FunctionalInterface
 	public static interface ViewActionMethodArgumentExtractor
 	{
-		public Object extractArgument(IView view, Document processParameters, Set<DocumentId> selectedDocumentIds);
+		public Object extractArgument(IView view, Document processParameters, DocumentIdsSelection selectedDocumentIds);
 	}
 }

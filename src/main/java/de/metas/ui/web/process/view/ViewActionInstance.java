@@ -5,14 +5,12 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.IProcessInstanceController;
@@ -22,6 +20,7 @@ import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -64,7 +63,7 @@ import lombok.ToString;
 	private final DocumentId pinstanceId;
 	private final WeakReference<IView> viewRef;
 	private final ViewActionDescriptor viewActionDescriptor;
-	private final Set<DocumentId> selectedDocumentIds;
+	private final DocumentIdsSelection selectedDocumentIds;
 
 	private ProcessInstanceResult result;
 
@@ -76,7 +75,7 @@ import lombok.ToString;
 			@NonNull final DocumentId pinstanceId //
 			, @NonNull final IView view //
 			, @NonNull final ViewActionDescriptor viewActionDescriptor //
-			, final Set<DocumentId> selectedDocumentIds //
+			, final DocumentIdsSelection selectedDocumentIds //
 	)
 	{
 		processId = ViewProcessInstancesRepository.buildProcessId(view.getViewId(), viewActionDescriptor.getActionId());
@@ -85,7 +84,7 @@ import lombok.ToString;
 		viewRef = new WeakReference<>(view);
 		this.viewActionDescriptor = viewActionDescriptor;
 
-		this.selectedDocumentIds = selectedDocumentIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(selectedDocumentIds);
+		this.selectedDocumentIds = selectedDocumentIds == null ? DocumentIdsSelection.EMPTY : selectedDocumentIds;
 
 		final DocumentEntityDescriptor parametersDescriptor = viewActionDescriptor.createParametersEntityDescriptor(processId);
 		if (parametersDescriptor != null)

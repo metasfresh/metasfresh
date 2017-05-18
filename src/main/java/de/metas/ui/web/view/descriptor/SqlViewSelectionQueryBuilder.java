@@ -1,7 +1,6 @@
 package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -13,20 +12,25 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -60,6 +64,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 // TODO: used only in one place.. consider removing it from here
 public final class SqlViewSelectionQueryBuilder
 {
+	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
+
 	public static final SqlViewSelectionQueryBuilder newInstance(final SqlEntityBinding entityBinding)
 	{
 		return new SqlViewSelectionQueryBuilder(entityBinding);
@@ -236,39 +242,63 @@ public final class SqlViewSelectionQueryBuilder
 		return sqlBuilder.toString();
 	}
 
-	public String buildSqlWhereClause(final String selectionId, final Collection<DocumentId> rowIds)
+	public String buildSqlWhereClause(final String selectionId, final DocumentIdsSelection rowIds)
 	{
 		final String sqlTableName = getTableName();
 		final String sqlKeyColumnName = getKeyColumnName();
-
+		final String sqlKeyColumnNameFK = sqlTableName + "." + sqlKeyColumnName;
+		return buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds);
+	}
+	
+	public static String buildSqlWhereClause(@NonNull final String sqlKeyColumnNameFK, @NonNull final String selectionId, final DocumentIdsSelection rowIds)
+	{
+		if (rowIds.isEmpty())
+		{
+			new AdempiereException("got empty rowIds")
+					.throwIfDeveloperModeOrLogWarningElse(logger);
+			return "1=0";
+		}
+		
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		sqlWhereClause.append("exists (select 1 from " + I_T_WEBUI_ViewSelection.Table_Name + " sel "
 				+ " where "
 				+ " " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId)
-				+ " and sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + sqlTableName + "." + sqlKeyColumnName
+				+ " and sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + "=" + sqlKeyColumnNameFK
 				+ ")");
 
-		if (!Check.isEmpty(rowIds))
+		if (!rowIds.isAll())
 		{
-			final Set<Integer> rowIdsAsInts = DocumentId.toIntSet(rowIds);
-			sqlWhereClause.append(" AND ").append(sqlKeyColumnName).append(" IN ").append(DB.buildSqlList(rowIdsAsInts));
+			final Set<Integer> rowIdsAsInts = rowIds.toIntSet();
+			sqlWhereClause.append(" AND ").append(sqlKeyColumnNameFK).append(" IN ").append(DB.buildSqlList(rowIdsAsInts));
 		}
 
 		return sqlWhereClause.toString();
-
 	}
 
-	public String buildSqlDeleteRowIdsFromSelection(final String selectionId, final Collection<DocumentId> rowIds)
+
+	public String buildSqlDeleteRowIdsFromSelection(@NonNull final String selectionId, @NonNull final DocumentIdsSelection rowIds)
 	{
-		final Set<Integer> rowIdsAsInts = DocumentId.toIntSet(rowIds);
-		if (rowIdsAsInts.isEmpty())
+		if (rowIds.isEmpty())
 		{
 			return null;
 		}
 
-		return "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
-				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId)
-				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " IN " + DB.buildSqlList(rowIdsAsInts);
+		final StringBuilder sql = new StringBuilder();
+		sql.append("DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
+				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(selectionId));
+
+		if (rowIds.isAll())
+		{
+			// nothing
+		}
+		else
+		{
+			final Set<Integer> recordIds = rowIds.toIntSet();
+			Check.assumeNotEmpty(recordIds, "recordIds is not empty"); // shall not happen
+			sql.append(" AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " IN " + DB.buildSqlList(recordIds));
+		}
+
+		return sql.toString();
 	}
 
 	public String buildSqlAddRowIdsFromSelection(final List<Object> sqlParams, final String selectionId, final DocumentId rowId)
@@ -303,15 +333,29 @@ public final class SqlViewSelectionQueryBuilder
 		return "SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?";
 	}
 
-	public String buildSqlCount(final List<Object> sqlParams, final String selectionId, final Collection<DocumentId> rowIds)
+	public String buildSqlCount(final List<Object> sqlParams, final String selectionId, final DocumentIdsSelection rowIds)
 	{
 		Check.assumeNotEmpty(selectionId, "selectionId is not empty");
-		final Set<Integer> recordIds = DocumentId.toIntSet(rowIds);
-		Check.assumeNotEmpty(recordIds, "recordIds is not empty");
 
 		sqlParams.add(selectionId);
-		return "SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?"
-				+ " AND " + DB.buildSqlList(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID, rowIds, sqlParams);
+		final StringBuilder sql = new StringBuilder();
+		sql.append("SELECT COUNT(1) FROM " + I_T_WEBUI_ViewSelection.Table_Name + " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?");
+
+		if (rowIds.isAll())
+		{
+			// nothing
+		}
+		else if (rowIds.isEmpty())
+		{
+			throw new IllegalArgumentException("empty rowIds is not allowed");
+		}
+		else
+		{
+			final Set<Integer> recordIds = rowIds.toIntSet();
+			sql.append(" AND ").append(DB.buildSqlList(I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID, recordIds, sqlParams));
+		}
+
+		return sql.toString();
 	}
 
 	public <T> IQueryFilter<T> buildInSelectionQueryFilter(final String selectionId)

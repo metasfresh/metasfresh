@@ -2,7 +2,6 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +29,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -231,7 +230,7 @@ public class ViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Set<DocumentId> rowIds = DocumentId.ofCommaSeparatedString(idsListStr);
+		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(idsListStr);
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final List<? extends IViewRow> result = viewsRepo.getView(viewId)
@@ -275,7 +274,7 @@ public class ViewRestController
 	private Stream<WebuiRelatedProcessDescriptor> streamAllViewActions(final String windowId, final String viewIdStr, final String selectedRowIdsAsStringList)
 	{
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final Set<DocumentId> selectedRowIds = DocumentId.ofCommaSeparatedString(selectedRowIdsAsStringList);
+		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStringList);
 		final IView view = viewsRepo.getView(viewId);
 		final IProcessPreconditionsContext preconditionsContext = ViewAsPreconditionsContext.newInstance(view, selectedRowIds);
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext);
