@@ -511,7 +511,7 @@ public abstract class Lookup extends AbstractListModel
 	 * 	@param query query
 	 *  @return Zoom Window - here 0
 	 */
-	public int getZoom(MQuery query)
+	public int getZoomAD_Window_ID(MQuery query)
 	{
 		return 0;
 	}	//	getZoom
