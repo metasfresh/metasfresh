@@ -302,7 +302,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// Find out the first shipment/receipt
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> icIols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
 		I_M_InOut firstInOut = null;
 		for (final I_C_InvoiceCandidate_InOutLine icIol : icIols)
 		{
