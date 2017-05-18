@@ -12,6 +12,7 @@ import org.compiere.util.Env;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -130,7 +131,10 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
 	{
 		return Document.builder(parametersDescriptor)
-				.setShadowParentDocumentEvaluatee(evalCtx)
+				.setShadowParentDocumentEvaluatee(evalCtx.excludingFields(
+						WindowConstants.FIELDNAME_Processed,
+						WindowConstants.FIELDNAME_Processing,
+						WindowConstants.FIELDNAME_IsActive))
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 

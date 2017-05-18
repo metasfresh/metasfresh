@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.adempiere.ad.validationRule.IValidationContext;
@@ -18,6 +19,7 @@ import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
@@ -28,6 +30,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,22 +59,23 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 	private static final Logger logger = LogManager.getLogger(DocumentEvaluatee.class);
 
 	private final Document _document;
-
-	//
-	// Scope
 	private final String _fieldNameInScope;
+	private final ImmutableSet<String> _fieldNamesToExclude;
+
 
 	/* package */ DocumentEvaluatee(@NotNull final Document document)
 	{
 		_document = document; // note: we assume it's not null
 		_fieldNameInScope = null;
+		_fieldNamesToExclude = ImmutableSet.of();
 	}
 
-	private DocumentEvaluatee(@NotNull final Document document, final String fieldNameInScope)
+	private DocumentEvaluatee(@NotNull final Document document, @Nullable final String fieldNameInScope, @NonNull final ImmutableSet<String> fieldNamesToExclude)
 	{
 		super();
 		_document = document; // note: we assume it's not null
 		_fieldNameInScope = fieldNameInScope; // null is also ok
+		_fieldNamesToExclude = fieldNamesToExclude;
 	}
 
 	@Override
@@ -92,13 +96,25 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 			return this;
 		}
 
-		return new DocumentEvaluatee(_document, fieldNameInScope);
+		return new DocumentEvaluatee(_document, fieldNameInScope, ImmutableSet.of());
 	}
 
 	private final boolean isFieldInScope(final String fieldName)
 	{
 		return Objects.equals(_fieldNameInScope, fieldName);
 	}
+	
+	@Override
+	public IDocumentEvaluatee excludingFields(final String ... fieldNamesToExclude)
+	{
+		return new DocumentEvaluatee(_document, _fieldNameInScope, ImmutableSet.copyOf(fieldNamesToExclude));
+	}
+	
+	private boolean isExcludedField(final String fieldName)
+	{
+		return _fieldNamesToExclude.contains(fieldName);
+	}
+
 
 	private Properties getCtx()
 	{
@@ -202,6 +218,11 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 	public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
 	{
 		if (variableName == null)
+		{
+			return Optional.empty();
+		}
+		
+		if(isExcludedField(variableName))
 		{
 			return Optional.empty();
 		}
