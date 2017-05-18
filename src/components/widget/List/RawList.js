@@ -28,7 +28,10 @@ class RawList extends Component {
             blur && this.handleBlur();
         }
 
-        (this.dropdown && autofocus) && this.dropdown.focus();
+        if(this.dropdown && autofocus) {
+            this.dropdown.focus();
+            list.length === 1 && this.handleSelect(list[0]);
+        }
 
         if(prevProps.defaultValue != defaultValue){
             this.dropdown && this.dropdown.focus();

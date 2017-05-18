@@ -738,6 +738,11 @@ input:checked + .input-slider:before {
     background-color: $brand-color-primary;
     color: #fff;
 }
+.input-error .input-dropdown-list-option:hover,
+.input-error .input-dropdown-list-option:hover * {
+    color: $brand-font-color;
+    background-color: $brand-danger-color !important;
+}
 .input-dropdown-list-option p {
     margin:0;
     overflow: hidden;
