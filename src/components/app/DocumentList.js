@@ -491,15 +491,15 @@ class DocumentList extends Component {
                                     updateDocList={this.handleFilterChange}
                                 />}
                             </div>}
-                            {!hasIncluded && <QuickActions
+                            <QuickActions
                                 windowType={windowType}
                                 viewId={viewId}
                                 selected={selectionValid ? selected : undefined}
                                 refresh={refresh}
-                                shouldNotUpdate={inBackground && !hasIncluded}
                                 fetchOnInit={fetchQuickActionsOnInit}
                                 processStatus={processStatus}
-                            />}
+                                hidden={hasIncluded}
+                            />
                         </div>}
                         <div className="document-list-body">
                             <Table

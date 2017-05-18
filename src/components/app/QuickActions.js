@@ -104,9 +104,11 @@ class QuickActions extends Component {
             actions, isDropdownOpen
         } = this.state;
 
-        const {shouldNotUpdate, processStatus} = this.props;
+        const {
+            shouldNotUpdate, processStatus, hidden
+        } = this.props;
 
-        if(actions.length){
+        if(actions.length && !hidden){
             return (
                 <div className="js-not-unselect">
                     <span className="spacer-right">Actions:</span>
