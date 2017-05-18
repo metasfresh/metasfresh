@@ -450,7 +450,7 @@ class DocumentList extends Component {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
             includedView, children, isIncluded, disablePaginationShortcuts,
-            notfound, disconnectFromState, autofocus
+            notfound, disconnectFromState, autofocus, selectedWindowType
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
@@ -493,12 +493,14 @@ class DocumentList extends Component {
                             </div>}
                             <QuickActions
                                 windowType={windowType}
+                                selectedWindowType={selectedWindowType}
                                 viewId={viewId}
                                 selected={selectionValid ? selected : undefined}
                                 refresh={refresh}
                                 fetchOnInit={fetchQuickActionsOnInit}
                                 processStatus={processStatus}
                                 hidden={hasIncluded}
+                                shouldNotUpdate={inBackground && !hasIncluded}
                             />
                         </div>}
                         <div className="document-list-body">

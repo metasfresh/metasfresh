@@ -281,7 +281,7 @@ class TablePagination extends Component {
         }
 
         return (
-            <div className="pagination-wrapper">
+            <div className="pagination-wrapper js-not-unselect">
                 <div className="pagination-row">
                     {compressed && <div />}
                     {!compressed && this.renderSelectAll()}
@@ -310,7 +310,6 @@ class TablePagination extends Component {
                         handleNextPage={() => handleChangePage('up')}
                         handlePrevPage={() => handleChangePage('down')}
                     />
-
                 }
             </div>
         );
