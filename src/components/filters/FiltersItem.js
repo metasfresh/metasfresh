@@ -93,13 +93,13 @@ class FiltersItem extends Component {
         const {filter} = this.state;
 
         if(
-            filter && 
-            filter.parametersLayoutType === 'singleOverlayField' && 
+            filter &&
+            filter.parametersLayoutType === 'singleOverlayField' &&
             !filter.parameters[0].value
         ){
             return this.handleClear();
         }
-        
+
         applyFilters(filter, () => {
             closeFilterMenu();
         });
