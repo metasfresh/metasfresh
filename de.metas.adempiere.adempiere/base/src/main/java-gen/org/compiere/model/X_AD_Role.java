@@ -16,7 +16,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1974153980L;
+	private static final long serialVersionUID = -1926184843L;
 
     /** Standard Constructor */
     public X_AD_Role (Properties ctx, int AD_Role_ID, String trxName)
@@ -563,7 +563,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtApproval);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1205,9 +1205,43 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_PreferenceType);
 	}
 
+	@Override
+	public org.compiere.model.I_AD_Menu getRoot_Menu() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Root_Menu_ID, org.compiere.model.I_AD_Menu.class);
+	}
+
+	@Override
+	public void setRoot_Menu(org.compiere.model.I_AD_Menu Root_Menu)
+	{
+		set_ValueFromPO(COLUMNNAME_Root_Menu_ID, org.compiere.model.I_AD_Menu.class, Root_Menu);
+	}
+
+	/** Set Root menu node.
+		@param Root_Menu_ID Root menu node	  */
+	@Override
+	public void setRoot_Menu_ID (int Root_Menu_ID)
+	{
+		if (Root_Menu_ID < 1) 
+			set_Value (COLUMNNAME_Root_Menu_ID, null);
+		else 
+			set_Value (COLUMNNAME_Root_Menu_ID, Integer.valueOf(Root_Menu_ID));
+	}
+
+	/** Get Root menu node.
+		@return Root menu node	  */
+	@Override
+	public int getRoot_Menu_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Root_Menu_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Reihenfolge.
 		@param SeqNo 
-		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+		Zur Bestimmung der Reihenfolge der EintrÃ¤ge; die kleinste Zahl kommt zuerst
 	  */
 	@Override
 	public void setSeqNo (int SeqNo)
@@ -1216,7 +1250,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	}
 
 	/** Get Reihenfolge.
-		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+		@return Zur Bestimmung der Reihenfolge der EintrÃ¤ge; die kleinste Zahl kommt zuerst
 	  */
 	@Override
 	public int getSeqNo () 
@@ -1279,7 +1313,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UserDiscount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

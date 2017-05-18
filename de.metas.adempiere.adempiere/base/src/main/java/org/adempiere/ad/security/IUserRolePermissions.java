@@ -9,6 +9,7 @@ import org.adempiere.ad.security.permissions.InfoWindowPermission;
 import org.adempiere.ad.security.permissions.OrgResource;
 import org.adempiere.ad.security.permissions.Permission;
 import org.adempiere.ad.security.permissions.ResourceAsPermission;
+import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -227,7 +228,7 @@ public interface IUserRolePermissions
 
 	int getOrg_Tree_ID();
 
-	int getMenu_Tree_ID();
+	UserMenuInfo getMenuInfo();
 
 	boolean isShowPreference();
 

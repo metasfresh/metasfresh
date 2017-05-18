@@ -54,6 +54,13 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	Set<String> getRoleDependentTableNames();
 
 	/**
+	 * Gets current cache version.
+	 * 
+	 * The cache version is incremented on each cache reset call.
+	 */
+	long getCacheVersion();
+
+	/**
 	 * Resets all role and permissions related caches after current transaction is commited.
 	 * If there is no current transaction, the caches will be reset right away.
 	 * 

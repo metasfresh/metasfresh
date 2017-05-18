@@ -471,20 +471,8 @@ public class Login
 	
 	public Set<KeyNamePair> getAvailableClients(final int AD_Role_ID, final int AD_User_ID)
 	{
-		//
-		// Get user role
-		final IUserRolePermissions rolePermissions = getUserRolePermissions(AD_Role_ID, AD_User_ID);
-
-		//
-		// Get login AD_Clients
-		final Set<KeyNamePair> clientsList = rolePermissions.getLoginClients();
-		if (clientsList.isEmpty())
-		{
-			// shall not happen because in this case rolePermissions retrieving should fail
-			throw new AdempiereException("No Clients for AD_Role_ID: " + AD_Role_ID);
-		}
-		
-		return clientsList;
+		return getUserRolePermissions(AD_Role_ID, AD_User_ID)
+				.getLoginClients();
 	}
 
 	/**

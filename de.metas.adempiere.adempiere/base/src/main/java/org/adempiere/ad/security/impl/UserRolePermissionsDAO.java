@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -45,7 +46,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.proxy.Cached;
@@ -89,8 +89,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
 
-	private boolean accountingModuleActive = false;
-
 	private static final Set<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
 			// Included role
@@ -109,12 +107,24 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			I_AD_Table_Access.Table_Name,
 			I_AD_Record_Access.Table_Name);
 
+	
+	private final AtomicBoolean accountingModuleActive = new AtomicBoolean(false);
+
+	private final AtomicLong version = new AtomicLong(1);
+
 	@Override
 	public Set<String> getRoleDependentTableNames()
 	{
 		return ROLE_DEPENDENT_TABLENAMES;
 	}
 
+	@Override
+	public long getCacheVersion()
+	{
+		return version.get();
+	}
+
+	
 	@Override
 	public void resetCacheAfterTrxCommit()
 	{
@@ -150,7 +160,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private static final AtomicBoolean resetCacheRunning = new AtomicBoolean(false);
 
-	private static void resetCache(final boolean broadcast)
+	private void resetCache(final boolean broadcast)
 	{
 		// If already running, do nothing (avoid StackOverflowError)
 		final boolean alreadyRunning = resetCacheRunning.getAndSet(true);
@@ -161,6 +171,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 		try
 		{
+			version.incrementAndGet();
+			
 			final CacheMgt cacheManager = CacheMgt.get();
 			cacheManager.reset(I_AD_Role.Table_Name); // cache reset role itself
 			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::reset);
@@ -246,9 +258,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Override
-	public IUserRolePermissions retrieveUserRolePermissions(final UserRolePermissionsKey key)
+	public IUserRolePermissions retrieveUserRolePermissions(@NonNull final UserRolePermissionsKey key)
 	{
-		Check.assumeNotNull(key, "Parameter key is not null");
 		return retrieveUserRolePermissionsCached(key.getAD_Role_ID(), key.getAD_User_ID(), key.getAD_Client_ID(), key.getDateMillis());
 	}
 
@@ -300,7 +311,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Cached(cacheName = I_AD_Role.Table_Name + "#UserRolePermissions")
 	IUserRolePermissions retrieveIndividialUserRolePermissions(final int adRoleId, final int adUserId, final int adClientId)
 	{
-		return new UserRolePermissionsBuilder(accountingModuleActive)
+		return new UserRolePermissionsBuilder(isAccountingModuleActive())
 				.setAD_Role_ID(adRoleId)
 				.setAD_User_ID(adUserId)
 				.setAD_Client_ID(adClientId)
@@ -775,13 +786,20 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	@Override
 	public void setAccountingModuleActive()
 	{
-		accountingModuleActive = true;
+		final boolean accountingModuleActiveOld = accountingModuleActive.getAndSet(true);
+		
+		// If flag changed, reset the cache
+		if(!accountingModuleActiveOld)
+		{
+			// NOTE: don't broadcast because this is just a local change
+			resetLocalCache();
+		}
 	}
 
 	@Override
 	public boolean isAccountingModuleActive()
 	{
-		return accountingModuleActive;
+		return accountingModuleActive.get();
 	}
 
 	@Override

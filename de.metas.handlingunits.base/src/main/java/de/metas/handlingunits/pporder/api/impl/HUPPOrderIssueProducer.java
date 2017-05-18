@@ -76,6 +76,10 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 
+	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
+	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
+	private static final String MSG_IssuingHUWithMultipleProductsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed";
+
 	public static final LockOwner lockOwner = LockOwner.forOwnerName("PP_Order_PreparedToIssue");
 
 	private Date movementDate;
@@ -150,17 +154,22 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		// If not a top level HU, take it out first
 		if (!handlingUnitsBL.isTopLevel(hu))
 		{
+			if(handlingUnitsBL.isAggregateHU(hu))
+			{
+				throw HUException.ofAD_Message(MSG_IssuingAggregatedTUsNotAllowed);
+			}
 			if (handlingUnitsBL.isVirtual(hu))
 			{
-				throw new HUException("Issuing VHUs is not allowed");
+				throw HUException.ofAD_Message(MSG_IssuingVHUsNotAllowed);
 			}
-
-			huTrxBL.setParentHU(huContext //
-					, null // parentHUItem
-					, hu //
-					, true // destroyOldParentIfEmptyStorage
-			);
-			// throw new HUException("Only top level HUs are allowed to be issued");
+			else
+			{
+				huTrxBL.setParentHU(huContext //
+						, null // parentHUItem
+						, hu //
+						, true // destroyOldParentIfEmptyStorage
+				);
+			}
 		}
 
 		//
@@ -180,7 +189,9 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 
 			if (productStorages.size() != 1)
 			{
-				throw new HUException("HU with multiple products is not allowed: hu=" + hu + ", productStorages=" + productStorages);
+				throw HUException.ofAD_Message(MSG_IssuingHUWithMultipleProductsNotAllowed)
+						.setParameter("HU", hu)
+						.setParameter("ProductStorages", productStorages);
 			}
 			productStorage = productStorages.get(0);
 		}
@@ -313,7 +324,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		{
 			throw new HUException("Cannot reverse candidate because it's already processed: " + candidate);
 		}
-		
+
 		final I_M_HU huToIssue = candidate.getM_HU();
 		huLockBL.unlock(huToIssue, HUPPOrderIssueProducer.lockOwner);
 
