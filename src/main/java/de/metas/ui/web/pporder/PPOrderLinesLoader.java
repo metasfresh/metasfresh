@@ -64,9 +64,9 @@ import lombok.Builder;
 
 public class PPOrderLinesLoader
 {
-	public static final PPOrderLinesLoaderBuilder builder(final WindowId windowId)
+	public static final PPOrderLinesLoaderBuilder builder(final WindowId viewWindowId)
 	{
-		return new PPOrderLinesLoaderBuilder().windowId(windowId);
+		return new PPOrderLinesLoaderBuilder().viewWindowId(viewWindowId);
 	}
 
 	//
@@ -78,22 +78,22 @@ public class PPOrderLinesLoader
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 
 	//
-	private final WindowId windowId;
+	private final WindowId viewWindowId;
 	private final transient HUEditorViewRepository huEditorRepo;
 	private final HUEditorRowAttributesProvider huAttributesProvider;
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
 
 	@Builder
-	public PPOrderLinesLoader(final WindowId windowId, final ASIViewRowAttributesProvider asiAttributesProvider)
+	public PPOrderLinesLoader(final WindowId viewWindowId, final ASIViewRowAttributesProvider asiAttributesProvider)
 	{
-		this.windowId = windowId;
+		this.viewWindowId = viewWindowId;
 		
 		huAttributesProvider = HUEditorRowAttributesProvider.builder()
 				.readonly(false)
 				.build();
 		
 		huEditorRepo = HUEditorViewRepository.builder()
-				.windowId(windowId)
+				.windowId(viewWindowId)
 				.referencingTableName(I_PP_Order.Table_Name)
 				.attributesProvider(huAttributesProvider)
 				.build();
@@ -166,8 +166,7 @@ public class PPOrderLinesLoader
 		final BigDecimal qtyPlan = ppOrder.getQtyOrdered();
 		final I_M_HU_LUTU_Configuration lutuConfig = huPPOrderBL.createReceiptLUTUConfigurationManager(ppOrder).getCreateLUTUConfiguration();
 
-		return PPOrderLineRow.builder(windowId)
-				.setRowId(documentId)
+		return PPOrderLineRow.builder(viewWindowId, documentId)
 				.ppOrder(ppOrder.getPP_Order_ID())
 				.setType(PPOrderLineType.MainProduct)
 				.setProcessed(readonly)
@@ -209,8 +208,7 @@ public class PPOrderLinesLoader
 			qtyPlan = ppOrderBOMLine.getQtyRequiered();
 		}
 
-		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(windowId)
-				.setRowId(documentId)
+		final PPOrderLineRow.Builder builder = PPOrderLineRow.builder(viewWindowId, documentId)
 				.ppOrderBOMLineId(ppOrderBOMLine.getPP_Order_ID(), ppOrderBOMLine.getPP_Order_BOMLine_ID())
 				.setType(lineType)
 				.setProcessed(readonly)
@@ -268,8 +266,8 @@ public class PPOrderLinesLoader
 		}
 
 		//
-		return PPOrderLineRow.builder(windowId)
-				.setRowId(huEditorRow.getId())
+		return PPOrderLineRow.builder(viewWindowId, huEditorRow.getId())
+				.huId(huEditorRow.getM_HU_ID())
 				.ppOrderQtyId(ppOrderQty.getPP_Order_Qty_ID())
 				.processed(readonly || ppOrderQty.isProcessed())
 				.setType(type)

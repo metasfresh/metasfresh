@@ -102,8 +102,8 @@ public class PPOrderLinesView implements IView
 
 		this.asiAttributesProvider = asiAttributesProvider;
 
-		final WindowId windowId = viewId.getWindowId();
-		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(windowId)
+		final WindowId viewWindowId = viewId.getWindowId();
+		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(viewWindowId)
 				.asiAttributesProvider(asiAttributesProvider)
 				.build()
 				.retrieveData(ppOrderId));
@@ -141,7 +141,7 @@ public class PPOrderLinesView implements IView
 	{
 		return viewType;
 	}
-	
+
 	@Override
 	public ImmutableSet<DocumentPath> getReferencingDocumentPaths()
 	{
@@ -288,6 +288,13 @@ public class PPOrderLinesView implements IView
 	private PPOrderLinesViewData getData()
 	{
 		return dataSupplier.get();
+	}
+
+	@Override
+	public DocumentPath getDocumentPathEffective(final DocumentId rowId)
+	{
+		final PPOrderLineRow row = getData().getById(rowId);
+		return row.getDocumentPathEffective();
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)

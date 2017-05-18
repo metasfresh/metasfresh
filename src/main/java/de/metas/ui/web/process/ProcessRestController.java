@@ -32,6 +32,8 @@ import de.metas.ui.web.process.json.JSONProcessInstance;
 import de.metas.ui.web.process.json.JSONProcessInstanceResult;
 import de.metas.ui.web.process.json.JSONProcessLayout;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -78,6 +80,10 @@ public class ProcessRestController
 
 	@Autowired
 	private UserSession userSession;
+	
+	@Autowired
+	private IViewsRepository viewsRepo;
+
 
 	private final ConcurrentHashMap<String, IProcessInstancesRepository> pinstancesRepositoriesByHandlerType = new ConcurrentHashMap<>();
 
@@ -151,7 +157,8 @@ public class ProcessRestController
 		DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
 		if (singleDocumentPath == null && viewDocumentIds.isSingleDocumentId())
 		{
-			singleDocumentPath = DocumentPath.rootDocumentPath(viewId.getWindowId(), viewDocumentIds.getSingleDocumentId());
+			final IView view = viewsRepo.getView(viewId);
+			singleDocumentPath = view.getDocumentPathEffective(viewDocumentIds.getSingleDocumentId());
 		}
 
 		final CreateProcessInstanceRequest request = CreateProcessInstanceRequest.builder()
