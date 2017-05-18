@@ -33,6 +33,7 @@ Here come the actual release notes:
     * Add an option to have metasfresh-backend, -admin, -material-dispo and -webui-api send log messages to an ELK Stack
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
     * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
+  * [#1517](https://github.com/metasfresh/metasfresh/issues/1517) intern: refactor LanguageDAO and LanguageBL
   * [#1520](https://github.com/metasfresh/metasfresh/pull/1520) add .metadata/ and .recommenders/ to .gitignore
     * Thx to @homebeaver
   * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
@@ -51,14 +52,20 @@ Here come the actual release notes:
     * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
 
 * metasfresh-webui-api
+  * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
+  * [#366](https://github.com/metasfresh/metasfresh-webui-api/issues/366) Make Permission change active without server cache reset
+  * [#370](https://github.com/metasfresh/metasfresh-webui-api/issues/370) Avoid spamming the console with "Connection refused" when elasticsearch connection is not available
+  * [#372](https://github.com/metasfresh/metasfresh-webui-api/issues/372) backend: endpoint for creating a filtered view
   * [#388](https://github.com/metasfresh/metasfresh-webui-api/issues/388) grid view: select "ALL" support
   * [#390](https://github.com/metasfresh/metasfresh-webui-api/issues/390) Change advanced edit layout
 
 * metasfresh-webui-frontend
+  * [#679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/679) Record selection behavior w/ browser back/ forward
   * [#738](https://github.com/metasfresh/metasfresh-webui-frontend/issues/738) Use Key in long drop down list
   * [#739](https://github.com/metasfresh/metasfresh-webui-frontend/issues/739) When included view is displayed add an alpha layer over the main view
   * [#740](https://github.com/metasfresh/metasfresh-webui-frontend/issues/740) When filtering a view please use the newly introduced "/documentView/{windowId}/{viewId}/filter" endpoint
   * [#742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/742) Filter singleOverlayField support
+  * [#743](https://github.com/metasfresh/metasfresh-webui-frontend/issues/743) modal panel: background looks a bit ugly
   * [#752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/752) Select-all-filtered option in general
 
 ## Fixes
@@ -66,9 +73,14 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1515](https://github.com/metasfresh/metasfresh/issues/1515) Project "de.metas.material.dispo" shall not be part of Swing client
   * [#1516](https://github.com/metasfresh/metasfresh/issues/1516) HU Transform - split out some TUs from LU does not work correctly with custom LUs
+  * [#1521](https://github.com/metasfresh/metasfresh/issues/1521) standard database: add SSCC attribute to "DIM_Barcode_Attributes" dimension spec
 
 * metasfresh-webui-api
   * [#302](https://github.com/metasfresh/metasfresh-webui-api/issues/302) jasper processes default values not taken
+  * [#363](https://github.com/metasfresh/metasfresh-webui-api/issues/363) make LU not mandatory in Receive HUs
+  * [#364](https://github.com/metasfresh/metasfresh-webui-api/issues/364) Replace HU editor's Barcode quick action with Barcode filter
+  * [#369](https://github.com/metasfresh/metasfresh-webui-api/issues/369) adding role to user does not work
+  * [#377](https://github.com/metasfresh/metasfresh-webui-api/issues/377) Don't show zoom-to for non-zoom reference Lists
   * [#381](https://github.com/metasfresh/metasfresh-webui-api/issues/381) ZoomInto shall consider AD_Ref_List.AD_Reference_ID if any
   * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/380) readonly permission in webui
   * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/382) menu is not updating when you change permission
@@ -77,6 +89,10 @@ Here come the actual release notes:
   * [#389](https://github.com/metasfresh/metasfresh-webui-api/issues/389) Zoom-Into error for subtab orderline
 
 * metasfresh-webui-frontend
+  * [#707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/707) Page popup shall be closed when clicking o a page
+  * [#715](https://github.com/metasfresh/metasfresh-webui-frontend/issues/715) KPI widgets shall have the same height
+  * [#732](https://github.com/metasfresh/metasfresh-webui-frontend/issues/732) issue not opening on single document
+  * [#734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/734) included view: don't reset when closing an error notification
   * [#749](https://github.com/metasfresh/metasfresh-webui-frontend/issues/749) singleOverlayField: pressing ESC shall close the popup
   * [#751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/751) Initial Setup Wizard does not open after switching language
   * [#755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/755) mandatory numeric field is underlined with blue, even if it's set
