@@ -10,6 +10,17 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.11 (2017-21)
+
+**upcoming release for week 2017-21**
+
+## Features
+
+* metasfresh-backend
+  * [#1506](https://github.com/metasfresh/metasfresh/issues/1506) Add the possibility to track easily contracts that ended naturally
+  * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
+
+
 # metasfresh 5.10 (2017-20)
 
 **upcoming release for week 2017-20**
