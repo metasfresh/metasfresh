@@ -217,6 +217,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	{
 		final DocumentIdsSelection rowIdsEffective = getRows().streamByIdsExcludingIncludedRows(rowIds)
 				.map(row -> row.getId())
+				.filter(rowId -> rowId.isInt())
 				.collect(DocumentIdsSelection.toDocumentIdsSelection());
 
 		if (rowIdsEffective.isEmpty())
