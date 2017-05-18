@@ -149,6 +149,12 @@ public final class PPOrderHUsToIssueActions
 		ppOrderView.invalidateAll();
 	}
 
+	/**
+	 * Issue selected TUs (aka Partial Issue)
+	 * @param husView HUEditor view
+	 * @param selectedHURowIds selected row IDs
+	 * @param qtyTUs how many TUs to issue
+	 */
 	@ViewAction(caption = "PPOrderIncludedHUEditorActions.issueSelectedTUs", precondition = SingleSelectedLUOrTU.class)
 	public static void issueSelectedTUs( //
 			final HUEditorView husView //
