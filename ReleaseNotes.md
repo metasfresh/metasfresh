@@ -39,7 +39,9 @@ Here come the actual release notes:
   * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
     * New window in WebUI to allow the Print Format maintenance.
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
-    * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
+    * Adding the Document Sequence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
+  * [#1529](https://github.com/metasfresh/metasfresh/issues/1529) Fresh Migration of WebUI Menu for rel. 5.10
+    * Adding the new Menu Configuration for WebUI.
   * [#1539](https://github.com/metasfresh/metasfresh/issues/1539) New Window for Product BOM in WebUI
     * Adding the BOM Product Window to WebUI. Now allowing the easy BOM Configuration via the Web User Interface.
   * [#1541](https://github.com/metasfresh/metasfresh/issues/1541) New Window for Packing Configuration in WebUI
