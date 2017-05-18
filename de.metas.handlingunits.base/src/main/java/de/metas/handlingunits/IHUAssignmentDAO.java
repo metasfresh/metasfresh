@@ -220,4 +220,6 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(IContextAware contextProvider, int adTableId, I_M_HU hu);
+
+	<T> List<T> retrieveDerivedModelsForHU(Properties ctx, Class<T> clazz, I_M_HU topLevelHU, I_M_HU luHU, I_M_HU tuHU, String trxName);
 }

@@ -516,6 +516,7 @@ public class HUItemStorage implements IHUItemStorage
 		for (final I_M_HU_Item_Storage storage : storages)
 		{
 			final I_M_Product product = storage.getM_Product();
+			System.out.println(product);
 			final I_C_UOM uom = storage.getC_UOM();
 			final HUItemProductStorage productStorage = new HUItemProductStorage(this, product, uom, date);
 			result.add(productStorage);
