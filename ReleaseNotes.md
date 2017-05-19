@@ -80,6 +80,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
     * Adding default filters to Handling Unit window in WebUI.
+  * [#364](https://github.com/metasfresh/metasfresh-webui-api/issues/364) Replace HU editor's Barcode quick action with Barcode filter
+    * Replacing the action based Barcode selection with the new specia Barcode Filter.
   * [#366](https://github.com/metasfresh/metasfresh-webui-api/issues/366) Make Permission change active without server cache reset
     * First Implemantation of distrubuted Cache invalidation. Now it's possible to change role permissions without the need to have a server cache reset.
   * [#370](https://github.com/metasfresh/metasfresh-webui-api/issues/370) Avoid spamming the console with "Connection refused" when elasticsearch connection is not available
@@ -124,18 +126,29 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#302](https://github.com/metasfresh/metasfresh-webui-api/issues/302) jasper processes default values not taken
+    * Fix for Jasper Processing in WebUI. In a minor case some default values were not considered when doing the Jasper Processing.
   * [#363](https://github.com/metasfresh/metasfresh-webui-api/issues/363) make LU not mandatory in Receive HUs
-  * [#364](https://github.com/metasfresh/metasfresh-webui-api/issues/364) Replace HU editor's Barcode quick action with Barcode filter
+    * Fix for the Field Logistic Unit in Receive Handling Units action. Now allowing to receive without a Logistics Unit.
   * [#369](https://github.com/metasfresh/metasfresh-webui-api/issues/369) adding role to user does not work
+    * Fix for Role Permissions in WebUI. Adding of new Users to a roles was not working anymore.
   * [#377](https://github.com/metasfresh/metasfresh-webui-api/issues/377) Don't show zoom-to for non-zoom reference Lists
+    * Restricting the new zoom-to action in WebUI. Not allowing non-zoom reference Lists anymore.
   * [#381](https://github.com/metasfresh/metasfresh-webui-api/issues/381) ZoomInto shall consider AD_Ref_List.AD_Reference_ID if any
+    * Enhancing zoom-to, now considering the Reference List ID if available.
   * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/380) readonly permission in webui
+    * Possibility tio use the readonly Layout configuration also in WebUI now.
   * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/382) menu is not updating when you change permission
+    * After changing a permission in Role window, the menu was not adjusted to the new permission.
   * [#386](https://github.com/metasfresh/metasfresh-webui-api/issues/386) Purchase Order from Sales Order Parms not initially filled in WebUI
+    * Now setting the needed default values in Processes when calling actions from window Main view.
   * [#375](https://github.com/metasfresh/metasfresh-webui-api/issues/375) Adding Role for User w/o Org_access restricts access totally
+    * Fixing a Bug with All Orgs Access permission, which restricted the access totally after setting.
   * [#389](https://github.com/metasfresh/metasfresh-webui-api/issues/389) Zoom-Into error for subtab orderline
+    * Fixing a Bug when using zoom-to for subntab lines of a main window.
   * [#392](https://github.com/metasfresh/metasfresh-webui-api/issues/392) barcode field is readonly
+    * Fix of the barcode field. Was readonly and should be editable.
   * [#393](https://github.com/metasfresh/metasfresh-webui-api/issues/393) Manufacturing Issue/Receipt: cannot receive HUs
+    * Fix for the receive Handling Units error, that prevented the receive of new Handling Units.
   
 * metasfresh-webui-frontend
   * [#706](https://github.com/metasfresh/metasfresh-webui-frontend/issues/706) Manufacturing order - Issue HUs - wrong /quickActions call
