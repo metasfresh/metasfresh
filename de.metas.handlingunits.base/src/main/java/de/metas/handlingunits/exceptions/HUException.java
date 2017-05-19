@@ -23,6 +23,7 @@ package de.metas.handlingunits.exceptions;
  */
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Check;
 
 /**
  * Root of Handling Units module exceptions hierarchy.
@@ -32,6 +33,11 @@ import org.adempiere.exceptions.AdempiereException;
  */
 public class HUException extends AdempiereException
 {
+	public static final HUException ofAD_Message(final String adMessage)
+	{
+		final String adMessageEffective = !Check.isEmpty(adMessage, true) ? adMessage : "Error";
+		return new HUException("@" + adMessageEffective + "@");
+	}
 
 	/**
 	 *
