@@ -152,14 +152,23 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#706](https://github.com/metasfresh/metasfresh-webui-frontend/issues/706) Manufacturing order - Issue HUs - wrong /quickActions call
+    * Fix for the action menu behavior in Manufacturing Order Window of WebUI. Now the actions are fitting to the selected rows and context.
   * [#707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/707) Page popup shall be closed when clicking o a page
+    * The Page selection popup now closes automatically when clicking on a page selection.
   * [#715](https://github.com/metasfresh/metasfresh-webui-frontend/issues/715) KPI widgets shall have the same height
+    * Adjustment to the KPI widget heights. Now all widgets have the same height and result in a tidier look and feel of the metasfresh Dashboard.
   * [#732](https://github.com/metasfresh/metasfresh-webui-frontend/issues/732) issue not opening on single document
+    * Fixing an error that avoided the opeing of the action issue window in Manufaturing workflow.
   * [#734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/734) included view: don't reset when closing an error notification
+    * Fix in included view. Not resetting the context anymore when clicking on an error notification.
   * [#749](https://github.com/metasfresh/metasfresh-webui-frontend/issues/749) singleOverlayField: pressing ESC shall close the popup
+    * Fix for the single field overlay, now allowing to press [esc] to close that overlay.
   * [#751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/751) Initial Setup Wizard does not open after switching language
+    * Fixing a Bug in Initial setup wizard that did not open anymore when unsing the language selector previously.
   * [#755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/755) mandatory numeric field is underlined with blue, even if it's set
-  * [#759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/759) Action button remains gray if the process execution fails with error 404[#759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/759) Action button remains gray if the process execution fails with error 404
+    * Adjustment in the mandatory field look & feel for number fields. Although a number was set, the mandatory logic said that the fields still has to be recorded.
+  * [#759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/759) Action button remains gray if the process execution fails with error 404
+    * Fixing an error leaving the action button greyed out after running into a previous 404 error.
 
 # metasfresh 5.9 (2017-19)
 
