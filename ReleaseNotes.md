@@ -96,12 +96,19 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/679) Record selection behavior w/ browser back/ forward
+    * New Implementation of a refined Browser Navigation in metasfresh. It now possible to use the browsee back button and also persist the previously made selection in Grid View Lines.
   * [#738](https://github.com/metasfresh/metasfresh-webui-frontend/issues/738) Use Key in long drop down list
+    * New Alphanumeric key Handling in drop down list. The user can press the first key and the cursor jups to the first apperarance in the drop down list.
   * [#739](https://github.com/metasfresh/metasfresh-webui-frontend/issues/739) When included view is displayed add an alpha layer over the main view
+    * The new included view implementation is now better focussable for the user. The remaining non active main view has an opacity overlay, to avoid distraction for the user.
   * [#740](https://github.com/metasfresh/metasfresh-webui-frontend/issues/740) When filtering a view please use the newly introduced "/documentView/{windowId}/{viewId}/filter" endpoint
+    * Internal housekeeping task moving the filtering implementations to a new endpoint.
   * [#742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/742) Filter singleOverlayField support
+    * Adding a new Overlay method to WebUI allowing to create special Filtering screens. First implementation done with Barcode Filter functionality in Manufacturing Issue and ReceiptEditor.
   * [#743](https://github.com/metasfresh/metasfresh-webui-frontend/issues/743) modal panel: background looks a bit ugly
+    * Adjustment of the Look and Fied design of the modal overlay.
   * [#752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/752) Select-all-filtered option in general
+    * Providing the possibility to use the select-all filtering generally/ systemwide.
 
 ## Fixes
 
