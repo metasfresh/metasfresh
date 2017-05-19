@@ -114,9 +114,13 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1515](https://github.com/metasfresh/metasfresh/issues/1515) Project "de.metas.material.dispo" shall not be part of Swing client
+    * Extracting the project material dispo from swing client.
   * [#1516](https://github.com/metasfresh/metasfresh/issues/1516) HU Transform - split out some TUs from LU does not work correctly with custom LUs
+    * Fix for the Split Functionality in handling Unit Editor. Sometimes the Split off for Transport Units did not work properly.
   * [#1521](https://github.com/metasfresh/metasfresh/issues/1521) standard database: add SSCC attribute to "DIM_Barcode_Attributes" dimension spec
+    * Adding the SSCC Attribute to the default database seed of metasfresh.
   * [#1580](https://github.com/metasfresh/metasfresh/issues/1580) NPE when setting up production ressource
+    * Fixing a Null Pointer Exception when inserting an new manufacturing ressource.
 
 * metasfresh-webui-api
   * [#302](https://github.com/metasfresh/metasfresh-webui-api/issues/302) jasper processes default values not taken
