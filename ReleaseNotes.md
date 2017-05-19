@@ -20,6 +20,10 @@ Here come the actual release notes:
   * [#1506](https://github.com/metasfresh/metasfresh/issues/1506) Add the possibility to track easily contracts that ended naturally
   * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
 
+## Fixes
+
+* metasfresh-backend
+  * [#1578](https://github.com/metasfresh/metasfresh/issues/1578) spring-boot services try to start local broker and fail
 
 # metasfresh 5.10 (2017-20)
 
