@@ -20,7 +20,6 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
 import lombok.ToString;
@@ -50,9 +49,9 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 {
-	public static final Builder builder(final WindowId viewWindowId, final DocumentId rowId)
+	public static final Builder builder(final DocumentId rowId)
 	{
-		return new Builder(viewWindowId, rowId);
+		return new Builder(rowId);
 	}
 
 	public static final PPOrderLineRow cast(final IViewRow viewRecord)
@@ -84,9 +83,9 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 
 	private PPOrderLineRow(final Builder builder)
 	{
-		documentPath = builder.getDocumentPath();
-		rowId = documentPath.getDocumentId();
+		rowId = builder.getRowId();
 		type = builder.getType();
+		documentPath = builder.getDocumentPath();
 
 		ppOrderId = builder.ppOrderId;
 		ppOrderBOMLineId = builder.ppOrderBOMLineId;
@@ -125,28 +124,6 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	}
 
 	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
-	}
-
-	/**
-	 * The effective document path of this row.
-	 * i.e. in case HUs that will be "HU's window" and "M_HU_ID".
-	 */
-	public DocumentPath getDocumentPathEffective()
-	{
-		if (huId > 0)
-		{
-			return DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, DocumentId.of(huId));
-		}
-		else
-		{
-			return getDocumentPath();
-		}
-	}
-
-	@Override
 	public DocumentId getId()
 	{
 		return rowId;
@@ -169,6 +146,13 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	{
 		return type;
 	}
+	
+	@Override
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
+	}
+
 
 	public JSONLookupValue getProduct()
 	{
@@ -264,7 +248,6 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	//
 	public static final class Builder
 	{
-		private final WindowId viewWindowId;
 		private final DocumentId rowId;
 		private PPOrderLineType type;
 
@@ -286,9 +269,8 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 		private BigDecimal qty;
 		private boolean qtyAsSumOfIncludedQtys = false;
 
-		private Builder(@NonNull final WindowId viewWindowId, @NonNull final DocumentId rowId)
+		private Builder(@NonNull final DocumentId rowId)
 		{
-			this.viewWindowId = viewWindowId;
 			this.rowId = rowId;
 		}
 
@@ -351,10 +333,31 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 			this.processed = processed;
 			return this;
 		}
+		
+		private DocumentId getRowId()
+		{
+			return rowId;
+		}
 
 		private DocumentPath getDocumentPath()
 		{
-			return DocumentPath.rootDocumentPath(viewWindowId, rowId);
+			final PPOrderLineType type = getType();
+			if (type == PPOrderLineType.MainProduct)
+			{
+				return DocumentPath.rootDocumentPath(WebPPOrderConfig.AD_WINDOW_ID_PP_Order, DocumentId.of(ppOrderId));
+			}
+			else if (type.isBOMLine())
+			{
+				return DocumentPath.includedDocumentPath(WebPPOrderConfig.AD_WINDOW_ID_PP_Order, DocumentId.of(ppOrderId), WebPPOrderConfig.TABID_ID_PP_Order_BOMLine, DocumentId.of(ppOrderBOMLineId));
+			}
+			else if (type.isHUOrHUStorage())
+			{
+				return DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, DocumentId.of(huId));
+			}
+			else
+			{
+				throw new IllegalStateException("Unknown type: " + type);
+			}
 		}
 
 		private PPOrderLineType getType()

@@ -290,13 +290,6 @@ public class PPOrderLinesView implements IView
 		return dataSupplier.get();
 	}
 
-	@Override
-	public DocumentPath getDocumentPathEffective(final DocumentId rowId)
-	{
-		final PPOrderLineRow row = getData().getById(rowId);
-		return row.getDocumentPathEffective();
-	}
-
 	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
 	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final DocumentIdsSelection selectedDocumentIds)
 	{
