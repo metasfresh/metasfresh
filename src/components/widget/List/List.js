@@ -47,22 +47,25 @@ class List extends Component {
         } = this.props;
 
         if(lookupList){
-            if(children.length > 0) {
-                let dataToChange = [];
-                const valuesToSet = [];
+            // if(children.length > 0) {
+            //     let dataToChange = [];
+            //     const valuesToSet = [];
 
-                dataToChange.push(mainProperty[0]);
-                valuesToSet.push(option);
+            //     dataToChange.push(mainProperty[0]);
+            //     valuesToSet.push(option);
 
-                children.map(item=>{
-                        dataToChange.push(item);
-                        valuesToSet.push(null);
-                });
+            //     children.map(item=>{
+            //             dataToChange.push(item);
+            //             valuesToSet.push(null);
+            //     });
 
-                onChange(dataToChange, valuesToSet);
-            } else {
-                onChange(properties[0].field, option);
-            }
+            //     onChange(dataToChange, valuesToSet);
+            // } else {
+            //     onChange(properties[0].field, option);
+            // }
+
+            onChange(properties[0].field, option);
+
             this.setState({
                 selectedItem: option
             });

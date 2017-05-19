@@ -130,13 +130,14 @@ class RawList extends Component {
      */
     handleClick = (e) => {
         e.preventDefault();
-        const {onFocus, doNotOpenOnFocus} = this.props;
+        // const {onFocus, doNotOpenOnFocus} = this.props;
 
-        onFocus && onFocus();
+        // onFocus && onFocus();
 
-        doNotOpenOnFocus && this.setState({
-            isOpen: true
-        })
+        // doNotOpenOnFocus && this.setState({
+        //     isOpen: true
+        // })
+        // this.handleFocus(e);
     }
 
     handleFocus = (e) => {

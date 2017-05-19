@@ -79,22 +79,24 @@ class RawLookup extends Component {
         this.setState({
             selected: null
         }, () => {
-                if(children.length > 0) {
-                    let dataToChange = [];
-                    const valuesToSet = [];
+                // if(children.length > 0) {
+                //     let dataToChange = [];
+                //     const valuesToSet = [];
 
-                    dataToChange.push(mainProperty[0]);
-                    valuesToSet.push(select);
+                //     dataToChange.push(mainProperty[0]);
+                //     valuesToSet.push(select);
 
-                    children.map(item=>{
-                            dataToChange.push(item);
-                            valuesToSet.push(null);
-                    });
+                //     children.map(item=>{
+                //             dataToChange.push(item);
+                //             valuesToSet.push(null);
+                //     });
 
-                    onChange(dataToChange, valuesToSet);
-                } else {
-                    onChange(properties[0].field, select);
-                }
+                //     onChange(dataToChange, valuesToSet);
+                // } else {
+                //     onChange(properties[0].field, select);
+                // }
+
+                onChange(mainProperty[0].field, select);
 
                 this.inputSearch.value = select[Object.keys(select)[0]];
                 handleInputEmptyStatus(false);

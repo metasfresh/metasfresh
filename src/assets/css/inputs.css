@@ -656,6 +656,10 @@ input:checked + .input-slider:before {
     flex: 1;
 }
 
+.raw-lookup-wrapper .input-dropdown-container  {
+    width: 100%;
+}
+
 .raw-lookup-wrapper.input-icon {
     flex: 0.05;
     justify-content: flex-end;

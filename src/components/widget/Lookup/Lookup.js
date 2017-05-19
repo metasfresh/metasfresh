@@ -129,7 +129,9 @@ class Lookup extends Component {
             {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
-                        const children = properties.slice(
+
+                        //--------- not needed children for now
+                        const children = properties.slice( 
                             index+1, properties.length
                         );
 
