@@ -79,12 +79,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
+    * Adding default filters to Handling Unit window in WebUI.
   * [#366](https://github.com/metasfresh/metasfresh-webui-api/issues/366) Make Permission change active without server cache reset
+    * First Implemantation of distrubuted Cache invalidation. Now it's possible to change role permissions without the need to have a server cache reset.
   * [#370](https://github.com/metasfresh/metasfresh-webui-api/issues/370) Avoid spamming the console with "Connection refused" when elasticsearch connection is not available
+    * Housekeeping task about log messages when elasitcsearch is not available.
   * [#372](https://github.com/metasfresh/metasfresh-webui-api/issues/372) backend: endpoint for creating a filtered view
+    * New Functionality in webui backend that allows to provide filtered views for the frontend.
   * [#388](https://github.com/metasfresh/metasfresh-webui-api/issues/388) grid view: select "ALL" support
+    * New Feature that allows to select more records that are visible on the page. The new selection possibility allows the user to select all records which are available with the current filtering. These selected records can then also be used for following processes or quickactions.
   * [#390](https://github.com/metasfresh/metasfresh-webui-api/issues/390) Change advanced edit layout
+    * Adjusting the advanced edit mode to the Main View Layout. This makes it easier for the user to find additional fields that are not displayed on Main view and makes a more tidy look & feel.
   * [#391](https://github.com/metasfresh/metasfresh-webui-api/issues/391) role: besides menu tree, allow configuring the sub-tree to be used
+    * New feature that allows an easier Menu maintenance in future via Menu Nodes that can be selected as Root of main menue for a given role.
 
   
 * metasfresh-webui-frontend
