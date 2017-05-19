@@ -33,7 +33,9 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1304](https://github.com/metasfresh/metasfresh/issues/1304) Jasper Document for Material disposal
+    * New Jasper Report for the Material disposal Document.
   * [#1306](https://github.com/metasfresh/metasfresh/issues/1306) Customer Returns Functionality
+    * New Functionality for the customer Returns workflow, allowing to receive book the returns including Packing Material and empties.
   * [#1474](https://github.com/metasfresh/metasfresh/issues/1474) New Window Handling Unit Packing Instruction in WebUI
     * Creates a new Packing Instruction window in WebUI.
   * [#1475](https://github.com/metasfresh/metasfresh/issues/1475) New Window for Handling Unit Packing Instruction Item in WebUI
@@ -49,6 +51,7 @@ Here come the actual release notes:
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
     * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
   * [#1517](https://github.com/metasfresh/metasfresh/issues/1517) intern: refactor LanguageDAO and LanguageBL
+    * Internal issue, refactoring and improving the language Handling in metasfresh.
   * [#1520](https://github.com/metasfresh/metasfresh/pull/1520) add .metadata/ and .recommenders/ to .gitignore
     * Thx to @homebeaver
   * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
@@ -64,7 +67,9 @@ Here come the actual release notes:
   * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
   * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
+    * New Jasper Report for the Customer Returns Document.
   * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
+    * Adding default search filters for the Business Partner window in WebUI.
   * [#1561](https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
     * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
   * [#1572](https://github.com/metasfresh/metasfresh/issues/1572) User Window adjustment in WebUI
