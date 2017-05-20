@@ -8,6 +8,7 @@ import java.util.function.Function;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Component;
 import com.hazelcast.util.function.BiConsumer;
 
 import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -125,7 +125,8 @@ public class ASIDescriptorFactory
 	{
 		if (attributes.isEmpty())
 		{
-			throw new EntityNotFoundException("Attributes not allowed");
+			throw new AdempiereException("Attributes not allowed")
+					.setParameter("asiDescriptorId", asiDescriptorId);
 		}
 
 		final DocumentEntityDescriptor.Builder attributeSetDescriptor = DocumentEntityDescriptor.builder()

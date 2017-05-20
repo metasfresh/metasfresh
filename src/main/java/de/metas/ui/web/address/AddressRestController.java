@@ -22,6 +22,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 
 /*
@@ -70,7 +72,8 @@ public class AddressRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("createAddressDocument", () -> {
-			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId());
+			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+			final Document addressDoc = addressRepo.createNewFrom(request.getTemplateId(), changesCollector);
 			return JSONDocument.ofDocument(addressDoc, newJsonOpts());
 		});
 	}
@@ -91,7 +94,7 @@ public class AddressRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Document addressDoc = addressRepo.getAddressDocument(docId);
+		final Document addressDoc = addressRepo.getAddressDocumentForReading(docId);
 		return JSONDocument.ofDocument(addressDoc, newJsonOpts());
 	}
 
@@ -104,8 +107,9 @@ public class AddressRestController
 		userSession.assertLoggedIn();
 
 		return Execution.callInNewExecution("processChanges", () -> {
-			addressRepo.processAddressDocumentChanges(docId, events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			addressRepo.processAddressDocumentChanges(docId, events, changesCollector);
+			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
 		});
 	}
 
@@ -118,7 +122,7 @@ public class AddressRestController
 	{
 		userSession.assertLoggedIn();
 
-		return addressRepo.getAddressDocument(docId)
+		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValuesForQuery(attributeName, query)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
@@ -131,7 +135,7 @@ public class AddressRestController
 	{
 		userSession.assertLoggedIn();
 
-		return addressRepo.getAddressDocument(docId)
+		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValues(attributeName)
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}

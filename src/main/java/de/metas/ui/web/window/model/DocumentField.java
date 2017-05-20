@@ -151,7 +151,7 @@ import lombok.NonNull;
 	{
 		return _lookupDataSource;
 	}
-	
+
 	private LookupDataSource getLookupDataSource()
 	{
 		if (_lookupDataSource == null)
@@ -160,7 +160,6 @@ import lombok.NonNull;
 		}
 		return _lookupDataSource;
 	}
-
 
 	@Override
 	public Document getDocument()
@@ -207,7 +206,7 @@ import lombok.NonNull;
 		final Object valueNew = convertToValueClassAndCorrect(value);
 		final Object valueOld = _value;
 		_value = valueNew;
-		
+
 		if (logger.isTraceEnabled() && !DataTypes.equals(valueNew, valueOld))
 		{
 			logger.trace("setValue: {} = {} <- {}", getFieldName(), valueNew, valueOld);
@@ -234,7 +233,7 @@ import lombok.NonNull;
 		//
 		// If we are dealing with a lookup value, make, sure it's translated (see https://github.com/metasfresh/metasfresh-webui-api/issues/311 )
 		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
-		if(lookupDataSource != null && value instanceof LookupValue)
+		if (lookupDataSource != null && value instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)value;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
@@ -286,7 +285,7 @@ import lombok.NonNull;
 
 	/**
 	 * Converts given value to field's type and after that applies various corrections like precision in case of numbers with precision.
-	 * 
+	 *
 	 * @param value
 	 * @return value converted and corrected
 	 */
@@ -453,7 +452,7 @@ import lombok.NonNull;
 
 	/**
 	 * Computes field's validStatus.
-	 * 
+	 *
 	 * IMPORTANT: this method is not updating the status, it's not computing it.
 	 */
 	private final DocumentValidStatus computeValidStatus()
@@ -480,6 +479,16 @@ import lombok.NonNull;
 	}
 
 	@Override
+	public DocumentValidStatus updateStatusIfInvalidAndGet(final IDocumentChangesCollector changesCollector)
+	{
+		if (_validStatus.isInitialInvalid())
+		{
+			updateValid(changesCollector);
+		}
+		return _validStatus;
+	}
+
+	@Override
 	public boolean hasChangesToSave()
 	{
 		if (isVirtualField())
@@ -494,16 +503,16 @@ import lombok.NonNull;
 	{
 		return DataTypes.equals(_value, _initialValue);
 	}
-	
+
 	@Override
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSourceOrNull();
-		if(lookupDataSource == null)
+		if (lookupDataSource == null)
 		{
 			return Optional.empty();
 		}
-		
+
 		return lookupDataSource.getZoomIntoWindowId();
 	}
 }

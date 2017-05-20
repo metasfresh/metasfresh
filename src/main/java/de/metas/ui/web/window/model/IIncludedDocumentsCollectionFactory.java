@@ -26,5 +26,5 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public interface IIncludedDocumentsCollectionFactory
 {
-	IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor, IDocumentChangesCollector changesCollector);
+	IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument, final DocumentEntityDescriptor entityDescriptor);
 }

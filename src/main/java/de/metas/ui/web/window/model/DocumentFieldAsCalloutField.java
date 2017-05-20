@@ -27,23 +27,23 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public final class DocumentFieldAsCalloutField implements ICalloutField, IProcessDefaultParameter
 {
-	/*package */static IDocumentField unwrap(final ICalloutField calloutField)
+	/* package */static IDocumentField unwrap(final ICalloutField calloutField)
 	{
 		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
 		return documentFieldAsCalloutField.documentField;
 	}
-	
+
 	public static Document unwrapDocument(final ICalloutField calloutField)
 	{
 		final DocumentFieldAsCalloutField documentFieldAsCalloutField = (DocumentFieldAsCalloutField)calloutField;
@@ -187,12 +187,12 @@ public final class DocumentFieldAsCalloutField implements ICalloutField, IProces
 		final Object valueObj = getDocument().getDynAttribute(name);
 		return DisplayType.toBoolean(valueObj);
 	}
-	
+
 	@Override
 	public int getContextAsInt(final String name)
 	{
 		final Object valueObj = getDocument().getDynAttribute(name);
-		if(valueObj == null)
+		if (valueObj == null)
 		{
 			return -1;
 		}

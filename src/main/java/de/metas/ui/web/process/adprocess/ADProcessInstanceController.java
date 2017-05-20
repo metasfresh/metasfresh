@@ -49,7 +49,6 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -134,14 +133,14 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	}
 
 	/** Copy constructor */
-	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode)
+	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		super();
 
 		instanceId = from.instanceId;
 
 		processDescriptor = from.processDescriptor;
-		parameters = from.parameters.copy(copyMode);
+		parameters = from.parameters.copy(copyMode, changesCollector);
 		processClassInstance = from.processClassInstance;
 
 		viewsRepo = from.viewsRepo;
@@ -166,13 +165,6 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				.toString();
 	}
 
-	@Override
-	public void destroy()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
 	private ProcessDescriptor getDescriptor()
 	{
 		return processDescriptor;
@@ -195,9 +187,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return parameters.getFieldViews();
 	}
 
-	public ADProcessInstanceController copy(final CopyMode copyMode)
+	public ADProcessInstanceController copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		return new ADProcessInstanceController(this, copyMode);
+		return new ADProcessInstanceController(this, copyMode, changesCollector);
 	}
 
 	public IAutoCloseable activate()
@@ -253,11 +245,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	{
 		assertNotExecuted();
 
-		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-
 		//
 		// Make sure it's saved in database
-		if (!saveIfValidAndHasChanges(true, changesCollector))
+		if (!saveIfValidAndHasChanges(true))
 		{
 			// shall not happen because the method throws the exception in case of failure
 			throw new ProcessExecutionException("Instance could not be saved because it's not valid");
@@ -493,10 +483,10 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return DocumentPath.rootDocumentPath(WindowId.of(adWindowId), documentId);
 	}
 
-	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx, final IDocumentChangesCollector changesCollector)
+	/* package */boolean saveIfValidAndHasChanges(final boolean throwEx)
 	{
 		final Document parametersDocument = getParametersDocument();
-		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges(changesCollector);
+		final DocumentSaveStatus parametersSaveStatus = parametersDocument.saveIfValidAndHasChanges();
 		final boolean saved = parametersSaveStatus.isSaved();
 		if (!saved && throwEx)
 		{

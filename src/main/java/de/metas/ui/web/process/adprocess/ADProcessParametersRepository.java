@@ -21,6 +21,7 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
@@ -61,19 +62,19 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 	}
 
 	@Override
-	public List<Document> retrieveDocuments(final DocumentQuery query)
+	public List<Document> retrieveDocuments(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Document retrieveDocument(final DocumentQuery query)
+	public Document retrieveDocument(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Document retrieveDocumentById(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId)
+	public Document retrieveDocumentById(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentChangesCollector changesCollector)
 	{
 		//
 		// Get parameters
@@ -82,6 +83,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		//
 		// Build the parameters (as document)
 		return Document.builder(parametersDescriptor)
+				.setChangesCollector(changesCollector)
 				.initializeAsExistingRecord(new ProcessInfoParameterDocumentValuesSupplier(adPInstanceId, processInfoParameters));
 	}
 
@@ -108,13 +110,13 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		{
 
 			@Override
-			public ITableRecordReference toTableRecordReference(int id)
+			public ITableRecordReference toTableRecordReference(final int id)
 			{
 				throw new UnsupportedOperationException();
 			}
 
 			@Override
-			public LookupValue findById(Object id)
+			public LookupValue findById(final Object id)
 			{
 				return LookupValue.fromObject(id, parameterDisplay);
 			}
@@ -123,15 +125,15 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 	}
 
 	@Override
-	public Document createNewDocument(final DocumentEntityDescriptor parametersDescriptor, final Document parentProcessParameters)
+	public Document createNewDocument(final DocumentEntityDescriptor parametersDescriptor, final Document parentProcessParameters, final IDocumentChangesCollector changesCollector)
 	{
 		throw new UnsupportedOperationException();
 	}
 
-	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx, final IDocumentChangesCollector changesCollector)
 	{
 		final IDocumentEvaluatee evalCtxEffective;
-		if(evalCtx != null)
+		if (evalCtx != null)
 		{
 			evalCtxEffective = evalCtx.excludingFields(WindowConstants.FIELDNAME_Processed, WindowConstants.FIELDNAME_Processing, WindowConstants.FIELDNAME_IsActive);
 		}
@@ -139,9 +141,10 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		{
 			evalCtxEffective = null;
 		}
-		
+
 		return Document.builder(parametersDescriptor)
 				.setShadowParentDocumentEvaluatee(evalCtxEffective)
+				.setChangesCollector(changesCollector)
 				.initializeAsNewDocument(adPInstanceId, VERSION_DEFAULT);
 	}
 
@@ -207,6 +210,12 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 	public String retrieveVersion(final DocumentEntityDescriptor entityDescriptor, final int documentIdAsInt)
 	{
 		return VERSION_DEFAULT;
+	}
+
+	@Override
+	public int retrieveLastLineNo(final DocumentQuery query)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	private static final class ProcessInfoParameterDocumentValuesSupplier implements DocumentValuesSupplier

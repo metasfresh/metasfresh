@@ -76,6 +76,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		return DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocuments();
 	}
 
@@ -98,7 +99,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public void updateStatusFromParent(final IDocumentChangesCollector changesCollector)
+	public void updateStatusFromParent()
 	{
 		// nothing
 	}
@@ -134,7 +135,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged, final IDocumentChangesCollector changesCollector)
+	public DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
 	{
 		return DocumentValidStatus.documentValid();
 	}
@@ -146,7 +147,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public void saveIfHasChanges(final IDocumentChangesCollector changesCollector)
+	public void saveIfHasChanges()
 	{
 	}
 

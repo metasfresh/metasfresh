@@ -80,5 +80,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 	@Override
 	DocumentValidStatus getValidStatus();
 
+	DocumentValidStatus updateStatusIfInvalidAndGet(IDocumentChangesCollector changesCollector);
+
 	IDocumentField copy(Document document, CopyMode copyMode);
 }

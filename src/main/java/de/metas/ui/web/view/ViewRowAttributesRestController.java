@@ -117,7 +117,7 @@ public class ViewRowAttributesRestController
 					.getById(rowId)
 					.getAttributes()
 					.processChanges(events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
+			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollectorOrNull(), newJSONOptions());
 		});
 	}
 

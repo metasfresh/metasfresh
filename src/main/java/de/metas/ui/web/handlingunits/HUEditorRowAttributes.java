@@ -292,13 +292,13 @@ import lombok.NonNull;
 
 		private final void forwardEvent(final IAttributeStorage storage, final IAttributeValue attributeValue)
 		{
-			final IDocumentChangesCollector documentChangesCollector = Execution.getCurrentDocumentChangesCollector();
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollector();
 
 			final String attributeName = HUEditorRowAttributesHelper.extractAttributeName(attributeValue);
 			final Object jsonValue = HUEditorRowAttributesHelper.extractJSONValue(storage, attributeValue);
 			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
-			documentChangesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
+			changesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeName, widgetType)
 					.setValue(jsonValue));
 		}
 

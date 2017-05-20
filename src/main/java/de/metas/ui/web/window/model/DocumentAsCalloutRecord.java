@@ -7,9 +7,9 @@ import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -24,28 +24,26 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/final class DocumentAsCalloutRecord implements ICalloutRecord
+/* package */final class DocumentAsCalloutRecord implements ICalloutRecord
 {
 	private static final ReasonSupplier REASON_Value_DirectSetOnCalloutRecord = () -> "direct set on callout record";
 
 	private final Reference<Document> _documentRef;
 
-	/* package */ DocumentAsCalloutRecord(final Document document)
+	/* package */ DocumentAsCalloutRecord(@NonNull final Document document)
 	{
-		super();
-		Preconditions.checkNotNull(document, "document shall not be null");
-		this._documentRef = new WeakReference<>(document);
+		_documentRef = new WeakReference<>(document);
 	}
-	
+
 	@Override
 	public String toString()
 	{
@@ -53,24 +51,24 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 				.addValue(_documentRef.get())
 				.toString();
 	}
-	
+
 	private final Document getDocument()
 	{
 		final Document document = _documentRef.get();
-		if(document == null)
+		if (document == null)
 		{
 			throw new IllegalStateException("Document reference already expired");
 		}
 		return document;
 	}
-	
+
 	@Override
 	public String getTableName()
 	{
 		final Document document = getDocument();
 		return document.getEntityDescriptor().getTableName();
 	}
-	
+
 	@Override
 	public int getAD_Tab_ID()
 	{
@@ -84,14 +82,13 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 		final Document document = getDocument();
 		return DocumentInterfaceWrapper.wrap(document, modelClass);
 	}
-	
+
 	@Override
 	public <T> T getModelBeforeChanges(final Class<T> modelClass)
 	{
 		final Document document = getDocument();
 		return DocumentInterfaceWrapper.wrapUsingOldValues(document, modelClass);
 	}
-
 
 	@Override
 	public Object getValue(final String columnName)

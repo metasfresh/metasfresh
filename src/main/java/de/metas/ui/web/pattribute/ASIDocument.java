@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -77,10 +78,10 @@ public class ASIDocument
 	}
 
 	/** copy constructor */
-	private ASIDocument(final ASIDocument asiDocument, final CopyMode copyMode)
+	private ASIDocument(final ASIDocument asiDocument, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		descriptor = asiDocument.descriptor;
-		data = asiDocument.data.copy(copyMode);
+		data = asiDocument.data.copy(copyMode, changesCollector);
 		
 		_lock = asiDocument._lock; // always share
 		completed = asiDocument.completed;
@@ -132,9 +133,9 @@ public class ASIDocument
 	}
 
 
-	public ASIDocument copy(final CopyMode copyMode)
+	public ASIDocument copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		return new ASIDocument(this, copyMode);
+		return new ASIDocument(this, copyMode, changesCollector);
 	}
 
 	public ASILayout getLayout()

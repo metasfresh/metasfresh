@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -542,7 +541,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	{
 		return document;
 	}
-
+	
 	private final Properties getCtx()
 	{
 		return document.getCtx();
@@ -652,7 +651,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	public static void save(final Object model)
 	{
 		final Document document = getDocument(model);
-		document.saveIfHasChanges(Execution.getCurrentDocumentChangesCollectorOrNull());
+		document.saveIfHasChanges();
 	}
 
 	/**

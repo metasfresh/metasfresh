@@ -24,6 +24,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -57,7 +58,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 
 	private static final String PROCESS_HANDLER_TYPE = "View";
 
-//	private final CCache<String, ViewActionDescriptorsList> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
+	// private final CCache<String, ViewActionDescriptorsList> viewActionsDescriptorByViewClassname = CCache.newCache("viewActionsDescriptorByViewClassname", 50, 0);
 
 	private final CCache<String, ViewActionInstancesList> viewActionInstancesByViewId = CCache.newLRUCache("viewActionInstancesByViewId", 100, 60);
 
@@ -70,9 +71,9 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	private final ViewActionDescriptorsList getViewActionDescriptors(@NonNull final IView view)
 	{
 		final ViewActionDescriptorsList viewClassActions = ViewActionDescriptorsFactory.instance.getFromClass(view.getClass());
-		
+
 		final ViewActionDescriptorsList viewActions = view.getActions();
-		
+
 		return viewClassActions.mergeWith(viewActions);
 	}
 
@@ -127,7 +128,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	}
 
 	@Override
-	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request)
+	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
 	{
 		//
 		// Get the view and and the viewActionDescriptor
@@ -147,10 +148,11 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 				.view(view)
 				.viewActionDescriptor(viewActionDescriptor)
 				.selectedDocumentIds(request.getViewDocumentIds())
+				.changesCollector(changesCollector)
 				.build();
 		request.assertProcessIdEquals(viewActionInstance.getProcessId());
 		viewActionInstancesList.add(viewActionInstance);
-		
+
 		//
 		// Return the newly created instance
 		return viewActionInstance;
@@ -176,7 +178,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 	}
 
 	@Override
-	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
+	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, final Function<IProcessInstanceController, R> processor)
 	{
 		final ViewActionInstance actionInstance = getActionInstance(pinstanceId);
 
@@ -186,7 +188,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 
 		return processor.apply(actionInstance);
 	}
-	
+
 	@Override
 	public void cacheReset()
 	{

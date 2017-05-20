@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -24,6 +25,7 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import lombok.ToString;
 
 /*
  * #%L
@@ -57,6 +59,7 @@ import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
  *
  */
 // @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE) // cannot use it because of "otherProperties"
+@ToString(callSuper = true)
 public final class JSONDocument extends JSONDocumentBase
 {
 	public static final JSONDocument ofDocument(final Document document, final JSONOptions jsonOpts)
@@ -132,10 +135,25 @@ public final class JSONDocument extends JSONDocumentBase
 
 	public static List<JSONDocument> ofEvents(final IDocumentChangesCollector documentChangesCollector, final JSONOptions jsonOpts)
 	{
-		return documentChangesCollector.streamOrderedDocumentChanges()
+		final int MAX_SIZE = 100;
+
+		final List<JSONDocument> jsonChanges = documentChangesCollector.streamOrderedDocumentChanges()
 				.map(documentChanges -> ofEventOrNull(documentChanges, jsonOpts))
 				.filter(jsonDocument -> jsonDocument != null)
+				.limit(MAX_SIZE + 1)
 				.collect(ImmutableList.toImmutableList());
+
+		//
+		// Prevent sending more then MAX_SIZE events because that will freeze the frontend application.
+		if (jsonChanges.size() > MAX_SIZE)
+		{
+			throw new AdempiereException("Events count exceeded")
+					.setParameter("maxSize", MAX_SIZE)
+					.setParameter("documentChangesCollector", documentChangesCollector)
+					.setParameter("first events", jsonChanges);
+		}
+
+		return jsonChanges;
 	}
 
 	private static JSONDocument ofEventOrNull(final DocumentChanges documentChangedEvents, final JSONOptions jsonOpts)

@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import org.adempiere.util.Check;
 
@@ -10,6 +11,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
@@ -37,9 +39,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 /**
  * Document query.
- * 
+ *
  * NOTE: this is not serializable, so please DO NOT CACHE IT
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -50,16 +52,14 @@ public final class DocumentQuery
 		return new Builder(entityDescriptor);
 	}
 
-	public static final DocumentQuery ofRecordId(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId)
+	public static final Builder ofRecordId(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId)
 	{
 		Check.assumeNotNull(recordId, "Parameter recordId is not null");
 		return builder(entityDescriptor)
 				.setRecordId(recordId)
-				.noSorting()
-				.build();
+				.noSorting();
 	}
 
-	private final DocumentsRepository documentsRepository;
 	private final DocumentEntityDescriptor entityDescriptor;
 	private final DocumentId recordId;
 	private final Document parentDocument;
@@ -72,10 +72,11 @@ public final class DocumentQuery
 	private final int firstRow;
 	private final int pageLength;
 
+	private final Function<DocumentId, Document> existingDocumentsSupplier;
+
 	private DocumentQuery(final Builder builder)
 	{
 		super();
-		documentsRepository = builder.getDocumentsRepository();
 		entityDescriptor = builder.entityDescriptor; // not null
 		recordId = builder.recordId;
 		parentDocument = builder.parentDocument;
@@ -87,6 +88,8 @@ public final class DocumentQuery
 
 		firstRow = builder.firstRow;
 		pageLength = builder.pageLength;
+
+		existingDocumentsSupplier = builder.existingDocumentsSupplier;
 	}
 
 	@Override
@@ -102,26 +105,6 @@ public final class DocumentQuery
 				.add("pageLength", pageLength > 0 ? pageLength : null)
 				.add("noSorting", noSorting ? Boolean.TRUE : null)
 				.toString();
-	}
-
-	public Document retriveDocumentOrNull()
-	{
-		return documentsRepository.retrieveDocument(this);
-	}
-
-	public List<Document> retriveDocuments()
-	{
-		return documentsRepository.retrieveDocuments(this);
-	}
-
-	/**
-	 * Retrieves parent's {@link DocumentId} for a child document identified by given query.
-	 * 
-	 * @param parentEntityDescriptor parent descriptor
-	 */
-	public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor)
-	{
-		return documentsRepository.retrieveParentDocumentId(parentEntityDescriptor, this);
 	}
 
 	public DocumentEntityDescriptor getEntityDescriptor()
@@ -174,6 +157,11 @@ public final class DocumentQuery
 		return pageLength;
 	}
 
+	public Function<DocumentId, Document> getExistingDocumentsSupplier()
+	{
+		return existingDocumentsSupplier;
+	}
+
 	public static final class Builder
 	{
 		private final DocumentEntityDescriptor entityDescriptor;
@@ -186,6 +174,9 @@ public final class DocumentQuery
 
 		private int firstRow = -1;
 		private int pageLength = -1;
+
+		private Function<DocumentId, Document> existingDocumentsSupplier = null;
+		private IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull(); // TODO: for legacy reason we are calling Execution.getCurrent.. ... but this shall be removed!
 
 		private Builder(final DocumentEntityDescriptor entityDescriptor)
 		{
@@ -200,13 +191,37 @@ public final class DocumentQuery
 
 		public Document retriveDocumentOrNull()
 		{
-			return build().retriveDocumentOrNull();
+			final DocumentQuery query = build();
+			final DocumentsRepository documentsRepository = getDocumentsRepository();
+			return documentsRepository.retrieveDocument(query, changesCollector);
 		}
 
 		public List<Document> retriveDocuments()
 		{
-			return build().retriveDocuments();
+			final DocumentQuery query = build();
+			final DocumentsRepository documentsRepository = getDocumentsRepository();
+			return documentsRepository.retrieveDocuments(query, changesCollector);
 		}
+
+		/**
+		 * Retrieves parent's {@link DocumentId} for a child document identified by given query.
+		 *
+		 * @param parentEntityDescriptor parent descriptor
+		 */
+		public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor)
+		{
+			final DocumentQuery query = build();
+			final DocumentsRepository documentsRepository = getDocumentsRepository();
+			return documentsRepository.retrieveParentDocumentId(parentEntityDescriptor, query);
+		}
+		
+		public int retrieveLastLineNo()
+		{
+			final DocumentQuery query = build();
+			final DocumentsRepository documentsRepository = getDocumentsRepository();
+			return documentsRepository.retrieveLastLineNo(query);
+		}
+
 
 		private DocumentsRepository getDocumentsRepository()
 		{
@@ -215,7 +230,7 @@ public final class DocumentQuery
 
 		public Builder setRecordId(final DocumentId documentId)
 		{
-			this.recordId = documentId;
+			recordId = documentId;
 			return this;
 		}
 
@@ -299,6 +314,18 @@ public final class DocumentQuery
 		public Builder setPageLength(final int pageLength)
 		{
 			this.pageLength = pageLength;
+			return this;
+		}
+
+		public Builder setExistingDocumentsSupplier(final Function<DocumentId, Document> existingDocumentsSupplier)
+		{
+			this.existingDocumentsSupplier = existingDocumentsSupplier;
+			return this;
+		}
+
+		public Builder setChangesCollector(IDocumentChangesCollector changesCollector)
+		{
+			this.changesCollector = changesCollector;
 			return this;
 		}
 	}

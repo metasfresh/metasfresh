@@ -45,8 +45,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
 import de.metas.ui.web.window.model.IncludedDocumentsCollection;
@@ -292,9 +292,9 @@ public class DocumentEntityDescriptor
 				.collect(GuavaCollectors.toImmutableSet());
 	}
 
-	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument, final IDocumentChangesCollector changesCollector)
+	public IIncludedDocumentsCollection createIncludedDocumentsCollection(final Document parentDocument)
 	{
-		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this, changesCollector);
+		return includedDocumentsCollectionFactory.createIncludedDocumentsCollection(parentDocument, this);
 	}
 
 	public Collection<DocumentEntityDescriptor> getIncludedEntities()
@@ -630,7 +630,7 @@ public class DocumentEntityDescriptor
 			{
 				if (getReadonlyLogic().isConstantTrue())
 				{
-					return (parentDocument, entityDescriptor, changesCollector) -> new HighVolumeReadonlyIncludedDocumentsCollection(parentDocument, entityDescriptor);
+					return HighVolumeReadonlyIncludedDocumentsCollection::new;
 				}
 				else
 				{
@@ -638,9 +638,15 @@ public class DocumentEntityDescriptor
 					// Case: e.g. Product->Price, Product->CU-TU etc
 				}
 			}
+			
+			// FIXME: debugging
+			if(true)
+			{
+				return HighVolumeReadWriteIncludedDocumentsCollection::newInstance;
+			}
 
 			// Fallback
-			return (parentDocument, entityDescriptor, changesCollector) -> IncludedDocumentsCollection.newInstance(parentDocument, entityDescriptor, changesCollector);
+			return IncludedDocumentsCollection::newInstance;
 		}
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)

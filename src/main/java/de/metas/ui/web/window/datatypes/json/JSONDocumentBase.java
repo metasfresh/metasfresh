@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -102,10 +103,10 @@ public abstract class JSONDocumentBase
 			// shall not happen
 			throw new InvalidDocumentPathException(documentPath, "only root path and single included document path are allowed");
 		}
-		
+
 		tabid = tabId;
 	}
-	
+
 	protected JSONDocumentBase(final DocumentId documentId)
 	{
 		id = documentId.toJson();
@@ -114,6 +115,16 @@ public abstract class JSONDocumentBase
 		rowId = null;
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("id", id)
+				.add("tablId", tabId)
+				.add("rowId", rowId)
+				.toString();
+	}
 
 	public final void setDeleted()
 	{

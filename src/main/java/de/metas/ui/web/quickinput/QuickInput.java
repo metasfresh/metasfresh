@@ -25,6 +25,8 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -104,14 +106,14 @@ public final class QuickInput
 	}
 
 	/** Copy constructor */
-	private QuickInput(final QuickInput from, final CopyMode copyMode)
+	private QuickInput(final QuickInput from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		super();
 		descriptor = from.descriptor;
 		rootDocumentPath = from.rootDocumentPath;
 		targetDetailId = from.targetDetailId;
 
-		quickInputDocument = from.quickInputDocument.copy(copyMode);
+		quickInputDocument = from.quickInputDocument.copy(copyMode, changesCollector);
 		if (copyMode.isWritable())
 		{
 			quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
@@ -197,9 +199,9 @@ public final class QuickInput
 		return InterfaceWrapperHelper.create(getQuickInputDocument(), modelClass);
 	}
 
-	public QuickInput copy(final CopyMode copyMode)
+	public QuickInput copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		return new QuickInput(this, copyMode);
+		return new QuickInput(this, copyMode, changesCollector);
 	}
 
 	public QuickInput bindRootDocument(final Document rootDocument)
@@ -324,6 +326,7 @@ public final class QuickInput
 		private Document buildQuickInputDocument()
 		{
 			return Document.builder(getQuickInputDescriptor().getEntityDescriptor())
+					.setChangesCollector(NullDocumentChangesCollector.instance)
 					.initializeAsNewDocument(nextQuickInputDocumentId::getAndIncrement, VERSION_DEFAULT)
 					.build();
 

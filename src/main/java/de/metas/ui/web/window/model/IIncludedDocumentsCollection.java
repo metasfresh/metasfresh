@@ -42,7 +42,7 @@ public interface IIncludedDocumentsCollection
 
 	Document getDocumentById(DocumentId documentId);
 
-	void updateStatusFromParent(final IDocumentChangesCollector changesCollector);
+	void updateStatusFromParent();
 
 	void assertNewDocumentAllowed();
 
@@ -54,11 +54,16 @@ public interface IIncludedDocumentsCollection
 
 	void deleteDocuments(DocumentIdsSelection documentIds);
 
-	DocumentValidStatus checkAndGetValidStatus(OnValidStatusChanged onValidStatusChanged, IDocumentChangesCollector changesCollector);
+	DocumentValidStatus checkAndGetValidStatus(OnValidStatusChanged onValidStatusChanged);
 
+	/**
+	 * Check if there are any changes in any of the included documents
+	 * 
+	 * @return true if there are some changes
+	 */
 	boolean hasChangesRecursivelly();
 
-	void saveIfHasChanges(IDocumentChangesCollector changesCollector);
+	void saveIfHasChanges();
 
 	void markStaleAll();
 
@@ -67,5 +72,13 @@ public interface IIncludedDocumentsCollection
 
 	int getNextLineNo();
 
+	default void onChildSaved(final Document document)
+	{
+		// nothing
+	}
 
+	default void onChildChanged(Document document)
+	{
+		// nothing
+	}
 }

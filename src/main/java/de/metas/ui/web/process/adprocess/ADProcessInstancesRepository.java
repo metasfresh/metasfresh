@@ -1,5 +1,6 @@
 package de.metas.ui.web.process.adprocess;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -7,6 +8,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -16,11 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
@@ -39,7 +38,6 @@ import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -51,6 +49,7 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.NonNull;
 
 /*
@@ -77,7 +76,7 @@ import lombok.NonNull;
 
 /**
  * {@link IProcessInstancesRepository} implementation for metasfresh {@link I_AD_Process}s.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @Component
@@ -96,18 +95,9 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	//
 	private final ADProcessDescriptorsFactory processDescriptorFactory = new ADProcessDescriptorsFactory();
 
-	private final LoadingCache<DocumentId, ADProcessInstanceController> processInstances = CacheBuilder.newBuilder()
+	private final Cache<DocumentId, ADProcessInstanceController> processInstances = CacheBuilder.newBuilder()
 			.expireAfterAccess(10, TimeUnit.MINUTES)
-			.removalListener(new RemovalListener<DocumentId, ADProcessInstanceController>()
-			{
-				@Override
-				public void onRemoval(final RemovalNotification<DocumentId, ADProcessInstanceController> notification)
-				{
-					final IProcessInstanceController pinstance = notification.getValue();
-					pinstance.destroy();
-				}
-			})
-			.build(CacheLoader.from(adPInstanceId -> retrieveProcessInstance(adPInstanceId)));
+			.build();
 
 	@Override
 	public String getProcessHandlerType()
@@ -136,28 +126,31 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@Override
-	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request)
+	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
 	{
-		if(request.getSingleDocumentPath() != null)
+		if (request.getSingleDocumentPath() != null)
 		{
 			// In case we have a single document path, we shall fetch it as use it as evaluation context.
 			// This will make sure that the parameter's default values will be correctly computed
-			return documentsCollection.forDocumentReadonly(request.getSingleDocumentPath(), document -> createNewProcessInstance0(request, document.asEvaluatee()));
+			return documentsCollection.forDocumentReadonly(request.getSingleDocumentPath(), changesCollector, document -> createNewProcessInstance0(request, document.asEvaluatee(), changesCollector));
 		}
 		else
 		{
 			final IDocumentEvaluatee shadowParentDocumentEvaluatee = null; // N/A
-			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee);
+			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee, changesCollector);
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param request
-	 * @param shadowParentDocumentEvaluatee optional shadowParentDocumentEvaluatee which will be 
+	 * @param shadowParentDocumentEvaluatee optional shadowParentDocumentEvaluatee which will be
 	 * @return
 	 */
-	private IProcessInstanceController createNewProcessInstance0(@NonNull final CreateProcessInstanceRequest request, @Nullable final IDocumentEvaluatee evalCtx)
+	private IProcessInstanceController createNewProcessInstance0(
+			@NonNull final CreateProcessInstanceRequest request,
+			@Nullable final IDocumentEvaluatee evalCtx,
+			final IDocumentChangesCollector changesCollector)
 	{
 		//
 		// Save process info together with it's parameters and get the the newly created AD_PInstance_ID
@@ -172,7 +165,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// Build the parameters document
 			final ProcessDescriptor processDescriptor = getProcessDescriptor(request.getProcessId());
 			final DocumentEntityDescriptor parametersDescriptor = processDescriptor.getParametersDescriptor();
-			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx);
+			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx, changesCollector);
 			final int windowNo = parametersDoc.getWindowNo();
 
 			// Set parameters's default values
@@ -191,11 +184,11 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setView(request.getViewId(), request.getViewDocumentIds())
 					.setProcessClassInstance(processClassInstance)
 					.build();
-			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly));
+			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 			return pinstance;
 		}
 	}
-	
+
 	private ProcessInfo createProcessInfo(@NonNull final CreateProcessInstanceRequest request)
 	{
 		final String tableName;
@@ -298,7 +291,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			final Document parametersDoc = parametersDescriptor
 					.getDataBinding()
 					.getDocumentsRepository()
-					.retrieveDocumentById(parametersDescriptor, adPInstanceId);
+					.retrieveDocumentById(parametersDescriptor, adPInstanceId, NullDocumentChangesCollector.instance);
 
 			// TODO: handle the case when the process was already executed
 			// In that case we need to load the result and provide it to ProcessInstance constructor
@@ -328,9 +321,9 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	@Override
 	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
 	{
-		try (final IAutoCloseable readLock = processInstances.getUnchecked(pinstanceId).lockForReading())
+		try (final IAutoCloseable readLock = getOrLoad(pinstanceId).lockForReading())
 		{
-			final ADProcessInstanceController processInstance = processInstances.getUnchecked(pinstanceId);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId);
 			try (final IAutoCloseable c = processInstance.activate())
 			{
 				return processor.apply(processInstance);
@@ -338,12 +331,24 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		}
 	}
 
-	@Override
-	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
+	private final ADProcessInstanceController getOrLoad(final DocumentId pinstanceId)
 	{
-		try (final IAutoCloseable writeLock = processInstances.getUnchecked(pinstanceId).lockForWriting())
+		try
 		{
-			final ADProcessInstanceController processInstance = processInstances.getUnchecked(pinstanceId).copy(CopyMode.CheckOutWritable);
+			return processInstances.get(pinstanceId, () -> retrieveProcessInstance(pinstanceId));
+		}
+		catch (final ExecutionException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	@Override
+	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, final Function<IProcessInstanceController, R> processor)
+	{
+		try (final IAutoCloseable writeLock = getOrLoad(pinstanceId).lockForWriting())
+		{
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckOutWritable, changesCollector);
 
 			// Make sure the process was not already executed.
 			// If it was executed we are not allowed to change it.
@@ -355,9 +360,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				final R result = processor.apply(processInstance);
 
 				// Actually put it back
-				final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-				processInstance.saveIfValidAndHasChanges(false, changesCollector); // throwEx=false
-				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly));
+				processInstance.saveIfValidAndHasChanges(false); // throwEx=false
+				processInstances.put(pinstanceId, processInstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 
 				return result;
 			}

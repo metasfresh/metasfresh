@@ -18,7 +18,6 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -26,6 +25,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentValidStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.Builder;
@@ -71,11 +71,12 @@ import lombok.ToString;
 	private final Document parametersDocument;
 
 	@Builder
-	private ViewActionInstance( //
-			@NonNull final DocumentId pinstanceId //
-			, @NonNull final IView view //
-			, @NonNull final ViewActionDescriptor viewActionDescriptor //
-			, final DocumentIdsSelection selectedDocumentIds //
+	private ViewActionInstance(
+			@NonNull final DocumentId pinstanceId,
+			@NonNull final IView view,
+			@NonNull final ViewActionDescriptor viewActionDescriptor,
+			@NonNull final DocumentIdsSelection selectedDocumentIds,
+			@NonNull final IDocumentChangesCollector changesCollector
 	)
 	{
 		processId = ViewProcessInstancesRepository.buildProcessId(view.getViewId(), viewActionDescriptor.getActionId());
@@ -89,7 +90,9 @@ import lombok.ToString;
 		final DocumentEntityDescriptor parametersDescriptor = viewActionDescriptor.createParametersEntityDescriptor(processId);
 		if (parametersDescriptor != null)
 		{
-			parametersDocument = Document.builder(parametersDescriptor).initializeAsNewDocument(pinstanceId, VERSION_DEFAULT);
+			parametersDocument = Document.builder(parametersDescriptor)
+					.setChangesCollector(changesCollector)
+					.initializeAsNewDocument(pinstanceId, VERSION_DEFAULT);
 		}
 		else
 		{
@@ -107,12 +110,6 @@ import lombok.ToString;
 		return view;
 	}
 	
-	@Override
-	public void destroy()
-	{
-		// nothing
-	}
-
 	public ProcessId getProcessId()
 	{
 		return processId;
@@ -168,7 +165,7 @@ import lombok.ToString;
 		// Validate parameters, if any
 		if (parametersDocument != null)
 		{
-			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus(Execution.getCurrentDocumentChangesCollectorOrNull());
+			final DocumentValidStatus validStatus = parametersDocument.checkAndGetValidStatus();
 			if (!validStatus.isValid())
 			{
 				throw new AdempiereException(validStatus.getReason());
