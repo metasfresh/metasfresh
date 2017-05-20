@@ -98,6 +98,29 @@ public interface I_AD_Role_OrgAccess
     public static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
 
 	/**
+	 * Set AD_Role_OrgAccess.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Role_OrgAccess_ID (int AD_Role_OrgAccess_ID);
+
+	/**
+	 * Get AD_Role_OrgAccess.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Role_OrgAccess_ID();
+
+    /** Column definition for AD_Role_OrgAccess_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Role_OrgAccess, Object> COLUMN_AD_Role_OrgAccess_ID = new org.adempiere.model.ModelColumn<I_AD_Role_OrgAccess, Object>(I_AD_Role_OrgAccess.class, "AD_Role_OrgAccess_ID", null);
+    /** Column name AD_Role_OrgAccess_ID */
+    public static final String COLUMNNAME_AD_Role_OrgAccess_ID = "AD_Role_OrgAccess_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Date this record was created
 	 *
