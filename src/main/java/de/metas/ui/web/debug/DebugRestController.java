@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -119,6 +120,7 @@ public class DebugRestController
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
 		processesController.cacheReset();
+		Services.get(IUserRolePermissionsDAO.class).resetLocalCache();
 
 		System.gc();
 	}
