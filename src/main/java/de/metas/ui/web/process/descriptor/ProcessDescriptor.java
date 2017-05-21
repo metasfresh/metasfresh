@@ -1,6 +1,7 @@
 package de.metas.ui.web.process.descriptor;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.exceptions.AdempiereException;
@@ -15,6 +16,8 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.cache.ETag;
+import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
@@ -40,7 +43,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
  * #L%
  */
 
-public final class ProcessDescriptor
+public final class ProcessDescriptor implements ETagAware
 {
 	private static final Logger logger = LogManager.getLogger(ProcessDescriptor.class);
 
@@ -61,6 +64,10 @@ public final class ProcessDescriptor
 
 	private final DocumentEntityDescriptor parametersDescriptor;
 	private final ProcessLayout layout;
+	
+	// ETag support
+	private static final Supplier<ETag> nextETagSupplier = ETagAware.newETagGenerator();
+	private final ETag eTag = nextETagSupplier.get();
 
 	private ProcessDescriptor(final Builder builder)
 	{
@@ -84,10 +91,16 @@ public final class ProcessDescriptor
 				.add("processId", processId)
 				.toString();
 	}
-
+	
 	public ProcessId getProcessId()
 	{
 		return processId;
+	}
+
+	@Override
+	public ETag getETag()
+	{
+		return eTag;
 	}
 
 	public ITranslatableString getCaption()

@@ -27,7 +27,6 @@ import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -59,6 +58,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -125,32 +125,18 @@ public class DebugRestController
 		System.gc();
 	}
 
-	private static final void logResourceValueChanged(final String name, final Object value, final Object valueOld)
-	{
-		System.out.println("*********************************************************************************************");
-		System.out.println("Changed " + name + " " + valueOld + " -> " + value);
-		System.out.println("*********************************************************************************************");
-
-	}
-
 	// NOTE: using String parameter because when using boolean parameter, we get following error in swagger-ui:
 	// swagger-ui.min.js:10 Uncaught TypeError: Cannot read property 'toLowerCase' of undefined
 	@RequestMapping(value = "/showColumnNamesForCaption", method = RequestMethod.PUT)
 	public void setShowColumnNamesForCaption(@RequestBody final String showColumnNamesForCaptionStr)
 	{
-		final boolean showColumnNamesForCaption_Old = userSession.isShowColumnNamesForCaption();
 		userSession.setShowColumnNamesForCaption(DisplayType.toBoolean(showColumnNamesForCaptionStr));
-		final boolean showColumnNamesForCaption_New = userSession.isShowColumnNamesForCaption();
-		logResourceValueChanged("showColumnNamesForCaption", showColumnNamesForCaption_New, showColumnNamesForCaption_Old);
 	}
 
 	@RequestMapping(value = "/allowDeprecatedRestAPI", method = RequestMethod.PUT)
 	public void setAllowDeprecatedRestAPI(@RequestBody final String allowDeprecatedRestAPI)
 	{
-		final boolean allowDeprecatedRestAPI_Old = userSession.isAllowDeprecatedRestAPI();
 		userSession.setAllowDeprecatedRestAPI(DisplayType.toBoolean(allowDeprecatedRestAPI));
-		final boolean allowDeprecatedRestAPI_New = userSession.isAllowDeprecatedRestAPI();
-		logResourceValueChanged("Allow Deprecated REST API", allowDeprecatedRestAPI_New, allowDeprecatedRestAPI_Old);
 	}
 
 	@RequestMapping(value = "/disableDeprecatedRestAPI", method = RequestMethod.GET)
@@ -207,7 +193,7 @@ public class DebugRestController
 			, @RequestParam(name = "targetType", required = false) final String targetTypeStr//
 			, @RequestParam(name = "targetDocumentType", required = false, defaultValue = "143") final String targetDocumentType//
 			, @RequestParam(name = "targetDocumentId", required = false) final String targetDocumentId//
-			)
+	)
 	{
 		final Topic topic = Topic.builder()
 				.setName(topicName)
@@ -318,7 +304,7 @@ public class DebugRestController
 			this.loggerNames = ImmutableSet.copyOf(loggerNames);
 		}
 
-		//@JsonValue
+		// @JsonValue
 		public Set<String> getLoggerNames()
 		{
 			return loggerNames;
@@ -330,7 +316,7 @@ public class DebugRestController
 			@RequestParam("module") final LoggingModule module //
 			, @RequestParam(name = "loggerName", required = false) String loggerName //
 			, @PathVariable("level") final String levelStr //
-			)
+	)
 	{
 		//
 		// Get Level to set
@@ -378,14 +364,12 @@ public class DebugRestController
 		}
 	}
 
-	@PutMapping("/language")
-	public String setAD_Language(@RequestBody final String adLanguage)
+	@GetMapping("http.cache.maxAge")
+	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") int httpCacheMaxAge)
 	{
-		final String adLanguageOld = userSession.setAD_Language(adLanguage);
-		final String adLanguageNew = userSession.getAD_Language();
-		logResourceValueChanged("AD_Language", adLanguageNew, adLanguageOld);
-
-		return adLanguageNew;
+		final long httpCacheMaxAgeOld = userSession.getHttpCacheMaxAge();
+		userSession.setHttpCacheMaxAge(httpCacheMaxAge);
+		return ImmutableMap.of("value", httpCacheMaxAge, "valueOld", httpCacheMaxAgeOld);
 	}
 
 }

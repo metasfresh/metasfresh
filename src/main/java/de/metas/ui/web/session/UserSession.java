@@ -49,7 +49,7 @@ import lombok.NonNull;
 
 /**
  * User Session service
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 @Service
@@ -57,7 +57,7 @@ public class UserSession
 {
 	/**
 	 * Gets current {@link UserSession} if any
-	 * 
+	 *
 	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
 	 *
 	 * @return {@link UserSession} or null
@@ -89,9 +89,9 @@ public class UserSession
 
 	/**
 	 * Gets current {@link UserSession}.
-	 * 
+	 *
 	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
-	 * 
+	 *
 	 * @return user session; never returns null
 	 * @throws NotLoggedInException
 	 */
@@ -107,7 +107,7 @@ public class UserSession
 
 	/**
 	 * Gets current permissions.
-	 * 
+	 *
 	 * @return permissions; never returns null
 	 * @throws NotLoggedInException
 	 */
@@ -200,9 +200,9 @@ public class UserSession
 
 	/**
 	 * Sets user preferred language.
-	 * 
+	 *
 	 * Fires {@link LanguagedChangedEvent}.
-	 * 
+	 *
 	 * @param adLanguage
 	 * @return old AD_Language
 	 */
@@ -277,6 +277,13 @@ public class UserSession
 		}
 	}
 
+	private static final void logSettingChanged(final String name, final Object value, final Object valueOld)
+	{
+		UserSession.logger.warn("/*********************************************************************************************\\");
+		UserSession.logger.warn("Setting changed: {} = {} (Old: {})", name, valueOld, value);
+		UserSession.logger.warn("\\*********************************************************************************************/");
+	}
+
 	public boolean isAllowDeprecatedRestAPI()
 	{
 		return data.isAllowDeprecatedRestAPI();
@@ -284,7 +291,9 @@ public class UserSession
 
 	public void setAllowDeprecatedRestAPI(final boolean allowDeprecatedRestAPI)
 	{
+		final boolean allowDeprecatedRestAPIOld = data.isAllowDeprecatedRestAPI();
 		data.setAllowDeprecatedRestAPI(allowDeprecatedRestAPI);
+		logSettingChanged("AllowDeprecatedRestAPI", allowDeprecatedRestAPI, allowDeprecatedRestAPIOld);
 	}
 
 	public boolean isShowColumnNamesForCaption()
@@ -294,13 +303,27 @@ public class UserSession
 
 	public void setShowColumnNamesForCaption(final boolean showColumnNamesForCaption)
 	{
+		final boolean showColumnNamesForCaptionOld = data.isShowColumnNamesForCaption();
 		data.setShowColumnNamesForCaption(showColumnNamesForCaption);
+		logSettingChanged("ShowColumnNamesForCaption", showColumnNamesForCaption, showColumnNamesForCaptionOld);
+	}
+
+	public void setHttpCacheMaxAge(final int httpCacheMaxAge)
+	{
+		final int httpCacheMaxAgeOld = data.getHttpCacheMaxAge();
+		data.setHttpCacheMaxAge(httpCacheMaxAge);
+		logSettingChanged("HttpCacheMaxAge", httpCacheMaxAge, httpCacheMaxAgeOld);
+	}
+
+	public int getHttpCacheMaxAge()
+	{
+		return data.getHttpCacheMaxAge();
 	}
 
 	/**
 	 * Event fired when the user language was changed.
 	 * Usually it is user triggered.
-	 * 
+	 *
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */

@@ -23,7 +23,6 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -82,22 +81,9 @@ public class SqlViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		final DocumentLayoutDescriptor layout = documentDescriptorFactory.getDocumentDescriptor(windowId).getLayout();
-		switch (viewDataType)
-		{
-			case grid:
-			{
-				return layout.getGridViewLayout();
-			}
-			case list:
-			{
-				return layout.getSideListViewLayout();
-			}
-			default:
-			{
-				throw new IllegalArgumentException("Invalid viewDataType: " + viewDataType);
-			}
-		}
+		return documentDescriptorFactory.getDocumentDescriptor(windowId)
+				.getViewLayout(viewDataType)
+				.withFilters(getViewFilterDescriptors(windowId, viewDataType));
 	}
 
 	@Override

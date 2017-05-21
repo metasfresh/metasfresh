@@ -59,9 +59,12 @@ import de.metas.ui.web.base.session.UserPreference;
 {
 	private static final long serialVersionUID = 4046535476486036184L;
 
+	// ---------------------------------------------------------------------------------------------
+	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
+	// ---------------------------------------------------------------------------------------------
+
 	//
 	// Actual session data
-	// NOTE: make sure none of those fields are "final" because this will prevent deserialization
 	private String sessionId = null;
 	private UserPreference userPreference = null;
 	private boolean loggedIn = false;
@@ -76,6 +79,10 @@ import de.metas.ui.web.base.session.UserPreference;
 	@Value("${metasfresh.webui.debug.allowDeprecatedRestAPI:false}")
 	private boolean defaultAllowDeprecatedRestAPI;
 	private boolean allowDeprecatedRestAPI;
+	
+	@Value("${metasfresh.webui.http.cache.maxAge:60}")
+	private int defaultHttpCacheMaxAge;
+	private int httpCacheMaxAge;
 
 	//
 	public InternalUserSessionData()
@@ -109,6 +116,7 @@ import de.metas.ui.web.base.session.UserPreference;
 		// Set initial properties
 		setShowColumnNamesForCaption(defaultShowColumnNamesForCaption);
 		setAllowDeprecatedRestAPI(defaultAllowDeprecatedRestAPI);
+		setHttpCacheMaxAge(defaultHttpCacheMaxAge);
 	}
 
 	@Override
@@ -136,7 +144,7 @@ import de.metas.ui.web.base.session.UserPreference;
 
 		UserSession.logger.trace("User session deserialized: {}", this);
 	}
-
+	
 	Properties getCtx()
 	{
 		return Env.getCtx();

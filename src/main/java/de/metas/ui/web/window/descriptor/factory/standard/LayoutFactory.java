@@ -516,7 +516,7 @@ public class LayoutFactory
 				.setDescription(entityDescriptor.getDescription())
 				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setQueryOnActivate(entityDescriptor.isHighVolume());
+				.setQueryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
