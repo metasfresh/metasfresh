@@ -1272,10 +1272,10 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public Set<Integer> retrievePrivateAccessRecordIds(final int adUserId, final int adTableId)
 	{
 		final String sql = "SELECT Record_ID "
-				+ "FROM " + I_AD_Private_Access.Table_Name
-				+ "WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive='Y' "
-				+ "ORDER BY Record_ID";
-		final Object[] sqlParams = new Object[] { adUserId, adTableId };
+				+ " FROM " + I_AD_Private_Access.Table_Name
+				+ " WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive=? "
+				+ " ORDER BY Record_ID";
+		final Object[] sqlParams = new Object[] { adUserId, adTableId, true };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
