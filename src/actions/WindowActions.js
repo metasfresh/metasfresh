@@ -597,7 +597,7 @@ export function getZoomIntoWindow(windowId, docId, field, tabId, rowId) {
         (rowId ? '/' + rowId : '') +
         '/attribute' +
         '/' + field +
-        '/zoomInto'
+        '/zoomInto?showError=true'
     );
 }
 
@@ -636,6 +636,9 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     throw err;
                 });
             }
+        }).catch(err => {
+            dispatch(setProcessSaved());
+            throw err;
         });
     }
 }

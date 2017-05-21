@@ -139,7 +139,6 @@ class Breadcrumb extends Component {
                         name=""
                         action={'Go to default documents list'}
                         type={''}
-                        delay={100}
                     />
                 }
 

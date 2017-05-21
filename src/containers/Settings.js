@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Moment from 'moment';
+import Modal from '../components/app/Modal';
 
 import {
     getAvailableLang,
@@ -77,12 +78,27 @@ class Settings extends Component {
     }
 
     render() {
+        const {rawModal, modal} = this.props;
         const {langs, value, hideHeader} = this.state;
         return (
             <Container
                 hideHeader={hideHeader}
                 siteName="Settings"
             >
+                {modal.visible &&
+                    <Modal
+                        windowType={modal.type}
+                        data={modal.data}
+                        layout={modal.layout}
+                        rowData={modal.rowData}
+                        tabId={modal.tabId}
+                        rowId={modal.rowId}
+                        modalTitle={modal.title}
+                        modalType={modal.modalType}
+                        modalViewId={modal.viewId}
+                        rawModalVisible={rawModal && rawModal.visible}
+                     />
+                 }
                 <div className="window-wrapper">
                     <div className="row">
                         <div className="col-sm-6">
@@ -117,10 +133,29 @@ class Settings extends Component {
     }
 }
 
+function mapStateToProps(state) {
+    const { windowHandler } = state;
+
+    const {
+        modal,
+        rawModal
+    } = windowHandler || {
+        modal: {},
+        rawModal: {}
+    };
+
+    return {
+        modal,
+        rawModal
+    }
+}
+
 Settings.propTypes = {
     dispatch: PropTypes.func.isRequired,
+    modal: PropTypes.object.isRequired,
+    rawModal: PropTypes.object.isRequired
 };
 
-Settings = connect()(Settings);
+Settings = connect(mapStateToProps)(Settings);
 
 export default Settings

@@ -19,6 +19,10 @@ class FiltersNotFrequent extends Component {
     }
 
     handleClickOutside = () => {
+       this.outsideClick();
+    }
+
+    outsideClick = () => {
         const {widgetShown, dropdownToggled} = this.props;
         if(!widgetShown) {
             dropdownToggled();
@@ -101,6 +105,7 @@ class FiltersNotFrequent extends Component {
                                 onShow={() => handleShow(true)}
                                 onHide={() => handleShow(false)}
                                 viewId={viewId}
+                                outsideClick={this.outsideClick}
                             />
                         }
                     </div>

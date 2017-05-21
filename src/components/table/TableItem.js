@@ -193,7 +193,7 @@ class TableItem extends Component {
             case 'CU':
                 return 'meta-icon-product';
             case 'PP_Order_Receive':
-                return 'meta-icon-receive';
+                return 'meta-icon-receipt';
             case 'PP_Order_Issue':
                 return 'meta-icon-issue';
         }

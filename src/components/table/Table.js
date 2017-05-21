@@ -218,7 +218,8 @@ class Table extends Component {
     }
 
     handleClickOutside = (event) => {
-        if(event.target.parentNode !== document) {
+        if(event.target.parentNode !== document &&
+            !event.target.parentNode.className.includes('notification')) {
             const item = event.path;
             for(let i = 0; i < item.length; i++){
                 if(
@@ -656,7 +657,8 @@ class Table extends Component {
                             changeListenOnFalse={() => this.changeListen(false)}
                             newRow={i === keys.length-1 ? newRow : false}
                             isSelected={
-                                selected.indexOf(item[key][keyProp]) > -1
+                                selected.indexOf(item[key][keyProp]) > -1 ||
+                                selected[0] === 'all'
                             }
                             handleSelect={this.selectRangeProduct}
                             indentSupported={indentSupported}
@@ -707,8 +709,8 @@ class Table extends Component {
             cols, type, docId, rowData, tabid, readonly, size, handleChangePage,
             pageLength, page, mainTable, updateDocList, sort, orderBy,
             toggleFullScreen, fullScreen, tabIndex, indentSupported, isModal,
-            queryLimitHit, supportQuickInput, tabInfo, isIncluded,
-            disablePaginationShortcuts
+            queryLimitHit, supportQuickInput, tabInfo,
+            disablePaginationShortcuts, hasIncluded
         } = this.props;
 
         const {
@@ -780,7 +782,8 @@ class Table extends Component {
                             className={
                                 'table table-bordered-vertically ' +
                                 'table-striped js-table ' +
-                                (readonly ? 'table-read-only' : '')
+                                (readonly ? 'table-read-only ' : '') +
+                                (hasIncluded ? 'table-fade-out': '')
                             }
                             onKeyDown={this.handleKey}
                             tabIndex={tabIndex}
@@ -821,6 +824,7 @@ class Table extends Component {
                             <TablePagination
                                 handleChangePage={handleChangePage}
                                 handleSelectAll={this.selectAll}
+                                handleSelectRange={this.selectRangeProduct}
                                 pageLength={pageLength}
                                 size={size}
                                 selected={selected}
@@ -828,7 +832,6 @@ class Table extends Component {
                                 orderBy={orderBy}
                                 deselect={this.deselectAllProducts}
                                 queryLimitHit={queryLimitHit}
-                                compressed={isIncluded}
                                 disablePaginationShortcuts=
                                     {disablePaginationShortcuts}
                             />
