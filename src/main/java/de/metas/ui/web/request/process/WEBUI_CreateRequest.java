@@ -21,6 +21,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -89,7 +90,7 @@ public class WEBUI_CreateRequest extends JavaProcess
 				.allowNewDocumentId()
 				.build();
 		
-		final DocumentId documentId = documentCollection.forDocumentWritable(documentPath, document -> {
+		final DocumentId documentId = documentCollection.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
 			document.processValueChanges(events, ReasonSupplier.NONE);
 			return document.getDocumentId();
 		});

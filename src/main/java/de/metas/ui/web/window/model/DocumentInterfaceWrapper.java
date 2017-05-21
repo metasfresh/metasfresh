@@ -541,7 +541,7 @@ public class DocumentInterfaceWrapper implements InvocationHandler, IInterfaceWr
 	{
 		return document;
 	}
-
+	
 	private final Properties getCtx()
 	{
 		return document.getCtx();

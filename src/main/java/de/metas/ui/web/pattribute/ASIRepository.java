@@ -29,8 +29,10 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -83,6 +85,7 @@ public class ASIRepository
 		// Create the new ASI document
 		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
 				.initializeAsNewDocument(nextASIDocId, VERSION_DEFAULT)
+				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.build();
 
 		//
@@ -109,9 +112,9 @@ public class ASIRepository
 
 	/**
 	 * Retrieves {@link ASIDocument} for given ASI. The document will be readonly and not save-able.
-	 * 
+	 *
 	 * IMPORTANT: the retrieved document is not cached, so next time it will be retrieved again
-	 * 
+	 *
 	 * @param attributeSetInstanceId
 	 * @return ASI document
 	 */
@@ -132,6 +135,7 @@ public class ASIRepository
 		// Create the new ASI document
 		final Document asiDocData = Document.builder(asiDescriptor.getEntityDescriptor())
 				.initializeAsNewDocument(() -> DocumentId.of(attributeSetInstanceId), VERSION_DEFAULT)
+				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.build();
 
 		//
@@ -148,7 +152,7 @@ public class ASIRepository
 		logger.trace("Created from ASI={}: {}", templateASI, asiDocData);
 
 		final ASIDocument asiDoc = new ASIDocument(asiDescriptor, asiDocData);
-		return asiDoc.copy(CopyMode.CheckInReadonly);
+		return asiDoc.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 	}
 
 	private ASIEditingInfo createASIEditingInfo(final JSONCreateASIRequest request)
@@ -157,7 +161,7 @@ public class ASIRepository
 
 		if (documentPath.getDocumentType() == DocumentType.Window)
 		{
-			return documentsCollection.forDocumentReadonly(documentPath, document -> {
+			return documentsCollection.forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
 				final int productId = document.asEvaluatee().get_ValueAsInt("M_Product_ID", -1);
 				final boolean isSOTrx = document.asEvaluatee().get_ValueAsBoolean("IsSOTrx", true);
 
@@ -203,7 +207,7 @@ public class ASIRepository
 		}
 		else
 		{
-			final ASIDocument asiDocReadonly = asiDoc.copy(CopyMode.CheckInReadonly);
+			final ASIDocument asiDocReadonly = asiDoc.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			id2asiDoc.put(asiDocId, asiDocReadonly);
 			logger.trace("Added to repository: {}", asiDocReadonly);
 		}
@@ -213,16 +217,16 @@ public class ASIRepository
 	{
 		try (final IAutoCloseable readLock = getASIDocumentNoLock(asiDocId).lockForReading())
 		{
-			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId);
+			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			return processor.apply(asiDoc);
 		}
 	}
 
-	public <R> R forASIDocumentWritable(final DocumentId asiDocId, final Function<ASIDocument, R> processor)
+	public <R> R forASIDocumentWritable(final DocumentId asiDocId, final IDocumentChangesCollector changesCollector, final Function<ASIDocument, R> processor)
 	{
 		try (final IAutoCloseable readLock = getASIDocumentNoLock(asiDocId).lockForWriting())
 		{
-			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId).copy(CopyMode.CheckOutWritable);
+			final ASIDocument asiDoc = getASIDocumentNoLock(asiDocId).copy(CopyMode.CheckOutWritable, changesCollector);
 			final R result = processor.apply(asiDoc);
 
 			Services.get(ITrxManager.class)
@@ -233,9 +237,9 @@ public class ASIRepository
 		}
 	}
 
-	public void processASIDocumentChanges(final DocumentId asiDocId, final List<JSONDocumentChangedEvent> events)
+	public void processASIDocumentChanges(final DocumentId asiDocId, final List<JSONDocumentChangedEvent> events, final IDocumentChangesCollector changesCollector)
 	{
-		forASIDocumentWritable(asiDocId, asiDoc -> {
+		forASIDocumentWritable(asiDocId, changesCollector, asiDoc -> {
 			asiDoc.processValueChanges(events, REASON_ProcessASIDocumentChanges);
 			return null; // no response
 		});
@@ -264,6 +268,7 @@ public class ASIRepository
 
 	public LookupValue complete(final DocumentId asiDocId)
 	{
-		return forASIDocumentWritable(asiDocId, ASIDocument::complete);
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return forASIDocumentWritable(asiDocId, changesCollector, ASIDocument::complete);
 	}
 }

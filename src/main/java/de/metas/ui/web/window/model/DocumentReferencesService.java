@@ -51,7 +51,7 @@ public class DocumentReferencesService
 
 	public List<DocumentReference> getDocumentReferences(final DocumentPath documentPath)
 	{
-		return documentCollection.forDocumentReadonly(documentPath, document -> {
+		return documentCollection.forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
 			if (document.isNew())
 			{
 				return ImmutableList.of();
@@ -69,7 +69,7 @@ public class DocumentReferencesService
 
 	public DocumentReference getDocumentReference(final DocumentPath sourceDocumentPath, final WindowId targetWindowId)
 	{
-		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
+		return documentCollection.forDocumentReadonly(sourceDocumentPath, NullDocumentChangesCollector.instance, sourceDocument -> {
 			if (sourceDocument.isNew())
 			{
 				throw new IllegalArgumentException("New documents cannot be referenced: " + sourceDocument);

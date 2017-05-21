@@ -58,6 +58,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 
@@ -132,14 +133,14 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	}
 
 	/** Copy constructor */
-	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode)
+	private ADProcessInstanceController(final ADProcessInstanceController from, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		super();
 
 		instanceId = from.instanceId;
 
 		processDescriptor = from.processDescriptor;
-		parameters = from.parameters.copy(copyMode);
+		parameters = from.parameters.copy(copyMode, changesCollector);
 		processClassInstance = from.processClassInstance;
 
 		viewsRepo = from.viewsRepo;
@@ -164,13 +165,6 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				.toString();
 	}
 
-	@Override
-	public void destroy()
-	{
-		// TODO Auto-generated method stub
-
-	}
-
 	private ProcessDescriptor getDescriptor()
 	{
 		return processDescriptor;
@@ -193,9 +187,9 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return parameters.getFieldViews();
 	}
 
-	public ADProcessInstanceController copy(final CopyMode copyMode)
+	public ADProcessInstanceController copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
-		return new ADProcessInstanceController(this, copyMode);
+		return new ADProcessInstanceController(this, copyMode, changesCollector);
 	}
 
 	public IAutoCloseable activate()

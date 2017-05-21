@@ -43,7 +43,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 
@@ -173,7 +175,8 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
+			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request, changesCollector);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
@@ -209,11 +212,12 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
-			instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
 		});
 	}
 
@@ -233,7 +237,8 @@ public class ProcessRestController
 		return Execution.prepareNewExecution()
 				.outOfTransaction()
 				.execute(() -> {
-					return instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+					final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+					return instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
 						final ProcessInstanceResult result = processInstance.startProcess();
 						return JSONProcessInstanceResult.of(result);
 					});

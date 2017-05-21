@@ -61,8 +61,10 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -220,7 +222,8 @@ public class WindowRestController
 				.setDataFieldsList(fieldsListStr)
 				.build();
 
-		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forRootDocumentReadonly(documentPath, changesCollector, rootDocument -> {
 			List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
@@ -292,12 +295,13 @@ public class WindowRestController
 
 	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
-		documentCollection.forDocumentWritable(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-			Execution.getCurrentDocumentChangesCollector().setPrimaryChange(document.getDocumentPath());
+			changesCollector.setPrimaryChange(document.getDocumentPath());
 			return null; // void
 		});
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
+		return JSONDocument.ofEvents(changesCollector, jsonOpts);
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")
@@ -370,8 +374,9 @@ public class WindowRestController
 				.build();
 
 		return Execution.callInNewExecution("window.delete", () -> {
-			documentCollection.deleteAll(documentPaths);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			documentCollection.deleteAll(documentPaths, changesCollector);
+			return JSONDocument.ofEvents(changesCollector, jsonOpts);
 		});
 	}
 
@@ -414,7 +419,8 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValuesForQuery(fieldName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -448,7 +454,8 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
@@ -484,7 +491,8 @@ public class WindowRestController
 	{
 		userSession.assertLoggedIn();
 
-		final IPair<ITableRecordReference, WindowId> zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		final IPair<ITableRecordReference, WindowId> zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -523,7 +531,7 @@ public class WindowRestController
 				return ImmutablePair.of(recordRef, zoomIntoWindowId);
 			}
 		});
-		
+
 		final ITableRecordReference zoomInfoTableRecordRef = zoomIntoInfo.getLeft();
 		final WindowId zoomIntoWindowId = zoomIntoInfo.getRight();
 		if (zoomInfoTableRecordRef == null)
@@ -550,7 +558,8 @@ public class WindowRestController
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
-		return documentCollection.forDocumentReadonly(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
@@ -594,7 +603,8 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
-		final Document document = documentCollection.forDocumentReadonly(documentPath, Function.identity());
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		final Document document = documentCollection.forDocumentReadonly(documentPath, changesCollector, Function.identity());
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
@@ -640,7 +650,8 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
-		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			document.saveIfValidAndHasChanges();
 			if (document.hasChangesRecursivelly())
 			{

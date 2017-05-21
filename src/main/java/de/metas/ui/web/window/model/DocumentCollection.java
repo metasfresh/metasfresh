@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
@@ -24,11 +25,8 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -36,7 +34,6 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
-import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
@@ -83,25 +80,7 @@ public class DocumentCollection
 	@Autowired
 	private UserSession userSession;
 
-	private final LoadingCache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder()
-			.removalListener(new RemovalListener<DocumentKey, Document>()
-			{
-				@Override
-				public void onRemoval(final RemovalNotification<DocumentKey, Document> notification)
-				{
-					final Document document = notification.getValue();
-					document.destroy();
-				}
-			})
-			.build(new CacheLoader<DocumentKey, Document>()
-			{
-				@Override
-				public Document load(final DocumentKey documentKey)
-				{
-					return retrieveRootDocumentFromRepository(documentKey);
-				}
-
-			});
+	private final Cache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder().build();
 
 	/* package */ DocumentCollection()
 	{
@@ -124,11 +103,11 @@ public class DocumentCollection
 		return descriptor.getEntityDescriptor();
 	}
 
-	public <R> R forDocumentReadonly(final DocumentPath documentPath, final Function<Document, R> documentProcessor)
+	public <R> R forDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 
-		return forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
+		return forRootDocumentReadonly(rootDocumentPath, changesCollector, rootDocument -> {
 			if (documentPath.isRootDocument())
 			{
 				return documentProcessor.apply(rootDocument);
@@ -147,23 +126,35 @@ public class DocumentCollection
 		});
 	}
 
-	public <R> R forRootDocumentReadonly(final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
+	private Document getOrLoadDocument(final DocumentKey documentKey)
+	{
+		try
+		{
+			return rootDocuments.get(documentKey, () -> retrieveRootDocumentFromRepository(documentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+		}
+		catch (final ExecutionException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	public <R> R forRootDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
-		try (final IAutoCloseable readLock = rootDocuments.getUnchecked(rootDocumentKey).lockForReading())
+		try (final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
-			final Document rootDocument = rootDocuments.getUnchecked(rootDocumentKey);
+			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, changesCollector);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
 
 			return rootDocumentProcessor.apply(rootDocument);
 		}
 	}
 
-	public <R> R forDocumentWritable(final DocumentPath documentPath, final Function<Document, R> documentProcessor)
+	public <R> R forDocumentWritable(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
-		return forRootDocumentWritable(rootDocumentPath, rootDocument -> {
+		return forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
 
 			final Document document;
 			if (documentPath.isRootDocument())
@@ -184,7 +175,7 @@ public class DocumentCollection
 		});
 	}
 
-	public <R> R forRootDocumentWritable(final DocumentPath documentPathOrNew, final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentWritable(final DocumentPath documentPathOrNew, final IDocumentChangesCollector changesCollector, final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentPath rootDocumentPathOrNew = documentPathOrNew.getRootDocumentPath();
 
@@ -193,7 +184,7 @@ public class DocumentCollection
 		final DocumentKey rootDocumentKey;
 		if (rootDocumentPathOrNew.isNewDocument())
 		{
-			final Document newRootDocument = createRootDocument(rootDocumentPathOrNew);
+			final Document newRootDocument = createRootDocument(rootDocumentPathOrNew, changesCollector);
 			lockHolder = newRootDocument;
 			rootDocumentKey = DocumentKey.ofRootDocumentPath(newRootDocument.getDocumentPath());
 			isNewRootDocument = true;
@@ -201,7 +192,7 @@ public class DocumentCollection
 		else
 		{
 			rootDocumentKey = DocumentKey.ofRootDocumentPath(rootDocumentPathOrNew);
-			lockHolder = rootDocuments.getUnchecked(rootDocumentKey);
+			lockHolder = getOrLoadDocument(rootDocumentKey);
 			isNewRootDocument = false;
 		}
 
@@ -214,9 +205,9 @@ public class DocumentCollection
 			}
 			else
 			{
-				rootDocument = rootDocuments.getUnchecked(rootDocumentKey)
-						.refreshFromRepositoryIfStaled()
-						.copy(CopyMode.CheckOutWritable);
+				rootDocument = getOrLoadDocument(rootDocumentKey)
+						.copy(CopyMode.CheckOutWritable, changesCollector)
+						.refreshFromRepositoryIfStaled();
 
 				DocumentPermissionsHelper.assertCanEdit(rootDocument, UserSession.getCurrentPermissions());
 			}
@@ -230,6 +221,7 @@ public class DocumentCollection
 			if (rootDocument.isDeleted())
 			{
 				rootDocuments.invalidate(rootDocumentKey);
+				changesCollector.collectDeleted(rootDocument.getDocumentPath());
 			}
 			else
 			{
@@ -247,7 +239,7 @@ public class DocumentCollection
 	 * @param documentPath
 	 * @return new root document (writable)
 	 */
-	private Document createRootDocument(final DocumentPath documentPath)
+	private Document createRootDocument(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
 	{
 		if (!documentPath.isNewDocument())
 		{
@@ -259,7 +251,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL);
+		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -286,6 +278,7 @@ public class DocumentCollection
 		}
 
 		final Document document = DocumentQuery.ofRecordId(entityDescriptor, documentKey.getDocumentId())
+				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocumentOrNull();
 		if (document == null)
 		{
@@ -320,8 +313,7 @@ public class DocumentCollection
 		//
 		// Add the saved and changed document back to index
 		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
-		final Document rootDocumentReadonly = rootDocument.copy(CopyMode.CheckInReadonly);
-		rootDocuments.put(rootDocumentKey, rootDocumentReadonly);
+		rootDocuments.put(rootDocumentKey, rootDocument.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 
 		//
 		// Make sure all events were collected for the case when we just created the new document
@@ -329,7 +321,7 @@ public class DocumentCollection
 		if (wasNew)
 		{
 			logger.debug("Checking if we collected all events for the new document");
-			final Set<String> collectedFieldNames = Execution.getCurrentDocumentChangesCollector().collectFrom(rootDocument, () -> "new document, initially missed");
+			final Set<String> collectedFieldNames = rootDocument.getChangesCollector().collectFrom(rootDocument, () -> "new document, initially missed");
 			if (!collectedFieldNames.isEmpty())
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
@@ -340,7 +332,7 @@ public class DocumentCollection
 
 	}
 
-	public void delete(final DocumentPath documentPath)
+	public void delete(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
 	{
 		if (documentPath.isRootDocument())
 		{
@@ -354,7 +346,7 @@ public class DocumentCollection
 			throw new InvalidDocumentPathException(rootDocumentPath);
 		}
 
-		forRootDocumentWritable(rootDocumentPath, rootDocument -> {
+		forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
 			if (documentPath.isRootDocument())
 			{
 				if (!rootDocument.isNew())
@@ -377,7 +369,7 @@ public class DocumentCollection
 		});
 	}
 
-	private void assertDeleteDocumentAllowed(DocumentEntityDescriptor entityDescriptor)
+	private void assertDeleteDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(WindowConstants.FIELDNAME_Processed, false)
@@ -391,13 +383,13 @@ public class DocumentCollection
 		}
 	}
 
-	public void deleteAll(final List<DocumentPath> documentPaths)
+	public void deleteAll(final List<DocumentPath> documentPaths, final IDocumentChangesCollector changesCollector)
 	{
 		// FIXME: i think we shall refactor this method and make sure that "deleteAll" is atomic
 
 		for (final DocumentPath documentPath : documentPaths)
 		{
-			delete(documentPath);
+			delete(documentPath, changesCollector);
 		}
 	}
 
@@ -408,7 +400,7 @@ public class DocumentCollection
 
 	/**
 	 * Retrieves document path for given table/recordId.
-	 * 
+	 *
 	 * @param tableRecordRef
 	 * @return document path; never returns null
 	 */
@@ -420,7 +412,7 @@ public class DocumentCollection
 
 	/**
 	 * Retrieves document path for given table/recordId.
-	 * 
+	 *
 	 * @param tableRecordRef
 	 * @param zoomIntoWindowId optional WindowId to be used; if not provided, this method will search for it.
 	 * @return document path; never returns null

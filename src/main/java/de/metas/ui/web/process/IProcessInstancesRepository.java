@@ -7,6 +7,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 
 /*
  * #%L
@@ -58,9 +59,10 @@ public interface IProcessInstancesRepository
 	 * Creates a new process instance for given request.
 	 * 
 	 * @param request
+	 * @param changesCollector 
 	 * @return newly created process instance; never returns null
 	 */
-	IProcessInstanceController createNewProcessInstance(CreateProcessInstanceRequest request);
+	IProcessInstanceController createNewProcessInstance(CreateProcessInstanceRequest request, IDocumentChangesCollector changesCollector);
 
 	/**
 	 * Fetching the process instance for given <code>pinstanceId</code> (readonly) and processes it using given processor.
@@ -78,7 +80,7 @@ public interface IProcessInstancesRepository
 	 * @param processor
 	 * @return <code>processor</code>'s return value
 	 */
-	<R> R forProcessInstanceWritable(DocumentId pinstanceId, Function<IProcessInstanceController, R> processor);
+	<R> R forProcessInstanceWritable(DocumentId pinstanceId, IDocumentChangesCollector changesCollector, Function<IProcessInstanceController, R> processor);
 
 	/**
 	 * Resets internal caches.

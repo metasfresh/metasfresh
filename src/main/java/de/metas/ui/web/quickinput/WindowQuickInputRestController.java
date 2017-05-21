@@ -38,6 +38,8 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 
 /*
@@ -149,8 +151,9 @@ public class WindowQuickInputRestController
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final DetailId detailId = DetailId.fromJson(tabIdStr);
 
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("quickInput.create", () -> {
-			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, rootDocument -> {
+			final QuickInput quickInput = documentsCollection.forRootDocumentReadonly(rootDocumentPath, changesCollector, rootDocument -> {
 				// Make sure we can edit our root document. Fail fast.
 				DocumentPermissionsHelper.assertCanEdit(rootDocument, userSession.getUserRolePermissions());
 
@@ -183,10 +186,11 @@ public class WindowQuickInputRestController
 
 	private final <R> R forQuickInputReadonly(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
 	{
-		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), changesCollector, rootDocument -> {
 			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForReading())
 			{
-				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly)
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly, changesCollector)
 						.bindRootDocument(rootDocument)
 						.assertTargetWritable();
 				return quickInputProcessor.apply(quickInput);
@@ -194,12 +198,12 @@ public class WindowQuickInputRestController
 		});
 	}
 
-	private final <R> R forQuickInputWritable(final QuickInputPath quickInputPath, final Function<QuickInput, R> quickInputProcessor)
+	private final <R> R forQuickInputWritable(final QuickInputPath quickInputPath, final IDocumentChangesCollector changesCollector, final Function<QuickInput, R> quickInputProcessor)
 	{
-		return documentsCollection.forRootDocumentWritable(quickInputPath.getRootDocumentPath(), rootDocument -> {
+		return documentsCollection.forRootDocumentWritable(quickInputPath.getRootDocumentPath(), changesCollector, rootDocument -> {
 			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForWriting())
 			{
-				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckOutWritable)
+				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckOutWritable, changesCollector)
 						.bindRootDocument(rootDocument)
 						.assertTargetWritable();
 
@@ -268,15 +272,17 @@ public class WindowQuickInputRestController
 		userSession.assertLoggedIn();
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
-
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
-			forQuickInputWritable(quickInputPath, quickInput -> {
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			
+			forQuickInputWritable(quickInputPath, changesCollector, quickInput -> {
 				quickInput.processValueChanges(events);
 				
-				Execution.getCurrentDocumentChangesCollector().setPrimaryChange(quickInput.getDocumentPath());
+				changesCollector.setPrimaryChange(quickInput.getDocumentPath());
 				return null; // void
 			});
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJSONOptions());
+			
+			return JSONDocument.ofEvents(changesCollector, newJSONOptions());
 		});
 	}
 
@@ -291,8 +297,9 @@ public class WindowQuickInputRestController
 		userSession.assertLoggedIn();
 
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
-			return forQuickInputWritable(quickInputPath, quickInput -> {
+			return forQuickInputWritable(quickInputPath, changesCollector, quickInput -> {
 				final Document document = quickInput.complete();
 				return JSONDocument.ofDocument(document, newJSONOptions());
 			});
@@ -315,7 +322,7 @@ public class WindowQuickInputRestController
 		}
 		else
 		{
-			_quickInputDocuments.put(quickInput.getId(), quickInput.copy(CopyMode.CheckInReadonly));
+			_quickInputDocuments.put(quickInput.getId(), quickInput.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 		}
 	}
 }

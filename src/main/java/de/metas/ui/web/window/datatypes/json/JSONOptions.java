@@ -89,15 +89,7 @@ public final class JSONOptions
 
 		newRecordDescriptorsProvider = builder.getNewRecordDescriptorsProvider();
 
-		final IUserRolePermissions userRolePermissions = builder.getPermissionsOrNull();
-		if (userRolePermissions == null)
-		{
-			documentPermissionsSupplier = () -> null;
-		}
-		else
-		{
-			documentPermissionsSupplier = ExtendedMemorizingSupplier.of(() -> new JSONDocumentPermissions(userRolePermissions));
-		}
+		documentPermissionsSupplier = builder.getPermissionsSupplier();
 	}
 
 	@Override
@@ -120,7 +112,7 @@ public final class JSONOptions
 	{
 		return showAdvancedFields;
 	}
-	
+
 	public boolean isDebugShowColumnNamesForCaption()
 	{
 		return debugShowColumnNamesForCaption;
@@ -393,9 +385,22 @@ public final class JSONOptions
 			throw new IllegalStateException("Cannot detect the AD_Language");
 		}
 
-		private IUserRolePermissions getPermissionsOrNull()
+		private Supplier<JSONDocumentPermissions> getPermissionsSupplier()
 		{
-			return _userSession == null ? null : _userSession.getUserRolePermissions();
+			return createPermissionsSupplier(_userSession);
+		}
+
+		private static final Supplier<JSONDocumentPermissions> createPermissionsSupplier(final UserSession userSession)
+		{
+			if (userSession == null)
+			{
+				return () -> null;
+			}
+
+			return ExtendedMemorizingSupplier.of(() -> {
+				final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
+				return new JSONDocumentPermissions(userRolePermissions);
+			});
 		}
 
 		public Builder setShowAdvancedFields(final boolean showAdvancedFields)
@@ -403,7 +408,7 @@ public final class JSONOptions
 			this.showAdvancedFields = showAdvancedFields;
 			return this;
 		}
-		
+
 		private boolean isShowAdvancedFields()
 		{
 			return showAdvancedFields;

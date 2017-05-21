@@ -21,6 +21,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -123,7 +124,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 				.allowNewDocumentId()
 				.build();
 
-		final DocumentId documentId = documentsRepo.forDocumentWritable(documentPath, document -> {
+		final DocumentId documentId = documentsRepo.forDocumentWritable(documentPath, NullDocumentChangesCollector.instance, document -> {
 			huEmptiesService.newReturnsInOutProducer(getCtx())
 					.setMovementType(getReturnMovementType())
 					.setMovementDate(SystemTime.asDayTimestamp())

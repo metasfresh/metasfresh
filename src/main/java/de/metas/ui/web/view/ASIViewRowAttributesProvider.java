@@ -52,11 +52,6 @@ public class ASIViewRowAttributesProvider implements IViewRowAttributesProvider
 		return attributesById.computeIfAbsent(asiId, this::createAttributes);
 	}
 	
-	public IViewRowAttributes getAttributesByASI(final int asiId)
-	{
-		return attributesById.computeIfAbsent(DocumentId.of(asiId), this::createAttributes);
-	}
-
 	private final ASIViewRowAttributes createAttributes(final DocumentId asiId)
 	{
 		final ASIDocument asiDoc = asiRepository.loadReadonly(asiId.toInt());

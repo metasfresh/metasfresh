@@ -29,20 +29,20 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public interface DocumentsRepository
 {
-	List<Document> retrieveDocuments(DocumentQuery query);
+	List<Document> retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector);
 
 	/** @return document or null */
-	Document retrieveDocument(DocumentQuery query);
+	Document retrieveDocument(DocumentQuery query, IDocumentChangesCollector changesCollector);
 
 	/** @return document or null */
-	default Document retrieveDocumentById(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId)
+	default Document retrieveDocumentById(final DocumentEntityDescriptor entityDescriptor, final DocumentId recordId, final IDocumentChangesCollector changesCollector)
 	{
-		return retrieveDocument(DocumentQuery.ofRecordId(entityDescriptor, recordId));
+		return retrieveDocument(DocumentQuery.ofRecordId(entityDescriptor, recordId).setChangesCollector(changesCollector).build(), changesCollector);
 	}
 
 	/**
 	 * Retrieves parent's {@link DocumentId} for a child document identified by given query.
-	 * 
+	 *
 	 * @param parentEntityDescriptor
 	 * @param childDocumentQuery
 	 * @return parent's {@link DocumentId}; never returns null
@@ -55,13 +55,7 @@ public interface DocumentsRepository
 	 * @param parentDocument
 	 * @return newly created document (not saved); never returns null
 	 */
-	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument);
-
-	default Document createNewDocument(final DocumentEntityDescriptor entityDescriptor)
-	{
-		final Document parentDocument = null;
-		return createNewDocument(entityDescriptor, parentDocument);
-	}
+	Document createNewDocument(DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final IDocumentChangesCollector changesCollector);
 
 	void refresh(Document document);
 
@@ -70,4 +64,6 @@ public interface DocumentsRepository
 	void delete(Document document);
 
 	String retrieveVersion(DocumentEntityDescriptor entityDescriptor, int documentIdAsInt);
+
+	int retrieveLastLineNo(DocumentQuery query);
 }

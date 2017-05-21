@@ -64,7 +64,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		return this;
 	}
-	
+
 	@Override
 	public DetailId getDetailId()
 	{
@@ -76,6 +76,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		return DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocuments();
 	}
 
@@ -96,7 +97,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 
 		return document;
 	}
-	
+
 	@Override
 	public void updateStatusFromParent()
 	{
@@ -108,7 +109,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
 	}
-	
+
 	@Override
 	public LogicExpressionResult getAllowCreateNewDocument()
 	{
@@ -120,7 +121,7 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	{
 		throw new InvalidDocumentStateException(parentDocument, RESULT_TabReadOnly.getName());
 	}
-	
+
 	@Override
 	public LogicExpressionResult getAllowDeleteDocument()
 	{

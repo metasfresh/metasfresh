@@ -45,10 +45,10 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
-import de.metas.ui.web.window.model.IncludedDocumentsCollection;
 
 /*
  * #%L
@@ -100,7 +100,6 @@ public class DocumentEntityDescriptor
 	private final IIncludedDocumentsCollectionFactory includedDocumentsCollectionFactory;
 
 	private final DocumentEntityDataBindingDescriptor dataBinding;
-	private final boolean highVolume;
 
 	private final DocumentFieldDependencyMap dependencies;
 
@@ -140,7 +139,6 @@ public class DocumentEntityDescriptor
 		includedEntitiesByDetailId = builder.buildIncludedEntitiesByDetailId();
 		includedDocumentsCollectionFactory = builder.getIncludedDocumentsCollectionFactory();
 		dataBinding = builder.getOrBuildDataBinding();
-		highVolume = builder.isHighVolume();
 		dependencies = builder.buildDependencies();
 
 		//
@@ -326,11 +324,6 @@ public class DocumentEntityDescriptor
 		@SuppressWarnings("unchecked")
 		final T dataBindingCasted = (T)dataBinding;
 		return dataBindingCasted;
-	}
-
-	public boolean isHighVolume()
-	{
-		return highVolume;
 	}
 
 	public DocumentFieldDependencyMap getDependencies()
@@ -533,12 +526,12 @@ public class DocumentEntityDescriptor
 		{
 			return _fieldBuilders.values();
 		}
-		
+
 		public boolean hasField(final String fieldName)
 		{
 			return getFieldBuilder(fieldName) != null;
 		}
-		
+
 		public int getFieldsCount()
 		{
 			return _fieldBuilders.size();
@@ -633,13 +626,16 @@ public class DocumentEntityDescriptor
 				}
 				else
 				{
-					// TODO implement an IIncludedDocumentCollection which does not cache the documents but which allows New/Delete
-					// Case: e.g. Product->Price, Product->CU-TU etc
+					return HighVolumeReadWriteIncludedDocumentsCollection::newInstance;
 				}
 			}
 
+			//
 			// Fallback
-			return IncludedDocumentsCollection::new;
+			// NOTE: it turned out that HighVolumeReadWriteIncludedDocumentsCollection is behaving nice on document lines too (e.g. C_Order->C_OrderLine)
+			// so we are considering not using IncludedDocumentsCollection.
+			return HighVolumeReadWriteIncludedDocumentsCollection::newInstance;
+			// return IncludedDocumentsCollection::newInstance;
 		}
 
 		public Builder setDataBinding(final DocumentEntityDataBindingDescriptorBuilder dataBindingBuilder)

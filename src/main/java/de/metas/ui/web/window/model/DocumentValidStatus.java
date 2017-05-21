@@ -42,11 +42,6 @@ public final class DocumentValidStatus
 		return STATE_InitialInvalid;
 	}
 
-	public static final DocumentValidStatus fieldInitiallyStaled()
-	{
-		return STATE_InitialStaled;
-	}
-
 	public static final DocumentValidStatus documentValid()
 	{
 		return STATE_Valid;
@@ -82,7 +77,6 @@ public final class DocumentValidStatus
 	private static final String FIELDNAME_Null = null;
 
 	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(VALID_No, "not validated yet", FIELDNAME_Null, INITIALVALUE_Yes);
-	private static final DocumentValidStatus STATE_InitialStaled = new DocumentValidStatus(VALID_No, "staled", FIELDNAME_Null, INITIALVALUE_Yes);
 	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(VALID_Yes, REASON_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
 	private static final DocumentValidStatus STATE_InvalidIncludedDocument = new DocumentValidStatus(VALID_No, "child invalid", FIELDNAME_Null, INITIALVALUE_Unknown);
 
@@ -176,9 +170,9 @@ public final class DocumentValidStatus
 	{
 		return reason;
 	}
-
-	public boolean isStaled()
+	
+	public boolean isInitialInvalid()
 	{
-		return this == STATE_InitialStaled;
+		return this == STATE_InitialInvalid;
 	}
 }

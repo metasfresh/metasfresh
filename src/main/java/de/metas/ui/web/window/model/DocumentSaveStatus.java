@@ -89,7 +89,7 @@ public final class DocumentSaveStatus
 	private DocumentSaveStatus(final boolean hasChangesToBeSaved, final boolean error, final String reason)
 	{
 		super();
-		
+
 		this.saved = !hasChangesToBeSaved && !error;
 
 		this.hasChangesToBeSaved = hasChangesToBeSaved;
@@ -122,6 +122,18 @@ public final class DocumentSaveStatus
 	@Override
 	public boolean equals(final Object obj)
 	{
+		final boolean ignoreReason = false;
+		return equals(obj, ignoreReason);
+	}
+
+	public boolean equalsIgnoreReason(final Object obj)
+	{
+		final boolean ignoreReason = true;
+		return equals(obj, ignoreReason);
+	}
+
+	private boolean equals(final Object obj, final boolean ignoreReason)
+	{
 		if (this == obj)
 		{
 			return true;
@@ -135,19 +147,19 @@ public final class DocumentSaveStatus
 		final DocumentSaveStatus other = (DocumentSaveStatus)obj;
 		return hasChangesToBeSaved == other.hasChangesToBeSaved
 				&& error == other.error
-				&& Objects.equals(reason, other.reason);
+				&& (ignoreReason || Objects.equals(reason, other.reason));
 	}
 
 	public boolean isSaved()
 	{
 		return !hasChangesToBeSaved && !error;
 	}
-	
+
 	public boolean isNotSaved()
 	{
 		return !isSaved();
 	}
-	
+
 	public boolean hasChangesToBeSaved()
 	{
 		return hasChangesToBeSaved;
