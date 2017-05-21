@@ -65,7 +65,8 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 	{
 		final Supplier<R> result = this.result;
 		final Supplier<R2> newResult = () -> resultMapper.apply(result.get());
-		return new ETagResponseEntityBuilder<>(request, etagAware, newResult);
+		return new ETagResponseEntityBuilder<>(request, etagAware, newResult)
+				.cacheMaxAge(this.cacheMaxAgeSec);
 	}
 
 	public ETagResponseEntityBuilder<T, R> jsonOptions(@NonNull final Supplier<JSONOptions> jsonOptions)
