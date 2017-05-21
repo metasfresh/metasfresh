@@ -28,11 +28,11 @@ import de.metas.ui.web.security.MetasfreshUserDetailsService;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -86,17 +86,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 		//@formatter:off
 		http
 				.addFilterBefore(new CORSFilter(), ChannelProcessingFilter.class)
-		
+				
 				.csrf().disable() // FIXME: disabled for now... need to figure out how to configure with REST
-				.authorizeRequests()
-					//
+				.authorizeRequests()				
 					// Swagger-UI
 					.antMatchers("/swagger-ui.html", "/v2/api-docs", "/swagger-resources/**", "/webjars/springfox-swagger-ui/**", "/configuration/**")
 						.permitAll()
-					//
 					// Login
 					.antMatchers("/rest/api/login/auth").permitAll()
-					//
 					// Others
 					.anyRequest()
 						.permitAll() // FIXME: until we really implement the spring security it's better to permit ALL
@@ -105,6 +102,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter
 //				.and()
 //				.httpBasic()
 		;
+
+		//
+		// Headers
+		http.headers()
+			.cacheControl().disable(); // disable cache control; required for ETag to work
 		//@formatter:on
 	}
 }

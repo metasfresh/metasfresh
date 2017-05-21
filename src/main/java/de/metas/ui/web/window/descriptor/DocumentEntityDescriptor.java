@@ -667,6 +667,11 @@ public class DocumentEntityDescriptor
 		{
 			return _highVolume;
 		}
+		
+		public boolean isQueryIncludedTabOnActivate()
+		{
+			return true;
+		}
 
 		private DocumentFieldDependencyMap buildDependencies()
 		{

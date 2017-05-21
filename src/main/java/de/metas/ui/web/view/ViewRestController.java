@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,16 +14,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONCreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -173,7 +177,7 @@ public class ViewRestController
 			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -184,41 +188,20 @@ public class ViewRestController
 	}
 
 	@GetMapping("/layout")
-	public JSONViewLayout getViewLayout(
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-			)
+	public ResponseEntity<JSONViewLayout> getViewLayout(
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
+			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		return viewsRepo.getViewLayout(windowId, viewDataType, newJSONOptions());
-	}
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType);
 
-	@GetMapping("/{viewId}/layout")
-	public JSONViewLayout getViewLayout(
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @PathVariable("viewId") final String viewIdStr //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-			)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final IView view = viewsRepo.getView(viewId);
-
-		final JSONViewLayout viewLayout = viewsRepo.getViewLayout(viewId.getWindowId(), viewDataType, newJSONOptions());
-		viewLayout.setViewId(viewId.getViewId());
-		if (view.isIncludedView())
-		{
-			viewLayout.setSupportAttributes(false);
-		}
-		else
-		{
-			viewLayout.setSupportAttributes(view.hasAttributesSupport());
-		}
-
-		return viewLayout;
+		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.jsonOptions(this::newJSONOptions)
+				.toJson(JSONViewLayout::of);
 	}
 
 	@GetMapping("/{viewId}/byIds")
@@ -226,7 +209,7 @@ public class ViewRestController
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
 			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -245,7 +228,7 @@ public class ViewRestController
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -261,7 +244,7 @@ public class ViewRestController
 			, @PathVariable("viewId") final String viewIdStr //
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -285,7 +268,7 @@ public class ViewRestController
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr//
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -299,7 +282,7 @@ public class ViewRestController
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 

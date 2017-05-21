@@ -94,7 +94,10 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 	public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response, final Object handler, final Exception ex)
 	{
 		logExceptionIfNeeded(ex, handler);
-		request.setAttribute(REQUEST_ATTR_EXCEPTION, ex);
+
+		final Throwable cause = ex == null ? null : AdempiereException.extractCause(ex);
+		request.setAttribute(REQUEST_ATTR_EXCEPTION, cause);
+		response.setHeader("Cache-Control", "no-cache");
 
 		return null; // don't forward, go with default processing
 	}

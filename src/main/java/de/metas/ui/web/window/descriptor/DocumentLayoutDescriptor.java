@@ -1,6 +1,5 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -47,8 +46,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutDetailNotFoundException;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentLayoutDescriptor implements Serializable
+public final class DocumentLayoutDescriptor
 {
 	public static final Builder builder()
 	{
@@ -79,9 +77,9 @@ public final class DocumentLayoutDescriptor implements Serializable
 		super();
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
-		
+
 		caption = builder.caption;
-		
+
 		documentSummaryElement = builder.documentSummaryElement;
 		docActionElement = builder.docActionElement;
 
@@ -129,7 +127,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return docActionElement;
 	}
-	
+
 	public DocumentLayoutHeader getSingleRowLayout()
 	{
 		return singleRowLayout;
@@ -147,7 +145,6 @@ public final class DocumentLayoutDescriptor implements Serializable
 	{
 		return sideListView;
 	}
-
 
 	public Collection<DocumentLayoutDetailDescriptor> getDetails()
 	{
@@ -306,7 +303,7 @@ public final class DocumentLayoutDescriptor implements Serializable
 			this.singleRowLayout = singleRowLayout;
 			return this;
 		}
-		
+
 		private DocumentLayoutHeader.Builder getSingleRowLayout()
 		{
 			return singleRowLayout;

@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTree;
@@ -53,8 +55,6 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
@@ -127,10 +127,10 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/layout")
-	public JSONDocumentLayout getLayout(
-			@PathVariable("windowId") final String windowIdStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+	public ResponseEntity<JSONDocumentLayout> getLayout(
+			@PathVariable("windowId") final String windowIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
@@ -138,37 +138,35 @@ public class WindowRestController
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
-		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(advanced)
-				.build();
-
-		return JSONDocumentLayout.ofHeaderLayout(layout, jsonOpts);
+		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.map(DocumentDescriptor::getLayout)
+				//
+				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
+				.toJson(JSONDocumentLayout::ofHeaderLayout);
 	}
 
 	@GetMapping("/{windowId}/{tabId}/layout")
-	public JSONDocumentLayout getLayout(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+	public ResponseEntity<JSONDocumentLayout> getLayout(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DetailId detailId = DetailId.fromJson(tabIdStr);
+
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
-		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(advanced)
-				.build();
-
-		final DetailId detailId = DetailId.fromJson(tabIdStr);
-		final DocumentLayoutDetailDescriptor detailLayout = layout.getDetail(detailId);
-		return JSONDocumentLayout.ofDetailTab(detailLayout, jsonOpts);
+		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.map(desc -> desc.getLayout().getDetail(detailId))
+				//
+				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
+				.toJson(JSONDocumentLayout::ofDetailTab);
 	}
 
 	@GetMapping("/{windowId}/{documentId}")

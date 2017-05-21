@@ -19,13 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
-import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.process.json.JSONProcessInstance;
@@ -132,16 +134,21 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
-	public JSONProcessLayout getLayout(
-			@PathVariable("processId") final String adProcessIdStr //
-	)
+	public ResponseEntity<JSONProcessLayout> getLayout(
+			@PathVariable("processId") final String adProcessIdStr,
+			WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
-		final ProcessLayout layout = instancesRepository.getProcessDescriptor(processId).getLayout();
-		return JSONProcessLayout.of(layout, newJsonOpts());
+		final ProcessDescriptor descriptor = instancesRepository.getProcessDescriptor(processId);
+
+		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.map(ProcessDescriptor::getLayout)
+				.jsonOptions(this::newJsonOpts)
+				.toJson(JSONProcessLayout::of);
 	}
 
 	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)

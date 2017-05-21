@@ -8,11 +8,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
 
 /*
@@ -45,7 +44,7 @@ import lombok.NonNull;
  */
 public interface IViewsRepository
 {
-	JSONViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, JSONOptions jsonOpts);
+	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType);
 
 	/** @return view or <code>null</code> */
 	IView getViewIfExists(ViewId viewId);

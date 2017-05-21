@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -33,6 +34,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@EqualsAndHashCode // required for (ETag) caching
 public class DocumentFilterParam
 {
 	public static final Builder builder()

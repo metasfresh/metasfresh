@@ -1,7 +1,14 @@
 package de.metas.ui.web.window.descriptor;
 
+import java.util.function.Supplier;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+
+import de.metas.ui.web.cache.ETag;
+import de.metas.ui.web.cache.ETagAware;
+import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONViewDataType;
 
 /*
  * #%L
@@ -16,16 +23,16 @@ import com.google.common.base.Preconditions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public final class DocumentDescriptor
+public final class DocumentDescriptor implements ETagAware
 {
 	public static final Builder builder()
 	{
@@ -34,6 +41,10 @@ public final class DocumentDescriptor
 
 	private final DocumentLayoutDescriptor layout;
 	private final DocumentEntityDescriptor entityDescriptor;
+
+	// ETag support
+	private static final Supplier<ETag> nextETagSupplier = ETagAware.newETagGenerator();
+	private final ETag eTag = nextETagSupplier.get();
 
 	private DocumentDescriptor(final Builder builder)
 	{
@@ -48,6 +59,7 @@ public final class DocumentDescriptor
 		return MoreObjects.toStringHelper(this)
 				.add("entity", entityDescriptor)
 				.add("layout", layout)
+				.add("eTag", eTag)
 				.toString();
 	}
 
@@ -56,11 +68,37 @@ public final class DocumentDescriptor
 		return layout;
 	}
 
+	public ViewLayout getViewLayout(final JSONViewDataType viewDataType)
+	{
+		switch (viewDataType)
+		{
+			case grid:
+			{
+				return layout.getGridViewLayout();
+			}
+			case list:
+			{
+				return layout.getSideListViewLayout();
+			}
+			default:
+			{
+				throw new IllegalArgumentException("Invalid viewDataType: " + viewDataType);
+			}
+		}
+	}
+
 	public DocumentEntityDescriptor getEntityDescriptor()
 	{
 		return entityDescriptor;
 	}
 
+	@Override
+	public ETag getETag()
+	{
+		return eTag;
+	}
+
+	//
 	public static final class Builder
 	{
 		private DocumentLayoutDescriptor layout;

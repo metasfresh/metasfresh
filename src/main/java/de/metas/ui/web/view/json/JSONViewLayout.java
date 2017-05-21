@@ -1,10 +1,7 @@
 package de.metas.ui.web.view.json;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
-
-import org.compiere.util.Util;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -14,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -50,20 +46,10 @@ public final class JSONViewLayout implements Serializable
 {
 	public static JSONViewLayout of(
 			final ViewLayout gridLayout //
-			, final Collection<DocumentFilterDescriptor> filtersOverride //
 			, final JSONOptions jsonOpts //
 	)
 	{
-		return new JSONViewLayout(gridLayout, filtersOverride, jsonOpts);
-	}
-
-	public static JSONViewLayout of(
-			final ViewLayout gridLayout //
-			, final JSONOptions jsonOpts //
-	)
-	{
-		final Collection<DocumentFilterDescriptor> filtersOverride = null;
-		return new JSONViewLayout(gridLayout, filtersOverride, jsonOpts);
+		return new JSONViewLayout(gridLayout, jsonOpts);
 	}
 
 	@JsonProperty("viewId")
@@ -122,14 +108,8 @@ public final class JSONViewLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String newRecordCaption = null;
 
-	private JSONViewLayout(
-			final ViewLayout layout //
-			, final Collection<DocumentFilterDescriptor> filtersOverride //
-			, final JSONOptions jsonOpts //
-			)
+	private JSONViewLayout(final ViewLayout layout, final JSONOptions jsonOpts)
 	{
-		super();
-
 		windowId = layout.getWindowId();
 		type = windowId;
 
@@ -152,8 +132,7 @@ public final class JSONViewLayout implements Serializable
 		}
 		this.elements = elements;
 
-		final Collection<DocumentFilterDescriptor> filtersEffective = Util.coalesce(filtersOverride, layout.getFilters());
-		this.filters = JSONDocumentFilterDescriptor.ofCollection(filtersEffective, jsonOpts);
+		this.filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
 
 		supportAttributes = layout.isAttributesSupport();
 		supportTree = layout.isTreeSupport();
