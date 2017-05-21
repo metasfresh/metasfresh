@@ -1,8 +1,14 @@
 --
 -- Backup
-create table backup.AD_TreeNodeMM_BKP_BeforeImport as select * from AD_TreeNodeMM;
-create table backup.AD_Menu_BKP_BeforeImport as select * from AD_Menu;
-create table backup.AD_Menu_BKP_BeforeImport as select * from AD_Menu_Trl;
+/*
+drop table if exists backup.AD_Menu_BKP_BeforeImportWebUI;
+drop table if exists backup.AD_Menu_Trl_BKP_BeforeImportWebUI;
+drop table if exists backup.AD_TreeNodeMM_BKP_BeforeImportWebUI;
+*/
+--
+create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI as select * from AD_TreeNodeMM;
+create table backup.AD_Menu_BKP_BeforeImportWebUI as select * from AD_Menu;
+create table backup.AD_Menu_Trl_BKP_BeforeImportWebUI as select * from AD_Menu_Trl;
 
 --
 -- Expected input tables:
@@ -12,7 +18,7 @@ create table backup.AD_Menu_BKP_BeforeImport as select * from AD_Menu_Trl;
 
 --
 -- Import AD_TreeNodeMM webui menu
-delete from AD_TreeNodeMM where AD_Tree_ID=1000039;
+delete from AD_TreeNodeMM where AD_Tree_ID=10;
 insert into AD_TreeNodeMM
 (
 	AD_Tree_ID
@@ -27,7 +33,8 @@ select
 	, t.Parent_ID
 	, t.SeqNo
 	, 0 as AD_Client_ID, 0 as AD_Org_ID, now() as Created, 0 as CreatedBy, now() as Updated, 0 as UpdatedBy
-from backup.WEBUI_AD_TreeNodeMM t;
+from backup.WEBUI_AD_TreeNodeMM t
+where t.AD_Tree_ID=10;
 
 --
 --
@@ -88,23 +95,16 @@ where
 -- Delete orphan trees of webui AD_Tree_ID
 delete from AD_TreeNodeMM n
 where 
-n.AD_Tree_ID=1000039
+n.AD_Tree_ID=10
 and n.Node_ID in (
 	select t.Node_ID
-	from get_AD_TreeNodeMM_Paths(1000039, null) t
+	from get_AD_TreeNodeMM_Paths(10, null) t
 	where not IsCycle and t.Root_ID <> 0
 	-- order by Path
 );
 
---
--- Remove the Node_ID=1000007 (the webui subtree in AD_Tree_ID=10),
--- and move it's direct children to Parent_ID=0
-delete from AD_TreeNodeMM where AD_Tree_ID=1000039 and node_id=1000007;
-update AD_TreeNodeMM set Parent_ID=0 where AD_Tree_ID=1000039 and Parent_ID=1000007;
-
-
 -- Check the webui menu
 /*
-select * from get_AD_TreeNodeMM_Paths(1000039, null) order by Path;
+select * from get_AD_TreeNodeMM_Paths(10, null) order by Path;
 */
 
