@@ -44,7 +44,8 @@ import org.compiere.model.MTreeNode;
 import org.compiere.model.X_AD_Menu;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Language;
+
+import de.metas.i18n.Language;
 
 /**
  * @author tsa

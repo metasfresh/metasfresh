@@ -10,7 +10,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -18,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /*

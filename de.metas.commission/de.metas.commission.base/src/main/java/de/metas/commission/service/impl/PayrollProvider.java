@@ -46,7 +46,6 @@ import org.compiere.model.MRefList;
 import org.compiere.model.MTax;
 import org.compiere.model.MWarehouse;
 import org.compiere.model.PO;
-import org.compiere.util.Msg;
 import org.eevolution.model.I_HR_Concept;
 import org.eevolution.model.I_HR_Employee;
 import org.eevolution.model.I_HR_Movement;
@@ -73,6 +72,7 @@ import de.metas.commission.service.ICommissionInstanceDAO;
 import de.metas.commission.service.ICommissionTermDAO;
 import de.metas.commission.service.IFieldAccessBL;
 import de.metas.commission.service.IPayrollProvider;
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 

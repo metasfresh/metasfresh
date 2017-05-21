@@ -22,6 +22,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TreeSet;
 
+import org.adempiere.ad.security.IRoleDAO;
+import org.adempiere.util.Services;
+
 /**
  *	Alert Model
  *	
@@ -150,12 +153,8 @@ public class MAlert extends X_AD_Alert
 		int AD_User_ID = getFirstAD_User_ID();
 		if (AD_User_ID != -1)
 		{
-			MUserRoles[] urs = MUserRoles.getOfUser(getCtx(), AD_User_ID);
-			for (int i = 0; i < urs.length; i++)
-			{
-				if (urs[i].isActive())
-					return urs[i].getAD_Role_ID();
-			}
+			final int firstRoleId = Services.get(IRoleDAO.class).retrieveFirstRoleIdForUserId(AD_User_ID);
+			return firstRoleId >= 0 ? firstRoleId : -1;
 		}
 		return -1;
 	}	//	getFirstUserAD_Role_ID
@@ -188,14 +187,8 @@ public class MAlert extends X_AD_Alert
 				users.add(recipient.getAD_User_ID());
 			if (recipient.getAD_Role_ID() >= 0)		//	SystemAdministrator == 0
 			{
-				MUserRoles[] urs = MUserRoles.getOfRole(getCtx(), recipient.getAD_Role_ID());
-				for (int j = 0; j < urs.length; j++)
-				{
-					MUserRoles ur = urs[j];
-					if (!ur.isActive())
-						continue;
-					users.add(ur.getAD_User_ID());
-				}
+				final List<Integer> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(recipient.getAD_Role_ID());
+				users.addAll(allRoleUserIds);
 			}
 		}
 		return users;
@@ -205,6 +198,7 @@ public class MAlert extends X_AD_Alert
 	 * 	String Representation
 	 *	@return info
 	 */
+	@Override
 	public String toString ()
 	{
 		StringBuffer sb = new StringBuffer ("MAlert[");

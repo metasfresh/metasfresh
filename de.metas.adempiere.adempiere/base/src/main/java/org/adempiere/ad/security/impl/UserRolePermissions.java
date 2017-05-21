@@ -57,6 +57,7 @@ import org.adempiere.ad.security.permissions.StartupWindowConstraint;
 import org.adempiere.ad.security.permissions.TableColumnPermissions;
 import org.adempiere.ad.security.permissions.TablePermissions;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
+import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -67,7 +68,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
-import org.compiere.model.MPrivateAccess;
+import org.compiere.model.I_AD_Private_Access;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -134,7 +135,7 @@ class UserRolePermissions implements IUserRolePermissions
 	/** Permission constraints */
 	private final Constraints constraints;
 
-	private final int menu_AD_Tree_ID;
+	private final UserMenuInfo menuInfo;
 
 	UserRolePermissions(final UserRolePermissionsBuilder builder)
 	{
@@ -164,7 +165,7 @@ class UserRolePermissions implements IUserRolePermissions
 		miscPermissions = builder.getMiscPermissions();
 		constraints = builder.getConstraints();
 
-		menu_AD_Tree_ID = builder.getMenu_Tree_ID();
+		menuInfo = builder.getMenuInfo();
 	}
 
 	@Override
@@ -178,7 +179,7 @@ class UserRolePermissions implements IUserRolePermissions
 				.setAD_Client_ID(getAD_Client_ID())
 				.setAD_User_ID(getAD_User_ID())
 				.setUserLevel(userLevel)
-				.setMenu_AD_Tree_ID(getMenu_Tree_ID())
+				.setMenuInfo(getMenuInfo())
 				//
 				.setOrgPermissions(orgPermissions)
 				.setTablePermissions(tablePermissions)
@@ -395,9 +396,9 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public int getMenu_Tree_ID()
+	public UserMenuInfo getMenuInfo()
 	{
-		return menu_AD_Tree_ID;
+		return menuInfo;
 	}
 
 	@Override
@@ -1066,15 +1067,13 @@ class UserRolePermissions implements IUserRolePermissions
 		// Don't ignore Privacy Access
 		if (!isPersonalAccess())
 		{
-			final String lockedIDs = MPrivateAccess.getLockedRecordWhere(AD_Table_ID, getAD_User_ID());
-			if (lockedIDs != null)
+			final String lockedIDs = " NOT IN ( SELECT Record_ID FROM " + I_AD_Private_Access.Table_Name
+					+ " WHERE AD_Table_ID = " + AD_Table_ID + " AND AD_User_ID <> " + getAD_User_ID() + " AND IsActive = 'Y' )";
+			if (sb.length() > 0)
 			{
-				if (sb.length() > 0)
-				{
-					sb.append(" AND ");
-				}
-				sb.append(keyColumnName).append(lockedIDs);
+				sb.append(" AND ");
 			}
+			sb.append(keyColumnName).append(lockedIDs);
 		}
 		//
 		return sb.toString();

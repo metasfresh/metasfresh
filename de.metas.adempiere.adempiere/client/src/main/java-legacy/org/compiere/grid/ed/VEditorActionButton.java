@@ -6,8 +6,6 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -18,6 +16,7 @@ import org.adempiere.images.Images;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /**
@@ -66,7 +65,7 @@ class VEditorActionButton extends JButton
 		ImageIcon icon = Images.getImageIcon2(iconNameAndSize);
 		if (icon == null)
 		{
-			logger.info("No image icon was found for {}", iconNameAndSize);
+			logger.debug("No image icon was found for {}", iconNameAndSize);
 			iconNameAndSize = iconName + "10";
 			icon = Images.getImageIcon2(iconNameAndSize);
 		}

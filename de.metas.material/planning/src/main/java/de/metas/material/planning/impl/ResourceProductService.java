@@ -13,6 +13,8 @@ import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
+import com.jgoodies.common.base.Objects;
+
 import de.metas.adempiere.util.CacheModel;
 import de.metas.material.planning.IResourceProductService;
 import lombok.NonNull;
@@ -40,14 +42,8 @@ import lombok.NonNull;
  */
 public class ResourceProductService implements IResourceProductService
 {
-	/**
-	 * Set Resource
-	 *
-	 * @param parent resource
-	 * @return true if changed
-	 */
 	@Override
-	public boolean setResourceToProduct(final I_S_Resource parent, final I_M_Product product)
+	public boolean setResourceToProduct(@NonNull final I_S_Resource resource, @NonNull final I_M_Product product)
 	{
 		boolean changed = false;
 		if (!X_M_Product.PRODUCTTYPE_Resource.equals(product.getProductType()))
@@ -55,31 +51,32 @@ public class ResourceProductService implements IResourceProductService
 			product.setProductType(X_M_Product.PRODUCTTYPE_Resource);
 			changed = true;
 		}
-		if (parent.getS_Resource_ID() != product.getS_Resource_ID())
+		if (resource.getS_Resource_ID() != product.getS_Resource_ID())
 		{
-			product.setS_Resource_ID(parent.getS_Resource_ID());
+			product.setS_Resource_ID(resource.getS_Resource_ID());
 			changed = true;
 		}
-		if (parent.isActive() != product.isActive())
+		if (resource.isActive() != product.isActive())
 		{
-			product.setIsActive(parent.isActive());
+			product.setIsActive(resource.isActive());
 			changed = true;
 		}
-		//
-		if (!parent.getValue().equals(product.getValue()))
+
+		// the "PR" is a QnD solution to the possible problem that if the production resource's value is set to its ID (like '1000000") there is probably already a product with the same value.
+		if (!Objects.equals("PR" + resource.getValue(), product.getValue()))
 		{
-			product.setValue(parent.getValue());
+			product.setValue("PR" + resource.getValue());
 			changed = true;
 		}
-		if (!parent.getName().equals(product.getName()))
+		if (!resource.getName().equals(product.getName()))
 		{
-			product.setName(parent.getName());
+			product.setName(resource.getName());
 			changed = true;
 		}
-		if (parent.getDescription() == null && product.getDescription() != null
-				|| parent.getDescription() != null && !parent.getDescription().equals(product.getDescription()))
+		if (resource.getDescription() == null && product.getDescription() != null
+				|| resource.getDescription() != null && !resource.getDescription().equals(product.getDescription()))
 		{
-			product.setDescription(parent.getDescription());
+			product.setDescription(resource.getDescription());
 			changed = true;
 		}
 		//
@@ -102,12 +99,12 @@ public class ResourceProductService implements IResourceProductService
 			changed = true;
 		}
 		//
-		if (parent.getC_UOM_ID() != parent.getC_UOM_ID())
+		if (parent.getC_UOM_ID() != product.getC_UOM_ID())
 		{
 			product.setC_UOM_ID(parent.getC_UOM_ID());
 			changed = true;
 		}
-		if (parent.getM_Product_Category_ID() != parent.getM_Product_Category_ID())
+		if (parent.getM_Product_Category_ID() != product.getM_Product_Category_ID())
 		{
 			product.setM_Product_Category_ID(parent.getM_Product_Category_ID());
 			changed = true;

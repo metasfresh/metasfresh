@@ -25,6 +25,8 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.Vector;
 import org.slf4j.Logger;
+
+import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
 
 import javax.swing.JLabel;
@@ -54,7 +56,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
 public class VCreateFromStatementUI extends CreateFromStatement implements ActionListener
 {

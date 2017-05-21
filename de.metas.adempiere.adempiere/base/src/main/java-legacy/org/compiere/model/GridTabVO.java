@@ -37,7 +37,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -45,6 +44,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**

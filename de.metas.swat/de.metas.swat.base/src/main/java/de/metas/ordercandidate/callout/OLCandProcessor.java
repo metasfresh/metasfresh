@@ -41,8 +41,8 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MSchedulerPara;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 
+import de.metas.i18n.Msg;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.ordercandidate.process.ProcessOLCands;

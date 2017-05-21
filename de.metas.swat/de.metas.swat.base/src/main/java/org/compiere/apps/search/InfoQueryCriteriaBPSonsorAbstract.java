@@ -31,11 +31,11 @@ import java.util.List;
 
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.gui.search.SponsorNoObject;
+import de.metas.i18n.Msg;
 
 /**
  * @author cg

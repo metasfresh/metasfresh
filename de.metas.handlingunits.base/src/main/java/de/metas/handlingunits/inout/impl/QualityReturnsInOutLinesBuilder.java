@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -16,6 +17,7 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -102,9 +104,9 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	 * In the end assign the handling unit to the inout line and mark the HU as shipped.
 	 * 
 	 * @param productStorage
-	 * @param originInOutLine 
+	 * @param originInOutLine
 	 */
-	private void updateInOutLine(final IHUProductStorage productStorage, I_M_InOutLine originInOutLine)
+	private void updateInOutLine(final IHUProductStorage productStorage, final I_M_InOutLine originInOutLine)
 	{
 		// services
 		final IProductBL productBL = Services.get(IProductBL.class);
@@ -149,7 +151,11 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 					.build();
 
 			// mark hu as shipped
-			hu.setHUStatus(X_M_HU.HUSTATUS_Shipped);
+			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+
+			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
+
+			handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Shipped);
 
 			InterfaceWrapperHelper.save(hu);
 		}
@@ -195,6 +201,8 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 
 		newInOutLine.setM_Product(originInOutLine.getM_Product());
 		
+		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
+
 		newInOutLine.setVendorReturn_Origin_InOutLine(originInOutLine);
 
 		// NOTE: we are not saving the inOut line

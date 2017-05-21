@@ -731,47 +731,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set DLM_Level.
-		@param DLM_Level DLM_Level	  */
-	@Override
-	public void setDLM_Level (int DLM_Level)
-	{
-		set_Value (COLUMNNAME_DLM_Level, Integer.valueOf(DLM_Level));
-	}
-
-	/** Get DLM_Level.
-		@return DLM_Level	  */
-	@Override
-	public int getDLM_Level () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Level);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Partition.
-		@param DLM_Partition_ID Partition	  */
-	@Override
-	public void setDLM_Partition_ID (int DLM_Partition_ID)
-	{
-		if (DLM_Partition_ID < 1) 
-			set_Value (COLUMNNAME_DLM_Partition_ID, null);
-		else 
-			set_Value (COLUMNNAME_DLM_Partition_ID, Integer.valueOf(DLM_Partition_ID));
-	}
-
-	/** Get Partition.
-		@return Partition	  */
-	@Override
-	public int getDLM_Partition_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DLM_Partition_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** 
 	 * DocAction AD_Reference_ID=135
 	 * Reference name: _Document Action

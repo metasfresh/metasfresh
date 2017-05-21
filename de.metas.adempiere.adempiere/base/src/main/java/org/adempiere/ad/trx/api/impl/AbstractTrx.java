@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,6 +45,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Supplier;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
@@ -559,6 +561,22 @@ public abstract class AbstractTrx implements ITrx
 		@SuppressWarnings("unchecked")
 		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
 		return value;
+	}
+	
+	@Override
+	public <T> T setAndGetProperty(@NonNull final String name, @NonNull final Function<T, T> valueRemappingFunction)
+	{
+		final BiFunction<? super String, ? super Object, ? extends Object> remappingFunction = (propertyName, oldValue) -> {
+			@SuppressWarnings("unchecked")
+			final T oldValueCasted = (T)oldValue;
+			
+			return valueRemappingFunction.apply(oldValueCasted);
+		};
+		
+		@SuppressWarnings("unchecked")
+		final T value = (T)getPropertiesMap().compute(name, remappingFunction);
+		return value;
+		
 	}
 
 

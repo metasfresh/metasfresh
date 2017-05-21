@@ -90,7 +90,7 @@ public class C_Invoice_Candidate_InOut_FacetCollector extends SingleFacetCategor
 		return Facet.<I_C_Invoice_Candidate> builder()
 				.setFacetCategory(facetCategory)
 				.setDisplayName(documentNo)
-				.setFilter(new TypedSqlQueryFilter<I_C_Invoice_Candidate>(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID + "=" + inoutId))
+				.setFilter(TypedSqlQueryFilter.of(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID + "=" + inoutId))
 				.build();
 	}
 

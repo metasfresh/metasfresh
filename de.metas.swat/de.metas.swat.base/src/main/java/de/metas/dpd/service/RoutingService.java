@@ -58,7 +58,6 @@ import org.compiere.model.MSysConfig;
 import org.compiere.model.MUOM;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
-import org.compiere.util.Msg;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
@@ -73,6 +72,7 @@ import de.metas.dpd.model.MDPDFileInfo;
 import de.metas.dpd.model.MDPDRoute;
 import de.metas.dpd.model.MDPDService;
 import de.metas.dpd.model.MDPDServiceInfo;
+import de.metas.i18n.Msg;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;

@@ -13,7 +13,6 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.api.ILanguageBL;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -47,7 +46,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.Language;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -56,6 +54,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
 /**
@@ -618,7 +618,7 @@ public final class ProcessInfo implements Serializable
 		}
 		else
 		{
-			whereFilter = new TypedSqlQueryFilter<>(whereClause);
+			whereFilter = TypedSqlQueryFilter.of(whereClause);
 		}
 
 		// https://github.com/metasfresh/metasfresh/issues/1348
@@ -626,9 +626,9 @@ public final class ProcessInfo implements Serializable
 		final IUserRolePermissions role = Env.getUserRolePermissions(this.ctx);
 
 		// Note that getTableNameOrNull() might as well return null, plus the method does not need the table name
-		final TypedSqlQueryFilter<T> orgFilter = new TypedSqlQueryFilter<>(role.getOrgWhere(null, true));
+		final TypedSqlQueryFilter<T> orgFilter = TypedSqlQueryFilter.of(role.getOrgWhere(null, true));
 
-		final TypedSqlQueryFilter<T> clientFilter = new TypedSqlQueryFilter<>(role.getClientWhere(true));
+		final TypedSqlQueryFilter<T> clientFilter = TypedSqlQueryFilter.of(role.getClientWhere(true));
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		

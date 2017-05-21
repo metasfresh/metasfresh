@@ -39,8 +39,14 @@ public class S_Resource
 	private S_Resource()
 	{
 	}
-	
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
+
+	/**
+	 * Creates a resource product.<br>
+	 * Note that it's important to create it <b>after</b> new, because otherwise the given {@code resource}'s {@code Value} mit still be {@code null} (https://github.com/metasfresh/metasfresh/issues/1580)
+	 * 
+	 * @param resource
+	 */
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createResourceProduct(final I_S_Resource resource)
 	{
 		createOrUpdateProduct(resource);

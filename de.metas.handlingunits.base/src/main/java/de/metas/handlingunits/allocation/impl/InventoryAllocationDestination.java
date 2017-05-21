@@ -46,10 +46,8 @@ import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
 
-import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUTransaction;
@@ -62,6 +60,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 import de.metas.product.IProductBL;
 
 /**
@@ -73,6 +72,9 @@ import de.metas.product.IProductBL;
  */
 public class InventoryAllocationDestination implements IAllocationDestination
 {
+	// services
+	private static transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	private final I_M_Warehouse warehouse;
 	private final int chargeId;
 	private final I_M_Locator defaultLocator;
@@ -85,6 +87,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	 * There will be an inventory entry for each partner
 	 */
 	private final Map<Integer, I_M_Inventory> partnerIdToInventory = new HashMap<Integer, I_M_Inventory>();
+
+	private HUPackingMaterialsCollector collector = null;
 
 	/**
 	 * Map the inventory lines to the base inout lines
@@ -123,6 +127,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		final ITableRecordReference reference = request.getReference();
 
+		if (collector == null)
+		{
+			collector = new HUPackingMaterialsCollector(request.getHUContext());
+		}
+
 		if (InterfaceWrapperHelper.isInstanceOf(reference, I_M_HU_Item.class))
 		{
 			final I_M_HU_Item huItem = InterfaceWrapperHelper.create(
@@ -130,12 +139,14 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			final I_M_HU hu = huItem.getM_HU();
 
-			final I_M_HU topLevelParent = Services.get(IHandlingUnitsBL.class).getTopLevelParent(hu);
+			final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(hu);
 
 			final List<I_M_InOutLine> inOutLines = Services.get(IHUAssignmentDAO.class).retrieveModelsForHU(topLevelParent, I_M_InOutLine.class);
 
 			for (final I_M_InOutLine inOutLine : inOutLines)
 			{
+
+				collector.addHURecursively(hu, inOutLine);
 
 				final I_M_InOut inout = inOutLine.getM_InOut();
 
@@ -151,6 +162,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				final BigDecimal qtyInternalUseOld = inventoryLine.getQtyInternalUse();
 				final BigDecimal qtyInternalUseNew = qtyInternalUseOld.add(qty);
 				inventoryLine.setQtyInternalUse(qtyInternalUseNew);
+
+				final int countTUs = collector.getAndResetCountTUs();
+
+				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(new BigDecimal(countTUs));
+				inventoryLine.setQtyTU(qtyTU);
 				InterfaceWrapperHelper.save(inventoryLine, trxName);
 
 				result.substractAllocatedQty(qtySource);
@@ -213,6 +229,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		if (inOutLineId2InventoryLine.containsKey(inOutLineId))
 		{
+
 			return inOutLineId2InventoryLine.get(inOutLineId);
 		}
 
@@ -242,18 +259,4 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventoryLine;
 	}
 
-	public void processInventory()
-	{
-		if (inventories.isEmpty())
-		{
-			// No inventory was created. Nothing to do.
-			return;
-		}
-
-		for (final I_M_Inventory inventory : inventories)
-		{
-			// Finally, process the inventory document.
-			Services.get(IDocActionBL.class).processEx(inventory, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-		}
-	}
 }
