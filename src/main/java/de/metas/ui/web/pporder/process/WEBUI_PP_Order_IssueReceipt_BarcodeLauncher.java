@@ -11,7 +11,7 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.pporder.WebPPOrderConfig;
 import de.metas.ui.web.process.adprocess.WebuiProcess;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui-api/issues/280
  */
-@WebuiProcess(layoutType = ProcessLayoutType.SingleOverlayField)
+@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
 public class WEBUI_PP_Order_IssueReceipt_BarcodeLauncher extends JavaProcess
 {
 	@Param(parameterName = "Barcode", mandatory = true)

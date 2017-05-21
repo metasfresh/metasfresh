@@ -36,7 +36,13 @@ import de.metas.ui.web.handlingunits.util.HUPackingInfos;
  * #L%
  */
 
-public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base
+/**
+ * Receive planning HUs using standard/default configuration.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_ReceiptSchedule_ReceiveHUs_Base
 {
 	// services
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
@@ -85,7 +91,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 
 	private final void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule receiptSchedule)
 	{
-		if(lutuConfigurationFactory.isNoLU(lutuConfig))
+		if (lutuConfigurationFactory.isNoLU(lutuConfig))
 		{
 			//
 			// Adjust TU
@@ -98,7 +104,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 			// Adjust LU
 			lutuConfig.setIsInfiniteQtyLU(false);
 			lutuConfig.setQtyLU(BigDecimal.ONE);
-	
+
 			//
 			// Adjust TU
 			// * if the standard QtyTU is less than how much is available to be received => enforce the available Qty
@@ -106,7 +112,7 @@ public class WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_UsingDefaults extends W
 			// see https://github.com/metasfresh/metasfresh-webui/issues/228
 			{
 				final BigDecimal qtyToMoveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(receiptSchedule);
-	
+
 				if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
 				{
 					lutuConfig.setQtyTU(qtyToMoveTU);

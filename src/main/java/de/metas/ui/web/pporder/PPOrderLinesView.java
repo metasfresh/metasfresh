@@ -1,6 +1,5 @@
 package de.metas.ui.web.pporder;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -8,7 +7,6 @@ import java.util.stream.Stream;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.ListUtils;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -17,6 +15,7 @@ import org.eevolution.model.X_PP_Order;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -26,15 +25,17 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.view.ASIViewRowAttributesProvider;
-import de.metas.ui.web.view.ViewCreateRequest;
-import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -69,10 +70,13 @@ public class PPOrderLinesView implements IView
 	{
 		return (PPOrderLinesView)view;
 	}
-	
+
 	private final ViewId parentViewId;
 
 	private final ViewId viewId;
+	private final JSONViewDataType viewType;
+	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
+
 	private final int ppOrderId;
 
 	private final ASIViewRowAttributesProvider asiAttributesProvider;
@@ -82,20 +86,24 @@ public class PPOrderLinesView implements IView
 	private PPOrderLinesView( //
 			final ViewId parentViewId //
 			, @NonNull final ViewId viewId //
+			, @NonNull final JSONViewDataType viewType //
+			, final Set<DocumentPath> referencingDocumentPaths //
 			, final int ppOrderId //
 			, final ASIViewRowAttributesProvider asiAttributesProvider //
 	)
 	{
 		this.parentViewId = parentViewId; // might be null
 		this.viewId = viewId;
+		this.viewType = viewType;
+		this.referencingDocumentPaths = referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 
 		Preconditions.checkArgument(ppOrderId > 0, "PP_Order_ID not provided");
 		this.ppOrderId = ppOrderId;
 
 		this.asiAttributesProvider = asiAttributesProvider;
 
-		final WindowId windowId = viewId.getWindowId();
-		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(windowId)
+		final WindowId viewWindowId = viewId.getWindowId();
+		dataSupplier = ExtendedMemorizingSupplier.of(() -> PPOrderLinesLoader.builder(viewWindowId)
 				.asiAttributesProvider(asiAttributesProvider)
 				.build()
 				.retrieveData(ppOrderId));
@@ -105,12 +113,12 @@ public class PPOrderLinesView implements IView
 	{
 		return getData().getPlanningStatus();
 	}
-	
+
 	public boolean isStatusPlanning()
 	{
 		return X_PP_Order.PLANNINGSTATUS_Planning.equals(getPlanningStatus());
 	}
-	
+
 	public boolean isStatusReview()
 	{
 		return X_PP_Order.PLANNINGSTATUS_Review.equals(getPlanningStatus());
@@ -126,6 +134,18 @@ public class PPOrderLinesView implements IView
 	public ViewId getViewId()
 	{
 		return viewId;
+	}
+
+	@Override
+	public JSONViewDataType getViewType()
+	{
+		return viewType;
+	}
+
+	@Override
+	public ImmutableSet<DocumentPath> getReferencingDocumentPaths()
+	{
+		return referencingDocumentPaths;
 	}
 
 	@Override
@@ -212,7 +232,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<DocumentId> viewDocumentIds)
+	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds)
 	{
 		return null; // not supported
 	}
@@ -224,13 +244,13 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> documentIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection documentIds, final Class<T> modelClass)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Stream<PPOrderLineRow> streamByIds(final Collection<DocumentId> documentIds)
+	public Stream<PPOrderLineRow> streamByIds(final DocumentIdsSelection documentIds)
 	{
 		return getData().streamByIds(documentIds);
 	}
@@ -261,7 +281,7 @@ public class PPOrderLinesView implements IView
 		{
 			asiAttributesProvider.invalidateAll();
 		}
-		
+
 		dataSupplier.forget();
 	}
 
@@ -271,16 +291,16 @@ public class PPOrderLinesView implements IView
 	}
 
 	@ViewAction(caption = "PPOrderLinesView.openViewsToIssue", precondition = IsSingleIssueLine.class)
-	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final Set<DocumentId> selectedDocumentIds)
+	public OpenIncludedViewAction actionOpenViewForHUsToIssue(final DocumentIdsSelection selectedDocumentIds)
 	{
-		final DocumentId selectedRowId = ListUtils.singleElement(selectedDocumentIds);
+		final DocumentId selectedRowId = selectedDocumentIds.getSingleDocumentId();
 		final PPOrderLineRow selectedRow = getById(selectedRowId);
 
 		if (!selectedRow.isIssue())
 		{
 			throw new IllegalStateException("Only issue lines are supported");
 		}
-		if(selectedRow.isProcessed())
+		if (selectedRow.isProcessed())
 		{
 			throw new IllegalStateException("Row processed");
 		}
@@ -293,7 +313,7 @@ public class PPOrderLinesView implements IView
 		}
 
 		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class); // TODO dirty workaround
-		final IView husToIssueView = viewsRepo.createView(ViewCreateRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
+		final IView husToIssueView = viewsRepo.createView(CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 				.setParentViewId(getViewId())
 				.setFilterOnlyIds(huIdsToAvailableToIssue)
 				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
@@ -307,26 +327,26 @@ public class PPOrderLinesView implements IView
 	public static final class IsSingleIssueLine implements ViewAction.Precondition
 	{
 		@Override
-		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(final IView view, final DocumentIdsSelection selectedDocumentIds)
 		{
-			if (selectedDocumentIds.size() != 1)
+			if (!selectedDocumentIds.isSingleDocumentId())
 			{
 				return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 			}
-			
+
 			final PPOrderLinesView ppOrder = cast(view);
 			if (!(ppOrder.isStatusPlanning() || ppOrder.isStatusReview()))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("not in planning or in review");
 			}
 
-			final DocumentId selectedDocumentId = ListUtils.singleElement(selectedDocumentIds);
+			final DocumentId selectedDocumentId = selectedDocumentIds.getSingleDocumentId();
 			final PPOrderLineRow ppOrderLine = ppOrder.getById(selectedDocumentId);
 			if (!ppOrderLine.isIssue())
 			{
 				return ProcessPreconditionsResolution.reject("not an issue line");
 			}
-			if(ppOrderLine.isProcessed())
+			if (ppOrderLine.isProcessed())
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("row processed");
 			}

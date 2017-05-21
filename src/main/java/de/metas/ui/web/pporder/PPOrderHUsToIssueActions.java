@@ -1,12 +1,12 @@
 package de.metas.ui.web.pporder;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
@@ -26,6 +26,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 
 /*
@@ -62,14 +63,25 @@ public final class PPOrderHUsToIssueActions
 	public static class HasSelectedHUs implements ViewAction.Precondition
 	{
 		@Override
-		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(final IView view, final DocumentIdsSelection selectedDocumentIds)
 		{
-			final Set<Integer> huIds = extractHUIds(view, selectedDocumentIds);
-			if (huIds.isEmpty())
+			if (selectedDocumentIds.isEmpty())
 			{
-				return ProcessPreconditionsResolution.reject("no HU(s) selected");
+				return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 			}
-			return ProcessPreconditionsResolution.accept();
+			else if (selectedDocumentIds.isAll())
+			{
+				return ProcessPreconditionsResolution.accept();
+			}
+			else
+			{
+				final Set<Integer> huIds = extractHUIds(view, selectedDocumentIds);
+				if (huIds.isEmpty())
+				{
+					return ProcessPreconditionsResolution.reject("no HU(s) selected");
+				}
+				return ProcessPreconditionsResolution.accept();
+			}
 		}
 	}
 
@@ -77,25 +89,36 @@ public final class PPOrderHUsToIssueActions
 	public static class SingleSelectedLUOrTU implements ViewAction.Precondition
 	{
 		@Override
-		public ProcessPreconditionsResolution matches(final IView view, final Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(final IView view, final DocumentIdsSelection selectedDocumentIds)
 		{
 			if (selectedDocumentIds.isEmpty())
 			{
 				return ProcessPreconditionsResolution.reject("no rows selected");
 			}
-			else if (selectedDocumentIds.size() > 1)
+			else if (!selectedDocumentIds.isSingleDocumentId())
 			{
 				return ProcessPreconditionsResolution.reject("only one row shall be selected");
 			}
 
-			final DocumentId rowId = selectedDocumentIds.iterator().next();
+			final DocumentId rowId = selectedDocumentIds.getSingleDocumentId();
 			final HUEditorRow row = HUEditorRow.cast(view.getById(rowId));
-			if (!row.isLU() && !row.isTU())
+
+			if (row.isLU())
+			{
+				return ProcessPreconditionsResolution.accept();
+			}
+			else if (row.isTU())
+			{
+				if (row.isTopLevel())
+				{
+					return ProcessPreconditionsResolution.reject("top level TU");
+				}
+				return ProcessPreconditionsResolution.accept();
+			}
+			else
 			{
 				return ProcessPreconditionsResolution.reject("LU or TU shall be selected");
 			}
-
-			return ProcessPreconditionsResolution.accept();
 		}
 	}
 
@@ -106,7 +129,7 @@ public final class PPOrderHUsToIssueActions
 	 * @param selectedHURowIds
 	 */
 	@ViewAction(caption = "PPOrderIncludedHUEditorActions.issueSelectedHUs", precondition = HasSelectedHUs.class)
-	public static void issueSelectedHUs(final HUEditorView husView, final Set<DocumentId> selectedHURowIds)
+	public static void issueSelectedHUs(final HUEditorView husView, final DocumentIdsSelection selectedHURowIds)
 	{
 		final PPOrderLinesView ppOrderView = getPPOrderView(husView).get();
 		final int ppOrderId = ppOrderView.getPP_Order_ID();
@@ -126,23 +149,34 @@ public final class PPOrderHUsToIssueActions
 		ppOrderView.invalidateAll();
 	}
 
+	/**
+	 * Issue selected TUs (aka Partial Issue)
+	 * @param husView HUEditor view
+	 * @param selectedHURowIds selected row IDs
+	 * @param qtyTUs how many TUs to issue
+	 */
 	@ViewAction(caption = "PPOrderIncludedHUEditorActions.issueSelectedTUs", precondition = SingleSelectedLUOrTU.class)
 	public static void issueSelectedTUs( //
 			final HUEditorView husView //
-			, final Set<DocumentId> selectedHURowIds //
+			, final DocumentIdsSelection selectedHURowIds //
 			, @ViewActionParam(caption = "QtyTU", widgetType = DocumentFieldWidgetType.Integer) final Integer qtyTUs //
 	)
 	{
+		if (qtyTUs == null || qtyTUs <= 0)
+		{
+			throw new FillMandatoryException("QtyTU");
+		}
+
 		final PPOrderLinesView ppOrderView = getPPOrderView(husView).get();
 		final int ppOrderId = ppOrderView.getPP_Order_ID();
 
-		final DocumentId rowId = selectedHURowIds.iterator().next();
+		final DocumentId rowId = selectedHURowIds.getSingleDocumentId();
 		final HUEditorRow row = HUEditorRow.cast(husView.getById(rowId));
 
 		final I_M_HU sourceLUorTU = row.getM_HU();
 
 		final List<I_M_HU> extractedTUs = HUTransferService.get(Env.getCtx())
-				.tuToNewTUs(sourceLUorTU, BigDecimal.valueOf(qtyTUs), sourceLUorTU.isHUPlanningReceiptOwnerPM());
+				.huExtractTUs(sourceLUorTU, qtyTUs, sourceLUorTU.isHUPlanningReceiptOwnerPM());
 		if (extractedTUs.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
@@ -157,7 +191,7 @@ public final class PPOrderHUsToIssueActions
 		ppOrderView.invalidateAll();
 	}
 
-	private static final Set<Integer> extractHUIds(final IView view, final Set<DocumentId> selectedHURowIds)
+	private static final Set<Integer> extractHUIds(final IView view, final DocumentIdsSelection selectedHURowIds)
 	{
 		if (selectedHURowIds.isEmpty())
 		{
@@ -172,7 +206,7 @@ public final class PPOrderHUsToIssueActions
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private static final List<I_M_HU> extractHUs(final IView view, final Set<DocumentId> selectedHURowIds)
+	private static final List<I_M_HU> extractHUs(final IView view, final DocumentIdsSelection selectedHURowIds)
 	{
 		final Set<Integer> huIds = extractHUIds(view, selectedHURowIds);
 		if (huIds.isEmpty())

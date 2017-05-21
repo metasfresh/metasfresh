@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -12,6 +13,7 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -148,5 +150,11 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	public List<CCacheStats> getCacheStats()
 	{
 		return fetcher.getCacheStats();
+	}
+	
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return fetcher.getZoomIntoWindowId();
 	}
 }

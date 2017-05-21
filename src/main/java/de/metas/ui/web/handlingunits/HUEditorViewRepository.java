@@ -1,13 +1,16 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -28,8 +31,11 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
@@ -66,8 +72,15 @@ public class HUEditorViewRepository
 
 	private final HUEditorRowAttributesProvider attributesProvider;
 
+	private final SqlViewBinding sqlViewBinding;
+
 	@Builder
-	private HUEditorViewRepository(@NonNull final WindowId windowId, final String referencingTableName, final HUEditorRowAttributesProvider attributesProvider)
+	private HUEditorViewRepository(
+			@NonNull final WindowId windowId //
+			, final String referencingTableName //
+			, final HUEditorRowAttributesProvider attributesProvider //
+			, final SqlViewBinding sqlViewBinding
+	)
 	{
 		super();
 
@@ -75,13 +88,20 @@ public class HUEditorViewRepository
 		this.referencingTableName = referencingTableName;
 
 		this.attributesProvider = attributesProvider;
+
+		this.sqlViewBinding = sqlViewBinding;
 	}
 	
+	SqlViewBinding getSqlViewBinding()
+	{
+		return sqlViewBinding;
+	}
+
 	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
-				.map(hu -> createHUEditorRow(hu))
+				.map(hu -> createHUEditorRow(hu, true))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -97,20 +117,23 @@ public class HUEditorViewRepository
 		{
 			return null;
 		}
+
+		// TODO: check if the huId is part of our collection
+
 		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
-		return createHUEditorRow(hu);
+		return createHUEditorRow(hu, true);
 	}
 
 	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> huIds)
 	{
-		if(huIds.isEmpty())
+		if (huIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final IQueryBuilder<I_M_HU> queryBuilder = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+				.setContext(PlainContextAware.newOutOfTrx())
 				.setOnlyTopLevelHUs()
 				.createQueryBuilder();
 
@@ -124,7 +147,7 @@ public class HUEditorViewRepository
 				.list();
 	}
 
-	private HUEditorRow createHUEditorRow(final I_M_HU hu)
+	private HUEditorRow createHUEditorRow(final I_M_HU hu, final boolean topLevel)
 	{
 		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
@@ -148,8 +171,9 @@ public class HUEditorViewRepository
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRow.rowIdFromM_HU_ID(huId))
 				.setType(huRecordType)
-				.setAttributesProvider(attributesProvider)
+				.setTopLevel(topLevel)
 				.setProcessed(processed)
+				.setAttributesProvider(attributesProvider)
 				//
 				.setHUId(huId)
 				.setCode(hu.getValue())
@@ -186,7 +210,7 @@ public class HUEditorViewRepository
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
-					.map(includedHU -> createHUEditorRow(includedHU))
+					.map(includedHU -> createHUEditorRow(includedHU, false))
 					.forEach(huEditorRow::addIncludedRow);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
@@ -275,6 +299,7 @@ public class HUEditorViewRepository
 		return HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRow.rowIdFromM_HU_Storage(huId, product.getM_Product_ID()))
 				.setType(HUEditorRowType.HUStorage)
+				.setTopLevel(false)
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProviderEffective)
 				//
@@ -318,4 +343,21 @@ public class HUEditorViewRepository
 		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
+	public List<Integer> retrieveHUIdsEffective(final Collection<Integer> huIds, final List<DocumentFilter> filters)
+	{
+		//
+		// Convert the "filters" to SQL
+		final List<Object> sqlFilterParams = new ArrayList<>();
+		final String sqlFilter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding)
+				.getSql(sqlFilterParams, filters);
+
+		//
+		// Retrieve only given huIds but also apply the filters SQL on top of it.
+		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
+				.setContext(PlainContextAware.newOutOfTrx())
+				.addOnlyHUIds(huIds)
+				.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams))
+				.createQuery()
+				.listIds();
+	}
 }

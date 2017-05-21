@@ -22,6 +22,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
@@ -76,6 +79,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final SqlDocumentFilterConvertersList viewFilterConverters;
 
 	private SqlViewBinding(final Builder builder)
 	{
@@ -125,6 +129,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 		viewFilterDescriptors = builder.getViewFilterDescriptors();
+		viewFilterConverters = builder.buildViewFilterConverters();
 	}
 
 	@Override
@@ -227,7 +232,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		return sql.build().caching();
 	}
-	
+
 	@Override
 	public IStringExpression getSqlWhereClause()
 	{
@@ -252,6 +257,12 @@ public class SqlViewBinding implements SqlEntityBinding
 	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
 		return viewFilterDescriptors;
+	}
+
+	@Override
+	public SqlDocumentFilterConvertersList getFilterConverters()
+	{
+		return viewFilterConverters;
 	}
 
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
@@ -295,6 +306,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private List<DocumentQueryOrderBy> defaultOrderBys;
 		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
+		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
 
 		private Builder()
 		{
@@ -337,13 +349,12 @@ public class SqlViewBinding implements SqlEntityBinding
 			this.sqlWhereClause = sqlWhereClause == null ? IStringExpression.NULL : sqlWhereClause;
 			return this;
 		}
-		
+
 		public Builder setSqlWhereClause(final String sqlWhereClause)
 		{
 			this.sqlWhereClause = ConstantStringExpression.ofNullable(sqlWhereClause);
 			return this;
 		}
-
 
 		private IStringExpression getSqlWhereClause()
 		{
@@ -417,6 +428,25 @@ public class SqlViewBinding implements SqlEntityBinding
 		private DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 		{
 			return viewFilterDescriptors;
+		}
+
+		public Builder addViewFilterConverter(final String filterId, final SqlDocumentFilterConverter converter)
+		{
+			if (viewFilterConverters == null)
+			{
+				viewFilterConverters = SqlDocumentFilterConverters.listBuilder();
+			}
+			viewFilterConverters.addConverter(filterId, converter);
+			return this;
+		}
+
+		private SqlDocumentFilterConvertersList buildViewFilterConverters()
+		{
+			if (viewFilterConverters == null)
+			{
+				return SqlDocumentFilterConverters.emptyList();
+			}
+			return viewFilterConverters.build();
 		}
 	}
 

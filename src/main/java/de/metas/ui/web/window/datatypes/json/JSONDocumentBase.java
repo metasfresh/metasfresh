@@ -12,8 +12,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Maps;
 
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 
 /*
@@ -52,8 +52,13 @@ public abstract class JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String id;
 
+	@JsonProperty("tabId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String tabId;
+	//
 	@JsonProperty("tabid")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Deprecated
 	private final String tabid;
 
 	@JsonProperty("rowId")
@@ -72,25 +77,24 @@ public abstract class JSONDocumentBase
 	/** Any other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
-	public JSONDocumentBase(final DocumentPath documentPath)
+	protected JSONDocumentBase(final DocumentPath documentPath)
 	{
 		if (documentPath == null)
 		{
 			id = null;
-			tabid = null;
+			tabId = null;
 			rowId = null;
 		}
 		else if (documentPath.isRootDocument())
 		{
 			id = documentPath.getDocumentId().toJson();
-			tabid = null;
+			tabId = null;
 			rowId = null;
 		}
 		else if (documentPath.isSingleIncludedDocument())
 		{
 			id = documentPath.getDocumentId().toJson();
-			final DetailId detailId = documentPath.getDetailId();
-			tabid = DetailId.toJson(detailId);
+			tabId = documentPath.getDetailId().toJson();
 			rowId = documentPath.getSingleRowId().toJson();
 		}
 		else
@@ -98,7 +102,18 @@ public abstract class JSONDocumentBase
 			// shall not happen
 			throw new InvalidDocumentPathException(documentPath, "only root path and single included document path are allowed");
 		}
+		
+		tabid = tabId;
 	}
+	
+	protected JSONDocumentBase(final DocumentId documentId)
+	{
+		id = documentId.toJson();
+		tabId = null;
+		tabid = tabId;
+		rowId = null;
+	}
+
 
 	public final void setDeleted()
 	{

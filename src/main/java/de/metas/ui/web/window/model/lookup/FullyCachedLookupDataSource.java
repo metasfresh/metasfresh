@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
@@ -16,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 
 /*
  * #%L
@@ -127,11 +129,16 @@ class FullyCachedLookupDataSource implements LookupDataSource
 				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to ITableRecordReference because the fetcher returned null tablename: " + fetcher));
 		return TableRecordReference.of(tableName, id);
 	}
+	
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return fetcher.getZoomIntoWindowId();
+	}
 
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
 		return ImmutableList.of(cacheByPartition.stats());
 	}
-
 }

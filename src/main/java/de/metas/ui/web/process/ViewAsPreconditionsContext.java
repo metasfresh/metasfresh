@@ -1,26 +1,24 @@
 package de.metas.ui.web.process;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Functions;
 import org.adempiere.util.Functions.MemoizingFunction;
-import org.adempiere.util.collections.ListUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -63,7 +61,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		}
 	}
 
-	public static final ViewAsPreconditionsContext newInstance(final IView view, final Collection<DocumentId> selectedDocumentIds)
+	public static final ViewAsPreconditionsContext newInstance(final IView view, final DocumentIdsSelection selectedDocumentIds)
 	{
 		return new ViewAsPreconditionsContext(view, selectedDocumentIds);
 	}
@@ -73,18 +71,18 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	private final IView view;
 	private final String tableName;
 	private final WindowId windowId;
-	private final Set<DocumentId> selectedDocumentIds;
+	private final DocumentIdsSelection selectedDocumentIds;
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
 
-	private ViewAsPreconditionsContext(final IView view, final Collection<DocumentId> selectedDocumentIds)
+	private ViewAsPreconditionsContext(@NonNull final IView view, @NonNull final DocumentIdsSelection selectedDocumentIds)
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
 		this.windowId = view.getViewId().getWindowId();
 		this.tableName = view.getTableName();
-		this.selectedDocumentIds = ImmutableSet.copyOf(selectedDocumentIds);
+		this.selectedDocumentIds = selectedDocumentIds;
 	}
 
 	@Override
@@ -122,14 +120,14 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		return tableName;
 	}
 
-	public Set<DocumentId> getSelectedDocumentIds()
+	public DocumentIdsSelection getSelectedDocumentIds()
 	{
 		return selectedDocumentIds;
 	}
 	
 	public DocumentId getSingleSelectedDocumentId()
 	{
-		return ListUtils.singleElement(selectedDocumentIds);
+		return selectedDocumentIds.getSingleDocumentId();
 	}
 
 	@Override
@@ -160,6 +158,18 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	public int getSelectionSize()
 	{
 		return getSelectedDocumentIds().size();
+	}
+	
+	@Override
+	public boolean isNoSelection()
+	{
+		return getSelectedDocumentIds().isEmpty();
+	}
+	
+	@Override
+	public boolean isMoreThanOneSelected()
+	{
+		return getSelectedDocumentIds().isMoreThanOneDocumentId();
 	}
 
 	private final SelectedModelsList retrieveSelectedModels(final Class<?> modelClass)

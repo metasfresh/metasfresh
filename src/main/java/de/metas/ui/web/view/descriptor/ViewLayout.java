@@ -1,6 +1,7 @@
 package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -172,7 +173,7 @@ public class ViewLayout
 		private ITranslatableString emptyResultText;
 		private ITranslatableString emptyResultHint;
 		
-		private List<DocumentFilterDescriptor> filters = null;
+		private Collection<DocumentFilterDescriptor> filters = null;
 		
 		private boolean hasAttributesSupport = false;
 		private boolean hasTreeSupport = false;
@@ -296,7 +297,7 @@ public class ViewLayout
 			return findElementBuilderByFieldName(fieldName) != null;
 		}
 		
-		public List<DocumentFilterDescriptor> getFilters()
+		private Collection<DocumentFilterDescriptor> getFilters()
 		{
 			if(filters == null || filters.isEmpty())
 			{
@@ -305,7 +306,7 @@ public class ViewLayout
 			return filters;
 		}
 		
-		public Builder setFilters(List<DocumentFilterDescriptor> filters)
+		public Builder setFilters(final Collection<DocumentFilterDescriptor> filters)
 		{
 			this.filters = filters;
 			return this;

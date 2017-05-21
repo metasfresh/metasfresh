@@ -2,7 +2,6 @@ package de.metas.ui.web.view;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +23,13 @@ import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.json.JSONViewCreateRequest;
+import de.metas.ui.web.view.json.JSONCreateViewRequest;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -94,38 +94,28 @@ public class ViewRestController
 	@PostMapping
 	public JSONViewResult createView(
 			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @RequestBody final JSONViewCreateRequest jsonRequest //
+			, @RequestBody final JSONCreateViewRequest jsonRequest //
 	)
 	{
 		userSession.assertLoggedIn();
 
-		final ViewCreateRequest request = ViewCreateRequest.builder(jsonRequest.getWindowId(), jsonRequest.getViewType())
+		final WindowId windowId = extractWindowId(windowIdStr, jsonRequest.getWindowId());
+		final CreateViewRequest request = CreateViewRequest.builder(windowId, jsonRequest.getViewType())
 				.setReferencingDocumentPaths(jsonRequest.getReferencingDocumentPaths())
+				// .setStickyFilters(stickyFilters) // none
 				.setFilters(jsonRequest.getFilters())
 				.setFilterOnlyIds(jsonRequest.getFilterOnlyIds())
-				.setFetchPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength())
 				.build();
-
-		final WindowId windowIdParam = WindowId.fromNullableJson(windowIdStr);
-		WindowId windowIdEffective = request.getWindowId();
-		if (windowIdEffective == null)
-		{
-			windowIdEffective = WindowId.fromJson(windowIdStr);
-		}
-		else if (!Objects.equals(windowIdParam, windowIdEffective))
-		{
-			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
-		}
 
 		final IView view = viewsRepo.createView(request);
 
 		//
 		// Fetch result if requested
 		final ViewResult result;
-		if (request.getQueryPageLength() > 0)
+		if (jsonRequest.getQueryPageLength() > 0)
 		{
 			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
-			result = view.getPage(request.getQueryFirstRow(), request.getQueryPageLength(), orderBys);
+			result = view.getPage(jsonRequest.getQueryFirstRow(), jsonRequest.getQueryPageLength(), orderBys);
 		}
 		else
 		{
@@ -133,6 +123,38 @@ public class ViewRestController
 		}
 
 		return JSONViewResult.of(result);
+	}
+
+	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
+	{
+		final WindowId pathWindowId = WindowId.fromNullableJson(pathWindowIdStr);
+		WindowId windowIdEffective = requestWindowId;
+		if (windowIdEffective == null)
+		{
+			windowIdEffective = WindowId.fromJson(pathWindowIdStr);
+		}
+		else if (!Objects.equals(pathWindowId, windowIdEffective))
+		{
+			throw new IllegalArgumentException("Request's windowId is not matching the one from path");
+		}
+
+		return windowIdEffective;
+	}
+
+	/**
+	 * Creates a new view by filtering the given one.
+	 */
+	@PostMapping("/{viewId}/filter")
+	public JSONViewResult filterView( //
+			@PathVariable(PARAM_WindowId) final String windowIdStr //
+			, @PathVariable("viewId") final String viewIdStr //
+			, @RequestBody final JSONFilterViewRequest jsonRequest //
+	)
+	{
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
+
+		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
+		return JSONViewResult.of(ViewResult.ofView(newView));
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -182,7 +204,6 @@ public class ViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final IView view = viewsRepo.getView(viewId);
 
@@ -209,7 +230,7 @@ public class ViewRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Set<DocumentId> rowIds = DocumentId.ofCommaSeparatedString(idsListStr);
+		final DocumentIdsSelection rowIds = DocumentIdsSelection.ofCommaSeparatedString(idsListStr);
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final List<? extends IViewRow> result = viewsRepo.getView(viewId)
@@ -253,7 +274,7 @@ public class ViewRestController
 	private Stream<WebuiRelatedProcessDescriptor> streamAllViewActions(final String windowId, final String viewIdStr, final String selectedRowIdsAsStringList)
 	{
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final Set<DocumentId> selectedRowIds = DocumentId.ofCommaSeparatedString(selectedRowIdsAsStringList);
+		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStringList);
 		final IView view = viewsRepo.getView(viewId);
 		final IProcessPreconditionsContext preconditionsContext = ViewAsPreconditionsContext.newInstance(view, selectedRowIds);
 		return processRestController.streamDocumentRelatedProcesses(preconditionsContext);

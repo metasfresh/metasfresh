@@ -1,6 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -13,7 +12,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -43,12 +45,20 @@ public interface IView
 {
 	ViewId getViewId();
 
+	JSONViewDataType getViewType();
+
+	Set<DocumentPath> getReferencingDocumentPaths();
+
 	/** @return table name or null */
 	String getTableName();
 
-	/** @return parent viewId or null */
+	/**
+	 * @return In case this is an included view, this method will return the parent's viewId. Else null will be returned.
+	 * @see #isIncludedView()
+	 */
 	ViewId getParentViewId();
 
+	/** @return true if this is an included view */
 	default boolean isIncludedView()
 	{
 		return getParentViewId() != null;
@@ -72,7 +82,7 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	default List<? extends IViewRow> getByIds(final Set<DocumentId> rowId)
+	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowId)
 	{
 		return streamByIds(rowId).collect(ImmutableList.toImmutableList());
 	}
@@ -81,6 +91,11 @@ public interface IView
 
 	LookupValuesList getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
 
+	/**
+	 * Gets the stick filters.
+	 * Sticky filters are those filters which cannot be changed by user and which shall be preserved between filterings.
+	 * Sticky filters shall never be exported to frontend.
+	 */
 	List<DocumentFilter> getStickyFilters();
 
 	/**
@@ -90,17 +105,17 @@ public interface IView
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
 
-	String getSqlWhereClause(Collection<DocumentId> rowIds);
+	String getSqlWhereClause(DocumentIdsSelection rowIds);
 
 	boolean hasAttributesSupport();
 
-	<T> List<T> retrieveModelsByIds(Collection<DocumentId> rowIds, Class<T> modelClass);
+	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 *         If a {@link IViewRow} was not found for given ID, this method simply ignores it.
 	 */
-	Stream<? extends IViewRow> streamByIds(Collection<DocumentId> rowIds);
+	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
 
 	/**
 	 * Notify the view that given record(s) has changed.

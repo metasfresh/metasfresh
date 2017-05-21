@@ -4,19 +4,24 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.util.DB;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
-import de.metas.printing.esb.base.util.Check;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -52,15 +57,40 @@ import lombok.NonNull;
  */
 class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 {
+	private final ViewId viewId;
 	private final HUEditorViewRepository huEditorRepo;
 
-	private final CopyOnWriteArraySet<Integer> huIds;
+	private final Supplier<CopyOnWriteArraySet<Integer>> huIdsHolder;
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
 
-	HUEditorViewBuffer_FullyCached(@NonNull final HUEditorViewRepository huEditorRepo, final Collection<Integer> huIds)
+	HUEditorViewBuffer_FullyCached( //
+			@NonNull final WindowId windowId //
+			, @NonNull final HUEditorViewRepository huEditorRepo //
+			, final Collection<Integer> huIds //
+			, final List<DocumentFilter> filters //
+	)
 	{
+		viewId = ViewId.random(windowId);
 		this.huEditorRepo = huEditorRepo;
-		this.huIds = new CopyOnWriteArraySet<>(huIds);
+		if (filters.isEmpty())
+		{
+			huIdsHolder = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huIds));
+		}
+		else
+		{
+			huIdsHolder = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(huIds, filters)));
+		}
+	}
+
+	@Override
+	public ViewId getViewId()
+	{
+		return viewId;
+	}
+
+	private CopyOnWriteArraySet<Integer> getHUIds()
+	{
+		return huIdsHolder.get();
 	}
 
 	private IndexedHUEditorRows getRows()
@@ -70,7 +100,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 	private IndexedHUEditorRows retrieveHUEditorRows()
 	{
-		final List<HUEditorRow> rows = huEditorRepo.retrieveHUEditorRows(huIds);
+		final List<HUEditorRow> rows = huEditorRepo.retrieveHUEditorRows(getHUIds());
 		return new IndexedHUEditorRows(rows);
 	}
 
@@ -127,7 +157,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final Collection<DocumentId> rowIds)
+	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds == null || rowIds.isEmpty())
 		{
@@ -144,20 +174,6 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Set<DocumentId> getRowIdsMatchingBarcode(@NonNull final String barcode)
-	{
-		if (Check.isEmpty(barcode, true))
-		{
-			throw new IllegalArgumentException("Invalid barcode");
-		}
-		
-		return streamAllRecursive()
-				.filter(row -> row.matchesBarcode(barcode))
-				.map(HUEditorRow::getId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Override
 	public void invalidateAll()
 	{
 		rowsSupplier.forget();
@@ -171,7 +187,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return false;
 		}
 
-		return huIds.addAll(huIdsToAdd);
+		return getHUIds().addAll(huIdsToAdd);
 	}
 
 	@Override
@@ -182,7 +198,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return false;
 		}
 
-		return huIds.removeAll(huIdsToRemove);
+		return getHUIds().removeAll(huIdsToRemove);
 	}
 
 	@Override
@@ -193,7 +209,24 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return false;
 		}
 
-		return !Collections.disjoint(huIds, huIdsToCheck);
+		return !Collections.disjoint(getHUIds(), huIdsToCheck);
+	}
+
+	@Override
+	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	{
+		final DocumentIdsSelection rowIdsEffective = getRows().streamByIdsExcludingIncludedRows(rowIds)
+				.map(row -> row.getId())
+				.filter(rowId -> rowId.isInt())
+				.collect(DocumentIdsSelection.toDocumentIdsSelection());
+
+		if (rowIdsEffective.isEmpty())
+		{
+			throw new IllegalArgumentException("No HU rows found for " + rowIds);
+		}
+
+		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
+		return sqlKeyColumnNameFK + " IN " + DB.buildSqlList(rowIdsEffective.toIntSet());
 	}
 
 	//
@@ -228,11 +261,16 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return record;
 		}
 
-		public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final Collection<DocumentId> rowIds)
+		public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final DocumentIdsSelection rowIds)
 		{
 			if (rowIds == null || rowIds.isEmpty())
 			{
 				return Stream.empty();
+			}
+
+			if (rowIds.isAll())
+			{
+				return allRowsById.values().stream();
 			}
 
 			return rowIds.stream()
@@ -243,7 +281,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		}
 
 		/** @return true if given <code>childRowId</code> is a direct or indirect child of any of <code>parentRowIds</code> */
-		private final boolean isRowIdIncluded(final Collection<DocumentId> parentRowIds, final DocumentId childRowId)
+		private final boolean isRowIdIncluded(final DocumentIdsSelection parentRowIds, final DocumentId childRowId)
 		{
 			if (parentRowIds == null || parentRowIds.isEmpty())
 			{

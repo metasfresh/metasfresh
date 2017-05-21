@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
@@ -28,16 +29,16 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/*package*/ class DefaultDocumentDescriptorLoader
+/* package */ class DefaultDocumentDescriptorLoader
 {
 	private static final Logger logger = LogManager.getLogger(DefaultDocumentDescriptorLoader.class);
 
@@ -82,7 +83,7 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 
 		final DocumentDescriptor.Builder documentBuilder = DocumentDescriptor.builder();
 		final DocumentLayoutDescriptor.Builder layoutBuilder = DocumentLayoutDescriptor.builder()
-				.setAD_Window_ID(gridWindowVO.getAD_Window_ID())
+				.setWindowId(WindowId.of(gridWindowVO.getAD_Window_ID()))
 				.setStopwatch(stopwatch)
 				.putDebugProperty("generator-name", toString());
 
@@ -92,12 +93,12 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		final LayoutFactory rootLayoutFactory = LayoutFactory.ofMainTab(gridWindowVO, mainTabVO);
 		{
 			layoutBuilder.setCaption(rootLayoutFactory.getWindowCaption());
-			layoutBuilder.addSections(rootLayoutFactory.layoutSectionsList());
+			layoutBuilder.setSingleRowLayout(rootLayoutFactory.layoutSingleRow());
 			layoutBuilder.setGridView(rootLayoutFactory.layoutGridView());
-			layoutBuilder.setAdvancedView(rootLayoutFactory.layoutAdvancedView());
 			layoutBuilder.setSideListView(rootLayoutFactory.layoutSideListView());
-			
+
 			// Set special field names
+			// IMPORTANT: do this after you created all layouts
 			layoutBuilder
 					.setDocumentSummaryElement(rootLayoutFactory.createSpecialElement_DocumentSummary())
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
@@ -108,11 +109,11 @@ import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 		for (final GridTabVO detailTabVO : gridWindowVO.getChildTabs(mainTabVO.getTabNo()))
 		{
 			// Skip sort tabs because they are not supported
-			if(detailTabVO.IsSortTab)
+			if (detailTabVO.IsSortTab)
 			{
 				continue;
 			}
-			
+
 			final LayoutFactory detailLayoutFactory = LayoutFactory.ofIncludedTab(gridWindowVO, mainTabVO, detailTabVO);
 			final DocumentLayoutDetailDescriptor.Builder layoutDetail = detailLayoutFactory.layoutDetail();
 			layoutBuilder.addDetailIfValid(layoutDetail);

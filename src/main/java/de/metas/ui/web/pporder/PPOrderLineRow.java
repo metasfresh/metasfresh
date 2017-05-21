@@ -9,18 +9,17 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
 import lombok.ToString;
@@ -50,9 +49,9 @@ import lombok.ToString;
 @ToString
 public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 {
-	public static final Builder builder(final WindowId windowId)
+	public static final Builder builder(final DocumentId rowId)
 	{
-		return new Builder(windowId);
+		return new Builder(rowId);
 	}
 
 	public static final PPOrderLineRow cast(final IViewRow viewRecord)
@@ -72,6 +71,7 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	private final int ppOrderId;
 	private final int ppOrderBOMLineId;
 	private final int ppOrderQtyId;
+	private final int huId;
 
 	private final ImmutableMap<String, Object> values;
 	private final JSONLookupValue product;
@@ -83,13 +83,14 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 
 	private PPOrderLineRow(final Builder builder)
 	{
-		documentPath = builder.getDocumentPath();
-		rowId = documentPath.getDocumentId();
+		rowId = builder.getRowId();
 		type = builder.getType();
+		documentPath = builder.getDocumentPath();
 
 		ppOrderId = builder.ppOrderId;
 		ppOrderBOMLineId = builder.ppOrderBOMLineId;
 		ppOrderQtyId = builder.ppOrderQtyId;
+		huId = builder.huId;
 
 		processed = builder.processed;
 
@@ -123,12 +124,6 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	}
 
 	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
-	}
-
-	@Override
 	public DocumentId getId()
 	{
 		return rowId;
@@ -151,6 +146,13 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	{
 		return type;
 	}
+	
+	@Override
+	public DocumentPath getDocumentPath()
+	{
+		return documentPath;
+	}
+
 
 	public JSONLookupValue getProduct()
 	{
@@ -246,8 +248,7 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	//
 	public static final class Builder
 	{
-		private final WindowId windowId;
-		private DocumentId _rowId;
+		private final DocumentId rowId;
 		private PPOrderLineType type;
 
 		private List<PPOrderLineRow> includedDocuments = null;
@@ -257,6 +258,7 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 		private int ppOrderId;
 		private int ppOrderBOMLineId;
 		private int ppOrderQtyId;
+		private int huId;
 		private boolean processed = false;
 
 		private JSONLookupValue product;
@@ -267,9 +269,9 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 		private BigDecimal qty;
 		private boolean qtyAsSumOfIncludedQtys = false;
 
-		private Builder(@NonNull final WindowId windowId)
+		private Builder(@NonNull final DocumentId rowId)
 		{
-			this.windowId = windowId;
+			this.rowId = rowId;
 		}
 
 		public PPOrderLineRow build()
@@ -320,29 +322,42 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 			return this;
 		}
 
+		public Builder huId(final int huId)
+		{
+			this.huId = huId;
+			return this;
+		}
+
 		public Builder processed(final boolean processed)
 		{
 			this.processed = processed;
 			return this;
 		}
+		
+		private DocumentId getRowId()
+		{
+			return rowId;
+		}
 
 		private DocumentPath getDocumentPath()
 		{
-			final DocumentId rowId = getRowId();
-			return DocumentPath.rootDocumentPath(windowId, rowId);
-		}
-
-		public Builder setRowId(final DocumentId rowId)
-		{
-			_rowId = rowId;
-			return this;
-		}
-
-		/** @return view row ID */
-		private DocumentId getRowId()
-		{
-			Check.assumeNotNull(_rowId, "Parameter rowId is not null");
-			return _rowId;
+			final PPOrderLineType type = getType();
+			if (type == PPOrderLineType.MainProduct)
+			{
+				return DocumentPath.rootDocumentPath(WebPPOrderConfig.AD_WINDOW_ID_PP_Order, DocumentId.of(ppOrderId));
+			}
+			else if (type.isBOMLine())
+			{
+				return DocumentPath.includedDocumentPath(WebPPOrderConfig.AD_WINDOW_ID_PP_Order, DocumentId.of(ppOrderId), WebPPOrderConfig.TABID_ID_PP_Order_BOMLine, DocumentId.of(ppOrderBOMLineId));
+			}
+			else if (type.isHUOrHUStorage())
+			{
+				return DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, DocumentId.of(huId));
+			}
+			else
+			{
+				throw new IllegalStateException("Unknown type: " + type);
+			}
 		}
 
 		private PPOrderLineType getType()
@@ -473,7 +488,7 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 			includedDocObjs.stream()
 					.map(includedDocumentMapper)
 					.forEach(this::addIncludedDocument);
-			
+
 			return this;
 		}
 

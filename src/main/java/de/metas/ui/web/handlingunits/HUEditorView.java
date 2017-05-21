@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -8,38 +9,34 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
-import de.metas.ui.web.process.view.ViewAction;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
-import de.metas.ui.web.process.view.ViewActionParam;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -80,6 +77,7 @@ public class HUEditorView implements IView
 	private final ViewId parentViewId;
 
 	private final ViewId viewId;
+	private final JSONViewDataType viewType;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 
@@ -87,45 +85,91 @@ public class HUEditorView implements IView
 	private final HUEditorViewBuffer rowsBuffer;
 	private final HUEditorRowAttributesProvider huAttributesProvider;
 
+	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
+	private final ImmutableList<DocumentFilter> stickyFilters;
+	private final ImmutableList<DocumentFilter> filters;
+
 	private HUEditorView(final Builder builder)
 	{
 		parentViewId = builder.getParentViewId();
+		viewType = builder.getViewType();
 
+		//
+		// Build the attributes provider
 		final boolean isHighVolume = builder.isHighVolume();
-
-		this.huAttributesProvider = HUEditorRowAttributesProvider.builder()
+		huAttributesProvider = HUEditorRowAttributesProvider.builder()
 				.readonly(isHighVolume)
 				.build();
 
+		//
+		// Build the repository
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(builder.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
 				.attributesProvider(huAttributesProvider)
+				.sqlViewBinding(builder.getSqlViewBinding())
 				.build();
 
-		final Collection<Integer> huIds = builder.getHUIds();
-		
-		if (isHighVolume)
+		viewFilterDescriptors = builder.getSqlViewBinding().getViewFilterDescriptors();
+
+		//
+		// Build stickyFilters
 		{
-			final ImmutableList.Builder<DocumentFilter> filters = ImmutableList.builder();
-			if(!huIds.isEmpty())
+			final Collection<Integer> builder_huIds = builder.getHUIds();
+			final List<DocumentFilter> stickyFilters = new ArrayList<>(builder.getStickyFilters());
+
+			final DocumentFilter stickyFilter_HUIds_Existing = HUIdsDocumentFilterFactory.findExistingOrNull(stickyFilters);
+
+			// Create the sticky filter by HUIds from builder's huIds (if any huIds)
+			if (stickyFilter_HUIds_Existing == null && !builder_huIds.isEmpty())
 			{
-				filters.add(DocumentFilter.singleParameterFilter("huIds", I_M_HU.COLUMNNAME_M_HU_ID, Operator.IN_ARRAY, huIds));
+				final DocumentFilter stickyFilter_HUIds_New = HUIdsDocumentFilterFactory.createFilter(builder_huIds);
+				stickyFilters.add(stickyFilter_HUIds_New);
 			}
-			
-			final HUEditorViewBuffer_HighVolume rowsBuffer = new HUEditorViewBuffer_HighVolume(builder.getWindowId(), huEditorRepo, builder.getSqlViewBinding(), filters.build());
-			this.rowsBuffer = rowsBuffer;
-			this.viewId = rowsBuffer.getViewId();
+
+			this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 		}
-		else
-		{
-			this.rowsBuffer = new HUEditorViewBuffer_FullyCached(huEditorRepo, huIds);
-			this.viewId = ViewId.random(builder.getWindowId());
-		}
+
+		//
+		// Build filters
+		filters = ImmutableList.copyOf(builder.getFilters());
+
+		//
+		// Build rowsBuffer
+		rowsBuffer = createRowsBuffer(builder.getWindowId(), isHighVolume, huEditorRepo, stickyFilters, filters);
+		viewId = rowsBuffer.getViewId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
-		this.actions = builder.actions;
+		actions = builder.actions;
+	}
+
+	private static final HUEditorViewBuffer createRowsBuffer( //
+			final WindowId windowId //
+			, final boolean isHighVolume //
+			, final HUEditorViewRepository huEditorRepo //
+			, final List<DocumentFilter> stickyFilters //
+			, final List<DocumentFilter> filters //
+	)
+	{
+		if (isHighVolume)
+		{
+			final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
+
+			return new HUEditorViewBuffer_HighVolume(windowId, huEditorRepo, filtersAll);
+		}
+		else
+		{
+			final List<Integer> huIds = HUIdsDocumentFilterFactory.extractHUIdsOrEmpty(stickyFilters);
+
+			final List<DocumentFilter> stickyFiltersEffective = stickyFilters.stream()
+					.filter(HUIdsDocumentFilterFactory::isNotHUIdsFilter)
+					.collect(ImmutableList.toImmutableList());
+			final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersEffective, filters));
+
+			return new HUEditorViewBuffer_FullyCached(windowId, huEditorRepo, huIds, filtersAll);
+		}
+
 	}
 
 	@Override
@@ -138,6 +182,12 @@ public class HUEditorView implements IView
 	public ViewId getViewId()
 	{
 		return viewId;
+	}
+
+	@Override
+	public JSONViewDataType getViewType()
+	{
+		return viewType;
 	}
 
 	@Override
@@ -193,7 +243,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public List<HUEditorRow> getByIds(final Set<DocumentId> rowId)
+	public List<HUEditorRow> getByIds(final DocumentIdsSelection rowId)
 	{
 		return streamByIds(rowId).collect(ImmutableList.toImmutableList());
 	}
@@ -201,25 +251,31 @@ public class HUEditorView implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return viewFilterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx);
 	}
 
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		throw new UnsupportedOperationException();
+		return viewFilterDescriptors.getByFilterId(filterId)
+				.getParameterByName(filterParameterName)
+				.getLookupDataSource()
+				.findEntities(ctx, query);
 	}
 
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
-		return ImmutableList.of();
+		return stickyFilters;
 	}
 
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
-		return ImmutableList.of();
+		return filters;
 	}
 
 	@Override
@@ -229,13 +285,9 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final Collection<DocumentId> rowIds)
+	public String getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
 	{
-		Check.assumeNotEmpty(rowIds, "rowIds is not empty");
-		// NOTE: ignoring non integer IDs because those might of HUStorage records, about which we don't care
-		final Set<Integer> huIds = DocumentId.toIntSetIgnoringNonInts(rowIds);
-
-		return I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
+		return rowsBuffer.getSqlWhereClause(rowIds);
 	}
 
 	@Override
@@ -244,6 +296,7 @@ public class HUEditorView implements IView
 		return true;
 	}
 
+	@Override
 	public Set<DocumentPath> getReferencingDocumentPaths()
 	{
 		return referencingDocumentPaths;
@@ -314,7 +367,7 @@ public class HUEditorView implements IView
 				.filter(recordRef -> I_M_HU.Table_Name.equals(recordRef.getTableName()))
 				.map(recordRef -> recordRef.getRecord_ID())
 				.collect(ImmutableSet.toImmutableSet());
-		if(huIdsToCheck.isEmpty())
+		if (huIdsToCheck.isEmpty())
 		{
 			return;
 		}
@@ -329,7 +382,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIds(final Collection<DocumentId> rowIds)
+	public Stream<HUEditorRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		return rowsBuffer.streamByIdsExcludingIncludedRows(rowIds);
 	}
@@ -341,7 +394,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final Collection<DocumentId> rowIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
 		final Set<Integer> huIds = streamByIds(rowIds)
 				.filter(HUEditorRow::isPureHU)
@@ -361,30 +414,51 @@ public class HUEditorView implements IView
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
-	@ViewAction(caption = "Barcode", layoutType = ProcessLayoutType.SingleOverlayField)
-	public SelectViewRowsAction actionSelectHUsByBarcode( //
-			@ViewActionParam(caption = "Barcode", widgetType = DocumentFieldWidgetType.Text) final String barcode //
-	// , final Set<DocumentId> selectedRowIds //
-			)
+	/**
+	 * Helper class to handle the HUIds document filter.
+	 */
+	private static final class HUIdsDocumentFilterFactory
 	{
-		// Search for matching rowIds by barcode
-		final Set<DocumentId> matchingRowIds = rowsBuffer.getRowIdsMatchingBarcode(barcode);
-		if (matchingRowIds.isEmpty())
+		private static final String FILTER_ID = "huIds";
+		private static final String FILTER_PARAM_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
+
+		public static final DocumentFilter findExistingOrNull(final Collection<DocumentFilter> filters)
 		{
-			throw new AdempiereException("Nothing found for '" + barcode + "'");
+			if (filters == null || filters.isEmpty())
+			{
+				return null;
+			}
+
+			return filters.stream()
+					.filter(filter -> FILTER_ID.equals(filter.getFilterId()))
+					.findFirst().orElse(null);
 		}
 
-		// Join matching rowIds with currently selected ones
-		final Set<DocumentId> rowIds = ImmutableSet.<DocumentId> builder()
-				.addAll(matchingRowIds)
-				// .addAll(selectedDocumentIds) // don't keep the previously selected ones (see https://github.com/metasfresh/metasfresh-webui-api/issues/313 )
-				.build();
+		public static final DocumentFilter createFilter(final Collection<Integer> huIds)
+		{
+			return DocumentFilter.inArrayFilter(FILTER_ID, FILTER_PARAM_M_HU_ID, huIds);
+		}
 
-		return SelectViewRowsAction.builder()
-				.viewId(getViewId())
-				.rowIds(rowIds)
-				.build();
+		private static final List<Integer> extractHUIds(@NonNull final DocumentFilter huIdsFilter)
+		{
+			Preconditions.checkArgument(!isNotHUIdsFilter(huIdsFilter), "Not a HUIds filter: %s", huIdsFilter);
+			return huIdsFilter.getParameter(FILTER_PARAM_M_HU_ID).getValueAsIntList();
+		}
 
+		public static final List<Integer> extractHUIdsOrEmpty(final Collection<DocumentFilter> filters)
+		{
+			final DocumentFilter huIdsFilter = findExistingOrNull(filters);
+			if (huIdsFilter == null)
+			{
+				return ImmutableList.of();
+			}
+			return HUIdsDocumentFilterFactory.extractHUIds(huIdsFilter);
+		}
+
+		public static final boolean isNotHUIdsFilter(final DocumentFilter filter)
+		{
+			return !FILTER_ID.equals(filter.getFilterId());
+		}
 	}
 
 	//
@@ -396,12 +470,17 @@ public class HUEditorView implements IView
 		private final SqlViewBinding sqlViewBinding;
 		private ViewId parentViewId;
 		private WindowId windowId;
+		private JSONViewDataType viewType;
 
 		private String referencingTableName;
 		private Set<DocumentPath> referencingDocumentPaths;
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
+
 		private Collection<Integer> huIds;
+		private List<DocumentFilter> stickyFilters;
+		private List<DocumentFilter> filters;
+
 		private boolean highVolume;
 
 		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
@@ -430,7 +509,7 @@ public class HUEditorView implements IView
 			return parentViewId;
 		}
 
-		public Builder setWindowId(WindowId windowId)
+		public Builder setWindowId(final WindowId windowId)
 		{
 			this.windowId = windowId;
 			return this;
@@ -439,6 +518,17 @@ public class HUEditorView implements IView
 		private WindowId getWindowId()
 		{
 			return windowId;
+		}
+
+		public Builder setViewType(final JSONViewDataType viewType)
+		{
+			this.viewType = viewType;
+			return this;
+		}
+
+		private JSONViewDataType getViewType()
+		{
+			return viewType;
 		}
 
 		public Builder setHUIds(final Collection<Integer> huIds)
@@ -455,13 +545,13 @@ public class HUEditorView implements IView
 			}
 			return huIds;
 		}
-		
-		public Builder setHighVolume(boolean highVolume)
+
+		public Builder setHighVolume(final boolean highVolume)
 		{
 			this.highVolume = highVolume;
 			return this;
 		}
-		
+
 		private boolean isHighVolume()
 		{
 			return highVolume;
@@ -489,5 +579,28 @@ public class HUEditorView implements IView
 			this.actions = actions;
 			return this;
 		}
+
+		public Builder setStickyFilters(final List<DocumentFilter> stickyFilters)
+		{
+			this.stickyFilters = stickyFilters;
+			return this;
+		}
+
+		private List<DocumentFilter> getStickyFilters()
+		{
+			return stickyFilters != null ? stickyFilters : ImmutableList.of();
+		}
+
+		public Builder setFilters(final List<DocumentFilter> filters)
+		{
+			this.filters = filters;
+			return this;
+		}
+
+		private List<DocumentFilter> getFilters()
+		{
+			return filters != null ? filters : ImmutableList.of();
+		}
+
 	}
 }

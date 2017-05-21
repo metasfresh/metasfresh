@@ -3,7 +3,6 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,6 +31,7 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
@@ -114,7 +114,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, final Collection<DocumentId> rowIds)
+	public String getSqlWhereClause(final ViewId viewId, final DocumentIdsSelection rowIds)
 	{
 		return viewRowIdsOrderedSelectionFactory.getSqlWhereClause(viewId, rowIds);
 	}
@@ -277,7 +277,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final ViewId viewId, final Collection<DocumentId> rowIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(final ViewId viewId, final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -292,7 +292,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		return Services.get(IQueryBL.class).createQueryBuilder(modelClass, getTableName(), PlainContextAware.createUsingOutOfTransaction())
-				.filter(new TypedSqlQueryFilter<>(sqlWhereClause))
+				.filter(TypedSqlQueryFilter.of(sqlWhereClause))
 				.create()
 				.list(modelClass);
 	}

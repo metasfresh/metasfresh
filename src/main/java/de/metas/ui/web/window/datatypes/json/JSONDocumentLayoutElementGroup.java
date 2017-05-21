@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -53,9 +53,9 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
 	}
 
-	static List<JSONDocumentLayoutElementGroup> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+	static List<JSONDocumentLayoutElementGroup> ofElements(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
-		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(detailLayout, jsonOpts);
+		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(elements, jsonOpts);
 		return ImmutableList.of(elementGroup);
 	}
 
@@ -70,7 +70,6 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 
 	private JSONDocumentLayoutElementGroup(final DocumentLayoutElementGroupDescriptor elementGroup, final JSONOptions jsonOpts)
 	{
-		super();
 		type = JSONLayoutType.fromNullable(elementGroup.getLayoutType());
 		elementLines = JSONDocumentLayoutElementLine.ofList(elementGroup.getElementLines(), jsonOpts);
 	}
@@ -78,7 +77,6 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	@JsonCreator
 	private JSONDocumentLayoutElementGroup(@JsonProperty("type") final JSONLayoutType type, @JsonProperty("elementsLine") final List<JSONDocumentLayoutElementLine> elementLines)
 	{
-		super();
 		this.type = type;
 		this.elementLines = elementLines == null ? ImmutableList.of() : ImmutableList.copyOf(elementLines);
 	}
@@ -89,11 +87,10 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	 * @param detailLayout
 	 * @param jsonOpts
 	 */
-	private JSONDocumentLayoutElementGroup(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutElementGroup(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
-		super();
 		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(detailLayout.getElements(), jsonOpts);
+		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(elements, jsonOpts);
 	}
 
 	@Override

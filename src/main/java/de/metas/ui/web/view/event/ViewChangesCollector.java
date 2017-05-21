@@ -1,6 +1,5 @@
 package de.metas.ui.web.view.event;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -173,7 +172,7 @@ public class ViewChangesCollector implements AutoCloseable
 		autoflushIfEnabled();
 	}
 
-	public void collectRowsChanged(final IView view, final Collection<DocumentId> rowIds)
+	public void collectRowsChanged(final IView view, final DocumentIdsSelection rowIds)
 	{
 		viewChanges(view).addChangedRowIds(rowIds);
 
@@ -221,7 +220,8 @@ public class ViewChangesCollector implements AutoCloseable
 		{
 			logger.trace("Flushing {} to websocket", this);
 			changesList.stream()
-					.map(changes -> JSONViewChanges.of(changes))
+					.filter(ViewChanges::hasChanges)
+					.map(JSONViewChanges::of)
 					.forEach(this::sendToWebsocket);
 		}
 	}

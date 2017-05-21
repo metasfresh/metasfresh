@@ -2,11 +2,12 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -39,8 +40,10 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public interface HUEditorViewBuffer
+interface HUEditorViewBuffer
 {
+	ViewId getViewId();
+	
 	long size();
 
 	void invalidateAll();
@@ -67,11 +70,11 @@ public interface HUEditorViewBuffer
 	 * </ul>
 	 * 
 	 */
-	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(Collection<DocumentId> rowIds);
+	Stream<HUEditorRow> streamByIdsExcludingIncludedRows(DocumentIdsSelection rowIds);
 
 	Stream<HUEditorRow> streamPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	Set<DocumentId> getRowIdsMatchingBarcode(String barcode);
+	String getSqlWhereClause(DocumentIdsSelection rowIds);
 }

@@ -1,12 +1,10 @@
 package de.metas.ui.web.process.view;
 
-import java.util.Set;
-
 import com.google.common.base.Preconditions;
 
 import de.metas.ui.web.process.view.ViewActionDescriptor.ViewActionMethodArgumentExtractor;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
@@ -74,7 +72,7 @@ public final class ViewActionParamDescriptor
 
 	}
 
-	public Object extractArgument(final IView view, final Document processParameters, final Set<DocumentId> selectedDocumentIds)
+	public Object extractArgument(final IView view, final Document processParameters, final DocumentIdsSelection selectedDocumentIds)
 	{
 		return methodArgumentExtractor.extractArgument(view, processParameters, selectedDocumentIds);
 	}

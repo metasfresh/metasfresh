@@ -1,10 +1,9 @@
 package de.metas.ui.web.view;
 
-import java.util.Collection;
 import java.util.List;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -36,11 +35,9 @@ public interface ViewRowIdsOrderedSelectionFactory
 
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 
-	String getSqlWhereClause(ViewId viewId, Collection<DocumentId> rowIds);
+	String getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
 
-	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, Collection<DocumentId> rowIds);
+	ViewRowIdsOrderedSelection addRowIdsToSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
-	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, Collection<DocumentId> rowIds);
-	
-	
+	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 }

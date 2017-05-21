@@ -96,6 +96,19 @@ public enum PPOrderLineType implements IViewRowType
 	{
 		return canIssue;
 	}
+	
+	public boolean isBOMLine()
+	{
+		return this == BOMLine_Component || this == BOMLine_ByCoProduct;
+	}
+	
+	public boolean isHUOrHUStorage()
+	{
+		return this == HU_LU
+				|| this == HU_TU
+				|| this == HU_VHU
+				|| this == HU_Storage;
+	}
 
 	public static final PPOrderLineType ofHUEditorRowType(final HUEditorRowType huType)
 	{

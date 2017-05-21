@@ -7,7 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
 /*
  * #%L
@@ -43,5 +43,5 @@ import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 @Target({ ElementType.TYPE })
 public @interface WebuiProcess
 {
-	ProcessLayoutType layoutType() default ProcessLayoutType.Panel;
+	PanelLayoutType layoutType() default PanelLayoutType.Panel;
 }

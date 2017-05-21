@@ -36,9 +36,9 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
  * #L%
  */
 
-public class DocumentFilterParamDescriptor
+public final class DocumentFilterParamDescriptor
 {
-	static final Builder builder()
+	public static final Builder builder()
 	{
 		return new Builder();
 	}
@@ -67,14 +67,14 @@ public class DocumentFilterParamDescriptor
 		parameterName = builder.parameterName;
 		Check.assumeNotEmpty(parameterName, "parameterName is not empty");
 
-		fieldName = builder.fieldName;
+		fieldName = builder.getFieldName();
 		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 
-		widgetType = builder.widgetType;
+		widgetType = builder.getWidgetType();
 		Check.assumeNotNull(widgetType, "Parameter widgetType is not null");
 		valueClass = DescriptorsFactoryHelper.getValueClass(builder.widgetType, builder.lookupDescriptor);
 
-		displayName = builder.displayName;
+		displayName = builder.getDisplayName();
 		Check.assumeNotNull(displayName, "Parameter displayNameTrls is not null");
 
 		operator = builder.operator;

@@ -94,15 +94,9 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		// NOTE: we shall allow one line only
-		// if (context.getSelectionSize() <= 1)
-		// {
-		// return ProcessPreconditionsResolution.rejectWithInternalReason("select more than one row");
-		// }
-
 		//
 		// Check if we are allowed to select multiple lines
-		if (!allowMultipleReceiptsSchedules && context.getSelectionSize() > 1)
+		if (!allowMultipleReceiptsSchedules && context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("select only one line");
 		}
@@ -122,7 +116,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends JavaProcess implements I
 		// Make sure each of them are eligible for receiving
 		{
 			final ProcessPreconditionsResolution rejectResolution = receiptSchedules.stream()
-					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_GeneratePlanningHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
+					.map(receiptSchedule -> WEBUI_M_ReceiptSchedule_ReceiveHUs_Base.checkEligibleForReceivingHUs(receiptSchedule))
 					.filter(resolution -> !resolution.isAccepted())
 					.findFirst()
 					.orElse(null);

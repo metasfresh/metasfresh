@@ -47,12 +47,14 @@ import de.metas.ui.web.window.datatypes.WindowId;
 
 public final class MenuTree
 {
-	public static final MenuTree of(final MenuNode rootNode)
+	public static final MenuTree of(final long version, final MenuNode rootNode)
 	{
-		return new MenuTree(rootNode);
+		return new MenuTree(version, rootNode);
 	}
 
 	private static final Logger logger = LogManager.getLogger(MenuTree.class);
+	
+	private final long version;
 
 	private final MenuNode rootNode;
 	private final Map<String, MenuNode> nodesById;
@@ -60,9 +62,10 @@ public final class MenuTree
 	private final ListMultimap<ArrayKey, MenuNode> nodesByTypeAndElementId;
 	private final ListMultimap<String, MenuNode> nodesByMainTableName;
 
-	private MenuTree(final MenuNode rootNode)
+	private MenuTree(final long version, final MenuNode rootNode)
 	{
 		super();
+		this.version = version;
 		Preconditions.checkNotNull(rootNode, "rootNode");
 		this.rootNode = rootNode;
 
@@ -94,7 +97,13 @@ public final class MenuTree
 	{
 		return MoreObjects.toStringHelper(this)
 				.add("rootNode", rootNode)
+				.add("version", version)
 				.toString();
+	}
+	
+	public long getVersion()
+	{
+		return version;
 	}
 
 	public MenuNode getRootNode()

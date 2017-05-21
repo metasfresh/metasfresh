@@ -6,12 +6,11 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.Set;
 
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.descriptor.ProcessLayout.ProcessLayoutType;
 import de.metas.ui.web.view.IView;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 
 /*
  * #%L
@@ -47,13 +46,13 @@ public @interface ViewAction
 
 	boolean defaultAction() default false;
 	
-	ProcessLayoutType layoutType() default ProcessLayoutType.Panel;
+	PanelLayoutType layoutType() default PanelLayoutType.Panel;
 
 	Class<? extends Precondition> precondition() default AlwaysAllowPrecondition.class;
 
 	public interface Precondition
 	{
-		ProcessPreconditionsResolution matches(IView view, Set<DocumentId> selectedDocumentIds);
+		ProcessPreconditionsResolution matches(IView view, DocumentIdsSelection selectedDocumentIds);
 	}
 
 	public static final class AlwaysAllowPrecondition implements Precondition
@@ -61,7 +60,7 @@ public @interface ViewAction
 		public static final transient ViewAction.AlwaysAllowPrecondition instance = new ViewAction.AlwaysAllowPrecondition();
 
 		@Override
-		public ProcessPreconditionsResolution matches(IView view, Set<DocumentId> selectedDocumentIds)
+		public ProcessPreconditionsResolution matches(IView view, DocumentIdsSelection selectedDocumentIds)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}

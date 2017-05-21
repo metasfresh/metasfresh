@@ -10,7 +10,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSet;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.process.ProcessInstanceResult;
@@ -22,7 +21,7 @@ import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.process.ProcessInstanceResult.SelectViewRowsAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Getter;
@@ -214,23 +213,13 @@ public final class JSONProcessInstanceResult implements Serializable
 		private final String viewId;
 		private final Set<String> rowIds;
 
-		public JSONSelectViewRowsAction(final ViewId viewId, final Set<DocumentId> rowIds)
+		public JSONSelectViewRowsAction(final ViewId viewId, final DocumentIdsSelection rowIds)
 		{
 			super("selectViewRows");
-			
+
 			this.windowId = viewId.getWindowId();
 			this.viewId = viewId.getViewId();
-
-			if (rowIds == null || rowIds.isEmpty())
-			{
-				this.rowIds = ImmutableSet.of();
-			}
-			else
-			{
-				this.rowIds = rowIds.stream()
-						.map(rowId -> rowId.toJson())
-						.collect(ImmutableSet.toImmutableSet());
-			}
+			this.rowIds = rowIds.toJsonSet();
 		}
 
 	}

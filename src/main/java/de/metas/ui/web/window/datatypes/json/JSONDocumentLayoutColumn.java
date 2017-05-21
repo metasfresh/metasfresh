@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -54,14 +55,14 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		return new JSONDocumentLayoutColumn(column, jsonOpts);
 	}
 	
-	static JSONDocumentLayoutColumn oneColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+	static JSONDocumentLayoutColumn oneColumn(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
 	{
-		return new JSONDocumentLayoutColumn(detailLayout, jsonOpts);
+		return new JSONDocumentLayoutColumn(elements, jsonOpts);
 	}
 
 	static List<JSONDocumentLayoutColumn> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		return ImmutableList.of(oneColumn(detailLayout, jsonOpts));
+		return ImmutableList.of(oneColumn(detailLayout.getElements(), jsonOpts));
 	}
 
 	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
@@ -76,12 +77,6 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		this.elementGroups = ImmutableList.of();
 	}
 
-	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
-	{
-		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
-	}
-
 	@JsonCreator
 	private JSONDocumentLayoutColumn(@JsonProperty("elementGroups") final List<JSONDocumentLayoutElementGroup> elementGroups)
 	{
@@ -89,16 +84,16 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		this.elementGroups = elementGroups == null ? ImmutableList.of() : ImmutableList.copyOf(elementGroups);
 	}
 
-	/**
-	 * From detail tab constructor
-	 *
-	 * @param detailLayout
-	 * @param jsonOpts
-	 */
-	private JSONDocumentLayoutColumn(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+	private JSONDocumentLayoutColumn(final DocumentLayoutColumnDescriptor column, final JSONOptions jsonOpts)
 	{
 		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofDetailTab(detailLayout, jsonOpts);
+		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
+	}
+	
+	private JSONDocumentLayoutColumn(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
+	{
+		super();
+		elementGroups = JSONDocumentLayoutElementGroup.ofElements(elements, jsonOpts);
 	}
 
 	@Override

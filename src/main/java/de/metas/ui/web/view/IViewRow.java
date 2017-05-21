@@ -34,11 +34,19 @@ public interface IViewRow
 	//
 	// Document info
 	// @formatter:off
-	DocumentPath getDocumentPath();
 	DocumentId getId();
 	IViewRowType getType();
 	boolean isProcessed();
 	// @formatter:on
+
+	/**
+	 * Gets row's document path.
+	 * Usually the row's document path consist of view's WindowId and row's ID.
+	 * But there are views which mix data from multiple windows/tables and in that case this method will use row's actual WindowId instead of view's WindowId.
+	 *
+	 * @return row's document path
+	 */
+	DocumentPath getDocumentPath();
 
 	//
 	// Fields

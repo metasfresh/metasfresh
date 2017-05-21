@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -30,6 +29,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -82,9 +82,9 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return DocumentId.of(huId);
 	}
 
-	public static Set<DocumentId> rowIdsFromM_HU_IDs(final Collection<Integer> huIds)
+	public static DocumentIdsSelection rowIdsFromM_HU_IDs(final Collection<Integer> huIds)
 	{
-		return DocumentId.ofIntSet(huIds);
+		return DocumentIdsSelection.ofIntSet(huIds);
 	}
 
 	public static DocumentId rowIdFromM_HU_Storage(final int huId, final int productId)
@@ -92,19 +92,15 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + productId);
 	}
 
-	public static int rowIdToM_HU_ID(final DocumentId rowId)
-	{
-		return rowId == null ? -1 : rowId.toInt();
-	}
-
 	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
 	{
-		return DocumentId.toIntSet(rowIds);
+		return DocumentIdsSelection.of(rowIds).toIntSet();
 	}
 
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
 	private final HUEditorRowType type;
+	private final boolean topLevel;
 	private final boolean processed;
 
 	private final Map<String, Object> values;
@@ -129,6 +125,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		rowId = documentPath.getDocumentId();
 
 		type = builder.getType();
+		topLevel = builder.isTopLevel();
 		processed = builder.isProcessed();
 
 		values = builder.buildValuesMap();
@@ -329,6 +326,11 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		return getType() == HUEditorRowType.LU;
 	}
+	
+	public boolean isTopLevel()
+	{
+		return topLevel;
+	}
 
 	public String getSummary()
 	{
@@ -435,45 +437,6 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
 	}
 
-	public String getBarcode()
-	{
-		if (!isPureHU())
-		{
-			return null;
-		}
-
-		//
-		// Try fetching SSCC first!
-		final String sscc18 = getAttributes().getSSCC18().orElse(null);
-		if (sscc18 != null)
-		{
-			return sscc18;
-		}
-
-		//
-		// Use HU's code (i.e. M_HU.Value)
-		final String huCode = getValue();
-		return huCode;
-	}
-
-	public boolean matchesBarcode(final String barcodeToMatch)
-	{
-		if (Check.isEmpty(barcodeToMatch, true))
-		{
-			throw new IllegalArgumentException("Invalid barcode: " + barcodeToMatch);
-		}
-
-		final String barcodeToMatchNormalized = barcodeToMatch.trim();
-
-		final String huBarcode = getBarcode();
-		if (huBarcode == null)
-		{
-			return false;
-		}
-
-		return Objects.equals(huBarcode, barcodeToMatchNormalized);
-	}
-
 	//
 	//
 	//
@@ -483,6 +446,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		private final WindowId windowId;
 		private DocumentId _rowId;
+		private Boolean topLevel;
 		private HUEditorRowType type;
 		private Boolean processed;
 
@@ -563,6 +527,18 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		{
 			this.type = type;
 			return this;
+		}
+		
+		public Builder setTopLevel(final boolean topLevel)
+		{
+			this.topLevel = topLevel;
+			return this;
+		}
+		
+		private boolean isTopLevel()
+		{
+			Check.assumeNotNull(topLevel, "Parameter topLevel is not null");
+			return topLevel;
 		}
 
 		public Builder setProcessed(final boolean processed)

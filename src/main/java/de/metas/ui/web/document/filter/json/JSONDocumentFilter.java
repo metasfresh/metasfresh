@@ -99,7 +99,7 @@ public final class JSONDocumentFilter implements Serializable
 		final DocumentFilter.Builder filter = DocumentFilter.builder()
 				.setFilterId(jsonFilter.getFilterId());
 
-		final Map<String, JSONDocumentFilterParam> jsonParams = Maps.uniqueIndex(jsonFilter.getParameters(), jsonParam -> jsonParam.getParameterName());
+		final Map<String, JSONDocumentFilterParam> jsonParams = Maps.uniqueIndex(jsonFilter.getParameters(), JSONDocumentFilterParam::getParameterName);
 
 		for (final DocumentFilterParamDescriptor paramDescriptor : filterDescriptor.getParameters())
 		{

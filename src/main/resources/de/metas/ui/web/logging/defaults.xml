@@ -7,8 +7,7 @@
 	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
 
 	<!-- Override defaults -->
-	<property name="USER_SESSION_INFO"
-		value="[%16.16X{RemoteAddr:-}][%10.-10X{LoggedUser:-}]" />
+	<property name="USER_SESSION_INFO" value="[%16.16X{RemoteAddr:-}][%10.-10X{LoggedUser:-}]" />
 	<property name="CONSOLE_LOG_PATTERN"
 		value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} ${USER_SESSION_INFO} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}" />
 	<property name="FILE_LOG_PATTERN"
@@ -21,8 +20,7 @@
 	</contextListener>
 
 	<!-- Console logging configuration -->
-	<include
-		resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
 
 	<!-- File logging configuration -->
@@ -38,8 +36,7 @@
 			<LogFilePrefix>metasfresh</LogFilePrefix>
 			<LogFileDatePattern>%d{yyyy-MM-dd}</LogFileDatePattern>
 
-			<TimeBasedFileNamingAndTriggeringPolicy
-				class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
+			<TimeBasedFileNamingAndTriggeringPolicy class="de.metas.logging.MetasfreshTimeBasedFileNamingAndTriggeringPolicy" />
 		</rollingPolicy>
 	</appender>
 
@@ -55,12 +52,10 @@
 			<outputPatternAsHeader>true</outputPatternAsHeader>
 		</encoder>
 	</appender>
-	<logger name="org.apache.cxf.interceptor.LoggingInInterceptor"
-		level="INFO">
+	<logger name="org.apache.cxf.interceptor.LoggingInInterceptor" level="INFO">
 		<appender-ref ref="cxf-messages-File-Appender" />
 	</logger>
-	<logger name="org.apache.cxf.interceptor.LoggingOutInterceptor"
-		level="INFO">
+	<logger name="org.apache.cxf.interceptor.LoggingOutInterceptor" level="INFO">
 		<appender-ref ref="cxf-messages-File-Appender" />
 	</logger>
 
@@ -69,6 +64,19 @@
 	<include resource="de/metas/ui/web/logging/FILE-byLoggedUser.xml" />
 	<include resource="de/metas/ui/web/logging/FILE-byLoggedUserAndRemoteAddr.xml" />
 
+	<!-- Allow to enable logstash logging from outside; see https://github.com/metasfresh/metasfresh/issues/1504 -->
+	<!-- Logging to logstash is disabled by default, because it requeries additional infrastructure (i.e. an ELK stack).
+	     If you are a dev in need of a local ELK stack, you can take a look at
+		 https://github.com/metasfresh/metasfresh-dev/tree/master/vagrant 
+	-->
+	<springProperty scope="context" name="LOGSTASH_ENABLED" source="logstash.enabled" defaultValue="false" />
+
+	<!-- Include the config for a logstash appender; see https://github.com/metasfresh/metasfresh/issues/1504 -->
+	<if condition='Boolean.parseBoolean(property("LOGSTASH_ENABLED"))'>
+		<then>
+			<include resource="de/metas/ui/web/logging/STASH.xml" />
+		</then>
+	</if>
 
 	<!-- Configure root logger -->
 	<root level="INFO">
@@ -80,6 +88,12 @@
 		<!-- appender-ref ref="FILE-byRemoteAddr" / -->
 		<!-- appender-ref ref="FILE-byLoggedUser" / -->
 		<appender-ref ref="FILE-byLoggedUserAndRemoteAddr" />
+
+		<if condition='Boolean.parseBoolean(property("LOGSTASH_ENABLED"))'>
+			<then>
+				<appender-ref ref="STASH" />
+			</then>
+		</if>
 	</root>
 
 	<!-- see http://codecentric.github.io/spring-boot-admin/1.3.0/#loglevel-management -->

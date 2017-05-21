@@ -1,7 +1,6 @@
 package de.metas.ui.web.view;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -20,6 +19,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
@@ -69,7 +69,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, final Collection<DocumentId> rowIds)
+	public String getSqlWhereClause(final ViewId viewId, final DocumentIdsSelection rowIds)
 	{
 		return newSqlViewSelectionQueryBuilder().buildSqlWhereClause(viewId.getViewId(), rowIds);
 	}
@@ -127,19 +127,23 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection addRowIdsToSelection(final ViewRowIdsOrderedSelection selection, final Collection<DocumentId> rowIds)
+	public ViewRowIdsOrderedSelection addRowIdsToSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
-		if (rowIds == null || rowIds.isEmpty())
+		if (rowIds.isEmpty())
 		{
 			// nothing changed
 			return selection;
+		}
+		else if(rowIds.isAll())
+		{
+			throw new IllegalArgumentException("Cannot add ALL to selection");
 		}
 
 		//
 		// Add
 		boolean hasChanges = false;
 		final String selectionId = selection.getSelectionId();
-		for (final DocumentId rowId : rowIds)
+		for (final DocumentId rowId : rowIds.toSet())
 		{
 			final List<Object> sqlParams = new ArrayList<>();
 			final String sqlAdd = newSqlViewSelectionQueryBuilder().buildSqlAddRowIdsFromSelection(sqlParams, selectionId, rowId);
@@ -168,9 +172,9 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	@Override
-	public ViewRowIdsOrderedSelection removeRowIdsFromSelection(final ViewRowIdsOrderedSelection selection, final Collection<DocumentId> rowIds)
+	public ViewRowIdsOrderedSelection removeRowIdsFromSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
-		if (rowIds == null || rowIds.isEmpty())
+		if (rowIds.isEmpty())
 		{
 			// nothing changed
 			return selection;
@@ -206,8 +210,13 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		return size <= 0 ? 0 : size;
 	}
 
-	public boolean containsAnyOfRowIds(final String selectionId, final Collection<DocumentId> rowIds)
+	public boolean containsAnyOfRowIds(final String selectionId, final DocumentIdsSelection rowIds)
 	{
+		if(rowIds.isEmpty())
+		{
+			return false;
+		}
+		
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selectionId, rowIds);
 		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);

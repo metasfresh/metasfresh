@@ -44,12 +44,13 @@ import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.exceptions.ProcessExecutionException;
-import de.metas.ui.web.view.ViewCreateRequest;
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -105,7 +106,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
-	private final Set<DocumentId> viewSelectedDocumentIds;
+	private final DocumentIdsSelection viewSelectedDocumentIds;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
@@ -122,7 +123,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		viewsRepo = builder.viewsRepo;
 		viewId = builder.viewId;
-		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(builder.viewSelectedDocumentIds);
+		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
 
 		executed = false;
 		executionResult = null;
@@ -321,7 +322,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				// View
 				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 				{
-					final ViewCreateRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
+					final CreateViewRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
 					final IView view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
 							.viewId(view.getViewId())
@@ -389,7 +390,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return reportFile;
 	}
 
-	private static final ViewCreateRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
+	private static final CreateViewRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
 	{
 		final List<TableRecordReference> recordRefs = recordsToOpen.getRecords();
 		if (recordRefs.isEmpty())
@@ -401,12 +402,12 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		//
 		// Create view create request builders from current records
-		final Map<WindowId, ViewCreateRequest.Builder> viewRequestBuilders = new HashMap<>();
+		final Map<WindowId, CreateViewRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
 			final int recordWindowIdInt = adWindowId_Override > 0 ? adWindowId_Override : RecordZoomWindowFinder.findAD_Window_ID(recordRef);
 			final WindowId recordWindowId = WindowId.of(recordWindowIdInt);
-			final ViewCreateRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> ViewCreateRequest.builder(recordWindowId, JSONViewDataType.grid));
+			final CreateViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> CreateViewRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());
 		}
@@ -422,7 +423,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		{
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
-		final ViewCreateRequest viewRequest = viewRequestBuilders.values().iterator().next()
+		final CreateViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
 				.setReferencingDocumentPaths(extractReferencingDocumentPaths(processInfo))
 				.build();
 		return viewRequest;
@@ -540,7 +541,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 
 		private IViewsRepository viewsRepo;
 		private ViewId viewId;
-		private Set<DocumentId> viewSelectedDocumentIds;
+		private DocumentIdsSelection viewSelectedDocumentIds;
 		private Object processClassInstance;
 
 		private Builder()
@@ -577,7 +578,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			return this;
 		}
 
-		public Builder setView(final ViewId viewId, final Set<DocumentId> selectedDocumentIds)
+		public Builder setView(final ViewId viewId, final DocumentIdsSelection selectedDocumentIds)
 		{
 			this.viewId = viewId;
 			viewSelectedDocumentIds = selectedDocumentIds;

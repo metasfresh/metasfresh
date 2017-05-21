@@ -15,7 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 
@@ -80,7 +80,7 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 	private final Set<String> viewDocumentIdsStrings;
 
 	@JsonIgnore
-	private transient Set<DocumentId> _viewDocumentIds;
+	private transient DocumentIdsSelection _viewDocumentIds;
 
 	//
 	// Calculated values
@@ -168,14 +168,14 @@ public class JSONCreateProcessInstanceRequest implements Serializable
 		{
 			return null;
 		}
-		return ViewId.of(windowId, viewId);
+		return ViewId.ofViewIdString(viewId, windowId);
 	}
 
-	public Set<DocumentId> getViewDocumentIds()
+	public DocumentIdsSelection getViewDocumentIds()
 	{
 		if (_viewDocumentIds == null)
 		{
-			_viewDocumentIds = DocumentId.ofStringSet(viewDocumentIdsStrings);
+			_viewDocumentIds = DocumentIdsSelection.ofStringSet(viewDocumentIdsStrings);
 		}
 		return _viewDocumentIds;
 	}

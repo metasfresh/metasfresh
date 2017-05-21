@@ -108,7 +108,7 @@ public class SqlViewFactory implements IViewFactory
 	}
 
 	@Override
-	public IView createView(final ViewCreateRequest request)
+	public IView createView(final CreateViewRequest request)
 	{
 		if (!request.getFilterOnlyIds().isEmpty())
 		{
@@ -118,11 +118,14 @@ public class SqlViewFactory implements IViewFactory
 		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(request.getWindowId(), request.getViewTypeRequiredFieldCharacteristic());
 		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
 		final SqlViewDataRepository sqlViewDataRepository = new SqlViewDataRepository(sqlViewBinding);
-		
+
 		return DefaultView.builder(sqlViewDataRepository)
 				.setWindowId(request.getWindowId())
+				.setViewType(request.getViewType())
+				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 				.setParentViewId(request.getParentViewId())
-				.setStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
+				.addStickyFilters(request.getStickyFilters())
+				.addStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
 				.setFiltersFromJSON(request.getFilters())
 				.build();
 	}
@@ -150,8 +153,8 @@ public class SqlViewFactory implements IViewFactory
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(key.getWindowId());
 		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
-		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFiltersProvider();
-		
+		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
+
 		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
 				.setTableName(entityBinding.getTableName())
 				.setTableAlias(entityBinding.getTableAlias())
@@ -169,6 +172,11 @@ public class SqlViewFactory implements IViewFactory
 	}
 
 	private static final SqlViewRowFieldBinding createViewFieldBinding(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)
+	{
+		return createViewFieldBindingBuilder(documentField, availableDisplayColumnNames).build();
+	}
+
+	public static final SqlViewRowFieldBinding.SqlViewRowFieldBindingBuilder createViewFieldBindingBuilder(final SqlDocumentFieldDataBindingDescriptor documentField, final Collection<String> availableDisplayColumnNames)
 	{
 		final String fieldName = documentField.getFieldName();
 		final boolean isDisplayColumnAvailable = documentField.isUsingDisplayColumn() && availableDisplayColumnNames.contains(fieldName);
@@ -188,8 +196,8 @@ public class SqlViewFactory implements IViewFactory
 				.sqlOrderBy(documentField.getSqlOrderBy())
 				//
 				.fieldLoader(new DocumentFieldValueLoaderAsSqlViewRowFieldLoader(documentField.getDocumentFieldValueLoader(), isDisplayColumnAvailable))
-				//
-				.build();
+		//
+		;
 
 	}
 
@@ -205,6 +213,6 @@ public class SqlViewFactory implements IViewFactory
 			final Object fieldValue = fieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
 			return Values.valueToJsonObject(fieldValue);
 		}
-		
+
 	}
 }

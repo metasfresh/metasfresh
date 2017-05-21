@@ -113,6 +113,18 @@ public final class WindowId
 		return valueInt;
 	}
 
+	public int toIntOr(final int fallbackValue)
+	{
+		try
+		{
+			return toInt();
+		}
+		catch (Exception ex)
+		{
+			return fallbackValue;
+		}
+	}
+
 	public DocumentId toDocumentId()
 	{
 		return DocumentId.of(value);

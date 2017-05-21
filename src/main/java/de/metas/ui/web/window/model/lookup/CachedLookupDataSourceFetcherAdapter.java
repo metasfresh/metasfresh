@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 
 /*
@@ -140,5 +141,11 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		return cache_retrieveEntities.getOrLoad(evalCtx, () -> delegate.retrieveEntities(evalCtx));
+	}
+	
+	@Override
+	public Optional<WindowId> getZoomIntoWindowId()
+	{
+		return delegate.getZoomIntoWindowId();
 	}
 }
