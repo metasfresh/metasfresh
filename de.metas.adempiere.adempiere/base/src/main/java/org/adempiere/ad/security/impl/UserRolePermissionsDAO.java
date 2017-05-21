@@ -174,8 +174,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			version.incrementAndGet();
 			
 			final CacheMgt cacheManager = CacheMgt.get();
-			cacheManager.reset(I_AD_Role.Table_Name); // cache reset role itself
-			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::reset);
+			cacheManager.resetLocal(I_AD_Role.Table_Name); // cache reset role itself
+			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::resetLocal);
 			logger.info("Finished permissions cache reset");
 		}
 		finally

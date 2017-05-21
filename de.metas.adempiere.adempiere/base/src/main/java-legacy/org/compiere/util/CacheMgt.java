@@ -337,6 +337,22 @@ public final class CacheMgt
 		final int recordId = RECORD_ID_ALL;
 		return reset(tableName, recordId);
 	}	// reset
+	
+	/**
+	 * Invalidate all cached entries for given TableName.
+	 * 
+	 * The event won't be broadcasted.
+	 * 
+	 * @param tableName table name
+	 * @return how many cache entries were invalidated
+	 */
+	public int resetLocal(final String tableName)
+	{
+		final int recordId = RECORD_ID_ALL;
+		final boolean broadcast = false;
+		return reset(tableName, recordId, broadcast);
+	}	// reset
+
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
