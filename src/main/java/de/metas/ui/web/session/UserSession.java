@@ -280,7 +280,7 @@ public class UserSession
 	private static final void logSettingChanged(final String name, final Object value, final Object valueOld)
 	{
 		UserSession.logger.warn("/*********************************************************************************************\\");
-		UserSession.logger.warn("Setting changed: {} = {} (Old: {})", name, valueOld, value);
+		UserSession.logger.warn("Setting changed: {} = {} (Old: {})", name, value, valueOld);
 		UserSession.logger.warn("\\*********************************************************************************************/");
 	}
 
