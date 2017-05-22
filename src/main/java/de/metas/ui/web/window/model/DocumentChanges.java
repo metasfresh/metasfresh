@@ -207,6 +207,9 @@ public final class DocumentChanges
 				collectedFieldNames.add(documentField.getFieldName());
 			}
 		}
+		
+		collectDocumentValidStatusChanged(document.getValidStatus());
+		collectDocumentSaveStatusChanged(document.getSaveStatus());
 
 		return collectedFieldNames;
 	}
