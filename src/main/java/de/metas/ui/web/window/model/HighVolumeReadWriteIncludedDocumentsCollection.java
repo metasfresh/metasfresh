@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -12,6 +13,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
@@ -140,6 +142,11 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		return _documentsWithChanges.get(documentId);
 	}
 
+	private final Map<DocumentId, Document> getInnerDocumentsWithChanges()
+	{
+		return _documentsWithChanges;
+	}
+
 	@Override
 	public DetailId getDetailId()
 	{
@@ -155,11 +162,22 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	@Override
 	public List<Document> getDocuments()
 	{
-		final List<Document> documents = DocumentQuery.builder(entityDescriptor)
+		final Map<DocumentId, Document> documentsWithChanges = new LinkedHashMap<>(getInnerDocumentsWithChanges());
+		List<Document> documents = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
-				.setExistingDocumentsSupplier(this::getChangedDocumentOrNull)
+				.setExistingDocumentsSupplier(documentsWithChanges::remove)
 				.setChangesCollector(NullDocumentChangesCollector.instance)
 				.retriveDocuments();
+
+		// Add the remaining documents with changes if any
+		// i.e. those documents which are new and never saved in database.
+		if (!documentsWithChanges.isEmpty())
+		{
+			documents = ImmutableList.<Document> builder()
+					.addAll(documents)
+					.addAll(documentsWithChanges.values())
+					.build();
+		}
 
 		staled = false;
 
