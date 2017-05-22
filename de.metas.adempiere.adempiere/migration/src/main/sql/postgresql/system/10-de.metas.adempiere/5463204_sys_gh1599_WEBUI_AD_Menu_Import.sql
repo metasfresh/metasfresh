@@ -1,14 +1,14 @@
 --
 -- Backup
 /*
-drop table if exists backup.AD_Menu_BKP_BeforeImportWebUI;
-drop table if exists backup.AD_Menu_Trl_BKP_BeforeImportWebUI;
-drop table if exists backup.AD_TreeNodeMM_BKP_BeforeImportWebUI;
+drop table if exists backup.AD_Menu_BKP_Before1599;
+drop table if exists backup.AD_Menu_Trl_BKP_Before1599;
+drop table if exists backup.AD_TreeNodeMM_BKP_Before1599;
 */
 --
-create table backup.AD_TreeNodeMM_BKP_BeforeImportWebUI as select * from AD_TreeNodeMM;
-create table backup.AD_Menu_BKP_BeforeImportWebUI as select * from AD_Menu;
-create table backup.AD_Menu_Trl_BKP_BeforeImportWebUI as select * from AD_Menu_Trl;
+create table backup.AD_TreeNodeMM_BKP_Before1599 as select * from AD_TreeNodeMM;
+create table backup.AD_Menu_BKP_Before1599 as select * from AD_Menu;
+create table backup.AD_Menu_Trl_BKP_Before1599 as select * from AD_Menu_Trl;
 
 --
 -- Expected input tables:
