@@ -103,7 +103,7 @@ class RawWidget extends Component {
         })
     }
 
-    getClassnames = (icon) => {
+    getClassnames = (icon, forcedPrimary) => {
         const {
             widgetData, disabled, gridAlign, type, updated, rowId, isModal
         } = this.props;
@@ -125,7 +125,8 @@ class RawWidget extends Component {
                 ) &&
                 !isEdited) ? 'input-error ' : '') +
             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-            (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+            (type === 'primary' || forcedPrimary ? 
+                'input-primary ' : 'input-secondary ') +
             (updated ? 'pulse-on ' : 'pulse-off ') +
             (rowId && !isModal ? 'input-table ' : '');
     }
@@ -390,7 +391,7 @@ class RawWidget extends Component {
             case 'LongText':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassnames(false, true) +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
