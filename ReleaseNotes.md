@@ -17,17 +17,22 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1389](https://github.com/metasfresh/metasfresh/issues/1389) Make eMail adress fields longer
   * [#1506](https://github.com/metasfresh/metasfresh/issues/1506) Add the possibility to track easily contracts that ended naturally
   * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
+  * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
+  * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
 
 ## Fixes
 
 * metasfresh-backend
+  * [#1566](https://github.com/metasfresh/metasfresh/issues/1566) Invoicing problem with reversed inouts that have a quality discount
   * [#1578](https://github.com/metasfresh/metasfresh/issues/1578) spring-boot services try to start local broker and fail
+  * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
 
 # metasfresh 5.10 (2017-20)
 
-**upcoming release for week 2017-20**
+**release for week 2017-20**
 
 ## Features
 

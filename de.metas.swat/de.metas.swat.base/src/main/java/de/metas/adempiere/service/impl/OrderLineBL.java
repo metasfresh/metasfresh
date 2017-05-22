@@ -605,7 +605,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Order order = orderLine.getC_Order();
 
-		if (!docActionBL.isStatusOneOf(order,
+		if (!docActionBL.isDocumentStatusOneOf(order,
 				DocAction.STATUS_InProgress, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 		{
 			logger.debug("C_Order {} of given orderLine {} has DocStatus {}; setting QtyReserved=0.",

@@ -124,6 +124,6 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 		
 		final org.compiere.model.I_M_InOut io = line.getM_InOut();
 		
-		return Services.get(IDocActionBL.class).isStatusCompleted(io);
+		return Services.get(IDocActionBL.class).isDocumentCompleted(io);
 	}
 }

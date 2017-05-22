@@ -248,7 +248,7 @@ public class PPOrderMInOutLineRetrievalServiceTest
 		io.setDocStatus(docStatus);
 
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		if (!docActionBL.isStatusDraftedOrInProgress(io))
+		if (!docActionBL.issDocumentDraftedOrInProgress(io))
 		{
 			io.setProcessed(true); // important, since the code under test might also check for this flag
 		}

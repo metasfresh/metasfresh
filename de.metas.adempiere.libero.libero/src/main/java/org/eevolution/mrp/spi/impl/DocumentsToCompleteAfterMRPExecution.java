@@ -126,7 +126,7 @@ public class DocumentsToCompleteAfterMRPExecution implements Runnable
 
 	private final void completePPOrderIfNeeded(final I_PP_Order ppOrder)
 	{
-		if (!docActionBL.isStatusDraftedOrInProgress(ppOrder))
+		if (!docActionBL.issDocumentDraftedOrInProgress(ppOrder))
 		{
 			return;
 		}

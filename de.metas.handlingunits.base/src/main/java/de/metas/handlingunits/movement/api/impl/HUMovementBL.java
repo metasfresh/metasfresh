@@ -1,15 +1,15 @@
 package de.metas.handlingunits.movement.api.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -19,14 +19,14 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.form.terminal.TerminalException;
-import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.handlingunits.movement.api.HUMovementResult;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.product.acct.api.IProductAcctDAO;
+import lombok.NonNull;
 
 public class HUMovementBL implements IHUMovementBL
 {
@@ -108,25 +108,32 @@ public class HUMovementBL implements IHUMovementBL
 	}
 
 	@Override
-	public List<I_M_Movement> generateMovementsToWarehouse(final I_M_Warehouse destinationWarehouse, final Collection<I_M_HU> hus, final IContextAware ctxAware)
+	public HUMovementResult moveHUsToWarehouse(@NonNull final List<I_M_HU> hus, @NonNull final I_M_Warehouse warehouseTo)
 	{
+		if (hus.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@ @M_HU_ID@");
+		}
+
+		final PlainContextAware initialContext = PlainContextAware.newWithThreadInheritedTrx();
+
 		//
 		// iterate the HUs,
 		// create one builder per source warehouse
 		// add each HU to one builder
 		final Map<Integer, HUMovementBuilder> warehouseId2builder = new HashMap<Integer, HUMovementBuilder>();
-
 		for (final I_M_HU hu : hus)
 		{
+			
 			final I_M_Locator huLocator = hu.getM_Locator();
 			final int sourceWarehouseId = huLocator.getM_Warehouse_ID();
 			HUMovementBuilder movementBuilder = warehouseId2builder.get(sourceWarehouseId);
 			if (movementBuilder == null)
 			{
 				movementBuilder = new HUMovementBuilder();
-				movementBuilder.setContextInitial(ctxAware);
+				movementBuilder.setContextInitial(initialContext);
 				movementBuilder.setWarehouseFrom(huLocator.getM_Warehouse());
-				movementBuilder.setWarehouseTo(destinationWarehouse);
+				movementBuilder.setWarehouseTo(warehouseTo);
 
 				warehouseId2builder.put(sourceWarehouseId, movementBuilder);
 			}
@@ -135,16 +142,16 @@ public class HUMovementBL implements IHUMovementBL
 
 		//
 		// create the movements
-		final List<I_M_Movement> result = new ArrayList<I_M_Movement>();
+		final HUMovementResult.Builder result = HUMovementResult.builder();
 		for (final HUMovementBuilder builder : warehouseId2builder.values())
 		{
 			final I_M_Movement movement = builder.createMovement();
 			if (movement != null)
 			{
-				result.add(movement);
+				result.addMovementAndHUs(movement, builder.getHUsMoved());
 			}
 		}
-		return result;
+		return result.build();
 	}
 
 	@Override
@@ -153,35 +160,4 @@ public class HUMovementBL implements IHUMovementBL
 		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
 	}
-
-	@Override
-	public List<I_M_Movement> moveToQualityWarehouse(final ITerminalContext ctxAware, I_M_Warehouse warehouseFrom, final I_M_Warehouse warehouseTo, final List<I_M_HU> hus)
-	{
-
-		return doDirectMoveToWarehouse(ctxAware, warehouseFrom, warehouseTo, hus);
-	}
-
-	@Override
-	public List <I_M_Movement> doDirectMoveToWarehouse(
-			final ITerminalContext ctxAware,
-			final I_M_Warehouse warehouseFrom,
-			final I_M_Warehouse warehouseTo,
-			final List<I_M_HU> hus)
-	{
-		// services
-		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-
-		// make the movement-creating API call
-		final List<I_M_Movement> movements = huMovementBL.generateMovementsToWarehouse(warehouseTo, hus, ctxAware);
-		Check.assume(movements.size() <= 1, "We called the API with HUs {} that are all in the same warehouse {}, so there is just one movement created", hus, warehouseFrom);
-
-		if (movements.isEmpty())
-		{
-			throw new TerminalException("@NotCreated@ @M_Movement_ID@");
-		}
-		
-
-		return movements;
-	}
-
 }

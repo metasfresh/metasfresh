@@ -63,7 +63,7 @@ public class InvoicedSumProvider implements IInvoicedSumProvider
 		BigDecimal result = BigDecimal.ZERO;
 		for (final I_C_Invoice invoice : invoices)
 		{
-			if (!docActionBL.isStatusOneOf(invoice, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+			if (!docActionBL.isDocumentStatusOneOf(invoice, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 			{
 				continue;
 			}

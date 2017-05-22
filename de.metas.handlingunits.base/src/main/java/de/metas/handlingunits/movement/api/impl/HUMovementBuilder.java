@@ -23,6 +23,7 @@ package de.metas.handlingunits.movement.api.impl;
  */
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.product.IProductBL;
+import lombok.NonNull;
 
 /**
  * Generate {@link I_M_Movement} to move given {@link I_M_HU}s
@@ -93,6 +95,7 @@ public class HUMovementBuilder
 	private I_M_Locator _locatorTo;
 	private String _description;
 	private final Set<I_M_HU> _husToMove = new TreeSet<>(HUByIdComparator.instance);
+	private final List<I_M_HU> _husMoved = new ArrayList<>();
 
 	//
 	// Status
@@ -212,9 +215,14 @@ public class HUMovementBuilder
 		return this;
 	}
 
-	public HUMovementBuilder addHU(final I_M_HU hu)
+	public HUMovementBuilder addHU(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
+		// Only top level HUs can be moved
+		if (!handlingUnitsBL.isTopLevel(hu))
+		{
+			throw new HUException("Only top level HUs can be moved")
+					.setParameter("hu", hu);
+		}
 
 		//
 		// HU's locator shall match movement's From Locator
@@ -235,8 +243,18 @@ public class HUMovementBuilder
 		return _husToMove;
 	}
 
+	final List<I_M_HU> getHUsMoved()
+	{
+		return _husMoved;
+	}
+
+	private final void addHUMoved(final I_M_HU hu)
+	{
+		_husMoved.add(hu);
+	}
+
 	/**
-	 * Create and process the movement. Note that this BL only creates lines for the goods within the HUs, 
+	 * Create and process the movement. Note that this BL only creates lines for the goods within the HUs,
 	 * but there is a model interceptor that creates the packing material lines was soon as the M_Movement is prepared.
 	 *
 	 * @return movement
@@ -301,9 +319,14 @@ public class HUMovementBuilder
 			// Iterate the product storages of this HU and create/update the movement lines
 			final IHUStorage huStorage = huStorageFactory.getStorage(hu);
 			final List<IHUProductStorage> productStorages = huStorage.getProductStorages();
-			for (final IHUProductStorage productStorage : productStorages)
+			if (!productStorages.isEmpty())
 			{
-				updateMovementLine(productStorage);
+				for (final IHUProductStorage productStorage : productStorages)
+				{
+					updateMovementLine(productStorage);
+				}
+				
+				addHUMoved(hu);
 			}
 		}
 

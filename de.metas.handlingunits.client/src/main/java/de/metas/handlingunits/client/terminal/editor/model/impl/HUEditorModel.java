@@ -52,6 +52,7 @@ import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
@@ -97,7 +98,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
-import de.metas.interfaces.I_M_Movement;
 import de.metas.inventory.event.InventoryProcessedEventBus;
 import de.metas.logging.LogManager;
 

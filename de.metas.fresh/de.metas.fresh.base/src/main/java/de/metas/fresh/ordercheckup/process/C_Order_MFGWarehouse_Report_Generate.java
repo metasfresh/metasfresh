@@ -78,7 +78,7 @@ public class C_Order_MFGWarehouse_Report_Generate extends JavaProcess implements
 		}
 
 		// Only completed/closed orders
-		if (!docActionBL.isStatusCompletedOrClosed(order))
+		if (!docActionBL.isDocumentCompletedOrClosed(order))
 		{
 			logger.debug("{} has DocStatus={}; nothing to do", new Object[] { order, order.getDocStatus() });
 			return ProcessPreconditionsResolution.reject("only completed/closed orders are allowed");
