@@ -502,9 +502,9 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         })
 
         //Handling staleTabIds
-        !isModal && staleTabIds.map(staleTabId => {
+        staleTabIds.map(staleTabId => {
             dispatch(getTab(staleTabId, windowType, id)).then(tab => {
-                dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
+                dispatch(addRowData({[staleTabId]: tab}, getScope('master')));
             })
         })
 
