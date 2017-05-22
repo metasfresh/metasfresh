@@ -4,7 +4,7 @@ class Checkbox extends Component {
     constructor(props) {
         super(props);
     }
-    
+
     handleClear = () => {
         const {handlePatch, widgetField, id} = this.props;
         handlePatch(widgetField, '', id);
@@ -45,7 +45,7 @@ class Checkbox extends Component {
                     />
                     <div className="input-checkbox-tick" />
                 </label>
-                {(filterWidget && !disabled && !widgetData[0].readonly) ? 
+                {(filterWidget && !disabled && !widgetData[0].readonly) ?
                     <span className="input-icon-checkbox input-icon-lg">
                         <i
                             onClick={this.handleClear}

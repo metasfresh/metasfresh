@@ -126,7 +126,7 @@ class RawWidget extends Component {
                 ) &&
                 !isEdited) ? 'input-error ' : '') +
             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-            (type === 'primary' || forcedPrimary ? 
+            (type === 'primary' || forcedPrimary ?
                 'input-primary ' : 'input-secondary ') +
             (updated ? 'pulse-on ' : 'pulse-off ') +
             (rowId && !isModal ? 'input-table ' : '');
@@ -485,7 +485,7 @@ class RawWidget extends Component {
             case 'YesNo':
                 return (
                     <Checkbox
-                        {...{widgetData, disabled, fullScreen, tabIndex, 
+                        {...{widgetData, disabled, fullScreen, tabIndex,
                             widgetField, id, filterWidget}}
                         handlePatch={this.handlePatch}
                     />
