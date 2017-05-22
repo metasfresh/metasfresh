@@ -355,7 +355,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		 */
 		public int getAD_Window_ID(final boolean isSOTrx)
 		{
-			int windowId = tableRefInfo.getOverrideZoomWindow();
+			int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
 			if (windowId > 0)
 			{
 				return windowId;
@@ -363,11 +363,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 			if (isSOTrx)
 			{
-				windowId = tableRefInfo.getZoomWindow();
+				windowId = tableRefInfo.getZoomSO_Window_ID();
 			}
 			else
 			{
-				windowId = tableRefInfo.getZoomWindowPO();
+				windowId = tableRefInfo.getZoomPO_Window_ID();
 			}
 			if (windowId <= 0)
 			{

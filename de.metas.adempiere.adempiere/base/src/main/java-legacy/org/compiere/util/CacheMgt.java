@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -101,6 +102,8 @@ public final class CacheMgt
 
 	/** Logger */
 	static final transient Logger log = LogManager.getLogger(CacheMgt.class);
+
+	private final AtomicLong lastCacheReset = new AtomicLong();
 
 	/**
 	 * Enable caches for the given table to be invalidated by remote events. Example: if a user somewhere else opens/closes a period, we can allow the system to invalidate the local cache to avoid it
@@ -274,6 +277,12 @@ public final class CacheMgt
 		return RemoteCacheInvalidationHandler.instance.getTableNamesToBroadcast();
 	}
 
+	/** @return last time cache reset timestamp */
+	public long getLastCacheReset()
+	{
+		return lastCacheReset.get();
+	}
+
 	/**
 	 * Invalidate ALL cached entries of all registered {@link CacheInterface}s.
 	 * 
@@ -301,6 +310,8 @@ public final class CacheMgt
 					counter++;
 				}
 			}
+
+			lastCacheReset.incrementAndGet();
 		}
 		finally
 		{
@@ -326,6 +337,22 @@ public final class CacheMgt
 		final int recordId = RECORD_ID_ALL;
 		return reset(tableName, recordId);
 	}	// reset
+	
+	/**
+	 * Invalidate all cached entries for given TableName.
+	 * 
+	 * The event won't be broadcasted.
+	 * 
+	 * @param tableName table name
+	 * @return how many cache entries were invalidated
+	 */
+	public int resetLocal(final String tableName)
+	{
+		final int recordId = RECORD_ID_ALL;
+		final boolean broadcast = false;
+		return reset(tableName, recordId, broadcast);
+	}	// reset
+
 
 	/**
 	 * Invalidate all cached entries for given TableName/Record_ID.
@@ -425,7 +452,7 @@ public final class CacheMgt
 					else
 					{
 						// NOTE: for other cache implementations we shall skip reseting by tableName/key because they don't support it.
-						// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService() 
+						// e.g. de.metas.adempiere.report.jasper.client.JRClient.cacheListener, org.adempiere.ad.dao.cache.impl.ModelCacheService.ModelCacheService()
 						log.debug("Unknown cache instance to reset: {}", cacheInstance);
 					}
 				}
@@ -564,14 +591,14 @@ public final class CacheMgt
 		final Boolean registerWeak = Boolean.FALSE;
 		register(CacheResetListener2CacheInterface.of(tableName, cacheResetListener), registerWeak);
 	}
-	
+
 	private static final class CacheResetListener2CacheInterface implements ITableAwareCacheInterface
 	{
 		public static final CacheResetListener2CacheInterface of(@NonNull final String tableName, @NonNull final ICacheResetListener listener)
 		{
 			return new CacheResetListener2CacheInterface(tableName, listener);
 		}
-		
+
 		private final String tableName;
 		private final ICacheResetListener listener;
 

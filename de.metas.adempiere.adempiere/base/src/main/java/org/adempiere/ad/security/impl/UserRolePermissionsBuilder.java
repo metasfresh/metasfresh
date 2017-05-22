@@ -42,6 +42,7 @@ import org.adempiere.ad.security.permissions.TableColumnPermissions;
 import org.adempiere.ad.security.permissions.TablePermissions;
 import org.adempiere.ad.security.permissions.TableRecordPermissions;
 import org.adempiere.ad.security.permissions.UIDisplayedEntityTypes;
+import org.adempiere.ad.security.permissions.UserMenuInfo;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.security.permissions.WindowMaxQueryRecordsConstraint;
 import org.adempiere.service.IClientDAO;
@@ -66,7 +67,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 	private I_AD_Client _adClient; // lazy
 	private I_AD_ClientInfo _adClientInfo; // lazy
 	private TableAccessLevel userLevel;
-	private Integer _menu_AD_Tree_ID;  // lazy or configured
+	private UserMenuInfo _menuInfo;  // lazy or configured
 
 	//
 	private OrgPermissions orgAccesses;
@@ -538,37 +539,38 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		return userRolePermissionsIncluded;
 	}
 
-	public UserRolePermissionsBuilder setMenu_AD_Tree_ID(Integer _menu_AD_Tree_ID)
+	public UserRolePermissionsBuilder setMenuInfo(final UserMenuInfo menuInfo)
 	{
-		this._menu_AD_Tree_ID = _menu_AD_Tree_ID;
+		this._menuInfo = menuInfo;
 		return this;
 	}
 
-	public int getMenu_Tree_ID()
+	public UserMenuInfo getMenuInfo()
 	{
-		if (_menu_AD_Tree_ID == null)
+		if (_menuInfo == null)
 		{
-			_menu_AD_Tree_ID = findMenu_Tree_ID();
+			_menuInfo = findMenuInfo();
 		}
-		return _menu_AD_Tree_ID;
+		return _menuInfo;
 	}
 
-	private int findMenu_Tree_ID()
+	private UserMenuInfo findMenuInfo()
 	{
-		int roleMenuTreeId = getAD_Role().getAD_Tree_Menu_ID();
+		final I_AD_Role adRole = getAD_Role();
+		final int roleMenuTreeId = adRole.getAD_Tree_Menu_ID();
 		if (roleMenuTreeId > 0)
 		{
-			return roleMenuTreeId;
+			return UserMenuInfo.of(roleMenuTreeId, adRole.getRoot_Menu_ID());
 		}
 
 		final I_AD_ClientInfo adClientInfo = getAD_ClientInfo();
 		final int adClientMenuTreeId = adClientInfo.getAD_Tree_Menu_ID();
 		if (adClientMenuTreeId > 0)
 		{
-			return adClientMenuTreeId;
+			return UserMenuInfo.of(adClientMenuTreeId, adRole.getRoot_Menu_ID());
 		}
 
 		// Fallback: when role has NO menu and there is no menu defined on AD_ClientInfo level - shall not happen
-		return 10; // Menu // FIXME: hardcoded
+		return UserMenuInfo.of(10, -1); // Menu // FIXME: hardcoded
 	}
 }

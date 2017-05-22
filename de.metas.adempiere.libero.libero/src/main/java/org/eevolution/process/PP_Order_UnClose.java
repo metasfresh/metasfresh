@@ -143,7 +143,7 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 
 		for (final I_PP_Cost_Collector cc : costCollectors)
 		{
-			if (docActionBL.isStatusReversedOrVoided(cc))
+			if (docActionBL.isDocumentReversedOrVoided(cc))
 			{
 				continue;
 			}
@@ -154,7 +154,7 @@ public class PP_Order_UnClose extends JavaProcess implements IProcessPreconditio
 				continue;
 			}
 
-			if (docActionBL.isStatusOneOf(cc, DocAction.STATUS_Closed))
+			if (docActionBL.isDocumentStatusOneOf(cc, DocAction.STATUS_Closed))
 			{
 				cc.setDocStatus(DocAction.STATUS_Completed);
 				InterfaceWrapperHelper.save(cc);

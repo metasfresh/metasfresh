@@ -50,7 +50,16 @@ public interface IContractChangeBL extends ISingletonService
 	 *            </ul>
 	 * @param changeDate the cancellation date. If this this date is before the term's "regular" EndDate, it is also used to find the correct {@link de.metas.flatrate.model.I_C_Contract_Change} record
 	 *            for the cancel conditions.
+	 * @param isCloseInvoiceCandidate this value is forwarded to the given term's <code>IsCloseInvoiceCandidate</code> column and will determine what to do with invoice candidates for the term which were not
+	 *            yet (fully) invoiced. See {@link de.metas.flatrate.invoicecandidate.spi.impl.FlatrateTermHandler}
 	 * @throws SubscriptionChangeException if <code>changeDate</code> is before the term's EndDate and if there is no {@link de.metas.flatrate.model.I_C_Contract_Change} record for that date
 	 */
-	void cancelContract(I_C_Flatrate_Term term, Timestamp changeDate);
+	void cancelContract(I_C_Flatrate_Term term, Timestamp changeDate,  boolean isCloseInvoiceCandidate);
+	
+	/**
+	 * ending naturally a contract
+	 * Actually is just setting the status to Ending contract 
+	 * @param term
+	 */
+	void endContract(I_C_Flatrate_Term term);
 }
