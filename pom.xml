@@ -73,11 +73,11 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 		Where to deploy build artifacts; the values are coming from the outside via cmd-line parameters.
 		Even if you can't deploy to this repo, you can still make your own builds and install them to your local repo.
 		-->
-		<snapshotRepository>
+		<repository>
 			<id>${deploy-repo-id}</id>
 			<name>${deploy-repo-name}</name>
 			<url>${deploy-repo-url}</url>
-		</snapshotRepository>
+		</repository>
 	</distributionManagement>
 
 	<build>
