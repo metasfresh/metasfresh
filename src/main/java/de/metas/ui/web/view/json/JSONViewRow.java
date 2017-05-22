@@ -1,7 +1,8 @@
 package de.metas.ui.web.view.json;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.GuavaCollectors;
@@ -69,12 +70,13 @@ public class JSONViewRow extends JSONDocumentBase
 		//
 		// Fields
 		{
-			final List<JSONDocumentField> jsonFields = new ArrayList<>();
+			final Map<String, JSONDocumentField> jsonFields = new LinkedHashMap<>();
 
 			// Add pseudo "ID" field first
 			{
 				final Object id = row.getId().toJson();
-				jsonFields.add(0, JSONDocumentField.idField(id));
+				final JSONDocumentField jsonIDField = JSONDocumentField.idField(id);
+				jsonFields.put(jsonIDField.getField(), jsonIDField);
 			}
 
 			// Append the other fields
@@ -82,7 +84,7 @@ public class JSONViewRow extends JSONDocumentBase
 					.entrySet()
 					.stream()
 					.map(e -> JSONDocumentField.ofNameAndValue(e.getKey(), e.getValue()))
-					.forEach(jsonFields::add);
+					.forEach(jsonField -> jsonFields.put(jsonField.getField(), jsonField));
 
 			jsonRow.setFields(jsonFields);
 		}

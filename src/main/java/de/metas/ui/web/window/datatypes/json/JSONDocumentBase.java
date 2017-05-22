@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Maps;
 
@@ -70,10 +69,15 @@ public abstract class JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean deleted;
 
+	@JsonProperty("fieldsByName")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Map<String, JSONDocumentField> fieldsByName;
+	
 	@JsonProperty("fields")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonSerialize(using = JsonMapAsValuesListSerializer.class)
-	private Map<String, JSONDocumentField> fieldsByName;
+	@Deprecated
+	private Collection<JSONDocumentField> fields;
+
 
 	/** Any other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
@@ -151,7 +155,14 @@ public abstract class JSONDocumentBase
 
 	public final void setFields(final Collection<JSONDocumentField> fields)
 	{
-		fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
+		this.fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
+		this.fields = fields;
+	}
+	
+	public final void setFields(final Map<String, JSONDocumentField> fieldsByName)
+	{
+		this.fieldsByName = fieldsByName;
+		this.fields = fieldsByName.values();
 	}
 
 	@JsonIgnore
