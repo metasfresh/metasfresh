@@ -86,4 +86,16 @@ final class CompositeFlatrateHandler implements IFlatrateHandler
 	{
 		handlers.forEach(h -> h.afterExtendFlatrateTermCreated(oldTerm, newTerm));
 	}
+	
+	@Override
+	public void afterFlatrateTermEnded(I_C_Flatrate_Term term)
+	{
+		handlers.forEach(h -> h.afterFlatrateTermEnded(term));
+	}
+	
+	@Override
+	public void beforeFlatrateTermCreated(I_C_Flatrate_Term currentTerm,  I_C_Flatrate_Term nextTerm)
+	{
+		handlers.forEach(h -> h.beforeFlatrateTermCreated(currentTerm,nextTerm));
+	}
 }

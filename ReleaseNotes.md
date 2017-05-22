@@ -10,6 +10,23 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.11 (2017-21)
+
+**upcoming release for week 2017-21**
+
+## Features
+
+* metasfresh-backend
+  * [#1389](https://github.com/metasfresh/metasfresh/issues/1389) Make eMail adress fields longer
+  * [#1506](https://github.com/metasfresh/metasfresh/issues/1506) Add the possibility to track easily contracts that ended naturally
+  * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
+  * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
+
+## Fixes
+
+* metasfresh-backend
+  * [#1578](https://github.com/metasfresh/metasfresh/issues/1578) spring-boot services try to start local broker and fail
+
 # metasfresh 5.10 (2017-20)
 
 **upcoming release for week 2017-20**
@@ -18,68 +35,142 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1304](https://github.com/metasfresh/metasfresh/issues/1304) Jasper Document for Material disposal
+    * New Jasper Report for the Material disposal Document.
   * [#1306](https://github.com/metasfresh/metasfresh/issues/1306) Customer Returns Functionality
+    * New Functionality for the customer Returns workflow, allowing to receive and book the returns including Packing Material and empties.
   * [#1474](https://github.com/metasfresh/metasfresh/issues/1474) New Window Handling Unit Packing Instruction in WebUI
-    * Creates a new Packing Instruction window in WebUI.
+    * Creates a new Packing Instruction Window in WebUI.
   * [#1475](https://github.com/metasfresh/metasfresh/issues/1475) New Window for Handling Unit Packing Instruction Item in WebUI
-    * Creates a new Window in WebUI to allow Packing Instruction Versions to be maintained.
+    * Creates a new Window in WebUI allowing the maintenance of Packing Instruction Versions.
   * [#1485](https://github.com/metasfresh/metasfresh/issues/1485) New Window Distribution Order in WebUI
     * Adding the Distribution Order window to WebUI.
   * [#1489](https://github.com/metasfresh/metasfresh/issues/1489) Disable/delete legacy Cockpit window
-    * Disabling the legacy Buisness Partner Cockpit window.
+    * Disabling the legacy Business Partner Cockpit Window.
   * [#1501](https://github.com/metasfresh/metasfresh/issues/1501) Rename "No Handling Unit" and "Virtual PI" PIs
     * Renames the internal Packing Items (former Virtual PI, No Handling Unit) to names that describe what these Items really are.
   * [#1504](https://github.com/metasfresh/metasfresh/issues/1504) Configure our services for logstash
     * Add an option to have metasfresh-backend, -admin, -material-dispo and -webui-api send log messages to an ELK Stack
   * [#1509](https://github.com/metasfresh/metasfresh/issues/1509) New Window for Doctype in WebUI
-    * Adding a new window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
+    * Adding a new Window for Doctype in webUI allowing the admin user to maintain Document Types via Web User Interface.
+  * [#1517](https://github.com/metasfresh/metasfresh/issues/1517) intern: refactor LanguageDAO and LanguageBL
+    * Internal issue, refactoring and improving the language handling in metasfresh.
   * [#1520](https://github.com/metasfresh/metasfresh/pull/1520) add .metadata/ and .recommenders/ to .gitignore
     * Thx to @homebeaver
   * [#1523](https://github.com/metasfresh/metasfresh/issues/1523) New Window for Print Format in WebUI
-    * New window in WebUI to allow the Print Format maintenance.
+    * New Window in WebUI to allow doing the Print Format maintenance.
   * [#1524](https://github.com/metasfresh/metasfresh/issues/1524) New Window for Document Sequence in WebUI
-    * Adding the Document Seqzence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
+    * Adding the Document Sequence Window in webUI allowing the admin user to have control over the Document Sequences in metasfresh.
+  * [#1529](https://github.com/metasfresh/metasfresh/issues/1529) Fresh Migration of WebUI Menu for rel. 5.10
+    * Adding the new Menu Configuration for WebUI.
   * [#1539](https://github.com/metasfresh/metasfresh/issues/1539) New Window for Product BOM in WebUI
     * Adding the BOM Product Window to WebUI. Now allowing the easy BOM Configuration via the Web User Interface.
   * [#1541](https://github.com/metasfresh/metasfresh/issues/1541) New Window for Packing Configuration in WebUI
-    * Adding the Packing Configuration (readonly) window to webUI.
+    * Adding the Packing Configuration (readonly) Window to webUI.
   * [#1546](https://github.com/metasfresh/metasfresh/issues/1546) Add login Field to User Window in WebUI Main View
     * Move the Login Field from Advanced Edit to Main View in User Window of WebUI.
   * [#1551](https://github.com/metasfresh/metasfresh/issues/1551) Jasper Document for Customer Returns
+    * New Jasper Report for the Customer Returns Document.
   * [#1555](https://github.com/metasfresh/metasfresh/issues/1555) add default search fields for business partner window
+    * Adding default search filters for the Business Partner Window in WebUI.
   * [#1561](https://github.com/metasfresh/metasfresh/issues/1561) Rearrange Role Window w/ more important fields on Main view
-    * Adjustments of Main view and advanced Edit field content in Role Window. Moving Fields accoring to their importance/ usage.
+    * Adjustments of Main View and advanced Edit field content in Role Window. Moving Fields according to their importance/ usage.
+  * [#1572](https://github.com/metasfresh/metasfresh/issues/1572) User Window adjustment in WebUI
+    * Adjustment of User Window in WebUI, Harmonizing Look&Feel, important Fields to Main View.
+  * [#1574](https://github.com/metasfresh/metasfresh/issues/1574) New Field for Menu Root Node in Role window of WebUI
+    * Adding a new Field to Role Window of WebUI, Menu Root Node ID, allowing to define partial Menus as Main Menu for a given Role.
 
 * metasfresh-webui-api
+  * [#362](https://github.com/metasfresh/metasfresh-webui-api/issues/362) Add filters in Handling Units window
+    * Adding default filters to the Handling Unit Window in WebUI.
+  * [#364](https://github.com/metasfresh/metasfresh-webui-api/issues/364) Replace HU editor's Barcode quick action with Barcode filter
+    * Replacing the action based Barcode selection with the new special Barcode Filter.
+  * [#366](https://github.com/metasfresh/metasfresh-webui-api/issues/366) Make Permission change active without server cache reset
+    * First Implemantation of the distributed Cache invalidation. Now it's possible to change role permissions without the need of a  server cache reset. 
+  * [#370](https://github.com/metasfresh/metasfresh-webui-api/issues/370) Avoid spamming the console with "Connection refused" when elasticsearch connection is not available
+    * Housekeeping task about log messages when elasticsearch is not available.
+  * [#372](https://github.com/metasfresh/metasfresh-webui-api/issues/372) backend: endpoint for creating a filtered view
+    * New Functionality in WebUI backend that allows to provide filtered views for the frontend.
   * [#388](https://github.com/metasfresh/metasfresh-webui-api/issues/388) grid view: select "ALL" support
+    * New Feature that allows to select more records than are visible on the page. The new selection possibility allows the user to select all records which are available with the current filtering. These selected records can then also be used for following processes or quickactions.
   * [#390](https://github.com/metasfresh/metasfresh-webui-api/issues/390) Change advanced edit layout
+    * Adjusting the advanced edit mode to the Main View Layout. This makes it easier for the user to find additional fields that are not displayed on Main View and makes a more tidy look & feel.
+  * [#391](https://github.com/metasfresh/metasfresh-webui-api/issues/391) role: besides menu tree, allow configuring the sub-tree to be used
+    * New feature that allows an easier Menu maintenance in future via Menu Nodes that can be selected as Root of main menu for a given role.
 
+  
 * metasfresh-webui-frontend
+  * [#679](https://github.com/metasfresh/metasfresh-webui-frontend/issues/679) Record selection behavior w/ browser back/ forward
+    * New Implementation of a refined Browser Navigation in metasfresh. It is now possible to use the browser back button and also persist the previously made selection in Grid View Lines.
   * [#738](https://github.com/metasfresh/metasfresh-webui-frontend/issues/738) Use Key in long drop down list
+    * New Alphanumeric key handling in drop down list. The user can press the first key and the cursor jumps to the first found apperarance in the drop down list.
   * [#739](https://github.com/metasfresh/metasfresh-webui-frontend/issues/739) When included view is displayed add an alpha layer over the main view
+    * The new included view implementation is now better focussable for the user. The remaining non active main view has an opacity overlay, to avoid distraction for the user.
   * [#740](https://github.com/metasfresh/metasfresh-webui-frontend/issues/740) When filtering a view please use the newly introduced "/documentView/{windowId}/{viewId}/filter" endpoint
+    * Internal housekeeping task moving the filtering implementations to a new endpoint.
   * [#742](https://github.com/metasfresh/metasfresh-webui-frontend/issues/742) Filter singleOverlayField support
+    * Adding a new Overlay method to WebUI allowing to create special Filtering screens. First implementation done with Barcode Filter functionality in Manufacturing Issue and Receipt Editor.
+  * [#743](https://github.com/metasfresh/metasfresh-webui-frontend/issues/743) modal panel: background looks a bit ugly
+    * Adjustment of the Look and Fied design of the modal overlay.
   * [#752](https://github.com/metasfresh/metasfresh-webui-frontend/issues/752) Select-all-filtered option in general
+    * Providing the possibility to use the select-all filtering generally/ systemwide.
 
 ## Fixes
 
 * metasfresh-backend
   * [#1515](https://github.com/metasfresh/metasfresh/issues/1515) Project "de.metas.material.dispo" shall not be part of Swing client
+    * Extracting the project material dispo from swing client.
   * [#1516](https://github.com/metasfresh/metasfresh/issues/1516) HU Transform - split out some TUs from LU does not work correctly with custom LUs
+    * Fix for the Split Functionality in handling Unit Editor. Sometimes the Split off for Transport Units did not work properly.
+  * [#1521](https://github.com/metasfresh/metasfresh/issues/1521) standard database: add SSCC attribute to "DIM_Barcode_Attributes" dimension spec
+    * Adding the SSCC Attribute to the default database seed of metasfresh.
+  * [#1580](https://github.com/metasfresh/metasfresh/issues/1580) NPE when setting up production ressource
+    * Fixing a Null Pointer Exception when inserting an new manufacturing ressource.
 
 * metasfresh-webui-api
   * [#302](https://github.com/metasfresh/metasfresh-webui-api/issues/302) jasper processes default values not taken
+    * Fix for Jasper Processing in WebUI. In a minor case some default values were not considered when doing the Jasper Processing.
+  * [#363](https://github.com/metasfresh/metasfresh-webui-api/issues/363) make LU not mandatory in Receive HUs
+    * Fix for the Field Logistic Unit in Receive Handling Units action. Now allowing to receive without a Logistics Unit.
+  * [#369](https://github.com/metasfresh/metasfresh-webui-api/issues/369) adding role to user does not work
+    * Fix for Role Permissions in WebUI. Adding of new Users to a roles was not working anymore.
+  * [#377](https://github.com/metasfresh/metasfresh-webui-api/issues/377) Don't show zoom-to for non-zoom reference Lists
+    * Restricting the new zoom-to action in WebUI. Not allowing non-zoom reference Lists anymore.
   * [#381](https://github.com/metasfresh/metasfresh-webui-api/issues/381) ZoomInto shall consider AD_Ref_List.AD_Reference_ID if any
-  * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/380) readonly permission in webui
+    * Enhancing zoom-to, now considering the Reference List ID if available.
+  * [#380](https://github.com/metasfresh/metasfresh-webui-api/issues/380) readonly permission in webui
+    * Possibility to use the readonly Layout configuration also in WebUI now.
   * [#382](https://github.com/metasfresh/metasfresh-webui-api/issues/382) menu is not updating when you change permission
+    * After changing a permission in Role window, the menu was not adjusted to the new permission.
   * [#386](https://github.com/metasfresh/metasfresh-webui-api/issues/386) Purchase Order from Sales Order Parms not initially filled in WebUI
+    * Now setting the needed default values in Processes when calling actions from window Main view.
   * [#375](https://github.com/metasfresh/metasfresh-webui-api/issues/375) Adding Role for User w/o Org_access restricts access totally
+    * Fixing a Bug with All Orgs Access permission, which restricted the access totally after setting.
   * [#389](https://github.com/metasfresh/metasfresh-webui-api/issues/389) Zoom-Into error for subtab orderline
-
+    * Fixing a Bug when using zoom-to for subtab lines of a main window.
+  * [#392](https://github.com/metasfresh/metasfresh-webui-api/issues/392) barcode field is readonly
+    * Fix of the barcode field. Was readonly and should be editable.
+  * [#393](https://github.com/metasfresh/metasfresh-webui-api/issues/393) Manufacturing Issue/Receipt: cannot receive HUs
+    * Fix for the receive Handling Units error, that prevented the receipt of new Handling Units.
+  
 * metasfresh-webui-frontend
+  * [#706](https://github.com/metasfresh/metasfresh-webui-frontend/issues/706) Manufacturing order - Issue HUs - wrong /quickActions call
+    * Fix for the action menu behavior in Manufacturing Order Window of WebUI. Now the actions are fitting to the selected rows and context.
+  * [#707](https://github.com/metasfresh/metasfresh-webui-frontend/issues/707) Page popup shall be closed when clicking o a page
+    * The Page selection popup now closes automatically when clicking on a page selection.
+  * [#715](https://github.com/metasfresh/metasfresh-webui-frontend/issues/715) KPI widgets shall have the same height
+    * Adjustment to the KPI widget heights. Now all widgets have the same height and result in a tidier look and feel of the metasfresh Dashboard.
+  * [#732](https://github.com/metasfresh/metasfresh-webui-frontend/issues/732) issue not opening on single document
+    * Fixing an error that avoided the opening of the action issue window in Manufaturing workflow.
+  * [#734](https://github.com/metasfresh/metasfresh-webui-frontend/issues/734) included view: don't reset when closing an error notification
+    * Fix in included view. Not resetting the context anymore when clicking on an error notification.
   * [#749](https://github.com/metasfresh/metasfresh-webui-frontend/issues/749) singleOverlayField: pressing ESC shall close the popup
+    * Fix for the single field overlay, now allowing to press [esc] to close that overlay.
   * [#751](https://github.com/metasfresh/metasfresh-webui-frontend/issues/751) Initial Setup Wizard does not open after switching language
+    * Fixing a Bug in Initial setup wizard that did not open anymore when using the language selector previously.
   * [#755](https://github.com/metasfresh/metasfresh-webui-frontend/issues/755) mandatory numeric field is underlined with blue, even if it's set
+    * Adjustment in the mandatory field look & feel for number fields. Although a number was set, the mandatory logic said that the fields still has to be recorded.
+  * [#759](https://github.com/metasfresh/metasfresh-webui-frontend/issues/759) Action button remains gray if the process execution fails with error 404
+    * Fixing an error leaving the action button greyed out after running into a previous 404 error.
 
 # metasfresh 5.9 (2017-19)
 

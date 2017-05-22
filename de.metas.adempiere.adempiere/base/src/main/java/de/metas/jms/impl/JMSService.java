@@ -2,12 +2,12 @@ package de.metas.jms.impl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 
-import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
@@ -136,7 +136,7 @@ public class JMSService implements IJMSService
 		{
 			// nothing
 		}
-		else if (Check.equals(connectorOld.getUri(), uri))
+		else if (Objects.equals(connectorOld.getUri(), uri))
 		{
 			logger.info("JMS connector has not changed. Skip updating.");
 			return;
