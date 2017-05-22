@@ -209,7 +209,7 @@ public class PPOrderQualityCalculator
 			}
 
 			// skip receipts which are not COmpleted/CLosed
-			if (!docActionBL.isStatusCompletedOrClosed(inout))
+			if (!docActionBL.isDocumentCompletedOrClosed(inout))
 			{
 				continue;
 			}

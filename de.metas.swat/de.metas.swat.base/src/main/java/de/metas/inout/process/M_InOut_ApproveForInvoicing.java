@@ -64,7 +64,7 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 		if (I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
 			final I_M_InOut inOut = context.getSelectedModel(I_M_InOut.class);
-			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(inOut.getDocStatus(),
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusStrOneOf(inOut.getDocStatus(),
 					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
 		}
 		return ProcessPreconditionsResolution.reject();

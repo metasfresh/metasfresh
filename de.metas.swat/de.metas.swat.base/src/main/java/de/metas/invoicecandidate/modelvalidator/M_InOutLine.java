@@ -10,12 +10,12 @@ package de.metas.invoicecandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,10 +48,6 @@ public class M_InOutLine
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsForInOutLineInclInactive(inOutLine);
-		if (iciols.isEmpty())
-		{
-			return;
-		}
 
 		for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 		{
@@ -65,7 +61,7 @@ public class M_InOutLine
 
 	/**
 	 * IF an M_InOutLine is deleted, then this method deletes the candidates which directly reference that line via <code>AD_Table_ID</code> and <code>Record_ID</code>.
-	 * 
+	 *
 	 * @param inOutLine
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -89,7 +85,7 @@ public class M_InOutLine
 	 * <li>IsInDispute to <code>true</code> if QualityDiscountPercent was changed to a value > 0
 	 * </ul>
 	 * Also invalidates all ICs that have the given IC's header aggregation key.
-	 * 
+	 *
 	 * @param inOutLine
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
@@ -134,7 +130,7 @@ public class M_InOutLine
 
 	/**
 	 * If the <code>C_Order_ID</code> of the given line is at odds with the <code>C_Order_ID</code> of the line's <code>M_InOut</code>, then <code>M_InOut.C_Order</code> is set to <code>null</code>.
-	 * 
+	 *
 	 * @param inOutLine
 	 * @task 08451
 	 */

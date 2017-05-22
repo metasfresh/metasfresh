@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.modelvalidator;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -56,7 +57,7 @@ import de.metas.tax.api.ITaxDAO;
 public class C_Invoice_Candidate
 {
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(C_Invoice_Candidate.class);
-	
+
 	/**
 	 * Set QtyToInvoiceInPriceUOM, just to make sure it is up2date.
 	 */
@@ -237,17 +238,17 @@ public class C_Invoice_Candidate
 	}
 
 	/**
-	 * When an invoice candidate is deleted, then also delete its IC_IOLs
+	 * When an invoice candidate is deleted, then also delete all its {@link I_C_InvoiceCandidate_InOutLine}s
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteC_InvoiceCandidate_InOutLines(final I_C_Invoice_Candidate ic)
 	{
-		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-
-		for (final I_C_InvoiceCandidate_InOutLine icIol : invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidateInclInactive(ic))
-		{
-			InterfaceWrapperHelper.delete(icIol);
-		}
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		queryBL
+				.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, ic)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.create()
+				.delete();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })

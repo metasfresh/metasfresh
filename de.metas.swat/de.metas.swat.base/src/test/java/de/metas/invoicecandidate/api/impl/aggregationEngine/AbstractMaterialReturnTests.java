@@ -102,7 +102,7 @@ public abstract class AbstractMaterialReturnTests extends AbstractNewAggregation
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic1).size(), is(1));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic1).size(), is(1));
 	}
 
 	@Override

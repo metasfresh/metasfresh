@@ -1699,7 +1699,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			// Nothing to do if the document is not a draft or in progress.
-			if (!docActionBL.isStatusDraftedOrInProgress(document))
+			if (!docActionBL.issDocumentDraftedOrInProgress(document))
 			{
 				return null;
 			}
