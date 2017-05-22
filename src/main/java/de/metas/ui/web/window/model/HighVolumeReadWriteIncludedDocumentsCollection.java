@@ -261,11 +261,13 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 		assertNewDocumentAllowed();
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		final Document document = documentsRepository.createNewDocument(entityDescriptor, parentDocument, parentDocument.getChangesCollector());
+		final IDocumentChangesCollector changesCollector = parentDocument.getChangesCollector();
+		final Document document = documentsRepository.createNewDocument(entityDescriptor, parentDocument, changesCollector);
+
+		// Collect all changes to make sure the whole document content will be provided to frontend
+		changesCollector.collectFrom(document, () -> "new included document");
 
 		addChangedDocument(document);
-
-		// updateAndGetAllowCreateNewDocument();
 
 		return document;
 	}
