@@ -547,6 +547,14 @@ input:checked + .input-slider:before {
     font-size:18px;
 }
 
+.input-icon-checkbox {
+    top: -1px;
+    position: relative;
+    margin-left:.2rem;
+    color: $brand-font-color-weak;
+    cursor: pointer;
+}
+
 .input-icon-sm {
     font-size:10px;
     margin-right: 3px;

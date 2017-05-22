@@ -7,6 +7,7 @@ import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List/List';
 import ActionButton from './ActionButton';
+import Checkbox from './Checkbox';
 import Image from './Image';
 import DevicesWidget from './Devices/DevicesWidget';
 
@@ -125,7 +126,7 @@ class RawWidget extends Component {
                 ) &&
                 !isEdited) ? 'input-error ' : '') +
             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-            (type === 'primary' || forcedPrimary ? 
+            (type === 'primary' || forcedPrimary ?
                 'input-primary ' : 'input-secondary ') +
             (updated ? 'pulse-on ' : 'pulse-off ') +
             (rowId && !isModal ? 'input-table ' : '');
@@ -483,33 +484,11 @@ class RawWidget extends Component {
                 )
             case 'YesNo':
                 return (
-                    <label
-                        className={
-                            'input-checkbox ' +
-                            (widgetData[0].readonly || disabled ?
-                                'input-disabled ' : '')
-                        }
-                        tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => this.rawWidget = c}
-                        onKeyDown={e => {
-                            if(e.key === ' '){
-                                e.preventDefault();
-                                this.rawWidget && this.rawWidget.click();
-                            }
-                        }}
-                    >
-                        <input
-                            ref={c => this.rawWidget = c}
-                            type="checkbox"
-                            checked={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onChange={(e) => this.handlePatch(
-                                widgetField, e.target.checked, id
-                            )}
-                            tabIndex="-1"
-                        />
-                        <div className="input-checkbox-tick" />
-                    </label>
+                    <Checkbox
+                        {...{widgetData, disabled, fullScreen, tabIndex,
+                            widgetField, id, filterWidget}}
+                        handlePatch={this.handlePatch}
+                    />
                 )
             case 'Switch':
                 return (
