@@ -25,6 +25,7 @@ Here come the actual release notes:
 ## Fixes
 
 * metasfresh-backend
+  * [#1566](https://github.com/metasfresh/metasfresh/issues/1566) Invoicing problem with reversed inouts that have a quality discount
   * [#1578](https://github.com/metasfresh/metasfresh/issues/1578) spring-boot services try to start local broker and fail
 
 # metasfresh 5.10 (2017-20)
