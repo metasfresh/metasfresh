@@ -46,6 +46,8 @@ class MasterWindow extends Component {
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
 
+        console.log(master);
+
         if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
             window.addEventListener('beforeunload', this.confirm)
         }

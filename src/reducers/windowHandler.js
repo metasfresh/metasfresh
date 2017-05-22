@@ -52,6 +52,7 @@ export default function windowHandler(state = initialState, action) {
             });
 
         case types.OPEN_MODAL:
+        console.log('open modal');
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
                     visible: true,
@@ -121,6 +122,7 @@ export default function windowHandler(state = initialState, action) {
             });
 
         case types.ADD_ROW_DATA:
+        console.log('ADD_ROW_DATA');
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     rowData: Object.assign(
@@ -129,16 +131,29 @@ export default function windowHandler(state = initialState, action) {
                 })
             });
 
+        // case types.ADD_NEW_ROW:
+        // console.log('ADD_NEW_ROW_DATA');
+        //     return update(state, {
+        //         [action.scope]: {
+        //             rowData: {
+        //                 [action.tabid]: {$merge: {
+        //                     [action.rowid]: action.item
+        //                 }}
+        //             }
+        //         }
+        //     });
+
+
         case types.ADD_NEW_ROW:
+        console.log('ADD_NEW_ROW_DATA');
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$merge: {
-                            [action.rowid]: action.item
-                        }}
+                        [action.tabid]: {$push: [action.item]}
                     }
                 }
             });
+
 
         case types.DELETE_ROW:
             return update(state, {
@@ -221,6 +236,8 @@ export default function windowHandler(state = initialState, action) {
             });
 
         case types.UPDATE_ROW_STATUS:
+        console.log('save status');
+        console.log(action.saveStatus);
             return update(state, {
                 [action.scope]: {
                     rowData: {

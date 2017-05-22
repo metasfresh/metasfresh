@@ -66,6 +66,9 @@ class Table extends Component {
             dispatch, type
         } = this.props;
 
+        console.log('rowData');
+        console.log(rowData);
+
         const {
             selected
         } = this.state;
@@ -104,6 +107,7 @@ class Table extends Component {
     }
 
     getIndentData = (selectFirst) => {
+        // console.log('getIndentData: '+indentSupported);
         const {rowData, tabid, indentSupported} = this.props;
 
         if(indentSupported && rowData[tabid]){
@@ -496,6 +500,7 @@ class Table extends Component {
     }
 
     openModal = (windowType, tabId, rowId) => {
+        console.log(rowId);
         const {dispatch} = this.props;
         dispatch(openModal('Add new', windowType, 'window', tabId, rowId));
     }
@@ -619,6 +624,9 @@ class Table extends Component {
 
         const {selected, rows} = this.state;
         const keyProp = keyProperty ? keyProperty : 'rowId';
+
+        console.log('rows');
+        console.log(rows);
 
         if(rows){
             let keys = Object.keys(rows);
