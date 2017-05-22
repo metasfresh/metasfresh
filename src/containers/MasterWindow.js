@@ -6,7 +6,9 @@ import {push} from 'react-router-redux';
 import {
     findRowByPropName,
     attachFileAction,
-    clearMasterData
+    clearMasterData,
+    getTab,
+    addRowData
 } from '../actions/WindowActions';
 
 import {
@@ -42,7 +44,7 @@ class MasterWindow extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {master} = this.props;
+        const {master, modal, params, dispatch} = this.props;
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
 
@@ -51,6 +53,16 @@ class MasterWindow extends Component {
         }
         if (!prevProps.master.saveStatus.saved && isDocumentSaved) {
             window.removeEventListener('beforeunload', this.confirm)
+        }
+
+        // When closing modal, we need to update the stale tabs
+        if(!modal.visible && modal.visible !== prevProps.modal.visible){
+            Object.keys(master.includedTabsInfo).map(tabId => {
+                dispatch(getTab(tabId, params.windowType, master.docId))
+                    .then(tab => {
+                        dispatch(addRowData({[tabId]: tab}, 'master'));
+                    });
+            })
         }
     }
 
