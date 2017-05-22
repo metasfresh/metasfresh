@@ -20,6 +20,7 @@ Here come the actual release notes:
   * [#1389](https://github.com/metasfresh/metasfresh/issues/1389) Make eMail adress fields longer
   * [#1506](https://github.com/metasfresh/metasfresh/issues/1506) Add the possibility to track easily contracts that ended naturally
   * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
+  * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
 
 ## Fixes
 
