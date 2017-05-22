@@ -436,7 +436,8 @@ class Lookup extends Component {
                     (updated ? ' pulse-on' : ' pulse-off') +
                     (filterWidget ? ' input-full' : '') +
                     (mandatory && (isInputEmpty ||
-                        (validStatus.initialValue && !validStatus.valid)) ?
+                        (validStatus && validStatus.initialValue &&
+                        !validStatus.valid)) ?
                         ' input-mandatory ' : '') +
                     ((validStatus &&
                         (

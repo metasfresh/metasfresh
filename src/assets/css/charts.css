@@ -1,6 +1,7 @@
 .chart-wrapper {
     width: 100%;
     overflow: auto;
+    min-height: 425px;
 }
 
 .pie-path {

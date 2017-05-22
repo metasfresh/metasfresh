@@ -59,6 +59,19 @@ class TablePagination extends Component {
         });
     }
 
+    handleSelectWholePage = (value) => {
+        this.setState({
+            selectedWholePage: value
+        })
+    }
+
+    resetGoToPage = () => {
+        this.setState({
+            secondDotsState: false,
+            firstDotsState: false
+        })
+    }
+
     renderGoToPage = (pages, value) => {
         return (
             <div className="page-dots-open">
@@ -83,7 +96,10 @@ class TablePagination extends Component {
             <li
                 className="page-item"
                 key={1}
-                onClick={() => {handleChangePage(1); deselect()} }
+                onClick={() => {
+                    this.resetGoToPage();
+                    handleChangePage(1);
+                    deselect()} }
             >
                 <a
                     className={
@@ -127,7 +143,11 @@ class TablePagination extends Component {
             <li
                 className="page-item"
                 key={9999}
-                onClick={() => {handleChangePage(pages); deselect()} }
+                onClick={() => {
+                    this.resetGoToPage();
+                    handleChangePage(pages);
+                    deselect()
+                } }
             >
                 <a
                     className={
@@ -149,7 +169,11 @@ class TablePagination extends Component {
                         (page === i ? 'active': '')
                     }
                     key={i}
-                    onClick={() => {handleChangePage(i); deselect()} }
+                    onClick={() => {
+                        this.resetGoToPage();
+                        handleChangePage(i);
+                        deselect();
+                    } }
                 >
                     <a
                         className={
@@ -177,18 +201,29 @@ class TablePagination extends Component {
     }
 
     renderSelectAll = () => {
-        const {selected, handleSelectAll} = this.props;
+        const {
+            selected, handleSelectAll, handleSelectRange, size, pageLength
+        } = this.props;
+        const selectedWholePage = selected && (selected.length === pageLength);
         return (
             <div className="hidden-sm-down">
-                <div>{selected.length > 0 ? selected.length +
-                         ' items selected' : 'No items selected'
+                <div>{selected.length > 0 ?
+                        (selected[0] === 'all' ? size : selected.length) +
+                        ' items selected'
+                        : 'No items selected'
                      }
                  </div>
                 <div
                     className="pagination-link pointer"
-                    onClick={handleSelectAll}
+                    onClick={() => {
+                        selectedWholePage ?
+                             handleSelectRange(['all']) : handleSelectAll()
+                    }}
                 >
-                    Select all on this page
+                    {selectedWholePage ?
+                        'Select all ' + size + ' items' :
+                        'Select all on this page'
+                    }
                 </div>
             </div>
         )
@@ -204,6 +239,7 @@ class TablePagination extends Component {
                         (compressed ? 'page-link-compressed ' : '')
                     }
                     onClick={() => {
+                        this.resetGoToPage();
                         handleChangePage(left ? 'down' : 'up');
                         deselect();
                     }}
@@ -245,7 +281,7 @@ class TablePagination extends Component {
         }
 
         return (
-            <div className="pagination-wrapper">
+            <div className="pagination-wrapper js-not-unselect">
                 <div className="pagination-row">
                     {compressed && <div />}
                     {!compressed && this.renderSelectAll()}
@@ -274,7 +310,6 @@ class TablePagination extends Component {
                         handleNextPage={() => handleChangePage('up')}
                         handlePrevPage={() => handleChangePage('down')}
                     />
-
                 }
             </div>
         );
