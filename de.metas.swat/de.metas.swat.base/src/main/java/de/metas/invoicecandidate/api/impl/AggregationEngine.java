@@ -112,12 +112,12 @@ public class AggregationEngine implements IAggregationEngine
 	}
 
 	@Override
-	public IAggregationEngine addInvoiceCandidate(final I_C_Invoice_Candidate ic)
+	public final IAggregationEngine addInvoiceCandidate(final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(!ic.isToClear(), "{} has IsToClear='N'", ic);
 		Check.assume(!ic.isProcessed(), "{} not processed", ic);
 
-		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
 
 		//
 		// Case: No IC-IOL association found;
@@ -371,7 +371,7 @@ public class AggregationEngine implements IAggregationEngine
 	@Override
 	public List<IInvoiceHeader> aggregate()
 	{
-		final List<IInvoiceHeader> invoiceHeaders = new ArrayList<IInvoiceHeader>();
+		final List<IInvoiceHeader> invoiceHeaders = new ArrayList<>();
 
 		for (final InvoiceHeaderAndLineAggregators headerAndAggregators : key2headerAndAggregators.values())
 		{
@@ -406,11 +406,11 @@ public class AggregationEngine implements IAggregationEngine
 		final InvoiceHeaderImplBuilder invoiceHeaderBuilder = headerAndAggregators.getInvoiceHeader();
 		final InvoiceHeaderImpl invoiceHeader = invoiceHeaderBuilder.build();
 
-		final ArrayList<IAggregator> lineAggregators = new ArrayList<IAggregator>(headerAndAggregators.getLineAggregators());
+		final ArrayList<IAggregator> lineAggregators = new ArrayList<>(headerAndAggregators.getLineAggregators());
 
 		//
 		// Initialize invoice header's lines
-		final List<IInvoiceCandAggregate> lines = new ArrayList<IInvoiceCandAggregate>();
+		final List<IInvoiceCandAggregate> lines = new ArrayList<>();
 		invoiceHeader.setLines(lines);
 
 		//

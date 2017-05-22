@@ -1,5 +1,7 @@
 package org.compiere.util;
 
+import java.util.Objects;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,15 +15,14 @@ package org.compiere.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.Check;
 
@@ -77,7 +78,14 @@ public class IDCache<V> extends CCache<Object, V>
 			return 0;
 		}
 
-		final V valueOld = remove(recordId);
-		return valueOld == null ? 0 : 1;
+		if (Objects.equals(recordId, CacheMgt.RECORD_ID_ALL))
+		{
+			return reset();
+		}
+		else
+		{
+			final V valueOld = remove(recordId);
+			return valueOld == null ? 0 : 1;
+		}
 	}
 }

@@ -10,18 +10,17 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
  * Aggregates {@link InvoiceCandidateWithInOutLine}s and creates one {@link IInvoiceCandAggregate}.
- * 
+ *
  * @author tsa
  *
  */
@@ -81,8 +80,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	//
 	private boolean _hasAtLeastOneValidICS = false;
-	private final Collection<Integer> _iciolIds = new HashSet<Integer>();
-	private final List<InvoiceCandidateWithInOutLine> _invoiceCandidateWithInOutLines = new ArrayList<InvoiceCandidateWithInOutLine>();
+	private final Collection<Integer> _iciolIds = new HashSet<>();
+	private final List<InvoiceCandidateWithInOutLine> _invoiceCandidateWithInOutLines = new ArrayList<>();
 	private final List<IInvoiceCandidateInOutLineToUpdate> _iciolsToUpdate = new ArrayList<>();
 
 	public InvoiceCandidateWithInOutLineAggregator()
@@ -104,7 +103,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	/**
 	 * Aggregates collected {@link InvoiceCandidateWithInOutLine}s.
-	 * 
+	 *
 	 * @return invoice candidate aggregate; never return <code>null</code>
 	 */
 	public IInvoiceCandAggregate aggregate()
@@ -161,19 +160,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	public void addInvoiceCandidateWithInOutLines(final List<InvoiceCandidateWithInOutLine> icsCollection)
 	{
-		if (icsCollection.isEmpty())
-		{
-			return; // nothing to do
-		}
-
-		for (int i = 0; i < icsCollection.size(); i++)
-		{
-			final InvoiceCandidateWithInOutLine ics = icsCollection.get(i);
-			addInvoiceCandidateWithInOutLine(ics);
-		}
+		icsCollection.forEach(ics -> addInvoiceCandidateWithInOutLine(ics));
 	}
 
-	public void addInvoiceCandidateWithInOutLine(final InvoiceCandidateWithInOutLine ics)
+	private void addInvoiceCandidateWithInOutLine(final InvoiceCandidateWithInOutLine ics)
 	{
 		Check.assumeNotNull(ics, "ics not null");
 		initializeIfNeeded(ics);
@@ -626,11 +616,11 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 	/**
 	 * Checks if given invoice candidate is amount based invoicing (i.e. NOT quantity based invoicing).
-	 * 
+	 *
 	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
-	 * 
+	 *
 	 * To track where it's used, search also for {@link InvalidQtyForPartialAmtToInvoiceException}.
-	 * 
+	 *
 	 * @param cand
 	 * @return
 	 */

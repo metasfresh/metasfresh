@@ -675,7 +675,7 @@ public class MInOutLine extends X_M_InOutLine
 	protected boolean beforeDelete()
 	{
 		final MInOut parent = getParent();
-		if (Services.get(IDocActionBL.class).isStatusOneOf(parent, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress))
+		if (Services.get(IDocActionBL.class).isDocumentStatusOneOf(parent, DocAction.STATUS_Drafted, DocAction.STATUS_InProgress))
 		{
 			return true;
 		}

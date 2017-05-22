@@ -1,6 +1,9 @@
 package org.adempiere.util;
 
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.function.Function;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -20,11 +23,11 @@ import com.google.common.base.MoreObjects;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -84,6 +87,18 @@ public final class Functions
 	}
 
 	/**
+	 * Same as {@link #memoizing(Function)} but the value of the last call will be memorized.
+	 *
+	 * This might look similar to {@link ExtendedMemorizingSupplier} with the difference that in this case,
+	 * the last call will always memorized.
+	 */
+	public static final <T, R> MemoizingFunction<T, R> memoizingLastCall(final Function<T, R> delegate)
+	{
+		final Function<T, T> keyFunction = input -> input;
+		return new MemoizingLastCallFunction<T, R, T>(delegate, keyFunction);
+	}
+
+	/**
 	 * Function which memorize it's calls, so repeated calls with same inputs will be served from it's internal cache.
 	 *
 	 * IMPORTANT: some implementations might use some "key function" internally, which derives the given input and produced a cache. The value will be stored for that key.
@@ -140,6 +155,96 @@ public final class Functions
 		public R peek(final T input)
 		{
 			return values.get(keyFunction.apply(input));
+		}
+	}
+
+	private static class MemoizingLastCallFunction<T, R, K> implements MemoizingFunction<T, R>
+	{
+		private final Function<T, R> delegate;
+		private final Function<T, K> keyFunction;
+
+		private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		private transient volatile K lastKey;
+		private transient R lastValue;
+
+		private MemoizingLastCallFunction(final Function<T, R> delegate, final Function<T, K> keyFunction)
+		{
+			Check.assumeNotNull(delegate, "Parameter function is not null");
+			Check.assumeNotNull(keyFunction, "Parameter keyFunction is not null");
+			this.delegate = delegate;
+			this.keyFunction = keyFunction;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper("memoizing-last-call")
+					.addValue(delegate)
+					.toString();
+		}
+
+		@Override
+		public R apply(final T input)
+		{
+			final K key = keyFunction.apply(input);
+
+			lock.readLock().lock();
+			boolean readLockAcquired = true;
+			boolean writeLockAcquired = false;
+			try
+			{
+				if (Objects.equals(lastKey, key))
+				{
+					return lastValue;
+				}
+
+				// Upgrade to write lock
+				lock.readLock().unlock(); // must release read lock before acquiring write lock
+				readLockAcquired = false;
+				lock.writeLock().lock();
+				writeLockAcquired = true;
+
+				try
+				{
+					lastValue = delegate.apply(input);
+					lastKey = key;
+					return lastValue;
+				}
+				finally
+				{
+					// Downgrade to read lock
+					lock.readLock().lock(); // acquire read lock before releasing write lock
+					readLockAcquired = true;
+					lock.writeLock().unlock(); // unlock write, still hold read
+					writeLockAcquired = false;
+				}
+			}
+			finally
+			{
+				if (writeLockAcquired)
+				{
+					lock.writeLock().unlock();
+				}
+				if (readLockAcquired)
+				{
+					lock.readLock().unlock();
+				}
+			}
+		}
+
+		@Override
+		public R peek(final T input)
+		{
+			final ReadLock readLock = lock.readLock();
+			readLock.lock();
+			try
+			{
+				return lastValue;
+			}
+			finally
+			{
+				readLock.unlock();
+			}
 		}
 	}
 

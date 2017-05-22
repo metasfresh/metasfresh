@@ -63,7 +63,7 @@ public class C_BankStatementLine_UnLink_Payments extends JavaProcess
 		// Make sure we are allowed to modify this line
 		final I_C_BankStatement bankStatement = bankStatementLine.getC_BankStatement();
 		final String docStatus = bankStatement.getDocStatus();
-		if (!docActionBL.isStatusOneOf(docStatus, DocAction.STATUS_Drafted, DocAction.STATUS_Completed, DocAction.STATUS_InProgress))
+		if (!docActionBL.isStatusStrOneOf(docStatus, DocAction.STATUS_Drafted, DocAction.STATUS_Completed, DocAction.STATUS_InProgress))
 		{
 			throw new AdempiereException("@Invalid@ @DocStatus@: " + docStatus);
 		}

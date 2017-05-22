@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -63,6 +64,7 @@ import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -70,9 +72,11 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.adempiere.util.CacheModel;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -95,7 +99,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	private final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandDAO.class);
 
 	private static final ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean> DYNATTR_IC_Avoid_Recreate //
-	= new ModelDynAttributeAccessor<I_C_Invoice_Candidate, Boolean>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
+			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
 	@Override
 	public final Iterator<I_C_Invoice_Candidate> retrieveIcForSelection(final Properties ctx, final int AD_PInstance_ID, final String trxName)
@@ -138,7 +142,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		orderBy
 				.clear()
 
-		// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
+				// order by they header aggregation key to make sure candidates with the same key end up in the same invoice
 				.addColumn(I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey)
 				// task 08241: return ICs with a set Bill_User_ID first, because, we can aggregate ICs with different Bill_User_IDs into one invoice, however, if there are any ICs with a Bill_User_ID
 				// set, and others with no Bill_User_ID, then we want the Bill_User_ID to end up in the C_Invoice (header) record.
@@ -190,7 +194,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public <T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(final Properties ctx, final String tableName, final int recordId, final Class<T> clazz,
 			final boolean onlyUnpaid, final String trxName)
 	{
-		final Map<Integer, T> openInvoices = new HashMap<Integer, T>();
+		final Map<Integer, T> openInvoices = new HashMap<>();
 
 		final List<I_C_Invoice_Candidate> icsForCurrentTerm = fetchInvoiceCandidates(ctx, tableName, recordId, trxName);
 		Check.assumeNotNull(icsForCurrentTerm, "the method might return the empty list, but not null");
@@ -277,35 +281,31 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.match();
 	}
 
+	@Cached(cacheName = I_C_InvoiceCandidate_InOutLine.Table_Name + "#by#" + I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 	@Override
-	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidate)
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(@CacheModel final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		final boolean onlyActive = true;
-		return retrieveICIOLAssociationsForInvoiceCandidate(invoiceCandidate, onlyActive);
-	}
+		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
-	@Override
-	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidateInclInactive(final I_C_Invoice_Candidate invoiceCandidate)
-	{
-		final boolean onlyActive = false;
-		return retrieveICIOLAssociationsForInvoiceCandidate(invoiceCandidate, onlyActive);
-	}
+		// load all I_C_InvoiceCandidate_InOutLine and filter locally.
+		// i think it's safe to assume that there are not 1000s of records to load and this way the code is simpler
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final List<I_C_InvoiceCandidate_InOutLine> result = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, invoiceCandidate)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID).endOrderBy()
+				.create()
+				.stream(I_C_InvoiceCandidate_InOutLine.class)
+				.filter(iciol -> {
 
-	private List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidate(final I_C_Invoice_Candidate invoiceCandidate, final boolean onlyActive)
-	{
-		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, invoiceCandidate)
-				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID());
+					final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
 
-		if (onlyActive)
-		{
-			queryBuilder.addOnlyActiveRecordsFilter();
-		}
+					return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
+				})
+				.collect(Collectors.toList());
 
-		queryBuilder.orderBy()
-				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID);
-
-		return queryBuilder.create()
-				.list(I_C_InvoiceCandidate_InOutLine.class);
+		return result;
 	}
 
 	@Override
@@ -325,8 +325,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
 				.endOrderBy()
-				//
-				;
+		//
+		;
 	}
 
 	@Override
@@ -720,8 +720,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(adPInstanceId)
-				// Invalidate no matter if Processed or not
-				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+		// Invalidate no matter if Processed or not
+		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 		;
 
 		invalidateCandsFor(icQueryBuilder);
@@ -1013,7 +1013,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.setOnlySelection(selectionId)
 				.addNotEqualsFilter(invoiceCandidateColumnName, value) // skip those which have our value set
-				;
+		;
 		if (updateOnlyIfNull)
 		{
 			selectionQueryBuilder.addEqualsFilter(invoiceCandidateColumnName, null);
@@ -1086,7 +1086,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			@CacheTrx final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");
-		final List<Object> params = new ArrayList<Object>();
+		final List<Object> params = new ArrayList<>();
 
 		// Bill BPartner
 		if (query.getBill_BPartner_ID() > 0)
@@ -1152,7 +1152,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID + ","
 				+ I_C_Invoice_Candidate.COLUMNNAME_C_ConversionType_ID;
 
-		final Map<Integer, Map<Integer, BigDecimal>> currencyId2conversion2Amt = new HashMap<Integer, Map<Integer, BigDecimal>>();
+		final Map<Integer, Map<Integer, BigDecimal>> currencyId2conversion2Amt = new HashMap<>();
 
 		final PreparedStatement pstmt = DB.prepareStatement(sql, trxName);
 		ResultSet rs = null;
@@ -1173,7 +1173,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				Map<Integer, BigDecimal> conversion2Amt = currencyId2conversion2Amt.get(currencyId);
 				if (conversion2Amt == null)
 				{
-					conversion2Amt = new HashMap<Integer, BigDecimal>();
+					conversion2Amt = new HashMap<>();
 					currencyId2conversion2Amt.put(currencyId, conversion2Amt);
 				}
 				conversion2Amt.put(conversionTypeId, netAmt);
@@ -1281,8 +1281,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, ctx, trxName)
 				.addInArrayOrAllFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, icIds)
-				// Invalidate no matter if Processed or not
-				// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
+		// Invalidate no matter if Processed or not
+		// .addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, false)
 		;
 
 		invalidateCandsFor(icQueryBuilder);

@@ -956,7 +956,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		}
 		else
 		{
-			log.info("Query={}", m_query);
+			log.trace("Query={}", m_query);
 		}
 
 		return m_query;
@@ -997,7 +997,7 @@ public final class FindPanel extends CPanel implements ActionListener
 	 */
 	private int getNoOfRecords(final MQuery query, final boolean alertZeroRecords)
 	{
-		log.info("query={}", query);
+		log.trace("query={}", query);
 
 		// metas-2009_0021_AP1_G113: begin
 		if (!alertZeroRecords // we do count optimizations only if
@@ -1104,7 +1104,7 @@ public final class FindPanel extends CPanel implements ActionListener
 		}
 		else
 		{
-			log.info("#" + m_total);
+			log.trace("getNoOfRecords: #{}", m_total);
 		}
 
 		//

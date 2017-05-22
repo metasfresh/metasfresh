@@ -14,7 +14,7 @@ public class X_AD_Role_OrgAccess extends org.compiere.model.PO implements I_AD_R
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1118219823L;
+	private static final long serialVersionUID = 936006794L;
 
     /** Standard Constructor */
     public X_AD_Role_OrgAccess (Properties ctx, int AD_Role_OrgAccess_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_AD_Role_OrgAccess extends org.compiere.model.PO implements I_AD_R
       /** if (AD_Role_OrgAccess_ID == 0)
         {
 			setAD_Role_ID (0);
+			setAD_Role_OrgAccess_ID (0);
 			setIsReadOnly (false);
         } */
     }
@@ -74,6 +75,28 @@ public class X_AD_Role_OrgAccess extends org.compiere.model.PO implements I_AD_R
 	public int getAD_Role_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set AD_Role_OrgAccess.
+		@param AD_Role_OrgAccess_ID AD_Role_OrgAccess	  */
+	@Override
+	public void setAD_Role_OrgAccess_ID (int AD_Role_OrgAccess_ID)
+	{
+		if (AD_Role_OrgAccess_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Role_OrgAccess_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Role_OrgAccess_ID, Integer.valueOf(AD_Role_OrgAccess_ID));
+	}
+
+	/** Get AD_Role_OrgAccess.
+		@return AD_Role_OrgAccess	  */
+	@Override
+	public int getAD_Role_OrgAccess_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Role_OrgAccess_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

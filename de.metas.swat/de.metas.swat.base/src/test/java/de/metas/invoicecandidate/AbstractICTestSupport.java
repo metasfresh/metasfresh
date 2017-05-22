@@ -57,6 +57,7 @@ import org.compiere.model.MPriceList;
 import org.compiere.model.MPricingSystem;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Order;
+import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -473,6 +474,11 @@ public abstract class AbstractICTestSupport extends AbstractTestSupport
 		final I_M_InOut inOut = inOut(documentNo, I_M_InOut.class);
 		inOut.setC_BPartner_ID(bpartnerId);
 		inOut.setC_Order_ID(orderId);
+
+		// gh #1566: inactive and reversed inouts will be ignored by IInvoiceCandDAO.retrieveICIOLAssociationsExclRE()
+		inOut.setDocStatus(DocAction.STATUS_Completed);
+		inOut.setIsActive(true);
+
 		InterfaceWrapperHelper.save(inOut);
 		return inOut;
 	}
