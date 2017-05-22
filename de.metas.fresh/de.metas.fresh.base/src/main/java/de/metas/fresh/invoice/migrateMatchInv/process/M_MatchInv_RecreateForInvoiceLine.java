@@ -268,7 +268,7 @@ public class M_MatchInv_RecreateForInvoiceLine extends JavaProcess
 				final I_M_InOut inout = inoutLine.getM_InOut();
 
 				// Skip inouts which are not COmpleted or CLosed
-				if (!Services.get(IDocActionBL.class).isStatusCompletedOrClosed(inout))
+				if (!Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
 				{
 					continue;
 				}

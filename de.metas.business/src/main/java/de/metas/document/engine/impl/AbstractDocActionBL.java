@@ -212,38 +212,38 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	protected abstract DocAction getDocAction(final Object document, boolean throwEx);
 
 	@Override
-	public boolean isStatusDraftedOrInProgress(final Object document)
+	public boolean issDocumentDraftedOrInProgress(final Object document)
 	{
-		return isStatusOneOf(document,
+		return isDocumentStatusOneOf(document,
 				DocumentEngine.STATUS_Drafted,
 				DocumentEngine.STATUS_InProgress);
 	}
 
 	@Override
-	public boolean isStatusCompleted(final Object document)
+	public boolean isDocumentCompleted(final Object document)
 	{
-		return isStatusOneOf(document,
+		return isDocumentStatusOneOf(document,
 				DocumentEngine.STATUS_Completed);
 	}
 	
 	
 	@Override
-	public boolean isStatusClosed(Object document)
+	public boolean isDocumentClosed(Object document)
 	{
-		return isStatusOneOf(document,
+		return isDocumentStatusOneOf(document,
 				DocumentEngine.STATUS_Closed);
 	}
 
 	@Override
-	public boolean isStatusCompletedOrClosed(Object document)
+	public boolean isDocumentCompletedOrClosed(Object document)
 	{
-		return isStatusOneOf(document,
+		return isDocumentStatusOneOf(document,
 				DocumentEngine.STATUS_Completed,
 				DocumentEngine.STATUS_Closed);
 	}
 
 	@Override
-	public boolean isStatusCompletedOrClosedOrReversed(final Object document)
+	public boolean issDocumentCompletedOrClosedOrReversed(final Object document)
 	{
 		final DocAction doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
@@ -254,18 +254,18 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	@Override
 	public boolean isStatusCompletedOrClosedOrReversed(final String docStatus)
 	{
-		return isStatusOneOf(docStatus,
+		return isStatusStrOneOf(docStatus,
 				DocAction.STATUS_Completed,
 				DocAction.STATUS_Closed,
 				DocAction.STATUS_Reversed);
 	}
 
 	@Override
-	public boolean isStatusReversedOrVoided(final Object document)
+	public boolean isDocumentReversedOrVoided(final Object document)
 	{
 		final DocAction doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
-		return isStatusOneOf(docStatus,
+		return isStatusStrOneOf(docStatus,
 				DocAction.STATUS_Reversed,
 				DocAction.STATUS_Voided);
 	}
@@ -360,15 +360,15 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	}
 
 	@Override
-	public boolean isStatusOneOf(final Object document, final String... docStatusesToCheckFor)
+	public boolean isDocumentStatusOneOf(final Object document, final String... docStatusesToCheckFor)
 	{
 		final DocAction doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
-		return isStatusOneOf(docStatus, docStatusesToCheckFor);
+		return isStatusStrOneOf(docStatus, docStatusesToCheckFor);
 	}
 
 	@Override
-	public boolean isStatusOneOf(final String docStatus, final String... docStatusesToCheckFor)
+	public boolean isStatusStrOneOf(final String docStatus, final String... docStatusesToCheckFor)
 	{
 		for (final String currentDocStatus : docStatusesToCheckFor)
 		{

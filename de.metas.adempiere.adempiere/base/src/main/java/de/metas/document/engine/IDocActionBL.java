@@ -80,7 +80,7 @@ public interface IDocActionBL extends ISingletonService
 	 * @return true if document is completed
 	 * @throws IllegalArgumentException if document is not a valid {@link DocAction}.
 	 */
-	boolean isStatusCompletedOrClosed(Object document);
+	boolean isDocumentCompletedOrClosed(Object document);
 
 	boolean isDocumentTable(String tableName);
 
@@ -154,17 +154,17 @@ public interface IDocActionBL extends ISingletonService
 
 	boolean isStatusCompletedOrClosedOrReversed(String docStatus);
 
-	boolean isStatusCompletedOrClosedOrReversed(Object document);
+	boolean issDocumentCompletedOrClosedOrReversed(Object document);
 
-	boolean isStatusDraftedOrInProgress(Object document);
+	boolean issDocumentDraftedOrInProgress(Object document);
 
-	boolean isStatusCompleted(Object document);
+	boolean isDocumentCompleted(Object document);
 
 	/**
 	 * @param document
 	 * @return true if the doc has status 'CL', false otherwise
 	 */
-	boolean isStatusClosed(Object document);
+	boolean isDocumentClosed(Object document);
 
 	/**
 	 * Returns <code>true</code> if the given <code>document</code>'s status is one of the given <code>docStatusesToCheckFor</code>.
@@ -173,15 +173,15 @@ public interface IDocActionBL extends ISingletonService
 	 * @param docStatusesToCheckFor
 	 * @return
 	 */
-	boolean isStatusOneOf(Object document, String... docStatusesToCheckFor);
+	boolean isDocumentStatusOneOf(Object document, String... docStatusesToCheckFor);
 
-	boolean isStatusOneOf(String docStatus, String... docStatusesToCheckFor);
+	boolean isStatusStrOneOf(String docStatus, String... docStatusesToCheckFor);
 
 	/**
 	 * @param document
 	 * @return true if given document is Reversed or Voided
 	 */
-	boolean isStatusReversedOrVoided(Object document);
+	boolean isDocumentReversedOrVoided(Object document);
 
 	/**
 	 * Process a list of documents. The documents will be processed in the same transaction.

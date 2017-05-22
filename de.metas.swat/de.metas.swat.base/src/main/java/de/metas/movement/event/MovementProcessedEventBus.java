@@ -149,7 +149,7 @@ public class MovementProcessedEventBus extends QueueableForwardingEventBus
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (docActionBL.isStatusReversedOrVoided(movement))
+		if (docActionBL.isDocumentReversedOrVoided(movement))
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)

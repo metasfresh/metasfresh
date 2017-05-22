@@ -309,7 +309,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_M_InOut inOut = icIol.getM_InOutLine().getM_InOut();
 
 			// Consider only completed shipments/receipts
-			if (!docActionBL.isStatusCompletedOrClosed(inOut))
+			if (!docActionBL.isDocumentCompletedOrClosed(inOut))
 			{
 				continue;
 			}

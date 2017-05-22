@@ -301,7 +301,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 
 					final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
 
-					return inOut.isActive() && docActionBL.isStatusCompletedOrClosed(inOut.getDocStatus());
+					return inOut.isActive() && docActionBL.isDocumentCompletedOrClosed(inOut);
 				})
 				.collect(Collectors.toList());
 

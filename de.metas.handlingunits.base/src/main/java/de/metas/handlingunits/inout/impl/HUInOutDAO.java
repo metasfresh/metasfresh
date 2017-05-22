@@ -129,7 +129,7 @@ public class HUInOutDAO implements IHUInOutDAO
 			return null;
 		}
 
-		if (!docActionBL.isStatusCompletedOrClosed(inoutLine.getM_InOut()))
+		if (!docActionBL.isDocumentCompletedOrClosed(inoutLine.getM_InOut()))
 		{
 			return null;
 		}
