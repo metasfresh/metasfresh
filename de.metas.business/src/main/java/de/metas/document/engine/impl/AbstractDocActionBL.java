@@ -10,18 +10,17 @@ package de.metas.document.engine.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -50,6 +49,7 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import lombok.NonNull;
 
 public abstract class AbstractDocActionBL implements IDocActionBL
 {
@@ -64,10 +64,10 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	@Override
 	public boolean processIt(final DocAction document, final String processAction)
 	{
-		DocumentEngine engine = new DocumentEngine (document, document.getDocStatus());
-		return engine.processIt (processAction, document.getDocAction());
+		final DocumentEngine engine = new DocumentEngine(document, document.getDocStatus());
+		return engine.processIt(processAction, document.getDocAction());
 	}
-		
+
 	@Override
 	public boolean processIt(final Object documentObj, final String action)
 	{
@@ -88,7 +88,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		{
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				document.set_TrxName(localTrxName);
 				processed[0] = processIt0(document, action);
@@ -99,7 +99,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e) throws Throwable
 			{
 				processed[0] = false;
 				final DocumentProcessingException dpe = new DocumentProcessingException(document, action, e);
@@ -121,7 +121,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	protected boolean processIt0(final DocAction doc, final String action) throws Exception
 	{
 		Check.assumeNotNull(doc, "doc not null");
-		
+
 		//
 		// Guard: save the document if new, else the processing could be corrupted.
 		if (InterfaceWrapperHelper.isNew(doc))
@@ -130,7 +130,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 					.throwIfDeveloperModeOrLogWarningElse(logger);
 			InterfaceWrapperHelper.save(doc);
 		}
-		
+
 		// Actual document processing
 		return doc.processIt(action);
 	}
@@ -176,7 +176,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		{
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				for (final T document : documents.values())
 				{
@@ -215,31 +215,30 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	public boolean issDocumentDraftedOrInProgress(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocumentEngine.STATUS_Drafted,
-				DocumentEngine.STATUS_InProgress);
+				DocAction.STATUS_Drafted,
+				DocAction.STATUS_InProgress);
 	}
 
 	@Override
 	public boolean isDocumentCompleted(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocumentEngine.STATUS_Completed);
-	}
-	
-	
-	@Override
-	public boolean isDocumentClosed(Object document)
-	{
-		return isDocumentStatusOneOf(document,
-				DocumentEngine.STATUS_Closed);
+				DocAction.STATUS_Completed);
 	}
 
 	@Override
-	public boolean isDocumentCompletedOrClosed(Object document)
+	public boolean isDocumentClosed(final Object document)
 	{
 		return isDocumentStatusOneOf(document,
-				DocumentEngine.STATUS_Completed,
-				DocumentEngine.STATUS_Closed);
+				DocAction.STATUS_Closed);
+	}
+
+	@Override
+	public boolean isDocumentCompletedOrClosed(final Object document)
+	{
+		return isDocumentStatusOneOf(document,
+				DocAction.STATUS_Completed,
+				DocAction.STATUS_Closed);
 	}
 
 	@Override
@@ -270,9 +269,8 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 				DocAction.STATUS_Voided);
 	}
 
-
 	@Override
-	public String getDocStatusOrNull(Properties ctx, int adTableId, int recordId)
+	public String getDocStatusOrNull(final Properties ctx, final int adTableId, final int recordId)
 	{
 		return retrieveString(ctx, adTableId, recordId, "DocStatus");
 	}
@@ -304,7 +302,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	}
 
 	@Override
-	public String getDocumentNo(Object model)
+	public String getDocumentNo(final Object model)
 	{
 		//
 		// First try: document's DocumentNo if available
@@ -360,7 +358,7 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 	}
 
 	@Override
-	public boolean isDocumentStatusOneOf(final Object document, final String... docStatusesToCheckFor)
+	public boolean isDocumentStatusOneOf(@NonNull final Object document, @NonNull final String... docStatusesToCheckFor)
 	{
 		final DocAction doc = getDocAction(document);
 		final String docStatus = doc.getDocStatus();
