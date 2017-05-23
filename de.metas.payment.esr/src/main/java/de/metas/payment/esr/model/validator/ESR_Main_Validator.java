@@ -33,9 +33,9 @@ import de.metas.banking.bankstatement.match.spi.impl.ESRPaymentBatchProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.esr.api.IESRImportBL;
-import de.metas.payment.esr.api.IESRLineMatcherHandlersService;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
-import de.metas.payment.esr.spi.impl.DefaultESRLineMatchHandler;
+import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.esr.spi.impl.DunningESRActionHandler;
 import de.metas.payment.esr.spi.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.spi.impl.UnableToAssignESRActionHandler;
@@ -89,6 +89,6 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		
 		//
 		// ESR match listener
-		Services.get(IESRLineMatcherHandlersService.class).registerESRLineListener(new DefaultESRLineMatchHandler()); // 08741
+		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 	}
 }

@@ -8,20 +8,20 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.spi.IESRLineMatchHandler;
+import de.metas.payment.esr.spi.IESRLineHandler;
 
 /**
  * @author cg
  *
  */
-public interface IESRLineMatcherHandlersService extends ISingletonService
+public interface IESRLineHandlersService extends ISingletonService
 {
 	/**
 	 * register listeners for matching fields in ESR lines
 	 * 
 	 * @param l
 	 */
-	void registerESRLineListener(IESRLineMatchHandler l);
+	void registerESRLineListener(IESRLineHandler l);
 
 	/**
 	 * apply the esr matching listeners for Bpartner of the invoice

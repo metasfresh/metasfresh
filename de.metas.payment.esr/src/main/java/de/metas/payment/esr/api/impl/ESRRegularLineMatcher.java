@@ -46,7 +46,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.api.IESRLineMatcherHandlersService;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.exception.ESRParserException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -55,7 +55,7 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
 class ESRRegularLineMatcher extends AbstractESRLineMatcher
 {
 
-	private final IESRLineMatcherHandlersService esrMatchingListener = Services.get(IESRLineMatcherHandlersService.class);
+	private final IESRLineHandlersService esrMatchingListener = Services.get(IESRLineHandlersService.class);
 
 	/**
 	 * Matches the given import line

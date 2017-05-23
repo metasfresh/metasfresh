@@ -16,13 +16,13 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRLineMatcher;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.spi.IESRLineMatchHandler;
+import de.metas.payment.esr.spi.IESRLineHandler;
 
 /**
  * @author cg
  *
  */
-public class DefaultESRLineMatchHandler implements IESRLineMatchHandler
+public class DefaultESRLineHandler implements IESRLineHandler
 {
 
 	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);

@@ -45,14 +45,14 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRLineMatcher;
-import de.metas.payment.esr.api.IESRLineMatcherHandlersService;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 
 public abstract class AbstractESRLineMatcher implements IESRLineMatcher
 {
 	protected final transient Logger logger = LogManager.getLogger(getClass());
-	protected final IESRLineMatcherHandlersService esrMatchingListener = Services.get(IESRLineMatcherHandlersService.class);
+	protected final IESRLineHandlersService esrMatchingListener = Services.get(IESRLineHandlersService.class);
 	
 	/**
 	 * Method to remove the left zeros from a string.

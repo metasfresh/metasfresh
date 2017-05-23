@@ -12,7 +12,7 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
  * @author cg
  *
  */
-public interface IESRLineMatchHandler
+public interface IESRLineHandler
 {
 	/**
 	 * <ul>
