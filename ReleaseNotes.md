@@ -33,6 +33,8 @@ Here come the actual release notes:
     * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
   * [#1612](https://github.com/metasfresh/metasfresh/issues/1612) New Window for Business Partner Group in WebUI
     * Created a new Window in WebUI that allows different settings for Business Partner Groups.
+  * [#1621](https://github.com/metasfresh/metasfresh/issues/1621) Adjustments of Pricelist window in WebUI
+    * Adjusting the Pricelist Window in WebUI, renaming Fields, Adding Translations, Order by Valid from in Subtab.
 
 ## Fixes
 
