@@ -683,3 +683,453 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-05-23 15:57:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544751
 ;
 
+-- 2017-05-23T16:01:44.601
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Pflichtfeld Art', PrintName='Pflichtfeld Art',Updated=TO_TIMESTAMP('2017-05-23 16:01:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2537
+;
+
+-- 2017-05-23T16:01:44.604
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2537
+;
+
+-- 2017-05-23T16:01:44.607
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='MandatoryType', Name='Pflichtfeld Art', Description='The specification of a Product Attribute Instance is mandatory', Help=NULL WHERE AD_Element_ID=2537
+;
+
+-- 2017-05-23T16:01:44.621
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='MandatoryType', Name='Pflichtfeld Art', Description='The specification of a Product Attribute Instance is mandatory', Help=NULL, AD_Element_ID=2537 WHERE UPPER(ColumnName)='MANDATORYTYPE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:01:44.623
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='MandatoryType', Name='Pflichtfeld Art', Description='The specification of a Product Attribute Instance is mandatory', Help=NULL WHERE AD_Element_ID=2537 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:01:44.624
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Pflichtfeld Art', Description='The specification of a Product Attribute Instance is mandatory', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2537) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:01:44.639
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Pflichtfeld Art', Name='Pflichtfeld Art' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2537)
+;
+
+-- 2017-05-23T16:02:53.247
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Instanz Merkmal', PrintName='Instanz Merkmal',Updated=TO_TIMESTAMP('2017-05-23 16:02:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2012
+;
+
+-- 2017-05-23T16:02:53.249
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2012
+;
+
+-- 2017-05-23T16:02:53.251
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsInstanceAttribute', Name='Instanz Merkmal', Description='The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)', Help='If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).' WHERE AD_Element_ID=2012
+;
+
+-- 2017-05-23T16:02:53.264
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsInstanceAttribute', Name='Instanz Merkmal', Description='The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)', Help='If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).', AD_Element_ID=2012 WHERE UPPER(ColumnName)='ISINSTANCEATTRIBUTE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:02:53.266
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsInstanceAttribute', Name='Instanz Merkmal', Description='The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)', Help='If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).' WHERE AD_Element_ID=2012 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:02:53.267
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Instanz Merkmal', Description='The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)', Help='If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2012) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:02:53.288
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Instanz Merkmal', Name='Instanz Merkmal' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2012)
+;
+
+-- 2017-05-23T16:03:37.867
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Serien Nr.', PrintName='Serien Nr.',Updated=TO_TIMESTAMP('2017-05-23 16:03:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2014
+;
+
+-- 2017-05-23T16:03:37.869
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2014
+;
+
+-- 2017-05-23T16:03:37.870
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsSerNo', Name='Serien Nr.', Description='The product instances have Serial Numbers', Help='For individual products, you can define Serial Numbers' WHERE AD_Element_ID=2014
+;
+
+-- 2017-05-23T16:03:37.878
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsSerNo', Name='Serien Nr.', Description='The product instances have Serial Numbers', Help='For individual products, you can define Serial Numbers', AD_Element_ID=2014 WHERE UPPER(ColumnName)='ISSERNO' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:03:37.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsSerNo', Name='Serien Nr.', Description='The product instances have Serial Numbers', Help='For individual products, you can define Serial Numbers' WHERE AD_Element_ID=2014 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:03:37.881
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr.', Description='The product instances have Serial Numbers', Help='For individual products, you can define Serial Numbers' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2014) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:03:37.896
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Serien Nr.', Name='Serien Nr.' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2014)
+;
+
+-- 2017-05-23T16:04:37.040
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Serien Nr. Definition', PrintName='Serien Nr. Definition',Updated=TO_TIMESTAMP('2017-05-23 16:04:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2023
+;
+
+-- 2017-05-23T16:04:37.042
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2023
+;
+
+-- 2017-05-23T16:04:37.043
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='M_SerNoCtl_ID', Name='Serien Nr. Definition', Description='Definition einer Serien-Nummer', Help='Einstellungen für die Erzeugung von Serien-Nummern für Produkte' WHERE AD_Element_ID=2023
+;
+
+-- 2017-05-23T16:04:37.055
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='M_SerNoCtl_ID', Name='Serien Nr. Definition', Description='Definition einer Serien-Nummer', Help='Einstellungen für die Erzeugung von Serien-Nummern für Produkte', AD_Element_ID=2023 WHERE UPPER(ColumnName)='M_SERNOCTL_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:04:37.057
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='M_SerNoCtl_ID', Name='Serien Nr. Definition', Description='Definition einer Serien-Nummer', Help='Einstellungen für die Erzeugung von Serien-Nummern für Produkte' WHERE AD_Element_ID=2023 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:04:37.058
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr. Definition', Description='Definition einer Serien-Nummer', Help='Einstellungen für die Erzeugung von Serien-Nummern für Produkte' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2023) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:04:37.081
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Serien Nr. Definition', Name='Serien Nr. Definition' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2023)
+;
+
+-- 2017-05-23T16:05:29.929
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr. Start',Updated=TO_TIMESTAMP('2017-05-23 16:05:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=12372
+;
+
+-- 2017-05-23T16:05:29.934
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=12372
+;
+
+-- 2017-05-23T16:05:43.162
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Serien Nr. Start', PrintName='Serien Nr. Start',Updated=TO_TIMESTAMP('2017-05-23 16:05:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2856
+;
+
+-- 2017-05-23T16:05:43.167
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2856
+;
+
+-- 2017-05-23T16:05:43.171
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='SerNoCharSOverwrite', Name='Serien Nr. Start', Description='Serial Number Start Indicator overwrite - default #', Help='If not defined, the default character # is used' WHERE AD_Element_ID=2856
+;
+
+-- 2017-05-23T16:05:43.196
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SerNoCharSOverwrite', Name='Serien Nr. Start', Description='Serial Number Start Indicator overwrite - default #', Help='If not defined, the default character # is used', AD_Element_ID=2856 WHERE UPPER(ColumnName)='SERNOCHARSOVERWRITE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:05:43.198
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SerNoCharSOverwrite', Name='Serien Nr. Start', Description='Serial Number Start Indicator overwrite - default #', Help='If not defined, the default character # is used' WHERE AD_Element_ID=2856 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:05:43.200
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr. Start', Description='Serial Number Start Indicator overwrite - default #', Help='If not defined, the default character # is used' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2856) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:05:43.213
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Serien Nr. Start', Name='Serien Nr. Start' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2856)
+;
+
+-- 2017-05-23T16:06:27.916
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Serien Nr. Ende', PrintName='Serien Nr. Ende',Updated=TO_TIMESTAMP('2017-05-23 16:06:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2857
+;
+
+-- 2017-05-23T16:06:27.918
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2857
+;
+
+-- 2017-05-23T16:06:27.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='SerNoCharEOverwrite', Name='Serien Nr. Ende', Description='Serial Number End Indicator overwrite - default empty', Help='If not defined, no character is used' WHERE AD_Element_ID=2857
+;
+
+-- 2017-05-23T16:06:27.927
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SerNoCharEOverwrite', Name='Serien Nr. Ende', Description='Serial Number End Indicator overwrite - default empty', Help='If not defined, no character is used', AD_Element_ID=2857 WHERE UPPER(ColumnName)='SERNOCHAREOVERWRITE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:06:27.932
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SerNoCharEOverwrite', Name='Serien Nr. Ende', Description='Serial Number End Indicator overwrite - default empty', Help='If not defined, no character is used' WHERE AD_Element_ID=2857 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:06:27.933
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr. Ende', Description='Serial Number End Indicator overwrite - default empty', Help='If not defined, no character is used' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2857) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:06:27.948
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Serien Nr. Ende', Name='Serien Nr. Ende' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2857)
+;
+
+-- 2017-05-23T16:08:40.381
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Lot Nr.', PrintName='Lot Nr.',Updated=TO_TIMESTAMP('2017-05-23 16:08:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2013
+;
+
+-- 2017-05-23T16:08:40.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2013
+;
+
+-- 2017-05-23T16:08:40.384
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsLot', Name='Lot Nr.', Description='The product instances have a Lot Number', Help='For individual products, you can define Lot Numbers' WHERE AD_Element_ID=2013
+;
+
+-- 2017-05-23T16:08:40.400
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLot', Name='Lot Nr.', Description='The product instances have a Lot Number', Help='For individual products, you can define Lot Numbers', AD_Element_ID=2013 WHERE UPPER(ColumnName)='ISLOT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:08:40.401
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLot', Name='Lot Nr.', Description='The product instances have a Lot Number', Help='For individual products, you can define Lot Numbers' WHERE AD_Element_ID=2013 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:08:40.403
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Lot Nr.', Description='The product instances have a Lot Number', Help='For individual products, you can define Lot Numbers' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2013) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:08:40.420
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Lot Nr.', Name='Lot Nr.' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2013)
+;
+
+-- 2017-05-23T16:09:20.958
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Lot Nr. Definition', PrintName='Lot Nr. Definition',Updated=TO_TIMESTAMP('2017-05-23 16:09:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2022
+;
+
+-- 2017-05-23T16:09:20.959
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2022
+;
+
+-- 2017-05-23T16:09:20.959
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='M_LotCtl_ID', Name='Lot Nr. Definition', Description='Definition einer Los-Nummer', Help='Einstellungen für die Erzeugung von Los-Nummern für Produkte' WHERE AD_Element_ID=2022
+;
+
+-- 2017-05-23T16:09:20.972
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='M_LotCtl_ID', Name='Lot Nr. Definition', Description='Definition einer Los-Nummer', Help='Einstellungen für die Erzeugung von Los-Nummern für Produkte', AD_Element_ID=2022 WHERE UPPER(ColumnName)='M_LOTCTL_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:09:20.973
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='M_LotCtl_ID', Name='Lot Nr. Definition', Description='Definition einer Los-Nummer', Help='Einstellungen für die Erzeugung von Los-Nummern für Produkte' WHERE AD_Element_ID=2022 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:09:20.975
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Lot Nr. Definition', Description='Definition einer Los-Nummer', Help='Einstellungen für die Erzeugung von Los-Nummern für Produkte' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2022) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:09:20.989
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Lot Nr. Definition', Name='Lot Nr. Definition' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2022)
+;
+
+-- 2017-05-23T16:09:50.798
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Lot Nr. Start', PrintName='Lot Nr. Start',Updated=TO_TIMESTAMP('2017-05-23 16:09:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2858
+;
+
+-- 2017-05-23T16:09:50.799
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2858
+;
+
+-- 2017-05-23T16:09:50.800
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='LotCharSOverwrite', Name='Lot Nr. Start', Description='Lot/Batch Start Indicator overwrite - default «', Help='If not defined, the default character « is used' WHERE AD_Element_ID=2858
+;
+
+-- 2017-05-23T16:09:50.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='LotCharSOverwrite', Name='Lot Nr. Start', Description='Lot/Batch Start Indicator overwrite - default «', Help='If not defined, the default character « is used', AD_Element_ID=2858 WHERE UPPER(ColumnName)='LOTCHARSOVERWRITE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:09:50.814
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='LotCharSOverwrite', Name='Lot Nr. Start', Description='Lot/Batch Start Indicator overwrite - default «', Help='If not defined, the default character « is used' WHERE AD_Element_ID=2858 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:09:50.815
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Lot Nr. Start', Description='Lot/Batch Start Indicator overwrite - default «', Help='If not defined, the default character « is used' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2858) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:09:50.830
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Lot Nr. Start', Name='Lot Nr. Start' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2858)
+;
+
+-- 2017-05-23T16:10:28.879
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Lot Nr. Ende', PrintName='Lot Nr. Ende',Updated=TO_TIMESTAMP('2017-05-23 16:10:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2859
+;
+
+-- 2017-05-23T16:10:28.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2859
+;
+
+-- 2017-05-23T16:10:28.880
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='LotCharEOverwrite', Name='Lot Nr. Ende', Description='Lot/Batch End Indicator overwrite - default »', Help='If not defined, the default character » is used' WHERE AD_Element_ID=2859
+;
+
+-- 2017-05-23T16:10:28.893
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='LotCharEOverwrite', Name='Lot Nr. Ende', Description='Lot/Batch End Indicator overwrite - default »', Help='If not defined, the default character » is used', AD_Element_ID=2859 WHERE UPPER(ColumnName)='LOTCHAREOVERWRITE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:10:28.894
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='LotCharEOverwrite', Name='Lot Nr. Ende', Description='Lot/Batch End Indicator overwrite - default »', Help='If not defined, the default character » is used' WHERE AD_Element_ID=2859 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:10:28.895
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Lot Nr. Ende', Description='Lot/Batch End Indicator overwrite - default »', Help='If not defined, the default character » is used' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2859) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:10:28.909
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Lot Nr. Ende', Name='Lot Nr. Ende' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2859)
+;
+
+-- 2017-05-23T16:11:59.768
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr. Pflicht',Updated=TO_TIMESTAMP('2017-05-23 16:11:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=8376
+;
+
+-- 2017-05-23T16:11:59.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=8376
+;
+
+-- 2017-05-23T16:12:11.133
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Serien Nr. Pflicht', PrintName='Serien Nr. Pflicht',Updated=TO_TIMESTAMP('2017-05-23 16:12:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2263
+;
+
+-- 2017-05-23T16:12:11.137
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2263
+;
+
+-- 2017-05-23T16:12:11.141
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsSerNoMandatory', Name='Serien Nr. Pflicht', Description='The entry of a Serial No is mandatory when creating a Product Instance', Help=NULL WHERE AD_Element_ID=2263
+;
+
+-- 2017-05-23T16:12:11.172
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsSerNoMandatory', Name='Serien Nr. Pflicht', Description='The entry of a Serial No is mandatory when creating a Product Instance', Help=NULL, AD_Element_ID=2263 WHERE UPPER(ColumnName)='ISSERNOMANDATORY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:12:11.177
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsSerNoMandatory', Name='Serien Nr. Pflicht', Description='The entry of a Serial No is mandatory when creating a Product Instance', Help=NULL WHERE AD_Element_ID=2263 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:12:11.178
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Serien Nr. Pflicht', Description='The entry of a Serial No is mandatory when creating a Product Instance', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2263) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:12:11.190
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Serien Nr. Pflicht', Name='Serien Nr. Pflicht' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2263)
+;
+
+-- 2017-05-23T16:12:46.385
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Lot Nr. Pflicht', PrintName='Lot Nr. Pflicht',Updated=TO_TIMESTAMP('2017-05-23 16:12:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2262
+;
+
+-- 2017-05-23T16:12:46.386
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2262
+;
+
+-- 2017-05-23T16:12:46.386
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsLotMandatory', Name='Lot Nr. Pflicht', Description='The entry of Lot info is mandatory when creating a Product Instance', Help=NULL WHERE AD_Element_ID=2262
+;
+
+-- 2017-05-23T16:12:46.396
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLotMandatory', Name='Lot Nr. Pflicht', Description='The entry of Lot info is mandatory when creating a Product Instance', Help=NULL, AD_Element_ID=2262 WHERE UPPER(ColumnName)='ISLOTMANDATORY' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-05-23T16:12:46.397
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsLotMandatory', Name='Lot Nr. Pflicht', Description='The entry of Lot info is mandatory when creating a Product Instance', Help=NULL WHERE AD_Element_ID=2262 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:12:46.398
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Lot Nr. Pflicht', Description='The entry of Lot info is mandatory when creating a Product Instance', Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2262) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-05-23T16:12:46.412
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Lot Nr. Pflicht', Name='Lot Nr. Pflicht' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2262)
+;
+
+-- 2017-05-23T16:14:21.211
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,8376,0,461,540491,544764,TO_TIMESTAMP('2017-05-23 16:14:21','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Serien Nr. Pflicht',50,0,0,TO_TIMESTAMP('2017-05-23 16:14:21','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-05-23T16:14:37.933
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,8375,0,461,540495,544765,TO_TIMESTAMP('2017-05-23 16:14:37','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Lot Nr. Pflicht',50,0,0,TO_TIMESTAMP('2017-05-23 16:14:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
