@@ -46,6 +46,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
@@ -58,7 +59,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 
 import com.google.common.base.Supplier;
@@ -97,7 +97,6 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.inout.event.ReturnInOutProcessedEventBus;
 import de.metas.inventory.event.InventoryProcessedEventBus;
 import de.metas.logging.LogManager;
 
@@ -1260,46 +1259,35 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * Create vendor return inout
 	 */
-	public void createVendorReturn(final I_M_Warehouse warehouseFrom)
+	public void createVendorReturn()
 	{
+		// services
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
-		// the resulting vendor return inout
-		final List<I_M_InOut> returnInuts = new ArrayList<>();
-
-		trxManager.run(new TrxRunnable2()
+		try
 		{
+			// Extract the selected HUs to return back to vendor
+			final List<I_M_HU> husToReturn = getSelectedHUKeys().stream()
+					.map(HUKey::getM_HU)
+					.filter(hu -> !handlingUnitsBL.isPureVirtual(hu)) // Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+					.collect(GuavaCollectors.toImmutableList());
 
-			@Override
-			public void run(final String localTrxName) throws Exception
+			final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
+
+			final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(husToReturn, movementDate);
+
+			//
+			// Refresh the HUKeys if something changed (i.e. at least one vendor return was created)
+			if (!returnInOuts.isEmpty())
 			{
-				returnInuts.addAll(createVendorReturn0(warehouseFrom, localTrxName));
-
+				refreshSelectedHUKeys();
 			}
 
-			@Override
-			public boolean doCatch(final Throwable e) throws Throwable
-			{
-				throw new TerminalException(e.getLocalizedMessage(), e);
-			}
-
-			@Override
-			public void doFinally()
-			{
-				// nothing
-			}
-		});
-
-		if (!returnInuts.isEmpty())
+		}
+		catch (Exception ex)
 		{
-			//
-			// Refresh the HUKeys
-			refreshSelectedHUKeys();
-			
-			//
-			// Send notifications
-			ReturnInOutProcessedEventBus.newInstance()
-					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
-					.notify(returnInuts);
+			throw TerminalException.wrapIfNeeded(ex);
 		}
 	}
 
@@ -1380,7 +1368,6 @@ public class HUEditorModel implements IDisposable
 	 */
 	public void refreshSelectedHUKeys()
 	{
-		
 
 		// Remove huKeys from their parents
 		for (final HUKey huKey : getSelectedHUKeys())
@@ -1434,48 +1421,21 @@ public class HUEditorModel implements IDisposable
 	/**
 	 * 
 	 * Create vendor returns based on the selected hus
-	 * 
-	 * @param trxName
-	 * @return
 	 */
-	public List<I_M_InOut> createVendorReturn0(final I_M_Warehouse warehousefrom, final String trxName)
+	public List<I_M_InOut> createVendorReturn0()
 	{
-
 		// services
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
-		//
-		// Get selected HUs
-		final Set<HUKey> huKeys = new HashSet<>(getSelectedHUKeys());
-		for (final Iterator<HUKey> huKeysIterator = huKeys.iterator(); huKeysIterator.hasNext();)
-		{
-			final HUKey huKey = huKeysIterator.next();
-			final I_M_HU hu = huKey.getM_HU();
+		final List<I_M_HU> husToReturn = getSelectedHUKeys().stream()
+				.map(HUKey::getM_HU)
+				.filter(hu -> !handlingUnitsBL.isPureVirtual(hu)) // Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
+				.collect(GuavaCollectors.toImmutableList());
 
-			// Exclude pure virtual HUs (i.e. those HUs which are linked to material HU Items)
-			if (handlingUnitsBL.isPureVirtual(hu))
-			{
-				huKeysIterator.remove();
-				continue;
-			}
-		}
-		if (Check.isEmpty(huKeys))
-		{
-			throw new TerminalException("@NoSelection@");
-		}
-
-		final List<I_M_HU> hus = new ArrayList<I_M_HU>();
-		for (final HUKey huKey : huKeys)
-		{
-			final I_M_HU hu = huKey.getM_HU();
-			hus.add(hu);
-		}
-
-		// movement date for inout
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
 
-		final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
+		final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(husToReturn, movementDate);
 
 		return returnInOuts;
 	}
@@ -1503,14 +1463,14 @@ public class HUEditorModel implements IDisposable
 			return Collections.emptyList();
 		}
 
-		final List<I_M_Movement> movementsToQualityWarehouse =  returnsWarehouseModel.getMovements();
+		final List<I_M_Movement> movementsToQualityWarehouse = returnsWarehouseModel.getMovements();
 		//
 		// Refresh the HUKeys
-		if(!movementsToQualityWarehouse.isEmpty())
+		if (!movementsToQualityWarehouse.isEmpty())
 		{
 			refreshSelectedHUKeys();
 		}
-		
+
 		return returnsWarehouseModel.getMovements();
 
 	}
