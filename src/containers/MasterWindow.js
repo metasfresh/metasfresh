@@ -290,22 +290,22 @@ class MasterWindow extends Component {
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
 
+        const isDocumentNotSaved = dataId !== 'notfound' &&
+        (master.saveStatus.saved !== undefined && !master.saveStatus.saved) &&
+        (master.validStatus.initialValue !== undefined) &&
+        !master.validStatus.initialValue
+
         return (
             <Container
                 entity="window"
                 {...{dropzoneFocused, docStatusData, docSummaryData,
-                    dataId, breadcrumb, docNoData}}
+                    dataId, breadcrumb, docNoData, isDocumentNotSaved}}
                 docActionElem = {docActionElement}
                 windowType={params.windowType}
                 docId={params.docId}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
-                isDocumentNotSaved={
-                    dataId !== 'notfound' &&
-                    !master.saveStatus.saved &&
-                    !master.validStatus.initialValue
-                }
             >
                 {dataId === 'notfound' ?
                     <BlankPage what="Document" /> : this.renderBody()

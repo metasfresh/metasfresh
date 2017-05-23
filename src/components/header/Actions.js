@@ -13,7 +13,7 @@ class Actions extends Component {
         super(props);
 
         this.state = {
-            data: []
+            data: null
         }
     }
 
