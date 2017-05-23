@@ -25,6 +25,8 @@ Here come the actual release notes:
   * [#1609](https://github.com/metasfresh/metasfresh/issues/1609) Provide Basic Test config Data for manufacturing / production
   * [#1606](https://github.com/metasfresh/metasfresh/issues/1606) Add IsQualityReturnWarehouse flag to warehouse window WebUI
     * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
+  * [#1612](https://github.com/metasfresh/metasfresh/issues/1612) New Window for Business Partner Group in WebUI
+    * Created a new Window in WebUI that allows different settings for Business Partner Groups.
 
 ## Fixes
 
