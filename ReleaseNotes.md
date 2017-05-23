@@ -38,8 +38,11 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1566](https://github.com/metasfresh/metasfresh/issues/1566) Invoicing problem with reversed inouts that have a quality discount
+    * Fix that solves an issue when processing Invoice candidates that are associated with inoutlines which are reversed and have a quclity discount recorded.
   * [#1578](https://github.com/metasfresh/metasfresh/issues/1578) spring-boot services try to start local broker and fail
+    * Internal task that solves an issue with failing spring boot services.
   * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
+    * Fixes an issue in sequence generation, trying to create sequences in wrong, active db schemas.
 
 # metasfresh 5.10 (2017-20)
 
