@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
@@ -105,6 +106,14 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 			throw new FillMandatoryException(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
 		}
 
+		if (!esrImportBL.isV11File(p_FileName))
+		{
+			final String  msg = Services.get(IMsgBL.class).getMsg(getCtx(), "ESR_Import_LoadFromFile.CheckV11File");
+			Services.get(IClientUI.class).error(0, msg);
+			
+			throw new AdempiereException(msg);
+		}
+		
 		//
 		// Create Async Batch for tracking
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()

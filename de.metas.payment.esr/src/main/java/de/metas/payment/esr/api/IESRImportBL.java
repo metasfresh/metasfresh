@@ -152,6 +152,8 @@ public interface IESRImportBL extends ISingletonService
 	 * @return
 	 */
 	boolean isProcessed(I_ESR_Import esrImport);
+	
+	void addErrorMsgInFront(I_ESR_ImportLine importLine, String msg);
 
 	/**
 	 * Iterate the {@link ESR_ImportLine}s for the given <code>bankStatementLine</code> and set <code>C_BankStatementLine</code> and <code>C_BankStatementLine_Ref</code> to <code>null</code> for each
@@ -166,4 +168,12 @@ public interface IESRImportBL extends ISingletonService
 	 * @param bankStatementLineRef
 	 */
 	void unlinkESRImportLinesFor(I_C_BankStatementLine_Ref bankStatementLineRef);
+	
+	/**
+	 * Check is is a v11 filename<bR>
+	 * The check is made by name of the file
+	 * @param filename
+	 * @return
+	 */
+	boolean isV11File(String filename);
 }
