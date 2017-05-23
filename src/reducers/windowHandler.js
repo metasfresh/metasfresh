@@ -241,14 +241,13 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {
-                                saveStatus: {$set: action.saveStatus}
-                            }
-                        }
+                        [action.tabid]: 
                     }
                 }
             });
+
+
+            // state.master.rowData[1].findIndex(item=>item.rowId === action.rowid)
 
         case types.UPDATE_DATA_VALID_STATUS:
             return Object.assign({}, state, {

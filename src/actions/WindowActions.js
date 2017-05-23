@@ -526,7 +526,7 @@ function updateStatus(responseData) {
             if(item.rowId){
                 console.log(item);
                 dispatch(updateRowStatus(
-                    'master', item.tabid, item.rowId, item.saveStatus
+                    'master', item.tabid, item.rowId, item.saveStatus // item
                 ));
             }else{
 

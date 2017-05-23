@@ -96,6 +96,7 @@ class Modal extends Component {
                 dispatch(createWindow(
                     windowType, dataId, tabId, rowId, true, isAdvanced
                 )).catch(err => {
+                    console.log('error');
                     this.handleClose();
                     throw err;
                 });
