@@ -47,7 +47,8 @@ Here come the actual release notes:
     * Internal task that solves an issue with failing spring boot services.
   * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
     * Fixes an issue in sequence generation, trying to create sequences in wrong, active db schemas.
-
+  * [#1624](https://github.com/metasfresh/metasfresh/issues/1624) NPE when closing the pp_order
+  
 # metasfresh 5.10 (2017-20)
 
 ## Features
