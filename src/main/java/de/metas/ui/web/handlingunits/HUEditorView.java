@@ -344,6 +344,15 @@ public class HUEditorView implements IView
 			invalidateAll();
 		}
 	}
+	
+	public void removesHUIdsAndInvalidate(final Collection<Integer> huIdsToRemove)
+	{
+		if (rowsBuffer.removeHUIds(huIdsToRemove))
+		{
+			invalidateAll();
+		}
+	}
+
 
 	private static final Set<Integer> extractHUIds(final Collection<I_M_HU> hus)
 	{
