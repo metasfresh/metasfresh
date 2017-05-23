@@ -1410,10 +1410,10 @@ public final class Document
 		return includedDocuments.getDocumentById(rowId);
 	}
 
-	public List<Document> getIncludedDocuments(final DetailId detailId)
+	public OrderedDocumentsList getIncludedDocuments(final DetailId detailId, final List<DocumentQueryOrderBy> orderBys)
 	{
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
-		return includedDocuments.getDocuments();
+		return includedDocuments.getDocuments(orderBys);
 	}
 
 	public void assertNewDocumentAllowed(final DetailId detailId)

@@ -55,6 +55,7 @@ import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.OrderedDocumentsList;
 
 /*
  * #%L
@@ -144,13 +145,13 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public List<Document> retrieveDocuments(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
+	public OrderedDocumentsList retrieveDocuments(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		final int limit = query.getPageLength();
 		return retriveDocuments(query, limit, changesCollector);
 	}
 
-	public List<Document> retriveDocuments(final DocumentQuery query, final int limit, final IDocumentChangesCollector changesCollector)
+	public OrderedDocumentsList retriveDocuments(final DocumentQuery query, final int limit, final IDocumentChangesCollector changesCollector)
 	{
 		logger.debug("Retrieving records: query={}, limit={}", query, limit);
 
@@ -173,7 +174,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			maxRowsToFetch = loadLimitMax;
 		}
 
-		final List<Document> documentsCollector = limit > 0 ? new ArrayList<>(limit) : new ArrayList<>();
+		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -204,7 +205,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 							.setChangesCollector(changesCollector)
 							.initializeAsExistingRecord(documentValuesSupplier);
 				}
-				documentsCollector.add(document);
+				documentsCollector.addDocument(document);
 
 				final int loadCount = documentsCollector.size();
 
@@ -246,7 +247,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	public Document retrieveDocument(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		final int limit = 2;
-		final List<Document> documents = retriveDocuments(query, limit, changesCollector);
+		final OrderedDocumentsList documents = retriveDocuments(query, limit, changesCollector);
 		if (documents.isEmpty())
 		{
 			return null;
@@ -254,7 +255,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		else if (documents.size() > 1)
 		{
 			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query + " on " + this
-					+ "\n First " + limit + " records: " + Joiner.on("\n").join(documents));
+					+ "\n First " + limit + " records: " + Joiner.on("\n").join(documents.toList()));
 		}
 		else
 		{

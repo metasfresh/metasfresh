@@ -59,6 +59,7 @@ import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
@@ -171,29 +172,30 @@ public class WindowRestController
 
 	@GetMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> getData(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-		return getData(documentPath, fieldsListStr, advanced);
+		final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
+		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
 	public List<JSONDocument> getData(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr);
-		return getData(documentPath, fieldsListStr, advanced);
+		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -208,10 +210,11 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		return getData(documentPath, fieldsListStr, advanced);
+		final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
+		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
 
-	private List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced)
+	private List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced, final List<DocumentQueryOrderBy> orderBys)
 	{
 		userSession.assertLoggedIn();
 
@@ -229,7 +232,7 @@ public class WindowRestController
 			}
 			else if (documentPath.isAnyIncludedDocument())
 			{
-				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId());
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys).toList();
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{

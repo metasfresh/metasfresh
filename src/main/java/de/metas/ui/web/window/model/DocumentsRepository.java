@@ -1,7 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.List;
-
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
@@ -29,7 +27,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 
 public interface DocumentsRepository
 {
-	List<Document> retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector);
+	OrderedDocumentsList retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector);
 
 	/** @return document or null */
 	Document retrieveDocument(DocumentQuery query, IDocumentChangesCollector changesCollector);

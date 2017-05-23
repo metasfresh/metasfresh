@@ -13,7 +13,6 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import de.metas.logging.LogManager;
@@ -160,23 +159,21 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	}
 
 	@Override
-	public List<Document> getDocuments()
+	public OrderedDocumentsList getDocuments(final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Map<DocumentId, Document> documentsWithChanges = new LinkedHashMap<>(getInnerDocumentsWithChanges());
-		List<Document> documents = DocumentQuery.builder(entityDescriptor)
+		OrderedDocumentsList documents = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setExistingDocumentsSupplier(documentsWithChanges::remove)
 				.setChangesCollector(NullDocumentChangesCollector.instance)
+				.setOrderBys(orderBys)
 				.retriveDocuments();
 
 		// Add the remaining documents with changes if any
 		// i.e. those documents which are new and never saved in database.
 		if (!documentsWithChanges.isEmpty())
 		{
-			documents = ImmutableList.<Document> builder()
-					.addAll(documents)
-					.addAll(documentsWithChanges.values())
-					.build();
+			documents.addDocuments(documentsWithChanges.values());
 		}
 
 		staled = false;

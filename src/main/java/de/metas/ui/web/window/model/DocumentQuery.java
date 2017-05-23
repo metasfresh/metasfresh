@@ -196,7 +196,7 @@ public final class DocumentQuery
 			return documentsRepository.retrieveDocument(query, changesCollector);
 		}
 
-		public List<Document> retriveDocuments()
+		public OrderedDocumentsList retriveDocuments()
 		{
 			final DocumentQuery query = build();
 			final DocumentsRepository documentsRepository = getDocumentsRepository();
@@ -289,6 +289,19 @@ public final class DocumentQuery
 				_orderBys = new ArrayList<>();
 			}
 			_orderBys.add(orderBy);
+			return this;
+		}
+		
+		public Builder setOrderBys(final List<DocumentQueryOrderBy> orderBys)
+		{
+			if(orderBys == null || orderBys.isEmpty())
+			{
+				_orderBys = null;
+			}
+			else
+			{
+				_orderBys = new ArrayList<>(orderBys);
+			}
 			return this;
 		}
 

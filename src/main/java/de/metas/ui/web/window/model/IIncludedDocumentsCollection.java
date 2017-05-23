@@ -38,7 +38,7 @@ public interface IIncludedDocumentsCollection
 
 	IIncludedDocumentsCollection copy(Document parentDocumentCopy, CopyMode copyMode);
 
-	List<Document> getDocuments();
+	OrderedDocumentsList getDocuments(List<DocumentQueryOrderBy> orderBys);
 
 	Document getDocumentById(DocumentId documentId);
 

@@ -72,11 +72,12 @@ public final class HighVolumeReadonlyIncludedDocumentsCollection implements IInc
 	}
 
 	@Override
-	public List<Document> getDocuments()
+	public OrderedDocumentsList getDocuments(final List<DocumentQueryOrderBy> orderBys)
 	{
 		return DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setChangesCollector(NullDocumentChangesCollector.instance)
+				.setOrderBys(orderBys)
 				.retriveDocuments();
 	}
 

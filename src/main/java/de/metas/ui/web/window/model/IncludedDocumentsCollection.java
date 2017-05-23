@@ -271,9 +271,10 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	}
 
 	@Override
-	public synchronized List<Document> getDocuments()
+	public synchronized OrderedDocumentsList getDocuments(final List<DocumentQueryOrderBy> orderBys)
 	{
-		return ImmutableList.copyOf(getInnerDocumentsFullyLoaded());
+		// TODO: use orderBys
+		return OrderedDocumentsList.of(getInnerDocumentsFullyLoaded(), ImmutableList.of());
 	}
 
 	/**
@@ -364,7 +365,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 	{
 		//
 		// Retrieve the documents from repository
-		final List<Document> documentsNew = DocumentQuery.builder(entityDescriptor)
+		final OrderedDocumentsList documentsNew = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.retriveDocuments();
 
@@ -391,7 +392,7 @@ public class IncludedDocumentsCollection implements IIncludedDocumentsCollection
 
 		//
 		// Put the new documents(from repository) into our documents map
-		for (final Document document : documentsNew)
+		for (final Document document : documentsNew.toList())
 		{
 			final DocumentId documentId = document.getDocumentId();
 			final Document documentExisting = documents.put(documentId, document);

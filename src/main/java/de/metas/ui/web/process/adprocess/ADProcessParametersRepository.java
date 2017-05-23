@@ -24,6 +24,7 @@ import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
@@ -62,7 +63,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 	}
 
 	@Override
-	public List<Document> retrieveDocuments(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
+	public OrderedDocumentsList retrieveDocuments(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		throw new UnsupportedOperationException();
 	}
