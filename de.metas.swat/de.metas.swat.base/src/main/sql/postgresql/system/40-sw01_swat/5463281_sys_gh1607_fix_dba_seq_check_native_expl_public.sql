@@ -117,3 +117,4 @@ In other words, you can use an AD_Column record to explicitly tell this function
 Also note that the function won''t do anything unless there is a physical column named like "<tablename>_id".
 
 Otherwise, the sequence is named lower(tableName||''_seq'') and its next value is set from the maximum value of the key or parent column.';
+

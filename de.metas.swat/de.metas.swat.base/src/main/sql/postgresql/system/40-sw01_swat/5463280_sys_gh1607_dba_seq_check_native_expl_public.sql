@@ -78,8 +78,7 @@ BEGIN
 			-- do the actual creating or updating of the native sequence
 			if (v_record_to_process.sequence_name is null)
 			then
-				-- don't include the "public." in the quote_ident prgument(), because then the sequence's *name* wouldstart with "public.."
-				v_sequence_name := 'public.'||quote_ident(v_record_to_process.Table_Name||'_seq');
+				v_sequence_name := quote_ident('public.'||v_record_to_process.Table_Name||'_seq');
 	
 				execute 'CREATE SEQUENCE '||v_sequence_name
 					||' INCREMENT 1'
