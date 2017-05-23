@@ -39,8 +39,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -70,6 +68,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
@@ -80,6 +79,7 @@ import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.lock.api.ILockManager;
+import de.metas.logging.LogManager;
 import de.metas.payment.api.DefaultPaymentBuilder.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.esr.ESRConstants;
@@ -1320,5 +1320,12 @@ public class ESRImportBL implements IESRImportBL
 		esrImportLine.setC_BankStatementLine(null);
 		esrImportLine.setC_BankStatementLine_Ref(null);
 		InterfaceWrapperHelper.save(esrImportLine);
+	}
+	
+	@Override
+	public boolean isV11File(String filename)
+	{
+		Check.assume(Check.isEmpty(filename,true) == false, "Filename can not be empty!");
+		return filename.matches(".*v11") || filename.matches(".*V11");
 	}
 }
