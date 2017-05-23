@@ -531,4 +531,27 @@ public interface I_AD_UI_Element
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_User>(I_AD_UI_Element.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Widget size.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWidgetSize (java.lang.String WidgetSize);
+
+	/**
+	 * Get Widget size.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWidgetSize();
+
+    /** Column definition for WidgetSize */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_WidgetSize = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "WidgetSize", null);
+    /** Column name WidgetSize */
+    public static final String COLUMNNAME_WidgetSize = "WidgetSize";
 }

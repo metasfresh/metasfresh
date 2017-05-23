@@ -33,6 +33,10 @@ Here come the actual release notes:
     * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
   * [#1612](https://github.com/metasfresh/metasfresh/issues/1612) New Window for Business Partner Group in WebUI
     * Created a new Window in WebUI that allows different settings for Business Partner Groups.
+  * [#1614](https://github.com/metasfresh/metasfresh/issues/1614) New Window Attribute Set Instance in WebUI
+    * Adds the new Window for Attribute Set Maintenance to WebUI.
+  * [#1621](https://github.com/metasfresh/metasfresh/issues/1621) Adjustments of Pricelist window in WebUI
+    * Adjusting the Pricelist Window in WebUI, renaming Fields, Adding Translations, Order by Valid from in Subtab.
 
 ## Fixes
 
@@ -43,10 +47,9 @@ Here come the actual release notes:
     * Internal task that solves an issue with failing spring boot services.
   * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
     * Fixes an issue in sequence generation, trying to create sequences in wrong, active db schemas.
-
+  * [#1624](https://github.com/metasfresh/metasfresh/issues/1624) NPE when closing the pp_order
+  
 # metasfresh 5.10 (2017-20)
-
-**release for week 2017-20**
 
 ## Features
 
