@@ -198,6 +198,13 @@ public class ESRImportBL implements IESRImportBL
 
 		final ByteArrayInputStream in = new ByteArrayInputStream(data);
 
+		int countLines = 0;
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_CHECK_DUPLICATED, false))
+		{
+			countLines = Services.get(IESRImportDAO.class).countLines(esrImport, null);
+		}
+
 		BufferedReader reader = null;
 		try
 		{
@@ -219,17 +226,29 @@ public class ESRImportBL implements IESRImportBL
 				// for row number
 				lineNo++;
 
+				//
+				// create line only if does not exist
+				I_ESR_ImportLine existentLine = null;
+				// if there are already lines before starting reading the file, means that we already tried to import once
+				if (countLines > 0)
+				{
+					existentLine = Services.get(IESRImportDAO.class).fetchLineForESRLineText(esrImport, currentTextLine);
+				}
+
+				if (existentLine == null)
+				{
 				final I_ESR_ImportLine line = createESRImportLine(esrImport, currentTextLine, lineNo, trxRunConfig);
 
-				if (isControlLine(line))
-				{
-					// The control lines do not contain relevant information about the bank account
-					continue;
-				}
-				else
-				{
-					importAmt = importAmt.add(line.getAmount());
-					trxQty++;
+					if (isControlLine(line))
+					{
+						// The control lines do not contain relevant information about the bank account
+						continue;
+					}
+					else
+					{
+						importAmt = importAmt.add(line.getAmount());
+						trxQty++;
+					}
 				}
 			}
 
