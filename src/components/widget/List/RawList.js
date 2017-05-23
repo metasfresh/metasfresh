@@ -87,6 +87,7 @@ class RawList extends Component {
 
         //not visible from above
         const scrollFromDown = selectedIndex * listElementHeight;
+
         if (
             selectedIndex * listElementHeight < visibleMin &&
             listScrollWrap.scrollTop !== scrollFromDown
@@ -103,9 +104,14 @@ class RawList extends Component {
             return 0;
         }
 
-        const baseIndex = list.findIndex(item =>
-            Object.keys(item)[0] === Object.keys(selected)[0]
-        );
+        let baseIndex;
+        if(list.indexOf(selected) < 0) {
+            baseIndex = list.findIndex(item =>
+                Object.keys(item)[0] === Object.keys(selected)[0]
+            );
+        } else {
+            baseIndex = list.indexOf(selected);
+        }
 
         if (!mandatory){
             return baseIndex + 1;
@@ -206,7 +212,6 @@ class RawList extends Component {
         });
 
         const next = up ? selectedIndex + 1 : selectedIndex - 1;
-
         this.setState({
             selected: (next >= 0 && next <= dropdownList.length-1) ?
                 dropdownList[next] : selected
@@ -214,29 +219,63 @@ class RawList extends Component {
 
     }
 
+    navigateToAlphanumeric = (char) => {
+        const {isOpen, selected} = this.state;
+        const {list} = this.props;
+
+        if(!isOpen){
+            this.setState({
+                isOpen: true
+            })
+        }
+
+        const caption = item => item[Object.keys(item)[0]];
+        const items = list.filter(item =>
+            caption(item)[0].toUpperCase() === char.toUpperCase()
+        );
+
+        const selectedIndex = items.indexOf(selected);
+
+        const item = selectedIndex > -1 ?
+            items[selectedIndex + 1] :
+            items[0];
+
+        if(!item) {
+            return;
+        }
+
+        this.setState({
+            selected: item
+        })
+    }
+
     handleKeyDown = (e) => {
         const {selected, isOpen} = this.state;
 
-        switch(e.key){
-            case 'ArrowDown':
-                e.preventDefault();
-                this.navigate(true);
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                this.navigate(false);
-                break;
-            case 'Enter':
-                e.preventDefault();
-                if(isOpen){
-                    e.stopPropagation();
-                }
-                this.handleSelect(selected);
-                break;
-            case 'Escape':
-                e.preventDefault();
-                this.handleBlur();
-                break;
+        if(e.keyCode > 47 && e.keyCode < 123){
+            this.navigateToAlphanumeric(e.key);
+        }else{
+            switch(e.key){
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.navigate(true);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.navigate(false);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if(isOpen){
+                        e.stopPropagation();
+                    }
+                    this.handleSelect(selected);
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    this.handleBlur();
+                    break;
+            }
         }
     }
 

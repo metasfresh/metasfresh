@@ -76,7 +76,7 @@ class LoginForm extends Component {
     }
 
     handleLogin = () => {
-        const {dispatch} = this.props;
+        const {dispatch, auth} = this.props;
         const {roleSelect, role} = this.state;
 
         this.setState({
@@ -85,7 +85,7 @@ class LoginForm extends Component {
             if(roleSelect){
                 return dispatch(loginCompletionRequest(role))
                     .then(() => {
-                        dispatch(loginSuccess());
+                        dispatch(loginSuccess(auth));
                         this.handleSuccess();
                     })
             }
@@ -147,6 +147,7 @@ class LoginForm extends Component {
                             disabled={pending}
                             autofocus={true}
                             doNotOpenOnFocus={true}
+                            mandatory={true}
                         />
                     </div>:
                     <div>

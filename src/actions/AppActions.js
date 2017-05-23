@@ -1,40 +1,32 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import {replace} from 'react-router-redux';
-import SockJs from 'sockjs-client';
-import Stomp from 'stompjs/lib/stomp.min.js';
 
-export function loginSuccess() {
+export function loginSuccess(auth) {
     return dispatch => {
         localStorage.setItem('isLogged', true);
 
         dispatch(getNotificationsEndpoint()).then(topic => {
-            let sock = new SockJs(config.WS_URL);
-            let client = Stomp.Stomp.over(sock);
-            client.debug = null;
+            auth.initNotificationClient(topic, msg => {
+                const notification = JSON.parse(msg.body);
 
-            client.connect({}, () => {
-                client.subscribe(topic.data, msg => {
-                    const notification = JSON.parse(msg.body);
-
-                    if(notification.eventType === 'Read'){
-                        dispatch(updateNotification(
-                            notification.notification, notification.unreadCount
-                        ));
-                    }else if(notification.eventType === 'New'){
-                        dispatch(newNotification(
-                            notification.notification, notification.unreadCount
-                        ));
-                        const notif = notification.notification;
-                        if(notif.important){
-                            dispatch(addNotification(
-                                'Important notification', notif.message, 5000,
-                                'primary'
-                            ))
-                        }
+                if(notification.eventType === 'Read'){
+                    dispatch(updateNotification(
+                        notification.notification, notification.unreadCount
+                    ));
+                }else if(notification.eventType === 'New'){
+                    dispatch(newNotification(
+                        notification.notification, notification.unreadCount
+                    ));
+                    const notif = notification.notification;
+                    if(notif.important){
+                        dispatch(addNotification(
+                            'Important notification', notif.message, 5000,
+                            'primary'
+                        ))
                     }
-                });
-            })
+                }
+            });
         })
 
         dispatch(getNotifications()).then(response => {
@@ -46,8 +38,9 @@ export function loginSuccess() {
     }
 }
 
-export function logoutSuccess() {
+export function logoutSuccess(auth) {
     return () => {
+        auth.closeNotificationClient();
         localStorage.removeItem('isLogged');
     }
 }
@@ -89,6 +82,13 @@ export function createViewRequest(
             'documentType': refDocType,
             'documentId': refDocId
         }: null,
+        'filters': filters
+    });
+}
+
+export function filterViewRequest(windowType, viewId, filters){
+    return () => axios.post(config.API_URL + '/documentView/' + windowType +
+    '/'+viewId+'/filter', {
         'filters': filters
     });
 }

@@ -75,7 +75,14 @@ class InboxItem extends Component {
                         {item.message}
                     </div>
                     <div className="inbox-item-footer">
-                        <span>{Moment(item.timestamp).fromNow()}</span>
+                        <span
+                            title={
+                                Moment(item.timestamp)
+                                    .format('DD.MM.YYYY HH:mm:ss')
+                            }
+                        >
+                            {Moment(item.timestamp).fromNow()}
+                        </span>
                         <span>Notification</span>
                     </div>
                 </div>

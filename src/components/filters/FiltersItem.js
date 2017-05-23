@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import RawWidget from '../widget/RawWidget';
+import OverlayField from '../app/OverlayField';
 
 class FiltersItem extends Component {
     constructor(props) {
@@ -91,6 +92,14 @@ class FiltersItem extends Component {
         const {applyFilters, closeFilterMenu} = this.props;
         const {filter} = this.state;
 
+        if(
+            filter &&
+            filter.parametersLayoutType === 'singleOverlayField' &&
+            !filter.parameters[0].value
+        ){
+            return this.handleClear();
+        }
+
         applyFilters(filter, () => {
             closeFilterMenu();
         });
@@ -108,7 +117,8 @@ class FiltersItem extends Component {
 
     render() {
         const {
-            data, notValidFields, isActive, windowType, onShow, onHide, viewId
+            data, notValidFields, isActive, windowType, onShow, onHide, viewId,
+            outsideClick
         } = this.props;
 
         const {
@@ -116,61 +126,78 @@ class FiltersItem extends Component {
         } = this.state;
 
         return (
-            <div className="filter-menu filter-widget">
-                <div>Active filter:
-                    <span className="filter-active"> {data.caption}</span>
-                    {isActive &&
-                        <span
-                            className="filter-clear"
-                            onClick={() => this.handleClear()}
+            <div>
+                {
+                    data.parametersLayoutType === 'singleOverlayField' ?
+                    <OverlayField
+                        type={windowType}
+                        filter={true}
+                        layout={filter}
+                        handlePatch={this.setValue}
+                        handleChange={this.setValue}
+                        closeOverlay={outsideClick}
+                        handleSubmit={this.handleApply}
+                        {...{windowType, onShow, onHide, viewId}}
+                    /> :
+                    <div className="filter-menu filter-widget">
+                        <div>Active filter:
+                            <span className="filter-active">
+                                {data.caption}
+                            </span>
+                            {isActive &&
+                                <span
+                                    className="filter-clear"
+                                    onClick={() => this.handleClear()}
+                                >
+                                    Clear filter
+                                    <i className="meta-icon-trash" />
+                            </span>
+                        }
+                    </div>
+                    <div className="form-group row filter-content">
+                        <div className="col-sm-12">
+                            {filter.parameters &&
+                            filter.parameters.map((item, index) =>
+                                <RawWidget
+                                    entity="documentView"
+                                    subentity="filter"
+                                    subentityId={filter.filterId}
+                                    handlePatch={this.setValue}
+                                    handleChange={this.setValue}
+                                    widgetType={item.widgetType}
+                                    fields={[item]}
+                                    type={item.type}
+                                    widgetData={[item]}
+                                    key={index}
+                                    id={index}
+                                    range={item.range}
+                                    caption={item.caption}
+                                    noLabel={false}
+                                    filterWidget={true}
+                                    {...{viewId, windowType, onShow, onHide}}
+                                />
+                            )}
+                        </div>
+                        <div className="col-sm-12 text-xs-right">
+                            {notValidFields &&
+                                <div className="input-error">
+                                    Mandatory filters are not filled!
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div className="filter-btn-wrapper">
+                        <button
+                            className="applyBtn btn btn-sm btn-success"
+                            onClick={this.handleApply}
                         >
-                            Clear filter <i className="meta-icon-trash" />
-                    </span>
+                            Apply
+                        </button>
+                    </div>
+                </div>
+
                 }
             </div>
-            <div className="form-group row filter-content">
-                <div className="col-sm-12">
-                    {filter.parameters && filter.parameters.map((item, index) =>
-                        <RawWidget
-                            entity="documentView"
-                            subentity="filter"
-                            subentityId={filter.filterId}
-                            handlePatch={this.setValue}
-                            handleChange={this.setValue}
-                            widgetType={item.widgetType}
-                            fields={[item]}
-                            windowType={windowType}
-                            type={item.type}
-                            widgetData={[item]}
-                            key={index}
-                            id={index}
-                            range={item.range}
-                            onShow={onShow}
-                            onHide={onHide}
-                            caption={item.caption}
-                            noLabel={false}
-                            filterWidget={true}
-                            viewId={viewId}
-                        />
-                    )}
-                </div>
-                <div className="col-sm-12 text-xs-right">
-                    {notValidFields &&
-                        <div className="input-error">
-                            Mandatory filters are not filled!
-                        </div>
-                    }
-                </div>
-            </div>
-            <div className="filter-btn-wrapper">
-                <button
-                    className="applyBtn btn btn-sm btn-success"
-                    onClick={this.handleApply}
-                >
-                    Apply
-                </button>
-            </div>
-        </div>
     )}
 }
 

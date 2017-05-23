@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
 import Moment from 'moment';
 import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
-
 import DatePicker from './DatePicker';
 import Attributes from './Attributes/Attributes';
 import Lookup from './Lookup/Lookup';
 import DatetimeRange from './DatetimeRange';
 import List from './List/List';
 import ActionButton from './ActionButton';
+import Checkbox from './Checkbox';
 import Image from './Image';
 import DevicesWidget from './Devices/DevicesWidget';
 
@@ -25,10 +25,14 @@ class RawWidget extends Component {
     }
 
     componentDidMount(){
-        const {autoFocus} = this.props
+        const {autoFocus, textSelected} = this.props
 
         if(this.rawWidget && autoFocus){
             this.rawWidget.focus();
+        }
+
+        if(textSelected){
+            this.rawWidget.select();
         }
     }
 
@@ -100,7 +104,7 @@ class RawWidget extends Component {
         })
     }
 
-    getClassnames = (icon) => {
+    getClassnames = (icon, forcedPrimary) => {
         const {
             widgetData, disabled, gridAlign, type, updated, rowId, isModal
         } = this.props;
@@ -111,8 +115,10 @@ class RawWidget extends Component {
             (icon ? 'input-icon-container ' : '') +
             (widgetData[0].readonly || disabled ? 'input-disabled ' : '') +
             ((widgetData[0].mandatory &&
-                ((widgetData[0].value && widgetData[0].value.length === 0) ||
-                    !widgetData[0].value)) ? 'input-mandatory ' : '') +
+                (
+                    (widgetData[0].value && widgetData[0].value.length === 0) ||
+                    (!widgetData[0].value && widgetData[0].value !== 0))
+                ) ? 'input-mandatory ' : '') +
             ((widgetData[0].validStatus &&
                 (
                     !widgetData[0].validStatus.valid &&
@@ -120,7 +126,8 @@ class RawWidget extends Component {
                 ) &&
                 !isEdited) ? 'input-error ' : '') +
             (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
-            (type === 'primary' ? 'input-primary ' : 'input-secondary ') +
+            (type === 'primary' || forcedPrimary ?
+                'input-primary ' : 'input-secondary ') +
             (updated ? 'pulse-on ' : 'pulse-off ') +
             (rowId && !isModal ? 'input-table ' : '');
     }
@@ -140,7 +147,7 @@ class RawWidget extends Component {
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
-            listenOnKeysFalse, closeTableField
+            listenOnKeysFalse, closeTableField, handleZoomInto
         } = this.props;
 
         const {isEdited} = this.state;
@@ -385,7 +392,7 @@ class RawWidget extends Component {
             case 'LongText':
                 return (
                     <div className={
-                        this.getClassnames() +
+                        this.getClassnames(false, true) +
                         (isEdited ? 'input-focused ' : '')
                     }>
                         <textarea
@@ -477,33 +484,11 @@ class RawWidget extends Component {
                 )
             case 'YesNo':
                 return (
-                    <label
-                        className={
-                            'input-checkbox ' +
-                            (widgetData[0].readonly || disabled ?
-                                'input-disabled ' : '')
-                        }
-                        tabIndex={fullScreen ? -1 : tabIndex}
-                        ref={c => this.rawWidget = c}
-                        onKeyDown={e => {
-                            if(e.key === ' '){
-                                e.preventDefault();
-                                this.rawWidget && this.rawWidget.click();
-                            }
-                        }}
-                    >
-                        <input
-                            ref={c => this.rawWidget = c}
-                            type="checkbox"
-                            checked={widgetData[0].value}
-                            disabled={widgetData[0].readonly || disabled}
-                            onChange={(e) => this.handlePatch(
-                                widgetField, e.target.checked, id
-                            )}
-                            tabIndex="-1"
-                        />
-                        <div className="input-checkbox-tick" />
-                    </label>
+                    <Checkbox
+                        {...{widgetData, disabled, fullScreen, tabIndex,
+                            widgetField, id, filterWidget}}
+                        handlePatch={this.handlePatch}
+                    />
                 )
             case 'Switch':
                 return (
@@ -651,6 +636,23 @@ class RawWidget extends Component {
                         readonly={widgetData[0].readonly || disabled}
                     />
                 )
+            case 'ZoomIntoButton':
+                return (
+                    <button
+                        className={
+                            'btn btn-sm btn-meta-primary ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '') +
+                            (widgetData[0].readonly || disabled ?
+                                'tag-disabled disabled ' : '')
+                        }
+                        onClick={() => handleZoomInto(
+                                fields[0].field)}
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        ref={c => this.rawWidget = c}
+                    >
+                        {caption}
+                    </button>
+                )
             default:
                 return false;
         }
@@ -659,7 +661,7 @@ class RawWidget extends Component {
     render() {
         const {
             caption, fields, type, noLabel, widgetData, rowId, isModal,
-            handlePatch, widgetType
+            handlePatch, widgetType, handleZoomInto
         } = this.props;
 
         const {errorPopup} = this.state;
@@ -698,18 +700,31 @@ class RawWidget extends Component {
                         className={
                             'form-control-label ' +
                             ((type === 'primary' && !oneLineException) ?
-                                'col-sm-12 panel-title' : 'col-sm-3')
+                                'col-sm-12 panel-title' :
+                                (type === 'primaryLongLabels' ?
+                                    'col-sm-6' : 'col-sm-3 ')
+                            )
                         }
                         title={caption}
                     >
-                        {caption}
+                        {fields[0].supportZoomInto ?
+                        <span
+                            className="zoom-into"
+                            onClick={() => handleZoomInto(
+                                fields[0].field)}>
+                            {caption}
+                        </span> : caption}
                     </div>
                 }
                 <div
                     className={
-                        (((type === 'primary' || noLabel) &&
-                            !oneLineException ) ?
-                                'col-sm-12 ' : 'col-sm-9 ') +
+                        (
+                            ((type === 'primary' || noLabel) &&
+                                !oneLineException ) ?
+                            'col-sm-12 ' :
+                            (type === 'primaryLongLabels' ?
+                                'col-sm-6' : 'col-sm-9 ')
+                        ) +
                         (fields[0].devices ? 'form-group-flex ': '')
                     }
                     onMouseEnter={() => this.handleErrorPopup(true)}

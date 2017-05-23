@@ -78,20 +78,17 @@ class Breadcrumb extends Component {
             {index ? <span className="divider">/</span> : null}
             <div className="header-btn tooltip-parent">
                 <div
-                    title={(index && menu.children.captionBreadcrumb) ?
-                        menu.children.captionBreadcrumb : ''
-                    }
                     className={'header-item-container pointer ' +
                         (menuOverlay === menu.nodeId ?
                             'header-item-open ' : '') +
                         (!index ? 'header-item-container-static ': '') +
-                        (index===breadcrumb &&
+                        (breadcrumb && index===
                         breadcrumb.length?'header-item-last-level':'')
                     }
                     onClick={(e) => this.handleClick(e, menu)}
                     onMouseEnter={index ?
                         ()=> this.toggleTooltipOnFirstLevel(
-                            index===breadcrumb && breadcrumb.length
+                            breadcrumb && index=== breadcrumb.length
                             ) :
                         () => this.toggleTooltip(true)}
                     onMouseLeave={this.closeTooltips}
@@ -142,7 +139,6 @@ class Breadcrumb extends Component {
                         name=""
                         action={'Go to default documents list'}
                         type={''}
-                        delay={100}
                     />
                 }
 

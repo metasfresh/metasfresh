@@ -43,8 +43,16 @@ class QuickActions extends Component {
     }
 
     componentDidUpdate = (prevProps) => {
-        const {selected, refresh, shouldNotUpdate, viewId} = this.props;
+        const {
+            selected, refresh, shouldNotUpdate, viewId, selectedWindowType,
+            windowType
+        } = this.props;
+
         if(shouldNotUpdate){
+            return;
+        }
+
+        if(selectedWindowType && (selectedWindowType !== windowType)){
             return;
         }
 
@@ -104,9 +112,11 @@ class QuickActions extends Component {
             actions, isDropdownOpen
         } = this.state;
 
-        const {shouldNotUpdate, processStatus} = this.props;
+        const {
+            shouldNotUpdate, processStatus, hidden
+        } = this.props;
 
-        if(actions.length){
+        if(actions.length && !hidden){
             return (
                 <div className="js-not-unselect">
                     <span className="spacer-right">Actions:</span>

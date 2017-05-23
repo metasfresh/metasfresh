@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import MasterWidget from '../widget/MasterWidget';
+import RawWidget from '../widget/RawWidget';
 
 import {
     findRowByPropName
@@ -11,14 +12,14 @@ class OverlayField extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {setFetchOnTrue, removeModal} = this.props;
+        const {handleSubmit, closeOverlay} = this.props;
         switch(e.key) {
             case 'Enter':
                 document.activeElement.blur();
-                setFetchOnTrue();
+                handleSubmit();
                 break;
             case 'Escape':
-                removeModal();
+                closeOverlay();
                 break;
         }
     }
@@ -46,18 +47,50 @@ class OverlayField extends Component {
         })
     }
 
+    renderParameters = (layout) => {
+        const {
+            windowType, viewId, onShow, onHide, handlePatch, handleChange
+        } = this.props;
+        const parameters = layout.parameters;
+        return parameters.map((item, index) => {
+            return (
+                <RawWidget
+                    entity="documentView"
+                    subentity="filter"
+                    subentityId={layout.filterId}
+                    widgetType={item.widgetType}
+                    fields={[item]}
+                    type={item.type}
+                    widgetData={[item]}
+                    key={index}
+                    id={index}
+                    range={item.range}
+                    caption={item.caption}
+                    noLabel={false}
+                    filterWidget={true}
+                    autoFocus={index === 0}
+                    textSelected={true}
+                    {...{handlePatch, handleChange, windowType, onShow, onHide,
+                        viewId}}
+                />
+            )
+        })
+    }
+
     render() {
-        const {data, layout, type} = this.props;
+        const {data, layout, type, filter} = this.props;
+
         return (
             <div
                 className="overlay-field js-not-unselect"
                 onKeyDown={e => this.handleKeyDown(e)}
+                tabIndex={-1}
             >
-            {
-                layout && layout.elements &&
-                this.renderElements(layout, data, type)
-            }
-
+                {filter ?
+                    this.renderParameters(layout) :
+                    layout && layout.elements &&
+                        this.renderElements(layout, data, type)
+                }
             </div>
         )
     }

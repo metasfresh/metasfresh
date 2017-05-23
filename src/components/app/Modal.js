@@ -259,7 +259,7 @@ class Modal extends Component {
         } = this.props;
 
         const {
-            scrolled, pending
+            scrolled, pending, isNewDoc
         } = this.state;
 
         return(
@@ -277,6 +277,17 @@ class Modal extends Component {
                         {modalTitle ? modalTitle : layout.caption}
                     </span>
                     <div className="items-row-2">
+                        {isNewDoc && <button
+                            className={
+                                `btn btn-meta-outline-secondary
+                                btn-distance-3 btn-md `+
+                                (pending ? 'tag-disabled disabled ' : '')
+                            }
+                            onClick={this.removeModal}
+                            tabIndex={0}
+                        >
+                            Cancel
+                        </button>}
                         <button
                             className={
                                 `btn btn-meta-outline-secondary
@@ -331,8 +342,8 @@ class Modal extends Component {
                 disabled={pending}
                 data={data}
                 layout={layout}
-                setFetchOnTrue={this.setFetchOnTrue}
-                removeModal={this.removeModal}
+                handleSubmit={this.setFetchOnTrue}
+                closeOverlay={this.removeModal}
             />
         )
     }

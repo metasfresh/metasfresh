@@ -114,9 +114,10 @@ class Lookup extends Component {
                     'input-dropdown-container lookup-wrapper input-' +
                     (rank ? rank : 'primary') +
                     (updated ? ' pulse-on' : ' pulse-off') +
-                    (filterWidget ? ' input-full' : '')+
-                    (mandatory && (
-                        (validStatus.initialValue && !validStatus.valid)) ?
+                    (filterWidget ? ' input-full' : '') +
+                    (mandatory && (isInputEmpty ||
+                        (validStatus && validStatus.initialValue &&
+                        !validStatus.valid)) ?
                         ' input-mandatory ' : '') +
                     ((validStatus &&
                         (
@@ -130,7 +131,7 @@ class Lookup extends Component {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
 
-                        //--------- not needed children for now
+                        //children to remove
                         const children = properties.slice( 
                             index+1, properties.length
                         );

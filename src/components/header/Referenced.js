@@ -29,7 +29,7 @@ class Referenced extends Component {
             referencesRequest('window', windowType, docId)
         ).then(response => {
             this.setState({
-                data: response.data.references
+                data: response.data.groups
             }, () => {
                 this.referenced && this.referenced.focus();
             })
@@ -55,9 +55,16 @@ class Referenced extends Component {
             const sib = dir ? 'nextSibling' : 'previousSibling';
             e.preventDefault();
             if(active.classList.contains('js-subheader-item')){
-                active[sib] && active[sib].focus();
+                if(!active[sib]){
+                    return;
+                }
+                if(active[sib].classList.contains('js-subheader-item')){
+                    active[sib].focus();
+                }else{
+                    active[sib][sib] && active[sib][sib].focus();
+                }
             }else{
-                active.childNodes[0].focus();
+                active.getElementsByClassName('js-subheader-item')[0].focus();
             }
         }
 
@@ -79,19 +86,22 @@ class Referenced extends Component {
         const {data} = this.state;
 
         return (data && data.length) ?
-            data.map((item, key) =>
-                <div
-                    className="subheader-item js-subheader-item"
-                    onClick={() => {
-                        this.handleReferenceClick(
-                            item.documentType, item.filter
-                        )
-                    }}
-                    key={key}
-                    tabIndex={0}
-                >
+            data.map((item) => {
+                return [<div className="subheader-caption">
                     {item.caption}
-                </div>
+                </div>].concat(item.references.map((ref, refKey) => <div
+                        className="subheader-item js-subheader-item"
+                        onClick={() => {
+                            this.handleReferenceClick(
+                                ref.documentType, ref.filter
+                            )
+                        }}
+                        key={refKey}
+                        tabIndex={0}
+                    >
+                        {ref.caption}
+                    </div>
+                ))}
         ) : <div className="subheader-item subheader-item-disabled">
             There is no referenced document
         </div>

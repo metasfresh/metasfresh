@@ -33,7 +33,8 @@ import {
 
 import {
     createViewRequest,
-    browseViewRequest
+    browseViewRequest,
+    filterViewRequest
 } from '../../actions/AppActions';
 
 class DocumentList extends Component {
@@ -62,7 +63,7 @@ class DocumentList extends Component {
     }
 
     componentDidMount = () => {
-        this.mounted = true;
+        this.mounted = true
     }
 
     componentWillUnmount() {
@@ -267,7 +268,11 @@ class DocumentList extends Component {
                 if(viewId && !isNewFilter){
                     this.browseView();
                 }else{
-                    this.createView();
+                    if(viewId){
+                        this.filterView();
+                    } else {
+                        this.createView();
+                    }
                 }
                 setModalTitle && setModalTitle(response.data.caption)
             })
@@ -282,6 +287,7 @@ class DocumentList extends Component {
             })
         })
     }
+
     /*
      *  If viewId exist, than browse that view.
      */
@@ -306,6 +312,25 @@ class DocumentList extends Component {
 
         dispatch(createViewRequest(
             windowType, type, this.pageLength, filters, refType, refId
+        )).then(response => {
+            this.mounted && this.setState({
+                data: response.data,
+                viewId: response.data.viewId
+            }, () => {
+                this.getData(response.data.viewId, page, sort);
+            })
+        })
+    }
+
+    filterView = () => {
+        const {
+            dispatch, windowType
+        } = this.props;
+
+        const {page, sort, filters, viewId} = this.state;
+
+        dispatch(filterViewRequest(
+            windowType, viewId, filters
         )).then(response => {
             this.mounted && this.setState({
                 data: response.data,
@@ -386,7 +411,8 @@ class DocumentList extends Component {
 
     handleFilterChange = (filters) => {
         this.setState({
-            filters: filters
+            filters: filters,
+            page: 1
         }, () => {
             this.fetchLayoutAndData(true);
         })
@@ -396,7 +422,7 @@ class DocumentList extends Component {
 
     redirectToDocument = (id) => {
         const {
-            dispatch, isModal, windowType, isSideListShow, closeSideList
+            dispatch, isModal, windowType, isSideListShow
         } = this.props;
         const {page, viewId, sort} = this.state;
 
@@ -406,9 +432,7 @@ class DocumentList extends Component {
 
         dispatch(push('/window/' + windowType + '/' + id));
 
-        if(isSideListShow) {
-            closeSideList();
-        }else{
+        if(!isSideListShow){
             // Caching last settings
             dispatch(setPagination(page, windowType));
             dispatch(setSorting(sort, windowType));
@@ -425,8 +449,8 @@ class DocumentList extends Component {
         const {
             windowType, open, closeOverlays, selected, inBackground,
             fetchQuickActionsOnInit, isModal, processStatus, readonly,
-            includedView, children, isIncluded, disablePaginationShortcuts,
-            notfound, disconnectFromState
+            includedView, isIncluded, disablePaginationShortcuts,
+            notfound, disconnectFromState, autofocus, selectedWindowType
         } = this.props;
 
         const hasIncluded = layout && layout.supportIncludedView &&
@@ -445,115 +469,103 @@ class DocumentList extends Component {
                         (isIncluded ? 'document-list-included ' : '')
                     }
                 >
-                    {(!readonly && !isIncluded) && <div
-                        className="panel panel-primary panel-spaced panel-inline document-list-header"
-                    >
-                        <div>
-                            {layout.supportNewRecord && !isModal &&
-                                <button
-                                    className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
-                                    onClick={() => this.redirectToNewDocument()}
-                                    title={layout.newRecordCaption}
-                                >
-                                    <i className="meta-icon-add" />
-                                    {layout.newRecordCaption}
-                                </button>
-                            }
-                            {layout.filters && <Filters
-                                filterData={layout.filters}
-                                filtersActive={filters}
-                                windowType={windowType}
-                                viewId={viewId}
-                                updateDocList={this.handleFilterChange}
-                            />}
-                        </div>
-                        <QuickActions
-                            windowType={
-                                (includedView && includedView.windowType) ?
-                                    includedView.windowType : windowType
-                            }
-                            viewId={(includedView && includedView.viewId) ?
-                                includedView.viewId : viewId
-                            }
-                            selected={selectionValid ? selected : undefined}
-                            refresh={refresh}
-                            shouldNotUpdate={inBackground && !hasIncluded}
-                            fetchOnInit={fetchQuickActionsOnInit}
-                            processStatus={processStatus}
-                        />
-                    </div>}
-                    <div className="document-list-body">
-                        <Table
-                            entity="documentView"
-                            ref={c => this.table =
-                                c && c.getWrappedInstance()
-                                && c.getWrappedInstance().refs.instance
-                            }
-                            rowData={{1: data.result}}
-                            cols={layout.elements}
-                            tabid={1}
-                            type={windowType}
-                            emptyText={layout.emptyResultText}
-                            emptyHint={layout.emptyResultHint}
-                            readonly={true}
-                            keyProperty="id"
-                            onDoubleClick={(id) =>
-                                    !isIncluded && this.redirectToDocument(id)}
-                            size={data.size}
-                            pageLength={this.pageLength}
-                            handleChangePage={this.handleChangePage}
-                            mainTable={true}
-                            updateDocList={this.fetchLayoutAndData}
-                            sort={this.sortData}
-                            orderBy={data.orderBy}
-                            tabIndex={0}
-                            indentSupported={layout.supportTree}
-                            disableOnClickOutside={clickOutsideLock}
-                            defaultSelected={cachedSelection ?
-                                cachedSelection : selected}
-                            queryLimitHit={data.queryLimitHit}
-                            doesSelectionExist={this.doesSelectionExist}
-                            disconnectFromState={disconnectFromState}
-                            isIncluded={isIncluded}
-                            isModal={isModal}
-                            disablePaginationShortcuts={
-                                disablePaginationShortcuts}
-                            inBackground={inBackground}
-                            closeOverlays={closeOverlays}
-                            open={open}
-                            page={page}
+                        {!readonly && <div
+                            className="panel panel-primary panel-spaced panel-inline document-list-header"
                         >
-                            {layout.supportAttributes && !isIncluded &&
-                                !hasIncluded &&
-                                <DataLayoutWrapper
-                                    className="table-flex-wrapper attributes-selector js-not-unselect"
-                                    entity="documentView"
+                            {!hasIncluded && <div>
+                                {layout.supportNewRecord && !isModal &&
+                                    <button
+                                        className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
+                                        onClick={() =>
+                                            this.redirectToNewDocument()}
+                                        title={layout.newRecordCaption}
+                                    >
+                                        <i className="meta-icon-add" />
+                                        {layout.newRecordCaption}
+                                    </button>
+                                }
+                                {layout.filters && <Filters
+                                    filterData={layout.filters}
+                                    filtersActive={filters}
                                     windowType={windowType}
                                     viewId={viewId}
-                                >
-                                    <SelectionAttributes
-                                        refresh={refresh}
-                                        setClickOutsideLock={
-                                            this.setClickOutsideLock
-                                        }
-                                        selected={selectionValid ?
-                                            selected : undefined
-                                        }
-                                        shouldNotUpdate={
-                                            inBackground
-                                        }
-                                    />
-                                </DataLayoutWrapper>
-                            }
-                            {hasIncluded &&
-                                <div
-                                    className="table-flex-wrapper document-list-included js-not-unselect"
-                                >
-                                    {children}
-                                </div>
-                            }
-                        </Table>
-                    </div>
+                                    updateDocList={this.handleFilterChange}
+                                />}
+                            </div>}
+                            <QuickActions
+                                windowType={windowType}
+                                selectedWindowType={selectedWindowType}
+                                viewId={viewId}
+                                selected={selectionValid ? selected : undefined}
+                                refresh={refresh}
+                                fetchOnInit={fetchQuickActionsOnInit}
+                                processStatus={processStatus}
+                                hidden={hasIncluded}
+                                shouldNotUpdate={inBackground && !hasIncluded}
+                            />
+                        </div>}
+                        <div className="document-list-body">
+                            <Table
+                                entity="documentView"
+                                ref={c => this.table =
+                                    c && c.getWrappedInstance()
+                                    && c.getWrappedInstance().refs.instance
+                                }
+                                rowData={{1: data.result}}
+                                cols={layout.elements}
+                                tabid={1}
+                                type={windowType}
+                                emptyText={layout.emptyResultText}
+                                emptyHint={layout.emptyResultHint}
+                                readonly={true}
+                                keyProperty="id"
+                                onDoubleClick={(id) =>
+                                        !isIncluded &&
+                                            this.redirectToDocument(id)}
+                                size={data.size}
+                                pageLength={this.pageLength}
+                                handleChangePage={this.handleChangePage}
+                                mainTable={true}
+                                updateDocList={this.fetchLayoutAndData}
+                                sort={this.sortData}
+                                orderBy={data.orderBy}
+                                tabIndex={0}
+                                indentSupported={layout.supportTree}
+                                disableOnClickOutside={clickOutsideLock}
+                                defaultSelected={cachedSelection ?
+                                    cachedSelection : selected}
+                                queryLimitHit={data.queryLimitHit}
+                                doesSelectionExist={this.doesSelectionExist}
+                                {...{isIncluded, disconnectFromState, autofocus,
+                                    open, page, closeOverlays, inBackground,
+                                    disablePaginationShortcuts, isModal,
+                                    hasIncluded
+                                }}
+                            >
+                                {layout.supportAttributes && !isIncluded &&
+                                    !hasIncluded &&
+                                    <DataLayoutWrapper
+                                        className="table-flex-wrapper attributes-selector js-not-unselect"
+                                        entity="documentView"
+                                        windowType={windowType}
+                                        viewId={viewId}
+                                    >
+                                        <SelectionAttributes
+                                            refresh={refresh}
+                                            setClickOutsideLock={
+                                                this.setClickOutsideLock
+                                            }
+                                            selected={selectionValid ?
+                                                selected : undefined
+                                            }
+                                            shouldNotUpdate={
+                                                inBackground
+                                            }
+                                        />
+                                    </DataLayoutWrapper>
+                                }
+                            </Table>
+                        </div>
                 </div>
             );
         }else{

@@ -323,7 +323,7 @@ th {
     border-right:0;
     padding-top:0;
     padding-bottom:0;
-    line-height: 37px;
+    line-height: 42px;
     vertical-align: middle;
 }
 
@@ -413,4 +413,8 @@ $indent-signs-offset: 6px;
 
 .document-list-table {
     flex: 2.6;
+}
+
+.table-fade-out {
+    opacity: .65;
 }

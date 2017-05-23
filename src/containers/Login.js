@@ -63,13 +63,13 @@ class Login extends Component {
     }
 
     render() {
-        const {redirect} = this.props;
+        const {redirect, auth} = this.props;
         const isYourBrowserSupported = this.browserSupport('chrome');
         return (
             <div className="fullscreen">
                 <div className="login-container">
                     <LoginForm
-                        redirect={redirect}
+                        {...{redirect, auth}}
                      />
                     {! isYourBrowserSupported &&
                         <div className="browser-warning">
