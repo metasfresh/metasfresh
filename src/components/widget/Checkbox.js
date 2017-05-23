@@ -46,7 +46,7 @@ class Checkbox extends Component {
                     <div className="input-checkbox-tick" />
                 </label>
                 {(filterWidget && !disabled && !widgetData[0].readonly && 
-                    !widgetData[0].value !== '') ?
+                    widgetData[0].value !== '') ?
                     <span className="input-icon-checkbox input-icon-lg">
                         <i
                             onClick={this.handleClear}
