@@ -1325,7 +1325,7 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public boolean isV11File(String filename)
 	{
-		Check.assume(Check.isEmpty(filename,true) == false, "Filename can not be empty!");
+		Check.assume(!Check.isEmpty(filename,true), "Filename can not be empty!");
 		return filename.matches(".*v11") || filename.matches(".*V11");
 	}
 }
