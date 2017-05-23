@@ -23,6 +23,8 @@ Here come the actual release notes:
   * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
   * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
   * [#1609](https://github.com/metasfresh/metasfresh/issues/1609) Provide Basic Test config Data for manufacturing / production
+  * [#1606](https://github.com/metasfresh/metasfresh/issues/1606) Add IsQualityReturnWarehouse flag to warehouse window WebUI
+    * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
 
 ## Fixes
 
