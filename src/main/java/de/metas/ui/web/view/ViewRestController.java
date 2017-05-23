@@ -33,10 +33,12 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -89,6 +91,9 @@ public class ViewRestController
 
 	@Autowired
 	private ProcessRestController processRestController;
+	
+	@Autowired
+	private WindowRestController windowRestController;
 
 	private JSONOptions newJSONOptions()
 	{
@@ -290,5 +295,19 @@ public class ViewRestController
 				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
 				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
+	}
+
+	@GetMapping("/{viewId}/{rowId}/fields/{fieldName}/zoomInfo")
+	public JSONZoomInto getRowFieldZoomInto(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("viewId") final String viewIdStr,
+			@PathVariable("rowId") final String rowId,
+			@PathVariable("fieldName") final String fieldName)
+	{
+		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
+		
+		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
+		
+		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}
 }
