@@ -1475,7 +1475,7 @@ public class HUEditorModel implements IDisposable
 		// movement date for inout
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx()); // use Login date
 
-		final List<I_M_InOut> returnInOuts = huInOutBL.createReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
+		final List<I_M_InOut> returnInOuts = huInOutBL.createVendorReturnInOutForHUs(getCtx(), hus, warehousefrom, movementDate);
 
 		return returnInOuts;
 	}

@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
@@ -256,20 +255,20 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public IReturnsInOutProducer createQualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
+	public IReturnsInOutProducer createQualityVendorReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
 	{
-		return new QualityReturnsInOutProducer(ctx, huAssignments);
+		return new QualityVendorReturnsInOutProducer(ctx, huAssignments);
 	}
 
 	@Override
-	public List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	public List<de.metas.handlingunits.model.I_M_InOut> createVendorReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
 
 		final List<de.metas.handlingunits.model.I_M_InOut> returnInOuts = new ArrayList<>();
 
 		// services
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-		final Map<Integer, List<I_M_HU_Assignment>> partnerstoHUAssignments = new HashMap<>();
+		final Map<Integer, List<I_M_HU_Assignment>> huAssignmentsByPartnerId = new HashMap<>();
 
 		// inoutline table id
 		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class);
@@ -296,28 +295,15 @@ public class HUInOutBL implements IHUInOutBL
 				final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(ctxAware.getCtx(), assignment.getRecord_ID(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
 				final org.compiere.model.I_M_InOut inOut = inOutLine.getM_InOut();
-
-				final int bpartnerID = inOut.getC_BPartner_ID();
-
-				List<I_M_HU_Assignment> huAssignmentsForPartner = partnerstoHUAssignments.get(bpartnerID);
-
-				if (huAssignmentsForPartner == null)
-				{
-					huAssignmentsForPartner = new ArrayList<I_M_HU_Assignment>();
-					partnerstoHUAssignments.put(bpartnerID, huAssignmentsForPartner);
-				}
-
+				final List<I_M_HU_Assignment> huAssignmentsForPartner = huAssignmentsByPartnerId.computeIfAbsent(inOut.getC_BPartner_ID(), bpartnerId -> new ArrayList<>());
 				huAssignmentsForPartner.add(assignment);
 			}
 		}
 
 		// there will be as many return inouts as there are partners
-
-		Set<Integer> keySet = partnerstoHUAssignments.keySet();
-
-		for (final int partnerId : keySet)
+		for (final int partnerId : huAssignmentsByPartnerId.keySet())
 		{
-			final I_M_InOut returnInOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
+			final I_M_InOut returnInOut = createVendorReturnInOutForPartnerAndHUs(ctx, partnerId, huAssignmentsByPartnerId.get(partnerId), warehouse, movementDate);
 
 			de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(returnInOut, de.metas.handlingunits.model.I_M_InOut.class);
 
@@ -367,13 +353,12 @@ public class HUInOutBL implements IHUInOutBL
 	 * @param hus
 	 * @return
 	 */
-	private I_M_InOut createInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU_Assignment> huAssignments, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	private I_M_InOut createVendorReturnInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU_Assignment> huAssignments, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
-		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(ctx, huAssignments);
+		final IReturnsInOutProducer producer = createQualityVendorReturnsInOutProducer(ctx, huAssignments);
 		producer.setC_BPartner(partner);
 
 		final I_C_BPartner_Location shipToLocation = bpartnerDAO.retrieveShipToLocation(ctx, partnerId, ITrx.TRXNAME_None);

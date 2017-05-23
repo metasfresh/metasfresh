@@ -18,20 +18,35 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1389](https://github.com/metasfresh/metasfresh/issues/1389) Make eMail adress fields longer
+    * Enhancing the lenght of the eMail address field in Business Partner Contact Window/ Tab. Allowing also to include multiple eMail Addresses semicolon seperated.
   * [#1506](https://github.com/metasfresh/metasfresh/issues/1506) Add the possibility to track easily contracts that ended naturally
+    * New feature that adds more transparency to the contract management, allowing to easily track contracts that are resigned.
   * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
+    * New feature that prohibits invoice candidates to be invoiced after ther referenced contract has been terminated.
   * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
+    * Translation for a subset of Document Types to Language en_US.
   * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
+    * Solves an internal issue updating the jaxb maven plugin to new version 2.3.1
+  * [#1609](https://github.com/metasfresh/metasfresh/issues/1609) Provide Basic Test config Data for manufacturing / production
+    * Includes some initial settings for manufacturing that provides a good starting point for new users in this topic.
+  * [#1606](https://github.com/metasfresh/metasfresh/issues/1606) Add IsQualityReturnWarehouse flag to warehouse window WebUI
+    * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
+  * [#1612](https://github.com/metasfresh/metasfresh/issues/1612) New Window for Business Partner Group in WebUI
+    * Created a new Window in WebUI that allows different settings for Business Partner Groups.
 
 ## Fixes
 
 * metasfresh-backend
   * [#1566](https://github.com/metasfresh/metasfresh/issues/1566) Invoicing problem with reversed inouts that have a quality discount
+    * Fix that solves an issue when processing Invoice candidates that are associated with inoutlines which are reversed and have a quclity discount recorded.
   * [#1578](https://github.com/metasfresh/metasfresh/issues/1578) spring-boot services try to start local broker and fail
+    * Internal task that solves an issue with failing spring boot services.
+  * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
+    * Fixes an issue in sequence generation, trying to create sequences in wrong, active db schemas.
 
 # metasfresh 5.10 (2017-20)
 
-**upcoming release for week 2017-20**
+**release for week 2017-20**
 
 ## Features
 

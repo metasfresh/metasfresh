@@ -57,7 +57,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
+public class QualityVendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
 	private HUPackingMaterialsCollector collector = null;
 
@@ -82,7 +82,7 @@ public class QualityReturnsInOutProducer extends AbstractReturnsInOutProducer
 
 	private final List<I_M_HU_Assignment> huAssignments;
 
-	public QualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
+	public QualityVendorReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
 	{
 		super();
 
