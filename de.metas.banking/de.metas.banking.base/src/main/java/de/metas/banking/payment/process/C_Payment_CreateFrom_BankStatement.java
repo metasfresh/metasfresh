@@ -147,7 +147,7 @@ public class C_Payment_CreateFrom_BankStatement extends JavaProcess implements I
 		if (I_C_BankStatement.Table_Name.equals(context.getTableName()))
 		{
 			final I_C_BankStatement bankStatement = context.getSelectedModel(I_C_BankStatement.class);
-			return ProcessPreconditionsResolution.acceptIf(docActionBL.isStatusOneOf(bankStatement,
+			return ProcessPreconditionsResolution.acceptIf(docActionBL.isDocumentStatusOneOf(bankStatement,
 					DocAction.STATUS_Completed, DocAction.STATUS_Closed));
 		}
 		return ProcessPreconditionsResolution.reject();

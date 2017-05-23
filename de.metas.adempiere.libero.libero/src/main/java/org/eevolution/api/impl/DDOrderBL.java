@@ -141,12 +141,12 @@ public class DDOrderBL implements IDDOrderBL
 	public void completeDDOrderIfNeeded(final I_DD_Order ddOrder)
 	{
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		if (docActionBL.isStatusDraftedOrInProgress(ddOrder))
+		if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
 		{
 			docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 		}
 
-		if (!docActionBL.isStatusCompleted(ddOrder))
+		if (!docActionBL.isDocumentCompleted(ddOrder))
 		{
 			throw new LiberoException("@Invalid@ @DocStatus@=" + ddOrder.getDocStatus() + " (" + ddOrder + ")");
 		}
@@ -164,12 +164,12 @@ public class DDOrderBL implements IDDOrderBL
 
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
-			if (docActionBL.isStatusDraftedOrInProgress(ddOrder))
+			if (docActionBL.issDocumentDraftedOrInProgress(ddOrder))
 			{
 				docActionBL.processEx(ddOrder, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 			}
 
-			if (!docActionBL.isStatusCompleted(ddOrder))
+			if (!docActionBL.isDocumentCompleted(ddOrder))
 			{
 				throw new LiberoException("@Invalid@ @DocStatus@=" + ddOrder.getDocStatus() + " (" + ddOrder + ")");
 			}

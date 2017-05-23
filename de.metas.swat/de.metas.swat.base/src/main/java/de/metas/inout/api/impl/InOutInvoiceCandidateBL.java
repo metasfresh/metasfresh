@@ -55,7 +55,7 @@ public class InOutInvoiceCandidateBL implements IInOutInvoiceCandidateBL
 			isAllowToInvoice = true;
 		}
 
-		if (docActionBL.isStatusOneOf(inOut.getDocStatus(),
+		if (docActionBL.isStatusStrOneOf(inOut.getDocStatus(),
 				DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 		{
 			isAllowToInvoice = true;

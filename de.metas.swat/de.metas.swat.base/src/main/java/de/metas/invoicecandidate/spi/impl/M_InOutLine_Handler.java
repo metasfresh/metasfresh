@@ -360,7 +360,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
-		if (docActionBL.isStatusOneOf(inOut, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
+		if (docActionBL.isDocumentStatusOneOf(inOut, DocAction.STATUS_Completed, DocAction.STATUS_Closed))
 		{
 			final BigDecimal qtyMultiplier = getQtyMultiplier(ic);
 			final BigDecimal qtyDelivered = inOutLine.getMovementQty().multiply(qtyMultiplier);

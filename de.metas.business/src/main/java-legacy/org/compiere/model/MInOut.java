@@ -2452,7 +2452,7 @@ public class MInOut extends X_M_InOut implements DocAction
 			final List<I_C_InvoiceLine> existingInvoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(inoutLine);
 			for (final I_C_InvoiceLine existingInvoiceLine : existingInvoiceLines)
 			{
-				if (!Services.get(IDocActionBL.class).isStatusOneOf(existingInvoiceLine.getC_Invoice(), DocAction.STATUS_Reversed, DocAction.STATUS_Voided))
+				if (!Services.get(IDocActionBL.class).isDocumentStatusOneOf(existingInvoiceLine.getC_Invoice(), DocAction.STATUS_Reversed, DocAction.STATUS_Voided))
 				{
 					foundInvoice = true;
 				}
