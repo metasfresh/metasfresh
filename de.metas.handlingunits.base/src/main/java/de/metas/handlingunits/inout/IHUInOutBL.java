@@ -110,7 +110,7 @@ public interface IHUInOutBL extends ISingletonService
 	 * @param hus
 	 * @return
 	 */
-	IReturnsInOutProducer createQualityReturnsInOutProducer(Properties ctx, List<I_M_HU_Assignment> huAssignments);
+	IReturnsInOutProducer createQualityVendorReturnsInOutProducer(Properties ctx, List<I_M_HU_Assignment> huAssignments);
 
 	/**
 	 * Create return inouts for products of precarious quality based on the details of the given HUs
@@ -122,7 +122,7 @@ public interface IHUInOutBL extends ISingletonService
 	 * @param movementDate
 	 * @return
 	 */
-	List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
+	List<de.metas.handlingunits.model.I_M_InOut> createVendorReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
 
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines);
 

@@ -256,13 +256,13 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public IReturnsInOutProducer createQualityReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
+	public IReturnsInOutProducer createQualityVendorReturnsInOutProducer(final Properties ctx, final List<I_M_HU_Assignment> huAssignments)
 	{
-		return new QualityReturnsInOutProducer(ctx, huAssignments);
+		return new QualityVendorReturnsInOutProducer(ctx, huAssignments);
 	}
 
 	@Override
-	public List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	public List<de.metas.handlingunits.model.I_M_InOut> createVendorReturnInOutForHUs(final Properties ctx, final List<I_M_HU> hus, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
 
 		final List<de.metas.handlingunits.model.I_M_InOut> returnInOuts = new ArrayList<>();
@@ -317,7 +317,7 @@ public class HUInOutBL implements IHUInOutBL
 
 		for (final int partnerId : keySet)
 		{
-			final I_M_InOut returnInOut = createInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
+			final I_M_InOut returnInOut = createVendorReturnInOutForPartnerAndHUs(ctx, partnerId, partnerstoHUAssignments.get(partnerId), warehouse, movementDate);
 
 			de.metas.handlingunits.model.I_M_InOut huInOut = InterfaceWrapperHelper.create(returnInOut, de.metas.handlingunits.model.I_M_InOut.class);
 
@@ -367,13 +367,12 @@ public class HUInOutBL implements IHUInOutBL
 	 * @param hus
 	 * @return
 	 */
-	private I_M_InOut createInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU_Assignment> huAssignments, final I_M_Warehouse warehouse, final Timestamp movementDate)
+	private I_M_InOut createVendorReturnInOutForPartnerAndHUs(final Properties ctx, final int partnerId, List<I_M_HU_Assignment> huAssignments, final I_M_Warehouse warehouse, final Timestamp movementDate)
 	{
-		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 		final I_C_BPartner partner = InterfaceWrapperHelper.create(ctx, partnerId, I_C_BPartner.class, ITrx.TRXNAME_None);
-		final IReturnsInOutProducer producer = huInOutBL.createQualityReturnsInOutProducer(ctx, huAssignments);
+		final IReturnsInOutProducer producer = createQualityVendorReturnsInOutProducer(ctx, huAssignments);
 		producer.setC_BPartner(partner);
 
 		final I_C_BPartner_Location shipToLocation = bpartnerDAO.retrieveShipToLocation(ctx, partnerId, ITrx.TRXNAME_None);
