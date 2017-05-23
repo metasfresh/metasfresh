@@ -84,6 +84,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final LayoutType layoutType;
+	private final WidgetSize widgetSize;
 	private final LayoutAlign gridAlign;
 	private final boolean advancedField;
 
@@ -106,6 +107,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 
 		layoutType = builder.getLayoutType();
+		widgetSize = builder.getWidgetSize();
 		gridAlign = builder.getGridAlign();
 
 		advancedField = builder.isAdvancedField();
@@ -164,6 +166,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return layoutType;
 	}
+	
+	public WidgetSize getWidgetSize()
+	{
+		return widgetSize;
+	}
 
 	public LayoutAlign getGridAlign()
 	{
@@ -184,7 +191,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return !fields.isEmpty();
 	}
-	
+
 	public ButtonFieldActionDescriptor getButtonActionDescriptor()
 	{
 		return buttonActionDescriptor;
@@ -200,6 +207,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private DocumentFieldWidgetType _widgetType;
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 		private LayoutType _layoutType;
+		private WidgetSize _widgetSize;
 		private boolean _gridElement = false;
 		private boolean _advancedField = false;
 		private final LinkedHashMap<String, DocumentLayoutElementFieldDescriptor.Builder> _fieldsBuilders = new LinkedHashMap<>();
@@ -375,6 +383,17 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 			return _layoutType;
 		}
 
+		public Builder setWidgetSize(final WidgetSize widgetSize)
+		{
+			_widgetSize = widgetSize;
+			return this;
+		}
+		
+		private WidgetSize getWidgetSize()
+		{
+			return _widgetSize;
+		}
+
 		public Builder setAdvancedField(final boolean advancedField)
 		{
 			_advancedField = advancedField;
@@ -466,13 +485,13 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			return _gridElement ? getWidgetType().getGridAlign() : null;
 		}
-		
-		public Builder setButtonActionDescriptor(ButtonFieldActionDescriptor buttonActionDescriptor)
+
+		public Builder setButtonActionDescriptor(final ButtonFieldActionDescriptor buttonActionDescriptor)
 		{
 			this.buttonActionDescriptor = buttonActionDescriptor;
 			return this;
 		}
-		
+
 		/* package */ ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
 			return buttonActionDescriptor;

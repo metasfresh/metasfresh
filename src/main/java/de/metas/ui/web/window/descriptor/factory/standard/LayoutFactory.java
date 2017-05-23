@@ -45,6 +45,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutHeader;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import de.metas.ui.web.window.descriptor.LayoutType;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 
 /*
  * #%L
@@ -359,6 +360,7 @@ public class LayoutFactory
 		final DocumentLayoutElementDescriptor.Builder layoutElementBuilder = DocumentLayoutElementDescriptor.builder()
 				.setInternalName(uiElement.toString())
 				.setLayoutType(layoutType)
+				.setWidgetSize(WidgetSize.fromNullableADRefListValue(uiElement.getWidgetSize()))
 				.setAdvancedField(uiElement.isAdvancedField());
 
 		//
