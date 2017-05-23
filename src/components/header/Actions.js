@@ -23,6 +23,9 @@ class Actions extends Component {
         } = this.props;
 
         if(!windowType || docId === 'notfound' || notfound){
+            this.setState({
+                data: []
+            })
             return;
         }
 
@@ -32,7 +35,11 @@ class Actions extends Component {
             this.setState({
                 data: response.data.actions
             });
-        });
+        }).catch(() => {
+            this.setState({
+                data: []
+            })
+        })
     }
 
     renderData = () => {
