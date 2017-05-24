@@ -384,7 +384,7 @@ public class WindowRestController
 	/**
 	 * Typeahead for root document's field
 	 */
-	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/typeahead")
+	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -396,11 +396,26 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
+	
+	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/typeahead")
+	@Deprecated
+	public JSONLookupValuesList getDocumentFieldTypeahead_DEPRECATED(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
+			, @RequestParam(name = "query", required = true) final String query //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
+		return getDocumentFieldTypeahead(documentPath, fieldName, query);
+	}
+
 
 	/**
 	 * Typeahead for included document's field
 	 */
-	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/typeahead")
+	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -414,6 +429,26 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
+	
+	/**
+	 * Typeahead for included document's field
+	 */
+	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/typeahead")
+	@Deprecated
+	public JSONLookupValuesList getDocumentFieldTypeahead_DEPRECATED(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
+			, @RequestParam(name = "query", required = true) final String query //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
+		return getDocumentFieldTypeahead(documentPath, fieldName, query);
+	}
+
 
 	/** Typeahead: unified implementation */
 	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
@@ -425,7 +460,7 @@ public class WindowRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/dropdown")
+	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -436,8 +471,22 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
+	
+	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/dropdown")
+	@Deprecated
+	public JSONLookupValuesList getDocumentFieldDropdown_DEPRECATED(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
+		return getDocumentFieldDropdown(documentPath, fieldName);
+	}
 
-	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/dropdown")
+
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -450,6 +499,22 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
+	
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/dropdown")
+	@Deprecated
+	public JSONLookupValuesList getDocumentFieldDropdown_DEPRECATED(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
+		return getDocumentFieldDropdown(documentPath, fieldName);
+	}
+
 
 	private JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
 	{
@@ -461,7 +526,7 @@ public class WindowRestController
 	}
 
 	@ApiOperation("field current value's window layout to zoom into")
-	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/zoomInto")
+	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -472,9 +537,24 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
+	
+	@ApiOperation("field current value's window layout to zoom into")
+	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/zoomInto")
+	@Deprecated
+	public JSONZoomInto getDocumentFieldZoomInto_DEPRECATED(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("fieldName") final String fieldName //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
+		return getDocumentFieldZoomInto(documentPath, fieldName);
+	}
+
 
 	@ApiOperation("field current value's window layout to zoom into")
-	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/zoomInto")
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -487,6 +567,23 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
+	
+	@ApiOperation("field current value's window layout to zoom into")
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/zoomInto")
+	@Deprecated
+	public JSONZoomInto getDocumentFieldZoomInto_DEPRECATED(
+			@PathVariable("windowId") final String windowIdStr //
+			, @PathVariable("documentId") final String documentId //
+			, @PathVariable("tabId") final String tabId //
+			, @PathVariable("rowId") final String rowId //
+			, @PathVariable("fieldName") final String fieldName //
+	)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
+		return getDocumentFieldZoomInto(documentPath, fieldName);
+	}
+
 
 	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
