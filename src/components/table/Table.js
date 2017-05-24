@@ -654,21 +654,13 @@ class Table extends Component {
                 ret.push(
                     <tbody key={i}>
                         <TableItem
+                            {...item[key]}
+                            {...{entity, cols, type, mainTable, indentSupported,
+                                selected, docId, tabIndex, readonly}}
                             key={i}
                             odd={i & 1}
-                            item={item[key]}
-                            entity={entity}
-                            fields={item[key].fields}
                             rowId={item[key][keyProp]}
                             tabId={tabid}
-                            cols={cols}
-                            type={type}
-                            docId={docId}
-                            tabIndex={tabIndex}
-                            readonly={readonly}
-                            mainTable={mainTable}
-                            selected={selected}
-                            keyProperty={keyProp}
                             onDoubleClick={() => onDoubleClick &&
                                 onDoubleClick(item[key][keyProp])
                             }
@@ -686,10 +678,6 @@ class Table extends Component {
                                 selected[0] === 'all'
                             }
                             handleSelect={this.selectRangeProduct}
-                            indentSupported={indentSupported}
-                            indent={item[key].indent}
-                            includedDocuments={item[key].includedDocuments}
-                            lastSibling={item[key].lastChild}
                             contextType={item[key].type}
                             notSaved={
                                 item[key].saveStatus &&
@@ -750,16 +738,12 @@ class Table extends Component {
                     }
                 >
                     {contextMenu.open && <TableContextMenu
+                        {...{docId, type, selected, mainTable, updateDocList}}
                         x={contextMenu.x}
                         y={contextMenu.y}
                         blur={() => this.closeContextMenu()}
-                        docId={docId}
-                        type={type}
                         tabId={tabid}
-                        selected={selected}
                         deselect={() => this.deselectAllProducts()}
-                        mainTable={mainTable}
-                        updateDocList={updateDocList}
                         handleAdvancedEdit={() =>
                             this.handleAdvancedEdit(type, tabid, selected)
                         }
@@ -774,17 +758,13 @@ class Table extends Component {
                                 openModal={() =>
                                     this.openModal(type, tabid, 'NEW')
                                 }
-                                toggleFullScreen={toggleFullScreen}
-                                fullScreen={fullScreen}
+                                {...{toggleFullScreen, fullScreen, docId,
+                                    tabIndex, isBatchEntry, supportQuickInput}}
                                 docType={type}
-                                docId={docId}
                                 tabId={tabid}
-                                tabIndex={tabIndex}
-                                isBatchEntry={isBatchEntry}
                                 handleBatchEntryToggle={
                                     this.handleBatchEntryToggle
                                 }
-                                supportQuickInput={supportQuickInput}
                                 allowCreateNew={
                                     tabInfo && tabInfo.allowCreateNew
                                 }
@@ -818,8 +798,8 @@ class Table extends Component {
                         >
                             <thead>
                                 <TableHeader
-                                    {...{cols, mainTable, sort,
-                                        orderBy, page, indentSupported
+                                    {...{cols, sort, orderBy, page,
+                                        indentSupported, tabid
                                     }}
                                     getSizeClass={this.getSizeClass}
                                     deselect={this.deselectAllProducts}
@@ -846,18 +826,12 @@ class Table extends Component {
                     <div className="row">
                         <div className="col-xs-12">
                             <TablePagination
-                                handleChangePage={handleChangePage}
+                                {...{handleChangePage, pageLength, size,
+                                    selected, page, orderBy, queryLimitHit,
+                                    disablePaginationShortcuts}}
                                 handleSelectAll={this.selectAll}
                                 handleSelectRange={this.selectRangeProduct}
-                                pageLength={pageLength}
-                                size={size}
-                                selected={selected}
-                                page={page}
-                                orderBy={orderBy}
                                 deselect={this.deselectAllProducts}
-                                queryLimitHit={queryLimitHit}
-                                disablePaginationShortcuts=
-                                    {disablePaginationShortcuts}
                             />
                         </div>
                     </div>

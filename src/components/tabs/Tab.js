@@ -12,11 +12,11 @@ class Tab extends Component {
         super(props);
 
         const {
-            dispatch, tabid, windowType, queryOnActivate, docId
+            dispatch, tabid, windowType, queryOnActivate, docId, orderBy
         } = this.props;
 
         if(docId && queryOnActivate){
-            dispatch(getTab(tabid, windowType, docId)).then(res => {
+            dispatch(getTab(tabid, windowType, docId, orderBy)).then(res => {
                 dispatch(addRowData({[tabid]: res}, 'master'));
             });
         }

@@ -244,8 +244,8 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
-            handleRightClick, indentSupported, contextType, item, lastSibling,
-            includedDocuments, notSaved
+            handleRightClick, indentSupported, contextType, processed,
+            lastSibling, includedDocuments, notSaved
         } = this.props;
 
         return (
@@ -256,8 +256,8 @@ class TableItem extends Component {
                 className={
                     (isSelected ? 'row-selected ' : '') +
                     (odd ? 'tr-odd ': 'tr-even ') +
-                    (item.processed ? 'row-disabled ': '') +
-                    ((item.processed && lastSibling && !includedDocuments) ?
+                    (processed ? 'row-disabled ': '') +
+                    ((processed && lastSibling && !includedDocuments) ?
                         'row-boundary ': ''
                     ) +
                     (notSaved ? 'row-not-saved ': '')

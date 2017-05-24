@@ -8,7 +8,8 @@ import {
     attachFileAction,
     clearMasterData,
     getTab,
-    addRowData
+    addRowData,
+    sortTab
 } from '../actions/WindowActions';
 
 import {
@@ -153,8 +154,20 @@ class MasterWindow extends Component {
 
     handleDeletedStatus = (param) => {
         this.setState({
-                isDeleted: param
-            })
+            isDeleted: param
+        })
+    }
+
+    sort = (asc, field, startPage, page, tabId) => {
+        const {dispatch, master} = this.props;
+        const {windowType} = this.props.params;
+        const orderBy = (asc ? '+' : '-') + field;
+        const dataId = master.docId;
+
+        dispatch(sortTab('master', tabId, field, asc));
+        dispatch(getTab(tabId, windowType, dataId, orderBy)).then(res => {
+            dispatch(addRowData({[tabId]: res}, 'master'));
+        });
     }
 
     renderBody = () => {
@@ -248,6 +261,7 @@ class MasterWindow extends Component {
                 layout={master.layout}
                 rowData={master.rowData}
                 tabsInfo={master.includedTabsInfo}
+                sort={this.sort}
                 dataId={dataId}
                 isModal={false}
                 newRow={newRow}

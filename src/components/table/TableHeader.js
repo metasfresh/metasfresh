@@ -6,11 +6,9 @@ class TableHeader extends Component {
     }
 
     renderSorting = (field, caption) => {
-        const {sort, orderBy, deselect, page} = this.props;
+        const {sort, orderBy, deselect, page, tabid} = this.props;
         let sorting = {};
-
         orderBy && orderBy.map((item) => {
-
             if(field == item.fieldName){
                 sorting.name = item.fieldName;
                 sorting.asc = item.ascending;
@@ -21,8 +19,8 @@ class TableHeader extends Component {
             <div
                 className="sort-menu"
                 onClick={() => {
-                    sort(!sorting.asc, field, true, page);
-                    deselect()
+                    sort(!sorting.asc, field, true, page, tabid);
+                    deselect();
                 }}
             >
                 <span className="th-caption">{caption}</span>
@@ -40,24 +38,25 @@ class TableHeader extends Component {
         )
     }
 
-    renderCols = (cols, mainTable) => {
-        const {getSizeClass} = this.props;
+    renderCols = (cols) => {
+        const {getSizeClass, sort} = this.props;
 
         return cols && cols.map((item, index) =>
             <th
                 key={index}
                 className={getSizeClass(item)}
             >
-                {!mainTable ? item.caption: ''}
-                {mainTable ?
-                    this.renderSorting(item.fields[0].field, item.caption) : ''}
+                {sort ?
+                    this.renderSorting(item.fields[0].field, item.caption):
+                    item.caption
+                }
             </th>
         );
     }
 
     render() {
         const {
-            cols, mainTable, indentSupported
+            cols, indentSupported
         } = this.props;
 
         return (
@@ -67,7 +66,7 @@ class TableHeader extends Component {
                         className="indent"
                     />
                 }
-                {this.renderCols(cols, mainTable)}
+                {this.renderCols(cols)}
             </tr>
         )
     }
