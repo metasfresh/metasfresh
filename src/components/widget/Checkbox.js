@@ -15,7 +15,7 @@ class Checkbox extends Component {
             widgetData, disabled, fullScreen, tabIndex, handlePatch,
             widgetField, id, filterWidget
         } = this.props;
-
+        console.log(widgetData[0].value)
         return (
             <div>
                 <label
@@ -43,16 +43,21 @@ class Checkbox extends Component {
                         )}
                         tabIndex="-1"
                     />
-                    <div className="input-checkbox-tick" />
+                    <div 
+                        className={
+                            'input-checkbox-tick ' + 
+                            ((widgetData[0].value === false && filterWidget) ? 
+                                'input-state-false ' : '')
+                        }
+                    />
                 </label>
                 {(filterWidget && !disabled && !widgetData[0].readonly &&
                     widgetData[0].value !== '') ?
-                    <span className="input-icon-checkbox input-icon-lg">
-                        <i
+                        <small
+                            className="input-side"
                             onClick={this.handleClear}
-                            className="meta-icon-close-alt"
-                        />
-                    </span> : ''
+                        >(clear)</small>
+                    : ''
                 }
             </div>
         );
