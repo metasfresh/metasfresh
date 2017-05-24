@@ -166,4 +166,12 @@ public interface IESRImportBL extends ISingletonService
 	 * @param bankStatementLineRef
 	 */
 	void unlinkESRImportLinesFor(I_C_BankStatementLine_Ref bankStatementLineRef);
+	
+	/**
+	 * Check is is a v11 filename<bR>
+	 * The check is made by name of the file
+	 * @param filename
+	 * @return
+	 */
+	boolean isV11File(String filename);
 }
