@@ -32,7 +32,7 @@ class Lookup extends Component {
         const {defaultValue} = this.props;
         const {property} = this.state;
 
-         const objectValue = property && getItemsByProperty(
+        const objectValue = property && getItemsByProperty(
                                 defaultValue, 'field', property
                             )[0].value;
 
@@ -191,6 +191,7 @@ class Lookup extends Component {
                                         mainProperty={[item]}
                                         blur={!property?true:false}
                                         readonly={disabled}
+                                        isInputEmpty={isInputEmpty}
                                     />
                                 </div>
                         }

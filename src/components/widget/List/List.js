@@ -29,6 +29,18 @@ class List extends Component {
         }
     }
 
+    componentDidUpdate(prevProps){
+        const {isInputEmpty} = this.props;
+
+        if(isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
+
+            this.setState({
+                prevValue: ''
+            });
+
+        }
+    }
+
     handleFocus = () => {
         const {
             properties, dispatch, dataId, rowId, tabId, windowType,
@@ -57,19 +69,33 @@ class List extends Component {
         } = this.props;
         const {prevValue} = this.state;
 
-        if(lookupList){
-            if( prevValue !== option[Object.keys(option)[0]] ) {
-                onChange(properties[0].field, option);
+         if( prevValue !== option[Object.keys(option)[0]] ) {
+             if(lookupList){
+                    onChange(properties[0].field, option);
 
-                this.setState({
-                    selectedItem: option,
-                    prevValue: option[Object.keys(option)[0]]
-                });
-                setNextProperty(mainProperty[0].field);
+                    this.setState({
+                        selectedItem: option,
+                        prevValue: option[Object.keys(option)[0]]
+                    });
+                    setNextProperty(mainProperty[0].field);
+            } else {
+                onChange(option);
             }
-        } else {
-            onChange(option);
-        }
+         }
+    }
+
+    handleAutoSelect = (option) => {
+        const {
+            onChange, properties, setNextProperty, mainProperty
+        } = this.props;
+
+        onChange(properties[0].field, option);
+
+        this.setState({
+            selectedItem: option,
+            prevValue: option[Object.keys(option)[0]]
+        });
+        setNextProperty(mainProperty[0].field);
     }
 
     render() {
@@ -86,6 +112,7 @@ class List extends Component {
                 loading={loading}
                 onFocus={this.handleFocus}
                 onSelect={option => this.handleSelect(option)}
+                autoSelect={option => this.handleAutoSelect(option)}
                 rank={rank}
                 readonly={readonly}
                 defaultValue={defaultValue}
