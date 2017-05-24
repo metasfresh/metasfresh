@@ -101,7 +101,7 @@ class TableCell extends Component {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId,
             onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
-            listenOnKeys, listenOnKeysFalse, closeTableField
+            listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass
         } = this.props;
 
         return (
@@ -114,16 +114,7 @@ class TableCell extends Component {
                     (item.gridAlign ? 'text-xs-' + item.gridAlign + ' ' : '') +
                     (widgetData[0].readonly ? 'cell-disabled ' : '') +
                     (widgetData[0].mandatory ? 'cell-mandatory ' : '') +
-                    (item.widgetType==='Lookup' ||
-                        item.widgetType==='LongText' ||
-                        item.widgetType==='List' ||
-                        item.widgetType==='Date' ||
-                        item.widgetType==='DateTime' ||
-                        item.widgetType==='Time' ?
-                            'td-lg ' : '') +
-                    (item.widgetType==='ProductAttributes' ? 'td-md ' : '') +
-                    (item.widgetType==='Address' ? 'td-md ' : '') +
-                    (item.widgetType==='Text' ? 'td-md ' : '') +
+                    (getSizeClass(item) + ' ') +
                     (item.widgetType) +
                     ((updatedRow) ? ' pulse-on' : ' pulse-off')
                 }

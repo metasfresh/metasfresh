@@ -611,6 +611,31 @@ class Table extends Component {
         }
     }
 
+    getSizeClass = (col) => {
+        const {widgetType, size} = col;
+        const lg = ['List', 'Lookup', 'LongText', 'Date', 'DateTime', 'Time'];
+        const md = ['Text', 'Address', 'ProductAttributes'];
+
+        if(size){
+            switch(size){
+                case 'S':
+                    return 'td-sm';
+                case 'M':
+                    return 'td-md';
+                case 'L':
+                    return 'td-lg';
+            }
+        }else{
+            if(lg.indexOf(widgetType) > -1){
+                return 'td-lg';
+            }else if(md.indexOf(widgetType) > -1){
+                return 'td-md';
+            }else {
+                return 'td-sm';
+            }
+        }
+    }
+
     renderTableBody = () => {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
@@ -670,6 +695,7 @@ class Table extends Component {
                                 item[key].saveStatus &&
                                 !item[key].saveStatus.saved
                             }
+                            getSizeClass={this.getSizeClass}
                         />
                     </tbody>
                 );
@@ -792,13 +818,11 @@ class Table extends Component {
                         >
                             <thead>
                                 <TableHeader
-                                    cols={cols}
-                                    mainTable={mainTable}
-                                    sort={sort}
-                                    orderBy={orderBy}
+                                    {...{cols, mainTable, sort,
+                                        orderBy, page, indentSupported
+                                    }}
+                                    getSizeClass={this.getSizeClass}
                                     deselect={this.deselectAllProducts}
-                                    page={page}
-                                    indentSupported={indentSupported}
                                 />
                             </thead>
                             {this.renderTableBody()}
