@@ -9,7 +9,8 @@ import {
     selectTableItems,
     deleteLocal,
     mapIncluded,
-    getItemsByProperty
+    getItemsByProperty,
+    getZoomIntoWindow
 } from '../../actions/WindowActions';
 
 import {
@@ -43,7 +44,8 @@ class Table extends Component {
             contextMenu: {
                 open: false,
                 x: 0,
-                y: 0
+                y: 0,
+                fieldName: null
             },
             promptOpen: false,
             isBatchEntry: false,
@@ -430,26 +432,27 @@ class Table extends Component {
         }
     }
 
-    handleRightClick = (e, id) => {
+    handleRightClick = (e, id, fieldName) => {
         const {selected} = this.state;
         const {clientX, clientY} = e;
         e.preventDefault();
 
         if(selected.indexOf(id) > -1){
-            this.setContextMenu(clientX, clientY);
+            this.setContextMenu(clientX, clientY, fieldName);
         }else{
             this.selectOneProduct(id, null, null, () => {
-                this.setContextMenu(clientX, clientY);
+                this.setContextMenu(clientX, clientY, fieldName);
             });
         }
     }
 
-    setContextMenu = (clientX, clientY) => {
+    setContextMenu = (clientX, clientY, fieldName) => {
         this.setState({
             contextMenu: Object.assign({}, this.state.contextMenu, {
                 x: clientX,
                 y: clientY,
-                open: true
+                open: true,
+                fieldName
             })
         });
     }
@@ -610,6 +613,17 @@ class Table extends Component {
             }
         }
     }
+    
+    handleZoomInto = (fieldName) => {
+        const {dispatch, entity, type, docId, tabid} = this.props;
+        const {selected} = this.state;
+        
+        dispatch(
+            getZoomIntoWindow(entity, type, docId, fieldName, tabid, selected[0])
+        ).then(res => {
+            console.log(res.data)
+        })
+    }
 
     getSizeClass = (col) => {
         const {widgetType, size} = col;
@@ -675,8 +689,9 @@ class Table extends Component {
                             onMouseDown={(e) =>
                                 this.handleClick(e, item[key][keyProp])
                             }
-                            handleRightClick={(e) =>
-                                this.handleRightClick(e, item[key][keyProp])
+                            handleRightClick={(e, fieldName) =>
+                                this.handleRightClick(
+                                    e, item[key][keyProp], fieldName)
                             }
                             changeListenOnTrue={() => this.changeListen(true)}
                             changeListenOnFalse={() => this.changeListen(false)}
@@ -750,8 +765,7 @@ class Table extends Component {
                     }
                 >
                     {contextMenu.open && <TableContextMenu
-                        x={contextMenu.x}
-                        y={contextMenu.y}
+                        {...contextMenu}
                         blur={() => this.closeContextMenu()}
                         docId={docId}
                         type={type}
@@ -767,6 +781,7 @@ class Table extends Component {
                         handleDelete={(
                             !isModal && (tabInfo && tabInfo.allowDelete)) ?
                                 () => this.handleDelete() : null}
+                        handleZoomInto={this.handleZoomInto}
                     />}
                     {!readonly && <div className="row">
                         <div className="col-xs-12">

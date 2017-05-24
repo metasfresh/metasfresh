@@ -102,7 +102,8 @@ class TableItem extends Component {
     renderCells = (cols, cells) => {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
-            changeListenOnTrue, tabIndex, entity, getSizeClass
+            changeListenOnTrue, tabIndex, entity, getSizeClass,
+            handleRightClick
         } = this.props;
 
         const {
@@ -115,6 +116,7 @@ class TableItem extends Component {
             const widgetData = item.fields.map(property =>
                 findRowByPropName(cells, property.field)
             );
+            const {supportZoomInto} = item.fields[0];
 
             return (
                 <TableCell
@@ -136,6 +138,8 @@ class TableItem extends Component {
                     updateRow={this.updateRow}
                     listenOnKeysFalse={this.listenOnKeysFalse}
                     closeTableField={(e) => this.closeTableField(e)}
+                    handleRightClick={(e) => 
+                        handleRightClick(e, supportZoomInto ? property : null)}
                 />
             )
         })
@@ -244,7 +248,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
-            handleRightClick, indentSupported, contextType, item, lastSibling,
+            indentSupported, contextType, item, lastSibling,
             includedDocuments, notSaved
         } = this.props;
 
@@ -252,7 +256,6 @@ class TableItem extends Component {
             <tr
                 onClick={onMouseDown}
                 onDoubleClick={onDoubleClick}
-                onContextMenu={handleRightClick}
                 className={
                     (isSelected ? 'row-selected ' : '') +
                     (odd ? 'tr-odd ': 'tr-even ') +

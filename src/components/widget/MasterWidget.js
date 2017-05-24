@@ -163,8 +163,9 @@ class MasterWidget extends Component {
 
     handleZoomInto = (field) => {
         const {dispatch, dataId, windowType, tabId, rowId} = this.props;
-        dispatch(getZoomIntoWindow(windowType, dataId, field, tabId, rowId))
-        .then(res => {
+        dispatch(getZoomIntoWindow(
+            'window', windowType, dataId, field, tabId, rowId
+        )).then(res => {
              res && res.data && window.open('/window/' +
                                 res.data.documentPath.windowId + '/' +
                                 res.data.documentPath.documentId, '_blank');
