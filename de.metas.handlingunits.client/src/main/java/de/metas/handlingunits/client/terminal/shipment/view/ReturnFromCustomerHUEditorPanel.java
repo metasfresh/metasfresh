@@ -3,8 +3,11 @@ package de.metas.handlingunits.client.terminal.shipment.view;
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalDialog;
+import de.metas.adempiere.form.terminal.TerminalDialogCancelClosingException;
+import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.shipment.model.ReturnFromCustomerHUEditorModel;
+import de.metas.handlingunits.model.I_M_InOut;
 
 /*
  * #%L
@@ -50,36 +53,36 @@ public class ReturnFromCustomerHUEditorPanel extends HUEditorPanel
 	@Override
 	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
 	{
-//		final CustomerReturnHUEditorPanel model = getHUEditorModel();
-//		final List<I_M_InOut> receiptsToReverse = model.getReceiptsToReverse();
-//		if (receiptsToReverse.isEmpty())
-//		{
-//			throw new TerminalException("@NoSelection@");
-//		}
-//
-//		//
-//		// Ask user if he/she really wants to reverse those receipts
-//		final String receiptsToReverseInfo = model.buildReceiptsToReverseInfo(receiptsToReverse);
-//		final boolean reverse = getTerminalFactory()
-//				.ask(this)
-//				.setAD_Message("DeleteRecord?") // TODO: better message
-//				.setAdditionalMessage(receiptsToReverseInfo)
-//				.setDefaultAnswer(false)
-//				.getAnswer();
-//		if (!reverse)
-//		{
-//			// user canceled!
-//			throw new TerminalDialogCancelClosingException();
-//		}
-//
-//		model.reverseReceipts(receiptsToReverse);
+		final ReturnFromCustomerHUEditorModel model = getHUEditorModel();
+		final I_M_InOut shipmentToReturn = model.getShipment();
+		if (shipmentToReturn == null)
+		{
+			throw new TerminalException("@NoSelection@");
+		}
+
+		//
+		// Ask user if he/she really wants to reverse those receipts
+		final String receiptsToReverseInfo = model.buildShipmentToReturnInfo(shipmentToReturn);
+		final boolean returnShipment = getTerminalFactory()
+				.ask(this)
+				.setAD_Message("ReturnShipment?") // TODO: better message
+				.setAdditionalMessage(receiptsToReverseInfo)
+				.setDefaultAnswer(false)
+				.getAnswer();
+		if (!returnShipment)
+		{
+			// user canceled!
+			throw new TerminalDialogCancelClosingException();
+		}
+
+		model.returnShipmentFromCustomer(shipmentToReturn);
 	}
 
 	@Override
 	protected void createAndAddActionButtons(IContainer buttonsPanel)
 	{
-		buttonsPanel.add(bMoveToQualityWarehouse, "newline");
-		buttonsPanel.add(bCreateVendorReturn, "");
-		buttonsPanel.add(bMoveToGarbage, "");
+		buttonsPanel.add(bReturnFromCustomer, "");
 	}
+	
+
 }

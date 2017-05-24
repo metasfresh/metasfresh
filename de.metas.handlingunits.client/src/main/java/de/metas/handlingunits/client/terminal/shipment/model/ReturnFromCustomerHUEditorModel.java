@@ -1,7 +1,11 @@
 package de.metas.handlingunits.client.terminal.shipment.model;
 
+import de.metas.adempiere.form.terminal.ITerminalDialog;
+import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
+import de.metas.handlingunits.client.terminal.shipment.view.ReturnFromCustomerHUEditorPanel;
 import de.metas.handlingunits.model.I_M_InOut;
 
 /*
@@ -47,5 +51,63 @@ public class ReturnFromCustomerHUEditorModel  extends HUEditorModel
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+
+	public I_M_InOut getShipment()
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public String buildShipmentToReturnInfo(I_M_InOut shipmentToReturn)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void returnShipmentFromCustomer(I_M_InOut shipmentToReturn)
+	{
+		// TODO Auto-generated method stub
+		
+	}
+	
+	private void doReturnHUToCustomer()
+	{
+		//
+		// Create Receipt Correct Model
+		final ReturnFromCustomerHUSelectModel model = getModel();
+		final I_M_InOut shipment = model.getSelectedShipment();
+		if (shipment == null)
+		{
+			throw new TerminalException("@NoSelection@");
+		}
+
+		final ITerminalContext terminalContext = getTerminalContext();
+		try (final ITerminalContextReferences refs = terminalContext.newReferences())
+		{
+			final ReturnFromCustomerHUEditorModel returnFromCustomerModel = new ReturnFromCustomerHUEditorModel(getTerminalContext());
+			returnFromCustomerModel.loadFromShipment(shipment);
+
+			// Create Receipt Correct Panel and display it to user
+			final ReturnFromCustomerHUEditorPanel receiptCorrectPanel = new ReturnFromCustomerHUEditorPanel(returnFromCustomerModel);
+			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, btnReturnFromCustomer.getText(), receiptCorrectPanel);
+			editorDialog.setSize(getTerminalContext().getScreenResolution());
+
+			// Activate editor dialog and wait until user closes the window
+			editorDialog.activate();
+
+			if (editorDialog.isCanceled())
+			{
+				// user canceled!
+				return;
+			}
+		}
+		//
+		// Refresh ALL lines, because current receipt schedule was changed now.
+		// And it could be that also other receipt schedules are affected (in case of an HU which is assigned to multiple receipts).
+		model.refreshLines(true);
 	}
 }
