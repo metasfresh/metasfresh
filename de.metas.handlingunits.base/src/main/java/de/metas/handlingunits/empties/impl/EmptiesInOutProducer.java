@@ -40,11 +40,7 @@ public class EmptiesInOutProducer extends AbstractReturnsInOutProducer
 
 	public EmptiesInOutProducer(final Properties ctx)
 	{
-		super();
-
-		Check.assumeNotNull(ctx, "ctx not null");
-
-		_ctx = ctx;
+		super(ctx);
 	}
 
 	

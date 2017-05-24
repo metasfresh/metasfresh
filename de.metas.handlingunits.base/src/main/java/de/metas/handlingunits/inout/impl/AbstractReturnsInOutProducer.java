@@ -28,7 +28,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,6 +47,7 @@ import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import lombok.NonNull;
 
 public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProducer
 {
@@ -57,7 +57,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	protected Properties _ctx;
+	protected final Properties _ctx;
 	protected boolean executed = false;
 
 	protected I_C_BPartner _bpartner = null;
@@ -73,7 +73,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	/** InOut header reference. It will be created just when it is needed. */
 	protected final LazyInitializer<I_M_InOut> inoutRef = LazyInitializer.of(() -> createInOutHeader());
 
-	public void setCtx(final Properties ctx)
+	protected AbstractReturnsInOutProducer(@NonNull final Properties ctx)
 	{
 		this._ctx = ctx;
 	}
@@ -97,21 +97,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	public I_M_InOut create()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(new TrxCallable<I_M_InOut>()
-		{
-
-			@Override
-			public I_M_InOut call() throws Exception
-			{
-				return createInTrx();
-			}
-
-			@Override
-			public boolean doCatch(Throwable e) throws Throwable
-			{
-				throw e;
-			}
-		});
+		return trxManager.call(this::createInTrx);
 	}
 
 	private I_M_InOut createInTrx()
@@ -142,6 +128,8 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			}
 
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
+			
+			afterInOutProcessed(inout);
 
 			return inout;
 		}
@@ -154,6 +142,11 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			InterfaceWrapperHelper.save(inout);
 			return inout;
 		}
+	}
+	
+	protected void afterInOutProcessed(final I_M_InOut inout)
+	{
+		// nothing at this level
 	}
 
 	@Override

@@ -32,7 +32,7 @@ import org.compiere.model.I_C_DocType;
 public interface IDocTypeDAO extends ISingletonService
 {
 	String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
-	
+
 	String DOCSUBTYPE_NONE = null;
 
 	/**
@@ -72,6 +72,8 @@ public interface IDocTypeDAO extends ISingletonService
 	int getDocTypeId(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
 
 	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, int adClientId, int adOrgId, String trxName);
+
+	I_C_DocType getDocType(String docBaseType, String docSubType, int adClientId, int adOrgId);
 
 	I_C_DocType getDocTypeOrNull(Properties ctx, String docBaseType, String docSubType, int adClientId, int adOrgId, String trxName);
 
