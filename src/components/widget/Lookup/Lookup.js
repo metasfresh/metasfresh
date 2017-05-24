@@ -131,11 +131,6 @@ class Lookup extends Component {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
 
-                        //children to remove
-                        const children = properties.slice( 
-                            index+1, properties.length
-                        );
-
                         if(item.source === 'lookup'){
                             return <RawLookup
                                 key={index}
@@ -153,7 +148,7 @@ class Lookup extends Component {
                                 windowType, parameterName, entity, dataId,
                                 isModal, recent, rank, updated, filterWidget,
                                 mandatory, validStatus, align, onChange, item,
-                                disabled, children, fireClickOutside}}
+                                disabled, fireClickOutside}}
                             />
 
                         } else if (item.source === 'list') {
@@ -196,7 +191,6 @@ class Lookup extends Component {
                                         mainProperty={[item]}
                                         blur={!property?true:false}
                                         readonly={disabled}
-                                        children={children}
                                     />
                                 </div>
                         }

@@ -14,7 +14,18 @@ class List extends Component {
         this.state = {
             list: [],
             loading: false,
-            selectedItem: ''
+            selectedItem: '',
+            prevValue: ''
+        }
+    }
+
+    componentDidMount(){
+        const {defaultValue} = this.props;
+
+        if(defaultValue) {
+            this.setState({
+                prevValue: defaultValue
+            });
         }
     }
 
@@ -42,34 +53,20 @@ class List extends Component {
 
     handleSelect = (option) => {
         const {
-            onChange, lookupList, properties, setNextProperty, mainProperty,
-            children
+            onChange, lookupList, properties, setNextProperty, mainProperty
         } = this.props;
+        const {prevValue} = this.state;
 
         if(lookupList){
-            // if(children.length > 0) {
-            //     let dataToChange = [];
-            //     const valuesToSet = [];
+            if( prevValue !== option[Object.keys(option)[0]] ) {
+                onChange(properties[0].field, option);
 
-            //     dataToChange.push(mainProperty[0]);
-            //     valuesToSet.push(option);
-
-            //     children.map(item=>{
-            //             dataToChange.push(item);
-            //             valuesToSet.push(null);
-            //     });
-
-            //     onChange(dataToChange, valuesToSet);
-            // } else {
-            //     onChange(properties[0].field, option);
-            // }
-
-            onChange(properties[0].field, option);
-
-            this.setState({
-                selectedItem: option
-            });
-            setNextProperty(mainProperty[0].field);
+                this.setState({
+                    selectedItem: option,
+                    prevValue: option[Object.keys(option)[0]]
+                });
+                setNextProperty(mainProperty[0].field);
+            }
         } else {
             onChange(option);
         }

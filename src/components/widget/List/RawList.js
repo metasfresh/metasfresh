@@ -136,7 +136,6 @@ class RawList extends Component {
      */
     handleClick = (e) => {
         const {lookupList} = this.props;
-        
         if(!lookupList){
             e.preventDefault();
             const {onFocus, doNotOpenOnFocus} = this.props;
@@ -147,10 +146,6 @@ class RawList extends Component {
                 isOpen: true
             })
         }
-        
-
-        
-        
     }
 
     handleFocus = (e) => {
@@ -165,7 +160,6 @@ class RawList extends Component {
                 isOpen: true
             })
         }
-        
     }
 
     handleChange = (e) => {

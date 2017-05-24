@@ -72,29 +72,12 @@ class RawLookup extends Component {
 
     handleSelect = (select) => {
         const {
-            onChange, handleInputEmptyStatus, mainProperty, setNextProperty,
-            children, properties
+            onChange, handleInputEmptyStatus, mainProperty, setNextProperty
         } = this.props;
 
         this.setState({
             selected: null
         }, () => {
-                // if(children.length > 0) {
-                //     let dataToChange = [];
-                //     const valuesToSet = [];
-
-                //     dataToChange.push(mainProperty[0]);
-                //     valuesToSet.push(select);
-
-                //     children.map(item=>{
-                //             dataToChange.push(item);
-                //             valuesToSet.push(null);
-                //     });
-
-                //     onChange(dataToChange, valuesToSet);
-                // } else {
-                //     onChange(properties[0].field, select);
-                // }
 
                 onChange(mainProperty[0].field, select);
 
