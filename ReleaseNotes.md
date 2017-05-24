@@ -27,10 +27,11 @@ Here come the actual release notes:
     * Translation for a subset of Document Types to Language en_US.
   * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
     * Solves an internal issue updating the jaxb maven plugin to new version 2.3.1
-  * [#1609](https://github.com/metasfresh/metasfresh/issues/1609) Provide Basic Test config Data for manufacturing / production
-    * Includes some initial settings for manufacturing that provides a good starting point for new users in this topic.
+  * [#1602](https://github.com/metasfresh/metasfresh/issues/1602) Show manufactoring order documentno in production order overview
   * [#1606](https://github.com/metasfresh/metasfresh/issues/1606) Add IsQualityReturnWarehouse flag to warehouse window WebUI
     * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
+  * [#1609](https://github.com/metasfresh/metasfresh/issues/1609) Provide Basic Test config Data for manufacturing / production
+    * Includes some initial settings for manufacturing that provides a good starting point for new users in this topic.
   * [#1612](https://github.com/metasfresh/metasfresh/issues/1612) New Window for Business Partner Group in WebUI
     * Created a new Window in WebUI that allows different settings for Business Partner Groups.
   * [#1614](https://github.com/metasfresh/metasfresh/issues/1614) New Window Attribute Set Instance in WebUI
