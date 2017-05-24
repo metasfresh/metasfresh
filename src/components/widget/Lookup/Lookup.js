@@ -129,7 +129,7 @@ class Lookup extends Component {
     getAllDropdowns = () => {
         const {
             dispatch, windowType, dataId, select, tabId, rowId, entity,
-            subentity, subentityId, defaultValue, closeTableField
+            subentity, subentityId, closeTableField
         } = this.props;
 
         const {
@@ -142,15 +142,10 @@ class Lookup extends Component {
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.filter((item, index) => {
-                const objectValue = getItemsByProperty(
-                    defaultValue, 'field', item.field
-                )[0].value;
-                if(objectValue) {
-                    return false;
-                } else {
-                    propertiesArray.push(propertiesCopy[index]);
-                    return true;
-                }
+
+                propertiesArray.push(propertiesCopy[index]);
+                return true;
+
             }).map((item) => {
                 return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
