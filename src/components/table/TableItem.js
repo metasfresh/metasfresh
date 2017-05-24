@@ -102,7 +102,7 @@ class TableItem extends Component {
     renderCells = (cols, cells) => {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
-            changeListenOnTrue, tabIndex, entity
+            changeListenOnTrue, tabIndex, entity, getSizeClass
         } = this.props;
 
         const {
@@ -118,15 +118,9 @@ class TableItem extends Component {
 
             return (
                 <TableCell
-                    entity={entity}
-                    type={type}
-                    docId={docId}
-                    rowId={rowId}
-                    tabId={tabId}
-                    item={item}
-                    readonly={readonly}
+                    {...{getSizeClass, entity, type, docId, rowId, tabId, item,
+                        readonly, widgetData, tabIndex, listenOnKeys }}
                     key={index}
-                    widgetData={widgetData}
                     isEdited={edited === property}
                     onDoubleClick={(e) =>
                         this.handleEditProperty(e, property, true)
@@ -140,8 +134,6 @@ class TableItem extends Component {
                     }
                     updatedRow={updatedRow || newRow}
                     updateRow={this.updateRow}
-                    tabIndex={tabIndex}
-                    listenOnKeys={listenOnKeys}
                     listenOnKeysFalse={this.listenOnKeysFalse}
                     closeTableField={(e) => this.closeTableField(e)}
                 />

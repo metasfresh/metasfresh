@@ -251,37 +251,30 @@ th {
     position: relative;
 }
 
-.th-lg {
-    width: 200px;
-}
+/* Table cols sizing */
 
-.th-md {
-    width: 100px;
-}
-
-.th-sm {
-    min-width: 60px;
-    max-width: 100px;
-}
-
-.table .td-lg {
+.td-lg {
     width: 225px;
     max-width: 225px;
 }
 
-.td-lg .input-dropdown-list {
-    width: 225px;
-}
-
-.table .td-md {
+.td-md {
     width: 144px;
     max-width: 144px;
+}
+
+.td-sm {
+    min-width: 60px;
+    max-width: 100px;
+}
+
+.td-lg .input-dropdown-list {
+    width: 225px;
 }
 
 .td-lg .input-dropdown-list {
     width: auto;
 }
-
 
 .pagination {
     margin-top: 0;
