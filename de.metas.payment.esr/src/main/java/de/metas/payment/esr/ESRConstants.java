@@ -81,6 +81,8 @@ public final class ESRConstants
 	public static final String WARN_PreventDuplicateImportFilesEntirely = "de.metas.payment.esr.PreventDuplicatesEtirely";
 	
 	public static final String SYSCONFIG_MATCH_ORG = "de.metas.payment.esr.MatchOrg";
+	
+	public static final String SYSCONFIG_CHECK_DUPLICATED= "de.metas.payment.esr.CheckDuplicated";
 
 	public static final String ESR_DIFF_INV_PARTNER = "ESR_Diff_Inv_partner";
 
