@@ -98,6 +98,7 @@ class SelectionAttributes extends Component {
                     {DLWrapperLayout && DLWrapperLayout.map((item, id) =>
                         <RawWidget
                             entity={entity}
+                            attribute={true}
                             widgetType={item.widgetType}
                             fields={item.fields}
                             dataId={DLWrapperDataId}
