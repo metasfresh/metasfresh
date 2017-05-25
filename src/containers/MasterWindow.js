@@ -112,7 +112,7 @@ class MasterWindow extends Component {
         }
 
         const { dispatch, master } = this.props;
-        const dataId = master.data.ID.value;
+        const dataId = master.data ? master.data.ID.value : -1;
         const { type } = master.layout;
 
         let fd = new FormData();
@@ -278,8 +278,8 @@ class MasterWindow extends Component {
         const docNoData = master.data.DocumentNo;
 
         const docStatusData = {
-            'status': master.data.DocStatus,
-            'action': master.data.DocAction,
+            'status': master.data.DocStatus || -1,
+            'action': master.data.DocAction || -1,
             'displayed': true
         };
 

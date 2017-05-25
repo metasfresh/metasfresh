@@ -31,17 +31,13 @@ class DataLayoutWrapper extends Component {
     handleChange = (field, value) => {
         const {data} = this.state;
 
-        this.setState({
-            data: data.map(item => {
-                if(item.field === field){
-                    return Object.assign({}, item, {
-                        value: value
-                    })
-                }else{
-                    return item;
-                }
+        this.setState(prevState => ({
+            data: Object.assign({}, prevState.data, {
+                [field]: Object.assign({}, prevState.data[field], {
+                    value
+                })
             })
-        })
+        }))
     }
 
     handlePatch = (prop, value, cb) => {
@@ -52,17 +48,15 @@ class DataLayoutWrapper extends Component {
             entity, windowType, dataId, null, null, prop, value, null, null,
             null, viewId
         )).then(response => {
-            const preparedData = parseToDisplay(response.data[0].fields);
-            preparedData && preparedData.map(item => {
-                this.setState({
-                    data: this.state.data.map(field => {
-                        if(field.field === item.field){
-                            return Object.assign({}, field, item);
-                        }else{
-                            return field;
-                        }
+            const preparedData = parseToDisplay(response.data[0].fieldsByName);
+            preparedData && Object.keys(preparedData).map(key => {
+                this.setState(prevState => ({
+                    data: Object.assign({}, prevState.data, {
+                        [key]: Object.assign(
+                            {}, prevState.data[key], preparedData[key]
+                        )
                     })
-                });
+                }))
             })
         });
 

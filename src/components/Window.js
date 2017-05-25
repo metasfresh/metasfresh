@@ -156,7 +156,7 @@ class Window extends Component {
 
         return elements.map((elem, id)=> {
             const autoFocus = isFocused && (id === 0);
-            const widgetData = elem.fields.map(item => data[item.field]);
+            const widgetData = elem.fields.map(item => data[item.field] || -1);
             const relativeDocId = data.ID && data.ID.value;
             return (
                 <MasterWidget

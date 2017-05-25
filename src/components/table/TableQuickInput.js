@@ -43,7 +43,8 @@ class TableQuickInput extends Component {
         const {data, layout, editedField} = this.state;
         if(data && layout){
             for(let i = 0; i < layout.length; i++){
-                const item = layout[i].fields.map(elem => data[elem.field]);
+                const item = 
+                    layout[i].fields.map(elem => data[elem.field] || -1);
                 
                 if(!item[0].value){
                     if(editedField !== i){
@@ -138,7 +139,8 @@ class TableQuickInput extends Component {
 
         if(data && layout){
             return layout.map((item, id) => {
-                const widgetData = item.fields.map(elem => data[elem.field]);
+                const widgetData =
+                    item.fields.map(elem => data[elem.field] || -1);
                 return (<RawWidget
                     entity={attributeType}
                     subentity="quickInput"

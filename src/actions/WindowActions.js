@@ -617,9 +617,10 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
             getProcessData(processType, viewId, type, ids, tabId, rowId)
         ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
+            
             pid = response.data.pinstanceId;
 
-            if (preparedData.length === 0) {
+            if (Object.keys(preparedData).length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
                     dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));

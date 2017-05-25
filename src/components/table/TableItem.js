@@ -109,8 +109,7 @@ class TableItem extends Component {
         // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
-            const widgetData =
-                item.fields.map(prop => cells[prop.field]);
+            const widgetData = item.fields.map(prop => cells[prop.field] || -1);
             const {supportZoomInto} = item.fields[0];
 
             return (
