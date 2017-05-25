@@ -230,7 +230,7 @@ public class WindowQuickInputRestController
 		return forQuickInputReadonly(quickInputPath, quickInput -> JSONDocument.ofDocument(quickInput.getQuickInputDocument(), newJSONOptions()));
 	}
 
-	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/typeahead", method = RequestMethod.GET)
+	@RequestMapping(value = "/{quickInputId}/field/{fieldName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getFieldTypeaheadValues(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
@@ -246,7 +246,7 @@ public class WindowQuickInputRestController
 		return forQuickInputReadonly(quickInputPath, quickInput -> quickInput.getFieldTypeaheadValues(fieldName, query));
 	}
 
-	@RequestMapping(value = "/{quickInputId}/attribute/{fieldName}/dropdown", method = RequestMethod.GET)
+	@RequestMapping(value = "/{quickInputId}/field/{fieldName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getFieldDropdownValues(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentIdStr //
