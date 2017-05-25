@@ -48,21 +48,39 @@ public class DDOrderUtil
 		return orgBPLocation.getC_BPartner_Location_ID();
 	}
 
-	public int calculateDurationDays(@NonNull final I_PP_Product_Planning productPlanningData, @NonNull final I_DD_NetworkDistributionLine networkLine)
+	/**
+	 *
+	 * @param productPlanningData may be null as of gh #1635
+	 * @param networkLine
+	 * @return
+	 */
+	public int calculateDurationDays(final I_PP_Product_Planning productPlanningData, @NonNull final I_DD_NetworkDistributionLine networkLine)
 	{
 		//
 		// Leadtime
-		final int leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
-		Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
+		final int leadtimeDays;
+		if (productPlanningData != null)
+		{
+			leadtimeDays = productPlanningData.getDeliveryTime_Promised().intValueExact();
+			Check.assume(leadtimeDays >= 0, MrpException.class, "leadtimeDays >= 0");
+		}
+		else
+		{
+			leadtimeDays = 0;
+		}
 
 		//
 		// Transfer time
 		int transferTime = networkLine.getTransfertTime().intValueExact();
-		if (transferTime <= 0)
+		if (transferTime <= 0 && productPlanningData != null)
 		{
 			transferTime = productPlanningData.getTransfertTime().intValueExact();
+			Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
 		}
-		Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
+		else
+		{
+			transferTime = 0;
+		}
 
 		final int durationTotalDays = leadtimeDays + transferTime;
 		return durationTotalDays;
