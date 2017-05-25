@@ -273,7 +273,12 @@ class Lookup extends Component {
                     validLocal: response.data.values.length === 0 &&
                                 handleChangeOnFocus!==true ? false : true
                 });
-            });
+            }).catch((err) => {
+                this.setState({
+                    list: [],
+                    loading: false
+                })
+            })
 
         }else{
             this.setState({
