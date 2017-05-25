@@ -1,7 +1,8 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 import org.adempiere.util.GuavaCollectors;
 
@@ -43,17 +44,23 @@ public class JSONProcessInstance implements Serializable
 
 	@JsonProperty("pinstanceId")
 	private final String pinstanceId;
+	@JsonProperty("parametersByName")
+	private final Map<String, JSONDocumentField> parametersByName;
+
 	@JsonProperty("parameters")
-	private final List<JSONDocumentField> parameters;
+	@Deprecated
+	private final Collection<JSONDocumentField> parameters;
+
 
 	private JSONProcessInstance(final IProcessInstanceController pinstance, final JSONOptions jsonOpts)
 	{
 		super();
 		pinstanceId = pinstance.getInstanceId().toJson();
 
-		parameters = pinstance.getParameters()
+		parametersByName = pinstance.getParameters()
 				.stream()
 				.map(param -> JSONDocumentField.ofDocumentField(param, jsonOpts.getAD_Language()))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(GuavaCollectors.toImmutableMapByKey(JSONDocumentField::getField));
+		parameters = parametersByName.values();
 	}
 }
