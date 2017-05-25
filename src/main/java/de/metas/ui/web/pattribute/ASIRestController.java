@@ -110,7 +110,7 @@ public class ASIRestController
 		});
 	}
 
-	@GetMapping("/{asiDocId}/attribute/{attributeName}/typeahead")
+	@GetMapping("/{asiDocId}/field/{attributeName}/typeahead")
 	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @PathVariable("attributeName") final String attributeName //
@@ -124,7 +124,7 @@ public class ASIRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{asiDocId}/attribute/{attributeName}/dropdown")
+	@GetMapping("/{asiDocId}/field/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @PathVariable("attributeName") final String attributeName //
