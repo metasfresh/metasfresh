@@ -23,11 +23,11 @@ import com.google.common.collect.Multimap;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,16 +49,25 @@ public final class DocumentFieldDependencyMap
 
 	public enum DependencyType
 	{
-		ReadonlyLogic, DisplayLogic, MandatoryLogic, LookupValues, FieldValue
+		/** Field's Readonly logic */
+		ReadonlyLogic,
+		/** Field's Display logic */
+		DisplayLogic,
+		/** Field's Mandatory logic */
+		MandatoryLogic,
+		/** Field's lookup values */
+		LookupValues,
+		/** Field's value */
+		FieldValue,
 	};
-	
+
 	@FunctionalInterface
 	public static interface IDependencyConsumer
 	{
 		void consume(String dependentFieldName, DependencyType dependencyType);
 	}
 
-	/** Map: "dependency type" to "depends on field name" to list of "dependent field name" */ 
+	/** Map: "dependency type" to "depends on field name" to list of "dependent field name" */
 	private final ImmutableMap<DependencyType, Multimap<String, String>> type2name2dependencies;
 
 	private DocumentFieldDependencyMap(final Builder builder)
@@ -115,7 +124,7 @@ public final class DocumentFieldDependencyMap
 			{
 				continue;
 			}
-			
+
 			for (final String dependentFieldName : name2dependencies.get(changedFieldName))
 			{
 				consumer.consume(dependentFieldName, dependencyType);
