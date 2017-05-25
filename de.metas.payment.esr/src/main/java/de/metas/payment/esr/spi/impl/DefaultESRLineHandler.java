@@ -25,7 +25,7 @@ import de.metas.payment.esr.spi.IESRLineHandler;
 public class DefaultESRLineHandler implements IESRLineHandler
 {
 
-	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	final private ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean matchBPartnerOfInvoice(final I_C_Invoice invoice, final I_ESR_ImportLine esrLine)
