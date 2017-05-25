@@ -194,15 +194,16 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {
                         [action.tabid]: {
                             [action.rowid]: {
-                                fields: {$set:
-                                    state[action.scope]
-                                        .rowData[action.tabid][action.rowid]
-                                        .fields.map(item =>
-                                        item.field === action.property ?
-                                            Object.assign(
-                                                {}, item, action.item
-                                            ) : item
-                                    )
+                                fieldsByName: {
+                                    [action.property] : {
+                                        $set: Object.assign({}, 
+                                            state[action.scope]
+                                                .rowData[action.tabid]
+                                                [action.rowid]
+                                                .fieldsByName[action.property],
+                                            action.item
+                                        )
+                                    }
                                 }
                             }
                         }
