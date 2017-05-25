@@ -129,7 +129,7 @@ class Lookup extends Component {
     getAllDropdowns = () => {
         const {
             dispatch, windowType, dataId, select, tabId, rowId, entity,
-            subentity, subentityId, closeTableField
+            subentity, subentityId, closeTableField, attribute
         } = this.props;
 
         const {
@@ -149,7 +149,7 @@ class Lookup extends Component {
             }).map((item) => {
                 return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
-                    subentity, subentityId
+                    subentity, subentityId, null, attribute
                 ))
             });
 
@@ -246,7 +246,7 @@ class Lookup extends Component {
     handleChange = (handleChangeOnFocus) => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
-            tabId, rowId, entity, subentity, subentityId, viewId
+            tabId, rowId, entity, subentity, subentityId, viewId, attribute
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -265,7 +265,7 @@ class Lookup extends Component {
                 (filterWidget ? parameterName : mainProperty[0].field),
                 this.inputSearch.value,
                 (filterWidget ? viewId : dataId), tabId, rowId, entity,
-                subentity, subentityId
+                subentity, subentityId, null, attribute
             )).then((response)=>{
                 this.setState({
                     list: response.data.values,
