@@ -297,7 +297,7 @@ public class ViewRestController
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
 	}
 
-	@GetMapping("/{viewId}/{rowId}/fields/{fieldName}/zoomInfo")
+	@GetMapping("/{viewId}/{rowId}/field/{fieldName}/zoomInfo")
 	public JSONZoomInto getRowFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("viewId") final String viewIdStr,
