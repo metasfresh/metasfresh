@@ -44,9 +44,11 @@ public class JSONProcessInstance implements Serializable
 
 	@JsonProperty("pinstanceId")
 	private final String pinstanceId;
-	@JsonProperty("parametersByName")
-	private final Map<String, JSONDocumentField> parametersByName;
-
+	
+	/** Parameters */
+	@JsonProperty("fieldsByName")
+	private final Map<String, JSONDocumentField> fieldsByName;
+	//
 	@JsonProperty("parameters")
 	@Deprecated
 	private final Collection<JSONDocumentField> parameters;
@@ -57,10 +59,10 @@ public class JSONProcessInstance implements Serializable
 		super();
 		pinstanceId = pinstance.getInstanceId().toJson();
 
-		parametersByName = pinstance.getParameters()
+		fieldsByName = pinstance.getParameters()
 				.stream()
 				.map(param -> JSONDocumentField.ofDocumentField(param, jsonOpts.getAD_Language()))
 				.collect(GuavaCollectors.toImmutableMapByKey(JSONDocumentField::getField));
-		parameters = parametersByName.values();
+		parameters = fieldsByName.values();
 	}
 }
