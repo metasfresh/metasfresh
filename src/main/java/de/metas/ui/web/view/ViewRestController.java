@@ -226,7 +226,7 @@ public class ViewRestController
 		return JSONViewRow.ofViewRows(result);
 	}
 
-	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
+	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
@@ -243,7 +243,7 @@ public class ViewRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/dropdown")
+	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
