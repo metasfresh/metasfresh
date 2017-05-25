@@ -613,15 +613,18 @@ class Table extends Component {
             }
         }
     }
-    
+
     handleZoomInto = (fieldName) => {
-        const {dispatch, entity, type, docId, tabid} = this.props;
+        const {dispatch, entity, type, docId, tabid, viewId} = this.props;
         const {selected} = this.state;
-        
-        dispatch(
-            getZoomIntoWindow(entity, type, docId, fieldName, tabid, selected[0])
-        ).then(res => {
-            console.log(res.data)
+
+        dispatch(getZoomIntoWindow(
+            entity, type, docId, (entity === 'window' ? tabid : viewId),
+            selected[0], fieldName
+        )).then(res => {
+            res && res.data && window.open('/window/' +
+                   res.data.documentPath.windowId + '/' +
+                   res.data.documentPath.documentId, '_blank');
         })
     }
 

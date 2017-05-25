@@ -64,15 +64,16 @@ class TableContextMenu extends Component {
                     tabIndex="0"
                     onBlur={blur}
                 >
-                {contextMenu.fieldName && 
+                {contextMenu.fieldName &&
                     <div
                         className="context-menu-item"
-                        onClick={handleZoomInto(contextMenu.fieldName)}
+                        onClick={() => handleZoomInto(contextMenu.fieldName)}
                     >
                         <i className="meta-icon-share" /> Zoom into
                     </div>
                 }
-                {contextMenu.fieldName && <hr className="context-menu-separator" />}
+                {contextMenu.fieldName &&
+                    <hr className="context-menu-separator" />}
                 {isSelectedOne && !mainTable &&
                     <div
                         className="context-menu-item"

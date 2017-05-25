@@ -592,15 +592,15 @@ export function attachFileAction(windowType, docId, data){
 }
 
 //ZOOM INTO
-export function getZoomIntoWindow(entity, windowId, docId, field, tabId, rowId) {
+export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
    return () => axios.get(
         config.API_URL +
         '/' + entity +
         '/' + windowId +
-        '/' + docId +
+        (docId ? '/' + docId : '') +
         (tabId ? '/' + tabId : '') +
         (rowId ? '/' + rowId : '') +
-        '/attribute' +
+        '/field' +
         '/' + field +
         '/zoomInto?showError=true'
     );

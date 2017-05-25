@@ -138,7 +138,7 @@ class TableItem extends Component {
                     updateRow={this.updateRow}
                     listenOnKeysFalse={this.listenOnKeysFalse}
                     closeTableField={(e) => this.closeTableField(e)}
-                    handleRightClick={(e) => 
+                    handleRightClick={(e) =>
                         handleRightClick(e, supportZoomInto ? property : null)}
                 />
             )
