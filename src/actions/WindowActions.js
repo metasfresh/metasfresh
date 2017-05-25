@@ -275,7 +275,7 @@ export function createWindow(
                 docId = response.data[elem].id;
 
                 dispatch(initDataSuccess(
-                    parseToDisplay(response.data[elem].fields),
+                    parseToDisplay(response.data[elem].fieldsByName),
                     getScope(isModal), docId,
                     response.data[0].saveStatus, response.data[0].validStatus,
                     response.data[0].includedTabsInfo
@@ -479,8 +479,8 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
                     }
                 })
 
-            const parsedItem = item.fields ? Object.assign({}, item, {
-                fields: parseToDisplay(item.fields)
+            const parsedItem = item.fieldsByName ? Object.assign({}, item, {
+                fields: parseToDisplay(item.fieldsByName)
             }) : item;
 
             // First item in response is direct one for action that called it.
@@ -753,25 +753,25 @@ function getScope(isModal) {
     return isModal ? 'modal' : 'master';
 }
 
-export function parseToDisplay(arr) {
-    return parseDateToReadable(nullToEmptyStrings(arr));
+export function parseToDisplay(obj) {
+    return parseDateToReadable(nullToEmptyStrings(obj));
 }
 
-function parseDateToReadable(arr) {
+function parseDateToReadable(obj) {
     const dateParse = ['Date', 'DateTime', 'Time'];
-    return arr.map(item =>
-        (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
-        Object.assign({}, item, {
-            value: item.value ? new Date(item.value) : ''
-        }) : item
+    return Object.keys(obj).map(key =>
+        (dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value) ?
+        Object.assign({}, obj[key], {
+            value: obj[key].value ? new Date(obj[key].value) : ''
+        }) : obj[key]
     )
 }
 
-function nullToEmptyStrings(arr) {
-    return arr.map(item =>
-        (item.value === null) ?
-        Object.assign({}, item, { value: '' }) :
-        item
+function nullToEmptyStrings(obj) {
+    return Object.keys(obj).map(key =>
+        (obj[key].value === null) ?
+        Object.assign({}, obj[key], { value: '' }) :
+        obj[key]
     )
 }
 
