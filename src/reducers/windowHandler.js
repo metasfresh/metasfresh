@@ -45,10 +45,6 @@ const initialState = {
 
 export default function windowHandler(state = initialState, action) {
 
-    const index = action.tabid && action.rowid &&
-                    state[action.scope].rowData[action.tabid].
-                        findIndex(item => item.rowId === action.rowid);
-
     switch(action.type){
 
         case types.NO_CONNECTION:
@@ -149,8 +145,8 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {
                         [action.tabid]:
                         {$set: state[action.scope].rowData[action.tabid]
-                            .filter((item, id) => {
-                                if( id === index) {
+                            .filter((item) => {
+                                if( item.rowId === action.rowId) {
                                     return
                                 } else {
                                     return item
@@ -191,18 +187,22 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [index]: {
-                                fields: {$set:
-                                    state[action.scope]
-                                        .rowData[action.tabid][index]
-                                        .fields.map(item =>
-                                        item.field === action.property ?
+                            $set: state[action.scope].rowData[action.tabid]
+                            .map(item =>
+                                item.rowId === action.rowid?
+                                    Object.assign({}, item, ()=>{
+                                        item.fields.map(field => {
+                                            field.field === action.property ?
                                             Object.assign(
-                                                {}, item, action.item
-                                            ) : item
-                                    )
-                                }
-                            }
+                                                {},
+                                                field,
+                                                action.item
+                                                )
+                                            :field
+                                        })
+                                    })
+                                :item
+                            )
                         }
                     }
                 }
@@ -213,9 +213,14 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [index] : {$merge: {
-                                [action.property]: action.item
-                            }}
+                            $set: state[action.scope].rowData[action.tabid]
+                            .map(item =>
+                                item.rowId === action.rowid ?
+                                {$merge: {
+                                    [action.property]: action.item
+                                }}
+                                : item
+                            )
                         }
                     }
                 }
@@ -226,9 +231,12 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [index] : {
-                                saveStatus: {$set : action.saveStatus}
-                            }
+                             $set: state[action.scope].rowData[action.tabid]
+                             .map(item =>
+                                item.rowId === action.rowid ?
+                                {$set : action.saveStatus}
+                                : item
+                            )
                         }
                     }
                 }
