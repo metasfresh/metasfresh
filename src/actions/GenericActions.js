@@ -115,7 +115,7 @@ export function completeRequest(
 
 export function autocompleteRequest(
     docType, propertyName, query, docId, tabId, rowId, entity, subentity,
-    subentityId, viewId
+    subentityId, viewId, attribute
 ) {
     return () => axios.get(
         config.API_URL +
@@ -127,14 +127,15 @@ export function autocompleteRequest(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        '/attribute/' + propertyName +
+        (attribute ? '/attribute/' : '/field/') + 
+        propertyName +
         '/typeahead' + '?query=' + encodeURIComponent(query)
     );
 }
 
 export function dropdownRequest(
     docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId,
-    viewId
+    viewId, attribute
 ) {
     return () => axios.get(
         config.API_URL +
@@ -146,7 +147,8 @@ export function dropdownRequest(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        '/attribute/' + propertyName +
+        (attribute ? '/attribute/' : '/field/') +
+        propertyName +
         '/dropdown'
     );
 }

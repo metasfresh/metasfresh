@@ -5,19 +5,6 @@ class TableHeader extends Component {
         super(props);
     }
 
-    getSizeClass = (widgetType) => {
-        const lg = ['List', 'Lookup', 'LongText'];
-        const md = ['DateTime', 'Date', 'Time', 'Text'];
-
-        if(lg.indexOf(widgetType) > -1){
-            return 'th-lg';
-        }else if(md.indexOf(widgetType) > -1){
-            return 'th-md';
-        }else {
-            return 'th-sm';
-        }
-    }
-
     renderSorting = (field, caption) => {
         const {sort, orderBy, deselect, page} = this.props;
         let sorting = {};
@@ -54,12 +41,12 @@ class TableHeader extends Component {
     }
 
     renderCols = (cols, mainTable) => {
+        const {getSizeClass} = this.props;
+
         return cols && cols.map((item, index) =>
             <th
                 key={index}
-                className={
-                    this.getSizeClass(item.widgetType)
-                }
+                className={getSizeClass(item)}
             >
                 {!mainTable ? item.caption: ''}
                 {mainTable ?

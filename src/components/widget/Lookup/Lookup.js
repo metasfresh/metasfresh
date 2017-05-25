@@ -129,7 +129,7 @@ class Lookup extends Component {
     getAllDropdowns = () => {
         const {
             dispatch, windowType, dataId, select, tabId, rowId, entity,
-            subentity, subentityId, defaultValue, closeTableField
+            subentity, subentityId, closeTableField, attribute
         } = this.props;
 
         const {
@@ -142,19 +142,14 @@ class Lookup extends Component {
         // call for more properties
         if(propertiesCopy.length > 0){
             const batchArray = propertiesCopy.filter((item, index) => {
-                const objectValue = getItemsByProperty(
-                    defaultValue, 'field', item.field
-                )[0].value;
-                if(objectValue) {
-                    return false;
-                } else {
-                    propertiesArray.push(propertiesCopy[index]);
-                    return true;
-                }
+
+                propertiesArray.push(propertiesCopy[index]);
+                return true;
+
             }).map((item) => {
                 return dispatch(dropdownRequest(
                     windowType, item.field, dataId, tabId, rowId, entity,
-                    subentity, subentityId
+                    subentity, subentityId, null, attribute
                 ))
             });
 
@@ -251,7 +246,7 @@ class Lookup extends Component {
     handleChange = (handleChangeOnFocus) => {
         const {
             dispatch, recent, windowType, dataId, filterWidget, parameterName,
-            tabId, rowId, entity, subentity, subentityId, viewId
+            tabId, rowId, entity, subentity, subentityId, viewId, attribute
         } = this.props;
 
         const {mainProperty} = this.state;
@@ -270,7 +265,7 @@ class Lookup extends Component {
                 (filterWidget ? parameterName : mainProperty[0].field),
                 this.inputSearch.value,
                 (filterWidget ? viewId : dataId), tabId, rowId, entity,
-                subentity, subentityId
+                subentity, subentityId, null, attribute
             )).then((response)=>{
                 this.setState({
                     list: response.data.values,
@@ -278,7 +273,12 @@ class Lookup extends Component {
                     validLocal: response.data.values.length === 0 &&
                                 handleChangeOnFocus!==true ? false : true
                 });
-            });
+            }).catch((err) => {
+                this.setState({
+                    list: [],
+                    loading: false
+                })
+            })
 
         }else{
             this.setState({

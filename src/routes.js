@@ -21,12 +21,12 @@ import {
     createWindow
 } from './actions/WindowActions';
 
-export const getRoutes = (store) => {
+export const getRoutes = (store, auth) => {
     const authRequired = (nextState, replace, callback) => {
         if( !localStorage.isLogged ){
             store.dispatch(localLoginRequest()).then((resp) => {
                 if(resp.data){
-                    store.dispatch(loginSuccess());
+                    store.dispatch(loginSuccess(auth));
                     callback(null, nextState.location.pathname);
                 }else{
                     //redirect tells that there should be
@@ -35,14 +35,14 @@ export const getRoutes = (store) => {
                 }
             })
         }else{
-            store.dispatch(loginSuccess());
+            store.dispatch(loginSuccess(auth));
             callback();
         }
     }
 
     const logout = () => {
         store.dispatch(logoutRequest()).then(()=>
-            store.dispatch(logoutSuccess())
+            store.dispatch(logoutSuccess(auth))
         ).then(()=>
             store.dispatch(push('/login'))
         );
@@ -79,6 +79,7 @@ export const getRoutes = (store) => {
                 <Login
                     redirect={nextState.location.query.redirect}
                     logged={localStorage.isLogged}
+                    {...{auth}}
                 />
             } />
             <Route path="*" component={NoMatch} />

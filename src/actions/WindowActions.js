@@ -417,14 +417,14 @@ export function patch(
         )).then(response => {
             responsed = true;
             dispatch(mapDataToState(
-                response.data, isModal, rowId, id, windowType
+                response.data, isModal, rowId, id, windowType, isAdvanced
             ));
         }).catch(() => {
             dispatch(getData(
                 entity, windowType, id, tabId, rowId, null, null, isAdvanced
             )).then(response => {
                 dispatch(mapDataToState(
-                    response.data, isModal, rowId, id, windowType
+                    response.data, isModal, rowId, id, windowType, isAdvanced
                 ));
             });
         });
@@ -469,7 +469,7 @@ function updateRow(row, scope){
     }
 }
 
-function mapDataToState(data, isModal, rowId, id, windowType) {
+function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
     return (dispatch) => {
         let staleTabIds = [];
 
@@ -481,7 +481,7 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                     if(
                         tabInfo.stale &&
                         staleTabIds.indexOf(tabInfo.tabid) === -1
-                      ){
+                    ){
                         staleTabIds.push(tabInfo.tabid);
                     }
                 })
@@ -497,9 +497,14 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
                 ))
             }else{
                 if (item.rowId && !isModal) {
+                    // Update directly to a row by the widget in cell
                     dispatch(updateRow(parsedItem, 'master'));
                 } else {
+                    // Update by a modal
                     item.rowId && dispatch(updateRow(parsedItem, 'master'));
+
+                    // Advanced edit
+                    isAdvanced && dispatch(updateData(parsedItem, 'master'));
 
                     dispatch(updateData(
                         parsedItem, getScope(isModal && index === 0)
@@ -511,10 +516,9 @@ function mapDataToState(data, isModal, rowId, id, windowType) {
         //Handling staleTabIds
         !isModal && staleTabIds.map(staleTabId => {
             dispatch(getTab(staleTabId, windowType, id)).then(tab => {
-                dispatch(addRowData({[staleTabId]: tab}, getScope(isModal)));
-            })
+                dispatch(addRowData({[staleTabId]: tab}, 'master'));
+            });
         })
-
     }
 }
 
@@ -598,14 +602,15 @@ export function attachFileAction(windowType, docId, data){
 }
 
 //ZOOM INTO
-export function getZoomIntoWindow(windowId, docId, field, tabId, rowId) {
+export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
    return () => axios.get(
         config.API_URL +
-        '/window/' + windowId +
-        '/' + docId +
+        '/' + entity +
+        '/' + windowId +
+        (docId ? '/' + docId : '') +
         (tabId ? '/' + tabId : '') +
         (rowId ? '/' + rowId : '') +
-        '/attribute' +
+        '/field' +
         '/' + field +
         '/zoomInto?showError=true'
     );

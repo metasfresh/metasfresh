@@ -16,8 +16,8 @@ class TableContextMenu extends Component {
     }
 
     componentDidMount() {
-        const {x, y} = this.props;
-        this.setPosition(x, y, this.contextMenu);
+        const {x, y, fieldName} = this.props;
+        this.setPosition(x, y, fieldName, this.contextMenu);
     }
 
     getPosition = (dir, pos, element) => {
@@ -35,11 +35,12 @@ class TableContextMenu extends Component {
         }
     }
 
-    setPosition = (x, y, elem) => {
+    setPosition = (x, y, fieldName, elem) => {
         this.setState({
             contextMenu: {
                 x: this.getPosition('x', x, elem),
-                y: this.getPosition('y', y, elem)
+                y: this.getPosition('y', y, elem),
+                fieldName
             }
         });
     }
@@ -47,7 +48,7 @@ class TableContextMenu extends Component {
     render() {
         const {
             blur, selected, mainTable, handleAdvancedEdit, handleOpenNewTab,
-            handleDelete
+            handleDelete, handleZoomInto
         } = this.props;
         const {contextMenu} = this.state;
 
@@ -63,6 +64,16 @@ class TableContextMenu extends Component {
                     tabIndex="0"
                     onBlur={blur}
                 >
+                {contextMenu.fieldName &&
+                    <div
+                        className="context-menu-item"
+                        onClick={() => handleZoomInto(contextMenu.fieldName)}
+                    >
+                        <i className="meta-icon-share" /> Zoom into
+                    </div>
+                }
+                {contextMenu.fieldName &&
+                    <hr className="context-menu-separator" />}
                 {isSelectedOne && !mainTable &&
                     <div
                         className="context-menu-item"
