@@ -15,12 +15,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -637,18 +635,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	 */
 	public static final class Builder
 	{
-		/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
-		private static final ILogicExpression LOGICEXPRESSION_NotActive;
-		/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
-		private static final ILogicExpression LOGICEXPRESSION_Processed;
-
-		static
-		{
-			final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-			LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
-			LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
-		}
-
 		private DocumentFieldDescriptor _fieldBuilt;
 
 		private final String fieldName;
@@ -1046,7 +1032,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			// Case: DocumentNo/Value special field not be readonly
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
-				return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
+				return ILogicExpression.FALSE;
 			}
 
 			// Case: DocAction
@@ -1079,23 +1065,6 @@ public final class DocumentFieldDescriptor implements Serializable
 			if (!entityReadonlyLogic.isConstantFalse())
 			{
 				readonlyLogic = entityReadonlyLogic.or(fieldReadonlyLogic);
-			}
-
-			//
-			// Consider field readonly if the row is not active
-			// .. and this property is not the IsActive flag.
-			if (!WindowConstants.FIELDNAME_IsActive.equals(fieldName))
-			{
-				readonlyLogic = LOGICEXPRESSION_NotActive.or(readonlyLogic);
-			}
-
-			//
-			// Consider field readonly if the row is processed.
-			// In case we deal with an AlwaysUpdateable field, this logic do not apply.
-			final boolean alwaysUpdateable = isAlwaysUpdateable();
-			if (!alwaysUpdateable)
-			{
-				readonlyLogic = LOGICEXPRESSION_Processed.or(readonlyLogic);
 			}
 
 			return readonlyLogic;

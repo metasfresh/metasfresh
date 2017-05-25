@@ -120,6 +120,9 @@ public final class Document
 	private DocumentSaveStatus _saveStatusOnCheckout;
 	private final DocumentStaleState _staleStatus;
 	private final ReentrantReadWriteLock _lock;
+	// Status: readonly
+	private DocumentReadonly parentReadonly = DocumentReadonly.NOT_READONLY;
+	private DocumentReadonly readonly = DocumentReadonly.NOT_READONLY;
 
 	//
 	// Callouts
@@ -177,6 +180,8 @@ public final class Document
 		_deleted = false;
 		_staleStatus = new DocumentStaleState();
 		_lock = builder.createLock();
+		parentReadonly = _parentDocument != null ? _parentDocument.getReadonly() : DocumentReadonly.NOT_READONLY;
+		readonly = DocumentReadonly.ofParent(parentReadonly);
 
 		_validOnCheckout = DocumentValidStatus.documentInitiallyInvalid();
 		_valid = _validOnCheckout;
@@ -262,7 +267,7 @@ public final class Document
 	}
 
 	/** copy constructor */
-	private Document(final Document from, @Nullable final Document parentDocumentCopy, final CopyMode copyMode, IDocumentChangesCollector changesCollector)
+	private Document(final Document from, @Nullable final Document parentDocumentCopy, final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		super();
 		documentPath = from.documentPath;
@@ -297,11 +302,15 @@ public final class Document
 		{
 			Preconditions.checkNotNull(parentDocumentCopy, "parentDocumentCopy");
 			_parentDocument = parentDocumentCopy;
+			parentReadonly = parentDocumentCopy.getReadonly();
+			readonly = from.readonly;
 		}
 		else
 		{
 			Preconditions.checkArgument(parentDocumentCopy == null, "parentDocumentCopy shall be null");
 			_parentDocument = null;
+			parentReadonly = DocumentReadonly.NOT_READONLY;
+			readonly = from.readonly;
 		}
 
 		//
@@ -430,7 +439,7 @@ public final class Document
 
 			//
 			// Update field's flags (readonly, mandatory etc)
-			updateAllFieldsFlags();
+			updateAllDependencies();
 
 			//
 			// Mark the document not staled because we just initialized it
@@ -1247,34 +1256,108 @@ public final class Document
 	}
 
 	/**
-	 * Updates field status flags for all fields (i.e.Mandatory, ReadOnly, Displayed etc)
+	 * Updates field status flags for all document level and field level dependencies (i.e.Mandatory, ReadOnly, Displayed etc)
 	 */
-	private void updateAllFieldsFlags()
+	private void updateAllDependencies()
 	{
 		logger.trace("Updating all dependencies for {}", this);
 
 		final String triggeringFieldName = null; // N/A
+
+		// Document level properties (e.g. docuemnt readonly)
+		for (final String documentFieldName : DocumentFieldDependencyMap.DOCUMENT_ALL_FIELDS)
+		{
+			for (final DependencyType triggeringDependencyType : DocumentFieldDependencyMap.DEPENDENCYTYPES_DocumentLevel)
+			{
+				updateOnDependencyChanged(documentFieldName, (IDocumentField)null, triggeringFieldName, triggeringDependencyType);
+			}
+		}
+
+		// Fields
 		for (final IDocumentField documentField : getFields())
 		{
-			for (final DependencyType triggeringDependencyType : DependencyType.values())
+			for (final DependencyType triggeringDependencyType : DocumentFieldDependencyMap.DEPENDENCYTYPES_FieldLevel)
 			{
-				updateFieldFlag(documentField, triggeringFieldName, triggeringDependencyType);
+				updateOnDependencyChanged(documentField.getFieldName(), documentField, triggeringFieldName, triggeringDependencyType);
 			}
 		}
 	}
 
-	private final void updateFieldReadOnly(final IDocumentField documentField)
+	DocumentReadonly getReadonly()
 	{
-		final ILogicExpression readonlyLogic = documentField.getDescriptor().getReadonlyLogic();
+		return readonly;
+	}
+
+	private void updateReadonlyAndPropagate(final ReasonSupplier reason)
+	{
+		final DocumentReadonly readonlyOld = this.readonly;
+		final DocumentReadonly readonlyNew = computeReadonly();
+		if (Objects.equals(readonlyOld, readonlyNew))
+		{
+			return;
+		}
+
+		this.readonly = readonlyNew;
+
+		getFields().forEach(documentField -> updateFieldReadOnlyAndCollect(documentField, reason));
+	}
+
+	private final DocumentReadonly computeReadonly()
+	{
+		final ILogicExpression allFieldsReadonlyLogic = getEntityDescriptor().getReadonlyLogic();
+		LogicExpressionResult allFieldsReadonly;
 		try
 		{
-			final LogicExpressionResult readonly = readonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
-			documentField.setReadonly(readonly);
+			allFieldsReadonly = allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 		}
 		catch (final Exception e)
 		{
-			logger.warn("Failed evaluating readonly logic {} for {}. Preserving {}", readonlyLogic, documentField, documentField.getReadonly(), e);
+			allFieldsReadonly = LogicExpressionResult.FALSE;
+			logger.warn("Failed evaluating entity readonly logic {} for {}. Considering {}", allFieldsReadonlyLogic, this, allFieldsReadonly, e);
 		}
+
+		final DocumentReadonly readonlyComputed = DocumentReadonly.builder()
+				.parentActive(parentReadonly.isActive()).active(isActive())
+				.processed(parentReadonly.isProcessed() || isProcessed())
+				.processing(parentReadonly.isProcessing() || isProcessing())
+				.fieldsReadonly(allFieldsReadonly.booleanValue())
+				.build();
+		return readonlyComputed;
+	}
+
+	private final void updateFieldReadOnlyAndCollect(final IDocumentField documentField, final ReasonSupplier reason)
+	{
+		final LogicExpressionResult readonlyOld = documentField.getReadonly();
+		final LogicExpressionResult readonlyNew = computeFieldReadOnly(documentField);
+		if (readonlyNew != null)
+		{
+			documentField.setReadonly(readonlyNew);
+			changesCollector.collectReadonlyIfChanged(documentField, readonlyOld, reason);
+		}
+	}
+
+	private final LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
+	{
+		// Check document's readonly logic
+		final DocumentReadonly documentReadonlyLogic = getReadonly();
+		if (documentReadonlyLogic.computeFieldReadonly(documentField.getFieldName(), documentField.isAlwaysUpdateable()))
+		{
+			return LogicExpressionResult.TRUE;
+		}
+
+		// Check field's readonly logic
+		final ILogicExpression fieldReadonlyLogic = documentField.getDescriptor().getReadonlyLogic();
+		try
+		{
+			final LogicExpressionResult readonly = fieldReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
+			return readonly;
+		}
+		catch (final Exception e)
+		{
+			logger.warn("Failed evaluating readonly logic {} for {}. Preserving {}", fieldReadonlyLogic, documentField, documentField.getReadonly(), e);
+			return null;
+		}
+
 	}
 
 	private final void updateFieldDisplayed(final IDocumentField documentField)
@@ -1306,32 +1389,38 @@ public final class Document
 				return;
 			}
 
-			updateFieldFlag(dependentField, triggeringFieldName, dependencyType);
+			updateOnDependencyChanged(dependentFieldName, dependentField, triggeringFieldName, dependencyType);
 		});
 	}
 
 	/**
-	 * Updates field's status flag (readonly, mandatory, displayed, lookupValuesStaled etc).
+	 * Updates document or fields characteristics (e.g. readonly, mandatory, displayed, lookupValuesStaled etc).
 	 *
+	 * @param propertyName
 	 * @param documentField
 	 * @param triggeringFieldName optional field name which triggered this update
 	 * @param triggeringDependencyType
 	 * @param documentChangesCollector events collector (where to collect the change events)
 	 * @param collectEventsEventIfNoChange true if we shall collect the change event even if there was no change
 	 */
-	private void updateFieldFlag(
+	private void updateOnDependencyChanged(
+			final String propertyName,
 			final IDocumentField documentField,
 			final String triggeringFieldName,
 			final DependencyType triggeringDependencyType)
 	{
 		final ReasonSupplier reason = () -> "TriggeringField=" + triggeringFieldName + ", DependencyType=" + triggeringDependencyType;
 
-		if (DependencyType.ReadonlyLogic == triggeringDependencyType)
+		if (DependencyType.DocumentReadonlyLogic == triggeringDependencyType)
 		{
-			final LogicExpressionResult valueOld = documentField.getReadonly();
-			updateFieldReadOnly(documentField);
-
-			changesCollector.collectReadonlyIfChanged(documentField, valueOld, reason);
+			if (DocumentFieldDependencyMap.DOCUMENT_Readonly.equals(propertyName))
+			{
+				updateReadonlyAndPropagate(reason);
+			}
+		}
+		else if (DependencyType.ReadonlyLogic == triggeringDependencyType)
+		{
+			updateFieldReadOnlyAndCollect(documentField, reason);
 		}
 		else if (DependencyType.MandatoryLogic == triggeringDependencyType)
 		{
@@ -1380,7 +1469,7 @@ public final class Document
 
 					changesCollector.collectValueIfChanged(documentField, valueOld, reason);
 				}
-				catch (Exception ex)
+				catch (final Exception ex)
 				{
 					logger.warn("Failed updating virtual field {} for {}", documentField, this, ex);
 				}
@@ -1461,32 +1550,30 @@ public final class Document
 		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
 	}
 
+	/* package */ boolean isProcessing()
+	{
+		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processing);
+		return isActiveField != null ? isActiveField.getValueAsBoolean() : false; // not processed if field missing
+	}
+
 	/* package */ boolean isActive()
 	{
 		final IDocumentFieldView isActiveField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_IsActive);
 		return isActiveField != null ? isActiveField.getValueAsBoolean() : true; // active if field not found (shall not happen)
 	}
 
-	/* package */ LogicExpressionResult getReadonlyLogic()
+	/* package */ void setParentReadonly(@NonNull final DocumentReadonly parentReadonly)
 	{
-		if(!isActive())
+		final DocumentReadonly parentReadonlyOld = this.parentReadonly;
+		this.parentReadonly = parentReadonly;
+
+		if (!Objects.equals(parentReadonlyOld, parentReadonly))
 		{
-			return LogicExpressionResult.FALSE;
+			updateReadonlyAndPropagate(() -> "parent readonly state changed");
+			updateIncludedDetailsStatus();
 		}
-		if(isProcessed())
-		{
-			return LogicExpressionResult.FALSE;
-		}
-		
-		final IDocumentFieldView processingField = getFieldUpToRootOrNull(WindowConstants.FIELDNAME_Processing);
-		if(processingField != null && processingField.getValueAsBoolean())
-		{
-			return LogicExpressionResult.FALSE;
-		}
-		
-		return LogicExpressionResult.TRUE;
 	}
-	
+
 	/**
 	 * Set Dynamic Attribute.
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this this instance is not destroyed.
@@ -1590,7 +1677,7 @@ public final class Document
 
 	/**
 	 * Checks document's valid status, sets it and returns it.
-	 * 
+	 *
 	 * @param onValidStatusChanged callback to be called when the valid state of this document or of any of it's included documents was changed
 	 */
 	/* package */ final DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged)
@@ -1631,7 +1718,7 @@ public final class Document
 	/**
 	 * Checks if this document has changes.
 	 * NOTE: it's not checking the included documents.
-	 * 
+	 *
 	 * @return true if it has changes.
 	 */
 	private boolean hasChanges()
@@ -1661,7 +1748,7 @@ public final class Document
 
 	/**
 	 * Checks if this document or any of it's included documents has changes.
-	 * 
+	 *
 	 * @return true if it this document or any of it's included documents has changes.
 	 */
 	public boolean hasChangesRecursivelly()
@@ -1857,7 +1944,7 @@ public final class Document
 		return field != null ? field.getValueAsInt(-1) : -1;
 	}
 
-	public void onChildSaved(Document document)
+	public void onChildSaved(final Document document)
 	{
 		getIncludedDocumentsCollection(document.getDetailId()).onChildSaved(document);
 	}
@@ -2029,7 +2116,7 @@ public final class Document
 
 		public Builder setParentDocument(final Document parentDocument)
 		{
-			this._parentDocument = parentDocument;
+			_parentDocument = parentDocument;
 			return this;
 		}
 

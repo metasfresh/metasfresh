@@ -59,6 +59,7 @@ public interface IDocumentFieldView
 	//@formatter:off
 	LogicExpressionResult getReadonly();
 	default boolean isReadonly() { return getReadonly().booleanValue(); }
+	default boolean isAlwaysUpdateable() { return getDescriptor().isAlwaysUpdateable(); }
 	//
 	LogicExpressionResult getMandatory();
 	default boolean isMandatory() { return getMandatory().booleanValue(); }

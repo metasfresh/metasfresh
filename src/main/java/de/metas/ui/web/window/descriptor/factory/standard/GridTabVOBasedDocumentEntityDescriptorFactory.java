@@ -508,6 +508,13 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		{
 			return false;
 		}
+
+		// HARDCODED: DocAction shall always be updateable
+		if(WindowConstants.FIELDNAME_DocAction.equals(gridFieldVO.getColumnName()))
+		{
+			return true;
+		}
+		
 		return gridFieldVO.isAlwaysUpdateable();
 	}
 

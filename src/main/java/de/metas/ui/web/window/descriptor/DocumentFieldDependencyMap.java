@@ -1,12 +1,15 @@
 package de.metas.ui.web.window.descriptor;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
 
@@ -20,12 +23,12 @@ import com.google.common.collect.Multimap;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +37,7 @@ import com.google.common.collect.Multimap;
 
 /**
  * Immutable document field's dependencies map.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -49,6 +52,9 @@ public final class DocumentFieldDependencyMap
 
 	public enum DependencyType
 	{
+		/** Entity readonly */
+		DocumentReadonlyLogic,
+
 		/** Field's Readonly logic */
 		ReadonlyLogic,
 		/** Field's Display logic */
@@ -60,6 +66,12 @@ public final class DocumentFieldDependencyMap
 		/** Field's value */
 		FieldValue,
 	};
+
+	public static final EnumSet<DependencyType> DEPENDENCYTYPES_DocumentLevel = EnumSet.of(DependencyType.DocumentReadonlyLogic);
+	public static final EnumSet<DependencyType> DEPENDENCYTYPES_FieldLevel = EnumSet.complementOf(DEPENDENCYTYPES_DocumentLevel);
+
+	public static final String DOCUMENT_Readonly = "$DocumentReadonly";
+	public static final Set<String> DOCUMENT_ALL_FIELDS = ImmutableSet.of(DOCUMENT_Readonly);
 
 	@FunctionalInterface
 	public static interface IDependencyConsumer
@@ -195,7 +207,7 @@ public final class DocumentFieldDependencyMap
 			return this;
 		}
 
-		public Builder add(DocumentFieldDependencyMap dependencies)
+		public Builder add(final DocumentFieldDependencyMap dependencies)
 		{
 			if (dependencies == null || dependencies == EMPTY)
 			{
