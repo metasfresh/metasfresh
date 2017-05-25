@@ -127,7 +127,7 @@ export function autocompleteRequest(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        '/attribute/' + propertyName +
+        '/field/' + propertyName +
         '/typeahead' + '?query=' + encodeURIComponent(query)
     );
 }
@@ -146,7 +146,7 @@ export function dropdownRequest(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        '/attribute/' + propertyName +
+        '/field/' + propertyName +
         '/dropdown'
     );
 }

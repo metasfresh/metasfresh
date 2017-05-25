@@ -52,7 +52,7 @@ class Checkbox extends Component {
                     />
                 </label>
                 {(filterWidget && !disabled && !widgetData[0].readonly &&
-                    (widgetData[0].value != null && 
+                    (widgetData[0].value != null &&
                         widgetData[0].value !== '')) ?
                         <small
                             className="input-side"

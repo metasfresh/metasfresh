@@ -101,7 +101,8 @@ class TableCell extends Component {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId,
             onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
-            listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass
+            listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass,
+            handleRightClick
         } = this.props;
 
         return (
@@ -110,6 +111,7 @@ class TableCell extends Component {
                 ref={(c) => this.cell = c}
                 onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}
+                onContextMenu={handleRightClick}
                 className={
                     (item.gridAlign ? 'text-xs-' + item.gridAlign + ' ' : '') +
                     (widgetData[0].readonly ? 'cell-disabled ' : '') +
