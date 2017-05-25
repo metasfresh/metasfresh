@@ -282,7 +282,7 @@ public class ProcessRestController
 		return response;
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/typeahead", method = RequestMethod.GET)
+	@RequestMapping(value = "/{processId}/{pinstanceId}/field/{parameterName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterTypeahead(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
@@ -301,7 +301,7 @@ public class ProcessRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/dropdown", method = RequestMethod.GET)
+	@RequestMapping(value = "/{processId}/{pinstanceId}/field/{parameterName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterDropdown(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
