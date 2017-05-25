@@ -428,7 +428,7 @@ function updateData(doc, scope){
     return dispatch => {
         Object.keys(doc).map(key => {
             if(key === 'fieldsByName'){
-                Object.keys(doc.fieldsByName).map((fieldName) => {
+                Object.keys(doc.fieldsByName).map(fieldName => {
                     dispatch(updateDataFieldProperty(
                         fieldName, doc.fieldsByName[fieldName], scope
                     ))
@@ -447,10 +447,11 @@ function updateData(doc, scope){
 function updateRow(row, scope){
     return dispatch => {
         Object.keys(row).map(key => {
-            if(key === 'fields'){
-                row.fields.map(field => {
+            if(key === 'fieldsByName'){
+                Object.keys(row.fieldsByName).map(fieldName => {
                     dispatch(updateRowFieldProperty(
-                        field.field, field, row.tabid, row.rowId, scope
+                        fieldName, row.fieldsByName[fieldName], row.tabid,
+                        row.rowId, scope
                     ))
                 });
             }else{
@@ -480,7 +481,7 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
                 })
 
             const parsedItem = item.fieldsByName ? Object.assign({}, item, {
-                fields: parseToDisplay(item.fieldsByName)
+                fieldsByName: parseToDisplay(item.fieldsByName)
             }) : item;
 
             // First item in response is direct one for action that called it.

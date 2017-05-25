@@ -11,7 +11,7 @@ const initialState = {
         rowId: null,
         viewId: null,
         layout: {},
-        data: [],
+        data: {},
         rowData: {},
         modalTitle: '',
         modalType: '',
@@ -114,7 +114,7 @@ export default function windowHandler(state = initialState, action) {
         case types.CLEAR_MASTER_DATA:
             return Object.assign({}, state, {
                 master: Object.assign({}, state.master, {
-                    data: [],
+                    data: {},
                     rowData: {},
                     docId: undefined
                 })
