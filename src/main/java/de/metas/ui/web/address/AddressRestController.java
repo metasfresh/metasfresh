@@ -113,7 +113,7 @@ public class AddressRestController
 		});
 	}
 
-	@RequestMapping(value = "/{docId}/attribute/{attributeName}/typeahead", method = RequestMethod.GET)
+	@RequestMapping(value = "/{docId}/field/{attributeName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable("docId") final int docId //
 			, @PathVariable("attributeName") final String attributeName //
@@ -127,7 +127,7 @@ public class AddressRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{docId}/attribute/{attributeName}/dropdown", method = RequestMethod.GET)
+	@RequestMapping(value = "/{docId}/field/{attributeName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable("docId") final int docId //
 			, @PathVariable("attributeName") final String attributeName //
