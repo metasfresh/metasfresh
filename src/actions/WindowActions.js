@@ -338,7 +338,7 @@ export function getTab(tabId, windowType, docId) {
                 if(res.data){
                     let tab = {};
                     res.data.map(row => {
-                        row.fields = parseToDisplay(row.fields);
+                        row.fieldsByName = parseToDisplay(row.fieldsByName);
                         tab[row.rowId] = row;
                     });
                     return tab;
@@ -427,10 +427,10 @@ export function patch(
 function updateData(doc, scope){
     return dispatch => {
         Object.keys(doc).map(key => {
-            if(key === 'fields'){
-                doc.fields.map(field => {
+            if(key === 'fieldsByName'){
+                Object.keys(doc.fieldsByName).map((fieldName) => {
                     dispatch(updateDataFieldProperty(
-                        field.field, field, scope
+                        fieldName, doc.fieldsByName[fieldName], scope
                     ))
                 })
             }else if(key === 'includedTabsInfo'){
@@ -759,20 +759,24 @@ export function parseToDisplay(obj) {
 
 function parseDateToReadable(obj) {
     const dateParse = ['Date', 'DateTime', 'Time'];
-    return Object.keys(obj).map(key =>
-        (dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value) ?
-        Object.assign({}, obj[key], {
-            value: obj[key].value ? new Date(obj[key].value) : ''
-        }) : obj[key]
-    )
+    
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key] = 
+            (dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value) ?
+                Object.assign({}, obj[key], {
+                    value: obj[key].value ? new Date(obj[key].value) : ''
+                }) : obj[key];
+        return acc;
+    }, {});
 }
 
 function nullToEmptyStrings(obj) {
-    return Object.keys(obj).map(key =>
-        (obj[key].value === null) ?
-        Object.assign({}, obj[key], { value: '' }) :
-        obj[key]
-    )
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key] = (obj[key].value === null) ?
+            Object.assign({}, obj[key], { value: '' }) :
+            obj[key];
+        return acc;
+    }, {})
 }
 
 export function findRowByPropName(arr, name) {

@@ -162,11 +162,14 @@ export default function windowHandler(state = initialState, action) {
         case types.UPDATE_DATA_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
-                    data: {$set: state[action.scope].data.map(item =>
-                        item.field === action.property ?
-                        Object.assign({}, item, action.item) :
-                        item
-                    )}
+                    data: {
+                        [action.property]: {$set: 
+                            Object.assign({},
+                                state[action.scope].data[action.property],
+                                action.item
+                            )
+                        }
+                    }
                 }
             });
 

@@ -6,10 +6,6 @@ import {
     getData
 } from '../../actions/GenericActions';
 
-import {
-    findRowByPropName
-} from '../../actions/WindowActions';
-
 import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {
@@ -105,7 +101,7 @@ class SelectionAttributes extends Component {
                             windowType={windowType}
                             viewId={viewId}
                             widgetData={item.fields.map(elem =>
-                                findRowByPropName(DLWrapperData, elem.field)
+                                DLWrapperData[elem.field]
                             )}
                             gridAlign={item.gridAlign}
                             key={id}
@@ -116,9 +112,8 @@ class SelectionAttributes extends Component {
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
                             tabIndex={this.getTabId(
-                                item.fields.map(elem =>
-                                    findRowByPropName(
-                                        DLWrapperData, elem.field)
+                                item.fields.map(elem => 
+                                    DLWrapperData[elem.field]
                                 )
                             )}
                         />

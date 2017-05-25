@@ -9,7 +9,6 @@ import {
 } from '../../../actions/AppActions';
 
 import {
-    findRowByPropName,
     parseToDisplay
 } from '../../../actions/WindowActions';
 
@@ -120,7 +119,7 @@ class Attributes extends Component {
     handleCompletion = () => {
         const {attributeType, dispatch, patch} = this.props;
         const {data} = this.state;
-        const attrId = findRowByPropName(data, 'ID').value;
+        const attrId = data.ID.value;
 
         const mandatory = data.filter(field => field.mandatory);
         const valid = !mandatory.filter(field => !field.value).length;
@@ -160,7 +159,7 @@ class Attributes extends Component {
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
         const label = value[tmpId];
-        const attrId = findRowByPropName(data, 'ID').value;
+        const attrId = data.ID.value;
 
         return (
             <div
