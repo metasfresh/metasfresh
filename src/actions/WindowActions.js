@@ -515,7 +515,7 @@ function updateStatus(responseData) {
         const updateDispatch = (item) => {
             if(item.rowId){
                 dispatch(updateRowStatus(
-                    'master', item.tabid, item.rowId, item.saveStatus // item
+                    'master', item.tabid, item.rowId, item.saveStatus
                 ));
             }else{
 
