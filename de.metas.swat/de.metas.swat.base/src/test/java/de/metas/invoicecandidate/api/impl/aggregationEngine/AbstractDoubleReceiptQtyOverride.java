@@ -110,7 +110,7 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, FIFTY, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsForInvoiceCandidate(ic1).size(), is(2));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
 
 		return Arrays.asList(iol111, iol121);
 	}
@@ -129,6 +129,6 @@ public abstract class AbstractDoubleReceiptQtyOverride extends AbstractNewAggreg
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic1).size(), is(2));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
 	}
 }

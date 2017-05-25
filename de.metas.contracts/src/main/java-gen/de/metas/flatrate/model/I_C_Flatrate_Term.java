@@ -318,6 +318,38 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
+
+	/**
+	 * Get Vertragsverlängerung/-übergang.
+	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Flatrate_Transition_ID();
+
+	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
+
+	@Deprecated
+	public void setC_Flatrate_Transition(de.metas.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition);
+
+    /** Column definition for C_Flatrate_Transition_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Transition>(I_C_Flatrate_Term.class, "C_Flatrate_Transition_ID", de.metas.flatrate.model.I_C_Flatrate_Transition.class);
+    /** Column name C_Flatrate_Transition_ID */
+    public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
+
+	/**
 	 * Set Nachfolgende Vertragsperiode.
 	 *
 	 * <br>Type: Table
@@ -345,33 +377,155 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_C_FlatrateTerm_Next_ID = "C_FlatrateTerm_Next_ID";
 
 	/**
-	 * Set Vertragsverlängerung/-übergang.
-	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 * Set Vertrags-Auftrag.
+	 * Auftrag, mit der der Vertrag abgeschlossen wurde
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID);
+	@Deprecated
+	public void setC_Order_Term_ID (int C_Order_Term_ID);
 
 	/**
-	 * Get Vertragsverlängerung/-übergang.
-	 * Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
+	 * Get Vertrags-Auftrag.
+	 * Auftrag, mit der der Vertrag abgeschlossen wurde
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public int getC_Flatrate_Transition_ID();
+	public int getC_Order_Term_ID();
 
-	public de.metas.flatrate.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
+	public org.compiere.model.I_C_Order getC_Order_Term();
 
-	public void setC_Flatrate_Transition(de.metas.flatrate.model.I_C_Flatrate_Transition C_Flatrate_Transition);
+	@Deprecated
+	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term);
 
-    /** Column definition for C_Flatrate_Transition_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, de.metas.flatrate.model.I_C_Flatrate_Transition>(I_C_Flatrate_Term.class, "C_Flatrate_Transition_ID", de.metas.flatrate.model.I_C_Flatrate_Transition.class);
-    /** Column name C_Flatrate_Transition_ID */
-    public static final String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
+    /** Column definition for C_Order_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_Term_ID */
+    public static final String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
+
+	/**
+	 * Set Änderungs-Auftrag.
+	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_Order_TermChange_ID (int C_Order_TermChange_ID);
+
+	/**
+	 * Get Änderungs-Auftrag.
+	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public int getC_Order_TermChange_ID();
+
+	public org.compiere.model.I_C_Order getC_Order_TermChange();
+
+	@Deprecated
+	public void setC_Order_TermChange(org.compiere.model.I_C_Order C_Order_TermChange);
+
+    /** Column definition for C_Order_TermChange_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_TermChange_ID", org.compiere.model.I_C_Order.class);
+    /** Column name C_Order_TermChange_ID */
+    public static final String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
+
+	/**
+	 * Set Vertrags-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
+
+	/**
+	 * Get Vertrags-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLine_Term_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
+
+	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term);
+
+    /** Column definition for C_OrderLine_Term_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_Term_ID */
+    public static final String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
+
+	/**
+	 * Set Änderungs-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
+
+	/**
+	 * Get Änderungs-Auftragszeile.
+	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_OrderLine_TermChange_ID();
+
+	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
+
+	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
+
+    /** Column definition for C_OrderLine_TermChange_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
+    /** Column name C_OrderLine_TermChange_ID */
+    public static final String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_UOM>(I_C_Flatrate_Term.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Ändern oder Kündigen.
@@ -420,122 +574,6 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_ContractStatus = "ContractStatus";
 
 	/**
-	 * Set Änderungs-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_OrderLine_TermChange_ID (int C_OrderLine_TermChange_ID);
-
-	/**
-	 * Get Änderungs-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_OrderLine_TermChange_ID();
-
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_TermChange();
-
-	public void setC_OrderLine_TermChange(org.compiere.model.I_C_OrderLine C_OrderLine_TermChange);
-
-    /** Column definition for C_OrderLine_TermChange_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_TermChange_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_TermChange_ID */
-    public static final String COLUMNNAME_C_OrderLine_TermChange_ID = "C_OrderLine_TermChange_ID";
-
-	/**
-	 * Set Vertrags-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_OrderLine_Term_ID (int C_OrderLine_Term_ID);
-
-	/**
-	 * Get Vertrags-Auftragszeile.
-	 * Auftragszeile, mit der der Vertrag abgeschlossen wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_OrderLine_Term_ID();
-
-	public org.compiere.model.I_C_OrderLine getC_OrderLine_Term();
-
-	public void setC_OrderLine_Term(org.compiere.model.I_C_OrderLine C_OrderLine_Term);
-
-    /** Column definition for C_OrderLine_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_OrderLine>(I_C_Flatrate_Term.class, "C_OrderLine_Term_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_Term_ID */
-    public static final String COLUMNNAME_C_OrderLine_Term_ID = "C_OrderLine_Term_ID";
-
-	/**
-	 * Set Änderungs-Auftrag.
-	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setC_Order_TermChange_ID (int C_Order_TermChange_ID);
-
-	/**
-	 * Get Änderungs-Auftrag.
-	 * Auftrag, mit der der Vertrag vor dem regulären Ende gekündigt oder umgewandelt wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_Order_TermChange_ID();
-
-	public org.compiere.model.I_C_Order getC_Order_TermChange();
-
-	public void setC_Order_TermChange(org.compiere.model.I_C_Order C_Order_TermChange);
-
-    /** Column definition for C_Order_TermChange_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_TermChange_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_TermChange_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_TermChange_ID */
-    public static final String COLUMNNAME_C_Order_TermChange_ID = "C_Order_TermChange_ID";
-
-	/**
-	 * Set Vertrags-Auftrag.
-	 * Auftrag, mit der der Vertrag abgeschlossen wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setC_Order_Term_ID (int C_Order_Term_ID);
-
-	/**
-	 * Get Vertrags-Auftrag.
-	 * Auftrag, mit der der Vertrag abgeschlossen wurde
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_Order_Term_ID();
-
-	public org.compiere.model.I_C_Order getC_Order_Term();
-
-	public void setC_Order_Term(org.compiere.model.I_C_Order C_Order_Term);
-
-    /** Column definition for C_Order_Term_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order> COLUMN_C_Order_Term_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_Order>(I_C_Flatrate_Term.class, "C_Order_Term_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_Term_ID */
-    public static final String COLUMNNAME_C_Order_Term_ID = "C_Order_Term_ID";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -564,35 +602,6 @@ public interface I_C_Flatrate_Term
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_AD_User>(I_C_Flatrate_Term.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_C_UOM>(I_C_Flatrate_Term.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Lieferart.
@@ -880,13 +889,38 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_IsAutoRenew = "IsAutoRenew";
 
 	/**
+	 * Set Rechnungskandidat schließen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCloseInvoiceCandidate (boolean IsCloseInvoiceCandidate);
+
+	/**
+	 * Get Rechnungskandidat schließen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCloseInvoiceCandidate();
+
+    /** Column definition for IsCloseInvoiceCandidate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_IsCloseInvoiceCandidate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "IsCloseInvoiceCandidate", null);
+    /** Column name IsCloseInvoiceCandidate */
+    public static final String COLUMNNAME_IsCloseInvoiceCandidate = "IsCloseInvoiceCandidate";
+
+	/**
 	 * Set Gegenüberstellung mit erbr. Leist..
 	 * Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsClosingWithActualSum (boolean IsClosingWithActualSum);
 
 	/**
@@ -911,7 +945,9 @@ public interface I_C_Flatrate_Term
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsClosingWithCorrectionSum (boolean IsClosingWithCorrectionSum);
 
 	/**
@@ -936,7 +972,9 @@ public interface I_C_Flatrate_Term
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsNewTermCreatesOrder (boolean IsNewTermCreatesOrder);
 
 	/**
@@ -1286,7 +1324,9 @@ public interface I_C_Flatrate_Term
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setType_Flatrate (java.lang.String Type_Flatrate);
 
 	/**
@@ -1311,7 +1351,9 @@ public interface I_C_Flatrate_Term
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setUOMType (java.lang.String UOMType);
 
 	/**

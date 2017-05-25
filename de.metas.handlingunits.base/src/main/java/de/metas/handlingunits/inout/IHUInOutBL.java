@@ -29,12 +29,10 @@ import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Warehouse;
 
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -104,25 +102,13 @@ public interface IHUInOutBL extends ISingletonService
 	void updateEffectiveValues(I_M_InOutLine shipmentLine);
 
 	/**
-	 * Create a new instance of <code>de.metas.handlingunits.inout.impl.QualityReturnsInOutProducer)</code>
+	 * Create vendor return inouts for products of precarious quality based on the details of the given HUs
 	 * 
-	 * @param ctx
 	 * @param hus
-	 * @return
-	 */
-	IReturnsInOutProducer createQualityReturnsInOutProducer(Properties ctx, List<I_M_HU_Assignment> huAssignments);
-
-	/**
-	 * Create return inouts for products of precarious quality based on the details of the given HUs
-	 * 
-	 * 
-	 * @param ctx
-	 * @param hus
-	 * @param warehouse
 	 * @param movementDate
 	 * @return
 	 */
-	List<de.metas.handlingunits.model.I_M_InOut> createReturnInOutForHUs(Properties ctx, List<I_M_HU> hus, I_M_Warehouse warehouse, Timestamp movementDate);
+	List<de.metas.handlingunits.model.I_M_InOut> createVendorReturnInOutForHUs(List<I_M_HU> hus, Timestamp movementDate);
 
 	IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines);
 

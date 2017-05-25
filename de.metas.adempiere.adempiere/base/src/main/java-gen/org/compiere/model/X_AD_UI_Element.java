@@ -14,7 +14,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1204803140L;
+	private static final long serialVersionUID = 311245024L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (Properties ctx, int AD_UI_Element_ID, String trxName)
@@ -419,5 +419,33 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public java.lang.String getUIStyle () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UIStyle);
+	}
+
+	/** 
+	 * WidgetSize AD_Reference_ID=540724
+	 * Reference name: WidgetSize_WEBUI
+	 */
+	public static final int WIDGETSIZE_AD_Reference_ID=540724;
+	/** Small = S */
+	public static final String WIDGETSIZE_Small = "S";
+	/** Medium = M */
+	public static final String WIDGETSIZE_Medium = "M";
+	/** Large = L */
+	public static final String WIDGETSIZE_Large = "L";
+	/** Set Widget size.
+		@param WidgetSize Widget size	  */
+	@Override
+	public void setWidgetSize (java.lang.String WidgetSize)
+	{
+
+		set_Value (COLUMNNAME_WidgetSize, WidgetSize);
+	}
+
+	/** Get Widget size.
+		@return Widget size	  */
+	@Override
+	public java.lang.String getWidgetSize () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_WidgetSize);
 	}
 }

@@ -476,7 +476,7 @@ public class HUEditorPanel
 	 */
 	private void doCreateVendorReturn()
 	{
-		getHUEditorModel().createVendorReturn(getCurrentWarehouse());
+		getHUEditorModel().createVendorReturn();
 
 	}
 

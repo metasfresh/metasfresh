@@ -1225,6 +1225,11 @@ public class FlatrateBL implements IFlatrateBL
 			nextTerm.setC_UOM_ID(currentTerm.getC_UOM_ID());
 			nextTerm.setC_Currency_ID(currentTerm.getC_Currency_ID());
 
+			final IFlatrateHandlersService flatrateHandlersService = Services.get(IFlatrateHandlersService.class);
+			flatrateHandlersService
+					.getHandler(nextConditions.getType_Conditions()) // nextterm is not saved yet, so type will be null in this moment
+					.beforeFlatrateTermCreated(currentTerm, nextTerm);
+			
 			InterfaceWrapperHelper.save(nextTerm);
 
 			// the conditions were set via de.metas.flatrate.modelvalidator.C_Flatrate_Term.copyFromConditions(term)
@@ -1235,7 +1240,6 @@ public class FlatrateBL implements IFlatrateBL
 			currentTerm.setC_FlatrateTerm_Next_ID(nextTerm.getC_Flatrate_Term_ID());
 
 			// gh #549: notify that handler so it might do additional things. In the case of this task, it shall create C_Flatrate_DataEntry records
-			final IFlatrateHandlersService flatrateHandlersService = Services.get(IFlatrateHandlersService.class);
 			flatrateHandlersService
 					.getHandler(nextTerm.getType_Conditions())
 					.afterExtendFlatrateTermCreated(currentTerm, nextTerm);
@@ -1267,6 +1271,11 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else
 		{
+			final IFlatrateHandlersService flatrateHandlersService = Services.get(IFlatrateHandlersService.class);
+			flatrateHandlersService
+					.getHandler(currentTerm.getType_Conditions())
+					.afterFlatrateTermEnded(currentTerm);
+			
 			if (currentTransition.isNotifyUserInCharge())
 			{
 				msgValue = FlatrateBL.MSG_TERM_NO_NEW_0P;

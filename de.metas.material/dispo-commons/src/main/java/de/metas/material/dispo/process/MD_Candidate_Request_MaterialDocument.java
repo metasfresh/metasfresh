@@ -79,7 +79,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
 	{
-		if (context.getSelectionSize() <= 0)
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}

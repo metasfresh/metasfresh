@@ -38,6 +38,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_DocBaseType_Counter;
 import org.compiere.model.I_C_DocType;
+import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -123,6 +124,24 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	public I_C_DocType getDocType(
+			final String docBaseType,
+			final String docSubType,
+			final int adClientId,
+			final int adOrgId)
+	{
+		final I_C_DocType docType = getDocTypeOrNull(Env.getCtx(), docBaseType, docSubType, adClientId, adOrgId, ITrx.TRXNAME_None);
+		if(docType == null)
+		{
+			final String additionalInfo = "@DocSubType@: " + docSubType
+					+ ", @AD_Client_ID@: " + adClientId
+					+ ", @AD_Org_ID@: " + adOrgId;
+			throw new DocTypeNotFoundException(docBaseType, additionalInfo);
+		}
+		return docType;
+	}
+
+	@Override
 	public I_C_DocType getDocTypeOrNull(final Properties ctx,
 			final String docBaseType,
 			final String docSubType,
@@ -134,7 +153,7 @@ public class DocTypeDAO implements IDocTypeDAO
 				.create()
 				.first(I_C_DocType.class);
 	}
-
+	
 	private IQueryBuilder<I_C_DocType> createDocTypeByBaseTypeQuery(
 			final Properties ctx,
 			final String docBaseType,

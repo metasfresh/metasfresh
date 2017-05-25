@@ -125,7 +125,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 			iol121 = createInvoiceCandidateInOutLine(ic1, inOut12, TWENTY, inOutDocumentNo + "_1");
 			completeInOut(inOut12);
 		}
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsForInvoiceCandidate(ic1).size(), is(2));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
 
 		// Deliver everything via WP
 		{
@@ -136,8 +136,8 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 			completeInOut(inOut21);
 		}
 
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsForInvoiceCandidate(ic1).size(), is(2));
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsForInvoiceCandidate(ic2).size(), is(1));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(ic2).size(), is(1));
 		return Arrays.asList(iol111, iol121, iol211);
 
 	}
@@ -156,7 +156,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic1);
 
-		assertThat(invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic1).size(), is(2));
+		assertThat(invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic1).size(), is(2));
 
 		InvoiceCandidateExpectation.newExpectation()
 				.inDispute(false)
@@ -166,6 +166,6 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 				.qtyWithIssues(BigDecimal.ZERO)
 				.qualityDiscountPercent(BigDecimal.ZERO)
 				.assertExpected(ic2);
-		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsForInvoiceCandidate(ic2).size(), is(1));
+		assertThat(Services.get(IInvoiceCandDAO.class).retrieveICIOLAssociationsExclRE(ic2).size(), is(1));
 	}
 }

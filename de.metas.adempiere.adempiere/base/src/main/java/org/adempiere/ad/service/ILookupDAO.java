@@ -84,11 +84,11 @@ public interface ILookupDAO extends ISingletonService
 
 		boolean isValueDisplayed();
 
-		int getZoomWindow();
+		int getZoomSO_Window_ID();
 
-		int getOverrideZoomWindow();
+		int getZoomAD_Window_ID_Override();
 
-		int getZoomWindowPO();
+		int getZoomPO_Window_ID();
 
 		boolean isAutoComplete();
 

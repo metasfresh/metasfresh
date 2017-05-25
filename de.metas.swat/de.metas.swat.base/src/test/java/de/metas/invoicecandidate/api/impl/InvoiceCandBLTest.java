@@ -3,6 +3,9 @@
  */
 package de.metas.invoicecandidate.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -39,8 +42,9 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.util.Env;
+import org.compiere.process.DocAction;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -85,12 +89,12 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		ic1.setDescription("IC1 - normal");
-		InterfaceWrapperHelper.save(ic1);
+		save(ic1);
 
 		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bpartner.getC_BPartner_ID(), 10, 3, 10, false, true); // priceEntered, qty, discount
 		ic2.setDescription("IC2 - partial qty");
 		ic2.setQtyToInvoice_Override(BigDecimal.ONE);
-		InterfaceWrapperHelper.save(ic2);
+		save(ic2);
 
 		final BigDecimal discount1 = ic1.getDiscount();
 		BigDecimal discount_override1 = ic1.getDiscount_Override();
@@ -102,22 +106,22 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		final int precision2 = invoiceCandBL.getPrecisionFromCurrency(ic2);
 
 		// initial check
-		Check.assume(discount_override1.compareTo(Env.ZERO) == 0, "Discount Override should be null!", ic1.getDescription());
-		Check.assume(discount_override2.compareTo(Env.ZERO) == 0, "Discount Override should be null!", ic2.getDescription());
-		Check.assume(ic1.getPriceActual_Override().compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic1.getDescription());
-		Check.assume(ic2.getPriceActual_Override().compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic2.getDescription());
+		Check.assume(discount_override1.compareTo(BigDecimal.ZERO) == 0, "Discount Override should be null!", ic1.getDescription());
+		Check.assume(discount_override2.compareTo(BigDecimal.ZERO) == 0, "Discount Override should be null!", ic2.getDescription());
+		Check.assume(ic1.getPriceActual_Override().compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic1.getDescription());
+		Check.assume(ic2.getPriceActual_Override().compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic2.getDescription());
 
 		// change discount
 		ic1.setDiscount_Override(BigDecimal.valueOf(20));
 		final IOrderLineBL olBL = Services.get(IOrderLineBL.class);
 		final BigDecimal priceActual_OverrideComputed1 = olBL.subtractDiscount(ic1.getPriceEntered(), ic1.getDiscount_Override(), precision1);
 		discount_override1 = ic1.getDiscount_Override();
-		InterfaceWrapperHelper.save(ic1);
+		save(ic1);
 
 		// change priceEntered
 		ic2.setPriceEntered_Override(BigDecimal.valueOf(5));
 		final BigDecimal priceActual_OverrideComputed2 = olBL.subtractDiscount(ic2.getPriceEntered_Override(), ic2.getDiscount(), precision2);
-		InterfaceWrapperHelper.save(ic2);
+		save(ic2);
 
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
 		updateInvalid(invoiceCandidates);
@@ -132,14 +136,14 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		final BigDecimal discount_override2After = ic2.getDiscount_Override();
 
 		Check.assume(discount1.compareTo(discount1After) == 0, "Discount is not the same with discount after update", ic1.getDescription());
-		Check.assume(discount_override1.compareTo(Env.ZERO) != 0, "Discount Override should not be null!");
-		Check.assume(discount_override1After.compareTo(Env.ZERO) != 0, "Discount Override should not be null!");
+		Check.assume(discount_override1.compareTo(BigDecimal.ZERO) != 0, "Discount Override should not be null!");
+		Check.assume(discount_override1After.compareTo(BigDecimal.ZERO) != 0, "Discount Override should not be null!");
 
 		//
 
 		Check.assume(discount2.compareTo(discount2After) == 0, "Discount is not the same with discount after update", ic2.getDescription());
-		Check.assume(discount_override2.compareTo(Env.ZERO) == 0, "Discount Override should be null!");
-		Check.assume(discount_override2After.compareTo(Env.ZERO) == 0, "Disocunt Override should be null!");
+		Check.assume(discount_override2.compareTo(BigDecimal.ZERO) == 0, "Discount Override should be null!");
+		Check.assume(discount_override2After.compareTo(BigDecimal.ZERO) == 0, "Disocunt Override should be null!");
 
 	}
 
@@ -166,11 +170,11 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
-		Check.assume(initialPriceActualOverride.compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(initialPriceActualOverride.compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 
 		//
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		final BigDecimal priceActual_OverrideComputed = olBL.subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
@@ -200,11 +204,11 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
-		Check.assume(initialPriceActualOverride.compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(initialPriceActualOverride.compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 
 		//
 		ic.setDiscount_Override(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
 		final BigDecimal priceActual_OverrideComputed = olBL.subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
@@ -235,12 +239,12 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
-		Check.assume(initialPriceActualOverride.compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(initialPriceActualOverride.compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 
 		//
 		ic.setDiscount_Override(BigDecimal.valueOf(20));
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
 		final BigDecimal priceActual_OverrideComputed = olBL.subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
@@ -271,11 +275,11 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
-		Check.assume(initialPriceActualOverride.compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(initialPriceActualOverride.compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 
 		//
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		final BigDecimal priceActual_OverrideComputed = olBL.subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
@@ -284,10 +288,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		//
 		// remove price entered override
 		ic.setPriceEntered_Override(null);
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		Check.assume(priceActualComputed.compareTo(ic.getPriceActual()) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
-		Check.assume(ic.getPriceActual_Override().compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(ic.getPriceActual_Override().compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 	}
 
 	/**
@@ -313,18 +317,18 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
-		Check.assume(initialPriceActualOverride.compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(initialPriceActualOverride.compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 
 		//
 		ic.setDiscount_Override(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		// remove discount override
 		ic.setDiscount_Override(null);
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		Check.assume(priceActualComputed.compareTo(ic.getPriceActual()) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
-		Check.assume(ic.getPriceActual_Override().compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(ic.getPriceActual_Override().compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 	}
 
 	/**
@@ -350,12 +354,12 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 
 		Check.assume(priceActualComputed.compareTo(initialPriceActual) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
 
-		Check.assume(initialPriceActualOverride.compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(initialPriceActualOverride.compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 
 		//
 		ic.setDiscount_Override(BigDecimal.valueOf(20));
 		ic.setPriceEntered_Override(BigDecimal.valueOf(20));
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		final BigDecimal discount = invoiceCandBL.getDiscount(ic);
 		final BigDecimal priceActual_OverrideComputed = olBL.subtractDiscount(invoiceCandBL.getPriceEntered(ic), discount, precision);
@@ -365,10 +369,10 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		//
 		ic.setDiscount_Override(null);
 		ic.setPriceEntered_Override(null);
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		Check.assume(priceActualComputed.compareTo(ic.getPriceActual()) == 0, "Price Actual should equal with the one computed!", ic.getDescription(), initialPriceActual, initialPriceActual);
-		Check.assume(ic.getPriceActual_Override().compareTo(Env.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
+		Check.assume(ic.getPriceActual_Override().compareTo(BigDecimal.ZERO) == 0, "Price Actual Override should be null!", ic.getDescription());
 	}
 
 	@Test
@@ -409,19 +413,26 @@ public class InvoiceCandBLTest extends AbstractICTestSupport
 		ic.setQtyWithIssues(qtyWithIssues);
 		ic.setQualityDiscountPercent(qualityDiscountPercent); // shall be ignored, because it's not used in this method at all..QtyWithIssues is used instead
 		ic.setQualityDiscountPercent_Override(qualityDiscountPercent_Override);
-		InterfaceWrapperHelper.save(ic);
+		save(ic);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
 
+		// gh #1566: we need an active and completed inout; otherwise, the iol won't be counted properly
+		final I_M_InOut inOut = newInstance(I_M_InOut.class);
+		inOut.setIsActive(true);
+		inOut.setDocStatus(DocAction.STATUS_Completed);
+		save(inOut);
+
 		final I_M_InOutLine iol = InterfaceWrapperHelper.create(ctx, I_M_InOutLine.class, trxName);
+		iol.setM_InOut(inOut);
 		iol.setMovementQty(qtyDelivered);
-		InterfaceWrapperHelper.save(iol);
+		save(iol);
 
 		final I_C_InvoiceCandidate_InOutLine icIol = InterfaceWrapperHelper.create(ctx, I_C_InvoiceCandidate_InOutLine.class, trxName);
 		icIol.setC_Invoice_Candidate(ic);
 		icIol.setM_InOutLine(iol);
-		InterfaceWrapperHelper.save(icIol);
+		save(icIol);
 
 		invoiceCandBL.updateQtyWithIssues_Effective(ic);
 

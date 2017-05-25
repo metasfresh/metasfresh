@@ -1,9 +1,11 @@
 DROP FUNCTION IF EXISTS dba_seq_check_native();
 DROP FUNCTION IF EXISTS dba_seq_check_native(varchar);
 
+-- Function: public.dba_seq_check_native(character varying)
+-- DROP FUNCTION public.dba_seq_check_native(character varying);
 
-CREATE OR REPLACE FUNCTION dba_seq_check_native(IN p_tableName varchar DEFAULT NULL)
-RETURNS void AS
+CREATE OR REPLACE FUNCTION public.dba_seq_check_native(p_tablename character varying DEFAULT NULL::character varying)
+  RETURNS void AS
 $BODY$
 DECLARE
 	v_record_to_process record;
@@ -15,7 +17,7 @@ BEGIN
 	(
 		SELECT 
 			pt.Table_Name, -- physical table name
-			seq.sequence_name,
+			seq.sequence_schema||'.'||seq.sequence_name as sequence_name, -- schema name, if any
 			pc.column_name, -- physical column name
 			
 			-- we will create/update the native sequence named "tableName||'_seq'" 
@@ -25,7 +27,7 @@ BEGIN
 	
 		FROM public.AD_Table at
 			INNER JOIN information_schema.tables pt ON pt.table_schema='public' AND lower(pt.Table_Name)=lower(at.TableName)
-			LEFT OUTER JOIN information_schema.sequences seq ON seq.sequence_name=lower(at.tableName||'_seq') -- find out if there is an existing native sequence
+			LEFT OUTER JOIN information_schema.sequences seq ON seq.sequence_schema='public' AND seq.sequence_name=lower(at.tableName||'_seq') -- find out if there is an existing native sequence
 			LEFT OUTER JOIN public.AD_Column ac ON ac.AD_Table_ID=at.AD_Table_ID AND lower(ac.ColumnName)=lower(at.TableName||'_ID')
 			LEFT OUTER JOIN information_schema.columns pc ON pc.table_schema='public' AND pc.table_name=lower(at.tableName) and pc.column_name=lower(at.TableName||'_ID')
 		WHERE true
@@ -76,7 +78,8 @@ BEGIN
 			-- do the actual creating or updating of the native sequence
 			if (v_record_to_process.sequence_name is null)
 			then
-				v_sequence_name := quote_ident(v_record_to_process.Table_Name||'_seq');
+				-- don't include the "public." in the quote_ident prgument(), because then the sequence's *name* wouldstart with "public.."
+				v_sequence_name := 'public.'||quote_ident(v_record_to_process.Table_Name||'_seq');
 	
 				execute 'CREATE SEQUENCE '||v_sequence_name
 					||' INCREMENT 1'
@@ -100,10 +103,11 @@ BEGIN
 	END LOOP;
 end;
 $BODY$
-	LANGUAGE plpgsql VOLATILE
-	COST 100;
-COMMENT ON FUNCTION dba_seq_check_native(varchar) IS
-'Creates or updates a native sequences. If a not-null p_tableName parameter is provided (case insensitive), then it works with just that table.
+  LANGUAGE plpgsql VOLATILE
+  COST 100;
+ALTER FUNCTION public.dba_seq_check_native(character varying)
+  OWNER TO metasfresh;
+COMMENT ON FUNCTION public.dba_seq_check_native(character varying) IS 'Creates or updates a native sequences. If a not-null p_tableName parameter is provided (case insensitive), then it works with just that table.
 If no p_tableName parameter is provided, it does the job for each metasfresh AD_Table (whose name is not like X!_%Template) that is active and not flagged as a view.
 In both cases, it ignores AD_Tables that have an AD_Column with
 * ColumnName=TableName||''_ID''
@@ -112,9 +116,4 @@ In both cases, it ignores AD_Tables that have an AD_Column with
 In other words, you can use an AD_Column record to explicitly tell this function not to do anything about the respective table''s native sequence.
 Also note that the function won''t do anything unless there is a physical column named like "<tablename>_id".
 
-Otherwise, the sequence is named lower(tableName||''_seq'') and its next value is set from the maximum value of the key or parent column.'
-;
-
-
---select dba_seq_check_native('M_HU_Trx_Line')
---select dba_seq_check_native();
+Otherwise, the sequence is named lower(tableName||''_seq'') and its next value is set from the maximum value of the key or parent column.';
