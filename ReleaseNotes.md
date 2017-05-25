@@ -45,6 +45,8 @@ Here come the actual release notes:
   * [#1617](https://github.com/metasfresh/metasfresh/issues/1617) Check if imported esr file is v11 file
   * [#1621](https://github.com/metasfresh/metasfresh/issues/1621) Adjustments of Pricelist window in WebUI
     * Adjusting the Pricelist Window in WebUI, renaming Fields, Adding Translations, Order by Valid from in Subtab.
+  * [#1628](https://github.com/metasfresh/metasfresh/issues/1628) Sales Order Window Advanced edit rearrangement
+    * Refineing the Sales Order window for a better Layout and Look and Feel. Rearranging the Advanced edit to allow better visibility and navigation.
 
 * metasfresh-webui-api
   * [#396](https://github.com/metasfresh/metasfresh-webui-api/issues/396) Vendor Return Actions in WebUI
@@ -83,6 +85,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#753](https://github.com/metasfresh/metasfresh-webui-frontend/issues/753) Location dropdown missing in Order windows
+    * Fixes the missing Dropdown List for Locations in combined Businesspartner Lookups.  
   * [#760](https://github.com/metasfresh/metasfresh-webui-frontend/issues/760) Fix the texts displayed while loading
   * [#766](https://github.com/metasfresh/metasfresh-webui-frontend/issues/766) issue panel doesn't open
   * [#767](https://github.com/metasfresh/metasfresh-webui-frontend/issues/767) Got same notification several times
