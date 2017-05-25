@@ -44,6 +44,11 @@ const initialState = {
 };
 
 export default function windowHandler(state = initialState, action) {
+
+    const index = action.tabid && action.rowid &&
+                    state[action.scope].rowData[action.tabid].
+                        findIndex(item => item.rowId === action.rowid);
+
     switch(action.type){
 
         case types.NO_CONNECTION:
@@ -52,7 +57,6 @@ export default function windowHandler(state = initialState, action) {
             });
 
         case types.OPEN_MODAL:
-        console.log('open modal');
             return Object.assign({}, state, {
                 modal: Object.assign({}, state.modal, {
                     visible: true,
@@ -122,7 +126,6 @@ export default function windowHandler(state = initialState, action) {
             });
 
         case types.ADD_ROW_DATA:
-        console.log('ADD_ROW_DATA');
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
                     rowData: Object.assign(
@@ -131,21 +134,7 @@ export default function windowHandler(state = initialState, action) {
                 })
             });
 
-        // case types.ADD_NEW_ROW:
-        // console.log('ADD_NEW_ROW_DATA');
-        //     return update(state, {
-        //         [action.scope]: {
-        //             rowData: {
-        //                 [action.tabid]: {$merge: {
-        //                     [action.rowid]: action.item
-        //                 }}
-        //             }
-        //         }
-        //     });
-
-
         case types.ADD_NEW_ROW:
-        console.log('ADD_NEW_ROW_DATA');
             return update(state, {
                 [action.scope]: {
                     rowData: {
@@ -154,22 +143,19 @@ export default function windowHandler(state = initialState, action) {
                 }
             });
 
-
         case types.DELETE_ROW:
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$set:
-                            Object.keys(
-                                state[action.scope].rowData[action.tabid]
-                            ).filter(key => key !== action.rowid)
-                            .reduce((result, current) => {
-                                result[current] =
-                                    state[action.scope]
-                                        .rowData[action.tabid][current];
-                                return result;
-                            }, {})
-                        }
+                        [action.tabid]:
+                        {$set: state[action.scope].rowData[action.tabid]
+                            .filter((item, id) => {
+                                if( id === index) {
+                                    return
+                                } else {
+                                    return item
+                                }
+                            })}
                     }
                 }
             });
@@ -204,94 +190,49 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$splice: [[state.master.rowData[1].findIndex(item=>item.rowId === action.rowid), 1, {test: 'UPDATE_ROW_FIELD_PROPERTY'}]]}
+                        [action.tabid]: {
+                            [index]: {
+                                fields: {$set:
+                                    state[action.scope]
+                                        .rowData[action.tabid][index]
+                                        .fields.map(item =>
+                                        item.field === action.property ?
+                                            Object.assign(
+                                                {}, item, action.item
+                                            ) : item
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             });
-
-        // case types.UPDATE_ROW_FIELD_PROPERTY:
-        //     return update(state, {
-        //         [action.scope]: {
-        //             rowData: {
-        //                 [action.tabid]: {
-        //                     [action.rowid]: {
-        //                         fields: {$set:
-        //                             state[action.scope]
-        //                                 .rowData[action.tabid][action.rowid]
-        //                                 .fields.map(item =>
-        //                                 item.field === action.property ?
-        //                                     Object.assign(
-        //                                         {}, item, action.item
-        //                                     ) : item
-        //                             )
-        //                         }
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     });
 
          case types.UPDATE_ROW_PROPERTY:
-         console.log('UPDATE_ROW_PROPERTY');
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$splice: [[state.master.rowData[1].findIndex(item=>item.rowId === action.rowid), 1, {test: 'UPDATE_ROW_PROPERTY'}]]}
+                        [action.tabid]: {
+                            [index] : {$merge: {
+                                [action.property]: action.item
+                            }}
+                        }
                     }
                 }
             });
-
-        // case types.UPDATE_ROW_PROPERTY:
-        //     return update(state, {
-        //         [action.scope]: {
-        //             rowData: {
-        //                 [action.tabid]: {
-        //                     [action.rowid]: {$merge: {
-        //                         [action.property]: action.item
-        //                     }}
-        //                 }
-        //             }
-        //         }
-        //     });
 
         case types.UPDATE_ROW_STATUS:
-        console.log('--------------------------save status------------------------------');
-        console.log(action.saveStatus);
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$splice: [[state.master.rowData[1].findIndex(item=>item.rowId === action.rowid), 0, action.saveStatus]]}
+                        [action.tabid]: {
+                            [index] : {
+                                saveStatus: {$set : action.saveStatus}
+                            }
+                        }
                     }
                 }
             });
-
-
-            // case types.UPDATE_ROW_STATUS:
-            // return update(state, {
-            //     [action.scope]: {
-            //         rowData: {
-            //             [action.tabid]: {
-            //                 [action.rowid]: {
-            //                     saveStatus: {$set: action.saveStatus}
-            //                 }
-            //             }
-            //         }
-            //     }
-            // });
-
-
-        //      case types.ADD_NEW_ROW:
-        // console.log('ADD_NEW_ROW_DATA');
-        //     return update(state, {
-        //         [action.scope]: {
-        //             rowData: {
-        //                 [action.tabid]: {$push: [action.item]}
-        //             }
-        //         }
-        //     });
-
-
-            // state.master.rowData[1].findIndex(item=>item.rowId === action.rowid)
 
         case types.UPDATE_DATA_VALID_STATUS:
             return Object.assign({}, state, {

@@ -356,9 +356,6 @@ class DocumentList extends Component {
             id, page, this.pageLength, sortingQuery, windowType
         )).then(response => {
 
-            // console.log('response');
-            // console.log(response);
-
             this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters
@@ -455,9 +452,6 @@ class DocumentList extends Component {
             includedView, isIncluded, disablePaginationShortcuts,
             notfound, disconnectFromState, autofocus, selectedWindowType
         } = this.props;
-
-        // console.log('data');
-        // console.log(data);
 
         const hasIncluded = layout && layout.supportIncludedView &&
             includedView && includedView.windowType && includedView.viewId;

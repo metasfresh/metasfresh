@@ -81,8 +81,6 @@ export function addRowData(data, scope) {
 }
 
 export function updateRowStatus(scope, tabid, rowid, saveStatus) {
-    console.log('saveStatus');
-    console.log(saveStatus);
     return {
         type: types.UPDATE_ROW_STATUS,
         scope,
@@ -323,7 +321,6 @@ function initTabs(layout, windowType, docId, isModal) {
                 dispatch(
                     getTab(tab.tabid, windowType, docId)
                 ).then(res => {
-                    // console.log(res);
                     tabTmp[tab.tabid] = res;
                     dispatch(
                         addRowData(tabTmp, getScope(isModal))
@@ -338,16 +335,7 @@ export function getTab(tabId, windowType, docId) {
     return dispatch =>
         dispatch(getData('window', windowType, docId, tabId))
             .then(res => {
-                // console.log(res.data);
                 if(res.data){
-                    let tab = {};
-                    res.data.map((row, index) => {
-                        row.fields = parseToDisplay(row.fields);
-                        tab[row.rowId] = row;
-                        // tab[index]=row;
-                    });
-                    // console.log(tab);
-                    // return tab;
                     return res.data;
                 }
             })
@@ -523,12 +511,9 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
 }
 
 function updateStatus(responseData) {
-    console.log('updateStatus response data');
-    console.log(responseData);
     return dispatch => {
         const updateDispatch = (item) => {
             if(item.rowId){
-                console.log(item);
                 dispatch(updateRowStatus(
                     'master', item.tabid, item.rowId, item.saveStatus // item
                 ));
