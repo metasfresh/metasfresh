@@ -30,7 +30,6 @@ import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -630,17 +629,10 @@ public class LayoutFactory
 			field.addCharacteristic(Characteristic.PublicField);
 		}
 
-		boolean supportZoomInfo = field.getWidgetType().isSupportZoomInto();
-		final String lookupTableName = field.getLookupTableName().orElse(null);
-		if (WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName))
-		{
-			supportZoomInfo = false;
-		}
-
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
 				.setLookupSource(field.getLookupSourceType())
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
-				.setSupportZoomInto(supportZoomInfo)
+				.setSupportZoomInto(field.isSupportZoomInto())
 				.trackField(field);
 
 		logger.trace("Built layout element field for {}: {}", field, layoutElementFieldBuilder);
