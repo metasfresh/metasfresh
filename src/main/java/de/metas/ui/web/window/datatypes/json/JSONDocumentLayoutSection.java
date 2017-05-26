@@ -57,7 +57,16 @@ public final class JSONDocumentLayoutSection
 
 	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
 	{
-		title = section.getCaption(jsonOpts.getAD_Language()).trim();
+		// Show section title only for advanced layouts
+		if (jsonOpts.isShowAdvancedFields())
+		{
+			title = section.getCaption(jsonOpts.getAD_Language()).trim();
+		}
+		else
+		{
+			title = null;
+		}
+		
 		description = section.getDescription(jsonOpts.getAD_Language()).trim();
 		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
 	}
