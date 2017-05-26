@@ -197,7 +197,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
 		// TODO: THis column could be used also for customer returns. Rename it
-		newInOutLine.setVendorReturn_Origin_InOutLine(originInOutLine);
+		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
 
 		// NOTE: we are not saving the inOut line
 
