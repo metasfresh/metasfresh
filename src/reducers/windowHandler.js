@@ -11,7 +11,7 @@ const initialState = {
         rowId: null,
         viewId: null,
         layout: {},
-        data: {},
+        data: [],
         rowData: {},
         modalTitle: '',
         modalType: '',
@@ -114,7 +114,7 @@ export default function windowHandler(state = initialState, action) {
         case types.CLEAR_MASTER_DATA:
             return Object.assign({}, state, {
                 master: Object.assign({}, state.master, {
-                    data: {},
+                    data: [],
                     rowData: {},
                     docId: undefined
                 })
@@ -162,14 +162,11 @@ export default function windowHandler(state = initialState, action) {
         case types.UPDATE_DATA_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
-                    data: {
-                        [action.property]: {$set: 
-                            Object.assign({},
-                                state[action.scope].data[action.property],
-                                action.item
-                            )
-                        }
-                    }
+                    data: {$set: state[action.scope].data.map(item =>
+                        item.field === action.property ?
+                        Object.assign({}, item, action.item) :
+                        item
+                    )}
                 }
             });
 
@@ -194,16 +191,15 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {
                         [action.tabid]: {
                             [action.rowid]: {
-                                fieldsByName: {
-                                    [action.property] : {
-                                        $set: Object.assign({}, 
-                                            state[action.scope]
-                                                .rowData[action.tabid]
-                                                [action.rowid]
-                                                .fieldsByName[action.property],
-                                            action.item
-                                        )
-                                    }
+                                fields: {$set:
+                                    state[action.scope]
+                                        .rowData[action.tabid][action.rowid]
+                                        .fields.map(item =>
+                                        item.field === action.property ?
+                                            Object.assign(
+                                                {}, item, action.item
+                                            ) : item
+                                    )
                                 }
                             }
                         }

@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import RawWidget from '../widget/RawWidget';
 
 import {
+    findRowByPropName,
     parseToDisplay,
     addNewRow
 } from '../../actions/WindowActions';
@@ -43,9 +44,9 @@ class TableQuickInput extends Component {
         const {data, layout, editedField} = this.state;
         if(data && layout){
             for(let i = 0; i < layout.length; i++){
-                const item = 
-                    layout[i].fields.map(elem => data[elem.field] || -1);
-                
+                const item = layout[i].fields.map(elem =>
+                    findRowByPropName(data, elem.field)
+                );
                 if(!item[0].value){
                     if(editedField !== i){
                         this.setState({
@@ -70,7 +71,7 @@ class TableQuickInput extends Component {
                 createInstance('window', docType, docId, tabId, 'quickInput')
             ).then(instance => {
                 this.setState({
-                    data: parseToDisplay(instance.data.fieldsByName),
+                    data: parseToDisplay(instance.data.fields),
                     id: instance.data.id,
                     editedField: 0
                 });
@@ -94,11 +95,17 @@ class TableQuickInput extends Component {
     }
 
     handleChange = (field, value) => {
-        this.setState(prevState => ({
-            data: Object.assign({}, prevState.data, {
-                [field]: Object.assign({}, prevState.data[field], {
-                    value
-                })
+        const {data} = this.state;
+
+        this.setState(Object.assign({}, this.state, {
+            data: data.map(item => {
+                if(field === 'all' || item.field === field){
+                    return Object.assign({}, item, {
+                        value: value
+                    })
+                }else{
+                    return item;
+                }
             })
         }))
     }
@@ -112,22 +119,24 @@ class TableQuickInput extends Component {
                 'window', docType, docId, tabId, null, prop, value,
                 'quickInput', id
             )).then(response => {
-                const fields = response.data[0] && response.data[0].fieldsByName
-                
-                fields && Object.keys(fields).map(fieldName => {
-                    
-                    this.setState(prevState => ({
-                        data: Object.assign({}, prevState.data, {
-                            [fieldName]: Object.assign({}, 
-                                prevState.data[fieldName], 
-                                fields[fieldName]
-                            )
+                response.data[0] && response.data[0].fields &&
+                response.data[0].fields.map(item => {
+                    this.setState({
+                        data: this.state.data.map(field => {
+                            if (field.field !== item.field){
+                                return field;
+                            }
+
+                            if(callback){
+                                callback();
+                            }
+
+                            resolve();
+                            return {
+                                ...field,
+                                ...item
+                            };
                         })
-                    }), () => {
-                        if(callback){
-                            callback();
-                        }
-                        resolve();
                     });
                 })
             })
@@ -137,10 +146,11 @@ class TableQuickInput extends Component {
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
         const {tabId, docType} = this.props;
 
-        if(data && layout){
+        if(layout){
             return layout.map((item, id) => {
-                const widgetData =
-                    item.fields.map(elem => data[elem.field] || -1);
+                const widgetData = item.fields.map(elem =>
+                    findRowByPropName(data, elem.field)
+                );
                 return (<RawWidget
                     entity={attributeType}
                     subentity="quickInput"
@@ -193,8 +203,7 @@ class TableQuickInput extends Component {
     }
 
     validateForm = (data) => {
-        return !Object.keys(data).filter(key => 
-            data[key].mandatory && !data[key].value).length;
+        return !data.filter(item => item.mandatory && !item.value).length;
     }
 
     render() {

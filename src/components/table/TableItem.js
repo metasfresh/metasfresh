@@ -3,6 +3,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TableCell from './TableCell';
 
+import {
+    findRowByPropName
+} from '../../actions/WindowActions';
+
 class TableItem extends Component {
     constructor(props) {
         super(props);
@@ -109,7 +113,9 @@ class TableItem extends Component {
         // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
-            const widgetData = item.fields.map(prop => cells[prop.field] || -1);
+            const widgetData = item.fields.map(property =>
+                findRowByPropName(cells, property.field)
+            );
             const {supportZoomInto} = item.fields[0];
 
             return (

@@ -6,6 +6,10 @@ import {
     getData
 } from '../../actions/GenericActions';
 
+import {
+    findRowByPropName
+} from '../../actions/WindowActions';
+
 import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {
@@ -53,7 +57,7 @@ class SelectionAttributes extends Component {
                     getData(entity, windowType, viewId, selected[0])
                 );
             }).then(response => {
-                DLWrapperSetData(response.data.fieldsByName, response.data.id);
+                DLWrapperSetData(response.data.fields, response.data.id);
             }).catch(() => {});
     }
 
@@ -101,7 +105,7 @@ class SelectionAttributes extends Component {
                             windowType={windowType}
                             viewId={viewId}
                             widgetData={item.fields.map(elem =>
-                                DLWrapperData[elem.field] || -1
+                                findRowByPropName(DLWrapperData, elem.field)
                             )}
                             gridAlign={item.gridAlign}
                             key={id}
@@ -112,8 +116,9 @@ class SelectionAttributes extends Component {
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
                             tabIndex={this.getTabId(
-                                item.fields.map(elem => 
-                                    DLWrapperData[elem.field] || -1
+                                item.fields.map(elem =>
+                                    findRowByPropName(
+                                        DLWrapperData, elem.field)
                                 )
                             )}
                         />

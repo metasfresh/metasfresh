@@ -355,6 +355,7 @@ class DocumentList extends Component {
         return dispatch(browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
         )).then(response => {
+
             this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters

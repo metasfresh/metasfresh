@@ -113,6 +113,7 @@ class Modal extends Component {
                     )
                 ).catch(err => {
                     this.handleClose();
+
                     if(err.toString() !== 'Error: close_modal'){
                         throw err;
                     }
@@ -262,7 +263,7 @@ class Modal extends Component {
         } = this.state;
 
         return(
-            Object.keys(data).length > 0 && <div
+            data.length > 0 && <div
                 className="screen-freeze js-not-unselect"
             >
             <div className="panel panel-modal panel-modal-primary">
