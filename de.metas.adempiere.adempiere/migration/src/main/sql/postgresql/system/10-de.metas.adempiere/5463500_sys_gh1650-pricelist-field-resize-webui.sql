@@ -83,3 +83,23 @@ UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2017-05-26 07:2
 UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2017-05-26 07:20:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=2761
 ;
 
+-- 2017-05-26T07:41:16.470
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2017-05-26 07:41:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541391
+;
+
+-- 2017-05-26T07:41:21.309
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2017-05-26 07:41:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541392
+;
+
+-- 2017-05-26T07:41:31.213
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2017-05-26 07:41:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541393
+;
+
+-- 2017-05-26T07:41:42.191
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='L',Updated=TO_TIMESTAMP('2017-05-26 07:41:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541397
+;
+
