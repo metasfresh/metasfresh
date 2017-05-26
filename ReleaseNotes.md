@@ -117,8 +117,11 @@ Here come the actual release notes:
  
 * metasfresh-webui-api
   * [#378](https://github.com/metasfresh/metasfresh-webui-api/issues/378) Document changes: provide the validStatus and saveStatus only when changed
+    * Adjustments to the API of Documents, now prividing the validStatus/ saveStatus only when these are change.
   * [#405](https://github.com/metasfresh/metasfresh-webui-api/issues/405) Backend shall provide JSON document fields indexed by field's name
+    * Internal Issue to improve performance using name indexed JSON document fields in Map.
   * [#407](https://github.com/metasfresh/metasfresh-webui-api/issues/407) View filtering by virtual SQL column not working
+    * Fixing the usage of virtual columns in Filtering criteria.
 
 * metasfresh-webui-frontend
   * [#753](https://github.com/metasfresh/metasfresh-webui-frontend/issues/753) Location dropdown missing in Order windows
