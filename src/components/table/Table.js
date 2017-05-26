@@ -675,7 +675,7 @@ class Table extends Component {
                             odd={i & 1}
                             item={item[key]}
                             entity={entity}
-                            fields={item[key].fields}
+                            fields={item[key].fieldsByName}
                             rowId={item[key][keyProp]}
                             tabId={tabid}
                             cols={cols}

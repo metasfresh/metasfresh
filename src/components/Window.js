@@ -3,10 +3,6 @@ import React, { Component } from 'react';
 import Dropzone from './Dropzone';
 import Separator from './Separator';
 
-import {
-    findRowByPropName
-} from '../actions/WindowActions';
-
 import MasterWidget from '../components/widget/MasterWidget';
 import Tabs from '../components/tabs/Tabs';
 import Table from '../components/table/Table';
@@ -45,7 +41,7 @@ class Window extends Component {
         const {type} = this.props.layout;
         const {data, rowData, newRow, tabsInfo} = this.props;
         const {fullScreen} = this.state;
-        const dataId = findRowByPropName(data, 'ID').value;
+        const dataId = data.ID.value;
 
         return(
             <Tabs
@@ -165,10 +161,8 @@ class Window extends Component {
 
         return elements.map((elem, id)=> {
             const autoFocus = isFocused && (id === 0);
-            const widgetData = elem.fields.map(item =>
-                findRowByPropName(data, item.field)
-            );
-            const relativeDocId = findRowByPropName(data, 'ID').value;
+            const widgetData = elem.fields.map(item => data[item.field] || -1);
+            const relativeDocId = data.ID && data.ID.value;
             return (
                 <MasterWidget
                     entity="window"
