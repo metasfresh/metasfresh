@@ -34,11 +34,17 @@ Here come the actual release notes:
   * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
     * New feature that prohibits invoice candidates to be invoiced after ther referenced contract has been terminated.
   * [#1560](https://github.com/metasfresh/metasfresh/issues/1560) Add description fields to invoice window
+    * Adding the Prefix and Suffix Description Fields for Invoice Documents. These Fields allow the user to write an individual text that shall be shown in the beginning and at the end of an Invoice Doument.
   * [#1577](https://github.com/metasfresh/metasfresh/issues/1577) Introduce /test/ping/notifications server troubleshooting endpoint
+    * Internal Issue adding a Testing possibility that checks if websockets is available after starting metasfresh.
   * [#1584](https://github.com/metasfresh/metasfresh/issues/1584) New Window for Org in WebUI
+    * Adding a window that allows the maintenance of Organisations in WebUI.
   * [#1585](https://github.com/metasfresh/metasfresh/issues/1585) New Window Client in WebUI
+    * Adding a window that allows the maintenance of Clients in WebUI.
   * [#1586](https://github.com/metasfresh/metasfresh/issues/1586) New Window for OrgType in WebUI
+    * Adding a window that allows the maintenance of Organisation Type Settings in WebUI.
   * [#1591](https://github.com/metasfresh/metasfresh/issues/1591) Password Field is missing in user window in WebUI
+    * Adding the Password Field in User Window of WebUI.
   * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
     * Translation for a subset of Document Types to Language en_US.
   * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
