@@ -259,8 +259,8 @@ class TableItem extends Component {
                 className={
                     (isSelected ? 'row-selected ' : '') +
                     (odd ? 'tr-odd ': 'tr-even ') +
-                    (item.processed ? 'row-disabled ': '') +
-                    ((item.processed && lastSibling && !includedDocuments) ?
+                    (processed ? 'row-disabled ': '') +
+                    ((processed && lastSibling && !includedDocuments) ?
                         'row-boundary ': ''
                     ) +
                     (notSaved ? 'row-not-saved ': '')

@@ -121,6 +121,23 @@ export default function windowHandler(state = initialState, action) {
                 })
             });
 
+        case types.SORT_TAB:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    layout: Object.assign({}, state[action.scope].layout, {
+                        tabs: state[action.scope].layout.tabs.map(tab =>
+                            tab.tabId === action.tabId ?
+                            Object.assign({}, tab, {
+                                orderBy: [{
+                                    fieldName: action.field,
+                                    ascending: action.asc
+                                }]
+                            }) : tab
+                        )
+                    })
+                })
+            })
+
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {

@@ -80,6 +80,13 @@ export function addRowData(data, scope) {
     }
 }
 
+export function sortTab(scope, tabId, field, asc) {
+    return {
+        type: types.SORT_TAB,
+        scope, tabId, field, asc
+    }
+}
+
 export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     return {
         type: types.UPDATE_ROW_STATUS,
@@ -331,13 +338,14 @@ function initTabs(layout, windowType, docId, isModal) {
     }
 }
 
-export function getTab(tabId, windowType, docId) {
+export function getTab(tabId, windowType, docId, orderBy) {
     return dispatch =>
-        dispatch(getData('window', windowType, docId, tabId))
-            .then(res =>
-                res.data && res.data.map(row => Object.assign({}, row,
-                    {fields: parseToDisplay(row.fields)}
-                )))
+        dispatch(getData(
+            'window', windowType, docId, tabId, null, null, null, null, orderBy
+        )).then(res => res.data && res.data.map(row => Object.assign({}, row,
+                {fields: parseToDisplay(row.fields)}
+            )))
+        })
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
