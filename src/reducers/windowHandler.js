@@ -44,6 +44,7 @@ const initialState = {
 };
 
 export default function windowHandler(state = initialState, action) {
+
     switch(action.type){
 
         case types.NO_CONNECTION:
@@ -133,9 +134,7 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$merge: {
-                            [action.rowid]: action.item
-                        }}
+                        [action.tabid]: {$push: [action.item]}
                     }
                 }
             });
@@ -144,17 +143,15 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$set:
-                            Object.keys(
-                                state[action.scope].rowData[action.tabid]
-                            ).filter(key => key !== action.rowid)
-                            .reduce((result, current) => {
-                                result[current] =
-                                    state[action.scope]
-                                        .rowData[action.tabid][current];
-                                return result;
-                            }, {})
-                        }
+                        [action.tabid]:
+                        {$set: state[action.scope].rowData[action.tabid]
+                            .filter((item) => {
+                                if( item.rowId === action.rowId) {
+                                    return
+                                } else {
+                                    return item
+                                }
+                            })}
                     }
                 }
             });
@@ -185,36 +182,45 @@ export default function windowHandler(state = initialState, action) {
                 }
             });
 
-        case types.UPDATE_ROW_FIELD_PROPERTY:
+            case types.UPDATE_ROW_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [action.rowid]: {
-                                fields: {$set:
-                                    state[action.scope]
-                                        .rowData[action.tabid][action.rowid]
-                                        .fields.map(item =>
-                                        item.field === action.property ?
+                            $set: state[action.scope].rowData[action.tabid]
+                            .map(item =>
+                                item.rowId === action.rowid?
+                                    Object.assign({}, item, ()=>{
+                                        item.fields.map(field => {
+                                            field.field === action.property ?
                                             Object.assign(
-                                                {}, item, action.item
-                                            ) : item
-                                    )
-                                }
-                            }
+                                                {},
+                                                field,
+                                                action.item
+                                                )
+                                            :field
+                                        })
+                                    })
+                                :item
+                            )
                         }
                     }
                 }
             });
 
-        case types.UPDATE_ROW_PROPERTY:
+         case types.UPDATE_ROW_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [action.rowid]: {$merge: {
-                                [action.property]: action.item
-                            }}
+                            $set: state[action.scope].rowData[action.tabid]
+                            .map(item =>
+                                item.rowId === action.rowid ?
+                                {$merge: {
+                                    [action.property]: action.item
+                                }}
+                                : item
+                            )
                         }
                     }
                 }
@@ -225,9 +231,12 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [action.rowid]: {
-                                saveStatus: {$set: action.saveStatus}
-                            }
+                             $set: state[action.scope].rowData[action.tabid]
+                             .map(item =>
+                                item.rowId === action.rowid ?
+                                {$set : action.saveStatus}
+                                : item
+                            )
                         }
                     }
                 }
