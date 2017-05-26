@@ -343,9 +343,8 @@ export function getTab(tabId, windowType, docId, orderBy) {
         dispatch(getData(
             'window', windowType, docId, tabId, null, null, null, null, orderBy
         )).then(res => res.data && res.data.map(row => Object.assign({}, row,
-                {fields: parseToDisplay(row.fields)}
-            )))
-        })
+            {fields: parseToDisplay(row.fields)}
+        )));
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
