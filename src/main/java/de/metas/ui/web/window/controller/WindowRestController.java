@@ -46,6 +46,8 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -396,7 +398,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
-	
+
 	/**
 	 * Typeahead for included document's field
 	 */
@@ -414,7 +416,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
-	
+
 	/** Typeahead: unified implementation */
 	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
 	{
@@ -436,7 +438,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
-	
+
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr //
@@ -450,7 +452,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
-	
+
 	private JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
@@ -472,7 +474,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
-	
+
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
@@ -487,7 +489,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
-	
+
 	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
@@ -567,6 +569,27 @@ public class WindowRestController
 					.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
+	}
+
+	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/references")
+	public JSONDocumentReferencesGroup getDocumentReferences(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("rowId") final String rowIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		// Get document references
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
+		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
+
+		final JSONOptions jsonOpts = newJSONOptions().build();
+		return JSONDocumentReferencesGroup.builder()
+				.caption("References")
+				.references(JSONDocumentReference.ofList(documentReferences, jsonOpts))
+				.build();
 	}
 
 	@GetMapping(value = "/{windowId}/{documentId}/references")
