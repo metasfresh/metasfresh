@@ -275,7 +275,7 @@ export function createWindow(
                 docId = response.data[elem].id;
 
                 dispatch(initDataSuccess(
-                    parseToDisplay(response.data[elem].fieldsByName),
+                    parseToDisplay(response.data[elem].fields),
                     getScope(isModal), docId,
                     response.data[0].saveStatus, response.data[0].validStatus,
                     response.data[0].includedTabsInfo
@@ -338,7 +338,7 @@ export function getTab(tabId, windowType, docId) {
                 if(res.data){
                     let tab = {};
                     res.data.map(row => {
-                        row.fieldsByName = parseToDisplay(row.fieldsByName);
+                        row.fields = parseToDisplay(row.fields);
                         tab[row.rowId] = row;
                     });
                     return tab;
@@ -427,10 +427,10 @@ export function patch(
 function updateData(doc, scope){
     return dispatch => {
         Object.keys(doc).map(key => {
-            if(key === 'fieldsByName'){
-                Object.keys(doc.fieldsByName).map(fieldName => {
+            if(key === 'fields'){
+                doc.fields.map(field => {
                     dispatch(updateDataFieldProperty(
-                        fieldName, doc.fieldsByName[fieldName], scope
+                        field.field, field, scope
                     ))
                 })
             }else if(key === 'includedTabsInfo'){
@@ -447,11 +447,10 @@ function updateData(doc, scope){
 function updateRow(row, scope){
     return dispatch => {
         Object.keys(row).map(key => {
-            if(key === 'fieldsByName'){
-                Object.keys(row.fieldsByName).map(fieldName => {
+            if(key === 'fields'){
+                row.fields.map(field => {
                     dispatch(updateRowFieldProperty(
-                        fieldName, row.fieldsByName[fieldName], row.tabid,
-                        row.rowId, scope
+                        field.field, field, row.tabid, row.rowId, scope
                     ))
                 });
             }else{
@@ -480,8 +479,8 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
                     }
                 })
 
-            const parsedItem = item.fieldsByName ? Object.assign({}, item, {
-                fieldsByName: parseToDisplay(item.fieldsByName)
+            const parsedItem = item.fields ? Object.assign({}, item, {
+                fields: parseToDisplay(item.fields)
             }) : item;
 
             // First item in response is direct one for action that called it.
@@ -618,10 +617,9 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
             getProcessData(processType, viewId, type, ids, tabId, rowId)
         ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
-            
             pid = response.data.pinstanceId;
 
-            if (Object.keys(preparedData).length === 0) {
+            if (preparedData.length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
                     dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
@@ -755,30 +753,26 @@ function getScope(isModal) {
     return isModal ? 'modal' : 'master';
 }
 
-export function parseToDisplay(obj) {
-    return parseDateToReadable(nullToEmptyStrings(obj));
+export function parseToDisplay(arr) {
+    return parseDateToReadable(nullToEmptyStrings(arr));
 }
 
-function parseDateToReadable(obj) {
+function parseDateToReadable(arr) {
     const dateParse = ['Date', 'DateTime', 'Time'];
-    
-    return Object.keys(obj).reduce((acc, key) => {
-        acc[key] = 
-            (dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value) ?
-                Object.assign({}, obj[key], {
-                    value: obj[key].value ? new Date(obj[key].value) : ''
-                }) : obj[key];
-        return acc;
-    }, {});
+    return arr.map(item =>
+        (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
+        Object.assign({}, item, {
+            value: item.value ? new Date(item.value) : ''
+        }) : item
+    )
 }
 
-function nullToEmptyStrings(obj) {
-    return Object.keys(obj).reduce((acc, key) => {
-        acc[key] = (obj[key].value === null) ?
-            Object.assign({}, obj[key], { value: '' }) :
-            obj[key];
-        return acc;
-    }, {})
+function nullToEmptyStrings(arr) {
+    return arr.map(item =>
+        (item.value === null) ?
+        Object.assign({}, item, { value: '' }) :
+        item
+    )
 }
 
 export function findRowByPropName(arr, name) {

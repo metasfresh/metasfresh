@@ -14,7 +14,6 @@ class TableCell extends Component {
 
     componentWillReceiveProps(nextProps) {
         const {widgetData, updateRow, readonly} = this.props;
-
         if(!readonly &&
             JSON.stringify(widgetData[0].value) !==
             JSON.stringify(nextProps.widgetData[0].value)

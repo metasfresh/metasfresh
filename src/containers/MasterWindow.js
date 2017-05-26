@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
 import {
+    findRowByPropName,
     attachFileAction,
     clearMasterData,
     getTab,
@@ -112,7 +113,7 @@ class MasterWindow extends Component {
         }
 
         const { dispatch, master } = this.props;
-        const dataId = master.data ? master.data.ID.value : -1;
+        const dataId = findRowByPropName(master.data, 'ID').value;
         const { type } = master.layout;
 
         let fd = new FormData();
@@ -275,16 +276,19 @@ class MasterWindow extends Component {
         } = master.layout;
 
         const dataId = master.docId;
-        const docNoData = master.data.DocumentNo;
+
+        const docNoData = findRowByPropName(master.data, 'DocumentNo');
 
         const docStatusData = {
-            'status': master.data.DocStatus || -1,
-            'action': master.data.DocAction || -1,
+            'status': findRowByPropName(master.data, 'DocStatus'),
+            'action': findRowByPropName(master.data, 'DocAction'),
             'displayed': true
         };
 
-        const docSummaryData = documentSummaryElement &&
-            master.data[documentSummaryElement.fields[0].field];
+        const docSummaryData = findRowByPropName(
+            master.data,
+            documentSummaryElement && documentSummaryElement.fields[0].field
+        );
 
         const isDocumentNotSaved = dataId !== 'notfound' &&
         (master.saveStatus.saved !== undefined && !master.saveStatus.saved) &&

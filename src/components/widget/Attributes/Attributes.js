@@ -9,6 +9,7 @@ import {
 } from '../../../actions/AppActions';
 
 import {
+    findRowByPropName,
     parseToDisplay
 } from '../../../actions/WindowActions';
 
@@ -31,10 +32,16 @@ class Attributes extends Component {
 
     handleChange = (field, value) => {
         const {data} = this.state;
-        
-        this.setState(prevState => ({
-            data: Object.assign({}, prevState.data, {
-                [field]: Object.assign({}, prevState.data[field], {value})
+
+        this.setState(Object.assign({}, this.state, {
+            data: data.map(item => {
+                if(item.field === field){
+                    return Object.assign({}, item, {
+                        value: value
+                    })
+                }else{
+                    return item;
+                }
             })
         }))
     }
@@ -45,13 +52,14 @@ class Attributes extends Component {
         dispatch(patchRequest(
             attributeType, null, id, null, null, prop, value)
         ).then(response => {
-            const fields = response.data[0].fieldsByName;
-            Object.keys(fields).map(fieldName => {
+            response.data[0].fields.map(item => {
                 this.setState(prevState => ({
-                    data: Object.assign({}, prevState.data, {
-                        [fieldName]: Object.assign(
-                            {}, prevState.data[fieldName], {value}
-                        )
+                    data: prevState.data && prevState.data.map(field => {
+                        if(field.field === item.field){
+                            return Object.assign({}, field, item);
+                        }else{
+                            return field;
+                        }
                     })
                 }), () => cb && cb());
             })
@@ -71,10 +79,10 @@ class Attributes extends Component {
                 entity
             )
         ).then(response => {
-            const {id, fieldsByName} = response.data;
+            const {id, fields} = response.data;
 
             this.setState({
-                data: parseToDisplay(fieldsByName)
+                data: parseToDisplay(fields)
             });
 
             return dispatch(initLayout(attributeType, id));
@@ -112,11 +120,10 @@ class Attributes extends Component {
     handleCompletion = () => {
         const {attributeType, dispatch, patch} = this.props;
         const {data} = this.state;
-        const attrId = data && data.ID ? data.ID.value : -1;
+        const attrId = findRowByPropName(data, 'ID').value;
 
-        const mandatory = Object.keys(data).filter(fieldName => 
-            data[fieldName].mandatory);
-        const valid = !mandatory.filter(fieldName => !data[field].value).length;
+        const mandatory = data.filter(field => field.mandatory);
+        const valid = !mandatory.filter(field => !field.value).length;
 
         //there are required values that are not set. just close
         if (mandatory.length && !valid){
@@ -153,7 +160,7 @@ class Attributes extends Component {
         const {value} = widgetData;
         const tmpId = Object.keys(value)[0];
         const label = value[tmpId];
-        const attrId = data && data.ID ? data.ID.value : -1;
+        const attrId = findRowByPropName(data, 'ID').value;
 
         return (
             <div

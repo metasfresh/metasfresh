@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 import MasterWidget from '../widget/MasterWidget';
 import RawWidget from '../widget/RawWidget';
 
+import {
+    findRowByPropName
+} from '../../actions/WindowActions';
+
 class OverlayField extends Component {
     constructor(props) {
         super(props);
@@ -24,8 +28,9 @@ class OverlayField extends Component {
         const {disabled} = this.props;
         const elements = layout.elements;
         return elements.map((elem, id) => {
-            const widgetData = elem.fields.map(item => 
-                data[item.field] || -1);
+            const widgetData = elem.fields.map(item =>
+                findRowByPropName(data, item.field)
+            );
             return (
                 <MasterWidget
                     entity="process"
