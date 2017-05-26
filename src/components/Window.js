@@ -87,20 +87,21 @@ class Window extends Component {
     renderSections = (sections) => {
         return sections.map((elem, id)=> {
             const {title, columns} = elem;
+            const isFirst = (id === 0);
             return (
                 <div className="row" key={'section' + id}>
                     {title && <Separator {...{title}} />}
-                    {columns && this.renderColumns(columns)}
+                    {columns && this.renderColumns(columns, isFirst)}
                 </div>
             )
        })
     }
 
-    renderColumns = (columns) => {
+    renderColumns = (columns, isSectionFirst) => {
         const maxRows = 12;
         const colWidth = Math.floor(maxRows / columns.length);
         return columns.map((elem, id)=> {
-            const isFirst = (id === 0);
+            const isFirst = id === 0 && isSectionFirst;
             const elementGroups = elem.elementGroups;
             return (
                 <div className={'col-sm-' + colWidth} key={'col' + id}>
@@ -113,6 +114,7 @@ class Window extends Component {
     }
 
     renderElementGroups = (group, isFirst) => {
+        const {isModal} = this.props;
         return group.map((elem, id)=> {
             const {type, elementsLine} = elem;
             const shouldBeFocused = isFirst && (id === 0);
@@ -125,6 +127,7 @@ class Window extends Component {
                 elementsLine && elementsLine.length > 0 &&
                     <div
                         key={'elemGroups' + id}
+                        ref={c => isModal && shouldBeFocused && c && c.focus()}
                         tabIndex={shouldBeFocused ? 0 : undefined}
                         className={
                             'panel panel-spaced panel-distance ' +
