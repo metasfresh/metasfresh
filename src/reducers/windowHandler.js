@@ -141,9 +141,7 @@ export default function windowHandler(state = initialState, action) {
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    rowData: Object.assign(
-                        {}, state[action.scope].rowData, action.data
-                    )
+                    rowData: action.data
                 })
             });
 
@@ -160,15 +158,10 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]:
-                        {$set: state[action.scope].rowData[action.tabid]
-                            .filter((item) => {
-                                if( item.rowId === action.rowId) {
-                                    return
-                                } else {
-                                    return item
-                                }
-                            })}
+                        [action.tabid]: {
+                            $set: state[action.scope].rowData[action.tabid]
+                                .filter((item) => item.rowId === action.rowId)
+                        }
                     }
                 }
             });
@@ -206,42 +199,44 @@ export default function windowHandler(state = initialState, action) {
                 return update(state, {
                     [action.scope]: {
                         rowData: {
-                            [action.tabid]:
-                                state[action.scope].rowData[action.tabid]
-                                    .map(item =>
-                                        item.rowId === action.rowid ?
-                                            Object.assign({}, item, {
-                                                fieldsByName: {
-                                                    [action.property] : {
-                                                        $set: Object.assign({}, 
-                                                            state[action.scope]
-                                                                .rowData[action.tabid]
-                                                                [action.rowid]
-                                                                .fieldsByName[action.property],
-                                                            action.item
-                                                        )
+                            [action.tabid]: {
+                                $set: state[action.scope].rowData[action.tabid]
+                                    .map((item, index) => 
+                                        item.rowId === action.rowid ? {
+                                            ...state[action.scope].rowData[action.tabid][index],
+                                            fieldsByName: {
+                                                ...state[action.scope].rowData[action.tabid][index].fieldsByName,
+                                                [action.property]: {
+                                                    ...state[action.scope].rowData[action.tabid][index].fieldsByName[action.property], 
+                                                    ...action.item
                                                     }
-                                                }
-                                            })
-                                        : item
+                                            }
+                                        } : item
                                     )
+                            }
                         }
                     }
                 });
-
+                
+                    
          case types.UPDATE_ROW_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
                             $set: state[action.scope].rowData[action.tabid]
-                            .map(item =>
-                                item.rowId === action.rowid ?
-                                {$merge: {
-                                    [action.property]: action.item
-                                }}
-                                : item
-                            )
+                                .map((item, index) =>
+                                    item.rowId === action.rowid ? {
+                                        ...state[action.scope].rowData[action.tabid][index],
+                                        fieldsByName: {
+                                            ...state[action.scope].rowData[action.tabid][index].fieldsByName,
+                                            [action.property]: {
+                                                ...state[action.scope].rowData[action.tabid][index].fieldsByName[action.property], 
+                                                ...action.item
+                                                }
+                                        }
+                                    } : item
+                                )
                         }
                     }
                 }

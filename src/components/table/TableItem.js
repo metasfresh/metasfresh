@@ -241,7 +241,7 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
+            isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
             indentSupported, contextType, lastSibling, processed,
             includedDocuments, notSaved
         } = this.props;
@@ -265,7 +265,7 @@ class TableItem extends Component {
                         {this.renderTree(contextType)}
                     </td>
                 }
-                {this.renderCells(cols, fields)}
+                {this.renderCells(cols, fieldsByName)}
             </tr>
         );
     }

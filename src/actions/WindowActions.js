@@ -343,7 +343,9 @@ export function getTab(tabId, windowType, docId, orderBy) {
         dispatch(getData(
             'window', windowType, docId, tabId, null, null, null, null, orderBy
         )).then(res => res.data && res.data.map(row => 
-            Object.assign({}, row, {fieldsByName: parseToDisplay(row.fields)}
+            Object.assign({}, row, {
+                fieldsByName: parseToDisplay(row.fieldsByName)
+            }
         )));
 }
 
@@ -740,11 +742,10 @@ export function startProcess(processType, pinstanceId) {
 
 export function deleteLocal(tabid, rowsid, scope, response) {
     return (dispatch) => {
-        dispatch(updateStatus(response.data))
-
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid, rowid, scope))
         }
+        dispatch(updateStatus(response.data))
     }
 }
 
