@@ -41,10 +41,6 @@ body {
     font-family: 'Roboto', sans-serif;
 }
 
-*:focus {
-    border: 1px solid red !important;
-}
-
 *::selection {
     background-color: $brand-color-primary;
     color: #fff;
