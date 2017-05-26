@@ -131,7 +131,8 @@ class Lookup extends Component {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
 
-                        if(item.source === 'lookup'){
+                        if(item.source === 'lookup' ||
+                            item.widgetType === 'Lookup'){
                             return <RawLookup
                                 key={index}
                                 newRecordCaption={newRecordCaption}
@@ -148,7 +149,8 @@ class Lookup extends Component {
                                 windowType, parameterName, entity, dataId,
                                 isModal, recent, rank, updated, filterWidget,
                                 mandatory, validStatus, align, onChange, item,
-                                disabled, fireClickOutside}}
+                                disabled, fireClickOutside, viewId, subentity,
+                                subentityId}}
                             />
 
                         } else if (item.source === 'list') {

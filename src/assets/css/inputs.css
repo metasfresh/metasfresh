@@ -768,6 +768,11 @@ input:checked + .input-slider:before {
     color: $brand-font-color;
     background-color: $brand-danger-color !important;
 }
+.input-error .input-dropdown-list-option.input-dropdown-list-option-key-on,
+.input-error .input-dropdown-list-option.input-dropdown-list-option-key-on * {
+    color: $brand-font-color;
+    background-color: $brand-danger-color !important;
+}
 .input-dropdown-list-option p {
     margin:0;
     overflow: hidden;
@@ -990,8 +995,4 @@ table .rdtPicker table td,
 .rdtPicker table th {
     vertical-align: middle;
     padding: 0;
-}
-.Lookup .input-icon {
-    height: 16px;
-    bottom: 0;
 }
