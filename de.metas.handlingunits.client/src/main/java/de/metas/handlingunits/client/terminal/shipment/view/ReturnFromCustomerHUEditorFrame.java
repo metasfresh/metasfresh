@@ -7,6 +7,7 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.AbstractHUEditor
 import de.metas.handlingunits.client.terminal.select.api.IPOSFiltering;
 import de.metas.handlingunits.client.terminal.select.api.impl.InventoryHUFiltering;
 import de.metas.handlingunits.client.terminal.shipment.model.ReturnFromCustomerHUEditorModel;
+import de.metas.handlingunits.model.I_M_InOut;
 
 /*
  * #%L
@@ -21,11 +22,11 @@ import de.metas.handlingunits.client.terminal.shipment.model.ReturnFromCustomerH
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -33,30 +34,29 @@ import de.metas.handlingunits.client.terminal.shipment.model.ReturnFromCustomerH
 public class ReturnFromCustomerHUEditorFrame extends AbstractHUEditorFrame<ReturnFromCustomerHUEditorModel>
 {
 
-	public ReturnFromCustomerHUEditorFrame(final JFrame frame, final int windowNo)
+	public ReturnFromCustomerHUEditorFrame(final JFrame frame, final int windowNo, final I_M_InOut inout)
 	{
-		super(frame, windowNo);
+		super(frame, windowNo, inout);
 	}
 
 	@Override
-	protected ReturnFromCustomerHUEditorPanel createHUEditorPanel()
+	protected ReturnFromCustomerHUEditorPanel createHUEditorPanel(final I_M_InOut inout)
 	{
-		final ReturnFromCustomerHUEditorModel huEditorModel = createHUEditorModel();
+		final ReturnFromCustomerHUEditorModel huEditorModel = createHUEditorModel(inout);
+
+		huEditorModel.loadFromShipment();
 		final ReturnFromCustomerHUEditorPanel huEditorPanel = new ReturnFromCustomerHUEditorPanel(huEditorModel);
 		return huEditorPanel;
 	}
 
-	private ReturnFromCustomerHUEditorModel createHUEditorModel()
+	private ReturnFromCustomerHUEditorModel createHUEditorModel(final I_M_InOut inout)
 	{
 		final ITerminalContext terminalContext = getTerminalContext();
 
-		// filter for all warehouses in profile
 		terminalContext.registerService(IPOSFiltering.class, new InventoryHUFiltering());
-		final ReturnFromCustomerHUEditorModel documentSelectModel = new ReturnFromCustomerHUEditorModel(terminalContext);
-//		// don't display vendor keys (bpartners)
-//		documentSelectModel.setDisplayVendorKeys(false);
-//		// We display all HUs.
-//		documentSelectModel.setAdditionalHUFilter(null);
+		final ReturnFromCustomerHUEditorModel documentSelectModel = new ReturnFromCustomerHUEditorModel(terminalContext, inout);
+
 		return documentSelectModel;
 	}
+
 }

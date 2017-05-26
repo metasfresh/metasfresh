@@ -21,7 +21,7 @@ import de.metas.adempiere.form.terminal.event.MethodActionForwardListener;
 import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.select.view.AbstractHUSelectFrame;
-import de.metas.handlingunits.client.terminal.select.view.IHUSelectPanel;
+import de.metas.handlingunits.model.I_M_InOut;
 
 /*
  * #%L
@@ -57,7 +57,7 @@ public abstract class AbstractHUEditorFrame<MT> implements IComponent
 
 	private boolean disposed = false;
 
-	public AbstractHUEditorFrame(final JFrame frame, final int windowNo)
+	public AbstractHUEditorFrame(final JFrame frame, final int windowNo, final I_M_InOut inout)
 	{
 		//
 		// Create Terminal Context
@@ -68,7 +68,7 @@ public abstract class AbstractHUEditorFrame<MT> implements IComponent
 
 		//
 		// Setup Panel
-		huEditorPanel = createHUEditorPanel();
+		huEditorPanel = createHUEditorPanel(inout);
 		terminalContext.addToDisposableComponents(huEditorPanel);
 
 		// TODO: Check if works without this
@@ -107,10 +107,11 @@ public abstract class AbstractHUEditorFrame<MT> implements IComponent
 	/**
 	 * Implementors don't need call {@link ITerminalContext#addToDisposableComponents(de.metas.adempiere.form.terminal.IDisposable)} for the new panel.
 	 * That's already done by the caller of this method.
+	 * @param inOut 
 	 *
 	 * @return
 	 */
-	protected abstract HUEditorPanel createHUEditorPanel();
+	protected abstract HUEditorPanel createHUEditorPanel(final I_M_InOut inouts);
 
 	private final void initFrame()
 	{

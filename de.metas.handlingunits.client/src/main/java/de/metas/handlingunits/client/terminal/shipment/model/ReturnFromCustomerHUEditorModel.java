@@ -1,11 +1,18 @@
 package de.metas.handlingunits.client.terminal.shipment.model;
 
-import de.metas.adempiere.form.terminal.ITerminalDialog;
-import de.metas.adempiere.form.terminal.TerminalException;
+import java.util.List;
+
+import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.Services;
+
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
+import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
+import de.metas.handlingunits.client.terminal.editor.model.IHUKeyFactory;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
-import de.metas.handlingunits.client.terminal.shipment.view.ReturnFromCustomerHUEditorPanel;
+import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.IHUInOutDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 
 /*
@@ -21,93 +28,73 @@ import de.metas.handlingunits.model.I_M_InOut;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ReturnFromCustomerHUEditorModel  extends HUEditorModel
+public class ReturnFromCustomerHUEditorModel extends HUEditorModel
 {
 
-	public ReturnFromCustomerHUEditorModel(ITerminalContext terminalContext)
+	private I_M_InOut shipment;
+
+	public ReturnFromCustomerHUEditorModel(ITerminalContext terminalContext, final I_M_InOut shipment)
 	{
 		super(terminalContext);
-		// TODO Auto-generated constructor stub
+		this.shipment = shipment;
+
+		setAllowSelectingReadonlyKeys(true);
+		setDisplayBarcode(true); // yes, because user will scan/search for the HU which he/she fucked up
 	}
 
-	
 	public static final ReturnFromCustomerHUEditorModel cast(final HUEditorModel huEditorModel)
 	{
 		final ReturnFromCustomerHUEditorModel customerReturnHUEditorModel = (ReturnFromCustomerHUEditorModel)huEditorModel;
 		return customerReturnHUEditorModel;
 	}
 
-
-	public void loadFromShipment(I_M_InOut shipment)
+	public void loadFromShipment()
 	{
-		// TODO Auto-generated method stub
-		
-	}
+		Check.assumeNotNull(shipment, "shipment not null");
 
+		final List<I_M_HU> shipmentHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(shipment);
+
+		//
+		// Retrieve and create HU Keys
+		final ITerminalContext terminalContext = getTerminalContext();
+		final IHUKeyFactory keyFactory = terminalContext.getService(IHUKeyFactory.class);
+		final List<IHUKey> huKeys = shipmentHandlingUnits
+				.stream()
+				.map(hu -> keyFactory.createKey(hu, null))
+				.collect(GuavaCollectors.toImmutableList());
+
+		//
+		// Create and set Root HU Key
+		final IHUKeyFactory huKeyFactory = getHUKeyFactory();
+		final IHUKey rootKey = huKeyFactory.createRootKey();
+		rootKey.setReadonly(true); // make sure besides selecting HUs, the user is not allowed to change them; not here!
+		rootKey.addChildren(huKeys);
+		setRootHUKey(rootKey);
+	}
 
 	public I_M_InOut getShipment()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		return shipment;
 	}
 
-
-	public String buildShipmentToReturnInfo(I_M_InOut shipmentToReturn)
+	public void setShipment(final I_M_InOut shipment)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		this.shipment = shipment;
 	}
 
-
-	public void returnShipmentFromCustomer(I_M_InOut shipmentToReturn)
+	public void createCustomerReturn()
 	{
-		// TODO Auto-generated method stub
-		
+		Services.get(IHUInOutBL.class).createCustomerReturnInOutForHUs(getSelectedHUs());
+
 	}
-	
-	private void doReturnHUToCustomer()
-	{
-		//
-		// Create Receipt Correct Model
-		final ReturnFromCustomerHUSelectModel model = getModel();
-		final I_M_InOut shipment = model.getSelectedShipment();
-		if (shipment == null)
-		{
-			throw new TerminalException("@NoSelection@");
-		}
 
-		final ITerminalContext terminalContext = getTerminalContext();
-		try (final ITerminalContextReferences refs = terminalContext.newReferences())
-		{
-			final ReturnFromCustomerHUEditorModel returnFromCustomerModel = new ReturnFromCustomerHUEditorModel(getTerminalContext());
-			returnFromCustomerModel.loadFromShipment(shipment);
-
-			// Create Receipt Correct Panel and display it to user
-			final ReturnFromCustomerHUEditorPanel receiptCorrectPanel = new ReturnFromCustomerHUEditorPanel(returnFromCustomerModel);
-			final ITerminalDialog editorDialog = getTerminalFactory().createModalDialog(this, btnReturnFromCustomer.getText(), receiptCorrectPanel);
-			editorDialog.setSize(getTerminalContext().getScreenResolution());
-
-			// Activate editor dialog and wait until user closes the window
-			editorDialog.activate();
-
-			if (editorDialog.isCanceled())
-			{
-				// user canceled!
-				return;
-			}
-		}
-		//
-		// Refresh ALL lines, because current receipt schedule was changed now.
-		// And it could be that also other receipt schedules are affected (in case of an HU which is assigned to multiple receipts).
-		model.refreshLines(true);
-	}
 }

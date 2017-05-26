@@ -6,6 +6,7 @@ import de.metas.handlingunits.client.terminal.editor.model.impl.AbstractHUEditor
 import de.metas.handlingunits.client.terminal.form.AbstractHUEditorForm;
 import de.metas.handlingunits.client.terminal.shipment.model.ReturnFromCustomerHUEditorModel;
 import de.metas.handlingunits.client.terminal.shipment.view.ReturnFromCustomerHUEditorFrame;
+import de.metas.handlingunits.model.I_M_InOut;
 
 /*
  * #%L
@@ -20,26 +21,26 @@ import de.metas.handlingunits.client.terminal.shipment.view.ReturnFromCustomerHU
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public class ReturnFromCustomerHUEditorForm  extends AbstractHUEditorForm<ReturnFromCustomerHUEditorModel>
+public class ReturnFromCustomerHUEditorForm extends AbstractHUEditorForm<ReturnFromCustomerHUEditorModel>
 {
 
 	@Override
-	protected AbstractHUEditorFrame<ReturnFromCustomerHUEditorModel> createFramePanel(FormFrame frame)
+	protected AbstractHUEditorFrame<ReturnFromCustomerHUEditorModel> createFramePanel(FormFrame frame, final I_M_InOut shipment)
 	{
-		final ReturnFromCustomerHUEditorFrame framePanel = new ReturnFromCustomerHUEditorFrame(frame, frame.getWindowNo());
-	
+
+		final ReturnFromCustomerHUEditorFrame framePanel = new ReturnFromCustomerHUEditorFrame(frame, frame.getWindowNo(), shipment);
+
 		return framePanel;
-		
+
 	}
-	
 
 }

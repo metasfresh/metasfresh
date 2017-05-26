@@ -6,6 +6,8 @@ import org.compiere.apps.form.FormPanel;
 
 import de.metas.handlingunits.client.terminal.editor.model.impl.AbstractHUEditorFrame;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
+import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.process.ProcessInfo;
 
 /*
  * #%L
@@ -33,13 +35,16 @@ public abstract class AbstractHUEditorForm<MT extends HUEditorModel> implements 
 {
 	private FormFrame frame;
 	private AbstractHUEditorFrame<MT> framePanel;
-
+	
 	@Override
-	public final void init(final int WindowNo, final FormFrame frame)
+	public void init(final int WindowNo, final FormFrame frame)
 	{
 		this.frame = frame;
-
-		framePanel = createFramePanel(frame);
+		final ProcessInfo processInfo = frame.getProcessInfo();
+		
+		final I_M_InOut shipment = processInfo.getRecord(I_M_InOut.class);
+		
+		framePanel = createFramePanel(frame, shipment);
 		Check.assumeNotNull(framePanel, "framePanel not null");
 	}
 
@@ -51,7 +56,7 @@ public abstract class AbstractHUEditorForm<MT extends HUEditorModel> implements 
 	 * @param frame outer frame to decorate
 	 * @return inner frame component
 	 */
-	protected abstract AbstractHUEditorFrame<MT> createFramePanel(final FormFrame frame);
+	protected abstract AbstractHUEditorFrame<MT> createFramePanel(final FormFrame frame, final I_M_InOut shipment);
 
 	public final AbstractHUEditorFrame<MT> getFramePanel()
 	{

@@ -1,10 +1,11 @@
 package de.metas.handlingunits.client.terminal.shipment.view;
 
+import java.beans.PropertyChangeEvent;
+
 import de.metas.adempiere.form.terminal.IContainer;
 import de.metas.adempiere.form.terminal.ITerminalButton;
-import de.metas.adempiere.form.terminal.ITerminalDialog;
-import de.metas.adempiere.form.terminal.TerminalDialogCancelClosingException;
-import de.metas.adempiere.form.terminal.TerminalException;
+import de.metas.adempiere.form.terminal.ITerminalFactory;
+import de.metas.adempiere.form.terminal.event.UIPropertyChangeListener;
 import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.shipment.model.ReturnFromCustomerHUEditorModel;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -22,26 +23,37 @@ import de.metas.handlingunits.model.I_M_InOut;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class ReturnFromCustomerHUEditorPanel extends HUEditorPanel
 {
-	
+	/**
+	 * Button to create Returns From Vendor
+	 */
 	protected ITerminalButton bReturnFromCustomer;
-	private static final String ACTION_ReturnFromCustomer = "ReturnFromCustomer"; 
-	
+	private static final String ACTION_ReturnFromCustomer = "ReturnFromCustomer";
+
 	public ReturnFromCustomerHUEditorPanel(final ReturnFromCustomerHUEditorModel model)
 	{
 		super(model);
 
 		setAskUserWhenCancelingChanges(false);
+
+	}
+
+	/**
+	 * 
+	 */
+	protected void doReturnFromCustomer()
+	{
+		getHUEditorModel().createCustomerReturn();
 	}
 
 	@Override
@@ -50,39 +62,37 @@ public class ReturnFromCustomerHUEditorPanel extends HUEditorPanel
 		return ReturnFromCustomerHUEditorModel.cast(super.getHUEditorModel());
 	}
 
-	@Override
-	protected void onDialogOkAfterSave(final ITerminalDialog dialog)
+	public void setShipmentToReturn(final I_M_InOut shipment)
 	{
-		final ReturnFromCustomerHUEditorModel model = getHUEditorModel();
-		final I_M_InOut shipmentToReturn = model.getShipment();
-		if (shipmentToReturn == null)
-		{
-			throw new TerminalException("@NoSelection@");
-		}
-
-		//
-		// Ask user if he/she really wants to reverse those receipts
-		final String receiptsToReverseInfo = model.buildShipmentToReturnInfo(shipmentToReturn);
-		final boolean returnShipment = getTerminalFactory()
-				.ask(this)
-				.setAD_Message("ReturnShipment?") // TODO: better message
-				.setAdditionalMessage(receiptsToReverseInfo)
-				.setDefaultAnswer(false)
-				.getAnswer();
-		if (!returnShipment)
-		{
-			// user canceled!
-			throw new TerminalDialogCancelClosingException();
-		}
-
-		model.returnShipmentFromCustomer(shipmentToReturn);
+		getHUEditorModel().setShipment(shipment);
 	}
 
 	@Override
-	protected void createAndAddActionButtons(IContainer buttonsPanel)
+	protected void createAndAddActionButtons(final IContainer buttonsPanel)
 	{
+
+		// task #1062
+		// CreateVendorReturn button
+		{
+
+			final ITerminalFactory factory = getTerminalContext().getTerminalFactory();
+
+			this.bReturnFromCustomer = factory.createButton(ACTION_ReturnFromCustomer);
+			this.bReturnFromCustomer.setTextAndTranslate(ACTION_ReturnFromCustomer);
+			bReturnFromCustomer.setEnabled(true);
+			bReturnFromCustomer.setVisible(true);
+			bReturnFromCustomer.addListener(new UIPropertyChangeListener(factory, bReturnFromCustomer)
+			{
+
+				@Override
+				protected void propertyChangeEx(PropertyChangeEvent evt)
+				{
+					doReturnFromCustomer();
+
+				}
+			});
+		}
+
 		buttonsPanel.add(bReturnFromCustomer, "");
 	}
-	
-
 }
