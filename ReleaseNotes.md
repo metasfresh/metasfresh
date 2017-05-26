@@ -131,11 +131,11 @@ Here come the actual release notes:
   * [#766](https://github.com/metasfresh/metasfresh-webui-frontend/issues/766) issue panel doesn't open
     * Fixes a Bug in Manufacturing Action Issue and Receipt opening the Issue modal overlay.
   * [#767](https://github.com/metasfresh/metasfresh-webui-frontend/issues/767) Got same notification several times
-    * Aboiding the creation of notifications multiple times.
+    * Avoiding the creation of notifications multiple times.
   * [#769](https://github.com/metasfresh/metasfresh-webui-frontend/issues/769) Honor tab stale flag also when editing in advanced mode
     * Now honoring the stale flag of included tabs also in Advanced edit mode of main view.
   * [#774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/774) Fix invalid "GET /window/{windowId}/{tabId} call
-    * Ficing an invalid GET after completing a sales Order.
+    * Fixing an invalid GET after completing a sales Order.
   
 # metasfresh 5.10 (2017-20)
 
