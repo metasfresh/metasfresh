@@ -13,11 +13,11 @@ package de.metas.handlingunits.inout.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Attribute;
@@ -45,6 +46,7 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_InOutLine_HU_Alloc;
 import de.metas.inout.IInOutDAO;
 
 public class HUInOutDAO implements IHUInOutDAO
@@ -127,11 +129,46 @@ public class HUInOutDAO implements IHUInOutDAO
 			return null;
 		}
 
-		if(!docActionBL.isStatusCompletedOrClosed(inoutLine.getM_InOut()))
+		if (!docActionBL.isDocumentCompletedOrClosed(inoutLine.getM_InOut()))
 		{
 			return null;
 		}
 		return inoutLine;
+	}
+
+	@Override
+	public void deleteTradingUnitAllocations(final I_M_InOutLine inOutLine, final List<I_M_HU> tradingUnitsToUnassign, final String trxName)
+	{
+		if (tradingUnitsToUnassign == null || tradingUnitsToUnassign.isEmpty())
+		{
+			return;
+		}
+
+		final List<Integer> tuIdsToUnassign = new ArrayList<Integer>();
+		for (final I_M_HU tuToUnassign : tradingUnitsToUnassign)
+		{
+			Check.assumeNotNull(tuToUnassign, "tuToUnassign not null");
+			tuIdsToUnassign.add(tuToUnassign.getM_HU_ID());
+		}
+
+		//
+		// Use query builder for RSAs and filter TU-HUs
+		final IQueryBuilder<I_M_InOutLine_HU_Alloc> ioaQueryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_InOutLine_HU_Alloc.class, inOutLine)
+				.addEqualsFilter(I_M_InOutLine_HU_Alloc.COLUMNNAME_M_InOutLine_ID, inOutLine.getM_InOutLine_ID())
+				.addInArrayOrAllFilter(I_M_InOutLine_HU_Alloc.COLUMNNAME_M_TU_HU_ID, tuIdsToUnassign);
+
+		//
+		// Fetch RSA entries for TU-HUs
+		final List<I_M_InOutLine_HU_Alloc> inOutLineAllocations = ioaQueryBuilder.create()
+				.list(I_M_InOutLine_HU_Alloc.class);
+
+		//
+		// Delete all allocations
+		for (final I_M_InOutLine_HU_Alloc ioa : inOutLineAllocations)
+		{
+			InterfaceWrapperHelper.delete(ioa);
+		}
+
 	}
 
 }

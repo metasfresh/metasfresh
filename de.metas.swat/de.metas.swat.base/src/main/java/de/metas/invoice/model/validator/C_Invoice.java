@@ -257,7 +257,7 @@ public class C_Invoice
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 		// ONLY delete lines for status Draft or In Progress
-		final boolean isDraftOrInProgress = Services.get(IDocActionBL.class).isStatusDraftedOrInProgress(invoice);
+		final boolean isDraftOrInProgress = Services.get(IDocActionBL.class).issDocumentDraftedOrInProgress(invoice);
 
 		if (!isDraftOrInProgress)
 		{

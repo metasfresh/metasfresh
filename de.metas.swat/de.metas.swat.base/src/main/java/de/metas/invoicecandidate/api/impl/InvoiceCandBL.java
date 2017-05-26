@@ -1277,7 +1277,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (creditMemo && invoiceExt.getRef_CreditMemo_ID() > 0)
 		{
 			final org.compiere.model.I_C_Invoice originalInvoice = invoiceExt.getRef_CreditMemo();
-			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
+			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isDocumentStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
 		}
 		else
 		{
@@ -1536,7 +1536,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			int nonReversedIlas = 0;
 			for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
 			{
-				if (!docActionBL.isStatusOneOf(ila.getDocStatus(),
+				if (!docActionBL.isStatusStrOneOf(ila.getDocStatus(),
 						X_C_Invoice_Line_Alloc.DOCSTATUS_Reversed))
 				{
 					nonReversedIlas++;
@@ -1774,7 +1774,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
 
 		final MutableQtyAndQuality qtys = new MutableQtyAndQuality();
-		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsForInvoiceCandidate(ic);
+		final List<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLAssociationsExclRE(ic);
 		for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 		{
 			final org.compiere.model.I_M_InOutLine inoutLine = iciol.getM_InOutLine();

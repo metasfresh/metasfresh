@@ -138,20 +138,20 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		{
 			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 			// Voided/Reversed contract
-			if (docActionBL.isStatusReversedOrVoided(contractExisting))
+			if (docActionBL.isDocumentReversedOrVoided(contractExisting))
 			{
 				// => get rid of it, we will create a new one
 				rfqResponseLine.setC_Flatrate_Term(null);
 
 			}
 			// Draft/InProgress contract
-			else if (docActionBL.isStatusDraftedOrInProgress(contractExisting))
+			else if (docActionBL.issDocumentDraftedOrInProgress(contractExisting))
 			{
 				// => consider the contract was already created and do nothing
 				return;
 			}
 			// Completed/Closed contract
-			else if (docActionBL.isStatusCompletedOrClosed(contractExisting))
+			else if (docActionBL.isDocumentCompletedOrClosed(contractExisting))
 			{
 				// => consider the contract was already created and do nothing
 				return;
@@ -209,17 +209,17 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 		// Voided/Reversed contract
-		if (docActionBL.isStatusReversedOrVoided(contractExisting))
+		if (docActionBL.isDocumentReversedOrVoided(contractExisting))
 		{
 			// already voided => just unlink it
 		}
 		// Draft/InProgress contract
-		else if (docActionBL.isStatusDraftedOrInProgress(contractExisting))
+		else if (docActionBL.issDocumentDraftedOrInProgress(contractExisting))
 		{
 			Services.get(IFlatrateBL.class).voidIt(contractExisting);
 		}
 		// Completed contract
-		else if (docActionBL.isStatusCompleted(contractExisting))
+		else if (docActionBL.isDocumentCompleted(contractExisting))
 		{
 			Services.get(IFlatrateBL.class).voidIt(contractExisting);
 		}
@@ -260,12 +260,12 @@ public class PMM_RfQ_BL implements IPMM_RfQ_BL
 		}
 
 		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
-		if (docActionBL.isStatusDraftedOrInProgress(contract))
+		if (docActionBL.issDocumentDraftedOrInProgress(contract))
 		{
 			final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 			flatrateBL.complete(contract);
 		}
-		else if (docActionBL.isStatusCompleted(contract))
+		else if (docActionBL.isDocumentCompleted(contract))
 		{
 			// already completed => nothing to do
 		}

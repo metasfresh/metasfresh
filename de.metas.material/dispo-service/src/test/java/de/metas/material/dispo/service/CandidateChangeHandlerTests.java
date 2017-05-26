@@ -136,6 +136,7 @@ public class CandidateChangeHandlerTests
 		{
 			candidate = Candidate.builder()
 					.type(Type.STOCK)
+					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
@@ -147,6 +148,7 @@ public class CandidateChangeHandlerTests
 			earlierCandidate = candidateRepository
 					.addOrUpdate(Candidate.builder()
 							.type(Type.STOCK)
+							.clientId(org.getAD_Client_ID())
 							.orgId(org.getAD_Org_ID())
 							.productId(product.getM_Product_ID())
 							.warehouseId(warehouse.getM_Warehouse_ID())
@@ -156,6 +158,7 @@ public class CandidateChangeHandlerTests
 
 			final Candidate laterCandidate = Candidate.builder()
 					.type(Type.STOCK)
+					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
@@ -166,6 +169,7 @@ public class CandidateChangeHandlerTests
 
 			evenLaterCandidate = Candidate.builder()
 					.type(Type.STOCK)
+					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(warehouse.getM_Warehouse_ID())
@@ -176,6 +180,7 @@ public class CandidateChangeHandlerTests
 
 			evenLaterCandidateWithDifferentWarehouse = Candidate.builder()
 					.type(Type.STOCK)
+					.clientId(org.getAD_Client_ID())
 					.orgId(org.getAD_Org_ID())
 					.productId(product.getM_Product_ID())
 					.warehouseId(otherWarehouse.getM_Warehouse_ID())
@@ -320,6 +325,7 @@ public class CandidateChangeHandlerTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -414,6 +420,7 @@ public class CandidateChangeHandlerTests
 	{
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -437,6 +444,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -464,6 +472,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -499,6 +508,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -536,6 +546,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate olderStockCandidate = Candidate.builder()
 				.type(Type.STOCK)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -548,6 +559,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.subType(SubType.PRODUCTION)
 				.productId(product.getM_Product_ID())
@@ -578,6 +590,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -610,6 +623,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -623,6 +637,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -660,6 +675,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate supplyCandidate = Candidate.builder()
 				.type(Type.SUPPLY)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -680,6 +696,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate demandCandidate = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -715,6 +732,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())
@@ -754,6 +772,7 @@ public class CandidateChangeHandlerTests
 
 		final Candidate candidatee = Candidate.builder()
 				.type(Type.DEMAND)
+				.clientId(org.getAD_Client_ID())
 				.orgId(org.getAD_Org_ID())
 				.productId(product.getM_Product_ID())
 				.warehouseId(warehouse.getM_Warehouse_ID())

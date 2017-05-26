@@ -156,7 +156,7 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 	
 	private final String getNotificationAD_Message(final I_M_InOut inout)
 	{
-		if(docActionBL.isStatusReversedOrVoided(inout))
+		if(docActionBL.isDocumentReversedOrVoided(inout))
 		{
 			return inout.isSOTrx() ? MSG_Event_ShipmentReversed : MSG_Event_ReceiptReversed;
 		}
@@ -170,7 +170,7 @@ public final class InOutProcessedEventBus extends QueueableForwardingEventBus
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if(docActionBL.isStatusReversedOrVoided(inout))
+		if(docActionBL.isDocumentReversedOrVoided(inout))
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if(currentUserId > 0)

@@ -73,6 +73,7 @@ public class CandidateFactory
 		return Candidate.builder()
 				.type(Type.STOCK)
 				.orgId(candidate.getOrgId())
+				.clientId(candidate.getClientId())
 				.productId(candidate.getProductId())
 				.warehouseId(candidate.getWarehouseId())
 				.date(candidate.getDate())

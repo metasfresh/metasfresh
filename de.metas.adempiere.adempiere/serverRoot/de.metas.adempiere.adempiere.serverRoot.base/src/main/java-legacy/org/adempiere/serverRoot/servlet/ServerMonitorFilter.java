@@ -46,7 +46,7 @@ import de.metas.logging.LogManager;
  * @author Michael Judd BF [ 2736817 ] - remove deprecated BASE64Encoder classes
  * @author tsa
  */
-@WebFilter("/serverMonitor/*")
+@WebFilter({ "/serverMonitor/*", "/test/*" })
 @Profile(ServerBoot.PROFILE)
 public class ServerMonitorFilter implements Filter
 {

@@ -30,8 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -60,7 +62,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -132,13 +133,6 @@ public class HUTrxBL implements IHUTrxBL
 
 		final HULoader loader = HULoader.of(source, destination);
 		loader.load(request);
-	}
-
-	@Override
-	public List<I_M_HU> extractIncludedHUs(final List<I_M_HU> sourceHUs, final int huQty, final I_M_HU_PI destinationHuPI)
-	{
-		// TODO: implement extractIncludedHUs
-		throw new UnsupportedOperationException("Method not implemented");
 	}
 
 	private IHUTransactionProcessor createHUTransactionProcessor(final IHUContext huContext)
@@ -333,6 +327,22 @@ public class HUTrxBL implements IHUTrxBL
 		{
 			handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
 		}
+	}
+
+	@Override
+	public void extractHUFromParentIfNeeded(final I_M_HU hu)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (handlingUnitsBL.isTopLevel(hu))
+		{
+			return;
+		}
+
+		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
+
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+		final I_M_HU_Item parentHUItem = null; // no parent
+		setParentHU(huContext, parentHUItem, hu);
 	}
 
 	@Override

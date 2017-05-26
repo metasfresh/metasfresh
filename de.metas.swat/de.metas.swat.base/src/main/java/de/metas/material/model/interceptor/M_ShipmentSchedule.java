@@ -54,9 +54,8 @@ public class M_ShipmentSchedule
 		final Timestamp preparationDate = shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 
 		final ShipmentScheduleEvent event = ShipmentScheduleEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(EventDescr.createNew(schedule))
 				.materialDescr(MaterialDescriptor.builder()
-						.orgId(schedule.getAD_Org_ID())
 						.date(preparationDate)
 						.productId(schedule.getM_Product_ID())
 						.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))

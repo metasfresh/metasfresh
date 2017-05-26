@@ -178,7 +178,7 @@ public class M_Material_Tracking_Report_Line_Create
 			Check.assumeNotNull(ppOrder, "PP_Order not null in M_Material_Tracking_Ref: {}", ref);
 
 			// only closed pp_Orders are eligible
-			if (!docActionBL.isStatusClosed(ppOrder))
+			if (!docActionBL.isDocumentClosed(ppOrder))
 			{
 				return false; // this is a common and frequent case; don't pollute the loggable with it.
 			}
@@ -202,7 +202,7 @@ public class M_Material_Tracking_Report_Line_Create
 			final I_M_InOut io = iol.getM_InOut();
 
 			// only completed and closed inouts are eligible
-			if (!docActionBL.isStatusCompletedOrClosed(io))
+			if (!docActionBL.isDocumentCompletedOrClosed(io))
 			{
 				return false;
 			}

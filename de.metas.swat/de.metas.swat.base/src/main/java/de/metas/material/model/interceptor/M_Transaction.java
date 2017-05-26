@@ -56,11 +56,9 @@ public class M_Transaction
 	public void enqueuePurchaseCandidates(final I_M_Transaction transaction, final int timing)
 	{
 		final TransactionEvent event = TransactionEvent.builder()
-				.eventDescr(new EventDescr())
+				.eventDescr(EventDescr.createNew(transaction))
 				.transactionDeleted(timing == ModelValidator.TYPE_BEFORE_DELETE)
-				.eventDescr(new EventDescr())
 				.materialDescr(MaterialDescriptor.builder()
-						.orgId(transaction.getAD_Org_ID())
 						.warehouseId(transaction.getM_Locator().getM_Warehouse_ID())
 						.date(transaction.getMovementDate())
 						.productId(transaction.getM_Product_ID())

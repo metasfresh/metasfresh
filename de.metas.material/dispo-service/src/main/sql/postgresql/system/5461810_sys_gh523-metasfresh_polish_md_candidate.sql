@@ -27,7 +27,7 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=541267
 
 -- 2017-05-05T12:22:49.414
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541270,540715,TO_TIMESTAMP('2017-05-05 12:22:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo.service','Y','Beleg fertiggestellt',TO_TIMESTAMP('2017-05-05 12:22:49','YYYY-MM-DD HH24:MI:SS'),100,'doc_completed','doc_completed')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541270,540715,TO_TIMESTAMP('2017-05-05 12:22:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.material.dispo','Y','Beleg fertiggestellt',TO_TIMESTAMP('2017-05-05 12:22:49','YYYY-MM-DD HH24:MI:SS'),100,'doc_completed','doc_completed')
 ;
 
 -- 2017-05-05T12:22:49.419
@@ -57,7 +57,7 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='N' WHERE AD_Ref_List_ID=541268
 
 -- 2017-05-05T12:39:34.527
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Ref_List SET EntityType='de.metas.material.dispo.service',Updated=TO_TIMESTAMP('2017-05-05 12:39:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541271
+UPDATE AD_Ref_List SET EntityType='de.metas.material.dispo',Updated=TO_TIMESTAMP('2017-05-05 12:39:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=541271
 ;
 
 -- 2017-05-05T12:40:08.857

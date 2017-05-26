@@ -1,5 +1,10 @@
 package org.adempiere.util;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 /*
  * #%L
  * de.metas.util
@@ -31,24 +36,35 @@ package org.adempiere.util;
 public final class PlainStringLoggable implements ILoggable
 {
 
-	private final StringBuilder sb = new StringBuilder();
-
-	private int logCount = 0;
+	private final List<String> messages = new ArrayList<>();
 
 	@Override
 	public void addLog(String msg, Object... msgParameters)
 	{
-		if (logCount > 0)
-		{
-			sb.append("\n");
-		}
 		final String formattedMessage = StringUtils.formatMessage(msg, msgParameters);
-		sb.append(formattedMessage);
-		logCount++;
+		messages.add(formattedMessage);
 	}
 
-	public String getString()
+	public boolean isEmpty()
 	{
+		return messages.isEmpty();
+	}
+
+	public List<String> getSingleMessages()
+	{
+		return ImmutableList.copyOf(messages);
+	}
+
+	public String getConcatenatedMessages()
+	{
+		final StringBuilder sb = new StringBuilder();
+
+		messages.forEach(msg ->
+			{
+				sb.append(msg);
+				sb.append("\n");
+			});
+
 		return sb.toString();
 	}
 

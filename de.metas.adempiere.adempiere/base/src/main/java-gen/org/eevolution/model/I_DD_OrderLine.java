@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
 
@@ -32,7 +16,7 @@ public interface I_DD_OrderLine
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -48,7 +32,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client() throws RuntimeException;
+	public org.compiere.model.I_AD_Client getAD_Client();
 
     /** Column definition for AD_Client_ID */
     public static final org.adempiere.model.ModelColumn<I_DD_OrderLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_DD_OrderLine, org.compiere.model.I_AD_Client>(I_DD_OrderLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
@@ -75,7 +59,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_Org();
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
@@ -104,7 +88,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException;
+	public org.compiere.model.I_AD_Org getAD_OrgTrx();
 
 	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
@@ -133,7 +117,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_Activity_ID();
 
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException;
+	public org.compiere.model.I_C_Activity getC_Activity();
 
 	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
@@ -162,7 +146,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException;
+	public org.compiere.model.I_C_BPartner getC_BPartner();
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
@@ -191,7 +175,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_Campaign_ID();
 
-	public org.compiere.model.I_C_Campaign getC_Campaign() throws RuntimeException;
+	public org.compiere.model.I_C_Campaign getC_Campaign();
 
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
@@ -220,7 +204,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_Charge_ID();
 
-	public org.compiere.model.I_C_Charge getC_Charge() throws RuntimeException;
+	public org.compiere.model.I_C_Charge getC_Charge();
 
 	public void setC_Charge(org.compiere.model.I_C_Charge C_Charge);
 
@@ -249,7 +233,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_OrderLineSO_ID();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLineSO() throws RuntimeException;
+	public org.compiere.model.I_C_OrderLine getC_OrderLineSO();
 
 	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO);
 
@@ -278,7 +262,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_Project_ID();
 
-	public org.compiere.model.I_C_Project getC_Project() throws RuntimeException;
+	public org.compiere.model.I_C_Project getC_Project();
 
 	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
@@ -307,7 +291,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getC_UOM_ID();
 
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException;
+	public org.compiere.model.I_C_UOM getC_UOM();
 
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
@@ -472,6 +456,33 @@ public interface I_DD_OrderLine
     public static final String COLUMNNAME_DD_AllowPush = "DD_AllowPush";
 
 	/**
+	 * Set Network Distribution Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDD_NetworkDistributionLine_ID (int DD_NetworkDistributionLine_ID);
+
+	/**
+	 * Get Network Distribution Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDD_NetworkDistributionLine_ID();
+
+	public org.eevolution.model.I_DD_NetworkDistributionLine getDD_NetworkDistributionLine();
+
+	public void setDD_NetworkDistributionLine(org.eevolution.model.I_DD_NetworkDistributionLine DD_NetworkDistributionLine);
+
+    /** Column definition for DD_NetworkDistributionLine_ID */
+    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine, org.eevolution.model.I_DD_NetworkDistributionLine> COLUMN_DD_NetworkDistributionLine_ID = new org.adempiere.model.ModelColumn<I_DD_OrderLine, org.eevolution.model.I_DD_NetworkDistributionLine>(I_DD_OrderLine.class, "DD_NetworkDistributionLine_ID", org.eevolution.model.I_DD_NetworkDistributionLine.class);
+    /** Column name DD_NetworkDistributionLine_ID */
+    public static final String COLUMNNAME_DD_NetworkDistributionLine_ID = "DD_NetworkDistributionLine_ID";
+
+	/**
 	 * Set Distribution Order.
 	 *
 	 * <br>Type: TableDir
@@ -489,7 +500,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getDD_Order_ID();
 
-	public org.eevolution.model.I_DD_Order getDD_Order() throws RuntimeException;
+	public org.eevolution.model.I_DD_Order getDD_Order();
 
 	public void setDD_Order(org.eevolution.model.I_DD_Order DD_Order);
 
@@ -544,6 +555,7 @@ public interface I_DD_OrderLine
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
+	
 	/**
 	 * Set Frachtbetrag.
 	 * Freight Amount
@@ -766,8 +778,8 @@ public interface I_DD_OrderLine
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -776,8 +788,8 @@ public interface I_DD_OrderLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Product Attribute Set Instance
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -785,7 +797,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException;
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
 	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
@@ -814,7 +826,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getM_AttributeSetInstanceTo_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstanceTo() throws RuntimeException;
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstanceTo();
 
 	public void setM_AttributeSetInstanceTo(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstanceTo);
 
@@ -843,7 +855,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getM_Locator_ID();
 
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException;
+	public org.compiere.model.I_M_Locator getM_Locator();
 
 	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
 
@@ -872,7 +884,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getM_LocatorTo_ID();
 
-	public org.compiere.model.I_M_Locator getM_LocatorTo() throws RuntimeException;
+	public org.compiere.model.I_M_Locator getM_LocatorTo();
 
 	public void setM_LocatorTo(org.compiere.model.I_M_Locator M_LocatorTo);
 
@@ -886,7 +898,7 @@ public interface I_DD_OrderLine
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setM_Product_ID (int M_Product_ID);
@@ -896,12 +908,12 @@ public interface I_DD_OrderLine
 	 * Produkt, Leistung, Artikel
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException;
+	public org.compiere.model.I_M_Product getM_Product();
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
@@ -951,7 +963,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getPP_Plant_From_ID();
 
-	public org.compiere.model.I_S_Resource getPP_Plant_From() throws RuntimeException;
+	public org.compiere.model.I_S_Resource getPP_Plant_From();
 
 	public void setPP_Plant_From(org.compiere.model.I_S_Resource PP_Plant_From);
 
@@ -1208,7 +1220,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getUser1_ID();
 
-	public org.compiere.model.I_C_ElementValue getUser1() throws RuntimeException;
+	public org.compiere.model.I_C_ElementValue getUser1();
 
 	public void setUser1(org.compiere.model.I_C_ElementValue User1);
 
@@ -1237,7 +1249,7 @@ public interface I_DD_OrderLine
 	 */
 	public int getUser2_ID();
 
-	public org.compiere.model.I_C_ElementValue getUser2() throws RuntimeException;
+	public org.compiere.model.I_C_ElementValue getUser2();
 
 	public void setUser2(org.compiere.model.I_C_ElementValue User2);
 

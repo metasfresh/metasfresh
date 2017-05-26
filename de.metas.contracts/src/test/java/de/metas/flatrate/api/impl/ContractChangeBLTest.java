@@ -89,7 +89,7 @@ public class ContractChangeBLTest extends ContractsTestBase
 
 		final Timestamp changeTime = TimeUtil.getDay(2013,7,27);
 
-		contractChangeBL.cancelContract(currentTerm, changeTime);
+		contractChangeBL.cancelContract(currentTerm, changeTime, true);
 
 	}
 }

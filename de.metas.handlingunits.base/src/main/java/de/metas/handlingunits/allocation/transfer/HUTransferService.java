@@ -137,7 +137,13 @@ public class HUTransferService
 		this.referencedObjects = Preconditions.checkNotNull(referencedObjects, "Param 'referencedOjects' may noot be null");
 		return this;
 	}
-
+	
+	private List<TableRecordReference> getReferencedObjects()
+	{
+		// TODO: in case there were no referenced objects, i think we shall search & retrieve all the referenced documents/lines
+		return referencedObjects;
+	}
+	
 	private IAllocationRequest createCUAllocationRequest(
 			final IHUContext huContext, final I_M_Product cuProduct, final I_C_UOM cuUOM, final BigDecimal cuQty, final boolean forceAllocation)
 	{
@@ -385,7 +391,7 @@ public class HUTransferService
 				qtyToUse = qtyCU.multiply(factor);
 			}
 
-			for (final TableRecordReference ref : referencedObjects)
+			for (final TableRecordReference ref : getReferencedObjects())
 			{
 				final List<IHUDocument> huDocuments = huDocumentFactoryService.createHUDocuments(localHuContext.getCtx(), ref.getTableName(), ref.getRecord_ID());
 				for (final IHUDocument huDocument : huDocuments)

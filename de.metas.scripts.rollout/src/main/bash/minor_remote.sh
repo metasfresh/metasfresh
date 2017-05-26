@@ -113,23 +113,40 @@ prompt_superuser_script()
 	echo ""
 }
 
+#
+# Installs a spring-boot service. 
+# Notes:
+#   * installs the service binary from ${ROLLOUT_DIR}/deploy/services
+#   * the binaries name have be <service_name>.jar or <service_name>-service.jar. Anawys, it's installed in the target folder as <service_name>.jar. 
+#     This is consistent with the service's docker image name.
+#   * metasfresh-webui-api and "metasfresh-material-dispo will be restarted. All others (currently just metasfresh-admin) won't. This is a hack and will probably be changed
+#   * install_metasfresh() also installs a service (metasfresh-backend), but is in a separated function for historical reasons.
+#
 install_service()
 {
 	local service_name=$1
 	trace install_${service_name} BEGIN
 
-	local SYSTEM_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
-	local SYSTEM_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
+	local SERVICE_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
+	local SERVICE_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
 
-	if [[ ! -f ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ]]; 
+	local SERVICE_DEPLOY_SOURCE_NAME=NOTSET
+	
+	if [[ -f ${SERVICE_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ]];
 	then
-		trace install_${service_name} "Service binary ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar is not present. Nothing to do."
+		SERVICE_DEPLOY_SOURCE_NAME=${service_name}
+	elif [[ -f ${SERVICE_DEPLOY_SOURCE_FOLDER}/${service_name}-service.jar ]];
+	then
+		SERVICE_DEPLOY_SOURCE_NAME=${service_name}-service
+	else
+		trace install_${service_name} "Service binary ${SERVICE_DEPLOY_SOURCE_FOLDER}/${service_name}[-service].jar is not present. Nothing to do."
 		return;
 	fi
+	trace install_${service_name} "Going to install ${SERVICE_DEPLOY_SOURCE_FOLDER}/${SERVICE_DEPLOY_SOURCE_NAME}.jar"	
 	
 	if [[ -d /opt/${service_name} ]]; 
 	then
-		prompt_superuser_script ${service_name} "The service ${service_name} is currently installed in /opt/${service_name}. It needs to be migrated to $SYSTEM_DEPLOY_TARGET_FOLDER"
+		prompt_superuser_script ${service_name} "The service ${service_name} is currently installed in /opt/${service_name}. It needs to be migrated to $SERVICE_DEPLOY_TARGET_FOLDER"
 		exit 1;
 	fi
 
@@ -148,17 +165,17 @@ install_service()
 	fi
 
 	# make sure the service's folder actually exists
-	mkdir -p $SYSTEM_DEPLOY_TARGET_FOLDER
+	mkdir -p $SERVICE_DEPLOY_TARGET_FOLDER
 	
-	local SERVICE_CONF_FILE="$SYSTEM_DEPLOY_TARGET_FOLDER/${service_name}.conf"
+	local SERVICE_CONF_FILE="$SERVICE_DEPLOY_TARGET_FOLDER/${service_name}.conf"
 	if [[ ! -f $SERVICE_CONF_FILE ]];
 	then
 		trace install_${service_name} "The service conf file $SERVICE_CONF_FILE is not yet installed. It is required to customize the services runtime paramters"
 		trace install_${service_name} "Checking if file $(pwd)/${service_name}-configs/configs/${service_name}.conf was already extracted"
-		if [[ ! -d "$(pwd)/${service_name}-configs/configs" ]];
+		if [[ ! -d "$(pwd)/${SERVICE_DEPLOY_SOURCE_NAME}-configs/configs" ]];
 		then
 			# if the configs.zip was not yet extracted per our advise, then do it now
-			unzip ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-configs.zip -d $(pwd)/${service_name}-configs
+			unzip ${SERVICE_DEPLOY_SOURCE_FOLDER}/${SERVICE_DEPLOY_SOURCE_NAME}-configs.zip -d $(pwd)/${service_name}-configs
 		fi
 		if [[ -f $(pwd)/${service_name}-configs/configs/${service_name}.conf ]];
 		then
@@ -177,16 +194,16 @@ install_service()
 	
 	mkdir -p ${METASFRESH_HOME}/${service_name}
 	
-	if [[ -f ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar ]]; 
+	if [[ -f ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar ]]; 
 	then
-		trace install_${service_name} "Making sure that the main jar can be overwritten with our new version"
-		chmod 200 ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+		trace install_${service_name} "Making sure that the existing service jar can be overwritten with our new version"
+		chmod 200 ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	fi
 
-	cp ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}.jar ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+	cp -v ${SERVICE_DEPLOY_SOURCE_FOLDER}/${SERVICE_DEPLOY_SOURCE_NAME}.jar ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	
 	trace install_${service_name} "Making sure that the main jar shall only be accessible for its owner"
-	chmod 500 ${SYSTEM_DEPLOY_TARGET_FOLDER}/${service_name}.jar
+	chmod 500 ${SERVICE_DEPLOY_TARGET_FOLDER}/${service_name}.jar
 	
     # if system was running before rollout, start it back up
     #
@@ -198,7 +215,6 @@ install_service()
     if [[ ${service_name} = "metasfresh-webui-api" ]] || [[ ${service_name} = "metasfresh-material-dispo" ]]; then
         sudo systemctl restart ${service_name}.service
     fi 
-    
 	
 	trace install_${service_name} END
 }
