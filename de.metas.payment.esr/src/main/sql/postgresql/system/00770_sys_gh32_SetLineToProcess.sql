@@ -1,6 +1,6 @@
 -- 15.04.2016 13:24:03 OESZ
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,LockWaitTimeout,Name,ShowHelp,Statistic_Count,Statistic_Seconds,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540680,'de.metas.payment.esr.process.ESR_SetLineToProcessed','N',TO_TIMESTAMP('2016-04-15 13:24:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.esr','Y','N','N','N','N','N',0,'Process line','Y',0,0,'Java',TO_TIMESTAMP('2016-04-15 13:24:02','YYYY-MM-DD HH24:MI:SS'),100,'ESR_SetLineToProcessed')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,LockWaitTimeout,Name,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540680,'de.metas.payment.esr.process.ESR_SetLineToProcessed','N',TO_TIMESTAMP('2016-04-15 13:24:02','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.payment.esr','Y','N','N','N','N','N',0,'Process line','Y','Java',TO_TIMESTAMP('2016-04-15 13:24:02','YYYY-MM-DD HH24:MI:SS'),100,'ESR_SetLineToProcessed')
 ;
 
 -- 15.04.2016 13:24:03 OESZ
@@ -11,36 +11,6 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 -- 15.04.2016 13:24:03 OESZ
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540680,0,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 15.04.2016 13:24:03 OESZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540680,50002,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 15.04.2016 13:24:03 OESZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540680,50001,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 15.04.2016 13:24:03 OESZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540680,1000001,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 15.04.2016 13:24:03 OESZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540680,1000004,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 15.04.2016 13:24:03 OESZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540680,1000024,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 15.04.2016 13:24:03 OESZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540680,1000038,TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-04-15 13:24:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 15.04.2016 13:24:03 OESZ
