@@ -1139,3 +1139,21 @@ td.pulse-off input {
     text-decoration: underline;
     cursor: pointer;
 }
+
+.separator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    
+    margin-top: .5rem;
+}
+
+.separator-title {
+    color: $brand-font-color-weak;
+}
+
+.separator-hr {
+    width: 100%;
+    margin-left: 1rem;
+}

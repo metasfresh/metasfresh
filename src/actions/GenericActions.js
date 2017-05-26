@@ -127,7 +127,7 @@ export function autocompleteRequest(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        (attribute ? '/attribute/' : '/field/') + 
+        (attribute ? '/attribute/' : '/field/') +
         propertyName +
         '/typeahead' + '?query=' + encodeURIComponent(query)
     );

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import Dropzone from './Dropzone';
+import Separator from './Separator';
 
 import {
     findRowByPropName
@@ -85,9 +86,10 @@ class Window extends Component {
 
     renderSections = (sections) => {
         return sections.map((elem, id)=> {
-            const columns = elem.columns;
+            const {title, columns} = elem;
             return (
                 <div className="row" key={'section' + id}>
+                    {title && <Separator {...{title}} />}
                     {columns && this.renderColumns(columns)}
                 </div>
             )
