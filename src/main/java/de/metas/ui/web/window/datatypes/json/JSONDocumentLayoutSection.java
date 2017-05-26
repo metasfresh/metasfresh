@@ -2,7 +2,6 @@ package de.metas.ui.web.window.datatypes.json;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,20 +43,23 @@ public final class JSONDocumentLayoutSection
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@JsonProperty("title")
+	@JsonInclude(Include.NON_EMPTY)
+	private final String title;
+
+	@JsonProperty("description")
+	@JsonInclude(Include.NON_EMPTY)
+	private final String description;
+
 	@JsonProperty("columns")
 	@JsonInclude(Include.NON_EMPTY)
 	private final List<JSONDocumentLayoutColumn> columns;
 
 	private JSONDocumentLayoutSection(final DocumentLayoutSectionDescriptor section, final JSONOptions jsonOpts)
 	{
+		title = section.getCaption(jsonOpts.getAD_Language()).trim();
+		description = section.getDescription(jsonOpts.getAD_Language()).trim();
 		columns = JSONDocumentLayoutColumn.ofList(section.getColumns(), jsonOpts);
-	}
-
-	@JsonCreator
-	private JSONDocumentLayoutSection(@JsonProperty("columns") final List<JSONDocumentLayoutColumn> columns)
-	{
-		super();
-		this.columns = columns == null ? ImmutableList.of() : ImmutableList.copyOf(columns);
 	}
 
 	@Override

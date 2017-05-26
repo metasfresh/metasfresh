@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
@@ -42,8 +44,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Fi
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 
@@ -239,8 +241,11 @@ public class LayoutFactory
 	 */
 	private DocumentLayoutSectionDescriptor.Builder layoutSection(final I_AD_UI_Section uiSection)
 	{
+		final IModelTranslationMap uiSectionTrls = InterfaceWrapperHelper.getModelTranslationMap(uiSection);
 		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder()
-				.setInternalName(uiSection.toString());
+				.setInternalName(uiSection.toString())
+				.setCaption(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Name, uiSection.getName()))
+				.setDescription(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Description, uiSection.getDescription()));
 
 		if (!uiSection.isActive())
 		{
