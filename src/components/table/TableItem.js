@@ -248,7 +248,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
-            indentSupported, contextType, item, lastSibling, processed,
+            indentSupported, contextType, lastSibling, processed,
             includedDocuments, notSaved
         } = this.props;
 
