@@ -10,6 +10,16 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.12 (2017-22)
+
+**upcoming release for week 2017-22**
+
+## Features
+
+* metasfresh-backend
+  * [#1657](https://github.com/metasfresh/metasfresh/issues/1657) Initially set Date+Time Filters in WebUI
+    * Removing 2 Date Fields from Filter criteria in WebUI that did not have a perfect behavior when using combined filters.
+
 # metasfresh 5.11 (2017-21)
 
 **upcoming release for week 2017-21**
