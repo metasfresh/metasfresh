@@ -22,8 +22,8 @@ prepare_service_superuser()
 	local SYSTEM_DEPLOY_SOURCE_FOLDER=${ROLLOUT_DIR}/deploy/services
 	local SYSTEM_DEPLOY_TARGET_FOLDER=${METASFRESH_HOME}/${service_name}
     local service_isrunning=NOTSET	
-	echo "Checking if /opt/${service_name} needs to be migrated"
 
+	echo "Checking if /opt/${service_name} needs to be migrated"
 	if [[ -d /opt/${service_name} ]]; 
 	then
 
@@ -41,7 +41,6 @@ prepare_service_superuser()
 			echo "Found executable file ${INIT_D_FILE}; Going to try and stop ${service_name}"
 			${INIT_D_FILE} stop
 			unlink ${INIT_D_FILE}
-			
 		fi
 
 		echo "!!! Copying /opt/${service_name} to $SYSTEM_DEPLOY_TARGET_FOLDER (excluding /opt/${service_name}/log) !!! "
@@ -64,7 +63,20 @@ prepare_service_superuser()
 	then
 		echo "!!! Installing service unit file !!!"
 		cd $(pwd)
-		unzip ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-configs.zip -d ./${service_name}-configs
+		
+		# gh #1640: a service's artifact name might end with "-service" and we need to acomodate for that unzipping the configs file
+		local CONFIGS_ZIP_FILENAME=NOTSET
+		if [[ -f ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-configs.zip ]];
+		then
+			CONFIGS_ZIP_FILENAME=${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-configs.zip
+		elif [[ -f  ${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-service-configs.zip ]];
+		then
+			CONFIGS_ZIP_FILENAME=${SYSTEM_DEPLOY_SOURCE_FOLDER}/${service_name}-service-configs.zip
+		else
+			echo "Unable to find a zip configs file!"
+		fi
+		
+		unzip $CONFIGS_ZIP_FILENAME -d ./${service_name}-configs
 		cp -v ./${service_name}-configs/configs/${service_name}.service ${SYSTEM_SERVICE_FILE}
 		chmod 0644 ${SYSTEM_SERVICE_FILE}
 		systemctl daemon-reload
