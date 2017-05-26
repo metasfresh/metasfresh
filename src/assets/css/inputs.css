@@ -261,9 +261,22 @@ button {
     border-radius: 2px;
 }
 
+.input-state-false {
+    border-color: $brand-success-dark-color;
+    border-width: 2px;
+}
+
 .input-checkbox input:checked ~ .input-checkbox-tick {
     background: $brand-success-dark-color;
     border-color: $brand-success-dark-color;
+}
+
+.input-side {
+    position: relative;
+    top: -5px;
+    margin-left: 5px;
+    color: $brand-light-color;
+    cursor: pointer;
 }
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {

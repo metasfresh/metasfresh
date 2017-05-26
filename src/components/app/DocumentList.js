@@ -539,7 +539,7 @@ class DocumentList extends Component {
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
-                                    hasIncluded
+                                    hasIncluded, viewId
                                 }}
                             >
                                 {layout.supportAttributes && !isIncluded &&

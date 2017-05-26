@@ -119,6 +119,10 @@ body {
     z-index: 3;
 }
 
+.context-menu-separator {
+    margin:0;
+}
+
 .context-menu-open {
     display: block;
 }
@@ -1134,4 +1138,22 @@ td.pulse-off input {
 .zoom-into:hover {
     text-decoration: underline;
     cursor: pointer;
+}
+
+.separator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    
+    margin-top: .5rem;
+}
+
+.separator-title {
+    color: $brand-font-color-weak;
+}
+
+.separator-hr {
+    width: 100%;
+    margin-left: 1rem;
 }

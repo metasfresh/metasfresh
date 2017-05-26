@@ -39,8 +39,8 @@ class FiltersItem extends Component {
             active.parameters.map(item => {
                 this.mergeData(
                     item.parameterName,
-                    item.value ? item.value : '',
-                    item.valueTo ? item.valueTo : ''
+                    item.value != null ? item.value : '',
+                    item.valueTo != null ? item.valueTo : ''
                 );
             })
         }else if(filter.parameters){

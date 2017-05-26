@@ -15,8 +15,8 @@ class TableCell extends Component {
     componentWillReceiveProps(nextProps) {
         const {widgetData, updateRow, readonly} = this.props;
         if(!readonly &&
-                JSON.stringify(widgetData[0].value) !==
-                JSON.stringify(nextProps.widgetData[0].value)
+            JSON.stringify(widgetData[0].value) !==
+            JSON.stringify(nextProps.widgetData[0].value)
         ) {
             updateRow();
         }
@@ -101,7 +101,8 @@ class TableCell extends Component {
         const {
             isEdited, widgetData, item, docId, type, rowId, tabId,
             onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
-            listenOnKeys, listenOnKeysFalse, closeTableField
+            listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass,
+            handleRightClick
         } = this.props;
 
         return (
@@ -110,20 +111,12 @@ class TableCell extends Component {
                 ref={(c) => this.cell = c}
                 onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}
+                onContextMenu={handleRightClick}
                 className={
                     (item.gridAlign ? 'text-xs-' + item.gridAlign + ' ' : '') +
                     (widgetData[0].readonly ? 'cell-disabled ' : '') +
                     (widgetData[0].mandatory ? 'cell-mandatory ' : '') +
-                    (item.widgetType==='Lookup' ||
-                        item.widgetType==='LongText' ||
-                        item.widgetType==='List' ||
-                        item.widgetType==='Date' ||
-                        item.widgetType==='DateTime' ||
-                        item.widgetType==='Time' ?
-                            'td-lg ' : '') +
-                    (item.widgetType==='ProductAttributes' ? 'td-md ' : '') +
-                    (item.widgetType==='Address' ? 'td-md ' : '') +
-                    (item.widgetType==='Text' ? 'td-md ' : '') +
+                    (getSizeClass(item) + ' ') +
                     (item.widgetType) +
                     ((updatedRow) ? ' pulse-on' : ' pulse-off')
                 }

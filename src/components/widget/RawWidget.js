@@ -147,7 +147,7 @@ class RawWidget extends Component {
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
-            listenOnKeysFalse, closeTableField, handleZoomInto
+            listenOnKeysFalse, closeTableField, handleZoomInto, attribute
         } = this.props;
 
         const {isEdited} = this.state;
@@ -310,6 +310,7 @@ class RawWidget extends Component {
             case 'Lookup':
                 return (
                     <Lookup
+                        {...{attribute}}
                         entity={entity}
                         subentity={subentity}
                         subentityId={subentityId}
@@ -346,6 +347,7 @@ class RawWidget extends Component {
             case 'List':
                 return (
                     <List
+                        {...{attribute}}
                         dataId={dataId}
                         entity={entity}
                         subentity={subentity}
