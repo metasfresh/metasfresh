@@ -60,6 +60,7 @@ Here come the actual release notes:
   * [#1614](https://github.com/metasfresh/metasfresh/issues/1614) New Window Attribute Set Instance in WebUI
     * Adds the new Window for Attribute Set Maintenance to WebUI.
   * [#1617](https://github.com/metasfresh/metasfresh/issues/1617) Check if imported esr file is v11 file
+    * Adding a consitency check in Swiss ESR File Processing, allowing to import files only w/ the defined format.
   * [#1621](https://github.com/metasfresh/metasfresh/issues/1621) Adjustments of Pricelist window in WebUI
     * Adjusting the Pricelist Window in WebUI, renaming Fields, Adding Translations, Order by Valid from in Subtab.
   * [#1627](https://github.com/metasfresh/metasfresh/issues/1627) Adjustments of Business Partner window in WebUI
@@ -84,13 +85,19 @@ Here come the actual release notes:
   
 * metasfresh-webui-frontend
   * [#762](https://github.com/metasfresh/metasfresh-webui-frontend/issues/762) Empty Filter vs. Default Value in Window Filtering
+    * New Design and Functionality for the Filter Definition of Y/N Fields.
   * [#763](https://github.com/metasfresh/metasfresh-webui-frontend/issues/763) grid: right click on a cell and zoom into
+    * New Zoom-To Functionality in grid rows, allowing the user to right click on a table cell and selecting Zoo-To. A new browser Tab is created with the referenced window and record.
   * [#764](https://github.com/metasfresh/metasfresh-webui-frontend/issues/764) Long text boxes shall have a border around
+    * New Layout element for long text fields. These fields now have a surrounding visible border.
   * [#765](https://github.com/metasfresh/metasfresh-webui-frontend/issues/765) Date + Time Info in Notification window
+    * Adds Date and Time Infomration as Tooltip Overlay in Notification window.
   * [#772](https://github.com/metasfresh/metasfresh-webui-frontend/issues/772) automatic Column sizing not showing all text although space would be available
+    * Optimizing the Size mechanism für Window and Field Layout createn.
   * [#778](https://github.com/metasfresh/metasfresh-webui-frontend/issues/778) Yellow pulse effect w/o data change
+    * Restricting the pulse effect only to changed data.
   * [#787](https://github.com/metasfresh/metasfresh-webui-frontend/issues/787) window endpoint: change "attribute" to "field"
-  
+    * Adjusting API Calls, chinging used endpoints to avoid using deprecated ones.
   
 ## Fixes
 
@@ -102,8 +109,11 @@ Here come the actual release notes:
   * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
     * Fixes an issue in sequence generation, trying to create sequences in wrong, active db schemas.
   * [#1615](https://github.com/metasfresh/metasfresh/issues/1615) Address lines is cut off on shipment jasper document
+    * Resizing and adjustments of Address lines in documents. Thanks to @thelightsense for reporting and testing
   * [#1624](https://github.com/metasfresh/metasfresh/issues/1624) NPE when closing the pp_order
+    * Fixing a Bug that caused a Null Pointer Exception after closinf a manufacturing Order.
   * [#1639](https://github.com/metasfresh/metasfresh/issues/1635) cannot complete distribution order
+    * Fixing a Bug that restricted the closing of Distribution Orders.
  
 * metasfresh-webui-api
   * [#378](https://github.com/metasfresh/metasfresh-webui-api/issues/378) Document changes: provide the validStatus and saveStatus only when changed
