@@ -50,6 +50,7 @@ Here come the actual release notes:
   * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
     * Solves an internal issue updating the jaxb maven plugin to new version 2.3.1
   * [#1602](https://github.com/metasfresh/metasfresh/issues/1602) Show manufactoring order documentno in production order overview
+    * Now the Manufacturing Order No. is shown in Grid overview
   * [#1606](https://github.com/metasfresh/metasfresh/issues/1606) Add IsQualityReturnWarehouse flag to warehouse window WebUI
     * Adding the new Field isQualityReturnWarehouse to Main View of Warehouse Window in WebUI.
   * [#1609](https://github.com/metasfresh/metasfresh/issues/1609) Provide Basic Test config Data for manufacturing / production
@@ -72,9 +73,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#396](https://github.com/metasfresh/metasfresh-webui-api/issues/396) Vendor Return Actions in WebUI
+    * Adding the Vendor Return Actions to WebUI Handling Unit Editor in Material Receipt.
   * [#409](https://github.com/metasfresh/metasfresh-webui-api/issues/409) backend: change view attributes endpoint location
+    * Internal Issue about switching the Attributes endpoint in WebUI.
   * [#411](https://github.com/metasfresh/metasfresh-webui-api/issues/411) Provide "size" to layout element
+    * New feature for Admins, allowing to change the size of widgets in grid view to allow a better distribution of columns on each data table.
   * [#412](https://github.com/metasfresh/metasfresh-webui-api/issues/412) Provide API for sorting included tab
+    * Functionality that allows to define sorting critieria for included tabs.
   
   
 * metasfresh-webui-frontend
