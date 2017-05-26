@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -105,17 +106,19 @@ public final class JSONDocumentLayoutTab implements Serializable
 	private final boolean queryOnActivate;
 
 	private JSONDocumentLayoutTab(
-			final DocumentLayoutDetailDescriptor detail //
+			final DocumentLayoutDetailDescriptor includedTabLayout //
 			, final Collection<DocumentFilterDescriptor> filters //
 			, final JSONOptions jsonOpts //
 	)
 	{
-		super();
+		final ViewLayout gridLayout = includedTabLayout.getGridLayout();
+		supportQuickInput = includedTabLayout.isSupportQuickInput();
+		queryOnActivate = includedTabLayout.isQueryOnActivate();
 
-		windowId = detail.getWindowId();
+		windowId = gridLayout.getWindowId();
 		type = windowId;
 
-		this.tabId = detail.getDetailId();
+		this.tabId = gridLayout.getDetailId();
 		tabid = tabId;
 
 		final String adLanguage = jsonOpts.getAD_Language();
@@ -124,25 +127,22 @@ public final class JSONDocumentLayoutTab implements Serializable
 			caption = new StringBuilder()
 					.append("[")
 					.append(tabid)
-					.append(detail.isQueryOnActivate() ? "Q" : "")
+					.append(queryOnActivate ? "Q" : "")
 					.append("] ")
-					.append(detail.getCaption(adLanguage))
+					.append(gridLayout.getCaption(adLanguage))
 					.toString();
 		}
 		else
 		{
-			caption = detail.getCaption(adLanguage);
+			caption = gridLayout.getCaption(adLanguage);
 		}
-		description = detail.getDescription(adLanguage);
-		emptyResultText = detail.getEmptyResultText(adLanguage);
-		emptyResultHint = detail.getEmptyResultHint(adLanguage);
+		description = gridLayout.getDescription(adLanguage);
+		emptyResultText = gridLayout.getEmptyResultText(adLanguage);
+		emptyResultHint = gridLayout.getEmptyResultHint(adLanguage);
 
-		elements = JSONDocumentLayoutElement.ofList(detail.getElements(), jsonOpts);
+		elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
-
-		supportQuickInput = detail.isSupportQuickInput();
-		queryOnActivate = detail.isQueryOnActivate();
 	}
 
 	@JsonCreator

@@ -27,11 +27,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -140,20 +140,22 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return this;
 		}
 
-		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
+		public Builder addColumn(final List<DocumentLayoutElementDescriptor.Builder> elementsBuilders)
 		{
-			for (final DocumentLayoutColumnDescriptor.Builder columnBuilder : columnsBuilders)
+			if (elementsBuilders == null || elementsBuilders.isEmpty())
 			{
-				final DocumentLayoutElementDescriptor.Builder elementBuilder = columnBuilder.findElementBuilderByFieldName(fieldName);
-				if (elementBuilder == null)
-				{
-					continue;
-				}
-
-				return elementBuilder;
-
+				return this;
 			}
-			return null;
+
+			final DocumentLayoutElementGroupDescriptor.Builder elementsGroupBuilder = DocumentLayoutElementGroupDescriptor.builder();
+			elementsBuilders.stream()
+					.map(elementBuilder -> DocumentLayoutElementLineDescriptor.builder().addElement(elementBuilder))
+					.forEach(elementLineBuilder -> elementsGroupBuilder.addElementLine(elementLineBuilder));
+
+			final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor.builder().addElementGroup(elementsGroupBuilder);
+
+			addColumn(column);
+			return this;
 		}
 
 		public Builder setInvalid(final String invalidReason)
@@ -178,17 +180,20 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		{
 			return invalidReason;
 		}
+		
+		public boolean isNotEmpty()
+		{
+			return streamElementBuilders().findAny().isPresent();
+		}
 
 		private Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
-			return columnsBuilders.stream()
-					.flatMap(columnsBuilder -> columnsBuilder.streamElementBuilders());
+			return columnsBuilders.stream().flatMap(DocumentLayoutColumnDescriptor.Builder::streamElementBuilders);
 		}
 
 		public Builder setExcludeSpecialFields()
 		{
-			streamElementBuilders()
-					.forEach(elementBuilder -> elementBuilder.setExcludeSpecialFields());
+			streamElementBuilders().forEach(elementBuilder -> elementBuilder.setExcludeSpecialFields());
 			return this;
 		}
 	}

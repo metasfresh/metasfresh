@@ -13,8 +13,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentLayoutColumnDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -55,16 +53,6 @@ public final class JSONDocumentLayoutColumn implements Serializable
 		return new JSONDocumentLayoutColumn(column, jsonOpts);
 	}
 	
-	static JSONDocumentLayoutColumn oneColumn(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
-	{
-		return new JSONDocumentLayoutColumn(elements, jsonOpts);
-	}
-
-	static List<JSONDocumentLayoutColumn> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
-	{
-		return ImmutableList.of(oneColumn(detailLayout.getElements(), jsonOpts));
-	}
-
 	static final JSONDocumentLayoutColumn EMPTY = new JSONDocumentLayoutColumn();
 
 	@JsonProperty("elementGroups")
@@ -88,12 +76,6 @@ public final class JSONDocumentLayoutColumn implements Serializable
 	{
 		super();
 		elementGroups = JSONDocumentLayoutElementGroup.ofList(column.getElementGroups(), jsonOpts);
-	}
-	
-	private JSONDocumentLayoutColumn(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
-	{
-		super();
-		elementGroups = JSONDocumentLayoutElementGroup.ofElements(elements, jsonOpts);
 	}
 
 	@Override

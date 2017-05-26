@@ -9,8 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -44,20 +42,6 @@ public final class JSONDocumentLayoutSection
 		return sections.stream()
 				.map(section -> new JSONDocumentLayoutSection(section, jsonOpts))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	/** @return a section with one column contains all the elements */
-	public static JSONDocumentLayoutSection ofElements(List<DocumentLayoutElementDescriptor> elements, JSONOptions jsonOpts)
-	{
-		final JSONDocumentLayoutColumn column = JSONDocumentLayoutColumn.oneColumn(elements, jsonOpts);
-		return new JSONDocumentLayoutSection(ImmutableList.of(column));
-	}
-
-	static List<JSONDocumentLayoutSection> ofDetailTab(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
-	{
-		final List<JSONDocumentLayoutColumn> columns = JSONDocumentLayoutColumn.ofDetailTab(detailLayout, jsonOpts);
-		final JSONDocumentLayoutSection section = new JSONDocumentLayoutSection(columns);
-		return ImmutableList.of(section);
 	}
 
 	@JsonProperty("columns")

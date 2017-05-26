@@ -20,7 +20,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutHeader;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import io.swagger.annotations.ApiModel;
 
 /*
@@ -115,9 +115,6 @@ public final class JSONDocumentLayout implements Serializable
 
 	/**
 	 * Header layout constructor
-	 *
-	 * @param layout
-	 * @param jsonOpts
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDescriptor layout, final JSONOptions jsonOpts)
 	{
@@ -132,16 +129,8 @@ public final class JSONDocumentLayout implements Serializable
 		documentSummaryElement = JSONDocumentLayoutElement.fromNullable(layout.getDocumentSummaryElement(), jsonOpts);
 		docActionElement = JSONDocumentLayoutElement.fromNullable(layout.getDocActionElement(), jsonOpts);
 
-		final DocumentLayoutHeader singleRowLayout = layout.getSingleRowLayout();
-		if (jsonOpts.isShowAdvancedFields())
-		{
-			sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
-			// sections = ImmutableList.of(JSONDocumentLayoutSection.ofElements(singleRowLayout.getElements(), jsonOpts)); // one column layout
-		}
-		else
-		{
-			sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
-		}
+		final DocumentLayoutSingleRow singleRowLayout = layout.getSingleRowLayout();
+		sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
 
 		//
 		// Included tabs
@@ -175,32 +164,54 @@ public final class JSONDocumentLayout implements Serializable
 	 */
 	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAD_Language();
-
-		windowId = detailLayout.getWindowId();
+		this.windowId = detailLayout.getWindowId();
 		type = windowId;
 
 		tabId = detailLayout.getDetailId();
 		tabid = tabId;
 
-		caption = detailLayout.getCaption(jsonOpts.getAD_Language());
+		final DocumentLayoutSingleRow singleRowLayout = detailLayout.getSingleRowLayout();
+		caption = singleRowLayout.getCaption(jsonOpts.getAD_Language());
 
 		documentSummaryElement = null;
 		docActionElement = null;
 
-		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonOpts);
-		tabs = ImmutableList.of(); // no tabs for included tab
+		sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), jsonOpts);
+		tabs = ImmutableList.of(); // Included tabs
 
 		filters = null;
 
-		emptyResultText = detailLayout.getEmptyResultText(adLanguage);
-		emptyResultHint = detailLayout.getEmptyResultHint(adLanguage);
-
-		if (WindowConstants.isProtocolDebugging())
-		{
-			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
-		}
+		emptyResultText = null;
+		emptyResultHint = null;
 	}
+//	private JSONDocumentLayout(final DocumentLayoutDetailDescriptor detailLayout, final JSONOptions jsonOpts)
+//	{
+//		final String adLanguage = jsonOpts.getAD_Language();
+//
+//		windowId = detailLayout.getWindowId();
+//		type = windowId;
+//
+//		tabId = detailLayout.getDetailId();
+//		tabid = tabId;
+//
+//		caption = detailLayout.getCaption(jsonOpts.getAD_Language());
+//
+//		documentSummaryElement = null;
+//		docActionElement = null;
+//
+//		sections = JSONDocumentLayoutSection.ofDetailTab(detailLayout, jsonOpts);
+//		tabs = ImmutableList.of(); // no tabs for included tab
+//
+//		filters = null;
+//
+//		emptyResultText = detailLayout.getEmptyResultText(adLanguage);
+//		emptyResultHint = detailLayout.getEmptyResultHint(adLanguage);
+//
+//		if (WindowConstants.isProtocolDebugging())
+//		{
+//			putDebugProperty(JSONOptions.DEBUG_ATTRNAME, jsonOpts.toString());
+//		}
+//	}
 
 	@JsonCreator
 	private JSONDocumentLayout(

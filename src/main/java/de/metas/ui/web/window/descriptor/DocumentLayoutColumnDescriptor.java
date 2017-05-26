@@ -135,26 +135,9 @@ public class DocumentLayoutColumnDescriptor
 			return this;
 		}
 		
-		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
-		{
-			for (final DocumentLayoutElementGroupDescriptor.Builder elementGroupBuilder : elementGroupsBuilders)
-			{
-				final DocumentLayoutElementDescriptor.Builder elementBuilder = elementGroupBuilder.findElementBuilderByFieldName(fieldName);
-				if (elementBuilder == null)
-				{
-					continue;
-				}
-
-				return elementBuilder;
-
-			}
-			return null;
-		}
-
 		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
-			return elementGroupsBuilders.stream()
-					.flatMap(elementGroupsBuilder -> elementGroupsBuilder.streamElementBuilders());
+			return elementGroupsBuilders.stream().flatMap(DocumentLayoutElementGroupDescriptor.Builder::streamElementBuilders);
 		}
 	}
 }

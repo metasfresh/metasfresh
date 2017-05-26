@@ -156,24 +156,6 @@ public final class DocumentLayoutElementLineDescriptor
 			return !elementsBuilders.isEmpty();
 		}
 		
-		public DocumentLayoutElementDescriptor.Builder getFirstElement()
-		{
-			return elementsBuilders.get(0);
-		}
-
-		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
-		{
-			for (final DocumentLayoutElementDescriptor.Builder elementBuilder : elementsBuilders)
-			{
-				if (elementBuilder.hasFieldName(fieldName))
-				{
-					return elementBuilder;
-				}
-			}
-
-			return null;
-		}
-		
 		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
 			return elementsBuilders.stream();

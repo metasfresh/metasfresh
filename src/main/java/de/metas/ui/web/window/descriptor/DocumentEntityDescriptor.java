@@ -489,6 +489,12 @@ public class DocumentEntityDescriptor
 
 			return id.toString();
 		}
+		
+		public WindowId getWindowId()
+		{
+			Check.assume(_documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, _documentType);
+			return WindowId.of(_documentTypeId);
+		}
 
 		public Builder setDetailId(final DetailId detailId)
 		{
