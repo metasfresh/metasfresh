@@ -539,7 +539,7 @@ public class WindowRestController
 		final WindowId zoomIntoWindowId = zoomIntoInfo.getRight();
 		if (zoomInfoTableRecordRef == null)
 		{
-			throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value")
+			throw new EntityNotFoundException("Cannot zoom into empty fields")
 					.setParameter("documentPath", documentPath)
 					.setParameter("fieldName", fieldName);
 		}
