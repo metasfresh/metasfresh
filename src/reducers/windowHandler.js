@@ -11,7 +11,7 @@ const initialState = {
         rowId: null,
         viewId: null,
         layout: {},
-        data: [],
+        data: {},
         rowData: {},
         modalTitle: '',
         modalType: '',
@@ -115,7 +115,7 @@ export default function windowHandler(state = initialState, action) {
         case types.CLEAR_MASTER_DATA:
             return Object.assign({}, state, {
                 master: Object.assign({}, state.master, {
-                    data: [],
+                    data: {},
                     rowData: {},
                     docId: undefined
                 })
@@ -176,11 +176,14 @@ export default function windowHandler(state = initialState, action) {
         case types.UPDATE_DATA_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
-                    data: {$set: state[action.scope].data.map(item =>
-                        item.field === action.property ?
-                        Object.assign({}, item, action.item) :
-                        item
-                    )}
+                    data: {
+                        [action.property]: {$set: 
+                            Object.assign({},
+                                state[action.scope].data[action.property],
+                                action.item
+                            )
+                        }
+                    }
                 }
             });
 
@@ -200,30 +203,31 @@ export default function windowHandler(state = initialState, action) {
             });
 
             case types.UPDATE_ROW_FIELD_PROPERTY:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            $set: state[action.scope].rowData[action.tabid]
-                            .map(item =>
-                                item.rowId === action.rowid?
-                                    Object.assign({}, item, ()=>{
-                                        item.fields.map(field => {
-                                            field.field === action.property ?
-                                            Object.assign(
-                                                {},
-                                                field,
-                                                action.item
-                                                )
-                                            :field
-                                        })
-                                    })
-                                :item
-                            )
+                return update(state, {
+                    [action.scope]: {
+                        rowData: {
+                            [action.tabid]:
+                                state[action.scope].rowData[action.tabid]
+                                    .map(item =>
+                                        item.rowId === action.rowid ?
+                                            Object.assign({}, item, {
+                                                fieldsByName: {
+                                                    [action.property] : {
+                                                        $set: Object.assign({}, 
+                                                            state[action.scope]
+                                                                .rowData[action.tabid]
+                                                                [action.rowid]
+                                                                .fieldsByName[action.property],
+                                                            action.item
+                                                        )
+                                                    }
+                                                }
+                                            })
+                                        : item
+                                    )
                         }
                     }
-                }
-            });
+                });
 
          case types.UPDATE_ROW_PROPERTY:
             return update(state, {
