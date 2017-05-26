@@ -128,6 +128,11 @@ public class MultiCustomerHUReturnsInOutProducer
 
 				// Find out the the Vendor BPartner
 				final I_M_InOutLine inoutLine = InterfaceWrapperHelper.loadOutOfTrx(originalShipmentInOutLineId, I_M_InOutLine.class);
+				
+				if(inoutLine == null)
+				{
+					continue;
+				}
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 				final int bpartnerId = inout.getC_BPartner_ID();
 
