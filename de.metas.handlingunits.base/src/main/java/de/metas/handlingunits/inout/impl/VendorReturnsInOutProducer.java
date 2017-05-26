@@ -75,7 +75,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	/**
 	 * Builder for lines with products that are not packing materials
 	 */
-	private final QualityReturnsInOutLinesBuilder inoutLinesBuilder = QualityReturnsInOutLinesBuilder.newBuilder(inoutRef);
+	private final VendorReturnsInOutLinesBuilder inoutLinesBuilder = VendorReturnsInOutLinesBuilder.newBuilder(inoutRef);
 
 	/**
 	 * Builder for packing material lines
