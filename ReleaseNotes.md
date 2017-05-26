@@ -23,6 +23,12 @@ Here come the actual release notes:
     * New feature that adds more transparency to the contract management, allowing to easily track contracts that are resigned.
   * [#1507](https://github.com/metasfresh/metasfresh/issues/1507) Add the possibility to close or not invoice candidates when canceling a contract
     * New feature that prohibits invoice candidates to be invoiced after ther referenced contract has been terminated.
+  * [#1560](https://github.com/metasfresh/metasfresh/issues/1560) Add description fields to invoice window
+  * [#1577](https://github.com/metasfresh/metasfresh/issues/1577) Introduce /test/ping/notifications server troubleshooting endpoint
+  * [#1584](https://github.com/metasfresh/metasfresh/issues/1584) New Window for Org in WebUI
+  * [#1585](https://github.com/metasfresh/metasfresh/issues/1585) New Window Client in WebUI
+  * [#1586](https://github.com/metasfresh/metasfresh/issues/1586) New Window for OrgType in WebUI
+  * [#1591](https://github.com/metasfresh/metasfresh/issues/1591) Password Field is missing in user window in WebUI
   * [#1595](https://github.com/metasfresh/metasfresh/issues/1595) Translate Important Doc Types to en_US
     * Translation for a subset of Document Types to Language en_US.
   * [#1598](https://github.com/metasfresh/metasfresh/issues/1598) update jaxb maven plugin to 2.3.1
@@ -36,9 +42,35 @@ Here come the actual release notes:
     * Created a new Window in WebUI that allows different settings for Business Partner Groups.
   * [#1614](https://github.com/metasfresh/metasfresh/issues/1614) New Window Attribute Set Instance in WebUI
     * Adds the new Window for Attribute Set Maintenance to WebUI.
+  * [#1617](https://github.com/metasfresh/metasfresh/issues/1617) Check if imported esr file is v11 file
   * [#1621](https://github.com/metasfresh/metasfresh/issues/1621) Adjustments of Pricelist window in WebUI
     * Adjusting the Pricelist Window in WebUI, renaming Fields, Adding Translations, Order by Valid from in Subtab.
+  * [#1627](https://github.com/metasfresh/metasfresh/issues/1627) Adjustments of Business Partner window in WebUI
+    * Adjustments, Refining of Business Partner Window with Subtabs and new Fields.
+  * [#1628](https://github.com/metasfresh/metasfresh/issues/1628) Sales Order Window Advanced edit rearrangement
+    * Refining the Sales Order window for a better Layout and Look and Feel. Rearranging the Advanced edit to allow better visibility and navigation.
+  * [#1642](https://github.com/metasfresh/metasfresh/issues/1642) Column Resizing in Sales Order Grid View
+    * Finetuning in Sales Order Grid View, making important fields larger so their content is not cut off.
+  * [#1650](https://github.com/metasfresh/metasfresh/issues/1650) Resize Fields in Pricelist Window and Field and Layout adjustments
+    * Adding various windget sizes to fields shown in Grid View (Main and Subtab) to allow a better visibility, readability)
 
+* metasfresh-webui-api
+  * [#396](https://github.com/metasfresh/metasfresh-webui-api/issues/396) Vendor Return Actions in WebUI
+  * [#409](https://github.com/metasfresh/metasfresh-webui-api/issues/409) backend: change view attributes endpoint location
+  * [#411](https://github.com/metasfresh/metasfresh-webui-api/issues/411) Provide "size" to layout element
+  * [#412](https://github.com/metasfresh/metasfresh-webui-api/issues/412) Provide API for sorting included tab
+  
+  
+* metasfresh-webui-frontend
+  * [#762](https://github.com/metasfresh/metasfresh-webui-frontend/issues/762) Empty Filter vs. Default Value in Window Filtering
+  * [#763](https://github.com/metasfresh/metasfresh-webui-frontend/issues/763) grid: right click on a cell and zoom into
+  * [#764](https://github.com/metasfresh/metasfresh-webui-frontend/issues/764) Long text boxes shall have a border around
+  * [#765](https://github.com/metasfresh/metasfresh-webui-frontend/issues/765) Date + Time Info in Notification window
+  * [#772](https://github.com/metasfresh/metasfresh-webui-frontend/issues/772) automatic Column sizing not showing all text although space would be available
+  * [#778](https://github.com/metasfresh/metasfresh-webui-frontend/issues/778) Yellow pulse effect w/o data change
+  * [#787](https://github.com/metasfresh/metasfresh-webui-frontend/issues/787) window endpoint: change "attribute" to "field"
+  
+  
 ## Fixes
 
 * metasfresh-backend
@@ -48,7 +80,23 @@ Here come the actual release notes:
     * Internal task that solves an issue with failing spring boot services.
   * [#1607](https://github.com/metasfresh/metasfresh/issues/1607) DB Function dba_seq_check_native needs to explicitly work in public schema
     * Fixes an issue in sequence generation, trying to create sequences in wrong, active db schemas.
+  * [#1615](https://github.com/metasfresh/metasfresh/issues/1615) Address lines is cut off on shipment jasper document
   * [#1624](https://github.com/metasfresh/metasfresh/issues/1624) NPE when closing the pp_order
+  * [#1639](https://github.com/metasfresh/metasfresh/issues/1635) cannot complete distribution order
+ 
+* metasfresh-webui-api
+  * [#378](https://github.com/metasfresh/metasfresh-webui-api/issues/378) Document changes: provide the validStatus and saveStatus only when changed
+  * [#405](https://github.com/metasfresh/metasfresh-webui-api/issues/405) Backend shall provide JSON document fields indexed by field's name
+  * [#407](https://github.com/metasfresh/metasfresh-webui-api/issues/407) View filtering by virtual SQL column not working
+
+* metasfresh-webui-frontend
+  * [#753](https://github.com/metasfresh/metasfresh-webui-frontend/issues/753) Location dropdown missing in Order windows
+    * Fixes the missing Dropdown List for Locations in combined Businesspartner Lookups.  
+  * [#760](https://github.com/metasfresh/metasfresh-webui-frontend/issues/760) Fix the texts displayed while loading
+  * [#766](https://github.com/metasfresh/metasfresh-webui-frontend/issues/766) issue panel doesn't open
+  * [#767](https://github.com/metasfresh/metasfresh-webui-frontend/issues/767) Got same notification several times
+  * [#769](https://github.com/metasfresh/metasfresh-webui-frontend/issues/769) Honor tab stale flag also when editing in advanced mode
+  * [#774](https://github.com/metasfresh/metasfresh-webui-frontend/issues/774) Fix invalid "GET /window/{windowId}/{tabId} call
   
 # metasfresh 5.10 (2017-20)
 
