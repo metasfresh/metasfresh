@@ -1287,6 +1287,12 @@ public final class DocumentFieldDescriptor implements Serializable
 				return false;
 			}
 
+			final Class<?> valueClass = getValueClass();
+			if (StringLookupValue.class.isAssignableFrom(valueClass))
+			{
+				return false;
+			}
+
 			final String lookupTableName = getLookupTableName().orElse(null);
 			if (WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName))
 			{
