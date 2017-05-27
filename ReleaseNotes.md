@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
+    * Adding the Tax Rate Window to WebUI.
   * [#1647](https://github.com/metasfresh/metasfresh/issues/1647) Rename Empties Return in language de_DE
     * Translation of Emptires Return Window in WebUI. Renamed window, tab and menu entry.
   * [#1654](https://github.com/metasfresh/metasfresh/issues/1654) Customer Returns Window in WebUI
