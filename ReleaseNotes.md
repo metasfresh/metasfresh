@@ -19,10 +19,10 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1657](https://github.com/metasfresh/metasfresh/issues/1657) Initially set Date+Time Filters in WebUI
     * Removing 2 Date Fields from Filter criteria in WebUI that did not have a perfect behavior when using combined filters.
+  * [#1665](https://github.com/metasfresh/metasfresh/issues/1665) Subtab Advanced Edit Configurations
+    * Migrating all Subtab UI Elements to show them in Advanced Edit, also swicthing the UI Element Group UI Styles to be not primary.
 
 # metasfresh 5.11 (2017-21)
-
-**upcoming release for week 2017-21**
 
 ## Features
 
