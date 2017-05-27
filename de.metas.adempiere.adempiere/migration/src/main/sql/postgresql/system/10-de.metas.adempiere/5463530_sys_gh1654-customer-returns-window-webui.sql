@@ -120,7 +120,7 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000019, SeqNo=6, Updated=now(), UpdatedBy=10
 
 -- 2017-05-27T07:55:10.443
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,53271,540220,TO_TIMESTAMP('2017-05-27 07:55:10','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-05-27 07:55:10','YYYY-MM-DD HH24:MI:SS'),100,'advanced edit')
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value,Name) VALUES (0,0,53271,540220,TO_TIMESTAMP('2017-05-27 07:55:10','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-05-27 07:55:10','YYYY-MM-DD HH24:MI:SS'),100,'advanced edit','')
 ;
 
 -- 2017-05-27T07:55:10.458
