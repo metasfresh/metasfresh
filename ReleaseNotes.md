@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 
 * metasfresh-backend
+  * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
+    * New Window that allows to maintain Packing Material in WebUI.
   * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
     * Adding the Tax Rate Window to WebUI.
   * [#1647](https://github.com/metasfresh/metasfresh/issues/1647) Rename Empties Return in language de_DE
