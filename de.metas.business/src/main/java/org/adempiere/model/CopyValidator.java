@@ -33,7 +33,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_EXP_Format;
-import org.compiere.model.I_M_Product_PO;
 
 /**
  * @author Cristina Ghita, METAS.RO
@@ -44,7 +43,6 @@ public class CopyValidator extends AbstractModelInterceptor
 	@Override
 	protected void onInit(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Product_PO.Table_Name, MProductPOCopyRecordSupport.class);
 		CopyRecordFactory.registerCopyRecordSupport(I_C_Order.Table_Name, MOrderPOCopyRecordSupport.class);
 		CopyRecordFactory.registerCopyRecordSupport(I_C_OrderLine.Table_Name, MOrderLinePOCopyRecordSupport.class);
 		CopyRecordFactory.registerCopyRecordSupport(I_C_Invoice.Table_Name, MInvoicePOCopyRecordSupport.class);

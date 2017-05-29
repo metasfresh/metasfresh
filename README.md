@@ -19,6 +19,15 @@ We create weekly Releases of metasfresh ERP whch can be downloaded from our offi
 Do you want to help improving documentation, contribute some code or participate in functional requirements. That's great, you're welcome! Please read our contibutor guidelines first. You can find them here: [CONTRIBUTING.md](https://github.com/metasfresh/metasfresh/blob/master/CONTRIBUTING.md)
 If you would like to get in touch with other contributors then just join our chat on Gitter: [metasfresh Gitter](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+### Frequently used github URLs
+
+* [release notes (in `master` branch)](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md)
+* [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
+* Issuses
+  * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aissue+user%3Ametasfresh+-label%3Arelease%3Acandidate+label%3Astatus%3Aintegrated+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `release` brach but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3Ametasfresh+label%3Arelease%3Acandidate+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aissue+user%3Ametasfresh+-label%3Arelease%3Acandidate+label%3Astatus%3Aintegrated+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).
 

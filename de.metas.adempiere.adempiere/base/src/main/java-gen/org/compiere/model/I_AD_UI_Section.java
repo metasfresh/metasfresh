@@ -304,4 +304,29 @@ public interface I_AD_UI_Section
     public static final org.adempiere.model.ModelColumn<I_AD_UI_Section, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_UI_Section, org.compiere.model.I_AD_User>(I_AD_UI_Section.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Suchschlüssel.
+	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setValue (java.lang.String Value);
+
+	/**
+	 * Get Suchschlüssel.
+	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getValue();
+
+    /** Column definition for Value */
+    public static final org.adempiere.model.ModelColumn<I_AD_UI_Section, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_UI_Section, Object>(I_AD_UI_Section.class, "Value", null);
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
 }

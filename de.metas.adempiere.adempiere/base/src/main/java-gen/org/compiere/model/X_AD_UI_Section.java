@@ -14,7 +14,7 @@ public class X_AD_UI_Section extends org.compiere.model.PO implements I_AD_UI_Se
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1325117485L;
+	private static final long serialVersionUID = -440465032L;
 
     /** Standard Constructor */
     public X_AD_UI_Section (Properties ctx, int AD_UI_Section_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_AD_UI_Section extends org.compiere.model.PO implements I_AD_UI_Se
 			setName (null);
 			setSeqNo (0);
 // @SQL=SELECT COALESCE(MAX(SeqNo), 0) + 10 FROM AD_UI_Section WHERE AD_Tab_ID=@AD_Tab_ID@
+			setValue (null);
         } */
     }
 
@@ -178,5 +179,24 @@ public class X_AD_UI_Section extends org.compiere.model.PO implements I_AD_UI_Se
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Suchschlüssel.
+		@param Value 
+		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	  */
+	@Override
+	public void setValue (java.lang.String Value)
+	{
+		set_Value (COLUMNNAME_Value, Value);
+	}
+
+	/** Get Suchschlüssel.
+		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	  */
+	@Override
+	public java.lang.String getValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Value);
 	}
 }
