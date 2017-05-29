@@ -1,6 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import {
+    referencesRequest
+} from '../../actions/GenericActions';
+
+import {
+    setFilter
+} from '../../actions/ListActions';
+import {push} from 'react-router-redux';
 
 import keymap from '../../keymap.js';
 
@@ -11,13 +19,15 @@ class TableContextMenu extends Component {
             contextMenu:{
                 x:0,
                 y:0
-            }
+            },
+            references: []
         }
     }
 
     componentDidMount() {
-        const {x, y, fieldName} = this.props;
+        const {x, y, fieldName, docId} = this.props;
         this.setPosition(x, y, fieldName, this.contextMenu);
+        docId && this.getReferences();
     }
 
     getPosition = (dir, pos, element) => {
@@ -45,14 +55,39 @@ class TableContextMenu extends Component {
         });
     }
 
+    getReferences = () => {
+        const {docId, tabId, type, selected} = this.props;
+
+        referencesRequest('window', type, docId, tabId, selected[0])
+        .then(response => {
+            this.setState({
+                references: response.data.references
+
+            });
+        });
+    }
+
+    handleReferenceClick = (refType, filter) => {
+        const {
+            dispatch, type, docId
+        } = this.props;
+        dispatch(setFilter(filter, refType));
+        dispatch(push(
+            '/window/' + refType +
+            '?refType=' + type +
+            '&refId=' + docId
+        ));
+    }
+
     render() {
         const {
             blur, selected, mainTable, handleAdvancedEdit, handleOpenNewTab,
             handleDelete, handleZoomInto
         } = this.props;
-        const {contextMenu} = this.state;
+        const {contextMenu, references} = this.state;
 
         const isSelectedOne = selected.length === 1;
+
         return (
                 <div
                     className="context-menu context-menu-open panel-bordered panel-primary"
@@ -105,6 +140,25 @@ class TableContextMenu extends Component {
                             {keymap.DOCUMENT_LIST_CONTEXT.REMOVE_SELECTED}
                         </span>
                     </div>
+                }
+
+                {references &&
+                    <hr className="context-menu-separator" />
+                }
+
+                {references && references.map((item, index)=>
+                        <div
+                            className="context-menu-item"
+                            key={index}
+                            onClick={() => {
+                                this.handleReferenceClick(item.documentType,
+                                    item.filter
+                                )
+                            }}
+                        >
+                            <i className="meta-icon-share" /> {item.caption}
+                        </div>
+                    )
                 }
             </div>
         )
