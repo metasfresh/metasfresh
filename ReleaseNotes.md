@@ -33,6 +33,8 @@ Here come the actual release notes:
     * New Window for the Tax Category Maintenance.
   * [#1676](https://github.com/metasfresh/metasfresh/issues/1676) Payment Terms window in WebUI
     * Adding the window Layout For Payment Term window in WebUI.
+  * [#1679](https://github.com/metasfresh/metasfresh/issues/1679) New Window for Country in WebUI
+    * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
 
 # metasfresh 5.11 (2017-21)
 
