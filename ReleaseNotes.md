@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Adding the window Layout For Payment Term window in WebUI.
   * [#1679](https://github.com/metasfresh/metasfresh/issues/1679) New Window for Country in WebUI
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
+  * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
+    * Creation of the Window Layoutfor the Request Type Window in WebUI.
 
 # metasfresh 5.11 (2017-21)
 
