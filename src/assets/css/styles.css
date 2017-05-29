@@ -775,11 +775,11 @@ th {
 
 .pulse-on {
     background: $brand-pulse-effect !important;
-    transition: all .33s;
+    transition: background-color .33s;
 }
 
 .pulse-off {
-    transition: all 1.33s;
+    transition: background-color 1.33s;
 }
 
 td.pulse-on input {
