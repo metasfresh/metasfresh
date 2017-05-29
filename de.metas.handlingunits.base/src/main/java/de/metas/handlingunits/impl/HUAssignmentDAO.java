@@ -366,6 +366,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, contextProvider);
 
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId);
 		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID());
 		return queryBuilder;
 	}
