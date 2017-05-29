@@ -308,7 +308,7 @@ node('agent && linux && libc6-i386')
 
 				// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
 				// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15.dist/pom.xml --batch-mode properties:write-project-properties"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15.dist/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
 
 				// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
 				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15.dist/app.properties'
