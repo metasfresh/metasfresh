@@ -253,7 +253,7 @@ public class InOutMovementBL implements IInOutMovementBL
 		for (final I_M_Movement movement : movements)
 		{
 			// Skip those movements which were already reversed
-			if (docActionBL.isStatusReversedOrVoided(movement))
+			if (docActionBL.isDocumentReversedOrVoided(movement))
 			{
 				// already reversed, nothing to do
 				continue;

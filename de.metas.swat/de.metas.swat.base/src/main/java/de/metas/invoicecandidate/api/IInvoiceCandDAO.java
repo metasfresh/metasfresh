@@ -271,14 +271,20 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	<T extends org.compiere.model.I_C_Invoice> Map<Integer, T> retrieveInvoices(Properties ctx, String tableName, int recordId, Class<T> clazz, boolean onlyUnpaid, String trxName);
 
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidate(I_C_Invoice_Candidate invoiceCandidate);
-
 	/**
+	 * Returns the list of {@link I_C_InvoiceCandidate_InOutLine}s that
+	 * <ul>
+	 * <li>belong to the given {@code invoiceCandidate}</li>
+	 * <li>are active</li>
+	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
+	 * </ul>
 	 *
 	 * @param invoiceCandidate
-	 * @return also returns inactive records (intended use is for deletion)
+	 * @return
+	 *
+	 * @task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInvoiceCandidateInclInactive(I_C_Invoice_Candidate invoiceCandidate);
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(I_C_Invoice_Candidate invoiceCandidate);
 
 	/**
 	 *

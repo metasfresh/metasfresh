@@ -171,18 +171,6 @@ public class PPOrderUtil
 		return isComponentTypeOneOf(currentType, componentTypes);
 	}
 
-	public boolean isComponentTypeOneOf(@NonNull final String currentType, @NonNull final String... componentTypes)
-	{
-		for (final String type : componentTypes)
-		{
-			if (currentType.equals(type))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public boolean isCoProduct(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
@@ -195,9 +183,56 @@ public class PPOrderUtil
 		return isByProduct(componentType);
 	}
 
-	public boolean isByProduct(@NonNull final String componentType)
+	/**
+	 *
+	 * @param currentType may be {@code null}. In that case, the method returns {@code false}.
+	 * @param componentTypes
+	 * @return
+	 */
+	public boolean isComponentTypeOneOf(final String currentType, @NonNull final String... componentTypes)
+	{
+		if (currentType == null)
+		{
+			return false;
+		}
+
+		for (final String type : componentTypes)
+		{
+			if (currentType.equals(type))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
+	 * @return
+	 */
+	public boolean isByProduct(final String componentType)
 	{
 		return X_PP_Order_BOMLine.COMPONENTTYPE_By_Product.equals(componentType);
+	}
+
+	/**
+	 *
+	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
+	 * @return true if given {@code componentType} is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
+	 */
+	public boolean isReceipt(final String componentType)
+	{
+		return isComponentTypeOneOf(componentType, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
+	}
+
+	/**
+	 *
+	 * @param componentType may be {@code null}. In that case, the method returns {@code false}.
+	 * @return
+	 */
+	public boolean isIssue(final String componentType)
+	{
+		return !isReceipt(componentType);
 	}
 
 	public boolean isCoOrByProduct(@NonNull final I_PP_Order_BOMLine bomLine)
@@ -215,21 +250,6 @@ public class PPOrderUtil
 		return isComponentTypeOneOf(bomLine, X_PP_Order_BOMLine.COMPONENTTYPE_Variant);
 	}
 
-	/**
-	 *
-	 * @param bomLine
-	 * @return true if given Order BOM Line is for receiving materials from manufacturing order (i.e. ComponentType is Co/By-Product) and not for issuing
-	 */
-	public boolean isReceipt(@NonNull final String bomLineComponentType)
-	{
-		return isComponentTypeOneOf(bomLineComponentType, X_PP_Order_BOMLine.COMPONENTTYPE_By_Product, X_PP_Order_BOMLine.COMPONENTTYPE_Co_Product);
-	}
-
-	public boolean isIssue(@NonNull final String bomLineComponentType)
-	{
-		return !isReceipt(bomLineComponentType);
-	}
-	
 	public boolean isReceipt(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		return isReceipt(bomLine.getComponentType());

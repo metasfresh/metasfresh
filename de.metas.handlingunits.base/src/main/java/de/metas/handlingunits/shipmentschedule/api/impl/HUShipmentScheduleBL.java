@@ -557,7 +557,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				// Only sum up the qtys from inout lines that belong to completed inouts
 				final org.compiere.model.I_M_InOut io = iol.getM_InOut();
 
-				if (Services.get(IDocActionBL.class).isStatusCompleted(io))
+				if (Services.get(IDocActionBL.class).isDocumentCompleted(io))
 				{
 					seenIOIds.add(io.getM_InOut_ID());
 					iolTuQtySum = iolTuQtySum.add(iol.getQtyEnteredTU());

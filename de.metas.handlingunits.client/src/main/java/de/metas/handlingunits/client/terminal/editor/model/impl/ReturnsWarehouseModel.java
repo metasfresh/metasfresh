@@ -9,6 +9,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Movement;
 import org.compiere.util.TrxRunnable2;
 
 import de.metas.adempiere.form.terminal.ITerminalKey;
@@ -22,7 +23,6 @@ import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.interfaces.I_M_Movement;
 import de.metas.movement.event.MovementProcessedEventBus;
 
 /*
@@ -52,8 +52,6 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 
 	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
 	
-	private I_M_Warehouse warehouseFrom;
-
 	private List<I_M_HU> hus;
 	private List<I_M_Movement> movements;
 
@@ -72,7 +70,6 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 	{
 		super(terminalContext);
 
-		this.warehouseFrom = warehouseFrom;
 		this.hus = hus;
 		//
 		// Configure Warehouse Key Layout
@@ -147,16 +144,15 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 	}
 
 	/**
-	 * task #1065
 	 * Move the selected HUs to the quality returns warehouse
+	 * task #1065
 	 */
 	private List<I_M_Movement> doMoveToQualityWarehouse()
 	{
-		// Move from the selected warehouse
-		final I_M_Warehouse warehouseFrom = getM_WarehouseFrom(); // shall not be null
-		final I_M_Warehouse warehouseTo = getM_WarehouseTo();
+		final I_M_Warehouse qualityReturnsWarehouse = getM_WarehouseTo();
 		final List<I_M_HU> hus = getHUs();
-		movements = huMovementBL.moveToQualityWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
+		movements = huMovementBL.moveHUsToWarehouse(hus, qualityReturnsWarehouse)
+				.getMovements();
 
 		return movements;
 
@@ -222,11 +218,6 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		final I_M_Warehouse warehouseTo = InterfaceWrapperHelper.create(getCtx(), warehouseID, I_M_Warehouse.class, ITrx.TRXNAME_None);
 
 		return warehouseTo;
-	}
-
-	public I_M_Warehouse getM_WarehouseFrom()
-	{
-		return warehouseFrom;
 	}
 
 	public List<I_M_HU> getHUs()

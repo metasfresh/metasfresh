@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
@@ -58,7 +59,7 @@
 							<goal>xjc</goal>
 						</goals>
 						<configuration>
-							<schemaFiles>pain.008.001.02.xsd</schemaFiles>
+							<sources>src/main/xsd/pain.008.001.02.xsd</sources>
 							<packageName>de.metas.payment.sepa.sdd.jaxb.v1</packageName>
 							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.sdd.jaxb.v1</staleFile>
 						</configuration>
@@ -72,9 +73,8 @@
 							<!-- NOTE: don't clear the directory because else we will lose previous 
 								generated files -->
 							<clearOutputDir>false</clearOutputDir>
-							<schemaFiles>pain.008.003.02.xsd</schemaFiles>
+							<sources>src/main/xsd/pain.008.003.02.xsd</sources>
 							<packageName>de.metas.payment.sepa.sdd.jaxb.v3</packageName>
-							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.sdd.jaxb.v3</staleFile>
 						</configuration>
 					</execution>
 
@@ -87,9 +87,10 @@
 							<!-- NOTE: don't clear the directory because else we will lose previous 
 								generated files -->
 							<clearOutputDir>false</clearOutputDir>
-							<schemaFiles>pain.001.003.03.xsd</schemaFiles>
+							<sources>
+								<source>src/main/xsd/pain.001.003.03.xsd</source>
+							</sources>
 							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_003_03</packageName>
-							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.jaxb.sct.pain_001_003_03</staleFile>
 						</configuration>
 					</execution>
 
@@ -100,9 +101,8 @@
 						</goals>
 						<configuration>
 							<clearOutputDir>false</clearOutputDir>
-							<schemaFiles>pain.001.001.03.ch.02.xsd</schemaFiles>
+							<sources>src/main/xsd/pain.001.001.03.ch.02.xsd</sources>
 							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</packageName>
-							<staleFile>${project.build.directory}/jaxb2/.xjcStaleFlag-de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</staleFile>
 						</configuration>
 					</execution>
 				</executions>

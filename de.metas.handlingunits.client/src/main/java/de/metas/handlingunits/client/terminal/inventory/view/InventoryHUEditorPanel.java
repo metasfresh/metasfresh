@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.IContainer;
@@ -47,7 +48,6 @@ import de.metas.handlingunits.client.terminal.editor.view.HUEditorPanel;
 import de.metas.handlingunits.client.terminal.inventory.model.InventoryHUEditorModel;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.interfaces.I_M_Movement;
 
 public final class InventoryHUEditorPanel extends HUEditorPanel
 {
@@ -141,7 +141,8 @@ public final class InventoryHUEditorPanel extends HUEditorPanel
 		Check.assumeNotNull(warehouseTo, "warehouseTo not null"); // shall not happen, because if it's null the action button shall be hidden
 
 		final List<I_M_HU> hus = getSelectedHUs(warehouseFrom);
-		final List<I_M_Movement> movements = huMovementBL.doDirectMoveToWarehouse(getTerminalContext(), warehouseFrom, warehouseTo, hus);
+		final List<I_M_Movement> movements = huMovementBL.moveHUsToWarehouse(hus, warehouseTo)
+				.getMovements();
 		if (movements.isEmpty())
 		{
 			return;

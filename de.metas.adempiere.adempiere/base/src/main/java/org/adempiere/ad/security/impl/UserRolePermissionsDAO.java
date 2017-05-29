@@ -174,8 +174,8 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			version.incrementAndGet();
 			
 			final CacheMgt cacheManager = CacheMgt.get();
-			cacheManager.reset(I_AD_Role.Table_Name); // cache reset role itself
-			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::reset);
+			cacheManager.resetLocal(I_AD_Role.Table_Name); // cache reset role itself
+			ROLE_DEPENDENT_TABLENAMES.forEach(cacheManager::resetLocal);
 			logger.info("Finished permissions cache reset");
 		}
 		finally
@@ -1272,10 +1272,10 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	public Set<Integer> retrievePrivateAccessRecordIds(final int adUserId, final int adTableId)
 	{
 		final String sql = "SELECT Record_ID "
-				+ "FROM " + I_AD_Private_Access.Table_Name
-				+ "WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive='Y' "
-				+ "ORDER BY Record_ID";
-		final Object[] sqlParams = new Object[] { adUserId, adTableId };
+				+ " FROM " + I_AD_Private_Access.Table_Name
+				+ " WHERE AD_User_ID=? AND AD_Table_ID=? AND IsActive=? "
+				+ " ORDER BY Record_ID";
+		final Object[] sqlParams = new Object[] { adUserId, adTableId, true };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

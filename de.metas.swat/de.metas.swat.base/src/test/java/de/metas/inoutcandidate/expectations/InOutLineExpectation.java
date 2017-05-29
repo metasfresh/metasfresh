@@ -10,18 +10,17 @@ package de.metas.inoutcandidate.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,7 +37,9 @@ import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
+import org.compiere.process.DocAction;
 
 import de.metas.inout.model.I_M_InOutLine;
 
@@ -144,7 +145,14 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 
 	public <InOutLineType extends I_M_InOutLine> InOutLineType createInOutLine(final Class<InOutLineType> inoutLineClass)
 	{
+		// gh 1566: create a completed and active inout, otherwise the line won't be counted properly
+		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class, getContext());
+		inout.setIsActive(true);
+		inout.setDocStatus(DocAction.STATUS_Completed);
+		InterfaceWrapperHelper.save(inout);
+
 		final InOutLineType inoutLine = InterfaceWrapperHelper.newInstance(inoutLineClass, getContext());
+		inoutLine.setM_InOut(inout);
 		populateModel(inoutLine);
 		InterfaceWrapperHelper.save(inoutLine);
 		return inoutLine;
@@ -152,7 +160,7 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 
 	/**
 	 * Populate model which values from this expectation
-	 * 
+	 *
 	 * @param inoutLine
 	 */
 	@OverridingMethodsMustInvokeSuper
@@ -261,6 +269,7 @@ public class InOutLineExpectation<ParentExpectationType> extends AbstractExpecta
 		this.inDispute = inDispute;
 		return this;
 	}
+
 	public InOutLineExpectation<ParentExpectationType> packagingmaterialLine(boolean packagingmaterial)
 	{
 		this.packagingmaterial = packagingmaterial;
