@@ -261,9 +261,22 @@ button {
     border-radius: 2px;
 }
 
+.input-state-false {
+    border-color: $brand-success-dark-color;
+    border-width: 2px;
+}
+
 .input-checkbox input:checked ~ .input-checkbox-tick {
     background: $brand-success-dark-color;
     border-color: $brand-success-dark-color;
+}
+
+.input-side {
+    position: relative;
+    top: -5px;
+    margin-left: 5px;
+    color: $brand-light-color;
+    cursor: pointer;
 }
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
@@ -545,6 +558,14 @@ input:checked + .input-slider:before {
     top: 2px;
     right: 5px;
     font-size:18px;
+}
+
+.input-icon-checkbox {
+    top: -1px;
+    position: relative;
+    margin-left:.2rem;
+    color: $brand-font-color-weak;
+    cursor: pointer;
 }
 
 .input-icon-sm {

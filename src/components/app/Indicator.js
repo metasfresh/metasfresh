@@ -20,7 +20,6 @@ class Indicator extends Component {
 
     render() {
         const {indicator, isDocumentNotSaved} = this.props;
-
         return (
             <div>
                 <div className={

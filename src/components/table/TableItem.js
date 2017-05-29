@@ -102,7 +102,8 @@ class TableItem extends Component {
     renderCells = (cols, cells) => {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
-            changeListenOnTrue, tabIndex, entity
+            changeListenOnTrue, tabIndex, entity, getSizeClass,
+            handleRightClick
         } = this.props;
 
         const {
@@ -115,18 +116,13 @@ class TableItem extends Component {
             const widgetData = item.fields.map(property =>
                 findRowByPropName(cells, property.field)
             );
+            const {supportZoomInto} = item.fields[0];
 
             return (
                 <TableCell
-                    entity={entity}
-                    type={type}
-                    docId={docId}
-                    rowId={rowId}
-                    tabId={tabId}
-                    item={item}
-                    readonly={readonly}
+                    {...{getSizeClass, entity, type, docId, rowId, tabId, item,
+                        readonly, widgetData, tabIndex, listenOnKeys }}
                     key={index}
-                    widgetData={widgetData}
                     isEdited={edited === property}
                     onDoubleClick={(e) =>
                         this.handleEditProperty(e, property, true)
@@ -140,10 +136,10 @@ class TableItem extends Component {
                     }
                     updatedRow={updatedRow || newRow}
                     updateRow={this.updateRow}
-                    tabIndex={tabIndex}
-                    listenOnKeys={listenOnKeys}
                     listenOnKeysFalse={this.listenOnKeysFalse}
                     closeTableField={(e) => this.closeTableField(e)}
+                    handleRightClick={(e) =>
+                        handleRightClick(e, supportZoomInto ? property : null)}
                 />
             )
         })
@@ -252,7 +248,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
-            handleRightClick, indentSupported, contextType, item, lastSibling,
+            indentSupported, contextType, item, lastSibling,
             includedDocuments, notSaved
         } = this.props;
 
@@ -260,7 +256,6 @@ class TableItem extends Component {
             <tr
                 onClick={onMouseDown}
                 onDoubleClick={onDoubleClick}
-                onContextMenu={handleRightClick}
                 className={
                     (isSelected ? 'row-selected ' : '') +
                     (odd ? 'tr-odd ': 'tr-even ') +

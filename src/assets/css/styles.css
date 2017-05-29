@@ -119,6 +119,10 @@ body {
     z-index: 3;
 }
 
+.context-menu-separator {
+    margin:0;
+}
+
 .context-menu-open {
     display: block;
 }

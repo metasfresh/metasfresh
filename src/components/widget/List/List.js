@@ -20,7 +20,7 @@ class List extends Component {
     handleFocus = () => {
         const {
             properties, dispatch, dataId, rowId, tabId, windowType,
-            filterWidget, entity, subentity, subentityId, viewId
+            filterWidget, entity, subentity, subentityId, viewId, attribute
         } = this.props;
 
         this.setState({
@@ -30,7 +30,8 @@ class List extends Component {
         dispatch(dropdownRequest(
             windowType,
             filterWidget ? properties[0].parameterName: properties[0].field,
-            dataId, tabId, rowId, entity, subentity, subentityId, viewId
+            dataId, tabId, rowId, entity, subentity, subentityId, viewId,
+            attribute
         )).then((res) => {
             this.setState({
                 list: res.data.values,

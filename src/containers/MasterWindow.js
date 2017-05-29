@@ -6,7 +6,9 @@ import {push} from 'react-router-redux';
 import {
     findRowByPropName,
     attachFileAction,
-    clearMasterData
+    clearMasterData,
+    getTab,
+    addRowData
 } from '../actions/WindowActions';
 
 import {
@@ -42,7 +44,7 @@ class MasterWindow extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {master} = this.props;
+        const {master, modal, params, dispatch} = this.props;
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
 
@@ -51,6 +53,16 @@ class MasterWindow extends Component {
         }
         if (!prevProps.master.saveStatus.saved && isDocumentSaved) {
             window.removeEventListener('beforeunload', this.confirm)
+        }
+
+        // When closing modal, we need to update the stale tabs
+        if(!modal.visible && modal.visible !== prevProps.modal.visible){
+            Object.keys(master.includedTabsInfo).map(tabId => {
+                dispatch(getTab(tabId, params.windowType, master.docId))
+                    .then(tab => {
+                        dispatch(addRowData({[tabId]: tab}, 'master'));
+                    });
+            })
         }
     }
 
@@ -198,28 +210,33 @@ class MasterWindow extends Component {
                     key="rawModal"
                     modalTitle={modalTitle}
                 >
-                    <DocumentList
-                        type="grid"
-                        windowType={rawModal.type}
-                        defaultViewId={rawModal.viewId}
-                        selected={selected}
-                        selectedWindowType={selectedWindowType}
-                        isModal={true}
-                        setModalTitle={this.setModalTitle}
-                        processStatus={processStatus}
-                        includedView={includedView}
-                        inBackground={
-                            includedView.windowType && includedView.viewId
-                        }
-                    >
+                    <div className="document-lists-wrapper">
                         <DocumentList
-                            type="includedView"
+                            type="grid"
+                            windowType={rawModal.type}
+                            defaultViewId={rawModal.viewId}
                             selected={selected}
-                            windowType={includedView.windowType}
-                            defaultViewId={includedView.viewId}
-                            isIncluded={true}
-                        />
-                    </DocumentList>
+                            selectedWindowType={selectedWindowType}
+                            isModal={true}
+                            setModalTitle={this.setModalTitle}
+                            processStatus={processStatus}
+                            includedView={includedView}
+                            inBackground={
+                                includedView.windowType && includedView.viewId
+                            }
+                        >
+                        </DocumentList>
+                        {includedView.windowType && includedView.viewId &&
+                            <DocumentList
+                                type="includedView"
+                                selected={selected}
+                                selectedWindowType={selectedWindowType}
+                                windowType={includedView.windowType}
+                                defaultViewId={includedView.viewId}
+                                isIncluded={true}
+                            />
+                        }
+                    </div>
                 </RawModal>
             )
         }
@@ -273,22 +290,22 @@ class MasterWindow extends Component {
             documentSummaryElement && documentSummaryElement.fields[0].field
         );
 
+        const isDocumentNotSaved = dataId !== 'notfound' &&
+        (master.saveStatus.saved !== undefined && !master.saveStatus.saved) &&
+        (master.validStatus.initialValue !== undefined) &&
+        !master.validStatus.initialValue
+
         return (
             <Container
                 entity="window"
                 {...{dropzoneFocused, docStatusData, docSummaryData,
-                    dataId, breadcrumb, docNoData}}
+                    dataId, breadcrumb, docNoData, isDocumentNotSaved}}
                 docActionElem = {docActionElement}
                 windowType={params.windowType}
                 docId={params.docId}
                 showSidelist={true}
                 showIndicator={!modal.visible}
                 handleDeletedStatus={this.handleDeletedStatus}
-                isDocumentNotSaved={
-                    dataId !== 'notfound' &&
-                    !master.saveStatus.saved &&
-                    !master.validStatus.initialValue
-                }
             >
                 {dataId === 'notfound' ?
                     <BlankPage what="Document" /> : this.renderBody()
