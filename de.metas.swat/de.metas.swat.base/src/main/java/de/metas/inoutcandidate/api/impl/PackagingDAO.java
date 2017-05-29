@@ -167,12 +167,14 @@ public class PackagingDAO implements IPackagingDAO
 					+ " , COALESCE(s." + COLUMNNAME_PriorityRule_Override + ", s." + COLUMNNAME_PriorityRule + " )"
 					+ " , ol." + I_C_OrderLine.COLUMNNAME_DateOrdered;
 
+	@Override
 	public I_M_PackagingContainer retrieveContainer(int containerId, String trxName)
 	{
 
 		return new X_M_PackagingContainer(Env.getCtx(), containerId, trxName);
 	}
 
+	@Override
 	public I_M_PackagingContainer retrieveContainer(final BigDecimal volume, final int warehouseId, final String trxName)
 	{
 		final Properties ctx = Env.getCtx();
@@ -220,6 +222,7 @@ public class PackagingDAO implements IPackagingDAO
 		return false;
 	}
 
+	@Override
 	public List<I_M_PackagingContainer> retrieveContainers(final int warehouseId, final String trxName)
 	{
 
@@ -305,112 +308,6 @@ public class PackagingDAO implements IPackagingDAO
 		return IteratorUtils.asIterator(blindIterator);
 	}
 
-//	@Cached
-//	private Lookup getDeliveryViaLookup(@CacheCtx final Properties ctx)
-//	{
-//		// get a Lookup to find out the delivery via string from the lookup 'display';
-//		// this is a hack, but maybe we will switch from minitable to generic table one day.
-//		final int deliveryViaColID = MColumn.getColumn_ID(
-//				I_M_ShipmentSchedule.Table_Name,
-//				I_M_ShipmentSchedule.COLUMNNAME_DeliveryViaRule);
-//
-//		final I_AD_Column deliveryViaCol = MColumn.get(Env.getCtx(), deliveryViaColID);
-//
-//		final Lookup deliveryViaLookup;
-//		try
-//		{
-//			deliveryViaLookup = MLookupFactory.get(
-//					ctx,
-//					Env.WINDOW_None, // WindowNo
-//					deliveryViaColID,
-//					deliveryViaCol.getAD_Reference_ID(),
-//					Env.getLanguage(ctx),
-//					deliveryViaCol.getColumnName(),
-//					deliveryViaCol.getAD_Reference_Value_ID(),
-//					deliveryViaCol.isParent(),
-//					null // ValidationCode
-//					);
-//		}
-//		catch (Exception e)
-//		{
-//			throw new AdempiereException(e);
-//		}
-//
-//		return deliveryViaLookup;
-//	}
-//
-//	@Cached  
-//	private String getDeliveryViaDisplayName(@CacheCtx final Properties ctx, final String deliveryVia)
-//	{
-//		if (deliveryVia == null)
-//		{
-//			return null;
-//		}
-//
-//		final Lookup deliveryViaLookup = getDeliveryViaLookup(ctx);
-//		String deliveryViaName = deliveryViaLookup.getDisplay(deliveryVia);
-//
-//		// Fallback: use deliveryVia
-//		if (Check.isEmpty(deliveryViaName, true))
-//		{
-//			deliveryViaName = deliveryVia;
-//		}
-//
-//		return deliveryViaName;
-//	}
-
-//	@Cached
-//	private Lookup getFreightCostRuleLookup(@CacheCtx final Properties ctx)
-//	{
-//		final int freightCostRuleColID = MColumn.getColumn_ID(
-//				I_C_Order.Table_Name,
-//				I_C_Order.COLUMNNAME_FreightCostRule);
-//
-//		final I_AD_Column freightCostRuleCol = MColumn.get(Env.getCtx(), freightCostRuleColID);
-//
-//		final Lookup freightCostRuleLookup;
-//		try
-//		{
-//			freightCostRuleLookup = MLookupFactory.get(
-//					ctx,
-//					Env.WINDOW_None, // WindowNo
-//					freightCostRuleColID,
-//					freightCostRuleCol.getAD_Reference_ID(),
-//					Env.getLanguage(ctx),
-//					freightCostRuleCol.getColumnName(),
-//					freightCostRuleCol.getAD_Reference_Value_ID(),
-//					freightCostRuleCol.isParent(),
-//					null // ValidationCode
-//					);
-//		}
-//		catch (Exception e)
-//		{
-//			throw new AdempiereException(e);
-//		}
-//
-//		return freightCostRuleLookup;
-//	}
-//
-//	@Cached
-//	private String getFreightCostRuleDisplayName(@CacheCtx final Properties ctx, final String freightCostRule)
-//	{
-//		if (freightCostRule == null)
-//		{
-//			return null;
-//		}
-//
-//		final Lookup deliveryViaLookup = getFreightCostRuleLookup(ctx);
-//		String freightCostRuleDisplayName = deliveryViaLookup.getDisplay(freightCostRule);
-//
-//		// Fallback: use deliveryVia
-//		if (Check.isEmpty(freightCostRuleDisplayName, true))
-//		{
-//			freightCostRuleDisplayName = freightCostRule;
-//		}
-//
-//		return freightCostRuleDisplayName;
-//	}
-
 	private IPackageable fetchPackageable(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final Packageable packageable = new Packageable();
@@ -439,8 +336,6 @@ public class PackagingDAO implements IPackagingDAO
 
 		final String deliveryVia = rs.getString(I_M_ShipmentSchedule.COLUMNNAME_DeliveryViaRule);
 		packageable.setDeliveryVia(deliveryVia);
-//		final String deliveryViaName = rs.getString("DeliveryViaRuleName");
-//		packageable.setDeliveryViaName(deliveryViaName);
 
 		final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		packageable.setShipperId(shipperId);
@@ -475,8 +370,6 @@ public class PackagingDAO implements IPackagingDAO
 
 		final String freightCostRule = rs.getString(I_C_Order.COLUMNNAME_FreightCostRule);
 		packageable.setFreightCostRule(freightCostRule);
-//		final String freightCostRuleName = getFreightCostRuleDisplayName(ctx, freightCostRule);
-//		packageable.setFreightCostRuleName(freightCostRuleName);
 
 		return packageable;
 	}
