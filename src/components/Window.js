@@ -65,6 +65,7 @@ class Window extends Component {
                         <Table
                             entity="window"
                             caption={caption}
+                            keyProperty='rowId'
                             key={tabid}
                             rowData={rowData}
                             cols={elements}
