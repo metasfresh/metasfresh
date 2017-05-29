@@ -24,13 +24,13 @@ class RawChart extends Component {
         const { id, chartType } = this.props;
 
         if (chartType === 'Indicator') {
-            return getTargetIndicatorsData(id)()
+            return getTargetIndicatorsData(id)
                 .then(response => {
                     return response.data.datasets[0].values
                 }).catch(err => {throw err});
         }
 
-        return getKPIData(id)()
+        return getKPIData(id)
             .then(response => {
                 return response.data.datasets[0].values
             })
