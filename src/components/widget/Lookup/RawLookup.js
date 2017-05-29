@@ -29,7 +29,7 @@ class RawLookup extends Component {
     }
 
     componentDidMount() {
-        const {selected} = this.props;
+        const {selected, defaultValue} = this.props;
 
         this.handleValueChanged();
 
@@ -38,13 +38,19 @@ class RawLookup extends Component {
         }else{
             this.handleBlur(this.clearState);
         }
+
+        if(defaultValue){
+            this.inputSearch.value =
+                    defaultValue[Object.keys(defaultValue)[0]];
+        }
     }
 
     componentDidUpdate(prevProps) {
         this.handleValueChanged();
 
         const {
-            autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus
+            autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus,
+            filterWidget
         } = this.props;
         const {isInputEmpty, shouldBeFocused} = this.state;
 
@@ -68,24 +74,34 @@ class RawLookup extends Component {
                     defaultValue[Object.keys(defaultValue)[0]];
             }
         }
+
+        if(filterWidget && defaultValue === null){
+            this.inputSearch.value = defaultValue;
+        }
     }
 
     handleSelect = (select) => {
         const {
-            onChange, handleInputEmptyStatus, mainProperty, setNextProperty
+            onChange, handleInputEmptyStatus, mainProperty, setNextProperty,
+            filterWidget
         } = this.props;
 
         this.setState({
             selected: null
         }, () => {
 
+            if(filterWidget){
+                onChange(mainProperty[0].parameterName, select);
+                setNextProperty(mainProperty[0].parameterName);
+            } else {
                 onChange(mainProperty[0].field, select);
-
-                this.inputSearch.value = select[Object.keys(select)[0]];
-                handleInputEmptyStatus(false);
                 setNextProperty(mainProperty[0].field);
+            }
 
-                this.handleBlur();
+            this.inputSearch.value = select[Object.keys(select)[0]];
+            handleInputEmptyStatus(false);
+            this.handleBlur();
+
         });
     }
 
