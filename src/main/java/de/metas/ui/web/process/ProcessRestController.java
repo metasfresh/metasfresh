@@ -19,13 +19,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
-import de.metas.ui.web.process.descriptor.ProcessLayout;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONCreateProcessInstanceRequest;
 import de.metas.ui.web.process.json.JSONProcessInstance;
@@ -43,7 +45,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 
@@ -130,16 +134,21 @@ public class ProcessRestController
 	}
 
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
-	public JSONProcessLayout getLayout(
-			@PathVariable("processId") final String adProcessIdStr //
-	)
+	public ResponseEntity<JSONProcessLayout> getLayout(
+			@PathVariable("processId") final String adProcessIdStr,
+			WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
-		final ProcessLayout layout = instancesRepository.getProcessDescriptor(processId).getLayout();
-		return JSONProcessLayout.of(layout, newJsonOpts());
+		final ProcessDescriptor descriptor = instancesRepository.getProcessDescriptor(processId);
+
+		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.map(ProcessDescriptor::getLayout)
+				.jsonOptions(this::newJsonOpts)
+				.toJson(JSONProcessLayout::of);
 	}
 
 	@RequestMapping(value = "/{processId}", method = RequestMethod.POST)
@@ -173,7 +182,8 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(request.getProcessId());
 
 		return Execution.callInNewExecution("pinstance.create", () -> {
-			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request);
+			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request, changesCollector);
 			return JSONProcessInstance.of(processInstance, newJsonOpts());
 		});
 	}
@@ -209,11 +219,12 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
-			instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
 		});
 	}
 
@@ -233,7 +244,8 @@ public class ProcessRestController
 		return Execution.prepareNewExecution()
 				.outOfTransaction()
 				.execute(() -> {
-					return instancesRepository.forProcessInstanceWritable(pinstanceId, processInstance -> {
+					final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+					return instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
 						final ProcessInstanceResult result = processInstance.startProcess();
 						return JSONProcessInstanceResult.of(result);
 					});
@@ -270,7 +282,7 @@ public class ProcessRestController
 		return response;
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/typeahead", method = RequestMethod.GET)
+	@RequestMapping(value = "/{processId}/{pinstanceId}/field/{parameterName}/typeahead", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterTypeahead(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
@@ -289,7 +301,7 @@ public class ProcessRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@RequestMapping(value = "/{processId}/{pinstanceId}/attribute/{parameterName}/dropdown", method = RequestMethod.GET)
+	@RequestMapping(value = "/{processId}/{pinstanceId}/field/{parameterName}/dropdown", method = RequestMethod.GET)
 	public JSONLookupValuesList getParameterDropdown(
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //

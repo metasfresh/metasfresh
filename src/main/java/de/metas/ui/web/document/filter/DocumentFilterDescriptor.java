@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import lombok.EqualsAndHashCode;
 
 /*
  * #%L
@@ -37,15 +38,16 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+@EqualsAndHashCode // required for (ETag) caching
 public final class DocumentFilterDescriptor
 {
 	public static final Builder builder()
@@ -56,7 +58,7 @@ public final class DocumentFilterDescriptor
 	private final String filterId;
 	private final ITranslatableString displayNameTrls;
 	private final boolean frequentUsed;
-	
+
 	private final PanelLayoutType parametersLayoutType;
 	private final Map<String, DocumentFilterParamDescriptor> parametersByName;
 	private final List<DocumentFilterParam> internalParameters;
@@ -74,7 +76,7 @@ public final class DocumentFilterDescriptor
 		Check.assumeNotNull(displayNameTrls, "Parameter displayNameTrls is not null");
 
 		frequentUsed = builder.frequentUsed;
-		
+
 		parametersLayoutType = builder.getParametersLayoutType();
 		parametersByName = builder.buildParameters();
 		internalParameters = ImmutableList.copyOf(builder.internalParameters);
@@ -146,7 +148,7 @@ public final class DocumentFilterDescriptor
 		private String filterId;
 		private ITranslatableString displayNameTrls;
 		private boolean frequentUsed;
-		
+
 		private PanelLayoutType parametersLayoutType;
 		private final List<DocumentFilterParamDescriptor.Builder> parameters = new ArrayList<>();
 		private final List<DocumentFilterParam> internalParameters = new ArrayList<>();
@@ -215,18 +217,18 @@ public final class DocumentFilterDescriptor
 			this.frequentUsed = frequentUsed;
 			return this;
 		}
-		
+
 		public Builder setParametersLayoutType(PanelLayoutType parametersLayoutType)
 		{
 			this.parametersLayoutType = parametersLayoutType;
 			return this;
 		}
-		
+
 		private PanelLayoutType getParametersLayoutType()
 		{
 			return parametersLayoutType != null ? parametersLayoutType : PanelLayoutType.Panel;
 		}
-		
+
 		public boolean hasParameters()
 		{
 			return !parameters.isEmpty();

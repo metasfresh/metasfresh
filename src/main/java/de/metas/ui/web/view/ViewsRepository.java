@@ -22,17 +22,15 @@ import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -121,22 +119,16 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public JSONViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final JSONOptions jsonOpts)
+	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
 		DocumentPermissionsHelper.assertWindowAccess(windowId, null, UserSession.getCurrentPermissions());
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
-		final ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType);
-		final Collection<DocumentFilterDescriptor> viewFilterDescriptors = factory.getViewFilterDescriptors(windowId, viewDataType);
-
-		final JSONViewLayout jsonLayout = JSONViewLayout.of(viewLayout, viewFilterDescriptors, jsonOpts);
-		//
-		// Enable new record if supported
-		menuTreeRepo.getUserSessionMenuTree()
-				.getNewRecordNodeForWindowId(viewLayout.getWindowId())
-				.ifPresent(newRecordMenuNode -> jsonLayout.enableNewRecord(newRecordMenuNode.getCaption()));
-
-		return jsonLayout;
+		return factory.getViewLayout(windowId, viewDataType)
+				// Enable AllowNew if we have a menu node to create new records
+				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
+						.getNewRecordNodeForWindowId(windowId)
+						.map(MenuNode::getCaption));
 	}
 
 	@Override
@@ -181,11 +173,11 @@ public class ViewsRepository implements IViewsRepository
 					.setParameter("request", jsonRequest)
 					.setParameter("factory", factory.toString());
 		}
-		
+
 		//
 		// Add the new view to our internal map
 		// NOTE: avoid adding if the factory returned the same view.
-		if(view != newView)
+		if (view != newView)
 		{
 			final ViewId newViewId = newView.getViewId();
 			views.put(newViewId.getViewId(), newView);

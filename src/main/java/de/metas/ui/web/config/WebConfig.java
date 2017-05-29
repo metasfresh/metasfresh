@@ -1,5 +1,16 @@
 package de.metas.ui.web.config;
 
+import java.io.IOException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -17,11 +28,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -39,17 +50,59 @@ public class WebConfig extends WebMvcConfigurerAdapter
 	public static final String PARAM_TabId = "tabid";
 	public static final String PARAM_RowId = "rowId";
 
-
 	@Override
 	public void addCorsMappings(final CorsRegistry registry)
 	{
 		// FIXME: for now we enable CORS for the whole REST API
 		// registry.addMapping(ENDPOINT_ROOT + "/**");
-		
+
 		// NOTE: this seems to not work (i.e. headers are not added), so:
 		// pls check de.metas.ui.web.config.CORSFilter.doFilter(ServletRequest, ServletResponse, FilterChain)
 		// because we are setting the headers there... and that works!
-		
+
 		registry.addMapping("/**");
+	}
+
+	@Bean
+	public Filter addMissingHeadersFilter()
+	{
+		return new Filter()
+		{
+
+			@Override
+			public void init(final FilterConfig filterConfig) throws ServletException
+			{
+			}
+
+			@Override
+			public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
+			{
+				try
+				{
+					chain.doFilter(request, response);
+				}
+				finally
+				{
+					if (response instanceof HttpServletResponse)
+					{
+						final HttpServletResponse httpResponse = (HttpServletResponse)response;
+						
+						//
+						// If the Cache-Control is not set then set it to no-cache.
+						// In this way we precisely tell to browser that it shall not cache our REST calls.
+						// The Cache-Control is usually defined by features like ETag
+						if (!httpResponse.containsHeader("Cache-Control"))
+						{
+							httpResponse.setHeader("Cache-Control", "no-cache");
+						}
+					}
+				}
+			}
+
+			@Override
+			public void destroy()
+			{
+			}
+		};
 	}
 }

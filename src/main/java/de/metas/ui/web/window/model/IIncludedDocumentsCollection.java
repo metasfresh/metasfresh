@@ -38,7 +38,7 @@ public interface IIncludedDocumentsCollection
 
 	IIncludedDocumentsCollection copy(Document parentDocumentCopy, CopyMode copyMode);
 
-	List<Document> getDocuments();
+	OrderedDocumentsList getDocuments(List<DocumentQueryOrderBy> orderBys);
 
 	Document getDocumentById(DocumentId documentId);
 
@@ -54,8 +54,13 @@ public interface IIncludedDocumentsCollection
 
 	void deleteDocuments(DocumentIdsSelection documentIds);
 
-	DocumentValidStatus checkAndGetValidStatus(final OnValidStatusChanged onValidStatusChanged);
+	DocumentValidStatus checkAndGetValidStatus(OnValidStatusChanged onValidStatusChanged);
 
+	/**
+	 * Check if there are any changes in any of the included documents
+	 * 
+	 * @return true if there are some changes
+	 */
 	boolean hasChangesRecursivelly();
 
 	void saveIfHasChanges();
@@ -67,5 +72,13 @@ public interface IIncludedDocumentsCollection
 
 	int getNextLineNo();
 
+	default void onChildSaved(final Document document)
+	{
+		// nothing
+	}
 
+	default void onChildChanged(Document document)
+	{
+		// nothing
+	}
 }

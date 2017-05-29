@@ -1,7 +1,10 @@
 package de.metas.ui.web.window.datatypes;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 import org.compiere.util.NamePair;
 
@@ -80,6 +83,13 @@ public final class Values
 		else if (value instanceof DocumentId)
 		{
 			return ((DocumentId)value).toJson();
+		}
+		else if (value instanceof Collection)
+		{
+			final Collection<?> valuesList = (Collection<?>)value;
+			return valuesList.stream()
+					.map(v -> valueToJsonObject(v, fallbackMapper))
+					.collect(Collectors.toCollection(ArrayList::new)); // don't use ImmutableList because we might get null values
 		}
 		else
 		{

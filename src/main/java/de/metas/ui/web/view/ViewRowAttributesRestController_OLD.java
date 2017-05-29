@@ -11,22 +11,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
 import de.metas.ui.web.view.json.JSONViewRowAttributes;
 import de.metas.ui.web.view.json.JSONViewRowAttributesLayout;
-import de.metas.ui.web.window.controller.Execution;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,35 +30,30 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * @deprecated To be deleted after https://github.com/metasfresh/metasfresh-webui-frontend/issues/783 is implemented.
+ */
 @RestController
-@RequestMapping(value = ViewRowAttributesRestController.ENDPOINT)
-public class ViewRowAttributesRestController
+@RequestMapping(value = ViewRowAttributesRestController_OLD.ENDPOINT)
+@Deprecated
+public class ViewRowAttributesRestController_OLD
 {
 	private static final String PARAM_WindowId = ViewRestController.PARAM_WindowId;
 	private static final String PARAM_ViewId = "viewId";
 	private static final String PARAM_RowId = "rowId";
-
-	/* package */static final String ENDPOINT = ViewRestController.ENDPOINT + "/{" + PARAM_ViewId + "}/{" + PARAM_RowId + "}/attributes";
-
-	@Autowired
-	private UserSession userSession;
+	/* package */static final String ENDPOINT = ViewRestController.ENDPOINT + "/{" + PARAM_ViewId + "}/{" + PARAM_RowId + "}";
 
 	@Autowired
-	private IViewsRepository viewsRepo;
-
-	private JSONOptions newJSONOptions()
-	{
-		return JSONOptions.of(userSession);
-	}
+	private ViewRowAttributesRestController delegate;
 
 	@GetMapping("/layout")
 	public JSONViewRowAttributesLayout getAttributesLayout(
@@ -72,15 +62,7 @@ public class ViewRowAttributesRestController
 			, @PathVariable(PARAM_RowId) final String rowIdStr //
 	)
 	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final ViewRowAttributesLayout layout = viewsRepo.getView(viewId)
-				.getById(DocumentId.of(rowIdStr))
-				.getAttributes()
-				.getLayout();
-
-		return JSONViewRowAttributesLayout.of(layout, newJSONOptions());
+		return delegate.getAttributesLayout(windowIdStr, viewIdStr, rowIdStr);
 	}
 
 	@GetMapping
@@ -90,14 +72,7 @@ public class ViewRowAttributesRestController
 			, @PathVariable(PARAM_RowId) final String rowIdStr //
 	)
 	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		return viewsRepo.getView(viewId)
-				.getById(rowId)
-				.getAttributes()
-				.toJson(newJSONOptions());
+		return delegate.getData(windowIdStr, viewIdStr, rowIdStr);
 	}
 
 	@PatchMapping
@@ -108,17 +83,7 @@ public class ViewRowAttributesRestController
 			, @RequestBody final List<JSONDocumentChangedEvent> events //
 	)
 	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		return Execution.callInNewExecution("processChanges", () -> {
-			viewsRepo.getView(viewId)
-					.getById(rowId)
-					.getAttributes()
-					.processChanges(events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollectorOrNull(), newJSONOptions());
-		});
+		return delegate.processChanges(windowIdStr, viewIdStr, rowIdStr, events);
 	}
 
 	@GetMapping("/attribute/{attributeName}/typeahead")
@@ -130,15 +95,7 @@ public class ViewRowAttributesRestController
 			, @RequestParam(name = "query", required = true) final String query //
 	)
 	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		return viewsRepo.getView(viewId)
-				.getById(rowId)
-				.getAttributes()
-				.getAttributeTypeahead(attributeName, query)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+		return delegate.getAttributeTypeahead(windowIdStr, viewIdStr, rowIdStr, attributeName, query);
 	}
 
 	@GetMapping("/attribute/{attributeName}/dropdown")
@@ -149,14 +106,6 @@ public class ViewRowAttributesRestController
 			, @PathVariable("attributeName") final String attributeName //
 	)
 	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		return viewsRepo.getView(viewId)
-				.getById(rowId)
-				.getAttributes()
-				.getAttributeDropdown(attributeName)
-				.transform(JSONLookupValuesList::ofLookupValuesList);
+		return delegate.getAttributeDropdown(windowIdStr, viewIdStr, rowIdStr, attributeName);
 	}
 }

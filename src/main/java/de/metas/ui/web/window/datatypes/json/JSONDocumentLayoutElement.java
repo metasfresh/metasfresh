@@ -20,6 +20,7 @@ import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor.ButtonFieldActionType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
+import de.metas.ui.web.window.descriptor.WidgetSize;
 import io.swagger.annotations.ApiModel;
 import lombok.ToString;
 
@@ -96,6 +97,11 @@ public final class JSONDocumentLayoutElement
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutType type;
 
+	/** Widget size (see https://github.com/metasfresh/metasfresh-webui-api/issues/411). */
+	@JsonProperty("size")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final WidgetSize size;
+
 	@JsonProperty("gridAlign")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JSONLayoutAlign gridAlign;
@@ -135,6 +141,7 @@ public final class JSONDocumentLayoutElement
 		}
 
 		type = JSONLayoutType.fromNullable(element.getLayoutType());
+		size = element.getWidgetSize();
 		gridAlign = JSONLayoutAlign.fromNullable(element.getGridAlign());
 
 		fields = JSONDocumentLayoutElementField.ofSet(element.getFields(), jsonOpts);
@@ -151,6 +158,7 @@ public final class JSONDocumentLayoutElement
 		precision = null;
 
 		type = null;
+		size = null;
 		gridAlign = JSONLayoutAlign.right;
 
 		fields = ImmutableSet.of(new JSONDocumentLayoutElementField( //

@@ -26,7 +26,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -41,11 +43,11 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -61,18 +63,19 @@ public class AddressRepository
 
 	//
 	private final AtomicInteger nextAddressDocId = new AtomicInteger(1);
-	private final CCache<DocumentId, Document> id2addresssDoc = CCache.newLRUCache("AddressDocuments", 50, 0);
+	private final CCache<DocumentId, Document> id2addressDoc = CCache.newLRUCache("AddressDocuments", 50, 0);
 
 	private static final String VERSION_DEFAULT = "0";
 	private static final ReasonSupplier REASON_ProcessAddressDocumentChanges = () -> "process Address document changes";
 
-	public Document createNewFrom(final int fromC_Location_ID)
+	public Document createNewFrom(final int fromC_Location_ID, final IDocumentChangesCollector changesCollector)
 	{
 		final DocumentEntityDescriptor entityDescriptor = descriptorsFactory.getAddressDescriptor()
 				.getEntityDescriptor();
 
 		final Document addressDoc = Document.builder(entityDescriptor)
 				.initializeAsNewDocument(nextAddressDocId::getAndIncrement, VERSION_DEFAULT)
+				.setChangesCollector(changesCollector)
 				.build();
 
 		final I_C_Location fromLocation = fromC_Location_ID <= 0 ? null : InterfaceWrapperHelper.create(Env.getCtx(), fromC_Location_ID, I_C_Location.class, ITrx.TRXNAME_ThreadInherited);
@@ -107,28 +110,22 @@ public class AddressRepository
 
 	private final void putAddressDocument(final Document addressDoc)
 	{
-		final Document addressDocReadonly = addressDoc.copy(CopyMode.CheckInReadonly);
-		id2addresssDoc.put(addressDoc.getDocumentId(), addressDocReadonly);
+		final Document addressDocReadonly = addressDoc.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+		id2addressDoc.put(addressDoc.getDocumentId(), addressDocReadonly);
 
 		logger.trace("Added to repository: {}", addressDocReadonly);
 	}
 
 	private final void removeAddressDocumentById(final DocumentId addressDocId)
 	{
-		final Document addressDocRemoved = id2addresssDoc.remove(addressDocId);
+		final Document addressDocRemoved = id2addressDoc.remove(addressDocId);
 
 		logger.trace("Removed from repository by ID={}: {}", addressDocId, addressDocRemoved);
 	}
 
-	public Document getAddressDocument(final int addressDocIdInt)
+	private Document getInnerAddressDocument(final DocumentId addressDocId)
 	{
-		final DocumentId addressDocId = DocumentId.of(addressDocIdInt);
-		return getAddressDocument(addressDocId);
-	}
-
-	public Document getAddressDocument(final DocumentId addressDocId)
-	{
-		final Document addressDoc = id2addresssDoc.get(addressDocId);
+		final Document addressDoc = id2addressDoc.get(addressDocId);
 		if (addressDoc == null)
 		{
 			throw new DocumentNotFoundException(DocumentType.Address, AddressDescriptor.DocumentTypeId, addressDocId);
@@ -136,15 +133,21 @@ public class AddressRepository
 		return addressDoc;
 	}
 
-	private Document getAddressDocumentForWriting(final DocumentId addressDocId)
-	{
-		return getAddressDocument(addressDocId).copy(CopyMode.CheckOutWritable);
-	}
-
-	public void processAddressDocumentChanges(final int addressDocIdInt, final List<JSONDocumentChangedEvent> events)
+	public Document getAddressDocumentForReading(final int addressDocIdInt)
 	{
 		final DocumentId addressDocId = DocumentId.of(addressDocIdInt);
-		final Document addressDoc = getAddressDocumentForWriting(addressDocId);
+		return getInnerAddressDocument(addressDocId).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+	}
+
+	private Document getAddressDocumentForWriting(final DocumentId addressDocId, final IDocumentChangesCollector changesCollector)
+	{
+		return getInnerAddressDocument(addressDocId).copy(CopyMode.CheckOutWritable, changesCollector);
+	}
+
+	public void processAddressDocumentChanges(final int addressDocIdInt, final List<JSONDocumentChangedEvent> events, final IDocumentChangesCollector changesCollector)
+	{
+		final DocumentId addressDocId = DocumentId.of(addressDocIdInt);
+		final Document addressDoc = getAddressDocumentForWriting(addressDocId, changesCollector);
 		addressDoc.processValueChanges(events, REASON_ProcessAddressDocumentChanges);
 
 		Services.get(ITrxManager.class)
@@ -155,7 +158,7 @@ public class AddressRepository
 	public LookupValue complete(final int addressDocIdInt)
 	{
 		final DocumentId addressDocId = DocumentId.of(addressDocIdInt);
-		final Document addressDoc = getAddressDocumentForWriting(addressDocId);
+		final Document addressDoc = getAddressDocumentForWriting(addressDocId, NullDocumentChangesCollector.instance);
 
 		final I_C_Location locationRecord = createC_Location(addressDoc);
 

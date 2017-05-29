@@ -49,8 +49,6 @@ public interface IProcessInstanceController
 
 	ProcessInstanceResult startProcess();
 
-	void destroy();
-
 	/**
 	 * @return execution result or throws exception if the process was not already executed
 	 */

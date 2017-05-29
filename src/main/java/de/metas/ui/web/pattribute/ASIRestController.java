@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import io.swagger.annotations.Api;
 
 /*
@@ -103,12 +104,13 @@ public class ASIRestController
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 
 		return Execution.callInNewExecution("processChanges", () -> {
-			asiRepo.processASIDocumentChanges(asiDocId, events);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), newJsonOpts());
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			asiRepo.processASIDocumentChanges(asiDocId, events, changesCollector);
+			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
 		});
 	}
 
-	@GetMapping("/{asiDocId}/attribute/{attributeName}/typeahead")
+	@GetMapping("/{asiDocId}/field/{attributeName}/typeahead")
 	public JSONLookupValuesList getAttributeTypeahead(
 			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @PathVariable("attributeName") final String attributeName //
@@ -122,7 +124,7 @@ public class ASIRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{asiDocId}/attribute/{attributeName}/dropdown")
+	@GetMapping("/{asiDocId}/field/{attributeName}/dropdown")
 	public JSONLookupValuesList getAttributeDropdown(
 			@PathVariable("asiDocId") final String asiDocIdStr //
 			, @PathVariable("attributeName") final String attributeName //

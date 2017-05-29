@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
@@ -52,7 +53,9 @@ import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.DocumentValuesSupplier;
 import de.metas.ui.web.window.model.DocumentQuery;
 import de.metas.ui.web.window.model.DocumentsRepository;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.OrderedDocumentsList;
 
 /*
  * #%L
@@ -142,19 +145,20 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public List<Document> retrieveDocuments(final DocumentQuery query)
+	public OrderedDocumentsList retrieveDocuments(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		final int limit = query.getPageLength();
-		return retriveDocuments(query, limit);
+		return retriveDocuments(query, limit, changesCollector);
 	}
 
-	public List<Document> retriveDocuments(final DocumentQuery query, final int limit)
+	public OrderedDocumentsList retriveDocuments(final DocumentQuery query, final int limit, final IDocumentChangesCollector changesCollector)
 	{
 		logger.debug("Retrieving records: query={}, limit={}", query, limit);
 
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 		assertThisRepository(entityDescriptor);
 		final Document parentDocument = query.getParentDocument();
+		final Function<DocumentId, Document> existingDocumentsSupplier = query.getExistingDocumentsSupplier();
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
@@ -170,7 +174,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			maxRowsToFetch = loadLimitMax;
 		}
 
-		final List<Document> documentsCollector = limit > 0 ? new ArrayList<>(limit) : new ArrayList<>();
+		final OrderedDocumentsList documentsCollector = OrderedDocumentsList.newEmpty(query.getOrderBys());
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -186,10 +190,22 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			boolean loadLimitWarnReported = false;
 			while (rs.next())
 			{
-				final Document document = Document.builder(entityDescriptor)
-						.setParentDocument(parentDocument)
-						.initializeAsExistingRecord(new ResultSetDocumentValuesSupplier(entityDescriptor, adLanguage, rs));
-				documentsCollector.add(document);
+				final ResultSetDocumentValuesSupplier documentValuesSupplier = new ResultSetDocumentValuesSupplier(entityDescriptor, adLanguage, rs);
+
+				Document document = null;
+				if (existingDocumentsSupplier != null)
+				{
+					final DocumentId documentId = documentValuesSupplier.getDocumentId();
+					document = existingDocumentsSupplier.apply(documentId);
+				}
+				if (document == null)
+				{
+					document = Document.builder(entityDescriptor)
+							.setParentDocument(parentDocument)
+							.setChangesCollector(changesCollector)
+							.initializeAsExistingRecord(documentValuesSupplier);
+				}
+				documentsCollector.addDocument(document);
 
 				final int loadCount = documentsCollector.size();
 
@@ -202,14 +218,14 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				// Stop if we reached the MAXIMUM limit
 				if (loadLimitMax > 0 && loadCount >= loadLimitMax)
 				{
-					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount, new Exception("Trace"));
+					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount);
 					break;
 				}
 
 				// WARN if we reached the Warning limit
 				if (!loadLimitWarnReported && loadLimitWarn > 0 && loadCount >= loadLimitWarn)
 				{
-					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount, new Exception("Trace"));
+					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}", sql, sqlParams, loadCount);
 					loadLimitWarnReported = true;
 				}
 			}
@@ -228,10 +244,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public Document retrieveDocument(final DocumentQuery query)
+	public Document retrieveDocument(final DocumentQuery query, final IDocumentChangesCollector changesCollector)
 	{
 		final int limit = 2;
-		final List<Document> documents = retriveDocuments(query, limit);
+		final OrderedDocumentsList documents = retriveDocuments(query, limit, changesCollector);
 		if (documents.isEmpty())
 		{
 			return null;
@@ -239,7 +255,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		else if (documents.size() > 1)
 		{
 			throw new DBMoreThenOneRecordsFoundException("More than one record found for " + query + " on " + this
-					+ "\n First " + limit + " records: " + Joiner.on("\n").join(documents));
+					+ "\n First " + limit + " records: " + Joiner.on("\n").join(documents.toList()));
 		}
 		else
 		{
@@ -268,7 +284,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	}
 
 	@Override
-	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument)
+	public Document createNewDocument(final DocumentEntityDescriptor entityDescriptor, final Document parentDocument, final IDocumentChangesCollector changesCollector)
 	{
 		assertThisRepository(entityDescriptor);
 		// TODO: check permissions if we can create a new record
@@ -277,6 +293,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		return Document.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
+				.setChangesCollector(changesCollector)
 				.initializeAsNewDocument(documentId, VERSION_DEFAULT);
 	}
 
@@ -416,7 +433,9 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		logger.debug("Refreshing: {}, using ID={}", document, documentId);
 
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentId);
+		final DocumentQuery query = DocumentQuery.ofRecordId(entityDescriptor, documentId)
+				.setChangesCollector(document.getChangesCollector())
+				.build();
 
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
 		final List<Object> sqlParams = new ArrayList<>();
@@ -487,22 +506,29 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			}
 		}
 
-		if (!changes)
+		if (changes)
+		{
+			//
+			// Actual save
+			// TODO: advice the PO to not reload after save.
+			InterfaceWrapperHelper.save(po);
+			document.markAsNotNew();
+
+			//
+			// Reload the document
+			final DocumentId idNew = DocumentId.of(InterfaceWrapperHelper.getId(po));
+			refresh(document, idNew);
+		}
+		else
 		{
 			logger.trace("Skip saving {} because there was no actual change", po);
-			return;
 		}
 
-		//
-		// Actual save
-		// TODO: advice the PO to not reload after save.
-		InterfaceWrapperHelper.save(po);
-		document.markAsNotNew();
-
-		//
-		// Reload the document
-		final DocumentId idNew = DocumentId.of(InterfaceWrapperHelper.getId(po));
-		refresh(document, idNew);
+		// Notify the parent document that one of it's children were saved
+		if (!document.isRootDocument())
+		{
+			document.getParentDocument().onChildSaved(document);
+		}
 	}
 
 	private PO retrieveOrCreatePO(final Document document)
@@ -818,5 +844,20 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 
 		final Timestamp version = DB.getSQLValueTSEx(ITrx.TRXNAME_ThreadInherited, sql, documentIdAsInt);
 		return version == null ? VERSION_DEFAULT : String.valueOf(version.getTime());
+	}
+
+	@Override
+	public int retrieveLastLineNo(final DocumentQuery query)
+	{
+		logger.debug("Retrieving last LineNo: query={}", query);
+
+		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
+		assertThisRepository(entityDescriptor);
+
+		final List<Object> sqlParams = new ArrayList<>();
+		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
+		final String sql = sqlBuilder.getSqlMaxLineNo(sqlParams);
+
+		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 	}
 }

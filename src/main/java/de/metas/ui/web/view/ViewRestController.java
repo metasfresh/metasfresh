@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,26 +14,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONCreateViewRequest;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
+import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -85,6 +91,9 @@ public class ViewRestController
 
 	@Autowired
 	private ProcessRestController processRestController;
+	
+	@Autowired
+	private WindowRestController windowRestController;
 
 	private JSONOptions newJSONOptions()
 	{
@@ -173,7 +182,7 @@ public class ViewRestController
 			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
 			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
 			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -184,41 +193,20 @@ public class ViewRestController
 	}
 
 	@GetMapping("/layout")
-	public JSONViewLayout getViewLayout(
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-			)
+	public ResponseEntity<JSONViewLayout> getViewLayout(
+			@PathVariable(PARAM_WindowId) final String windowIdStr,
+			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		return viewsRepo.getViewLayout(windowId, viewDataType, newJSONOptions());
-	}
+		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType);
 
-	@GetMapping("/{viewId}/layout")
-	public JSONViewLayout getViewLayout(
-			@PathVariable(PARAM_WindowId) final String windowIdStr //
-			, @PathVariable("viewId") final String viewIdStr //
-			, @RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType //
-			)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
-		final IView view = viewsRepo.getView(viewId);
-
-		final JSONViewLayout viewLayout = viewsRepo.getViewLayout(viewId.getWindowId(), viewDataType, newJSONOptions());
-		viewLayout.setViewId(viewId.getViewId());
-		if (view.isIncludedView())
-		{
-			viewLayout.setSupportAttributes(false);
-		}
-		else
-		{
-			viewLayout.setSupportAttributes(view.hasAttributesSupport());
-		}
-
-		return viewLayout;
+		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.jsonOptions(this::newJSONOptions)
+				.toJson(JSONViewLayout::of);
 	}
 
 	@GetMapping("/{viewId}/byIds")
@@ -226,7 +214,7 @@ public class ViewRestController
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
 			, @RequestParam("ids") @ApiParam("comma separated IDs") final String idsListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -238,14 +226,14 @@ public class ViewRestController
 		return JSONViewRow.ofViewRows(result);
 	}
 
-	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/typeahead")
+	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
 			, @RequestParam(name = "query", required = true) final String query //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -255,13 +243,13 @@ public class ViewRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{viewId}/filter/{filterId}/attribute/{parameterName}/dropdown")
+	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
 			, @PathVariable("filterId") final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -285,7 +273,7 @@ public class ViewRestController
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr//
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -299,7 +287,7 @@ public class ViewRestController
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable("viewId") final String viewIdStr //
 			, @RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr //
-			)
+	)
 	{
 		userSession.assertLoggedIn();
 
@@ -307,5 +295,19 @@ public class ViewRestController
 				.filter(WebuiRelatedProcessDescriptor::isQuickAction)
 				.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent) // only those which are enabled or not silent
 				.collect(JSONDocumentActionsList.collect(newJSONOptions()));
+	}
+
+	@GetMapping("/{viewId}/{rowId}/field/{fieldName}/zoomInto")
+	public JSONZoomInto getRowFieldZoomInto(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("viewId") final String viewIdStr,
+			@PathVariable("rowId") final String rowId,
+			@PathVariable("fieldName") final String fieldName)
+	{
+		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
+		
+		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
+		
+		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}
 }

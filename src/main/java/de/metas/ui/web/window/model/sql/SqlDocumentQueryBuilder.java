@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -221,7 +222,6 @@ public class SqlDocumentQueryBuilder
 			outSqlParams.addAll(sqlSelectLinkColumnNameParams);
 			return sql;
 		}
-
 	}
 
 	/** @return SQL key column name; never returns null */
@@ -240,6 +240,20 @@ public class SqlDocumentQueryBuilder
 		}
 
 		return idFieldBinding.getColumnName();
+	}
+
+	public String getSqlMaxLineNo(final List<Object> outSqlParams)
+	{
+		final StringBuilder sql = new StringBuilder("SELECT COALESCE(MAX(" + WindowConstants.FIELDNAME_Line + "), 0)")
+				.append(" FROM " + entityBinding.getTableName() + " " + entityBinding.getTableAlias());
+
+		String sqlWhere = getSqlWhere(outSqlParams);
+		if (!Check.isEmpty(sqlWhere, true))
+		{
+			sql.append(" WHERE ").append(sqlWhere);
+		}
+
+		return sql.toString();
 	}
 
 	/**
@@ -326,6 +340,17 @@ public class SqlDocumentQueryBuilder
 	private IStringExpression getSqlSelectFrom()
 	{
 		return entityBinding.getSqlSelectAllFrom();
+	}
+
+	public String getSqlWhere(final List<Object> sqlParams)
+	{
+		final IPair<IStringExpression, List<Object>> sqlWhereAndParams = getSqlWhereAndParams();
+		final Evaluatee evalCtx = getEvaluationContext();
+		final String sqlWhere = sqlWhereAndParams.getLeft().evaluate(evalCtx, OnVariableNotFound.Fail);
+
+		sqlParams.addAll(sqlWhereAndParams.getRight());
+
+		return sqlWhere;
 	}
 
 	private IPair<IStringExpression, List<Object>> getSqlWhereAndParams()

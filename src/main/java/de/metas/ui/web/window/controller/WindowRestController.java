@@ -23,12 +23,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTree;
@@ -53,16 +55,17 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -125,10 +128,10 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/layout")
-	public JSONDocumentLayout getLayout(
-			@PathVariable("windowId") final String windowIdStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+	public ResponseEntity<JSONDocumentLayout> getLayout(
+			@PathVariable("windowId") final String windowIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
@@ -136,64 +139,63 @@ public class WindowRestController
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
-		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(advanced)
-				.build();
-
-		return JSONDocumentLayout.ofHeaderLayout(layout, jsonOpts);
+		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.map(DocumentDescriptor::getLayout)
+				//
+				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
+				.toJson(JSONDocumentLayout::ofHeaderLayout);
 	}
 
 	@GetMapping("/{windowId}/{tabId}/layout")
-	public JSONDocumentLayout getLayout(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+	public ResponseEntity<JSONDocumentLayout> getLayout(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DetailId detailId = DetailId.fromJson(tabIdStr);
+
 		final DocumentDescriptor descriptor = documentCollection.getDocumentDescriptorFactory().getDocumentDescriptor(windowId);
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
-		final DocumentLayoutDescriptor layout = descriptor.getLayout();
-
-		final JSONOptions jsonOpts = newJSONOptions()
-				.setShowAdvancedFields(advanced)
-				.build();
-
-		final DetailId detailId = DetailId.fromJson(tabIdStr);
-		final DocumentLayoutDetailDescriptor detailLayout = layout.getDetail(detailId);
-		return JSONDocumentLayout.ofDetailTab(detailLayout, jsonOpts);
+		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.map(desc -> desc.getLayout().getDetail(detailId))
+				//
+				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
+				.toJson(JSONDocumentLayout::ofDetailTab);
 	}
 
 	@GetMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> getData(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-		return getData(documentPath, fieldsListStr, advanced);
+		final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
+		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
 	public List<JSONDocument> getData(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentIdStr //
-			, @PathVariable("tabId") final String tabIdStr //
-			, @RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr //
-			, @RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr);
-		return getData(documentPath, fieldsListStr, advanced);
+		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
+		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -208,10 +210,11 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
-		return getData(documentPath, fieldsListStr, advanced);
+		final List<DocumentQueryOrderBy> orderBys = ImmutableList.of();
+		return getData(documentPath, fieldsListStr, advanced, orderBys);
 	}
 
-	private List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced)
+	private List<JSONDocument> getData(final DocumentPath documentPath, final String fieldsListStr, final boolean advanced, final List<DocumentQueryOrderBy> orderBys)
 	{
 		userSession.assertLoggedIn();
 
@@ -220,7 +223,8 @@ public class WindowRestController
 				.setDataFieldsList(fieldsListStr)
 				.build();
 
-		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forRootDocumentReadonly(documentPath, changesCollector, rootDocument -> {
 			List<Document> documents;
 			if (documentPath.isRootDocument())
 			{
@@ -228,7 +232,7 @@ public class WindowRestController
 			}
 			else if (documentPath.isAnyIncludedDocument())
 			{
-				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId());
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys).toList();
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
@@ -292,12 +296,13 @@ public class WindowRestController
 
 	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
-		documentCollection.forDocumentWritable(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-			Execution.getCurrentDocumentChangesCollector().setPrimaryChange(document.getDocumentPath());
+			changesCollector.setPrimaryChange(document.getDocumentPath());
 			return null; // void
 		});
-		return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
+		return JSONDocument.ofEvents(changesCollector, jsonOpts);
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")
@@ -370,15 +375,16 @@ public class WindowRestController
 				.build();
 
 		return Execution.callInNewExecution("window.delete", () -> {
-			documentCollection.deleteAll(documentPaths);
-			return JSONDocument.ofEvents(Execution.getCurrentDocumentChangesCollector(), jsonOpts);
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+			documentCollection.deleteAll(documentPaths, changesCollector);
+			return JSONDocument.ofEvents(changesCollector, jsonOpts);
 		});
 	}
 
 	/**
 	 * Typeahead for root document's field
 	 */
-	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/typeahead")
+	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -390,11 +396,11 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
-
+	
 	/**
 	 * Typeahead for included document's field
 	 */
-	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/typeahead")
+	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
 	public JSONLookupValuesList getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -408,17 +414,18 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
-
+	
 	/** Typeahead: unified implementation */
 	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
 	{
 		userSession.assertLoggedIn();
 
-		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValuesForQuery(fieldName, query))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/dropdown")
+	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -429,8 +436,8 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
-
-	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/dropdown")
+	
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -443,17 +450,18 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
-
+	
 	private JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
-		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName))
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> document.getFieldLookupValues(fieldName))
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
 	@ApiOperation("field current value's window layout to zoom into")
-	@GetMapping("/{windowId}/{documentId}/attribute/{fieldName}/zoomInto")
+	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -464,9 +472,9 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
-
+	
 	@ApiOperation("field current value's window layout to zoom into")
-	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/attribute/{fieldName}/zoomInto")
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr //
 			, @PathVariable("documentId") final String documentId //
@@ -479,12 +487,13 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
-
+	
 	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
-		final IPair<ITableRecordReference, WindowId> zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		final IPair<ITableRecordReference, WindowId> zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -523,7 +532,7 @@ public class WindowRestController
 				return ImmutablePair.of(recordRef, zoomIntoWindowId);
 			}
 		});
-		
+
 		final ITableRecordReference zoomInfoTableRecordRef = zoomIntoInfo.getLeft();
 		final WindowId zoomIntoWindowId = zoomIntoInfo.getRight();
 		if (zoomInfoTableRecordRef == null)
@@ -550,7 +559,8 @@ public class WindowRestController
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
-		return documentCollection.forDocumentReadonly(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
@@ -594,7 +604,8 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
-		final Document document = documentCollection.forDocumentReadonly(documentPath, Function.identity());
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		final Document document = documentCollection.forDocumentReadonly(documentPath, changesCollector, Function.identity());
 		final int windowNo = document.getWindowNo();
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 
@@ -640,7 +651,8 @@ public class WindowRestController
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
-		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, document -> {
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		return Execution.callInNewExecution("window.processTemplate", () -> documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			document.saveIfValidAndHasChanges();
 			if (document.hasChangesRecursivelly())
 			{

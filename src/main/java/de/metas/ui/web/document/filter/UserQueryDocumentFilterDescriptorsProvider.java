@@ -3,6 +3,7 @@ package de.metas.ui.web.document.filter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
@@ -13,6 +14,7 @@ import org.compiere.apps.search.IUserQueryField;
 import org.compiere.apps.search.IUserQueryRestriction;
 import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
+import org.compiere.util.CachedSuppliers;
 
 import com.google.common.base.MoreObjects;
 
@@ -38,11 +40,11 @@ import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,6 +52,7 @@ import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	private final UserQueryRepository repository;
+	private final Supplier<Map<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(() -> retrieveAllByFilterId());
 
 	public UserQueryDocumentFilterDescriptorsProvider(final int adTabId, final String tableName, final Collection<DocumentFieldDescriptor> fields)
 	{
@@ -57,7 +60,7 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		Check.assume(adTabId > 0, "adTabId > 0");
-		
+
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
 		final List<IUserQueryField> searchFields = fields
@@ -73,25 +76,23 @@ final class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilter
 				.build();
 	}
 
-	@Override
-	public Collection<DocumentFilterDescriptor> getAll()
+	@Override public Collection<DocumentFilterDescriptor> getAll()
 	{
-		return getAllByFilterId().values();
+		return filtersSupplier.get().values();
 	}
 
 	@Override
 	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{
-		return getAllByFilterId().get(filterId);
+		return filtersSupplier.get().get(filterId);
 	}
 
-	private final Map<String, DocumentFilterDescriptor> getAllByFilterId()
+	private final Map<String, DocumentFilterDescriptor> retrieveAllByFilterId()
 	{
-		// TODO: caching
 		return repository.getUserQueries()
 				.stream()
 				.map(userQuery -> createFilterDescriptor(userQuery))
-				.collect(GuavaCollectors.toImmutableMapByKey(filter -> filter.getFilterId()));
+				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterDescriptor::getFilterId));
 	}
 
 	private static final DocumentFilterDescriptor createFilterDescriptor(final IUserQuery userQuery)
