@@ -1,7 +1,8 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -82,7 +83,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	/**
 	 * List of handling units that have to be returned to vendor
 	 */
-	private final List<HUToReturn> _husToReturn = new ArrayList<>();
+	private final Set<HUToReturn> _husToReturn = new HashSet<>();
 
 	public CustomerReturnsInOutProducer()
 	{
@@ -174,7 +175,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return this;
 	}
 
-	private List<HUToReturn> getHUsToReturn()
+	private Set<HUToReturn> getHUsToReturn()
 	{
 		Check.assumeNotEmpty(_husToReturn, "husToReturn is not empty");
 		return _husToReturn;
