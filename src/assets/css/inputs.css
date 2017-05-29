@@ -26,6 +26,8 @@ textarea {
 
 ::placeholder {
     font-weight: normal;
+    color: $brand-font-color-secondary;
+    opacity: 1;
 }
 
 input {
