@@ -20,7 +20,8 @@ export function initLayout(
 }
 
 export function getData(
-    entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced
+    entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
+    orderBy
 ) {
     return () => axios.get(
         config.API_URL +
@@ -31,7 +32,8 @@ export function getData(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        (isAdvanced ? '?advanced=true' : '')
+        (isAdvanced ? '?advanced=true' : '') +
+        (orderBy ? '?orderBy=' + orderBy : '')
     );
 }
 

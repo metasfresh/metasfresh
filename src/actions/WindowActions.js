@@ -80,6 +80,13 @@ export function addRowData(data, scope) {
     }
 }
 
+export function sortTab(scope, tabId, field, asc) {
+    return {
+        type: types.SORT_TAB,
+        scope, tabId, field, asc
+    }
+}
+
 export function updateRowStatus(scope, tabid, rowid, saveStatus) {
     return {
         type: types.UPDATE_ROW_STATUS,
@@ -275,7 +282,7 @@ export function createWindow(
                 docId = response.data[elem].id;
 
                 dispatch(initDataSuccess(
-                    parseToDisplay(response.data[elem].fields),
+                    parseToDisplay(response.data[elem].fieldsByName),
                     getScope(isModal), docId,
                     response.data[0].saveStatus, response.data[0].validStatus,
                     response.data[0].includedTabsInfo
@@ -331,19 +338,15 @@ function initTabs(layout, windowType, docId, isModal) {
     }
 }
 
-export function getTab(tabId, windowType, docId) {
+export function getTab(tabId, windowType, docId, orderBy) {
     return dispatch =>
-        dispatch(getData('window', windowType, docId, tabId))
-            .then(res => {
-                if(res.data){
-                    let tab = {};
-                    res.data.map(row => {
-                        row.fields = parseToDisplay(row.fields);
-                        tab[row.rowId] = row;
-                    });
-                    return tab;
-                }
-            })
+        dispatch(getData(
+            'window', windowType, docId, tabId, null, null, null, null, orderBy
+        )).then(res => res.data && res.data.map(row => 
+            Object.assign({}, row, {
+                fieldsByName: parseToDisplay(row.fieldsByName)
+            }
+        )));
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
@@ -427,10 +430,10 @@ export function patch(
 function updateData(doc, scope){
     return dispatch => {
         Object.keys(doc).map(key => {
-            if(key === 'fields'){
-                doc.fields.map(field => {
+            if(key === 'fieldsByName'){
+                Object.keys(doc.fieldsByName).map(fieldName => {
                     dispatch(updateDataFieldProperty(
-                        field.field, field, scope
+                        fieldName, doc.fieldsByName[fieldName], scope
                     ))
                 })
             }else if(key === 'includedTabsInfo'){
@@ -447,10 +450,11 @@ function updateData(doc, scope){
 function updateRow(row, scope){
     return dispatch => {
         Object.keys(row).map(key => {
-            if(key === 'fields'){
-                row.fields.map(field => {
+            if(key === 'fieldsByName'){
+                Object.keys(row.fieldsByName).map(fieldName => {
                     dispatch(updateRowFieldProperty(
-                        field.field, field, row.tabid, row.rowId, scope
+                        fieldName, row.fieldsByName[fieldName], row.tabid,
+                        row.rowId, scope
                     ))
                 });
             }else{
@@ -479,8 +483,8 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
                     }
                 })
 
-            const parsedItem = item.fields ? Object.assign({}, item, {
-                fields: parseToDisplay(item.fields)
+            const parsedItem = item.fieldsByName ? Object.assign({}, item, {
+                fieldsByName: parseToDisplay(item.fieldsByName)
             }) : item;
 
             // First item in response is direct one for action that called it.
@@ -617,9 +621,10 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
             getProcessData(processType, viewId, type, ids, tabId, rowId)
         ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
+            
             pid = response.data.pinstanceId;
 
-            if (preparedData.length === 0) {
+            if (Object.keys(preparedData).length === 0) {
                 dispatch(startProcess(processType, pid)).then(response => {
                     dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
@@ -737,11 +742,10 @@ export function startProcess(processType, pinstanceId) {
 
 export function deleteLocal(tabid, rowsid, scope, response) {
     return (dispatch) => {
-        dispatch(updateStatus(response.data))
-
         for (let rowid of rowsid) {
             dispatch(deleteRow(tabid, rowid, scope))
         }
+        dispatch(updateStatus(response.data))
     }
 }
 
@@ -753,26 +757,30 @@ function getScope(isModal) {
     return isModal ? 'modal' : 'master';
 }
 
-export function parseToDisplay(arr) {
-    return parseDateToReadable(nullToEmptyStrings(arr));
+export function parseToDisplay(obj) {
+    return parseDateToReadable(nullToEmptyStrings(obj));
 }
 
-function parseDateToReadable(arr) {
+function parseDateToReadable(obj) {
     const dateParse = ['Date', 'DateTime', 'Time'];
-    return arr.map(item =>
-        (dateParse.indexOf(item.widgetType) > -1 && item.value) ?
-        Object.assign({}, item, {
-            value: item.value ? new Date(item.value) : ''
-        }) : item
-    )
+    
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key] = 
+            (dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value) ?
+                Object.assign({}, obj[key], {
+                    value: obj[key].value ? new Date(obj[key].value) : ''
+                }) : obj[key];
+        return acc;
+    }, {});
 }
 
-function nullToEmptyStrings(arr) {
-    return arr.map(item =>
-        (item.value === null) ?
-        Object.assign({}, item, { value: '' }) :
-        item
-    )
+function nullToEmptyStrings(obj) {
+    return Object.keys(obj).reduce((acc, key) => {
+        acc[key] = (obj[key].value === null) ?
+            Object.assign({}, obj[key], { value: '' }) :
+            obj[key];
+        return acc;
+    }, {})
 }
 
 export function findRowByPropName(arr, name) {

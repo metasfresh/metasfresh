@@ -4,11 +4,11 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
 import {
-    findRowByPropName,
     attachFileAction,
     clearMasterData,
     getTab,
-    addRowData
+    addRowData,
+    sortTab
 } from '../actions/WindowActions';
 
 import {
@@ -113,7 +113,7 @@ class MasterWindow extends Component {
         }
 
         const { dispatch, master } = this.props;
-        const dataId = findRowByPropName(master.data, 'ID').value;
+        const dataId = master.data ? master.data.ID.value : -1;
         const { type } = master.layout;
 
         let fd = new FormData();
@@ -153,8 +153,20 @@ class MasterWindow extends Component {
 
     handleDeletedStatus = (param) => {
         this.setState({
-                isDeleted: param
-            })
+            isDeleted: param
+        })
+    }
+
+    sort = (asc, field, startPage, page, tabId) => {
+        const {dispatch, master} = this.props;
+        const {windowType} = this.props.params;
+        const orderBy = (asc ? '+' : '-') + field;
+        const dataId = master.docId;
+
+        dispatch(sortTab('master', tabId, field, asc));
+        dispatch(getTab(tabId, windowType, dataId, orderBy)).then(res => {
+            dispatch(addRowData({[tabId]: res}, 'master'));
+        });
     }
 
     renderBody = () => {
@@ -248,6 +260,7 @@ class MasterWindow extends Component {
                 layout={master.layout}
                 rowData={master.rowData}
                 tabsInfo={master.includedTabsInfo}
+                sort={this.sort}
                 dataId={dataId}
                 isModal={false}
                 newRow={newRow}
@@ -276,19 +289,16 @@ class MasterWindow extends Component {
         } = master.layout;
 
         const dataId = master.docId;
-
-        const docNoData = findRowByPropName(master.data, 'DocumentNo');
+        const docNoData = master.data.DocumentNo;
 
         const docStatusData = {
-            'status': findRowByPropName(master.data, 'DocStatus'),
-            'action': findRowByPropName(master.data, 'DocAction'),
+            'status': master.data.DocStatus || -1,
+            'action': master.data.DocAction || -1,
             'displayed': true
         };
 
-        const docSummaryData = findRowByPropName(
-            master.data,
-            documentSummaryElement && documentSummaryElement.fields[0].field
-        );
+        const docSummaryData = documentSummaryElement &&
+            master.data[documentSummaryElement.fields[0].field];
 
         const isDocumentNotSaved = dataId !== 'notfound' &&
         (master.saveStatus.saved !== undefined && !master.saveStatus.saved) &&

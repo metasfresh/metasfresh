@@ -3,10 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import TableCell from './TableCell';
 
-import {
-    findRowByPropName
-} from '../../actions/WindowActions';
-
 class TableItem extends Component {
     constructor(props) {
         super(props);
@@ -113,9 +109,7 @@ class TableItem extends Component {
         // Iterate over layout settings
         return cols && cols.map((item, index) => {
             const property = item.fields[0].field;
-            const widgetData = item.fields.map(property =>
-                findRowByPropName(cells, property.field)
-            );
+            const widgetData = item.fields.map(prop => cells && cells[prop.field] || -1);
             const {supportZoomInto} = item.fields[0];
 
             return (
@@ -247,8 +241,8 @@ class TableItem extends Component {
 
     render() {
         const {
-            isSelected, fields, cols, onMouseDown, onDoubleClick, odd,
-            indentSupported, contextType, item, lastSibling,
+            isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
+            indentSupported, contextType, lastSibling, processed,
             includedDocuments, notSaved
         } = this.props;
 
@@ -259,8 +253,8 @@ class TableItem extends Component {
                 className={
                     (isSelected ? 'row-selected ' : '') +
                     (odd ? 'tr-odd ': 'tr-even ') +
-                    (item.processed ? 'row-disabled ': '') +
-                    ((item.processed && lastSibling && !includedDocuments) ?
+                    (processed ? 'row-disabled ': '') +
+                    ((processed && lastSibling && !includedDocuments) ?
                         'row-boundary ': ''
                     ) +
                     (notSaved ? 'row-not-saved ': '')
@@ -271,7 +265,7 @@ class TableItem extends Component {
                         {this.renderTree(contextType)}
                     </td>
                 }
-                {this.renderCells(cols, fields)}
+                {this.renderCells(cols, fieldsByName)}
             </tr>
         );
     }

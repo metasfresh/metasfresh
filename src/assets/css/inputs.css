@@ -454,7 +454,7 @@ input:checked + .input-slider:before {
 }
 
 .input-error {
-    border-color: $brand-danger-color;
+    border-color: $brand-danger-light-color;
 }
 
 .input-error input {
@@ -660,7 +660,81 @@ input:checked + .input-slider:before {
     overflow-y: auto;
     border-bottom-left-radius: 3px;
     border-bottom-right-radius: 3px;
+    left: 0;
+    top: calc(100% + 1px);
 }
+
+.lookup-wrapper {
+    display: flex;
+    padding: 0;
+    justify-content: space-between;
+}
+
+.raw-lookup-wrapper {
+    display: flex;
+    align-items: center;
+    padding: .3rem .50rem;
+    flex: 1;
+}
+
+.raw-lookup-wrapper .input-dropdown-container  {
+    width: 100%;
+}
+
+.raw-lookup-wrapper.input-icon {
+    flex: 0.05;
+    justify-content: flex-end;
+}
+
+.input-secondary .raw-lookup-wrapper {
+    padding: .1rem .50rem;
+}
+
+.raw-lookup-disabled .input-dropdown-container {
+    cursor: not-allowed;
+}
+
+.raw-lookup-disabled .input-dropdown {
+    cursor: not-allowed;
+}
+
+.raw-lookup-wrapper-bcg:hover {
+    background-color: $brand-border-color;
+}
+
+.input-error .raw-lookup-wrapper-bcg:hover {
+    background-color: $brand-danger-color !important;
+}
+
+.input-error  .raw-lookup-wrapper-bcg:hover .input-dropdown-container .input-dropdown {
+    color: $brand-super-light-color;
+}
+
+.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown,
+.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown input,
+.input-error .raw-lookup-wrapper-bcg:hover .input-dropdown-container {
+    background-color: $brand-danger-color !important;
+    color: $brand-super-light-color;
+}
+
+.raw-lookup-wrapper .input-dropdown-container {
+    min-width: 0;
+}
+
+.lookup-wrapper .input-dropdown-container {
+    position: static;
+}
+
+.lookup-wrapper .input-dropdown-container .input-dropdown{
+    position: static;
+    margin: 0;
+    border-bottom: none;
+}
+
+.lookup-wrapper .meta-icon-down-1 {
+    display: none;
+}
+
 .input-field {
     border: 0;
     width: 100%;
@@ -688,6 +762,16 @@ input:checked + .input-slider:before {
 .input-dropdown-list-option-key-on {
     background-color: $brand-color-primary;
     color: #fff;
+}
+.input-error .input-dropdown-list-option:hover,
+.input-error .input-dropdown-list-option:hover * {
+    color: $brand-font-color;
+    background-color: $brand-danger-color !important;
+}
+.input-error .input-dropdown-list-option.input-dropdown-list-option-key-on,
+.input-error .input-dropdown-list-option.input-dropdown-list-option-key-on * {
+    color: $brand-font-color;
+    background-color: $brand-danger-color !important;
 }
 .input-dropdown-list-option p {
     margin:0;
@@ -911,8 +995,4 @@ table .rdtPicker table td,
 .rdtPicker table th {
     vertical-align: middle;
     padding: 0;
-}
-.Lookup .input-icon {
-    height: 16px;
-    bottom: 0;
 }
