@@ -23,7 +23,7 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhum
+	END as displayhum,
 	io.docstatus
 FROM
 	M_InOut io
