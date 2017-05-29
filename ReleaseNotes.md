@@ -31,6 +31,8 @@ Here come the actual release notes:
     * Migrating all Subtab UI Elements to show them in Advanced Edit, also swicthing the UI Element Group UI Styles to be not primary.
   * [#1672](https://github.com/metasfresh/metasfresh/issues/1672) New Tax Category Window in WebUI
     * New Window for the Tax Category Maintenance.
+  * [#1676](https://github.com/metasfresh/metasfresh/issues/1676) Payment Terms window in WebUI
+    * Adding the window Layout For Payment Term window in WebUI.
 
 # metasfresh 5.11 (2017-21)
 
