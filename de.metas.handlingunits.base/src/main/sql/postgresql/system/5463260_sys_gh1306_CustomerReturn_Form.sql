@@ -10,8 +10,8 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, Description,Help,Name,PO_
 
 -- 2017-05-22T15:56:24.486
 -- URL zum Konzept
-UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
-;
+-- UPDATE AD_Sequence SET CurrentNext = CurrentNext + ? WHERE AD_Sequence_ID = ? RETURNING CurrentNext - ?
+-- ;
 
 -- 2017-05-22T15:56:24.495
 -- URL zum Konzept
