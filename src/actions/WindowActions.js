@@ -325,21 +325,20 @@ function initTabs(layout, windowType, docId, isModal) {
             tabTmp[tab.tabid] = {};
 
             if(index === 0 || !tab.queryOnActivate){
-                dispatch(
-                    getTab(tab.tabid, windowType, docId)
-                ).then(res => {
-                    tabTmp[tab.tabid] = res;
-                    dispatch(
-                        addRowData(tabTmp, getScope(isModal))
-                    );
-                })
+                getTab(tab.tabid, windowType, docId)
+                    .then(res => {
+                        tabTmp[tab.tabid] = res;
+                        dispatch(
+                            addRowData(tabTmp, getScope(isModal))
+                        );
+                    })
             }
         })
     }
 }
 
 export function getTab(tabId, windowType, docId, orderBy) {
-    getData(
+    return getData(
         'window', windowType, docId, tabId, null, null, null, null, orderBy
     ).then(res => res.data && res.data.map(row =>
         Object.assign({}, row, {
