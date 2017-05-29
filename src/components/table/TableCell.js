@@ -18,7 +18,7 @@ class TableCell extends Component {
         if(rowId !== nextProps.rowId){
             return;
         }
-        
+
         if(!readonly &&
             JSON.stringify(widgetData[0].value) !==
             JSON.stringify(nextProps.widgetData[0].value)

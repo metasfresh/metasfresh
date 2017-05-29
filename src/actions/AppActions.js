@@ -2,11 +2,157 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import {replace} from 'react-router-redux';
 
+// REQUESTS
+
+export function getUserLang() {
+    return axios.get(config.API_URL + '/userSession/language');
+}
+
+export function setUserLang(payload) {
+    return axios.put(config.API_URL + '/userSession/language', payload);
+}
+
+export function getAvailableLang() {
+    return axios.get(config.API_URL + '/login/availableLanguages');
+}
+
+export function browseViewRequest(
+    viewId, page, pageLength, orderBy, windowType
+){
+    return axios.get(
+        config.API_URL +
+        '/documentView/' +
+        windowType + '/' +
+        viewId +
+        '?firstRow=' + pageLength * (page - 1) +
+        '&pageLength=' + pageLength +
+        (orderBy ? '&orderBy=' + orderBy : '')
+    );
+}
+
+export function createViewRequest(
+    windowType, viewType, pageLength, filters, refDocType = null,
+    refDocId = null
+){
+    return axios.post(config.API_URL + '/documentView/' + windowType, {
+        'documentType': windowType,
+        'viewType': viewType,
+        'referencing': (refDocType && refDocId) ? {
+            'documentType': refDocType,
+            'documentId': refDocId
+        }: null,
+        'filters': filters
+    });
+}
+
+export function filterViewRequest(windowType, viewId, filters){
+    return axios.post(config.API_URL + '/documentView/' + windowType +
+    '/'+viewId+'/filter', {
+        'filters': filters
+    });
+}
+
+export function loginRequest(username, password){
+    return axios.post(
+        config.API_URL +
+        '/login/authenticate',
+        { username, password }
+    );
+}
+
+export function localLoginRequest(){
+    return axios.get(config.API_URL + '/login/isLoggedIn');
+}
+
+export function loginCompletionRequest(role){
+    return axios.post(config.API_URL + '/login/loginComplete', role);
+}
+
+export function logoutRequest(){
+    return axios.get(config.API_URL + '/login/logout');
+}
+
+export function getNotifications() {
+    return axios.get(config.API_URL + '/notifications/all?limit=20');
+}
+
+export function getNotificationsEndpoint() {
+    return axios.get(config.API_URL + '/notifications/websocketEndpoint');
+}
+
+export function markAllAsRead() {
+    return axios.put(config.API_URL + '/notifications/all/read');
+}
+
+export function markAsRead(id) {
+    return axios.put(config.API_URL + '/notifications/' + id + '/read');
+}
+
+export function getAttributesInstance(
+    attrType, tmpId, docType, docId, tabId, rowId, fieldName, entity
+) {
+    const type = entity === 'process' ? 'processId':'windowId';
+
+    return axios.post(config.API_URL + '/' + attrType, {
+        'templateId': tmpId,
+        'source': {
+            [type] : docType,
+            'documentId': docId,
+            'tabid': tabId,
+            'rowId': rowId,
+            'fieldName': fieldName
+        }
+    });
+}
+
+export function getImageAction(id) {
+    return axios({
+        url: `${config.API_URL}/image/${id}`,
+        responseType: 'blob'
+    })
+        .then(response => response.data);
+}
+
+export function postImageAction (data) {
+    return axios.post(`${config.API_URL}/image`, data)
+        .then(response => response.data);
+}
+
+export function getKPIsDashboard() {
+    return axios.get(config.API_URL +
+        '/dashboard/kpis?silentError=true');
+}
+
+export function getTargetIndicatorsDashboard() {
+    return axios.get(config.API_URL +
+        '/dashboard/targetIndicators?silentError=true');
+}
+
+export function getKPIData(id) {
+    return axios.get(config.API_URL + '/dashboard/kpis/'+id+
+        '/data?silentError=true');
+}
+
+export function getTargetIndicatorsData(id) {
+    return axios.get(
+        config.API_URL +
+        '/dashboard/targetIndicators/' +
+        id +
+        '/data?silentError=true'
+    );
+}
+
+export function setUserDashboardWidgets(payload) {
+    return axios.patch(config.API_URL + '/dashboard/kpis', payload);
+}
+
+// END OF REQUESTS
+
 export function loginSuccess(auth) {
     return dispatch => {
         localStorage.setItem('isLogged', true);
 
-        dispatch(getNotificationsEndpoint()).then(topic => {
+        getNotificationsEndpoint().then(topic => {
             auth.initNotificationClient(topic, msg => {
                 const notification = JSON.parse(msg.body);
 
@@ -29,7 +175,7 @@ export function loginSuccess(auth) {
             });
         })
 
-        dispatch(getNotifications()).then(response => {
+        getNotifications().then(response => {
             dispatch(getNotificationsSuccess(
                 response.data.notifications,
                 response.data.unreadCount
@@ -43,54 +189,6 @@ export function logoutSuccess(auth) {
         auth.closeNotificationClient();
         localStorage.removeItem('isLogged');
     }
-}
-
-export function getUserLang() {
-    return () => axios.get(config.API_URL + '/userSession/language');
-}
-
-export function setUserLang(payload) {
-    return () => axios.put(config.API_URL + '/userSession/language', payload);
-}
-
-export function getAvailableLang() {
-    return () => axios.get(config.API_URL + '/login/availableLanguages');
-}
-
-export function browseViewRequest(
-    viewId, page, pageLength, orderBy, windowType
-){
-    return () => axios.get(
-        config.API_URL +
-        '/documentView/' +
-        windowType + '/' +
-        viewId +
-        '?firstRow=' + pageLength * (page - 1) +
-        '&pageLength=' + pageLength +
-        (orderBy ? '&orderBy=' + orderBy : '')
-    );
-}
-
-export function createViewRequest(
-    windowType, viewType, pageLength, filters, refDocType = null,
-    refDocId = null
-){
-    return () => axios.post(config.API_URL + '/documentView/' + windowType, {
-        'documentType': windowType,
-        'viewType': viewType,
-        'referencing': (refDocType && refDocId) ? {
-            'documentType': refDocType,
-            'documentId': refDocId
-        }: null,
-        'filters': filters
-    });
-}
-
-export function filterViewRequest(windowType, viewId, filters){
-    return () => axios.post(config.API_URL + '/documentView/' + windowType +
-    '/'+viewId+'/filter', {
-        'filters': filters
-    });
 }
 
 export function addNotification(title, msg, time, notifType, shortMsg){
@@ -130,61 +228,6 @@ export function updateUri(pathname, query, prop, value) {
     }
 }
 
-export function loginRequest(username, password){
-    return () => axios.post(
-        config.API_URL +
-        '/login/authenticate',
-        { username, password }
-    );
-}
-
-export function localLoginRequest(){
-    return () => axios.get(config.API_URL + '/login/isLoggedIn');
-}
-
-export function loginCompletionRequest(role){
-    return () => axios.post(config.API_URL + '/login/loginComplete', role);
-}
-
-export function logoutRequest(){
-    return () => axios.get(config.API_URL + '/login/logout');
-}
-
-export function getNotifications() {
-    return () => axios.get(config.API_URL + '/notifications/all?limit=20');
-}
-
-export function getNotificationsEndpoint() {
-    return () => axios.get(config.API_URL + '/notifications/websocketEndpoint');
-}
-
-export function markAllAsRead() {
-    return () => axios.put(config.API_URL + '/notifications/all/read');
-}
-
-export function markAsRead(id) {
-    return () => axios.put(config.API_URL + '/notifications/' + id + '/read');
-}
-
-// Attribute widget backend
-
-export function getAttributesInstance(
-    attrType, tmpId, docType, docId, tabId, rowId, fieldName, entity
-) {
-    const type = entity === 'process' ? 'processId':'windowId';
-
-    return () => axios.post(config.API_URL + '/' + attrType, {
-        'templateId': tmpId,
-        'source': {
-            [type] : docType,
-            'documentId': docId,
-            'tabid': tabId,
-            'rowId': rowId,
-            'fieldName': fieldName
-        }
-    });
-}
-
 export function getNotificationsSuccess(notifications, unreadCount) {
     return {
         type: types.GET_NOTIFICATIONS_SUCCESS,
@@ -219,45 +262,4 @@ export function setProcessSaved() {
     return {
         type: types.SET_PROCESS_STATE_SAVED
     }
-}
-
-export function getImageAction(id) {
-    return axios({
-        url: `${config.API_URL}/image/${id}`,
-        responseType: 'blob'
-    })
-        .then(response => response.data);
-}
-
-export function postImageAction (data) {
-    return axios.post(`${config.API_URL}/image`, data)
-        .then(response => response.data);
-}
-
-export function getKPIsDashboard() {
-    return () => axios.get(config.API_URL +
-        '/dashboard/kpis?silentError=true');
-}
-
-export function getTargetIndicatorsDashboard() {
-    return () => axios.get(config.API_URL +
-        '/dashboard/targetIndicators?silentError=true');
-}
-
-export function getKPIData(id) {
-    return () => axios.get(config.API_URL + '/dashboard/kpis/'+id+
-        '/data?silentError=true');
-}
-
-export function getTargetIndicatorsData(id) {
-    return () => axios.get(
-        config.API_URL +
-        '/dashboard/targetIndicators/' +
-        id +
-        '/data?silentError=true'
-    );
-}
-
-export function setUserDashboardWidgets(payload) {
-    return () => axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }

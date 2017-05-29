@@ -58,7 +58,7 @@ class MasterWindow extends Component {
         // When closing modal, we need to update the stale tabs
         if(!modal.visible && modal.visible !== prevProps.modal.visible){
             Object.keys(master.includedTabsInfo).map(tabId => {
-                dispatch(getTab(tabId, params.windowType, master.docId))
+                getTab(tabId, params.windowType, master.docId)
                     .then(tab => {
                         dispatch(addRowData({[tabId]: tab}, 'master'));
                     });
@@ -164,7 +164,7 @@ class MasterWindow extends Component {
         const dataId = master.docId;
 
         dispatch(sortTab('master', tabId, field, asc));
-        dispatch(getTab(tabId, windowType, dataId, orderBy)).then(res => {
+        getTab(tabId, windowType, dataId, orderBy).then(res => {
             dispatch(addRowData({[tabId]: res}, 'master'));
         });
     }

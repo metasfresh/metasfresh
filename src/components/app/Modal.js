@@ -143,8 +143,8 @@ class Modal extends Component {
         const {isNew, isNewDoc} = this.state;
 
         if(isNewDoc) {
-            dispatch(
-                processNewRecord('window', windowType, dataId)
+            processNewRecord(
+                'window', windowType, dataId
             ).then(response => {
                 dispatch(patch(
                     'window', relativeType, relativeDataId, null, null,
@@ -188,9 +188,9 @@ class Modal extends Component {
         this.setState({
             pending: true
         }, () => {
-            dispatch(startProcess(
+            startProcess(
                 windowType, layout.pinstanceId
-            )).then(response => {
+            ).then(response => {
                 this.setState({
                     pending: false
                 }, () => {

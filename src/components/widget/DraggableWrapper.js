@@ -31,8 +31,7 @@ export class DraggableWrapper extends Component {
     }
 
     getIndicators = () => {
-        const {dispatch} = this.props;
-        dispatch(getTargetIndicatorsDashboard()).then(response => {
+        getTargetIndicatorsDashboard().then(response => {
             this.setState(Object.assign({}, this.state, {
                 indicators: response.data.items
             }));
@@ -40,8 +39,7 @@ export class DraggableWrapper extends Component {
     }
 
     getDashboard = () => {
-        const {dispatch} = this.props;
-        dispatch(getKPIsDashboard()).then(response => {
+        getKPIsDashboard().then(response => {
             this.setState(Object.assign({}, this.state, {
                 cards: response.data.items
             }));
@@ -65,7 +63,7 @@ export class DraggableWrapper extends Component {
             //         'dashboardItemIdsOrder': cards.map(item => item.id)
             //     }
             // };
-            // dispatch(setUserDashboardWidgets(changes));
+            // setUserDashboardWidgets(changes);
             //TO DO: future implementation
         });
     }

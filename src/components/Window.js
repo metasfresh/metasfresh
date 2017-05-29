@@ -41,13 +41,13 @@ class Window extends Component {
         const {type} = this.props.layout;
         const {data, rowData, newRow, tabsInfo, sort} = this.props;
         const {fullScreen} = this.state;
-        
+
         if(!Object.keys(data).length){
             return;
         }
-        
+
         const dataId = data.ID.value;
-        
+
         return(
             <Tabs
                 tabIndex={this.tabIndex.tabs}
@@ -65,7 +65,7 @@ class Window extends Component {
                         <Table
                             entity="window"
                             caption={caption}
-                            keyProperty='rowId'
+                            keyProperty="rowId"
                             key={tabid}
                             rowData={rowData}
                             cols={elements}

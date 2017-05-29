@@ -43,7 +43,7 @@ class List extends Component {
 
     handleFocus = () => {
         const {
-            properties, dispatch, dataId, rowId, tabId, windowType,
+            properties, dataId, rowId, tabId, windowType,
             filterWidget, entity, subentity, subentityId, viewId, attribute
         } = this.props;
 
@@ -51,12 +51,12 @@ class List extends Component {
             loading: true
         });
 
-        dispatch(dropdownRequest(
+        dropdownRequest(
             windowType,
             filterWidget ? properties[0].parameterName: properties[0].field,
             dataId, tabId, rowId, entity, subentity, subentityId, viewId,
             attribute
-        )).then((res) => {
+        ).then((res) => {
             this.setState({
                 list: res.data.values,
                 loading: false

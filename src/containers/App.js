@@ -100,7 +100,7 @@ export default class App extends Component {
             }
         }.bind(this));
 
-        store.dispatch(getAvailableLang()).then(response => {
+        getAvailableLang().then(response => {
             const {defaultValue, values} = response.data;
             const valuesFlatten = values.map(item => Object.keys(item)[0]);
 

@@ -37,8 +37,7 @@ class NavigationTree extends Component {
     }
 
     getData = (callback) => {
-        const {dispatch} = this.props;
-        dispatch(rootRequest()).then(response => {
+        rootRequest().then(response => {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
@@ -65,15 +64,13 @@ class NavigationTree extends Component {
     }
 
     handleQuery = (e) => {
-        const {dispatch} = this.props;
-
         e.preventDefault();
         if(e.target.value){
             this.setState({
                 query: e.target.value
             });
 
-            dispatch(queryPathsRequest(e.target.value, '', true))
+            queryPathsRequest(e.target.value, '', true)
                 .then(response => {
                     this.setState({
                         queriedResults: response.data.children
@@ -158,11 +155,9 @@ class NavigationTree extends Component {
     }
 
     handleDeeper = (e, nodeId) => {
-        const {dispatch} = this.props;
-
         e.preventDefault();
 
-        dispatch(nodePathsRequest(nodeId, 4)).then(response => {
+        nodePathsRequest(nodeId, 4).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))

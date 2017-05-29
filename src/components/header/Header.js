@@ -143,12 +143,10 @@ class Header extends Component {
     }
 
     handlePrint = (windowType, docId, docNo) => {
-        const {dispatch} = this.props;
-
-        dispatch(openFile(
+        openFile(
             'window', windowType, docId, 'print',
             windowType + '_' + (docNo ? docNo : docId) + '.pdf'
-        ));
+        );
     }
 
     handleDelete = () => {
@@ -175,7 +173,7 @@ class Header extends Component {
                 open: false
             })
         }, () => {
-            dispatch(deleteRequest('window', windowType, null, null, [docId]))
+            deleteRequest('window', windowType, null, null, [docId])
                 .then(() => {
                     handleDeletedStatus(true);
                     dispatch(push('/window/' + windowType));

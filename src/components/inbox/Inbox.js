@@ -36,15 +36,15 @@ class Inbox extends Component {
             }
         }
         if(!item.read){
-            dispatch(markAsRead(item.id));
+            markAsRead(item.id);
         }
         close && close();
     }
 
     handleMarkAllAsRead = () => {
-        const {dispatch, close} = this.props;
+        const {close} = this.props;
 
-        dispatch(markAllAsRead());
+        markAllAsRead();
 
         close && close();
     }

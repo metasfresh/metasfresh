@@ -238,14 +238,14 @@ class Table extends Component {
 
     handleKeyDown = (e) => {
         const {selected, rows, listenOnKeys} = this.state;
-        
+
         if(!listenOnKeys){
             return;
         }
-        
+
         const selectRange = e.shiftKey;
         const {keyProperty, mainTable, readonly} = this.props;
-        
+
         const {
             onDoubleClick, closeOverlays
         } = this.props;
@@ -266,15 +266,14 @@ class Table extends Component {
                 e.preventDefault();
 
                 const array = rows.map((item) => item[keyProperty]);
-                const currentId = array.findIndex(x => 
+                const currentId = array.findIndex(x =>
                     x === selected[selected.length-1]
                 );
 
                 if(currentId >= array.length - 1){
                     return;
                 }
-                
-                    
+
                 if(!selectRange) {
                     this.selectOneProduct(
                         array[currentId + 1], false, idFocused
@@ -297,7 +296,7 @@ class Table extends Component {
                 if(currentId <= 0 ){
                     return;
                 }
-                    
+
                 if(!selectRange) {
                     this.selectOneProduct(
                         array[currentId - 1], idFocused, false
@@ -481,11 +480,9 @@ class Table extends Component {
             promptOpen: false,
             selected: []
         }, () => {
-            dispatch(
-                deleteRequest(
-                    'window', type, docId ? docId : null, docId ? tabid : null,
-                    selected
-                )
+            deleteRequest(
+                'window', type, docId ? docId : null, docId ? tabid : null,
+                selected
             ).then(response => {
                 if(docId){
                     dispatch(deleteLocal(tabid, selected, 'master', response))
@@ -544,13 +541,13 @@ class Table extends Component {
     }
 
     handleZoomInto = (fieldName) => {
-        const {dispatch, entity, type, docId, tabid, viewId} = this.props;
+        const {entity, type, docId, tabid, viewId} = this.props;
         const {selected} = this.state;
 
-        dispatch(getZoomIntoWindow(
+        getZoomIntoWindow(
             entity, type, docId, (entity === 'window' ? tabid : viewId),
             selected[0], fieldName
-        )).then(res => {
+        ).then(res => {
             res && res.data && window.open('/window/' +
                    res.data.documentPath.windowId + '/' +
                    res.data.documentPath.documentId, '_blank');
