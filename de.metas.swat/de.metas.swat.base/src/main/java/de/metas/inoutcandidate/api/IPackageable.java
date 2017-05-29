@@ -74,8 +74,6 @@ public interface IPackageable
 
 	String getBPartnerAddress();
 
-//	String getDeliveryViaName();
-
 	int getWarehouseId();
 
 	/**
@@ -91,8 +89,6 @@ public interface IPackageable
 	int getShipperId();
 
 	String getDocSubType();
-
-//	String getFreightCostRuleName();
 
 	Timestamp getPreparationDate();
 }
