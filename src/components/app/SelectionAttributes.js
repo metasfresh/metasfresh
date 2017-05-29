@@ -46,8 +46,8 @@ class SelectionAttributes extends Component {
             DLWrapperSetLayout, dispatch
         } = this.props;
 
-        dispatch(initLayout(entity, windowType, selected[0], null, viewId)
-            ).then(response => {
+        initLayout(entity, windowType, selected[0], null, viewId)
+            .then(response => {
                 DLWrapperSetLayout(response.data.elements);
                 return dispatch(
                     getData(entity, windowType, viewId, selected[0])
@@ -112,7 +112,7 @@ class SelectionAttributes extends Component {
                             handlePatch={DLWrapperHandlePatch}
                             handleChange={DLWrapperHandleChange}
                             tabIndex={this.getTabId(
-                                item.fields.map(elem => 
+                                item.fields.map(elem =>
                                     DLWrapperData[elem.field] || -1
                                 )
                             )}

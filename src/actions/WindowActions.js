@@ -300,9 +300,9 @@ export function createWindow(
                     dispatch(getWindowBreadcrumb(windowType));
                 }
 
-                dispatch(initLayout(
+                initLayout(
                     'window', windowType, tabId, null, null, isAdvanced
-                )).then(response =>
+                ).then(response =>
                     dispatch(initLayoutSuccess(
                         response.data, getScope(isModal)
                     ))
@@ -325,53 +325,51 @@ function initTabs(layout, windowType, docId, isModal) {
             tabTmp[tab.tabid] = {};
 
             if(index === 0 || !tab.queryOnActivate){
-                dispatch(
-                    getTab(tab.tabid, windowType, docId)
-                ).then(res => {
-                    tabTmp[tab.tabid] = res;
-                    dispatch(
-                        addRowData(tabTmp, getScope(isModal))
-                    );
-                })
+                getTab(tab.tabid, windowType, docId)
+                    .then(res => {
+                        tabTmp[tab.tabid] = res;
+                        dispatch(
+                            addRowData(tabTmp, getScope(isModal))
+                        );
+                    })
             }
         })
     }
 }
 
 export function getTab(tabId, windowType, docId, orderBy) {
-    return dispatch =>
-        dispatch(getData(
-            'window', windowType, docId, tabId, null, null, null, null, orderBy
-        )).then(res => res.data && res.data.map(row => 
-            Object.assign({}, row, {
-                fieldsByName: parseToDisplay(row.fieldsByName)
-            }
-        )));
+    return getData(
+        'window', windowType, docId, tabId, null, null, null, null, orderBy
+    ).then(res => res.data && res.data.map(row =>
+        Object.assign({}, row, {
+            fieldsByName: parseToDisplay(row.fieldsByName)
+        }
+    )));
 }
 
 export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
     return (dispatch) => {
         if (docId === 'NEW') {
             //New master document
-            return dispatch(patchRequest('window', windowType, docId))
+            return patchRequest('window', windowType, docId)
         } else {
             if (rowId === 'NEW') {
                 //New row document
-                return dispatch(patchRequest(
+                return patchRequest(
                     'window', windowType, docId, tabId, 'NEW'
-                ))
+                )
             } else if (rowId) {
                 //Existing row document
-                return dispatch(getData(
+                return getData(
                     'window', windowType, docId, tabId, rowId, null, null,
                     isAdvanced
-                ))
+                )
             } else {
                 //Existing master document
-                return dispatch(getData(
+                return getData(
                     'window', windowType, docId, null, null, null, null,
                     isAdvanced
-                )).catch(() => {
+                ).catch(() => {
                     dispatch(initDataSuccess(
                         {}, 'master', 'notfound', {saved: true}, {}, {}
                     ));
@@ -407,18 +405,18 @@ export function patch(
         }
         timeoutLoop();
 
-        return dispatch(patchRequest(
+        return patchRequest(
             entity, windowType, id, tabId, rowId, property, value, null, null,
             isAdvanced
-        )).then(response => {
+        ).then(response => {
             responsed = true;
             dispatch(mapDataToState(
                 response.data, isModal, rowId, id, windowType, isAdvanced
             ));
         }).catch(() => {
-            dispatch(getData(
+            getData(
                 entity, windowType, id, tabId, rowId, null, null, isAdvanced
-            )).then(response => {
+            ).then(response => {
                 dispatch(mapDataToState(
                     response.data, isModal, rowId, id, windowType, isAdvanced
                 ));
@@ -512,7 +510,7 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
 
         //Handling staleTabIds
         !isModal && staleTabIds.map(staleTabId => {
-            dispatch(getTab(staleTabId, windowType, id)).then(tab => {
+            getTab(staleTabId, windowType, id).then(tab => {
                 dispatch(addRowData({[staleTabId]: tab}, 'master'));
             });
         })
@@ -597,7 +595,7 @@ export function attachFileAction(windowType, docId, data){
 
 //ZOOM INTO
 export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
-   return () => axios.get(
+   return axios.get(
         config.API_URL +
         '/' + entity +
         '/' + windowId +
@@ -617,15 +615,15 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     return (dispatch) => {
         dispatch(setProcessPending());
 
-        return dispatch(
-            getProcessData(processType, viewId, type, ids, tabId, rowId)
+        return getProcessData(
+            processType, viewId, type, ids, tabId, rowId
         ).then(response => {
             const preparedData = parseToDisplay(response.data.parameters);
-            
+
             pid = response.data.pinstanceId;
 
             if (Object.keys(preparedData).length === 0) {
-                dispatch(startProcess(processType, pid)).then(response => {
+                startProcess(processType, pid).then(response => {
                     dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
                 }).catch(err => {
@@ -635,7 +633,7 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                 throw new Error('close_modal');
             }else{
                 dispatch(initDataSuccess(preparedData, 'modal'));
-                dispatch(initLayout('process', processType)).then(response => {
+                initLayout('process', processType).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })
@@ -668,9 +666,9 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         dispatch(openRawModal(action.windowId, action.viewId));
                         break;
                     case 'openReport':
-                        dispatch(openFile(
+                        openFile(
                             'process', type, id, 'print', action.filename
-                        ));
+                        );
                         break;
                     case 'openDocument':
                         if(action.modal) {
@@ -714,7 +712,7 @@ export function handleProcessResponse(response, type, id, successCallback) {
 }
 
 function getProcessData(processId, viewId, type, ids, tabId, rowId) {
-    return () => axios.post(
+    return axios.post(
         config.API_URL +
         '/process/' + processId,
         viewId ? {
@@ -732,7 +730,7 @@ function getProcessData(processId, viewId, type, ids, tabId, rowId) {
 }
 
 export function startProcess(processType, pinstanceId) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/process/' + processType +
         '/' + pinstanceId +
@@ -763,9 +761,9 @@ export function parseToDisplay(obj) {
 
 function parseDateToReadable(obj) {
     const dateParse = ['Date', 'DateTime', 'Time'];
-    
+
     return Object.keys(obj).reduce((acc, key) => {
-        acc[key] = 
+        acc[key] =
             (dateParse.indexOf(obj[key].widgetType) > -1 && obj[key].value) ?
                 Object.assign({}, obj[key], {
                     value: obj[key].value ? new Date(obj[key].value) : ''

@@ -24,7 +24,7 @@ class OverlayField extends Component {
         const {disabled} = this.props;
         const elements = layout.elements;
         return elements.map((elem, id) => {
-            const widgetData = elem.fields.map(item => 
+            const widgetData = elem.fields.map(item =>
                 data[item.field] || -1);
             return (
                 <MasterWidget

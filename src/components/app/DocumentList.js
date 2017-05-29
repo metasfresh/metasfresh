@@ -171,7 +171,7 @@ class DocumentList extends Component {
     }
 
     connectWS = (viewId) => {
-        const {dispatch, windowType} = this.props;
+        const {windowType} = this.props;
         (this.sockClient && this.sockClient.connected) &&
             this.sockClient.disconnect();
 
@@ -182,9 +182,9 @@ class DocumentList extends Component {
             this.sockClient.subscribe('/view/'+ viewId, msg => {
                 const {fullyChanged, changedIds} = JSON.parse(msg.body);
                 if(changedIds){
-                    dispatch(getDataByIds(
+                    getDataByIds(
                         'documentView', windowType, viewId, changedIds.join()
-                    )).then(response => {
+                    ).then(response => {
                         response.data.map(row => {
                             this.setState({
                                 data: Object.assign(this.state.data, {}, {
@@ -252,16 +252,16 @@ class DocumentList extends Component {
 
     fetchLayoutAndData = (isNewFilter) => {
         const {
-            dispatch, windowType, type, setModalTitle, setNotFound
+            windowType, type, setModalTitle, setNotFound
         } = this.props;
 
         const {
             viewId
         } = this.state;
 
-        dispatch(initLayout(
+        initLayout(
             'documentView', windowType, null, null, null, null, type, true
-        )).then(response => {
+        ).then(response => {
             this.mounted && this.setState({
                 layout: response.data
             }, () => {
@@ -305,14 +305,14 @@ class DocumentList extends Component {
 
     createView = () => {
         const {
-            dispatch, windowType, type, refType, refId
+            windowType, type, refType, refId
         } = this.props;
 
         const {page, sort, filters} = this.state;
 
-        dispatch(createViewRequest(
+        createViewRequest(
             windowType, type, this.pageLength, filters, refType, refId
-        )).then(response => {
+        ).then(response => {
             this.mounted && this.setState({
                 data: response.data,
                 viewId: response.data.viewId
@@ -324,14 +324,14 @@ class DocumentList extends Component {
 
     filterView = () => {
         const {
-            dispatch, windowType
+            windowType
         } = this.props;
 
         const {page, sort, filters, viewId} = this.state;
 
-        dispatch(filterViewRequest(
+        filterViewRequest(
             windowType, viewId, filters
-        )).then(response => {
+        ).then(response => {
             this.mounted && this.setState({
                 data: response.data,
                 viewId: response.data.viewId
@@ -342,7 +342,7 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery, refresh) => {
-        const {dispatch, windowType, updateUri, setNotFound} = this.props;
+        const {windowType, updateUri, setNotFound} = this.props;
 
         setNotFound && setNotFound(false);
 
@@ -352,9 +352,9 @@ class DocumentList extends Component {
             sortingQuery && updateUri('sort', sortingQuery);
         }
 
-        return dispatch(browseViewRequest(
+        return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
-        )).then(response => {
+        ).then(response => {
             this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters

@@ -17,11 +17,11 @@ class Tab extends Component {
 
         if(docId && queryOnActivate){
             const query =
-                orderBy ? 
+                orderBy ?
                     (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
                     : '';
 
-            dispatch(getTab(tabid, windowType, docId, query)).then(res => {
+            getTab(tabid, windowType, docId, query).then(res => {
                 dispatch(addRowData({[tabid]: res}, 'master'));
             });
         }

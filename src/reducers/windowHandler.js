@@ -172,7 +172,7 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     data: {
-                        [action.property]: {$set: 
+                        [action.property]: {$set:
                             Object.assign({},
                                 state[action.scope].data[action.property],
                                 action.item
@@ -203,13 +203,18 @@ export default function windowHandler(state = initialState, action) {
                         rowData: {
                             [action.tabid]: {
                                 $set: state[action.scope].rowData[action.tabid]
-                                    .map((item, index) => 
+                                    .map((item, index) =>
                                         item.rowId === action.rowid ? {
-                                            ...state[action.scope].rowData[action.tabid][index],
+                                            ...state[action.scope]
+                                                .rowData[action.tabid][index],
                                             fieldsByName: {
-                                                ...state[action.scope].rowData[action.tabid][index].fieldsByName,
+                                                ...state[action.scope]
+                                                    .rowData[action.tabid][index]
+                                                    .fieldsByName,
                                                 [action.property]: {
-                                                    ...state[action.scope].rowData[action.tabid][index].fieldsByName[action.property], 
+                                                    ...state[action.scope]
+                                                        .rowData[action.tabid][index]
+                                                        .fieldsByName[action.property],
                                                     ...action.item
                                                     }
                                             }
@@ -219,8 +224,7 @@ export default function windowHandler(state = initialState, action) {
                         }
                     }
                 });
-                
-                    
+
          case types.UPDATE_ROW_PROPERTY:
             return update(state, {
                 [action.scope]: {
@@ -229,7 +233,8 @@ export default function windowHandler(state = initialState, action) {
                             $set: state[action.scope].rowData[action.tabid]
                                 .map((item, index) =>
                                     item.rowId === action.rowid ? {
-                                        ...state[action.scope].rowData[action.tabid][index],
+                                        ...state[action.scope]
+                                            .rowData[action.tabid][index],
                                         [action.property]: action.item
                                     } : item
                                 )

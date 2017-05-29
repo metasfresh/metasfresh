@@ -30,8 +30,6 @@ class Attributes extends Component {
     }
 
     handleChange = (field, value) => {
-        const {data} = this.state;
-        
         this.setState(prevState => ({
             data: Object.assign({}, prevState.data, {
                 [field]: Object.assign({}, prevState.data[field], {value})
@@ -40,10 +38,10 @@ class Attributes extends Component {
     }
 
     handlePatch = (prop, value, id, cb) => {
-        const {dispatch, attributeType} = this.props;
+        const {attributeType} = this.props;
 
-        dispatch(patchRequest(
-            attributeType, null, id, null, null, prop, value)
+        patchRequest(
+            attributeType, null, id, null, null, prop, value
         ).then(response => {
             const fields = response.data[0].fieldsByName;
             Object.keys(fields).map(fieldName => {
@@ -77,7 +75,7 @@ class Attributes extends Component {
                 data: parseToDisplay(fieldsByName)
             });
 
-            return dispatch(initLayout(attributeType, id));
+            return initLayout(attributeType, id);
         }).then(response => {
             const {elements} = response.data;
 
@@ -110,13 +108,13 @@ class Attributes extends Component {
     }
 
     handleCompletion = () => {
-        const {attributeType, dispatch, patch} = this.props;
+        const {attributeType, patch} = this.props;
         const {data} = this.state;
         const attrId = data && data.ID ? data.ID.value : -1;
 
-        const mandatory = Object.keys(data).filter(fieldName => 
+        const mandatory = Object.keys(data).filter(fieldName =>
             data[fieldName].mandatory);
-        const valid = !mandatory.filter(fieldName => !data[field].value).length;
+        const valid = !mandatory.filter(field => !data[field].value).length;
 
         //there are required values that are not set. just close
         if (mandatory.length && !valid){
@@ -126,7 +124,7 @@ class Attributes extends Component {
             return;
         }
 
-        dispatch(completeRequest(attributeType, attrId)).then(response => {
+        completeRequest(attributeType, attrId).then(response => {
             patch(response.data);
             this.handleToggle(false);
         });

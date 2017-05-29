@@ -23,17 +23,16 @@ class Referenced extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType, docId} = this.props;
+        const {windowType, docId} = this.props;
 
-        dispatch(
-            referencesRequest('window', windowType, docId)
-        ).then(response => {
-            this.setState({
-                data: response.data.groups
-            }, () => {
-                this.referenced && this.referenced.focus();
-            })
-        });
+        referencesRequest('window', windowType, docId)
+            .then(response => {
+                this.setState({
+                    data: response.data.groups
+                }, () => {
+                    this.referenced && this.referenced.focus();
+                })
+            });
     }
 
     handleReferenceClick = (type, filter) => {

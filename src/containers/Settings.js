@@ -26,9 +26,7 @@ class Settings extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch} = this.props;
-
-        dispatch(getAvailableLang()).then(response => {
+        getAvailableLang().then(response => {
             const {values, defaultValue} = response.data;
             let chosenLang = '';
 
@@ -47,9 +45,7 @@ class Settings extends Component {
     }
 
     patch = (value) => {
-        const {dispatch} = this.props;
-
-        dispatch(setUserLang(value)).then(() => {
+        setUserLang(value).then(() => {
             this.setState({
                 value: value
             }, () => {
@@ -69,7 +65,7 @@ class Settings extends Component {
             })
         })
 
-        dispatch(getNotifications()).then(response => {
+        getNotifications().then(response => {
             dispatch(getNotificationsSuccess(
                 response.data.notifications,
                 response.data.unreadCount

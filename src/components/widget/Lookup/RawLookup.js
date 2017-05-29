@@ -136,7 +136,7 @@ class RawLookup extends Component {
 
     handleChange = (handleChangeOnFocus) => {
         const {
-            dispatch, recent, windowType, dataId, filterWidget, parameterName,
+            recent, windowType, dataId, filterWidget, parameterName,
             tabId, rowId, entity, subentity, subentityId, viewId, mainProperty
         } = this.props;
 
@@ -149,13 +149,13 @@ class RawLookup extends Component {
                 isOpen: true
             });
 
-            dispatch(autocompleteRequest(
+            autocompleteRequest(
                 windowType,
                 (filterWidget ? parameterName : mainProperty[0].field),
                 this.inputSearch.value,
                 (filterWidget ? viewId : dataId), tabId, rowId, entity,
                 subentity, subentityId
-            )).then((response)=>{
+            ).then((response)=>{
                 this.setState({
                     list: response.data.values,
                     loading: false,

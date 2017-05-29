@@ -43,9 +43,9 @@ class TableQuickInput extends Component {
         const {data, layout, editedField} = this.state;
         if(data && layout){
             for(let i = 0; i < layout.length; i++){
-                const item = 
+                const item =
                     layout[i].fields.map(elem => data[elem.field] || -1);
-                
+
                 if(!item[0].value){
                     if(editedField !== i){
                         this.setState({
@@ -104,22 +104,22 @@ class TableQuickInput extends Component {
     }
 
     handlePatch = (prop, value, callback) => {
-        const {dispatch, docType, docId, tabId} = this.props;
+        const {docType, docId, tabId} = this.props;
         const {id} = this.state;
 
         this.patchPromise = new Promise(resolve => {
-            dispatch(patchRequest(
+            patchRequest(
                 'window', docType, docId, tabId, null, prop, value,
                 'quickInput', id
-            )).then(response => {
+            ).then(response => {
                 const fields = response.data[0] && response.data[0].fieldsByName
-                
+
                 fields && Object.keys(fields).map(fieldName => {
-                    
+
                     this.setState(prevState => ({
                         data: Object.assign({}, prevState.data, {
-                            [fieldName]: Object.assign({}, 
-                                prevState.data[fieldName], 
+                            [fieldName]: Object.assign({},
+                                prevState.data[fieldName],
                                 fields[fieldName]
                             )
                         })
@@ -180,9 +180,9 @@ class TableQuickInput extends Component {
 
         this.patchPromise
             .then(() => {
-                return dispatch(completeRequest(
+                return completeRequest(
                     'window', docType, docId, tabId, null, 'quickInput', id
-                ))
+                )
             })
             .then(response => {
                 this.initQuickInput();
@@ -193,7 +193,7 @@ class TableQuickInput extends Component {
     }
 
     validateForm = (data) => {
-        return !Object.keys(data).filter(key => 
+        return !Object.keys(data).filter(key =>
             data[key].mandatory && !data[key].value).length;
     }
 

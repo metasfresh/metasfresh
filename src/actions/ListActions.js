@@ -1,6 +1,15 @@
 import * as types from '../constants/ListTypes'
 import axios from 'axios';
 
+export function quickActionsRequest(windowId, viewId, selectedIds) {
+    return axios.get(
+        config.API_URL + '/documentView/' +
+        windowId + '/' + viewId +
+        '/quickActions' +
+        (selectedIds && selectedIds.length ? '?selectedIds=' + selectedIds : '')
+    );
+}
+
 export function setListId(viewId, windowType) {
     return {
         type: types.SET_LIST_ID,
@@ -39,22 +48,4 @@ export function setListIncludedView(windowType, viewId) {
         windowType,
         viewId
     }
-}
-
-export function quickActionsRequest(windowId, viewId, selectedIds) {
-    return () => axios.get(
-        config.API_URL + '/documentView/' +
-        windowId + '/' + viewId +
-        '/quickActions' +
-        (selectedIds && selectedIds.length ? '?selectedIds=' + selectedIds : '')
-    );
-}
-
-export function selectionAttributes(windowId, viewId, selectedIds) {
-    return () => axios.get(
-        config.API_URL + '/documentView/' +
-        windowId + '/' + viewId +
-        '/quickActions' +
-        (selectedIds && selectedIds.length ? '?selectedIds=' + selectedIds : '')
-    );
 }
