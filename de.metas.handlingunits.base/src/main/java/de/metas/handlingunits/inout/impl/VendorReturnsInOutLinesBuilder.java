@@ -42,7 +42,6 @@ public class VendorReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutL
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-
 	public VendorReturnsInOutLinesBuilder(IReference<I_M_InOut> inoutRef)
 	{
 		super(inoutRef);
@@ -59,6 +58,8 @@ public class VendorReturnsInOutLinesBuilder extends AbstractQualityReturnsInOutL
 	protected void setHUStatus(IHUContext huContext, I_M_HU hu)
 	{
 		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Shipped);
+		// this handling unit must be deactivated so it is no longer considered as part of our system and no longer displayed in out POS windows.
+		hu.setIsActive(false);
 	}
 
 }
