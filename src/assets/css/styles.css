@@ -107,7 +107,7 @@ body {
 .context-menu {
     position: fixed;
     display: none;
-    width: 150px;
+    width: 180px;
     background-color: #fff;
     left: 0;
     top: 0;
