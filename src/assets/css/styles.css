@@ -1150,6 +1150,7 @@ td.pulse-off input {
 }
 
 .separator-title {
+    white-space: nowrap;
     color: $brand-font-color-weak;
 }
 
