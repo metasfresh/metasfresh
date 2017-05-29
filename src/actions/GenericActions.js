@@ -188,12 +188,14 @@ export function actionsRequest(entity, type, id, selected){
     );
 }
 
-export function referencesRequest(entity, type, id){
+export function referencesRequest(entity, type, docId, tabId, rowId){
     return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
-        id +
+        docId +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
         '/references'
     );
 }
