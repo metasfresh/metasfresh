@@ -102,7 +102,6 @@ class BarChartComponent extends Component {
     render() {
         const {chartClass, isMaximize, data, fields} = this.props;
 
-
         return (
             <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
                 <svg className={chartClass} />
@@ -116,12 +115,11 @@ class BarChartComponent extends Component {
                                     <td>
                                         <table className="table table-included">
                                             {fields.map((field, index)=> {
-                                                const nameField = field.fieldName;
                                                 return (
                                                     <tbody key={index}>
                                                         <tr>
-                                                            <td>aaa</td>
-                                                            <td>bbb</td>
+                                                            <td>{field.caption}</td>
+                                                            <td>{item[field.fieldName]}</td>
                                                         </tr>
                                                     </tbody>
                                                 )

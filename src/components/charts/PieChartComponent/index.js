@@ -252,6 +252,7 @@ class PieChartComponent extends Component {
 
     render() {
         const {chartClass, data, fields, groupBy, isMaximize} = this.props;
+
         return (
             <div className={chartClass+'-wrapper' + ' chart-wrapper'}>
                 <svg className={chartClass} />
