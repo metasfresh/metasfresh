@@ -296,8 +296,9 @@ class RawLookup extends Component {
         return (
         <div
             onKeyDown={this.handleKeyDown}
-            className={'raw-lookup-wrapper raw-lookup-wrapper-bcg '+
-            (disabled ? 'raw-lookup-disabled':'')
+            className={'raw-lookup-wrapper raw-lookup-wrapper-bcg'+
+            (disabled ? ' raw-lookup-disabled':'') +
+            (readonly ? ' input-disabled':'')
         }
         >
             <div className={
