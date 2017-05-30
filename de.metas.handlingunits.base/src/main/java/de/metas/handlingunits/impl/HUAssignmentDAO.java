@@ -13,11 +13,11 @@ package de.metas.handlingunits.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -335,6 +335,14 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
+	public List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
+	{
+		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQueryNoTopLevel(contextProvider, adTableId, hu);
+		return queryBuilder.create()
+				.list(I_M_HU_Assignment.class);
+	}
+
+	@Override
 	public int retrieveTableHUAssignmentsCount(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQuery(contextProvider, adTableId, hu);
@@ -346,11 +354,20 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	public final IQueryBuilder<I_M_HU_Assignment> retrieveTableHUAssignmentsQuery(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, contextProvider)
-				// .addOnlyActiveRecordsFilter()
-				;
+		// .addOnlyActiveRecordsFilter()
+		;
 
 		applyCommonTopLevelFilters(queryBuilder, adTableId)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID());
+		return queryBuilder;
+	}
+
+	private final IQueryBuilder<I_M_HU_Assignment> retrieveTableHUAssignmentsQueryNoTopLevel(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
+	{
+		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, contextProvider);
+
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId);
+		queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, hu.getM_HU_ID());
 		return queryBuilder;
 	}
 

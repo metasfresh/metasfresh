@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inout;
 
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 
 /*
@@ -126,5 +127,13 @@ public interface IHUInOutBL extends ISingletonService
 	void createHUsForCustomerReturn(I_M_InOut customerReturn);
 
 	void createHUsForCustomerReturn(I_M_InOutLine customerReturnLine);
+
+	/**
+	 * Create Return From Vendor documents for the given HUs
+	 * 
+	 * @param hus
+	 * @return
+	 */
+	List<de.metas.handlingunits.model.I_M_InOut> createCustomerReturnInOutForHUs(Collection<I_M_HU> hus);
 
 }

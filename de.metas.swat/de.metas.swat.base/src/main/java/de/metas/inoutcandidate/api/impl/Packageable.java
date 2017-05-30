@@ -55,7 +55,6 @@ public class Packageable implements IPackageable
 	private String warehouseName;
 
 	private String deliveryVia;
-//	private String deliveryViaName;
 
 	private int shipperId;
 	private String shipperName;
@@ -68,7 +67,6 @@ public class Packageable implements IPackageable
 	private Timestamp preparationDate;
 
 	private String freighCostRule;
-//	private String freightCostRuleName;
 
 	private String docType;
 
@@ -273,17 +271,6 @@ public class Packageable implements IPackageable
 		this.freighCostRule = freighCostRule;
 	}
 
-//	@Override
-//	public String getFreightCostRuleName()
-//	{
-//		return freightCostRuleName;
-//	}
-//
-//	public void setFreightCostRuleName(String freighCostRuleName)
-//	{
-//		this.freightCostRuleName = freighCostRuleName;
-//	}
-
 	@Override
 	public String getDocType()
 	{
@@ -338,17 +325,6 @@ public class Packageable implements IPackageable
 	{
 		this.warehouseId = warehouseId;
 	}
-
-//	@Override
-//	public String getDeliveryViaName()
-//	{
-//		return deliveryViaName;
-//	}
-//
-//	public void setDeliveryViaName(String deliveryViaName)
-//	{
-//		this.deliveryViaName = deliveryViaName;
-//	}
 
 	public void setOrderId(int orderId)
 	{

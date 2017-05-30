@@ -40,6 +40,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPickingSlotBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -264,6 +265,14 @@ public class M_InOut
 		if (!huInOutBL.isCustomerReturn(customerReturn))
 		{
 			// do nothing if the inout is not a customer return
+			return;
+		}
+		
+		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
+		
+		if(!existingHandlingUnits.isEmpty())
+		{
+			// the handling units are already created
 			return;
 		}
 

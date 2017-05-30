@@ -47,6 +47,8 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 	 * M_InOut PO
 	 */
 	private static final int WINDOW_RETURN_TO_VENDOR = 53098; // FIXME: HARDCODED
+	
+	private static final int WINDOW_RETURN_FROM_CUSTOMER = 53097; // FIXME: HARDCODED
 
 	public static final ReturnInOutProcessedEventBus newInstance()
 	{
@@ -63,7 +65,7 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 	// services
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 
-	private static final String MSG_Event_CUSTOMER_RETURN_Generated = "Event_CustomerReturn_Generated";
+	private static final String MSG_Event_RETURN_FROM_CUSTOMER_Generated = "Event_CustomerReturn_Generated";
 	private static final String MSG_Event_RETURN_TO_VENDOR_Generated = "Event_ReturnToVendor_Generated";
 
 	private ReturnInOutProcessedEventBus(final IEventBus delegate)
@@ -146,15 +148,20 @@ public class ReturnInOutProcessedEventBus extends QueueableForwardingEventBus
 				.setDetailADMessage(adMessage, TableRecordReference.of(inout), bpValue, bpName)
 				.addRecipient_User_ID(recipientUserId)
 				.setRecord(TableRecordReference.of(inout))
-				.setSuggestedWindowId(WINDOW_RETURN_TO_VENDOR)
+				.setSuggestedWindowId(getWindowID(inout))
 				.build();
 		return event;
+	}
+
+	private int getWindowID(I_M_InOut inout)
+	{
+		return inout.isSOTrx() ? WINDOW_RETURN_FROM_CUSTOMER : WINDOW_RETURN_TO_VENDOR;
 	}
 
 	private final String getNotificationAD_Message(final I_M_InOut inout)
 	{
 
-		return inout.isSOTrx() ? MSG_Event_CUSTOMER_RETURN_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;
+		return inout.isSOTrx() ? MSG_Event_RETURN_FROM_CUSTOMER_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;
 
 	}
 
