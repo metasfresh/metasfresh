@@ -484,21 +484,17 @@ class DocumentList extends Component {
                                     </button>
                                 }
                                 {layout.filters && <Filters
+                                    {...{windowType, viewId}}
                                     filterData={layout.filters}
                                     filtersActive={filters}
-                                    windowType={windowType}
-                                    viewId={viewId}
                                     updateDocList={this.handleFilterChange}
                                 />}
                             </div>}
                             <QuickActions
-                                windowType={windowType}
-                                selectedWindowType={selectedWindowType}
-                                viewId={viewId}
+                                {...{windowType, selectedWindowType, viewId,
+                                    refresh, processStatus}}
                                 selected={selectionValid ? selected : undefined}
-                                refresh={refresh}
                                 fetchOnInit={fetchQuickActionsOnInit}
-                                processStatus={processStatus}
                                 hidden={hasIncluded}
                                 shouldNotUpdate={inBackground && !hasIncluded}
                             />
@@ -546,11 +542,10 @@ class DocumentList extends Component {
                                     <DataLayoutWrapper
                                         className="table-flex-wrapper attributes-selector js-not-unselect"
                                         entity="documentView"
-                                        windowType={windowType}
-                                        viewId={viewId}
+                                        {...{windowType, viewId}}
                                     >
                                         <SelectionAttributes
-                                            refresh={refresh}
+                                            {...{refresh}}
                                             setClickOutsideLock={
                                                 this.setClickOutsideLock
                                             }
