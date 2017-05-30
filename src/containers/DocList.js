@@ -30,7 +30,6 @@ class DocList extends Component {
 
     componentDidMount = () => {
         const {dispatch, windowType, latestNewDocument} = this.props;
-
         dispatch(getWindowBreadcrumb(windowType));
 
         if(latestNewDocument){
