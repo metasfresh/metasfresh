@@ -40,7 +40,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -104,14 +103,15 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void setHUStatusShippedForShipment(final I_M_InOut shipment)
 	{
-		// Make sure we deal with a shipment
-		if (!shipment.isSOTrx())
+		final boolean isVendorReturn = Services.get(IHUInOutBL.class).isVendorReturn(shipment);	//
+		// Make sure we deal with a shipment or a vendor return
+		if (!shipment.isSOTrx() && !isVendorReturn)
 		{
 			return;
 		}
-		
+
 		// make sure we are not dealing with a customer return
-		if(Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
 		{
 			return;
 		}
@@ -267,10 +267,10 @@ public class M_InOut
 			// do nothing if the inout is not a customer return
 			return;
 		}
-		
+
 		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
-		
-		if(!existingHandlingUnits.isEmpty())
+
+		if (!existingHandlingUnits.isEmpty())
 		{
 			// the handling units are already created
 			return;

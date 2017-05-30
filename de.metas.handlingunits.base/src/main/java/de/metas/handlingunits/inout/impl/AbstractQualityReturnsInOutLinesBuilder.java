@@ -146,7 +146,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			setHUStatus (huContext, hu);
 			
 
-			InterfaceWrapperHelper.save(hu);
+			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_None);
 		}
 	}
 	
