@@ -189,4 +189,63 @@ public class PlainESRImportDAO extends AbstractESRImportDAO
 		// TODO: Implement a plain method for this
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public int countLines(I_ESR_Import esrImport, final Boolean processed)
+	{
+
+		final List<I_ESR_ImportLine> result = db.getRecords(I_ESR_ImportLine.class, new IQueryFilter<I_ESR_ImportLine>()
+		{
+			@Override
+			public boolean accept(I_ESR_ImportLine pojo)
+			{
+				if (processed == null)
+				{
+					return true;
+				}
+				else if (processed)
+				{
+					if (!pojo.isProcessed())
+					{
+						return false;
+					}
+					return true;
+				}
+				else
+				{
+					if (pojo.isProcessed())
+					{
+						return false;
+					}
+					return true;
+				}
+			}
+		});
+
+		return result.size();
+	}
+
+	@Override
+	public I_ESR_ImportLine fetchLineForESRLineText(final I_ESR_Import import1, final String esrImportLineText)
+	{
+
+		final List<I_ESR_ImportLine> result = db.getRecords(I_ESR_ImportLine.class, new IQueryFilter<I_ESR_ImportLine>()
+		{
+			@Override
+			public boolean accept(I_ESR_ImportLine pojo)
+			{
+				if (pojo.getESR_Import_ID() != import1.getESR_Import_ID())
+				{
+					return false;
+				}
+				if (pojo.getESRLineText() != esrImportLineText)
+				{
+					return false;
+				}
+				return true;
+			}
+		});
+
+		return result.get(0);
+	}
 }

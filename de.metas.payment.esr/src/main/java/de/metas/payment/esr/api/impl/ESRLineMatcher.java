@@ -39,6 +39,7 @@ public class ESRLineMatcher extends AbstractESRLineMatcher
 	{
 		matchers.put(ESRConstants.ESRTRXTYPE_Receipt, new ESRReceiptLineMatcher());
 		matchers.put(ESRConstants.ESRTRXTYPE_Payment, new ESRPaymentLineMatcher());
+		matchers.put(ESRConstants.ESRTRXTYPE_ReverseBooking, new ESRReverseBookingMatcher());
 	}
 
 	/**

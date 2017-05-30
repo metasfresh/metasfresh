@@ -1,27 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -30,32 +8,36 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.acct.Doc;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
-import de.metas.adempiere.service.IPeriodBL;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.exception.ESRParserException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 
-class ESRRegularLineMatcher extends AbstractESRLineMatcher
+/**
+ * Matcher for specific case, line with code <code>005</code>
+ * <ul>
+ * recognize reverse booking on import due to their code which is 005 and not 002
+ * <ul>
+ * skip those lines and just add a error message into the line saying Reverse Booking. Please contact the admin
+ * 
+ * @author cg
+ *
+ */
+class ESRReverseBookingMatcher extends AbstractESRLineMatcher
 {
-
-	private final IESRLineHandlersService esrMatchingListener = Services.get(IESRLineHandlersService.class);
 
 	/**
 	 * Matches the given import line
@@ -66,11 +48,10 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 		final String trxType = importLine.getESRTrxType();
 
 		// make sure we are called with the correct type of line
-		Check.assume(!ESRConstants.ESRTRXTYPE_Receipt.equals(trxType), "{} does not have ERS trx type {}", importLine, ESRConstants.ESRTRXTYPE_Receipt);
-		Check.assume(!ESRConstants.ESRTRXTYPE_Payment.equals(trxType), "{} does not have ERS trx type {}", importLine, ESRConstants.ESRTRXTYPE_Payment);
+		Check.assume(ESRConstants.ESRTRXTYPE_ReverseBooking.equals(trxType), "{0} does not have ERS trx type {1}", importLine, ESRConstants.ESRTRXTYPE_ReverseBooking);
 
 		// Getting ctx with importLine's AD_Client_ID and AD_Org_ID because we want to retrieve the correct C_ReferenceNo_Doc further below
-		final Properties localCtx = Env.deriveCtx(InterfaceWrapperHelper.getCtx(importLine, true));
+		final Properties localCtx = new Properties(InterfaceWrapperHelper.getCtx(importLine, true));
 
 		final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
@@ -88,7 +69,7 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 			final String postAccountNo = esrImportLineText.substring(3, 12);
 			importLine.setESRPostParticipantNumber(postAccountNo);
 
-			// 04690: guarding against NPE (shouldn't happen, but i jsut encountered it)
+			// Mo73 04690: guarding against NPE (shouldn't happen, but i jsut encountered it)
 			final I_C_BP_BankAccount bankAccount;
 			if (importLine.getC_BP_BankAccount_ID() > 0)
 			{
@@ -119,23 +100,13 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 		// note: we parse the amount before the invoice line, because when setting the invoice lie, we already want to use it
 		{
 			final String amountStringWithPosibleSpaces = esrImportLineText.substring(39, 49);
-			final String amountString = replaceNonDigitCharsWithZero(amountStringWithPosibleSpaces); // 04551
+			final String amountString = replaceNonDigitCharsWithZero(amountStringWithPosibleSpaces); // mo73_04551
 
 			try
 			{
 				BigDecimal amount = new BigDecimal(amountString);
 				amount = amount.divide(Env.ONEHUNDRED, 2, RoundingMode.UNNECESSARY);
-				if (trxType.endsWith(ESRConstants.ESRTRXTYPE_REVERSE_LAST_DIGIT))
-				{
-					importLine.setAmount(amount.negate());
-				}
-				else
-				{
-					Check.assume(trxType.endsWith(ESRConstants.ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT) || trxType.endsWith(ESRConstants.ESRTRXTYPE_CORRECTION_LAST_DIGIT),
-							"The file contains a line with unsupported transaction type '" + trxType + "'");
-					importLine.setAmount(amount);
-				}
-				// Important: the imported amount doesn't need to match the invoices' amounts
+				importLine.setAmount(amount.negate());
 			}
 			catch (NumberFormatException e)
 			{
@@ -167,13 +138,14 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 
 				// check if invoice
 				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(esrReferenceNumberDocument.getAD_Table_ID());
-				if (I_C_Invoice.Table_Name.equalsIgnoreCase(tableName))
+				if (I_C_Invoice.Table_Name.equals(tableName))
 				{
 					importLine.setC_ReferenceNo(esrReferenceNumberDocument.getC_ReferenceNo());
 
 					final int invoiceID = esrReferenceNumberDocument.getRecord_ID();
 					final I_C_Invoice invoice = InterfaceWrapperHelper.create(localCtx, invoiceID, I_C_Invoice.class, ITrx.TRXNAME_None);
 
+					final String initialErrorMsg = importLine.getErrorMsg();
 					boolean match = esrMatchingListener.applyESRMatchingBPartnerOfTheInvoice(invoice, importLine);
 					// check the org: should not match with invoices from other orgs
 					if (match)
@@ -186,14 +158,18 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 							setValuesFromInvoice(importLine, invoice);
 						}
 					}
+					else
+					{
+						// reset error message: we do not care in this case
+						importLine.setErrorMsg(null);
+						importLine.setErrorMsg(initialErrorMsg);
+					}
 
 				}
 				else
 				{
-					esrImportBL.addErrorMsg(
-							importLine,
-							Services.get(IMsgBL.class).getMsg(localCtx, ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P,
-									new Object[] { completeEsrReferenceNumberStr, tableName }));
+					logger.trace(Services.get(IMsgBL.class).getMsg(localCtx, ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P,
+							new Object[] { completeEsrReferenceNumberStr, tableName }));
 				}
 			}
 		}
@@ -201,39 +177,13 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 		// Set the reference number components if the reference no is not manual
 		if (!importLine.isESR_IsManual_ReferenceNo())
 		{
+			final String initialErrorMsg = importLine.getErrorMsg();
 			setValuesFromESRString(importLine);
+			// reset error message: we do not care in this case
+			importLine.setErrorMsg(null);
+			importLine.setErrorMsg(initialErrorMsg);
 		}
 
-		// Payment Date
-		{
-			final String paymentDateStr = esrImportLineText.substring(59, 65);
-			try
-			{
-				final Timestamp oldPaymentDate = importLine.getPaymentDate();
-
-				// set only if not set before
-				if (oldPaymentDate == null)
-				{
-					final Timestamp paymentDate = extractTimestampFromString(paymentDateStr);
-					importLine.setPaymentDate(paymentDate);
-				}
-
-				// task 05917: check if the the payment date from the ESR file is OK for us
-				try
-				{
-					Services.get(IPeriodBL.class).testPeriodOpen(localCtx, importLine.getPaymentDate(), Doc.DOCTYPE_APPayment, importLine.getAD_Org_ID());
-				}
-				catch (PeriodClosedException p)
-				{
-					esrImportBL.addErrorMsg(importLine, p.getLocalizedMessage());
-				}
-
-			}
-			catch (ParseException e)
-			{
-				esrImportBL.addErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(localCtx, ERR_WRONG_PAYMENT_DATE, new Object[] { paymentDateStr }));
-			}
-		}
 
 		// Accounting Date
 		{
@@ -252,15 +202,16 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 			}
 		}
 
-		// Done with interesting data.
-
+		//
+		// set payment action
+		importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+		//
+		// set error message for the user
+		esrImportBL.addErrorMsgInFront(importLine, Services.get(IMsgBL.class).getMsg(localCtx, ESRConstants.ESR_Reverse_Booking));
 		//
 		// Update IsValid flag
-		final boolean isValid = Check.isEmpty(importLine.getErrorMsg());
-		importLine.setIsValid(isValid);
-		if (isValid)
-		{
-			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched);
-		}
+		importLine.setIsValid(false);
 	}
+
+	
 }
