@@ -185,7 +185,7 @@ class Window extends Component {
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
-                    autoFocus={autoFocus}
+                    autoFocus={!modal && autoFocus}
                     fullScreen={fullScreen}
                     {...elem}
                 />

@@ -102,7 +102,7 @@ class Lookup extends Component {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
             filterWidget, mandatory, rowId, tabIndex, validStatus, recent,
             onChange, newRecordCaption, properties, windowType, parameterName,
-            entity, dataId, tabId, subentity, subentityId, viewId
+            entity, dataId, tabId, subentity, subentityId, viewId, autoFocus
         } = this.props;
 
         const {isInputEmpty, property, fireClickOutside} = this.state;
@@ -150,7 +150,7 @@ class Lookup extends Component {
                                 isModal, recent, rank, updated, filterWidget,
                                 mandatory, validStatus, align, onChange, item,
                                 disabled, fireClickOutside, viewId, subentity,
-                                subentityId}}
+                                subentityId, autoFocus, tabId}}
                             />
 
                         } else if (item.source === 'list') {

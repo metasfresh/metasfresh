@@ -53,8 +53,7 @@ class RawLookup extends Component {
             filterWidget
         } = this.props;
         const {isInputEmpty, shouldBeFocused} = this.state;
-
-        if(autoFocus && isInputEmpty && shouldBeFocused){
+        if(autoFocus && !this.inputSearch.value && shouldBeFocused){
             this.inputSearch.focus();
             this.setState({
                 shouldBeFocused: false

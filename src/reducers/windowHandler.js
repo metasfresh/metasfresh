@@ -141,7 +141,9 @@ export default function windowHandler(state = initialState, action) {
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {
-                    rowData: action.data
+                    rowData: Object.assign(
+                        {}, state[action.scope].rowData, action.data
+                    )
                 })
             });
 

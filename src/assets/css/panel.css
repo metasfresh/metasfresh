@@ -10,6 +10,7 @@
 .panel-modal {
     max-width: 90%;
     height: 90vh;
+    overflow: hidden;
 }
 
 .panel-modal-primary {
