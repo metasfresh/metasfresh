@@ -83,8 +83,14 @@ class DocumentList extends Component {
          * If we browse list of docs, changing type of Document
          * does not re-construct component, so we need to
          * make it manually while the windowType changes.
+         * OR
+         * We want to refresh the window (generate new viewId)
          */
-        if(windowType !== this.props.windowType) {
+        if(
+            windowType !== this.props.windowType ||
+            (defaultViewId === undefined &&
+                defaultViewId !== this.props.defaultViewId)
+        ) {
             this.setState({
                 data:null,
                 layout:null,

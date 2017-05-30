@@ -56,11 +56,11 @@ class Breadcrumb extends Component {
 
     handleClick = (e, menu) => {
         const {
-            handleMenuOverlay, windowType, dataId
+            handleMenuOverlay, windowType
         } = this.props;
 
         if(menu && menu.children && menu.children.elementId) {
-            (windowType && dataId) && this.linkToPage(windowType);
+            (windowType) && this.linkToPage(windowType);
         } else {
             handleMenuOverlay(e, menu.nodeId);
         }
