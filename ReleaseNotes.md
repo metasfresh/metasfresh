@@ -19,6 +19,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
+  * [#1599](https://github.com/metasfresh/metasfresh/issues/1599) Import full menu from w101
+    * Initial Import of the current full webUI Menu/ Sitemap.
   * [#1619](https://github.com/metasfresh/metasfresh/issues/1619) Do not process reverse booking lines and improve esr import
   * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
     * Adding the Tax Rate Window to WebUI.
