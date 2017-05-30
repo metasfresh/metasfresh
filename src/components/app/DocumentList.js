@@ -75,7 +75,7 @@ class DocumentList extends Component {
         const {
             windowType, defaultViewId, defaultSort, defaultPage, selected,
             inBackground, dispatch, includedView, selectedWindowType,
-            disconnectFromState
+            disconnectFromState, refId
         } = props;
         const {page, sort, viewId, cachedSelection, layout} = this.state;
 
@@ -85,11 +85,14 @@ class DocumentList extends Component {
          * make it manually while the windowType changes.
          * OR
          * We want to refresh the window (generate new viewId)
+         * OR
+         * The reference ID is changed
          */
         if(
             windowType !== this.props.windowType ||
             (defaultViewId === undefined &&
-                defaultViewId !== this.props.defaultViewId)
+                defaultViewId !== this.props.defaultViewId) ||
+            refId !== this.props.refId
         ) {
             this.setState({
                 data:null,
