@@ -31,6 +31,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.event.InOutProcessedEventBus;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -100,6 +101,12 @@ public class ReceiptCorrectHUsProcessor
 
 			for (final I_M_HU hu : inoutId2hus.get(inoutId))
 			{
+				if(X_M_HU.HUSTATUS_Shipped == hu.getHUStatus())
+				{
+					// #1062: Do not display shipped inouts
+					continue;
+				}
+				
 				final int huId = hu.getM_HU_ID();
 				if (!seenHUIds.add(huId))
 				{

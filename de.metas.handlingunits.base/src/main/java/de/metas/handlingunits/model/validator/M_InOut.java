@@ -103,9 +103,8 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void setHUStatusShippedForShipment(final I_M_InOut shipment)
 	{
-		final boolean isVendorReturn = Services.get(IHUInOutBL.class).isVendorReturn(shipment);	//
-		// Make sure we deal with a shipment or a vendor return
-		if (!shipment.isSOTrx() && !isVendorReturn)
+		// Make sure we deal with a shipment
+		if (!shipment.isSOTrx())
 		{
 			return;
 		}

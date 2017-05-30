@@ -39,11 +39,11 @@ import de.metas.product.IProductBL;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -138,19 +138,16 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(InterfaceWrapperHelper.getCtx(hu), inOutLine, huTopLevel, luHU, tuHU, trxName)
 					.build();
 
-			// mark hu as shipped
+			// mark hu as shipped ( if vendor return)  or Active (if customer return)
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
 			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
-			setHUStatus (huContext, hu);
-			
+			setHUStatus(huContext, hu);
 
-			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_None);
+
 		}
 	}
-	
-	
 
 	protected abstract void setHUStatus(IHUContext huContext, I_M_HU hu);
 
@@ -193,7 +190,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		newInOutLine.setM_InOut_ID(inout.getM_InOut_ID());
 
 		newInOutLine.setM_Product(originInOutLine.getM_Product());
-		
+
 		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
 		// TODO: THis column could be used also for customer returns. Rename it

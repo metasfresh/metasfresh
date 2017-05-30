@@ -281,6 +281,10 @@ public class InventoryHUSelectModel extends AbstractHUSelectModel
 		//
 		// Exclude Planning HUs (08544)
 		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Destroyed);
+		
+		//
+		// #1062: Do not display shipped hus.
+		huQueryBuilder.addHUStatusToExclude(X_M_HU.HUSTATUS_Shipped);
 
 		//
 		// We check for additional filters (set from the frame).
