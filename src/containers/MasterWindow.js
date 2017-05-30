@@ -180,108 +180,90 @@ class MasterWindow extends Component {
 
         let body = [];
 
-        if(modal.visible){
-            body.push(
-                <Modal
-                    key="modal"
-                    relativeType={type}
-                    relativeDataId={dataId}
-                    triggerField={modal.triggerField}
-                    windowType={modal.type}
-                    dataId={modal.dataId ? modal.dataId : dataId}
-                    data={modal.data}
-                    layout={modal.layout}
-                    rowData={modal.rowData}
-                    tabId={modal.tabId}
-                    rowId={modal.rowId}
-                    modalTitle={modal.title}
-                    modalType={modal.modalType}
-                    modalViewId={modal.viewId}
-                    isAdvanced={modal.isAdvanced}
-                    viewId={null}
-                    modalViewDocumentIds={modal.viewDocumentIds}
-                    closeCallback={this.closeModalCallback}
-                    rawModalVisible={rawModal.visible}
-                    indicator={indicator}
-                    modalSaveStatus={
-                        modal.saveStatus &&
-                        modal.saveStatus.saved !== undefined ?
-                            modal.saveStatus.saved : true
-                    }
-                    isDocumentNotSaved={modal.saveStatus ?
-                        !modal.saveStatus.saved &&
-                        !modal.validStatus.initialValue : false
-                    }
-                 />
-            )
-        }
-
-        if(rawModal.visible){
-            body.push(
-                <RawModal
-                    key="rawModal"
-                    modalTitle={modalTitle}
-                >
-                    <div className="document-lists-wrapper">
-                        <DocumentList
-                            type="grid"
-                            windowType={rawModal.type}
-                            defaultViewId={rawModal.viewId}
-                            selected={selected}
-                            selectedWindowType={selectedWindowType}
-                            isModal={true}
-                            setModalTitle={this.setModalTitle}
-                            processStatus={processStatus}
-                            includedView={includedView}
-                            inBackground={
-                                includedView.windowType && includedView.viewId
-                            }
-                        >
-                        </DocumentList>
-                        {includedView.windowType && includedView.viewId &&
-                            <DocumentList
-                                type="includedView"
-                                selected={selected}
-                                selectedWindowType={selectedWindowType}
-                                windowType={includedView.windowType}
-                                defaultViewId={includedView.viewId}
-                                isIncluded={true}
-                            />
-                        }
-                    </div>
-                </RawModal>
-            )
-        }
-
-        body.push(
-            <Window
-                key="window"
-                data={master.data}
-                layout={master.layout}
-                rowData={master.rowData}
-                tabsInfo={master.includedTabsInfo}
-                sort={this.sort}
-                dataId={dataId}
-                isModal={false}
-                newRow={newRow}
-                handleDragStart={this.handleDragStart}
-                handleDropFile={accepted => this.handleDropFile(accepted)}
-                handleRejectDropped={
-                    rejected => this.handleRejectDropped(rejected)
-                }
-            />
-        )
+        // if(modal.visible){
+        //     body.push(
+        //         <Modal
+        //             key="modal"
+        //             relativeType={type}
+        //             relativeDataId={dataId}
+        //             triggerField={modal.triggerField}
+        //             windowType={modal.type}
+        //             dataId={modal.dataId ? modal.dataId : dataId}
+        //             data={modal.data}
+        //             layout={modal.layout}
+        //             rowData={modal.rowData}
+        //             tabId={modal.tabId}
+        //             rowId={modal.rowId}
+        //             modalTitle={modal.title}
+        //             modalType={modal.modalType}
+        //             modalViewId={modal.viewId}
+        //             isAdvanced={modal.isAdvanced}
+        //             viewId={null}
+        //             modalViewDocumentIds={modal.viewDocumentIds}
+        //             closeCallback={this.closeModalCallback}
+        //             rawModalVisible={rawModal.visible}
+        //             indicator={indicator}
+        //             modalSaveStatus={
+        //                 modal.saveStatus &&
+        //                 modal.saveStatus.saved !== undefined ?
+        //                     modal.saveStatus.saved : true
+        //             }
+        //             isDocumentNotSaved={modal.saveStatus ?
+        //                 !modal.saveStatus.saved &&
+        //                 !modal.validStatus.initialValue : false
+        //             }
+        //          />
+        //     )
+        // }
+        // 
+        // if(rawModal.visible){
+        //     body.push(
+        //         <RawModal
+        //             key="rawModal"
+        //             modalTitle={modalTitle}
+        //         >
+        //             <div className="document-lists-wrapper">
+        //                 <DocumentList
+        //                     type="grid"
+        //                     windowType={rawModal.type}
+        //                     defaultViewId={rawModal.viewId}
+        //                     selected={selected}
+        //                     selectedWindowType={selectedWindowType}
+        //                     isModal={true}
+        //                     setModalTitle={this.setModalTitle}
+        //                     processStatus={processStatus}
+        //                     includedView={includedView}
+        //                     inBackground={
+        //                         includedView.windowType && includedView.viewId
+        //                     }
+        //                 >
+        //                 </DocumentList>
+        //                 {includedView.windowType && includedView.viewId &&
+        //                     <DocumentList
+        //                         type="includedView"
+        //                         selected={selected}
+        //                         selectedWindowType={selectedWindowType}
+        //                         windowType={includedView.windowType}
+        //                         defaultViewId={includedView.viewId}
+        //                         isIncluded={true}
+        //                     />
+        //                 }
+        //             </div>
+        //         </RawModal>
+        //     )
+        // }
 
         return body;
     }
 
     render() {
         const {
-            master, modal, breadcrumb, params
+            master, modal, breadcrumb, params, rawModal, selected,
+            selectedWindowType, includedView, processStatus
         } = this.props;
 
         const {
-            dropzoneFocused
+            dropzoneFocused, newRow, modalTitle
         } = this.state;
 
         const {
@@ -308,8 +290,10 @@ class MasterWindow extends Component {
         return (
             <Container
                 entity="window"
-                {...{dropzoneFocused, docStatusData, docSummaryData,
-                    dataId, breadcrumb, docNoData, isDocumentNotSaved}}
+                {...{dropzoneFocused, docStatusData, docSummaryData, modal,
+                    dataId, breadcrumb, docNoData, isDocumentNotSaved, rawModal,
+                    selected, selectedWindowType}}
+                closeModalCallback={this.closeModalCallback}
                 docActionElem = {docActionElement}
                 windowType={params.windowType}
                 docId={params.docId}
@@ -318,7 +302,23 @@ class MasterWindow extends Component {
                 handleDeletedStatus={this.handleDeletedStatus}
             >
                 {dataId === 'notfound' ?
-                    <BlankPage what="Document" /> : this.renderBody()
+                    <BlankPage what="Document" /> :
+                    <Window
+                        key="window"
+                        data={master.data}
+                        layout={master.layout}
+                        rowData={master.rowData}
+                        tabsInfo={master.includedTabsInfo}
+                        sort={this.sort}
+                        dataId={dataId}
+                        isModal={false}
+                        newRow={newRow}
+                        handleDragStart={this.handleDragStart}
+                        handleDropFile={accepted => this.handleDropFile(accepted)}
+                        handleRejectDropped={
+                            rejected => this.handleRejectDropped(rejected)
+                        }
+                    />
                 }
             </Container>
         );

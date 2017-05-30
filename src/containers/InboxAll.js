@@ -8,11 +8,16 @@ import Inbox from '../components/inbox/Inbox';
 
 class InboxAll extends Component {
     render() {
-        const {inbox} = this.props;
+        const {
+            inbox, modal, rawModal, processStatus, indicator, selected, 
+            includedView
+        } = this.props;
 
         return (
             <Container
                 siteName = "Inbox"
+                {...{modal, rawModal, processStatus, indicator, selected,
+                    includedView}}
             >
                 <Inbox
                     all={true}
@@ -24,15 +29,36 @@ class InboxAll extends Component {
 }
 
 function mapStateToProps(state) {
-    const { appHandler } = state;
+    const { appHandler, windowHandler, listHandler  } = state;
+    
     const {
-        inbox
+        inbox,
+        processStatus
     } = appHandler || {
-        inbox: {}
+        inbox: {},
+        processStatus: ''
+    }
+    
+    const {
+        modal,
+        rawModal,
+        selected,
+        indicator,
+    } = windowHandler || {
+        modal: false,
+        rawModal: false,
+        selected: [],
+        indicator: ''
+    }
+    
+    const {
+        includedView
+    } = listHandler || {
+        includedView: {}
     }
 
     return {
-        inbox
+        inbox, modal, rawModal, selected, indicator, includedView, processStatus
     }
 }
 
