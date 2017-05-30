@@ -42,7 +42,7 @@ Here come the actual release notes:
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
  
  
-* metasfresh-webui-frontend
+* metasfresh-webui-api
   * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
     * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
     
@@ -57,6 +57,11 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
   * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
+  
+* metasfresh-webui-frontend
+  * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
+    * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
+
 
 # metasfresh 5.11 (2017-21)
 
