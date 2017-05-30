@@ -40,6 +40,10 @@ Here come the actual release notes:
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
+  
+* metasfresh-webui-frontend
+  * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
+    * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
 
 ## Fixes
 
