@@ -192,7 +192,7 @@ class Lookup extends Component {
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}
                                         blur={!property?true:false}
-                                        readonly={disabled}
+                                        readonly={disabled || readonly}
                                         isInputEmpty={isInputEmpty}
                                     />
                                 </div>
