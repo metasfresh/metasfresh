@@ -44,6 +44,7 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
+  * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
 
 # metasfresh 5.11 (2017-21)
 
