@@ -30,7 +30,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 
-import de.metas.payment.esr.spi.impl.WithNextInvoiceESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
 
 /**
  * Constant values for ESR.

@@ -1,10 +1,12 @@
-package de.metas.payment.esr.api;
+package de.metas.payment.esr.dataloader;
+
+import java.util.List;
 
 /*
  * #%L
  * de.metas.payment.esr
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,11 +25,7 @@ package de.metas.payment.esr.api;
  */
 
 
-import org.adempiere.util.ISingletonService;
-
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-
-public interface IESRLineMatcher extends ISingletonService
+public interface IESRDataImporter
 {
-	void match(I_ESR_ImportLine importLine);
+	ESRStatement load();
 }

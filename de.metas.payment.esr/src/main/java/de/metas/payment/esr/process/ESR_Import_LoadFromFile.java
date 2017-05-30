@@ -13,15 +13,14 @@ package de.metas.payment.esr.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -45,10 +44,9 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
 
 /**
- * Creates ESR import lines for the given V11 file and matches them against system invoices and bPartners.
  * 
- * @author ts
- * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
 public class ESR_Import_LoadFromFile extends JavaProcess
 {
@@ -81,14 +79,14 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 			{
 				p_ESR_Import_ID = para.getParameterAsInt();
 			}
-			 else if (I_C_Async_Batch.COLUMNNAME_Name.equals(name))
-			 {
-			 p_AsyncBatchName = (String)para.getParameter();
-			 }
-			 else if (I_C_Async_Batch.COLUMNNAME_Description.equals(name))
-			 {
-			 p_AsyncBatchDesc = (String)para.getParameter();
-			 }
+			else if (I_C_Async_Batch.COLUMNNAME_Name.equals(name))
+			{
+				p_AsyncBatchName = (String)para.getParameter();
+			}
+			else if (I_C_Async_Batch.COLUMNNAME_Description.equals(name))
+			{
+				p_AsyncBatchDesc = (String)para.getParameter();
+			}
 		}
 
 		if (I_ESR_Import.Table_Name.equals(getTableName()))
@@ -125,10 +123,8 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 		{
 			// the sys config not defined. Functionality to work as before
 		}
-
 		else
 		{
-
 			final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
 
 			final Iterator<I_ESR_Import> esrImports = esrImportDAO.retrieveESRImports(ctx, esrImport.getAD_Org_ID());

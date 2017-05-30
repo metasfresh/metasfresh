@@ -1,4 +1,4 @@
-package de.metas.payment.esr.spi.impl;
+package de.metas.payment.esr.actionhandler.impl;
 
 /*
  * #%L
@@ -33,9 +33,9 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
 import de.metas.payment.esr.ESRConstants;
+import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
-import de.metas.payment.esr.spi.IESRActionHandler;
 
 /**
  * This handler allocates the payment against the invoice

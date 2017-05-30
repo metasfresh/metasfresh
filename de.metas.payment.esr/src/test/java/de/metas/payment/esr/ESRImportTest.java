@@ -16,15 +16,14 @@ package de.metas.payment.esr;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -44,6 +43,7 @@ import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
@@ -57,6 +57,7 @@ import org.adempiere.util.test.RepeatRule;
 import org.adempiere.util.test.RepeatRule.Repeat;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
@@ -82,6 +83,11 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.lock.api.ILockManager;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WriteoffESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.impl.ESRImportBL;
@@ -89,11 +95,6 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
-import de.metas.payment.esr.spi.impl.MoneyTransferedBackESRActionHandler;
-import de.metas.payment.esr.spi.impl.UnableToAssignESRActionHandler;
-import de.metas.payment.esr.spi.impl.WithCurrenttInvoiceESRActionHandler;
-import de.metas.payment.esr.spi.impl.WithNextInvoiceESRActionHandler;
-import de.metas.payment.esr.spi.impl.WriteoffESRActionHandler;
 
 /**
  * This class tests the entire module of importing ESR
@@ -104,7 +105,7 @@ import de.metas.payment.esr.spi.impl.WriteoffESRActionHandler;
 public class ESRImportTest extends ESRTestBase
 {
 
-		/**
+	/**
 	 * This test emulates a real-world case of a perfect match
 	 * <ul>
 	 * <li>invoice 50
@@ -139,14 +140,15 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.isProcessed(), is(true));
 		assertThat(esrImportLine.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
-		assertThat(esrImportLine.getErrorMsg(), nullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), nullValue());
 
 		// check invoice
 		InterfaceWrapperHelper.refresh(getC_Invoice(), true);
 		assertThat(getC_Invoice().isPaid(), is(true));
 
 		// check the created payments
-		final I_C_Payment  esrLine1Payment = esrImportLine.getC_Payment();
+		final I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		InterfaceWrapperHelper.refresh(esrLine1Payment, true);
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(50)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(esrImportLine.getC_Invoice_ID()));
@@ -239,45 +241,35 @@ public class ESRImportTest extends ESRTestBase
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
-		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
-		// first line
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
-		final I_ESR_ImportLine esrImportLine1 = createImportLine(esrLineText);
-		esrImportLine1.setC_BP_BankAccount(account);
-		esrImportLine1.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImportLine1);
 
-		final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
-
-		// second line
-		final I_ESR_ImportLine esrImportLine2 = createImportLine(esrLineText);
-		esrImportLine2.setC_BP_BankAccount(account);
-		esrImportLine2.setAD_Org_ID(org.getAD_Org_ID());
-		esrImportLine2.setESR_Import(esrImport);
-		InterfaceWrapperHelper.save(esrImportLine2);
-		lines.add(esrImportLine2);
+		final I_ESR_Import esrImport = createImport();
 
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText + '\n' + esrLineText));
+
 		// start processing
 
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
+
+		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
+		assertThat(lines.size(), is(2));
 
 		// check first import line
-		InterfaceWrapperHelper.refresh(esrImportLine1, true);
+		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
 		assertThat(esrImportLine1.isValid(), is(true));
 		assertThat(esrImportLine1.isProcessed(), is(true));
 		assertThat(esrImportLine1.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
 		assertThat(esrImportLine1.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
-		assertThat(esrImportLine1.getErrorMsg(), nullValue());
+		assertThat(esrImportLine1.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine1.getMatchErrorMsg(), nullValue());
 		assertThat(esrImportLine1.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(0)));
 
 		// check second import line
-		InterfaceWrapperHelper.refresh(esrImportLine2, true);
+		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		assertThat(esrImportLine2.isValid(), is(true));
 		assertThat(esrImportLine2.isProcessed(), is(false));
 		assertThat(esrImportLine2.getESR_Payment_Action(), nullValue());
@@ -337,7 +329,6 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(grandTotal, esrLineText, refNo, ESR_Rendered_AccountNo, partnerValue, invDocNo, true, true);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-
 		// start processing
 		final ITrxRunConfig trxRunConfig = trxManager.createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
 		final ESRImportBL esrBL = new ESRImportBL();
@@ -350,7 +341,9 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 		assertThat(esrImportLine.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(-50)));
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), Matchers.notNullValue());
 
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
@@ -385,7 +378,6 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrImportLine);
 
 		esrBL.complete(esrImport, "Complete", trxRunConfig);
-
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -714,25 +706,21 @@ public class ESRImportTest extends ESRTestBase
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
 		final String esrLineText = "01201067789300000001060000000000000000400000050009072  030014040914041014041100001006800000000000090                          ";
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrLineText);
-		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
-		esrImportLine.setC_BP_BankAccount(account);
-		esrImportLine.setAccountNo(account.getAccountNo());
-		InterfaceWrapperHelper.save(esrImportLine);
-
-		I_ESR_Import esrImport = esrImportLine.getESR_Import();
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		esrImport.setC_BP_BankAccount(account);
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
+		InterfaceWrapperHelper.save(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText));
 
 		// start processing
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setESR_IsManual_ReferenceNo(true); // is by default on 'Y' in db
 		InterfaceWrapperHelper.save(esrImportLine);
 
@@ -741,7 +729,8 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.isProcessed(), is(false));
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
@@ -771,14 +760,14 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(inv);
 
 		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
 
-		esrBL.setInvoice(esrImportLine, inv);
+		esrImportBL.setInvoice(esrImportLine, inv);
 		InterfaceWrapperHelper.save(esrImportLine);
 		lines.add(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrImportBL.complete(esrImport, "Complete", trxRunConfig);
 
 		// check invoice
 		InterfaceWrapperHelper.refresh(inv, true);
@@ -837,13 +826,9 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(refNoType);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
 		final String esrLineText = "01201067789300000001060012345600000000400000050009072  030014040914041014041100001006800000000000090                          ";
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrLineText);
-		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
-		esrImportLine.setC_BPartner(partner);
-		InterfaceWrapperHelper.save(esrImportLine);
-		lines.add(esrImportLine);
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 
 		// currency
 		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
@@ -862,14 +847,20 @@ public class ESRImportTest extends ESRTestBase
 		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
 		InterfaceWrapperHelper.save(account);
 
-		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText));
+
 		// start processing
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+
+		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
+		esrImportLine.setC_BPartner(partner);
+		InterfaceWrapperHelper.save(esrImportLine);
+		lines.add(esrImportLine);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
@@ -883,7 +874,8 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getC_BPartner(), Matchers.notNullValue());
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
@@ -908,13 +900,13 @@ public class ESRImportTest extends ESRTestBase
 		inv.setProcessed(true);
 		InterfaceWrapperHelper.save(inv);
 
-		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
+		// Register payment action handlers.
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
-		esrBL.setInvoice(esrImportLine, inv);
+		esrImportBL.setInvoice(esrImportLine, inv);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrImportBL.complete(esrImport, "Complete", trxRunConfig);
 
 		// check invoice
 		InterfaceWrapperHelper.refresh(inv, true);
@@ -973,11 +965,8 @@ public class ESRImportTest extends ESRTestBase
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
 		final String esrLineText = "01201067789300000001060012345600000000400000050009072  030014040914041014041100001006800000000000090                          ";
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrLineText);
-		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
-		esrImportLine.setC_BPartner(partner);
-		InterfaceWrapperHelper.save(esrImportLine);
-		lines.add(esrImportLine);
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 
 		// currency
 		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
@@ -996,14 +985,19 @@ public class ESRImportTest extends ESRTestBase
 		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
 		InterfaceWrapperHelper.save(account);
 
-		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText));
+
 		// start processing
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
+
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+		esrImportLine.setC_BPartner(partner);
+		InterfaceWrapperHelper.save(esrImportLine);
+		lines.add(esrImportLine);
 
 		// this needs to be here because happens when saving, while importing the line
 		// process emulates the importing of the file and at the end the line is saved when the default values are set
@@ -1016,18 +1010,19 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.isProcessed(), is(false));
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), is(esrImportLine.getAmount()));
 
 		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 		InterfaceWrapperHelper.save(esrImportLine);
 
-		esrBL.complete(esrImport, "Complete", trxRunConfig);
+		esrImportBL.complete(esrImport, "Complete", trxRunConfig);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -1125,13 +1120,13 @@ public class ESRImportTest extends ESRTestBase
 			}
 		}
 
-		final List<I_C_Payment> payments = db.getRecords(I_C_Payment.class);
-//		System.out.println("***************************TEST PAYMENTS**********************");
-//
-//		for (final I_C_Payment payment : payments)
-//		{
-//			System.out.println("Payment " + payment.getC_Payment_ID() + " Allocated " + payment.isAllocated());
-//		}
+		final List<I_C_Payment> payments = POJOLookupMap.get().getRecords(I_C_Payment.class);
+		// System.out.println("***************************TEST PAYMENTS**********************");
+		//
+		// for (final I_C_Payment payment : payments)
+		// {
+		// System.out.println("Payment " + payment.getC_Payment_ID() + " Allocated " + payment.isAllocated());
+		// }
 
 		Assert.assertEquals("Shall be only 1 payment", 1, payments.size());
 
@@ -1231,20 +1226,20 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrLineText);
-		esrImportLine.setC_BP_BankAccount(account);
-		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
-		lines.add(esrImportLine);
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setC_BP_BankAccount(account);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		InterfaceWrapperHelper.save(esrImport);
 
-		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText));
+
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
+
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -1253,7 +1248,8 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getC_Invoice(), nullValue());
 		assertThat(esrImportLine.getC_BPartner(), nullValue());
 		assertThat(esrImportLine.getC_Payment(), nullValue());
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 	}
 
@@ -1353,21 +1349,20 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrLineText);
-		esrImportLine.setC_BP_BankAccount(account);
-		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
-		lines.add(esrImportLine);
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setC_BP_BankAccount(account);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		InterfaceWrapperHelper.save(esrImport);
 
-		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText));
 
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
+
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -1376,7 +1371,8 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getC_Invoice(), nullValue());
 		assertThat(esrImportLine.getC_BPartner(), nullValue());
 		assertThat(esrImportLine.getC_Payment(), nullValue());
-		assertThat(esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 	}
 
@@ -1475,32 +1471,32 @@ public class ESRImportTest extends ESRTestBase
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
 		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrLineText);
-		esrImportLine.setC_BP_BankAccount(account);
-		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImportLine);
-		lines.add(esrImportLine);
-
-		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
+		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount(account);
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		InterfaceWrapperHelper.save(esrImport);
 
+		esrImport.setC_BP_BankAccount(account);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
+		InterfaceWrapperHelper.save(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText));
 
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
+
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// check import line
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
-		final String msg = "Invalid (errmsg=" + esrImportLine.getErrorMsg() + ")";
+		final String msg = "Invalid (errmsg=" + esrImportLine.getMatchErrorMsg() + ")";
 		assertThat(msg, esrImportLine.isValid(), is(false));
 		assertThat(msg, esrImportLine.isProcessed(), is(false));
 		assertThat(msg, esrImportLine.getC_Invoice(), nullValue());
 		assertThat(msg, esrImportLine.getC_BPartner_ID(), is(partner.getC_BPartner_ID()));
 		assertThat(msg, esrImportLine.getC_Payment(), Matchers.notNullValue());
-		assertThat(msg, esrImportLine.getErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 	}
 
@@ -1589,42 +1585,25 @@ public class ESRImportTest extends ESRTestBase
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
-		// esr line
-		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
-		// first line
-		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
-		final I_ESR_ImportLine esrImportLine1 = createImportLine(esrLineText);
-		esrImportLine1.setC_BP_BankAccount(account);
-		esrImportLine1.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(esrImportLine1);
-
-		final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
-
-		// second line
-		final I_ESR_ImportLine esrImportLine2 = createImportLine(esrLineText);
-		esrImportLine2.setC_BP_BankAccount(account);
-		esrImportLine2.setAD_Org_ID(org.getAD_Org_ID());
-		esrImportLine2.setESR_Import(esrImport);
-		InterfaceWrapperHelper.save(esrImportLine2);
-		lines.add(esrImportLine2);
-
-		// third line
-		final I_ESR_ImportLine esrImportLine3 = createImportLine(esrLineText);
-		esrImportLine3.setC_BP_BankAccount(account);
-		esrImportLine3.setAD_Org_ID(org.getAD_Org_ID());
-		esrImportLine3.setESR_Import(esrImport);
-		InterfaceWrapperHelper.save(esrImportLine3);
-		lines.add(esrImportLine3);
-
+		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount(account);
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		InterfaceWrapperHelper.save(esrImport);
 
-		// start processing
+		// esr line
+		// first line
+		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrLineText + '\n' + esrLineText + '\n' + esrLineText));
 
 		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
-		final ESRImportBL esrBL = new ESRImportBL();
-		esrBL.process(esrImport, trxRunConfig);
+		esrImportBL.process(esrImport, trxRunConfig);
 
+		final List<I_ESR_ImportLine> lines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
+		final I_ESR_ImportLine esrImportLine1 = lines.get(0);
+		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
+		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
+		
 		// check first import line
 		InterfaceWrapperHelper.refresh(esrImportLine1, true);
 		assertThat(esrImportLine1.isProcessed(), is(false));
@@ -1640,13 +1619,12 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine3.isProcessed(), is(false));
 		assertThat(esrImportLine3.getESR_Payment_Action(), nullValue());
 
-
 		// Registrate payment action handlers.
-		esrBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportLine3.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
 		InterfaceWrapperHelper.save(esrImportLine3);
 		// esrBL.process(esrImport, trxRunConfig);
-		esrBL.complete(esrImport, "test", trxRunConfig);
+		esrImportBL.complete(esrImport, "test", trxRunConfig);
 
 		InterfaceWrapperHelper.refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));

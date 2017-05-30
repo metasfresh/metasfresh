@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.payment.esr.model;
 
 
@@ -239,35 +223,6 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_BankStatementLine_Ref_ID = "C_BankStatementLine_Ref_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BPartner>(I_ESR_ImportLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
 	 * Set Bankverbindung.
 	 * Bankverbindung des Geschäftspartners
 	 *
@@ -295,6 +250,35 @@ public interface I_ESR_ImportLine
     public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BP_BankAccount> COLUMN_C_BP_BankAccount_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BP_BankAccount>(I_ESR_ImportLine.class, "C_BP_BankAccount_ID", org.compiere.model.I_C_BP_BankAccount.class);
     /** Column name C_BP_BankAccount_ID */
     public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+
+	/**
+	 * Set Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Geschäftspartner.
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getC_BPartner();
+
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
+
+    /** Column definition for C_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, org.compiere.model.I_C_BPartner>(I_ESR_ImportLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name C_BPartner_ID */
+    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Rechnung.
@@ -355,6 +339,33 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
+	 * Set Reference No.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_ReferenceNo_ID (int C_ReferenceNo_ID);
+
+	/**
+	 * Get Reference No.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_ReferenceNo_ID();
+
+	public de.metas.document.refid.model.I_C_ReferenceNo getC_ReferenceNo();
+
+	public void setC_ReferenceNo(de.metas.document.refid.model.I_C_ReferenceNo C_ReferenceNo);
+
+    /** Column definition for C_ReferenceNo_ID */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, de.metas.document.refid.model.I_C_ReferenceNo> COLUMN_C_ReferenceNo_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, de.metas.document.refid.model.I_C_ReferenceNo>(I_ESR_ImportLine.class, "C_ReferenceNo_ID", de.metas.document.refid.model.I_C_ReferenceNo.class);
+    /** Column name C_ReferenceNo_ID */
+    public static final String COLUMNNAME_C_ReferenceNo_ID = "C_ReferenceNo_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -385,33 +396,6 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Reference No.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_ReferenceNo_ID (int C_ReferenceNo_ID);
-
-	/**
-	 * Get Reference No.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_ReferenceNo_ID();
-
-	public de.metas.document.refid.model.I_C_ReferenceNo getC_ReferenceNo();
-
-	public void setC_ReferenceNo(de.metas.document.refid.model.I_C_ReferenceNo C_ReferenceNo);
-
-    /** Column definition for C_ReferenceNo_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, de.metas.document.refid.model.I_C_ReferenceNo> COLUMN_C_ReferenceNo_ID = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, de.metas.document.refid.model.I_C_ReferenceNo>(I_ESR_ImportLine.class, "C_ReferenceNo_ID", de.metas.document.refid.model.I_C_ReferenceNo.class);
-    /** Column name C_ReferenceNo_ID */
-    public static final String COLUMNNAME_C_ReferenceNo_ID = "C_ReferenceNo_ID";
-
-	/**
 	 * Set Beschreibung.
 	 *
 	 * <br>Type: String
@@ -435,35 +419,14 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Fehlermeldung.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setErrorMsg (java.lang.String ErrorMsg);
-
-	/**
-	 * Get Fehlermeldung.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getErrorMsg();
-
-    /** Column definition for ErrorMsg */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ErrorMsg = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ErrorMsg", null);
-    /** Column name ErrorMsg */
-    public static final String COLUMNNAME_ErrorMsg = "ErrorMsg";
-
-	/**
 	 * Set Bereits zugeordnet.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setESR_Amount_Balance (java.math.BigDecimal ESR_Amount_Balance);
 
 	/**
@@ -479,6 +442,29 @@ public interface I_ESR_ImportLine
     public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESR_Amount_Balance = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESR_Amount_Balance", null);
     /** Column name ESR_Amount_Balance */
     public static final String COLUMNNAME_ESR_Amount_Balance = "ESR_Amount_Balance";
+
+	/**
+	 * Set Importstatus.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setESR_Document_Status (java.lang.String ESR_Document_Status);
+
+	/**
+	 * Get Importstatus.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getESR_Document_Status();
+
+    /** Column definition for ESR_Document_Status */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESR_Document_Status = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESR_Document_Status", null);
+    /** Column name ESR_Document_Status */
+    public static final String COLUMNNAME_ESR_Document_Status = "ESR_Document_Status";
 
 	/**
 	 * Set ESR Rechnungsnummer.
@@ -506,30 +492,7 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_ESR_DocumentNo = "ESR_DocumentNo";
 
 	/**
-	 * Set Importstatus.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setESR_Document_Status (java.lang.String ESR_Document_Status);
-
-	/**
-	 * Get Importstatus.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getESR_Document_Status();
-
-    /** Column definition for ESR_Document_Status */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESR_Document_Status = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESR_Document_Status", null);
-    /** Column name ESR_Document_Status */
-    public static final String COLUMNNAME_ESR_Document_Status = "ESR_Document_Status";
-
-	/**
-	 * Set ESR_Import.
+	 * Set ESR Zahlungsimport.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -538,7 +501,7 @@ public interface I_ESR_ImportLine
 	public void setESR_Import_ID (int ESR_Import_ID);
 
 	/**
-	 * Get ESR_Import.
+	 * Get ESR Zahlungsimport.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -652,6 +615,54 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_ESR_IsManual_ReferenceNo = "ESR_IsManual_ReferenceNo";
 
 	/**
+	 * Set ESR_Payment_Action.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setESR_Payment_Action (java.lang.String ESR_Payment_Action);
+
+	/**
+	 * Get ESR_Payment_Action.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getESR_Payment_Action();
+
+    /** Column definition for ESR_Payment_Action */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESR_Payment_Action = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESR_Payment_Action", null);
+    /** Column name ESR_Payment_Action */
+    public static final String COLUMNNAME_ESR_Payment_Action = "ESR_Payment_Action";
+
+	/**
+	 * Set ESR Referenznummer (komplett).
+	 * Referenznummer inkl. bankinterner Teilnehmernummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setESRFullReferenceNumber (java.lang.String ESRFullReferenceNumber);
+
+	/**
+	 * Get ESR Referenznummer (komplett).
+	 * Referenznummer inkl. bankinterner Teilnehmernummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getESRFullReferenceNumber();
+
+    /** Column definition for ESRFullReferenceNumber */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESRFullReferenceNumber = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESRFullReferenceNumber", null);
+    /** Column name ESRFullReferenceNumber */
+    public static final String COLUMNNAME_ESRFullReferenceNumber = "ESRFullReferenceNumber";
+
+	/**
 	 * Set Importierte ESR-Zeile.
 	 * ESR complete line text
 	 *
@@ -675,29 +686,6 @@ public interface I_ESR_ImportLine
     public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESRLineText = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESRLineText", null);
     /** Column name ESRLineText */
     public static final String COLUMNNAME_ESRLineText = "ESRLineText";
-
-	/**
-	 * Set ESR_Payment_Action.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setESR_Payment_Action (java.lang.String ESR_Payment_Action);
-
-	/**
-	 * Get ESR_Payment_Action.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getESR_Payment_Action();
-
-    /** Column definition for ESR_Payment_Action */
-    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESR_Payment_Action = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESR_Payment_Action", null);
-    /** Column name ESR_Payment_Action */
-    public static final String COLUMNNAME_ESR_Payment_Action = "ESR_Payment_Action";
 
 	/**
 	 * Set Post-Teilnehmernummer.
@@ -725,8 +713,8 @@ public interface I_ESR_ImportLine
     public static final String COLUMNNAME_ESRPostParticipantNumber = "ESRPostParticipantNumber";
 
 	/**
-	 * Set ESR Referenznummer.
-	 * Referenznummer inkl. bankinterne Teilnehmernummer
+	 * Set ESR Referenznummer (Rechnung).
+	 * Referenznummer der jeweiligen Rechnung
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -735,8 +723,8 @@ public interface I_ESR_ImportLine
 	public void setESRReferenceNumber (java.lang.String ESRReferenceNumber);
 
 	/**
-	 * Get ESR Referenznummer.
-	 * Referenznummer inkl. bankinterne Teilnehmernummer
+	 * Get ESR Referenznummer (Rechnung).
+	 * Referenznummer der jeweiligen Rechnung
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -771,6 +759,31 @@ public interface I_ESR_ImportLine
     public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ESRTrxType = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ESRTrxType", null);
     /** Column name ESRTrxType */
     public static final String COLUMNNAME_ESRTrxType = "ESRTrxType";
+
+	/**
+	 * Set Import-Fehler.
+	 * Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setImportErrorMsg (java.lang.String ImportErrorMsg);
+
+	/**
+	 * Get Import-Fehler.
+	 * Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getImportErrorMsg();
+
+    /** Column definition for ImportErrorMsg */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_ImportErrorMsg = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "ImportErrorMsg", null);
+    /** Column name ImportErrorMsg */
+    public static final String COLUMNNAME_ImportErrorMsg = "ImportErrorMsg";
 
 	/**
 	 * Set Aktiv.
@@ -871,6 +884,31 @@ public interface I_ESR_ImportLine
     public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_LineNo = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "LineNo", null);
     /** Column name LineNo */
     public static final String COLUMNNAME_LineNo = "LineNo";
+
+	/**
+	 * Set Zuordnungsfehler.
+	 * Fehler beim Zuordnen der Daten, z.B. fehlende Rechnung für eine eingelesene Referenznummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMatchErrorMsg (java.lang.String MatchErrorMsg);
+
+	/**
+	 * Get Zuordnungsfehler.
+	 * Fehler beim Zuordnen der Daten, z.B. fehlende Rechnung für eine eingelesene Referenznummer
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMatchErrorMsg();
+
+    /** Column definition for MatchErrorMsg */
+    public static final org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object> COLUMN_MatchErrorMsg = new org.adempiere.model.ModelColumn<I_ESR_ImportLine, Object>(I_ESR_ImportLine.class, "MatchErrorMsg", null);
+    /** Column name MatchErrorMsg */
+    public static final String COLUMNNAME_MatchErrorMsg = "MatchErrorMsg";
 
 	/**
 	 * Set Organisation.

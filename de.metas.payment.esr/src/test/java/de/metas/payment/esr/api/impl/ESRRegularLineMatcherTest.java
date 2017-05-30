@@ -1,5 +1,8 @@
 package de.metas.payment.esr.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -13,11 +16,11 @@ package de.metas.payment.esr.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -28,6 +31,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.X_C_DocType;
@@ -43,18 +47,17 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.esr.ESRTestBase;
+import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.exception.ESRParserException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
+import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
 public class ESRRegularLineMatcherTest extends ESRTestBase
 {
-	private ESRLineMatcher matcher;
-
 	@Override
 	public void init()
 	{
-		matcher = new ESRLineMatcher();
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
@@ -68,43 +71,43 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		db.save(account);
+		save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 
-		Assert.assertEquals("Invalid IsValid", false, esrImportLine.isValid());
+		Assert.assertEquals("Invalid IsValid", false, esrImport.isValid());
 	}
 
 	// task 09861
 	@Test
 	public void test_regularLineBPValueGreaterThan1000()
 	{
-		final I_C_BPartner bp = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G1386");
 		bp.setC_BPartner_ID(15);
-		db.save(bp);
+		save(bp);
 
 		final String esrImportLineText = "0020105993102345370001000013860016436390000000100000000000016050116050116050100000000000000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
@@ -112,24 +115,25 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setESR_RenderedAccountNo("01-059931-0");
 
 		account.setC_BPartner(bp);
-		db.save(account);
+		save(account);
 
-		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
 
-		db.save(invoice);
+		save(invoice);
 
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setC_Invoice(invoice);
 
 		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		save(esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportLine.getESR_Import(), new StringInputStream(esrImportLineText));
 
 		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
 
@@ -139,16 +143,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	@Test
 	public void test_regularLineBPValueGreaterThan1000_0Included()
 	{
-		final I_C_BPartner bp = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G01386");
 		bp.setC_BPartner_ID(15);
-		db.save(bp);
+		save(bp);
 
 		final String esrImportLineText = "0020105993102345370001000013860016436390000000100000000000016050116050116050100000000000000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
@@ -156,43 +160,45 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setESR_RenderedAccountNo("01-059931-0");
 
 		account.setC_BPartner(bp);
-		db.save(account);
+		save(account);
 
-		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
 
-		db.save(invoice);
+		save(invoice);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setC_Invoice(invoice);
 
 		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		save(esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		matcher.match(esrImportLine);
+		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
 		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
-
 	}
 
 	// task 09861
 	@Test
 	public void test_regularLineBPValueGreaterThan10000()
 	{
-		final I_C_BPartner bp = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G11386");
 		bp.setC_BPartner_ID(15);
-		db.save(bp);
+		save(bp);
 
 		final String esrImportLineText = "0020105993102345370001000113860016436390000000100000000000016050116050116050100000000000000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
@@ -200,24 +206,25 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setESR_RenderedAccountNo("01-059931-0");
 
 		account.setC_BPartner(bp);
-		db.save(account);
+		save(account);
 
-		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
 
-		db.save(invoice);
+		save(invoice);
 
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setC_Invoice(invoice);
 
 		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		save(esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
-
-		matcher.match(esrImportLine);
+		save(refNoType);
 
 		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
 
@@ -227,16 +234,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	@Test
 	public void test_regularLineBPValue_0007()
 	{
-		final I_C_BPartner bp = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G0007");
 		bp.setC_BPartner_ID(15);
-		db.save(bp);
+		save(bp);
 
 		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
@@ -244,27 +251,27 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setESR_RenderedAccountNo("01-059931-0");
 
 		account.setC_BPartner(bp);
-		db.save(account);
+		save(account);
 
-		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
 
-		db.save(invoice);
+		save(invoice);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		esrImportLine.setC_Invoice(invoice);
 
 		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		save(esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
-
-		matcher.match(esrImportLine);
+		save(refNoType);
 
 		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
-
 	}
 
 	@Test(expected = ESRParserException.class)
@@ -272,25 +279,23 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000142";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		db.save(account);
+		save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
-
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		Assert.assertEquals("Invalid IsValid", false, esrImportLine.isValid());
 	}
@@ -300,25 +305,27 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		db.save(account);
+		save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+
 		System.out.println(esrImportLine.getESRPostParticipantNumber() + "    ->    " + account.getESR_RenderedAccountNo().split("-"));
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
@@ -332,25 +339,26 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	{
 		final String esrImportLineText = "00288859931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		db.save(account);
+		save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
 		final String unrenderedPostAccountNo = unrenderedAccountNoParts[0] + unrenderedAccountNoParts[1] + unrenderedAccountNoParts[2];
@@ -365,9 +373,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
@@ -376,51 +384,53 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		InterfaceWrapperHelper.save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImportLine);
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
 		InterfaceWrapperHelper.save(refNoType);
 
-		final I_C_ReferenceNo referenceNo = db.newInstance(I_C_ReferenceNo.class);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
 		referenceNo.setReferenceNo("536417000120686");
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(false);
 		InterfaceWrapperHelper.save(referenceNo);
 
-		final I_C_BPartner partner = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");
 		InterfaceWrapperHelper.save(partner);
 
-		final I_C_DocType type = db.newInstance(I_C_DocType.class);
+		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
 		InterfaceWrapperHelper.save(type);
 
-		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		InterfaceWrapperHelper.save(invoice);
 
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = db.newInstance(I_C_ReferenceNo_Doc.class);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(invoice.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 
 		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
 
-		I_C_AllocationLine allocAmt = db.newInstance(I_C_AllocationLine.class);
+		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
 		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(allocAmt);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// I_ESR_Import esrImport = esrImportLine.getESR_Import();
 		// Services.get(IESRImportBL.class).process(esrImport);
 		//
 		// assertNoErrors(Arrays.asList(esrImportLine));
+
 		Assert.assertTrue("Reference number not found.", referenceNo.equals(esrImportLine.getC_ReferenceNo()));
 	}
 
@@ -429,40 +439,41 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000";
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		db.save(account);
+		save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		final I_C_BPartner partner = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");
-		db.save(partner);
+		save(partner);
 
-		final I_AD_Org org = db.newInstance(I_AD_Org.class);
+		final I_AD_Org org = newInstance(I_AD_Org.class);
 		org.setValue("105");
-		db.save(org);
+		save(org);
 
-		I_C_AllocationLine allocAmt = db.newInstance(I_C_AllocationLine.class);
+		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
 		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
 		// allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		db.save(allocAmt);
+		save(allocAmt);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
+		//System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
 
 		Assert.assertTrue("Org not found.", org.equals(esrImportLine.getOrg()));
 	}
@@ -474,67 +485,67 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		final I_AD_Org org = getAD_Org();
 
-		final I_ESR_ImportLine esrImportLine = createImportLine(esrImportLineText);
+		final I_ESR_Import esrImport = createImport();
 
-		final I_C_BP_BankAccount account = db.newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
 
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		db.save(account);
+		save(account);
 
-		esrImportLine.setC_BP_BankAccount(account);
-		db.save(esrImportLine);
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = db.newInstance(I_C_ReferenceNo_Type.class);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
-		db.save(refNoType);
+		save(refNoType);
 
-		final I_C_BPartner partner = db.newInstance(I_C_BPartner.class);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		db.save(partner);
+		save(partner);
 
-		esrImportLine.setAD_Org(org);
-		db.save(esrImportLine);
+		esrImport.setAD_Org(org);
+		save(esrImport);
 
-		final I_C_DocType type = db.newInstance(I_C_DocType.class);
+		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
-		db.save(type);
+		save(type);
 
-		final I_C_Invoice invoice = db.newInstance(I_C_Invoice.class);
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
-		db.save(invoice);
+		save(invoice);
 
-		final I_C_ReferenceNo referenceNo = db.newInstance(I_C_ReferenceNo.class);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
 		referenceNo.setReferenceNo("000000010501536417000120686");
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
-		db.save(referenceNo);
+		save(referenceNo);
 
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = db.newInstance(I_C_ReferenceNo_Doc.class);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(invoice.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
-		db.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
-		I_C_AllocationLine allocAmt = db.newInstance(I_C_AllocationLine.class);
+		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
 		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		db.save(allocAmt);
+		save(allocAmt);
 
-		matcher.match(esrImportLine);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		Assert.assertTrue("Is not manual referenceNO", esrImportLine.isESR_IsManual_ReferenceNo());
 		Assert.assertTrue("Org not found.", org.equals(esrImportLine.getAD_Org()));
 		Assert.assertTrue("Partner not found.", partner.equals(esrImportLine.getC_BPartner()));
 		Assert.assertTrue("Invoice not found.", invoice.equals(esrImportLine.getC_Invoice()));
-
 	}
 }
