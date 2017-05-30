@@ -46,13 +46,13 @@ public class FreshPackingMd extends PackingMd
 	{
 		final TableRowKeyBuilder keyBuilder = new TableRowKeyBuilder();
 
-		final int bpartnerId = item.getBPartnerId();
+		final int bpartnerId = item.getBpartnerId();
 		keyBuilder.setBPartnerId(bpartnerId);
 
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
-		final int bPartnerLocationId = item.getBPartnerLocationId();
-		final String bPartnerAddress = item.getBPartnerAddress();
+		final int bPartnerLocationId = item.getBpartnerLocationId();
+		final String bPartnerAddress = item.getBpartnerAddress();
 		keyBuilder.setBPartnerAddress(bPartnerAddress);
 
 		final int warehouseId = item.getWarehouseId();
@@ -97,9 +97,9 @@ public class FreshPackingMd extends PackingMd
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final Timestamp deliveryDate = item.getDeliveryDate(); // customer01676
 		final int shipmentScheduleId = item.getShipmentScheduleId();
-		final String bPartnerValue = item.getBPartnerValue();
-		final String bPartnerName = item.getBPartnerName();
-		final String bPartnerLocName = item.getBPartnerLocationName();
+		final String bPartnerValue = item.getBpartnerValue();
+		final String bPartnerName = item.getBpartnerName();
+		final String bPartnerLocName = item.getBpartnerLocationName();
 		final String shipper = item.getShipperName();
 
 		final boolean isDisplayed = item.isDisplayed();

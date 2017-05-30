@@ -33,14 +33,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
@@ -642,7 +640,7 @@ public class PackingMd extends MvcMdGenForm
 
 	protected TableRow createTableRow(final IPackageable item)
 	{
-		final int bpartnerId = item.getBPartnerId();
+		final int bpartnerId = item.getBpartnerId();
 		final int M_Warehouse_Dest_ID = item.getWarehouseDestId();
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
@@ -655,8 +653,8 @@ public class PackingMd extends MvcMdGenForm
 		final TableRowKeyBuilder keyBuilder = new TableRowKeyBuilder();
 		keyBuilder.setBPartnerId(bpartnerId);
 
-		final int bPartnerLocationId = item.getBPartnerLocationId();
-		final String bPartnerAddress = item.getBPartnerAddress();
+		final int bPartnerLocationId = item.getBpartnerLocationId();
+		final String bPartnerAddress = item.getBpartnerAddress();
 		keyBuilder.setBPartnerAddress(bPartnerAddress);
 
 		final int warehouseId = item.getWarehouseId();
@@ -702,9 +700,9 @@ public class PackingMd extends MvcMdGenForm
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final Timestamp deliveryDate = item.getDeliveryDate(); // 01676
 		final int shipmentScheduleId = item.getShipmentScheduleId();
-		final String bPartnerValue = item.getBPartnerValue();
-		final String bPartnerName = item.getBPartnerName();
-		final String bPartnerLocName = item.getBPartnerLocationName();
+		final String bPartnerValue = item.getBpartnerValue();
+		final String bPartnerName = item.getBpartnerName();
+		final String bPartnerLocName = item.getBpartnerLocationName();
 		final String shipper = item.getShipperName();
 
 		// metas-ts: we need the shipper-ID to be in PackingDetailsMd (see PAcking.createPackingDetailsModel() ), because it needs to be displayed in PackingDetailsV (see
@@ -785,7 +783,7 @@ public class PackingMd extends MvcMdGenForm
 		// Filter by BPartner
 		if (bpartnerIds != null && !bpartnerIds.isEmpty())
 		{
-			final int bpartnerId = packageableItem.getBPartnerId();
+			final int bpartnerId = packageableItem.getBpartnerId();
 			if (!bpartnerIds.contains(bpartnerId))
 			{
 				return false;
@@ -812,10 +810,8 @@ public class PackingMd extends MvcMdGenForm
 	{
 		if (_packageableItemsAll == null || _requeryNeeded)
 		{
-			final Properties ctx = Env.getCtx();
 			final IPackageableQuery query = createPackageableQuery();
-			final List<IPackageable> packageableItems = IteratorUtils.asList(packagingDAO.retrievePackableLines(ctx, query));
-			_packageableItemsAll = Collections.unmodifiableList(packageableItems);
+			_packageableItemsAll = packagingDAO.retrievePackableLines(query);
 
 			_requeryNeeded = false;
 		}
