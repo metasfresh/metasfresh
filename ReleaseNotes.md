@@ -40,7 +40,12 @@ Here come the actual release notes:
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
-  
+ 
+ 
+* metasfresh-webui-frontend
+  * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
+    * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
+    
 * metasfresh-webui-frontend
   * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
     * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
