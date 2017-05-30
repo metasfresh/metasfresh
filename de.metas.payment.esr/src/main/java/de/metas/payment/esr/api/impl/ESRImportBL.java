@@ -198,6 +198,13 @@ public class ESRImportBL implements IESRImportBL
 
 		final ByteArrayInputStream in = new ByteArrayInputStream(data);
 
+		int countLines = 0;
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_CHECK_DUPLICATED, false))
+		{
+			countLines = Services.get(IESRImportDAO.class).countLines(esrImport, null);
+		}
+
 		BufferedReader reader = null;
 		try
 		{
@@ -219,17 +226,29 @@ public class ESRImportBL implements IESRImportBL
 				// for row number
 				lineNo++;
 
+				//
+				// create line only if does not exist
+				I_ESR_ImportLine existentLine = null;
+				// if there are already lines before starting reading the file, means that we already tried to import once
+				if (countLines > 0)
+				{
+					existentLine = Services.get(IESRImportDAO.class).fetchLineForESRLineText(esrImport, currentTextLine);
+				}
+
+				if (existentLine == null)
+				{
 				final I_ESR_ImportLine line = createESRImportLine(esrImport, currentTextLine, lineNo, trxRunConfig);
 
-				if (isControlLine(line))
-				{
-					// The control lines do not contain relevant information about the bank account
-					continue;
-				}
-				else
-				{
-					importAmt = importAmt.add(line.getAmount());
-					trxQty++;
+					if (isControlLine(line))
+					{
+						// The control lines do not contain relevant information about the bank account
+						continue;
+					}
+					else
+					{
+						importAmt = importAmt.add(line.getAmount());
+						trxQty++;
+					}
 				}
 			}
 
@@ -519,10 +538,10 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		final List<I_ESR_ImportLine> linesToProcess = new ArrayList<I_ESR_ImportLine>();
-
+		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		try
 		{
-			final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
+			
 			if (allLines.isEmpty())
 			{
 				throw new AdempiereException("@NoLines@");
@@ -537,6 +556,15 @@ public class ESRImportBL implements IESRImportBL
 					InterfaceWrapperHelper.save(line);
 					continue;
 				}
+				// skip reverse booking lines from regular processing
+				// the admin should deal with them manually
+				if (isReverseBookingLine(line))
+				{
+					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+					InterfaceWrapperHelper.save(line);
+					continue;
+				}
+
 				// Skip already processed lines
 				if (line.isProcessed())
 				{
@@ -626,6 +654,15 @@ public class ESRImportBL implements IESRImportBL
 			}
 
 			throw new AdempiereException(e.getLocalizedMessage(), e);
+		}
+		finally
+		{
+			// cg: just make sure that the esr import is not set to processed too early
+			if (isAllLinesProcessed(allLines))
+			{
+				esrImport.setProcessed(true);
+				InterfaceWrapperHelper.save(esrImport);
+			}
 		}
 	}
 
@@ -1076,11 +1113,42 @@ public class ESRImportBL implements IESRImportBL
 		importLine.setErrorMsg(errorMsg);
 	}
 
-	public boolean isControlLine(final I_ESR_ImportLine line)
+	@Override
+	public void addErrorMsgInFront(I_ESR_ImportLine importLine, String msg)
+	{
+		if (Check.isEmpty(msg, true))
+		{
+			return;
+		}
+
+		String errorMsg = importLine.getErrorMsg();
+		if (errorMsg == null)
+		{
+			errorMsg = "";
+		}
+
+		final StringBuffer err = new StringBuffer();
+		err.append(msg);
+		if (!Check.isEmpty(errorMsg, true))
+		{
+			err.append("; ");
+		}
+		err.append(errorMsg);
+
+		importLine.setErrorMsg(err.toString());
+	}
+
+	private boolean isControlLine(final I_ESR_ImportLine line)
 	{
 		final String trxType = line.getESRTrxType();
 		return ESRConstants.ESRTRXTYPE_Payment.equals(trxType)
 				|| ESRConstants.ESRTRXTYPE_Receipt.equals(trxType);
+	}
+
+	private boolean isReverseBookingLine(final I_ESR_ImportLine line)
+	{
+		final String trxType = line.getESRTrxType();
+		return ESRConstants.ESRTRXTYPE_ReverseBooking.equals(trxType);
 	}
 
 	@Override

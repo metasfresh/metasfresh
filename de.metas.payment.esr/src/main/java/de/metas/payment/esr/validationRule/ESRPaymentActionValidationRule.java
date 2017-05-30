@@ -80,7 +80,7 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		final int invoiceId = StringUtils.toIntegerOrZero(invoiceIdStr);
 		final BigDecimal openAmt = StringUtils.toBigDecimalOrZero(openAmtStr);
 
-		if (paymentId <= 0)
+		if (paymentId <= 0 && !X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking.equals(item.getID()))
 		{
 			// No payment. No rule valid.
 			return false;
@@ -88,6 +88,7 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 
 		// 04690 these two actions are set by the system and imply that the record is readonly anyways.
 		if (X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line.equals(item.getID())
+				|| X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking.equals(item.getID())
 				|| X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts.equals(item.getID())
 				|| X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice.equals(item.getID()))
 		{

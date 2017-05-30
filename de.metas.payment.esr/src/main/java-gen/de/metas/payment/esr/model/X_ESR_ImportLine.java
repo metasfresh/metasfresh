@@ -658,6 +658,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final String ESR_PAYMENT_ACTION_Control_Line = "C";
 	/** Allocate_Payment_With_Current_Invoice = A */
 	public static final String ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice = "A";
+	/** Reverse_Booking = R */
+	public static final String ESR_PAYMENT_ACTION_Reverse_Booking = "R";
 	/** Set ESR_Payment_Action.
 		@param ESR_Payment_Action ESR_Payment_Action	  */
 	@Override

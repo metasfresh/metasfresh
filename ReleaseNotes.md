@@ -19,12 +19,14 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
+  * [#1619](https://github.com/metasfresh/metasfresh/issues/1619) Do not process reverse booking lines and improve esr import
   * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
     * Adding the Tax Rate Window to WebUI.
   * [#1647](https://github.com/metasfresh/metasfresh/issues/1647) Rename Empties Return in language de_DE
     * Translation of Emptires Return Window in WebUI. Renamed window, tab and menu entry.
   * [#1654](https://github.com/metasfresh/metasfresh/issues/1654) Customer Returns Window in WebUI
     * Creating the Customer Returns Window for WebUI. Adding to the menu.
+  * [#1659](https://github.com/metasfresh/metasfresh/issues/1659) Make verify BOM available in webUI 
   * [#1657](https://github.com/metasfresh/metasfresh/issues/1657) Initially set Date+Time Filters in WebUI
     * Removing 2 Date Fields from Filter criteria in WebUI that did not have a perfect behavior when using combined filters.
   * [#1665](https://github.com/metasfresh/metasfresh/issues/1665) Subtab Advanced Edit Configurations
@@ -33,6 +35,16 @@ Here come the actual release notes:
     * New Window for the Tax Category Maintenance.
   * [#1676](https://github.com/metasfresh/metasfresh/issues/1676) Payment Terms window in WebUI
     * Adding the window Layout For Payment Term window in WebUI.
+  * [#1679](https://github.com/metasfresh/metasfresh/issues/1679) New Window for Country in WebUI
+    * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
+  * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
+    * Creation of the Window Layoutfor the Request Type Window in WebUI.
+
+## Fixes
+
+* metasfresh-backend
+  * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
+  * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
 
 # metasfresh 5.11 (2017-21)
 
