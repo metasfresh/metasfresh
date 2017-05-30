@@ -618,7 +618,7 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
         return getProcessData(
             processType, viewId, type, ids, tabId, rowId
         ).then(response => {
-            const preparedData = parseToDisplay(response.data.parameters);
+            const preparedData = parseToDisplay(response.data.fieldsByName);
 
             pid = response.data.pinstanceId;
 
