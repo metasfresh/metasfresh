@@ -30,28 +30,23 @@ import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.PeriodClosedException;
-import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.acct.Doc;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.service.IPeriodBL;
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.exception.ESRParserException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -60,29 +55,7 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
 class ESRRegularLineMatcher extends AbstractESRLineMatcher
 {
 
-	private static final String ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P = "de.metas.payment.esr.EsrDoesNotBelongToInvoice";
-
-	private static final String ERR_NO_ESR_NO_FOUND_IN_DB_1P = "de.metas.payment.esr.NoEsrNoFoundInDB";
-
-	public static final String ERR_WRONG_REGULAR_LINE_LENGTH = "ESR_Wrong_Regular_Line_Length";
-
-	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
-
-	public static final String ERR_WRONG_NUMBER_FORMAT_AMOUNT = "ESR_Wrong_Number_Format_Amount";
-
-	public static final String ERR_WRONG_PAYMENT_DATE = "ESR_Wrong_Payment_Date";
-
-	public static final String ERR_WRONG_ACCOUNT_DATE = "ESR_Wrong_Account_Date";
-
-	public static final String ERR_INVOICE_ALREADY_PAID = "ESR_Invoice_Already_Paid";
-
-	public static final String ERR_UNFIT_BPARTNER_VALUES = "ESR_Unfit_BPartner_Values";
-
-	public static final String ERR_UNFIT_DOCUMENT_NOS = "ESR_Unfit_DocumentNo";
-
-	public static final String ESR_UNFIT_INVOICE_ORG = "ESR_Unfit_Invoice_Org";
-
-	public static final String ESR_UNFIT_BPARTNER_ORG = "ESR_Unfit_BPartner_Org";
+	private final IESRLineHandlersService esrMatchingListener = Services.get(IESRLineHandlersService.class);
 
 	/**
 	 * Matches the given import line
@@ -200,22 +173,10 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 
 					final int invoiceID = esrReferenceNumberDocument.getRecord_ID();
 					final I_C_Invoice invoice = InterfaceWrapperHelper.create(localCtx, invoiceID, I_C_Invoice.class, ITrx.TRXNAME_None);
-					final I_C_BPartner invoicePartner = invoice.getC_BPartner();
 
+					boolean match = esrMatchingListener.applyESRMatchingBPartnerOfTheInvoice(invoice, importLine);
 					// check the org: should not match with invoices from other orgs
-					if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
-					{
-						Services.get(IESRImportBL.class).addErrorMsg(importLine,
-								Services.get(IMsgBL.class).getMsg(localCtx, ESR_UNFIT_INVOICE_ORG));
-					}
-					// check the org: should not match with invoices which have the partner form other org
-					else if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
-							&& invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
-					{
-						Services.get(IESRImportBL.class).addErrorMsg(importLine,
-								Services.get(IMsgBL.class).getMsg(localCtx, ESR_UNFIT_BPARTNER_ORG));
-					}
-					else
+					if (match)
 					{
 						Services.get(IESRImportBL.class).setInvoice(importLine, invoice);
 
@@ -224,8 +185,8 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 						{
 							setValuesFromInvoice(importLine, invoice);
 						}
-
 					}
+
 				}
 				else
 				{
@@ -301,197 +262,5 @@ class ESRRegularLineMatcher extends AbstractESRLineMatcher
 		{
 			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched);
 		}
-	}
-
-	// 04551
-	private String replaceNonDigitCharsWithZero(String amountStringWithPosibleSpaces)
-	{
-		final int size = amountStringWithPosibleSpaces.length();
-
-		StringBuilder stringWithZeros = new StringBuilder();
-
-		for (int i = 0; i < size; i++)
-		{
-			final char currentChar = amountStringWithPosibleSpaces.charAt(i);
-
-			if (!Character.isDigit(currentChar))
-			{
-				stringWithZeros.append('0');
-			}
-			else
-			{
-				stringWithZeros.append(currentChar);
-			}
-		}
-
-		return stringWithZeros.toString();
-	}
-
-	private void setValuesFromInvoice(final I_ESR_ImportLine importLine, final I_C_Invoice invoice)
-	{
-		importLine.setC_BPartner_ID(invoice.getC_BPartner_ID()); // 04582: no need to load the whole bpartner when we just need the ID
-		importLine.setOrg_ID(invoice.getAD_Org_ID());
-
-		InterfaceWrapperHelper.save(importLine);
-	}
-
-	private void setValuesFromESRString(final I_ESR_ImportLine importLine)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(importLine);
-
-		final String esrImportLineText = importLine.getESRLineText();
-		// The reference number of the ESR Import line
-		final String completeEsrReferenceNumberStr = esrImportLineText.substring(12, 39);
-
-		// Organization value
-
-		final String orgValue = completeEsrReferenceNumberStr.substring(7, 10);
-		importLine.setSektionNo(orgValue);
-
-		// Org ID
-		final I_AD_Org organization = Services.get(IOrgDAO.class).retrieveOrganizationByValue(ctx, orgValue);
-		if (organization != null)
-		{
-			importLine.setOrg(organization);
-			importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
-		}
-
-		// BPartner value (without initial zeros)
-		final int bPartnerId;
-
-		final String bpValue = removeLeftZeros(completeEsrReferenceNumberStr.substring(10, 18));
-
-		// Get BPartner id
-		// try to format the value
-		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-		final String formattedBPValue = documentNoFactory.forTableName(I_C_BPartner.Table_Name, importLine.getAD_Client_ID(), importLine.getAD_Org_ID())
-				.setSequenceNo(Integer.valueOf(bpValue))
-				.setFailOnError(false)
-				.build();
-
-		I_C_BPartner bPartner = null;
-		if (!Check.isEmpty(formattedBPValue, true))
-		{
-			bPartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(ctx, formattedBPValue);
-		}
-
-		importLine.setBPartner_Value(bpValue);
-
-		if (bPartner != null)
-		{
-			// check organization
-			// we should not allow matching form other org
-			if (bPartner.getAD_Org_ID() > 0 // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
-					&& bPartner.getAD_Org_ID() != importLine.getAD_Org_ID())
-			{
-				Services.get(IESRImportBL.class).addErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_BPARTNER_ORG));
-
-				importLine.setC_BPartner(null);
-				bPartnerId = -1;
-			}
-			else
-			{
-				bPartnerId = bPartner.getC_BPartner_ID();
-				importLine.setC_BPartner(bPartner);
-				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
-			}
-		}
-		else
-		{
-			importLine.setC_BPartner(null);
-			bPartnerId = -1;
-		}
-
-		// Document number (e.g. of the invoice, without initial zeros)
-
-		final String documentNo = removeLeftZeros(completeEsrReferenceNumberStr.substring(18, 26));
-		importLine.setESR_DocumentNo(documentNo);
-
-		I_C_Invoice invoice = importLine.getC_Invoice();
-
-		if (invoice != null)
-		{
-			final I_C_BPartner invoicePartner = invoice.getC_BPartner();
-			final String invoiceDocumentNo = invoice.getDocumentNo();
-			// final I_AD_Org invoiceOrg = InterfaceWrapperHelper.create(ctx, invoice.getAD_Org_ID(), I_AD_Org.class, trxName);
-
-			// check the org: should not match with invoices from other orgs
-			if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
-			{
-				Services.get(IESRImportBL.class).addErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_INVOICE_ORG));
-			}
-			// check the org: should not match with invoices which have the partner from other org
-			else if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
-					&& invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
-			{
-				Services.get(IESRImportBL.class).addErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_BPARTNER_ORG));
-			}
-			else
-			{
-				if (!invoicePartner.getValue().equals(bpValue))
-				{
-					// task: 05799 also try with bpValue + one '0'
-					final String bpValueleftZero = '0' + bpValue;
-
-					if (invoicePartner.getValue().endsWith(bpValueleftZero))
-					{
-						// if we have a match with bpValueleftZero, then we need to make sure that 'importLine' references invoice's partner
-						// (the one with the leading '0')
-						importLine.setBPartner_Value(bpValueleftZero);
-						importLine.setC_BPartner(invoicePartner);
-					}
-					//task 09861
-					//Make sure the bpartners with values bigger than 1000 are correctly handled.
-					// For this, check if the invoice's bp value doesn't end with the string bpvalue as it is
-					else if(invoicePartner.getValue().endsWith(bpValue))
-					{
-						importLine.setBPartner_Value(bpValue);
-						importLine.setC_BPartner(invoicePartner);
-					}
-					else
-					{
-						Services.get(IESRImportBL.class).addErrorMsg(importLine,
-								Services.get(IMsgBL.class).getMsg(ctx, ERR_UNFIT_BPARTNER_VALUES, new Object[] {
-										invoicePartner.getValue(),
-										bpValue
-								}));
-					}
-				}
-
-				if (!invoiceDocumentNo.equals(documentNo))
-				{
-					Services.get(IESRImportBL.class).addErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(ctx, ERR_UNFIT_DOCUMENT_NOS, new Object[] {
-									invoiceDocumentNo,
-									documentNo
-							}));
-				}
-
-			}
-
-		}
-		// if (importLine.getC_Invoice() == null)
-		else
-		{
-			// Try to get the invoice via bpartner and document no
-			final I_C_Invoice invoiceFallback = Services.get(IInvoiceDAO.class).retrieveInvoiceByInvoiceNoAndBPartnerID(ctx, documentNo, bPartnerId);
-			if (invoiceFallback != null)
-			{
-				// check the org: should not match with invoices from other orgs
-				if (invoiceFallback.getAD_Org_ID() != importLine.getAD_Org_ID())
-				{
-					Services.get(IESRImportBL.class).addErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(ctx, ESR_UNFIT_INVOICE_ORG));
-				}
-				else
-				{
-					Services.get(IESRImportBL.class).setInvoice(importLine, invoiceFallback);
-				}
-			}
-		}
-		InterfaceWrapperHelper.save(importLine);
 	}
 }
