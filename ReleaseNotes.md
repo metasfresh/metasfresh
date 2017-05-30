@@ -45,6 +45,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
     * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
+  * [#414](https://github.com/metasfresh/metasfresh-webui-api/issues/414) Referenced Windows for Subtab Records
+    * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
   * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
     * The Section Names for Fieldgroup creation are now translatable in WebUI.
     
