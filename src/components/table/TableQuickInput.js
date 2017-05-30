@@ -66,8 +66,8 @@ class TableQuickInput extends Component {
         this.setState({
             data: null
         }, () => {
-            dispatch(
-                createInstance('window', docType, docId, tabId, 'quickInput')
+            createInstance(
+                'window', docType, docId, tabId, 'quickInput'
             ).then(instance => {
                 this.setState({
                     data: parseToDisplay(instance.data.fieldsByName),
@@ -83,8 +83,8 @@ class TableQuickInput extends Component {
                 }
             });
 
-            !layout && dispatch(
-                initLayout('window', docType, tabId, 'quickInput', docId)
+            !layout && initLayout(
+                'window', docType, tabId, 'quickInput', docId
             ).then(layout => {
                 this.setState({
                     layout: layout.data.elements
