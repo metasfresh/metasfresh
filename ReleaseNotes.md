@@ -39,6 +39,11 @@ Here come the actual release notes:
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
 
+## Fixes
+
+* metasfresh-backend
+  * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
+
 # metasfresh 5.11 (2017-21)
 
 ## Features
