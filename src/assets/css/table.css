@@ -422,4 +422,5 @@ $indent-signs-offset: 6px;
 
 .table.table-included td {
     height: 22px;
+    width: 50%;
 }

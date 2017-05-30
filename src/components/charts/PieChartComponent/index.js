@@ -251,7 +251,7 @@ class PieChartComponent extends Component {
     };
 
     render() {
-        const {chartClass, data, fields, groupBy, isMaximize} = this.props;
+        const {chartClass, data, fields, groupBy, isMaximize, chartTitle} = this.props;
 
         return (
             <div className={chartClass+'-wrapper' + ' chart-wrapper'}>
@@ -259,6 +259,12 @@ class PieChartComponent extends Component {
                 {isMaximize && 
                 <div className="panel panel-primary panel-bordered chart-data-table-wrapper">
                     <table className="table table-bordered-vertically table-striped">
+                        <thead>
+                            <tr>
+                                <th>{chartTitle}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
                         <tbody>
                         {data.map((item, index)=> {
                             return(

@@ -176,6 +176,7 @@ export class DraggableWidget extends Component {
                         responsive={true}
                         height={height}
                         isMaximize={isMaximize}
+                        chartTitle={text}
                     />
                 </div>
             </div>
