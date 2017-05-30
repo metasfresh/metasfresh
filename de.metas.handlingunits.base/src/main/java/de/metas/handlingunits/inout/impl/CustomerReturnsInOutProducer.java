@@ -1,8 +1,9 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -83,7 +84,8 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	/**
 	 * List of handling units that have to be returned to vendor
 	 */
-	private final Set<HUToReturn> _husToReturn = new HashSet<>();
+	private final Set<HUToReturn> _husToReturn = new TreeSet<>(Comparator.comparing(HUToReturn::getM_HU_ID)
+			.thenComparing(HUToReturn::getOriginalReceiptInOutLineId));
 
 	public CustomerReturnsInOutProducer()
 	{
@@ -183,7 +185,9 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 
 	public List<I_M_HU> getHUsReturned()
 	{
-		return _husToReturn.stream().map(HUToReturn::getHu).collect(Collectors.toList());
+		return _husToReturn.stream()
+				.map(HUToReturn::getHu)
+				.collect(Collectors.toList());
 	}
 
 	public CustomerReturnsInOutProducer addHUToReturn(@NonNull final I_M_HU hu, final int originalReceiptInOutLineId)
@@ -194,9 +198,14 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	}
 
 	@Value
-	private final class HUToReturn
+	private static final class HUToReturn
 	{
-		private final I_M_HU hu;
+		private @NonNull final I_M_HU hu;
 		private final int originalReceiptInOutLineId;
+		
+		private int getM_HU_ID()
+		{
+			return hu.getM_HU_ID(); 
+		}
 	}
 }

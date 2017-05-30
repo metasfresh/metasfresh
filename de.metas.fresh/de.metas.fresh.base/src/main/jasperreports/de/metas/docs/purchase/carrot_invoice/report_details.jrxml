@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-02T14:17:37 -->
+<!-- 2017-05-29T15:08:34 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/carrot_invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -76,7 +76,7 @@ SELECT
 
 	il.QtyenteredTU	AS HUQty,
 
-	CASE WHEN ss.Packdescription = 'VirtualPI' OR il.QtyenteredTU IS NULL
+	CASE WHEN piit.M_HU_PI_Version_ID = 101 OR il.QtyenteredTU IS NULL
 	THEN NULL ELSE ss.Packdescription END	AS HUName,
 
 	il.QtyInvoicedinPriceUOM		AS QtyInvoicedinPriceUOM,
@@ -99,6 +99,10 @@ FROM
 	LEFT OUTER JOIN C_OrderLine ol			ON ic.Record_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
 	LEFT OUTER JOIN M_ShipmentSchedule ss		ON ol.C_OrderLine_ID = ss.Record_ID AND ss.isActive = 'Y'
 		AND ss.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_OrderLine' AND isActive = 'Y')
+	--
+	LEFT OUTER JOIN M_HU_PI_Item_Product pi ON ss.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
+	LEFT OUTER JOIN M_HU_PI_Item piit ON pi.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y'  
+	--
 	LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol	ON ila.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID AND iciol.isActive = 'Y'
 	LEFT OUTER JOIN M_InOutLine iol 		ON iciol.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
 	LEFT OUTER JOIN M_InOut io 			ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
@@ -133,7 +137,7 @@ WHERE
 	LEFT OUTER JOIN M_Product idop ON ido.M_Product_ID = idop.M_Product_ID AND idop.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Trl idopt ON ido.M_Product_ID = idopt.M_Product_ID AND idopt.AD_Language = $P{ad_language} AND idopt.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI tupi ON ido.M_TU_HU_PI_ID = tupi.M_HU_PI_ID AND tupi.isActive = 'Y'
-	LEFT OUTER JOIN M_HU_PI_Item_Product piip ON ido.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID AND piip.isActive = 'Y' 
+	LEFT OUTER JOIN M_HU_PI_Item_Product piip ON ido.M_HU_PI_Item_Product_ID = piip.M_HU_PI_Item_Product_ID AND piip.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item pii ON piip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PackingMaterial pm ON pii.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID AND pm.isActive = 'Y'
 	LEFT OUTER JOIN M_Product pmp ON pm.M_Product_ID = pmp.M_Product_ID AND pmp.isActive = 'Y'

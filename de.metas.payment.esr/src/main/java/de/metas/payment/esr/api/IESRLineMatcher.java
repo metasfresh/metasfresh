@@ -29,5 +29,29 @@ import de.metas.payment.esr.model.I_ESR_ImportLine;
 
 public interface IESRLineMatcher extends ISingletonService
 {
+	public static final String ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P = "de.metas.payment.esr.EsrDoesNotBelongToInvoice";
+
+	public static final String ERR_NO_ESR_NO_FOUND_IN_DB_1P = "de.metas.payment.esr.NoEsrNoFoundInDB";
+
+	public static final String ERR_WRONG_REGULAR_LINE_LENGTH = "ESR_Wrong_Regular_Line_Length";
+
+	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
+
+	public static final String ERR_WRONG_NUMBER_FORMAT_AMOUNT = "ESR_Wrong_Number_Format_Amount";
+
+	public static final String ERR_WRONG_PAYMENT_DATE = "ESR_Wrong_Payment_Date";
+
+	public static final String ERR_WRONG_ACCOUNT_DATE = "ESR_Wrong_Account_Date";
+
+	public static final String ERR_INVOICE_ALREADY_PAID = "ESR_Invoice_Already_Paid";
+
+	public static final String ERR_UNFIT_BPARTNER_VALUES = "ESR_Unfit_BPartner_Values";
+
+	public static final String ERR_UNFIT_DOCUMENT_NOS = "ESR_Unfit_DocumentNo";
+
+	public static final String ESR_UNFIT_INVOICE_ORG = "ESR_Unfit_Invoice_Org";
+
+	public static final String ESR_UNFIT_BPARTNER_ORG = "ESR_Unfit_BPartner_Org";
+
 	void match(I_ESR_ImportLine importLine);
 }
