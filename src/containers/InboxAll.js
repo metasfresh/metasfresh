@@ -9,7 +9,7 @@ import Inbox from '../components/inbox/Inbox';
 class InboxAll extends Component {
     render() {
         const {
-            inbox, modal, rawModal, processStatus, indicator, selected, 
+            inbox, modal, rawModal, processStatus, indicator, selected,
             includedView
         } = this.props;
 
@@ -30,7 +30,7 @@ class InboxAll extends Component {
 
 function mapStateToProps(state) {
     const { appHandler, windowHandler, listHandler  } = state;
-    
+
     const {
         inbox,
         processStatus
@@ -38,7 +38,7 @@ function mapStateToProps(state) {
         inbox: {},
         processStatus: ''
     }
-    
+
     const {
         modal,
         rawModal,
@@ -50,7 +50,7 @@ function mapStateToProps(state) {
         selected: [],
         indicator: ''
     }
-    
+
     const {
         includedView
     } = listHandler || {

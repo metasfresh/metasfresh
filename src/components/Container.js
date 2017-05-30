@@ -47,7 +47,7 @@ class Container extends Component {
                 {modal.visible &&
                     <Modal
                         windowType={modal.type}
-                        dataId={modal.dataId ? modal.dataId : ''}
+                        dataId={modal.dataId ? modal.dataId : dataId}
                         data={modal.data}
                         layout={modal.layout}
                         rowData={modal.rowData}
@@ -101,7 +101,8 @@ class Container extends Component {
                                      }
                                  >
                                  </DocumentList>
-                                 {includedView.windowType && includedView.viewId &&
+                                 {includedView.windowType &&
+                                     includedView.viewId &&
                                      <DocumentList
                                          type="includedView"
                                          selected={selected}

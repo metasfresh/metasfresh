@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Moment from 'moment';
-import Modal from '../components/app/Modal';
 
 import {
     getAvailableLang,
@@ -80,21 +79,8 @@ class Settings extends Component {
             <Container
                 hideHeader={hideHeader}
                 siteName="Settings"
+                {...{modal, rawModal}}
             >
-                {modal.visible &&
-                    <Modal
-                        windowType={modal.type}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        rawModalVisible={rawModal && rawModal.visible}
-                     />
-                 }
                 <div className="window-wrapper">
                     <div className="row">
                         <div className="col-sm-6">

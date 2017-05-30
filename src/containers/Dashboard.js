@@ -19,7 +19,7 @@ export class Dashboard extends Component {
             <Container
                 siteName="Dashboard"
                 noMargin={true}
-                {...{modal, rawModal, selected, indicator, processStatus, 
+                {...{modal, rawModal, selected, indicator, processStatus,
                     includedView}}
             >
                 <div className="container-fluid dashboard-wrapper">
@@ -53,7 +53,6 @@ function mapStateToProps(state) {
         indicator: ''
     }
 
-    
     const {
         includedView
     } = listHandler || {
