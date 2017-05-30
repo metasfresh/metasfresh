@@ -217,6 +217,10 @@ class PieChartComponent extends Component {
         legend.exit().remove();
     };
 
+    addDataTable = () => {
+        
+    }
+
     addResponsive = (data, color) => {
         const {chartClass} = this.props;
         const chartWrap =
@@ -247,10 +251,25 @@ class PieChartComponent extends Component {
     };
 
     render() {
-        const {chartClass} = this.props;
+        const {chartClass, data, fields, groupBy, isMaximize} = this.props;
         return (
             <div className={chartClass+'-wrapper' + ' chart-wrapper'}>
                 <svg className={chartClass} />
+                {isMaximize && 
+                <div className="panel panel-primary panel-bordered chart-data-table-wrapper">
+                    <table className="table table-bordered-vertically table-striped">
+                        <tbody>
+                        {data.map((item, index)=> {
+                            return(
+                                <tr key={index}>
+                                    <td>{item[groupBy.fieldName]}</td>
+                                    <td>{item[fields[0].fieldName]}</td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                </div>}
             </div>
         );
     }

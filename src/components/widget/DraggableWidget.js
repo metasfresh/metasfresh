@@ -175,6 +175,7 @@ export class DraggableWidget extends Component {
                         reRender={forceChartReRender}
                         responsive={true}
                         height={height}
+                        isMaximize={isMaximize}
                     />
                 </div>
             </div>

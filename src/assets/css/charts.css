@@ -4,6 +4,12 @@
     min-height: 425px;
 }
 
+.chart-data-table-wrapper,
+.panel.chart-data-table-wrapper {
+    width: 90%;
+    margin: 0 auto;
+}
+
 .pie-path {
     stroke: #fff;
     stroke-width: 2px;

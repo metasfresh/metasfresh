@@ -100,11 +100,40 @@ class BarChartComponent extends Component {
     }
 
     render() {
-        const {chartClass} = this.props;
+        const {chartClass, isMaximize, data, fields} = this.props;
+
 
         return (
             <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
                 <svg className={chartClass} />
+                {isMaximize && 
+                <div className="panel panel-primary panel-bordered chart-data-table-wrapper">
+                    <table className="table table-bordered-vertically table-striped">
+                        <tbody>
+                        {data.map((item, index)=> {
+                            return(
+                                <tr key={index}>
+                                    <td>
+                                        <table className="table table-included">
+                                            {fields.map((field, index)=> {
+                                                const nameField = field.fieldName;
+                                                return (
+                                                    <tbody key={index}>
+                                                        <tr>
+                                                            <td>aaa</td>
+                                                            <td>bbb</td>
+                                                        </tr>
+                                                    </tbody>
+                                                )
+                                            })}
+                                        </table>
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                </div>}
             </div>
         );
     }
