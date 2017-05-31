@@ -44,6 +44,8 @@ Here come the actual release notes:
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
   * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
     * Adding the Handling Unit Editor to WebUI menu in Logistics group.
+  * [#1707](https://github.com/metasfresh/metasfresh/issues/1707) Add Handling Unit Assignment Tab to Customer Returns Window
+    * Adds the Handling Unitb Assignment Tab to the Customer Returns window, allowing the user to easily zoom-to and maintain the returned Handling Units.
  
  
 * metasfresh-webui-api
