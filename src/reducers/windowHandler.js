@@ -164,7 +164,7 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {
                         [action.tabid]: {
                             $set: state[action.scope].rowData[action.tabid]
-                                .filter((item) => item.rowId === action.rowId)
+                                .filter((item) => item.rowId !== action.rowid)
                         }
                     }
                 }
