@@ -78,6 +78,8 @@ Here come the actual release notes:
   * [#811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/811) Print Preview Stopped working
     * Fixes a Bug with Print action, that did not show the print preview in a new Tab anymore.
   * [#813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/813) included row: typeahead and dropdown endpoints are wrongly called
+  * [#814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/814) Deleting a row in included tab makes the included tab empty
+    * Fixes a Bug that undisplayed all rows of a Subtab when deleting one of the included rows.
   * [#815](https://github.com/metasfresh/metasfresh-webui-frontend/issues/815) attributes are missing
     * Fixing a Bug that prevented attributes to be shown in manufacturing order issue/ receipt.
 
