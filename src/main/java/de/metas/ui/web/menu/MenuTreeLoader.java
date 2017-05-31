@@ -153,7 +153,7 @@ final class MenuTreeLoader
 		}
 
 		final MenuNode.Builder builder = MenuNode.builder()
-				.setId(nodeModel.getNode_ID())
+				.setAD_Menu_ID(nodeModel.getNode_ID())
 				.setCaption(caption)
 				.setCaptionBreadcrumb(captionBreadcrumb)
 				.setMainTableName(nodeModel.getMainTableName());
@@ -215,7 +215,7 @@ final class MenuTreeLoader
 		}
 
 		return MenuNode.builder()
-				.setId(node.getId() + "-new")
+				.setAD_Menu_ID(node.getAD_Menu_ID())
 				.setCaption(captionEffective)
 				.setCaptionBreadcrumb(captionBreadcrumbEffective)
 				.setType(MenuNodeType.NewRecord, node.getElementId())
@@ -258,7 +258,7 @@ final class MenuTreeLoader
 
 		return rootNodeModel;
 	}
-
+	
 	private UserMenuInfo getUserMenuInfo()
 	{
 		final IUserRolePermissions userRolePermissions = getUserRolePermissions();
@@ -275,7 +275,7 @@ final class MenuTreeLoader
 		this._adLanguage = adLanguage;
 		return this;
 	}
-
+	
 	@NonNull
 	private String getAD_Language()
 	{
