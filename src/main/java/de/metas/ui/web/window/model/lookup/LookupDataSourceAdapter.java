@@ -84,14 +84,19 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	@Override
 	public final LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
-		if (!isValidFilter(filter))
+		final String filterEffective;
+		if (Check.isEmpty(filter, true))
 		{
-			throw new IllegalArgumentException("Invalid filter: " + filter);
+			filterEffective = LookupDataSourceContext.FILTER_Any;
+		}
+		else
+		{
+			filterEffective = filter.trim();
 		}
 
 		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingList()
 				.setParentEvaluatee(ctx)
-				.putFilter(filter, firstRow, pageLength)
+				.putFilter(filterEffective, firstRow, pageLength)
 				.build();
 
 		final LookupValuesList lookupValuesList = fetcher.retrieveEntities(evalCtx);
@@ -129,21 +134,6 @@ final class LookupDataSourceAdapter implements LookupDataSource
 			return null;
 		}
 		return lookupValue;
-	}
-
-	static boolean isValidFilter(final String filter)
-	{
-		if (Check.isEmpty(filter, true))
-		{
-			return false;
-		}
-
-		if (filter == LookupDataSourceContext.FILTER_Any)
-		{
-			return true;
-		}
-
-		return true;
 	}
 
 	@Override
