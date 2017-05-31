@@ -21,7 +21,7 @@
 - Then you should run node server by:
 > npm start
 
-# Build
+## Build
 In case of static version building execute (you are going need Webpack installed globally):
 > webpack --config webpack.prod.js
 
@@ -40,11 +40,11 @@ Also remember to respect our code-schema rules. All of them are listed in __esli
 
 (first one is also autofixing when possible)
 
-### Notice: CI/CD legacy
+## Notice: CI/CD legacy
 
 Submodule meta-frontend-ansible.git and .gitlab-ci.yml file are legacy of CI/CD.
 
-### Dictionary
+## Dictionary
 
 Project has a generic structure. Name of components and their containers should be strictly defined and keep for better understanding.
 
@@ -68,7 +68,7 @@ __MenuOverlay__ - These are components that float over __Header__ and contain na
 
 __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is a side by side table in __DocumentList__.
 
-### Schema
+## Schema
 - MasterWindow
     - Container
     - Window
