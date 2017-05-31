@@ -57,6 +57,8 @@ Here come the actual release notes:
     * The Dashboard now does sow "No data" instaead of error, when no Data is available.
   * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
     * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
+  * #789(https://github.com/metasfresh/metasfresh-webui-frontend/issues/789) Advanced Edit w/ key [ctrl]+e too many [tab] for scroll
+    * Nice Usability Improvement for the keyboard Navigation in Advanced Edit Mode. Scroll w/ page-up/ page-down can be used directly after opening the Advanced Edit mode.
   * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
     * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
 
