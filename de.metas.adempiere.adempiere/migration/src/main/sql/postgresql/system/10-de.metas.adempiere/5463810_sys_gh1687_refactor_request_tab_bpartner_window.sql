@@ -677,10 +677,9 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 UPDATE AD_Field SET DefaultValue='',Updated=TO_TIMESTAMP('2017-05-29 17:11:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558617
 ;
 
--- 2017-05-29T17:11:23.337
--- URL zum Konzept
-INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540829,540243,TO_TIMESTAMP('2017-05-29 17:11:23','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,TO_TIMESTAMP('2017-05-29 17:11:23','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,value) VALUES (0,0,540829,540243,TO_TIMESTAMP('2017-05-29 17:11:23','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,TO_TIMESTAMP('2017-05-29 17:11:23','YYYY-MM-DD HH24:MI:SS'),100,'main')
 ;
+
 
 -- 2017-05-29T17:11:29.963
 -- URL zum Konzept
