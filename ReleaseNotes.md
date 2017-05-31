@@ -19,6 +19,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
+  * [#1599](https://github.com/metasfresh/metasfresh/issues/1599) Import full menu from w101
+    * Initial Import of the current full webUI Menu/ Sitemap.
   * [#1619](https://github.com/metasfresh/metasfresh/issues/1619) Do not process reverse booking lines and improve esr import
   * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
     * Adding the Tax Rate Window to WebUI.
@@ -29,6 +31,7 @@ Here come the actual release notes:
   * [#1659](https://github.com/metasfresh/metasfresh/issues/1659) Make verify BOM available in webUI 
   * [#1657](https://github.com/metasfresh/metasfresh/issues/1657) Initially set Date+Time Filters in WebUI
     * Removing 2 Date Fields from Filter criteria in WebUI that did not have a perfect behavior when using combined filters.
+  * [#1661](https://github.com/metasfresh/metasfresh/issues/1661) make process field autocomplete in table and columns window
   * [#1665](https://github.com/metasfresh/metasfresh/issues/1665) Subtab Advanced Edit Configurations
     * Migrating all Subtab UI Elements to show them in Advanced Edit, also swicthing the UI Element Group UI Styles to be not primary.
   * [#1672](https://github.com/metasfresh/metasfresh/issues/1672) New Tax Category Window in WebUI
@@ -39,12 +42,34 @@ Here come the actual release notes:
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
+ 
+ 
+* metasfresh-webui-api
+  * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
+    * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
+  * [#414](https://github.com/metasfresh/metasfresh-webui-api/issues/414) Referenced Windows for Subtab Records
+    * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
+  * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
+    * The Section Names for Fieldgroup creation are now translatable in WebUI.
+    
+* metasfresh-webui-frontend
+  * [#713](https://github.com/metasfresh/metasfresh-webui-frontend/issues/713) KPIs: In case datasets is empty or missing shall show "No data" text
+    * The Dashboard now does sow "No data" instaead of error, when no Data is available.
+  * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
+    * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
+  * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
+    * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
 
 ## Fixes
 
 * metasfresh-backend
   * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
   * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
+  
+* metasfresh-webui-frontend
+  * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
+    * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
+
 
 # metasfresh 5.11 (2017-21)
 
