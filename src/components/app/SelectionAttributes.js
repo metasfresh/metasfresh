@@ -43,15 +43,13 @@ class SelectionAttributes extends Component {
     fetchActions = () => {
         const {
             windowType, viewId, selected, entity, DLWrapperSetData,
-            DLWrapperSetLayout, dispatch
+            DLWrapperSetLayout
         } = this.props;
 
         initLayout(entity, windowType, selected[0], null, viewId)
             .then(response => {
                 DLWrapperSetLayout(response.data.elements);
-                return dispatch(
-                    getData(entity, windowType, viewId, selected[0])
-                );
+                return getData(entity, windowType, viewId, selected[0]);
             }).then(response => {
                 DLWrapperSetData(response.data.fieldsByName, response.data.id);
             }).catch(() => {});
