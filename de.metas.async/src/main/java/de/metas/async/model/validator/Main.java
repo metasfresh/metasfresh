@@ -84,7 +84,6 @@ public class Main extends AbstractModuleInterceptor
 		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderSupplier(AsyncImportProcessBuilder.instanceSupplier);
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(AsyncImportWorkpackageProcessor.TOPIC_RecordsImported);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
-		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNotifier(new NotifyAsyncBatch());
 	}
 
 	/**

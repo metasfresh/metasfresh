@@ -84,8 +84,8 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 			if (!asyncBatch.isProcessed())
 			{
-				hasSkippedBatches = true;
-				continue;
+				final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
+				throw skipExcep;
 			}
 
 		}
@@ -95,11 +95,6 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 			throw new AdempiereException("@IAsyncBatchBL.keepAliveTimeExpired@");
 		}
 
-		if (hasSkippedBatches)
-		{
-			final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis());
-			throw skipExcep;
-		}
 
 		return Result.SUCCESS;
 	}
