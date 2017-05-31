@@ -55,6 +55,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#713](https://github.com/metasfresh/metasfresh-webui-frontend/issues/713) KPIs: In case datasets is empty or missing shall show "No data" text
     * The Dashboard now does sow "No data" instaead of error, when no Data is available.
+  * [#773](https://github.com/metasfresh/metasfresh-webui-frontend/issues/773) frontend: JSON documents: always use "fieldsByName" instead of "fields"
+    * Internal Task for changing API responses for single documents, vie data and Patches.
   * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
     * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
   * #789(https://github.com/metasfresh/metasfresh-webui-frontend/issues/789) Advanced Edit w/ key [ctrl]+e too many [tab] for scroll
