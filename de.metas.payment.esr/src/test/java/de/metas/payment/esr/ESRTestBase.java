@@ -79,6 +79,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.payment.esr.model.validator.ESR_Main_Validator;
+import lombok.NonNull;
 
 public class ESRTestBase
 {
@@ -108,7 +109,7 @@ public class ESRTestBase
 		AdempiereTestHelper.get().init();
 
 		dao = (PlainESRImportDAO)Services.get(IESRImportDAO.class);
-		
+
 		esrImportBL = new ESRImportBL();
 
 		// register processors
@@ -135,7 +136,7 @@ public class ESRTestBase
 		Env.setContext(ctx, "#AD_User_ID", 1);
 
 		trxManager = Services.get(ITrxManager.class);
-		contextProvider = new PlainContextAware(getCtx(), ITrx.TRXNAME_None);
+		contextProvider = PlainContextAware.newOutOfTrx(getCtx());
 
 		// Make sure esr validator interceptor is registered
 		final ESR_Main_Validator esrValidator = new ESR_Main_Validator();
@@ -180,29 +181,29 @@ public class ESRTestBase
 		return ctx;
 	}
 
-//	protected I_ESR_ImportLine createImportLine(final String esrImportLineText)
-//	{
-//		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
-//		esrImport.setDataType(X_ESR_Import.DATATYPE_V11);
-//		save(esrImport);
-//
-//		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class);
-//		esrImportLine.setESR_Import(esrImport);
-//		esrImportLine.setESRLineText(esrImportLineText);
-//		save(esrImportLine);
-//
-//		return esrImportLine;
-//	}
+	// protected I_ESR_ImportLine createImportLine(final String esrImportLineText)
+	// {
+	// final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
+	// esrImport.setDataType(X_ESR_Import.DATATYPE_V11);
+	// save(esrImport);
+	//
+	// final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class);
+	// esrImportLine.setESR_Import(esrImport);
+	// esrImportLine.setESRLineText(esrImportLineText);
+	// save(esrImportLine);
+	//
+	// return esrImportLine;
+	// }
 
 	protected I_ESR_Import createImport()
 	{
-		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
+		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class, contextProvider);
 		esrImport.setDataType(X_ESR_Import.DATATYPE_V11);
 		save(esrImport);
 
 		return esrImport;
 	}
-	
+
 	public void assertNoErrors(final List<I_ESR_ImportLine> lines)
 	{
 		if (lines == null || lines.isEmpty())
@@ -233,13 +234,14 @@ public class ESRTestBase
 	}
 
 	protected I_ESR_ImportLine setupESR_ImportLine(
-			final String invAmount,
-			final String esrLineText,
-			final String refNo,
-			final String ESR_RenderedAccountNo,
-			final String partnerValue,
-			final String invDocNo,
-			final boolean isPaid,
+			@NonNull final String invDocNo,
+			@NonNull final String invAmount,
+			final boolean invPaid,
+			@NonNull final String fullRefNo,
+			@NonNull final String refNo,
+			@NonNull final String ESR_RenderedAccountNo,
+			@NonNull final String partnerValue,
+			@NonNull final String payAmt,
 			final boolean createAllocation)
 	{
 		// org
@@ -289,7 +291,7 @@ public class ESRTestBase
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
-		invoice.setIsPaid(isPaid);
+		invoice.setIsPaid(invPaid);
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);
 		InterfaceWrapperHelper.save(invoice);
@@ -314,15 +316,17 @@ public class ESRTestBase
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
-		
-		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class);
+
+		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
 		esrImportLine.setESR_Import(esrImport);
 		esrImportLine.setC_BP_BankAccount(account);
 		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
+		esrImportLine.setESRPostParticipantNumber(ESR_RenderedAccountNo.replaceAll("-", ""));
+		esrImportLine.setESRFullReferenceNumber(fullRefNo);
+		esrImportLine.setAmount(new BigDecimal(payAmt));
 		InterfaceWrapperHelper.save(esrImportLine);
-		
-		lines.add(esrImportLine);
 
+		lines.add(esrImportLine);
 
 		if (createAllocation)
 		{

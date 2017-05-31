@@ -11,7 +11,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.PlainStringLoggable;
+import org.adempiere.util.Services;
+import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -46,8 +49,10 @@ import lombok.NonNull;
 
 public class ESRDataImporterV11 implements IESRDataImporter
 {
+	public final static String ERR_WRONG_CTRL_LINE_LENGTH = "ESR_Wrong_Ctrl_Line_Length";
+	
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterV11.class);
-
+	
 	private final InputStream input;
 
 	public ESRDataImporterV11(@NonNull final InputStream input)
@@ -79,13 +84,20 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 				final String trimmedtextLine = currentTextLine.trim();
 
-				if (ESRReceiptLineMatcherUtil.isReceiptLineWithCorrectLength(trimmedtextLine))
+				if (ESRReceiptLineMatcherUtil.isReceiptLine(trimmedtextLine))
 				{
 					if (controlLineCount > 0)
 					{
-						Loggables.get().addLog("More than one control line found");
+						builder.errorMsg("More than one control line found");
 						continue;
 					}
+					if(ESRReceiptLineMatcherUtil.isReceiptLineWithWrongLength(trimmedtextLine))
+					{
+						builder.errorMsg(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_LINE_LENGTH, new Object[]
+								{ trimmedtextLine.length() }));
+						continue;
+					}
+					
 					final BigDecimal ctrlAmount = ESRReceiptLineMatcherUtil.extractCtrlAmount(trimmedtextLine);
 					builder.ctrlAmount(ctrlAmount);
 
@@ -94,7 +106,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 					controlLineCount++;
 				}
-				else
+				else if (!ESRTransactionLineMatcherUtil.isControlLine(trimmedtextLine))
 				{
 					final ESRTransaction trx = createTransaction(trimmedtextLine);
 					importAmt = importAmt.add(trx.getAmountNotNull());

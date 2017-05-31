@@ -33,7 +33,6 @@ import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
 
 import de.metas.payment.esr.ESRTestBase;
-import de.metas.payment.esr.exception.ESRParserException;
 import de.metas.payment.esr.model.I_ESR_Import;
 
 public class ESRReceiptLineMatcherTest extends ESRTestBase
@@ -63,7 +62,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		// Assert.assertEquals("Invalid Processed", true, esrImportLine.isProcessed());
 	}
 
-	@Test(expected = ESRParserException.class)
+	@Test
 	public void test_invalidLength()
 	{
 		final String esrImportLineText = "9990105993109999999999999999999999999990000000920000000000000";
@@ -72,7 +71,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 
 		assertThat(esrImport.isValid(), is(false));
-		assertThat(esrImport.getDescription(), containsString("The counted transactions (1) do not fit the control transaction quantities (0)"));
+		assertThat(esrImport.getDescription(), containsString("ESR_Wrong_Ctrl_Line_Length_[61]"));
 	}
 
 	@Test

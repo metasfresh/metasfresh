@@ -1,7 +1,5 @@
 package de.metas.payment.esr.dataloader;
 
-import java.util.List;
-
 /*
  * #%L
  * de.metas.payment.esr

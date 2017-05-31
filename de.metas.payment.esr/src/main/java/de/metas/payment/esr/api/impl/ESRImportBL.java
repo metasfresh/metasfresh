@@ -183,6 +183,11 @@ public class ESRImportBL implements IESRImportBL
 		esrImport.setESR_Control_Amount(esrStatement.getCtrlAmount());
 		esrImport.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());
 		esrImport.setIsReceipt(true);
+		for (final String errorMsg : esrStatement.getErrorMsgs())
+		{
+			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(), errorMsg));
+		}
+
 		// TODO verify that the bankaccounts match!
 		InterfaceWrapperHelper.save(esrImport);
 
@@ -235,10 +240,7 @@ public class ESRImportBL implements IESRImportBL
 		final boolean fitTrxQtys = (new BigDecimal(trxQty).compareTo(esrImport.getESR_Control_Trx_Qty()) == 0);
 
 		esrImport.setIsValid(hasLines && fitAmounts && fitTrxQtys);
-		if (!esrImport.isValid())
-		{
-			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(), " > Fehler: Es ist ein Fehler beim Import aufgetreten!"));
-		}
+
 		if (!hasLines)
 		{
 			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(), "ESR Document has no lines"));
@@ -267,7 +269,7 @@ public class ESRImportBL implements IESRImportBL
 	public void evaluateLine(final I_ESR_Import esrImport, final I_ESR_ImportLine importLine)
 	{
 		// post account number
-		if (esrImport.getC_BP_BankAccount_ID() > 0) // might not be the case in unit tests.
+		if (esrImport.getC_BP_BankAccount_ID() > 0) // TODO this might not be the case in unit tests.
 		{
 			final String postAccountNo = importLine.getESRPostParticipantNumber();
 

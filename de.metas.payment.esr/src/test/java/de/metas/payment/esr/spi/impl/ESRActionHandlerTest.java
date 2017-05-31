@@ -27,21 +27,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Currency;
@@ -51,6 +49,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.payment.esr.ESRTestBase;
+import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
@@ -70,14 +69,12 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testDunningESRAction()
 	{
-		final String esrImportLineText = "00201059931000000010501536417000120686900000040000012  190013011813011813012100015000400000000000000";
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("10", esrImportLineText, "536417000120686", "01-059931-0", "15364170", "000120686", false, false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImportLine.getESR_Import(), new StringInputStream(esrImportLineText));
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		esrImportBL.process(esrImport, trxRunConfig);
 
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
@@ -102,13 +99,12 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testUnableToAssignAction()
 	{
-		final String esrImportLineText = "00201059931000000010501536417000120686900000040000012  190013011813011813012100015000400000000000000";
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("10", esrImportLineText, "536417000120686", "01-059931-0", "15364170", "000120686", false, false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImportLine.getESR_Import(), new StringInputStream(esrImportLineText));
+		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		esrImportBL.process(esrImport, trxRunConfig);
 
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
@@ -125,20 +121,29 @@ public class ESRActionHandlerTest extends ESRTestBase
 	}
 
 	/**
-	 * Tests {@link X_ESR_ImportLine#ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner} with a payment of 40 matched against an invoice of 10. Expects only one payment of 40 to be created and
-	 * allocated against the incoming payment.
+	 * Tests {@link X_ESR_ImportLine#ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner} with a payment of 40 matched against an invoice of 10.<br>
+	 * Expects an outgoing payment payment of <b>40</b> to be created and allocated against the incoming payment.
 	 */
 	@Test
 	public void testMoneyTransferedBackESRAction()
 	{
-		final String esrImportLineText = "00201059931000000010501536417000120686900000040000012  190013011813011813012100015000400000000000000";
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("10", esrImportLineText, "536417000120686", "01-059931-0", "15364170", "000120686", false, false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine(
+				"000120686", /*invoice doc number*/
+				"10" /* invoice grandtotal */,  
+				false, /*isInvoicePaid*/
+				"000000010501536417000120686", /*complete ESR reference*/
+				"536417000120686", /*invoice reference*/
+				"01-059931-0", /*ESR account number*/
+				"15364170", 
+				"40", /* esr transaction amount*/
+				false /*createAllocation*/);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImportLine.getESR_Import(), new StringInputStream(esrImportLineText));
+		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
+		assertThat(esrImportLine.getC_Invoice(), notNullValue());
 		assertThat(esrImportLine.getC_Invoice().getGrandTotal(), comparesEqualTo(new BigDecimal("10"))); // guard
 
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		esrImportBL.process(esrImport, trxRunConfig);
 
 		assertThat("Expecting one payment after esrImportBL.process()", POJOLookupMap.get().getRecords(I_C_Payment.class).size(), is(1));
@@ -153,12 +158,12 @@ public class ESRActionHandlerTest extends ESRTestBase
 		InterfaceWrapperHelper.refresh(esrImport, true);
 		InterfaceWrapperHelper.refresh(esrImportLine, true);
 
-		Assert.assertTrue("Import should be processed", esrImport.isProcessed());
-		Assert.assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue("Import should be processed", esrImport.isProcessed());
+		assertTrue("Line should be processed", esrImportLine.isProcessed());
 
-		Assert.assertEquals("Incorrect number of payments", 3, POJOLookupMap.get().getRecords(I_C_Payment.class).size());
-		Assert.assertEquals("Incorrect number of allocations", 2, POJOLookupMap.get().getRecords(I_C_AllocationHdr.class).size());
-		Assert.assertEquals("Incorrect number of allocation lines", 3, POJOLookupMap.get().getRecords(I_C_AllocationLine.class).size());
+		assertEquals("Incorrect number of payments", 3, POJOLookupMap.get().getRecords(I_C_Payment.class).size());
+		assertEquals("Incorrect number of allocations", 2, POJOLookupMap.get().getRecords(I_C_AllocationHdr.class).size());
+		assertEquals("Incorrect number of allocation lines", 3, POJOLookupMap.get().getRecords(I_C_AllocationLine.class).size());
 
 		final BigDecimal firstAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(0).getPayAmt();
 		final BigDecimal secondAmount = POJOLookupMap.get().getRecords(I_C_Payment.class).get(1).getPayAmt();
@@ -168,12 +173,12 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final BigDecimal thirdOverUnder = POJOLookupMap.get().getRecords(I_C_Payment.class).get(2).getOverUnderAmt();
 
 		// Check values for payments.
-		Assert.assertTrue("First payment has the wrong amount", (firstAmount.compareTo(new BigDecimal(40)) == 0));
-		Assert.assertTrue("Second payment has the wrong amount", (secondAmount.compareTo(new BigDecimal(40)) == 0));
-		Assert.assertTrue("Third payment has the wrong amount", (thirdAmount.compareTo(new BigDecimal(30)) == 0));
-		Assert.assertTrue("First over/under has the wrong amount", (firstOverUnder.compareTo(new BigDecimal(0)) == 0));
-		Assert.assertTrue("Second over/under has the wrong amount", (secondOverUnder.compareTo(new BigDecimal(30)) == 0));
-		Assert.assertTrue("Third over/under has the wrong amount", (thirdOverUnder.compareTo(new BigDecimal(0)) == 0));
+		assertTrue("First payment has the wrong amount", (firstAmount.compareTo(new BigDecimal(40)) == 0));
+		assertTrue("Second payment has the wrong amount", (secondAmount.compareTo(new BigDecimal(40)) == 0));
+		assertTrue("Third payment has the wrong amount", (thirdAmount.compareTo(new BigDecimal(30)) == 0));
+		assertTrue("First over/under has the wrong amount", (firstOverUnder.compareTo(new BigDecimal(0)) == 0));
+		assertTrue("Second over/under has the wrong amount", (secondOverUnder.compareTo(new BigDecimal(30)) == 0));
+		assertTrue("Third over/under has the wrong amount", (thirdOverUnder.compareTo(new BigDecimal(0)) == 0));
 
 		final BigDecimal firstAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0).getAmount();
 		final BigDecimal secondAllocLineAmount = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1).getAmount();
@@ -189,7 +194,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 	public void testWriteoffESRAction()
 	{
 		final String esrImportLineText = "00201059931000000010501536417000120686900000040000012  190013011813011813012100015000400000000000000";
-		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("10", esrImportLineText, "536417000120686", "01-059931-0", "15364170", "000120686", false, false);
+		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
 		final I_C_Invoice invoice = POJOLookupMap.get().getRecords(I_C_Invoice.class).get(0);
@@ -198,9 +203,9 @@ public class ESRActionHandlerTest extends ESRTestBase
 		invoice.setProcessed(true);
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImportLine.getESR_Import(), new StringInputStream(esrImportLineText));
+		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		esrImportBL.process(esrImport, trxRunConfig);
 
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount);

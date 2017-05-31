@@ -3,10 +3,8 @@ package de.metas.payment.esr.dataloader;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NonNull;
 import lombok.Singular;
 
 /*
@@ -40,4 +38,7 @@ public class ESRStatement
 	
 	@Singular
 	private final List<ESRTransaction> transactions;
+	
+	@Singular
+	private final List<String> errorMsgs;
 }

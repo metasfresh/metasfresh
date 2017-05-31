@@ -95,7 +95,7 @@ public class ESRDataLoaderUtil
 		final String completeEsrReferenceNumberStr = importLine.getESRFullReferenceNumber();
 		if (Check.isEmpty(completeEsrReferenceNumberStr, true))
 		{
-			return; // there is nothing to do. Note that we don't log an error betcause if this string is empty, something already failed and was logged before.
+			return; // there is nothing to do. Note that we don't log an error because if this string is empty, something already failed and was logged before.
 		}
 
 		// When matching, we will ignore the first 7 digits (the bank account no), and the last digit (check digit)

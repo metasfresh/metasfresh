@@ -2,6 +2,9 @@ package de.metas.payment.esr.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -48,17 +51,22 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
-import de.metas.payment.esr.exception.ESRParserException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
 public class ESRRegularLineMatcherTest extends ESRTestBase
 {
+	private I_C_ReferenceNo_Type refNoType;
+
 	@Override
 	public void init()
 	{
 		POJOWrapper.setDefaultStrictValues(false);
+
+		refNoType = newInstance(I_C_ReferenceNo_Type.class);
+		refNoType.setName("InvoiceReference");
+		save(refNoType);
 	}
 
 	/**
@@ -85,10 +93,6 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
-
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 
 		Assert.assertEquals("Invalid IsValid", false, esrImport.isValid());
@@ -96,7 +100,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 	// task 09861
 	@Test
-	public void test_regularLineBPValueGreaterThan1000()
+	public void test_regularLineBPValueGreaterThan1000_fallback_from_invoice()
 	{
 		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G1386");
@@ -120,28 +124,24 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
-
 		save(invoice);
 
-		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		esrImportLine.setC_Invoice(invoice);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 
-		esrImportLine.setC_BP_BankAccount(account);
+		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
+
+		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
+		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImportLine.getESR_Import(), new StringInputStream(esrImportLineText));
-
-		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
-
+		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
 	}
 
 	// task 09861
 	@Test
-	public void test_regularLineBPValueGreaterThan1000_0Included()
+	public void test_regularLineBPValueGreaterThan1000_0Included_fallback_from_invoice()
 	{
 		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G01386");
@@ -171,23 +171,19 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
+
 		esrImportLine.setC_Invoice(invoice);
-
-		esrImportLine.setC_BP_BankAccount(account);
 		save(esrImportLine);
-
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
 
 		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
+		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
 	}
 
 	// task 09861
 	@Test
-	public void test_regularLineBPValueGreaterThan10000()
+	public void test_regularLineBPValueGreaterThan10000_fallback_from_invoice()
 	{
 		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G11386");
@@ -211,40 +207,36 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
-
 		save(invoice);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		esrImportLine.setC_Invoice(invoice);
+		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
 
-		esrImportLine.setC_BP_BankAccount(account);
+		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
+		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
-
+		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
 	}
 
+	/**
+	 * Set up a BPartner value="G0007", but the incoming esr line shall contain the bpartner substring "0007". Matching shall still work, as soon as the invoice is known
+	 */
 	// task 09861
 	@Test
-	public void test_regularLineBPValue_0007()
+	public void test_regularLineBPValue_0007_fallback_from_invoice()
 	{
 		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
 		bp.setValue("G0007");
 		bp.setC_BPartner_ID(15);
 		save(bp);
 
-		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
-
 		final I_ESR_Import esrImport = createImport();
 
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class);
-
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
@@ -253,28 +245,27 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setC_BPartner(bp);
 		save(account);
 
+		esrImport.setC_BP_BankAccount(account);
+		save(esrImport);
+
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner(bp);
 		invoice.setDocumentNo("164363");
-
 		save(invoice);
 
+		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
+		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
-
-		esrImportLine.setC_BP_BankAccount(account);
 		save(esrImportLine);
+		esrImportBL.evaluateLine(esrImport, esrImportLine);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
-
-		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
+		assertThat("BPartner not the same in ESR Line and Invoice", esrImportLine.getC_BPartner(), is(bp));
 	}
 
-	@Test(expected = ESRParserException.class)
+	@Test
 	public void test_invalidLength()
 	{
 		final String esrImportLineText = "00201059931000000001050153641700120686900000040000012  190013011813011813012100015000400000000000000142";
@@ -290,14 +281,12 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		save(account);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
-
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		Assert.assertEquals("Invalid IsValid", false, esrImportLine.isValid());
+		assertThat("Invalid IsValid", esrImportLine.isValid(), is(false));
+		assertThat(esrImportLine.getMatchErrorMsg(), nullValue());
+		assertThat(esrImportLine.getImportErrorMsg(), is("ESR_Wrong_Regular_Line_Length_[103]"));
 	}
 
 	@Test
@@ -318,10 +307,6 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
-
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
@@ -353,10 +338,6 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
-
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
@@ -386,10 +367,6 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
-
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
 		referenceNo.setReferenceNo("536417000120686");
@@ -453,10 +430,6 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
-
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");
 		save(partner);
@@ -473,7 +446,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
-		//System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
+		// System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
 
 		Assert.assertTrue("Org not found.", org.equals(esrImportLine.getOrg()));
 	}
@@ -498,10 +471,6 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
-
-		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
-		refNoType.setName("InvoiceReference");
-		save(refNoType);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");

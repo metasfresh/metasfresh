@@ -40,24 +40,26 @@ public class ESRReceiptLineMatcherUtil
 	public final static String ERR_WRONG_CTRL_AMT = "ESR_Wrong_Ctrl_Amt";
 	public final static String ERR_WRONG_CTRL_QTY = "ESR_Wrong_Ctrl_Qty";
 	public final static String ERR_WRONG_TRX_TYPE = "ESR_Wrong_Trx_Type";
-	public final static String ERR_WRONG_CTRL_LINE_LENGTH = "ESR_Wrong_Ctrl_Line_Length";
 
-	public boolean isReceiptLineWithCorrectLength(@NonNull final String v11LineStr)
+	public boolean isReceiptLine(@NonNull final String v11LineStr)
 	{
 		final String trxType = ESRTransactionLineMatcherUtil.extractEsrTrxType(v11LineStr);
-		if (!ESRConstants.ESRTRXTYPE_Receipt.equals(trxType))
+		return ESRConstants.ESRTRXTYPE_Receipt.equals(trxType);
+	}
+
+	/**
+	 * 
+	 * @param v11LineStr
+	 * @return {@code true} if the given string is a V11 receipt (control) line, but does not have the correct length of 87.
+	 */
+	public boolean isReceiptLineWithWrongLength(@NonNull final String v11LineStr)
+	{
+		if (!isReceiptLine(v11LineStr))
 		{
 			return false;
 		}
 
-		if (v11LineStr.length() != 87)
-		{
-			Loggables.get().addLog(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_LINE_LENGTH, new Object[]
-				{ v11LineStr.length() }));
-			return false;
-		}
-
-		return true;
+		return v11LineStr.length() != 87;
 	}
 
 	/**
