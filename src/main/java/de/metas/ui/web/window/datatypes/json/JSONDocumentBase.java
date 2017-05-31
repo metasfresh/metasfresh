@@ -73,12 +73,6 @@ public abstract class JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Map<String, JSONDocumentField> fieldsByName;
 	
-	@JsonProperty("fields")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Deprecated
-	private Collection<JSONDocumentField> fields;
-
-
 	/** Any other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -156,13 +150,11 @@ public abstract class JSONDocumentBase
 	public final void setFields(final Collection<JSONDocumentField> fields)
 	{
 		this.fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
-		this.fields = fields;
 	}
 	
 	public final void setFields(final Map<String, JSONDocumentField> fieldsByName)
 	{
 		this.fieldsByName = fieldsByName;
-		this.fields = fieldsByName.values();
 	}
 
 	@JsonIgnore
