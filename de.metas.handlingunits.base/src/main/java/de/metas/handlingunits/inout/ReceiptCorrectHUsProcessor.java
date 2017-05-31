@@ -101,12 +101,24 @@ public class ReceiptCorrectHUsProcessor
 
 			for (final I_M_HU hu : inoutId2hus.get(inoutId))
 			{
-				if(X_M_HU.HUSTATUS_Shipped == hu.getHUStatus())
+				if (X_M_HU.HUSTATUS_Shipped == hu.getHUStatus())
 				{
-					// #1062: Do not display shipped inouts
+					// #1062: Do not display shipped HUs
 					continue;
 				}
-				
+
+				if (X_M_HU.HUSTATUS_Destroyed == hu.getHUStatus())
+				{
+					// #1327: Do not display destroyed HUS
+					continue;
+				}
+
+				if (!hu.isActive())
+				{
+					// #1327: do not display inactiveHUS
+					continue;
+				}
+
 				final int huId = hu.getM_HU_ID();
 				if (!seenHUIds.add(huId))
 				{
