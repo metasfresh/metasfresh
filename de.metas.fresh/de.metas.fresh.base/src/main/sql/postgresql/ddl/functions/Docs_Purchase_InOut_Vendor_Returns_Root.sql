@@ -4,7 +4,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOu
 RETURNS TABLE 
 	(
 	ad_org_id numeric,
-	displayhu text
+	displayhu text,
+	DocStatus Character (2)
 	)
 AS
 $$	
@@ -22,7 +23,8 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhu
+	END as displayhum
+	io.docstatus
 FROM
 	M_InOut io
 WHERE
