@@ -75,6 +75,7 @@ Here come the actual release notes:
     * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
   * [#804](https://github.com/metasfresh/metasfresh-webui-frontend/issues/804) Clicking on a menu item shall open the view without any filter
     * When Zooming-To an new window and the user navigates with breadcrumb or sitemap, now the view-id filtering is initializes. This way the user can easily rest the filter the window was opened with.
+  * [#813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/813) included row: typeahead and dropdown endpoints are wrongly called
   * [#815](https://github.com/metasfresh/metasfresh-webui-frontend/issues/815) attributes are missing
     * Fixing a Bug that prevented attributes to be shown in manufacturing order issue/ receipt.
 
