@@ -6,6 +6,7 @@ import java.util.List;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import lombok.Singular;
 
 /*
@@ -57,6 +58,15 @@ public class ESRTransaction
 	 */
 	private final String esrReferenceNumber;
 
+	/**
+	 * Used to decide if a given transaction from a file was already imported or no.
+	 */
+	@NonNull
+	private final String transactionKey;
+
+	@NonNull
+	private final String trxType;
+	
 	@Singular
 	private final List<String> errorMsgs;
 

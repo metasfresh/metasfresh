@@ -143,7 +143,7 @@ public class ESRDataLoaderCamt54Tests
 
 		final AmountAndCurrencyExchange3 amountAndCurrencyExchange3 = new AmountAndCurrencyExchange3();
 		amountAndCurrencyExchange3.setTxAmt(amountAndCurrencyExchangeDetails3);
-
+		
 		// ESR reference number (D-Level)
 		// https://www.six-interbank-clearing.com/dam/downloads/de/standardization/iso/swiss-recommendations/implementation-guidelines-camt.pdf
 		// Seite 63
@@ -199,7 +199,7 @@ public class ESRDataLoaderCamt54Tests
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		JAXB.marshal(document, out);
-
+		
 		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
 		save(esrImport);
 

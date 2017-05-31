@@ -143,8 +143,6 @@ public interface IESRImportBL extends ISingletonService
 	 */
 	boolean isProcessed(I_ESR_Import esrImport);
 
-	void addErrorMsgInFront(I_ESR_ImportLine importLine, String msg);
-
 	/**
 	 * Iterate the {@link ESR_ImportLine}s for the given <code>bankStatementLine</code> and set <code>C_BankStatementLine</code> and <code>C_BankStatementLine_Ref</code> to <code>null</code> for each
 	 * of those ESR lines.

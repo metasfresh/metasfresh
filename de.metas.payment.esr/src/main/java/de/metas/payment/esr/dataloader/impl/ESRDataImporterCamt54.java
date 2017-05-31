@@ -1,11 +1,15 @@
 package de.metas.payment.esr.dataloader.impl;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Optional;
 
 import javax.xml.bind.JAXB;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -20,6 +24,7 @@ import de.metas.payment.camt054.jaxb.CreditDebitCode;
 import de.metas.payment.camt054.jaxb.DateAndDateTimeChoice;
 import de.metas.payment.camt054.jaxb.Document;
 import de.metas.payment.camt054.jaxb.ReportEntry8;
+import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataloader.ESRStatement;
 import de.metas.payment.esr.dataloader.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataloader.ESRTransaction;
@@ -82,11 +87,13 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
 		{
 			final ESRStatementBuilder stmtBuilder = ESRStatement.builder();
+
 			for (final AccountNotification12 ntfctn : bkToCstmrDbtCdtNtfctn.getNtfctn())
 			{
 				for (final ReportEntry8 ntry : ntfctn.getNtry())
 				{
 					final ActiveOrHistoricCurrencyAndAmount amt = ntry.getAmt();
+					final BigDecimal amountValue;
 
 					// verify that the currency is consistent
 					if (header.getC_BP_BankAccount_ID() > 0)
@@ -97,14 +104,26 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 								headerCurrencyISO, amt.getCcy(), header.getC_BP_BankAccount());
 					}
 					// credit-or-debit indicator
+					final String trxType;
 					if (ntry.getCdtDbtInd() == CreditDebitCode.CRDT)
 					{
-						// we get money. this is the usual case
+						if (ntry.isRvslInd() != null && ntry.isRvslInd())
+						{
+							trxType = ESRConstants.ESRTRXTYPE_ReverseBooking;
+							amountValue = amt.getValue().negate();
+						}
+						else
+						{
+							trxType = ESRConstants.ESRTRXTYPE_CreditMemo;
+							amountValue = amt.getValue();
+						}
 					}
 					else
 					{
 						// we get charged currently not supported
 						Check.errorIf(true, "Unsupported cdtDbtInd={}", ntry.getCdtDbtInd());
+						trxType = "???";
+						amountValue = null;
 					}
 
 					final Optional<String> esrReferenceNumberString = ntry.getNtryDtls().stream()
@@ -119,8 +138,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 							.findFirst();
 					Check.errorUnless(esrReferenceNumberString.isPresent(), "Missing ESR creditor reference");
 
+					
 					stmtBuilder.transaction(ESRTransaction.builder()
-							.amount(amt.getValue())
+							.trxType(trxType)
+							.transactionKey(mkTrxKey(ntry))
+							.amount(amountValue)
 							.accountingDate(asTimestamp(ntry.getBookgDt()))
 							.paymentDate(asTimestamp(ntry.getValDt()))
 							.esrParticipantNo(ntry.getNtryRef())
@@ -133,7 +155,22 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 	}
 
-	private Timestamp asTimestamp(final DateAndDateTimeChoice valDt)
+	private String mkTrxKey(@NonNull final ReportEntry8 ntry)
+	{
+		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
+		JAXB.marshal(ntry, transactionKey);
+		try
+		{
+			return transactionKey.toString("UTF-8");
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			// won't happen because UTF-8 is supported
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	private Timestamp asTimestamp(@NonNull final DateAndDateTimeChoice valDt)
 	{
 		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
 	}

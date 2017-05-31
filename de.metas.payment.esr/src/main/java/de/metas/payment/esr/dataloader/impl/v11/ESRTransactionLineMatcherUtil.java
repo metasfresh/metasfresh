@@ -7,23 +7,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
 import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.dataloader.ESRDataLoaderUtil;
-import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -52,8 +42,6 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ESRTransactionLineMatcherUtil
 {
-	private final transient static Logger logger = LogManager.getLogger(ESRTransactionLineMatcherUtil.class);
-
 	public static final String ERR_WRONG_REGULAR_LINE_LENGTH = "ESR_Wrong_Regular_Line_Length";
 
 	public static final String ERR_WRONG_NUMBER_FORMAT_AMOUNT = "ESR_Wrong_Number_Format_Amount";

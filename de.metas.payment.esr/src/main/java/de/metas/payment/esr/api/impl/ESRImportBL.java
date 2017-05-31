@@ -49,6 +49,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+import org.omg.PortableServer.ImplicitActivationPolicyOperations;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -204,19 +205,18 @@ public class ESRImportBL implements IESRImportBL
 		{
 			lineNo++;
 
-
-				//
-				// create line only if does not exist
-				I_ESR_ImportLine existentLine = null;
-				// if there are already lines before starting reading the file, means that we already tried to import once
-				if (countLines > 0)
+			//
+			// create line only if does not exist
+			I_ESR_ImportLine existentLine = null;
+			// if there are already lines before starting reading the file, means that we already tried to import once
+			if (countLines > 0)
+			{
+				existentLine = Services.get(IESRImportDAO.class).fetchLineForESRLineText(esrImport, esrTransaction.getTransactionKey());
+				if (existentLine != null)
 				{
-					existentLine = Services.get(IESRImportDAO.class).fetchLineForESRLineText(esrImport, currentTextLine);
-if(existentLine != null)
-{
-continue;
-}
+					continue;
 				}
+			}
 
 			final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImport);
 			importLine.setLineNo(lineNo * 10);
@@ -232,6 +232,7 @@ continue;
 			importLine.setPaymentDate(TimeUtil.asTimestamp(esrTransaction.getPaymentDate()));
 			importLine.setAccountingDate(TimeUtil.asTimestamp(esrTransaction.getAccountingDate()));
 			importLine.setAmount(esrTransaction.getAmount());
+			importLine.setESRTrxType(esrTransaction.getTrxType());
 
 			save(importLine);
 		}
@@ -255,7 +256,6 @@ continue;
 			importAmt = importAmt.add(importLine.getAmount());
 			trxQty++;
 		}
-			}
 
 		final boolean hasLines = esrImportLines.size() > 0;
 		final boolean fitAmounts = importAmt.compareTo(esrImport.getESR_Control_Amount()) == 0;
@@ -288,8 +288,17 @@ continue;
 	}
 
 	@VisibleForTesting
-	public void evaluateLine(final I_ESR_Import esrImport, final I_ESR_ImportLine importLine)
+	public void evaluateLine(@NonNull final I_ESR_Import esrImport, @NonNull final I_ESR_ImportLine importLine)
 	{
+		if (ESRConstants.ESRTRXTYPE_ReverseBooking.equalsIgnoreCase(importLine.getESRTrxType()))
+		{
+			// set payment action
+			importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+
+			// set error message for the user
+			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRConstants.ESR_Reverse_Booking));
+		}
+
 		// post account number
 		if (esrImport.getC_BP_BankAccount_ID() > 0) // TODO this might not be the case in unit tests.
 		{
@@ -459,7 +468,7 @@ continue;
 		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		try
 		{
-			
+
 			if (allLines.isEmpty())
 			{
 				throw new AdempiereException("@NoLines@");
@@ -580,7 +589,7 @@ continue;
 			{
 				esrImport.setProcessed(true);
 				InterfaceWrapperHelper.save(esrImport);
-	}
+			}
 		}
 	}
 
@@ -1008,38 +1017,6 @@ continue;
 
 	}
 
-	// @Override
-	// public boolean isControlLine(final I_ESR_ImportLine line)
-	// {
-	// final String trxType = line.getESRTrxType();
-	// return ESRConstants.ESRTRXTYPE_Payment.equals(trxType)
-	// || ESRConstants.ESRTRXTYPE_Receipt.equals(trxType);
-	// }
-
-	@Override
-	public void addErrorMsgInFront(I_ESR_ImportLine importLine, String msg)
-	{
-		if (Check.isEmpty(msg, true))
-		{
-			return;
-		}
-
-		String errorMsg = importLine.getErrorMsg();
-		if (errorMsg == null)
-		{
-			errorMsg = "";
-		}
-
-		final StringBuffer err = new StringBuffer();
-		err.append(msg);
-		if (!Check.isEmpty(errorMsg, true))
-		{
-			err.append("; ");
-		}
-		err.append(errorMsg);
-
-		importLine.setErrorMsg(err.toString());
-	}
 	private boolean isReverseBookingLine(final I_ESR_ImportLine line)
 	{
 		final String trxType = line.getESRTrxType();
@@ -1285,11 +1262,11 @@ continue;
 		esrImportLine.setC_BankStatementLine_Ref(null);
 		InterfaceWrapperHelper.save(esrImportLine);
 	}
-	
+
 	@Override
 	public boolean isV11File(String filename)
 	{
-		Check.assume(!Check.isEmpty(filename,true), "Filename can not be empty!");
+		Check.assume(!Check.isEmpty(filename, true), "Filename can not be empty!");
 		return filename.matches(".*v11") || filename.matches(".*V11");
-}
+	}
 }

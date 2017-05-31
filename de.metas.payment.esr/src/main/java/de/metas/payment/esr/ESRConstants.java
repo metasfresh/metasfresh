@@ -13,11 +13,11 @@ package de.metas.payment.esr;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,22 +50,22 @@ public final class ESRConstants
 	public static final String ESRTRXTYPE_Payment = "995";
 
 	public static final String ESRTRXTYPE_Receipt = "999";
-	
-	public static final String ESRTRXTYPE_ReverseBooking = "005";
-
-	public static final List<String> ESRTRXTYPES_Control = Arrays.asList(ESRTRXTYPE_Payment, ESRTRXTYPE_Receipt);
 
 	public static final String ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT = "2";
+	public static final String ESRTRXTYPE_CreditMemo = "00" + ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT;
 
 	public static final String ESRTRXTYPE_REVERSE_LAST_DIGIT = "5";
+	public static final String ESRTRXTYPE_ReverseBooking = "00" + ESRTRXTYPE_REVERSE_LAST_DIGIT;
 
 	public static final String ESRTRXTYPE_CORRECTION_LAST_DIGIT = "8";
+
+	public static final List<String> ESRTRXTYPES_Control = Arrays.asList(ESRTRXTYPE_Payment, ESRTRXTYPE_Receipt);
 
 	/**
 	 * <code>AD_Message</code> value for the error message to be used when an ESR line has no selected action.
 	 */
 	public static final String ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION = "de.metas.payment.esr.LineWithNoPaymentAction";
-	
+
 	public static final String SYSCONFIG_PreventDuplicateImportFiles = "de.metas.payment.esr.PreventDuplicateImportFiles";
 
 	/**
@@ -79,17 +79,17 @@ public final class ESRConstants
 	public static final String ASK_PreventDuplicateImportFiles = "de.metas.payment.esr.PreventDuplicatesWarning";
 
 	public static final String WARN_PreventDuplicateImportFilesEntirely = "de.metas.payment.esr.PreventDuplicatesEtirely";
-	
+
 	public static final String SYSCONFIG_MATCH_ORG = "de.metas.payment.esr.MatchOrg";
-	
-	public static final String SYSCONFIG_CHECK_DUPLICATED= "de.metas.payment.esr.CheckDuplicated";
+
+	public static final String SYSCONFIG_CHECK_DUPLICATED = "de.metas.payment.esr.CheckDuplicated";
 
 	public static final String ESR_DIFF_INV_PARTNER = "ESR_Diff_Inv_partner";
 
 	public static final String ESR_DIFF_PAYMENT_PARTNER = "ESR_Diff_Payment_partner";
 
 	public static final String ESR_Reverse_Booking = "ESR_Reverse_Booking";
-	
+
 	private ESRConstants()
 	{
 	}
@@ -100,7 +100,8 @@ public final class ESRConstants
 	 * 
 	 * @see #calculateCheckDigit(String, int, int)
 	 */
-	public static int[] CHECK_String = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
+	public static int[] CHECK_String =
+		{ 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
 
 	public static final String C_Async_Batch_InternalName = "ESRWizard";
 
@@ -112,7 +113,7 @@ public final class ESRConstants
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_Enabled,
 				true, // defaultValue
 				Env.getAD_Client_ID(ctx) // AD_Client_ID
-				);
+		);
 	}
 
 	/**

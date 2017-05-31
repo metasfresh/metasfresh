@@ -50,9 +50,9 @@ import lombok.NonNull;
 public class ESRDataImporterV11 implements IESRDataImporter
 {
 	public final static String ERR_WRONG_CTRL_LINE_LENGTH = "ESR_Wrong_Ctrl_Line_Length";
-	
+
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterV11.class);
-	
+
 	private final InputStream input;
 
 	public ESRDataImporterV11(@NonNull final InputStream input)
@@ -91,13 +91,13 @@ public class ESRDataImporterV11 implements IESRDataImporter
 						builder.errorMsg("More than one control line found");
 						continue;
 					}
-					if(ESRReceiptLineMatcherUtil.isReceiptLineWithWrongLength(trimmedtextLine))
+					if (ESRReceiptLineMatcherUtil.isReceiptLineWithWrongLength(trimmedtextLine))
 					{
 						builder.errorMsg(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_LINE_LENGTH, new Object[]
-								{ trimmedtextLine.length() }));
+							{ trimmedtextLine.length() }));
 						continue;
 					}
-					
+
 					final BigDecimal ctrlAmount = ESRReceiptLineMatcherUtil.extractCtrlAmount(trimmedtextLine);
 					builder.ctrlAmount(ctrlAmount);
 
@@ -137,6 +137,9 @@ public class ESRDataImporterV11 implements IESRDataImporter
 		final PlainStringLoggable errorsLoggable = new PlainStringLoggable();
 		try (final IAutoCloseable tmpLoggable = Loggables.temporarySetLoggable(errorsLoggable))
 		{
+			final String esrTrxType = ESRTransactionLineMatcherUtil.extractEsrTrxType(currentTextLine);
+			esrTransactionBuilder.trxType(esrTrxType);
+
 			if (ESRTransactionLineMatcherUtil.isCorrectTransactionLineLength(currentTextLine))
 			{
 				final String postAccountNo = ESRTransactionLineMatcherUtil.extractPostAccountNo(currentTextLine);
@@ -150,6 +153,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 				final Date paymentDate = ESRTransactionLineMatcherUtil.extractPaymentDate(currentTextLine);
 				esrTransactionBuilder.paymentDate(paymentDate);
+				
 			}
 			else
 			{
@@ -157,132 +161,9 @@ public class ESRDataImporterV11 implements IESRDataImporter
 			}
 		}
 
+		esrTransactionBuilder.transactionKey(currentTextLine);
 		esrTransactionBuilder.errorMsgs(errorsLoggable.getSingleMessages());
-
+		
 		return esrTransactionBuilder.build();
-
 	}
-
-	// public void load(@NonNull final I_ESR_Import esrImport, @NonNull final InputStream input)
-	// {
-	// final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
-	//
-	// final InputStreamReader inputStreamReader = new InputStreamReader(input);
-	//
-	// try (final BufferedReader reader = new BufferedReader(inputStreamReader);)
-	// {
-	// BigDecimal importAmt = BigDecimal.ZERO;
-	// int trxQty = 0;
-	// int lineNo = 0;
-	// while (reader.ready())
-	// {
-	// final String currentTextLine = reader.readLine();
-	//
-	// // task 06281: skipping empty lines
-	// if (Check.isEmpty(currentTextLine))
-	// {
-	// logger.debug("Skip empty currentTextLine");
-	// continue;
-	// }
-	//
-	// // for row number
-	// lineNo++;
-	//
-	// final I_ESR_ImportLine line = createESRImportLine(esrImport, currentTextLine, lineNo);
-	//
-	// if (esrImportBL.isControlLine(line))
-	// {
-	// // The control lines do not contain relevant information about the bank account
-	// logger.debug("Skip empty currentTextLine");
-	// continue;
-	// }
-	// else
-	// {
-	// importAmt = importAmt.add(line.getAmount());
-	// trxQty++;
-	// }
-	//
-	// }
-	//
-	// final boolean hasLines = lineNo > 0;
-	//
-	// final boolean fitAmounts = importAmt.compareTo(esrImport.getESR_Control_Amount()) == 0;
-	//
-	// final boolean fitTrxQtys = new BigDecimal(trxQty).compareTo(esrImport.getESR_Control_Trx_Qty()) == 0;
-	//
-	// esrImport.setIsValid(hasLines && fitAmounts && fitTrxQtys);
-	//
-	// Check.assume(hasLines, "ESR Document has lines");
-	//
-	// Check.assume(fitAmounts, "The calculated amount for lines ("
-	// + importAmt
-	// + ") does not fit the control amount ("
-	// + esrImport.getESR_Control_Amount()
-	// + "). The document will not be processed.");
-	//
-	// Check.assume(fitTrxQtys, "The counted transactions ("
-	// + trxQty
-	// + ") do not fit the control transaction quantities ("
-	// + esrImport.getESR_Control_Trx_Qty()
-	// + "). The document will not be processed.");
-	// }
-	// catch (final IOException e)
-	// {
-	// throw new AdempiereException(e.getLocalizedMessage(), e);
-	// }
-	// catch (final AdempiereException e)
-	// {
-	// // if there is an an assumption error, catch it to add a message and the release it
-	// final String message = e.getMessage();
-	// if (message.startsWith("Assumption failure:"))
-	// {
-	// esrImport.setDescription(esrImport.getDescription() + " > Fehler: Es ist ein Fehler beim Import aufgetreten! " + e.getLocalizedMessage());
-	// InterfaceWrapperHelper.save(esrImport, ITrx.TRXNAME_None); // out of transaction: we want to not be rollback
-	// }
-	//
-	// throw new AdempiereException(e.getLocalizedMessage(), e);
-	// }
-	// }
-
-	// /**
-	// * This method creates an {@link I_ESR_ImportLine} and invokes {@link IESRImportBL#matchESRImportLine(I_ESR_ImportLine, ITrxRunConfig)} which also saves it.
-	// *
-	// * @param esrImport
-	// * @param esrImportLineText
-	// * @param rowNumber
-	// * @return
-	// */
-	// private I_ESR_ImportLine createESRImportLine(
-	// @NonNull final I_ESR_Import esrImport,
-	// @NonNull final String esrImportLineText,
-	// final int rowNumber)
-	// {
-	// final String trxName = InterfaceWrapperHelper.getTrxName(esrImport);
-	//
-	// final Mutable<I_ESR_ImportLine> importLine = new Mutable<>();
-	//
-	// final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).newTrxRunConfigBuilder()
-	// .setTrxPropagation(TrxPropagation.NESTED)
-	// .setOnRunnableSuccess(OnRunnableSuccess.COMMIT)
-	// .setOnRunnableFail(OnRunnableFail.ASK_RUNNABLE)
-	// .build();
-	//
-	// // 04582: create each line within its own TrxRunner, so that (depending on the trxRunConfig), it will be committed and thus release its locks
-	// Services.get(ITrxManager.class).run(trxName, trxRunConfig, new TrxRunnable()
-	// {
-	// @Override
-	// public void run(final String localTrxName) throws Exception
-	// {
-	// final I_ESR_ImportLine newLine = ESRDataLoaderUtil.newLine(esrImport);
-	//
-	// newLine.setLineNo(rowNumber);
-	// newLine.setESRLineText(esrImportLineText); // the whole line text
-	// importLine.setValue(newLine);
-	// }
-	// });
-	//
-	// ESRLineMatcherUtil.matchESRImportLine(importLine.getValue(), trxRunConfig);
-	//
-	// return importLine.getValue();
-	// }
 }
