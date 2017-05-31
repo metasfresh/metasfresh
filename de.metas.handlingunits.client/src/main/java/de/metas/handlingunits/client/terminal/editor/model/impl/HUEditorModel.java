@@ -70,7 +70,6 @@ import de.metas.adempiere.form.terminal.PropertiesPanelModelConfigurator;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.client.terminal.editor.model.HUKeyVisitorAdapter;
@@ -98,7 +97,6 @@ public class HUEditorModel implements IDisposable
 	// services
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	protected final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 	private static final String SYSCONFIG_HUKeyFilterEnabled = "de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel.HUKeyFilterEnabled";
 	private static final boolean DEFAULT_HUKeyFilterEnabled = false;
@@ -1292,7 +1290,7 @@ public class HUEditorModel implements IDisposable
 	{
 		final Set<I_M_HU> selectedHUs = getSelectedHUs();
 		final Timestamp movementDate = Env.getDate(getTerminalContext().getCtx());
-		
+
 		final IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 		final List<I_M_Inventory> inventories = huInventoryBL.moveToGarbage(selectedHUs, movementDate);
 

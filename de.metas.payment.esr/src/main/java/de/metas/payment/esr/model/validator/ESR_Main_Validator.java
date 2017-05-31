@@ -39,6 +39,7 @@ import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandl
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.WriteoffESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.spi.impl.ESRCreaLogixStringParser;
 import de.metas.payment.spi.impl.ESRRegularLineParser;
@@ -84,5 +85,9 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		//
 		// Bank statement listener
 		Services.get(IBankStatementListenerService.class).addListener(ESRBankStatementListener.instance);
+		
+		//
+		// ESR match listener
+		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 	}
 }

@@ -50,6 +50,8 @@ public final class ESRConstants
 	public static final String ESRTRXTYPE_Payment = "995";
 
 	public static final String ESRTRXTYPE_Receipt = "999";
+	
+	public static final String ESRTRXTYPE_ReverseBooking = "005";
 
 	public static final List<String> ESRTRXTYPES_Control = Arrays.asList(ESRTRXTYPE_Payment, ESRTRXTYPE_Receipt);
 
@@ -63,7 +65,7 @@ public final class ESRConstants
 	 * <code>AD_Message</code> value for the error message to be used when an ESR line has no selected action.
 	 */
 	public static final String ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION = "de.metas.payment.esr.LineWithNoPaymentAction";
-
+	
 	public static final String SYSCONFIG_PreventDuplicateImportFiles = "de.metas.payment.esr.PreventDuplicateImportFiles";
 
 	/**
@@ -77,11 +79,17 @@ public final class ESRConstants
 	public static final String ASK_PreventDuplicateImportFiles = "de.metas.payment.esr.PreventDuplicatesWarning";
 
 	public static final String WARN_PreventDuplicateImportFilesEntirely = "de.metas.payment.esr.PreventDuplicatesEtirely";
+	
+	public static final String SYSCONFIG_MATCH_ORG = "de.metas.payment.esr.MatchOrg";
+	
+	public static final String SYSCONFIG_CHECK_DUPLICATED= "de.metas.payment.esr.CheckDuplicated";
 
 	public static final String ESR_DIFF_INV_PARTNER = "ESR_Diff_Inv_partner";
 
 	public static final String ESR_DIFF_PAYMENT_PARTNER = "ESR_Diff_Payment_partner";
 
+	public static final String ESR_Reverse_Booking = "ESR_Reverse_Booking";
+	
 	private ESRConstants()
 	{
 	}

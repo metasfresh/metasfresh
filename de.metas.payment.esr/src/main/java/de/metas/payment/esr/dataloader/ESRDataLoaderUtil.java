@@ -19,6 +19,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
@@ -129,22 +130,12 @@ public class ESRDataLoaderUtil
 
 				final int invoiceID = esrReferenceNumberDocument.getRecord_ID();
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), invoiceID, I_C_Invoice.class, ITrx.TRXNAME_None);
-				final I_C_BPartner invoicePartner = invoice.getC_BPartner();
+
+				final boolean match = Services.get(IESRLineHandlersService.class)
+						.applyESRMatchingBPartnerOfTheInvoice(invoice, importLine);
 
 				// check the org: should not match with invoices from other orgs
-				if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
-				{
-					addMatchErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESR_UNFIT_INVOICE_ORG));
-				}
-				// check the org: should not match with invoices which have the partner form other org
-				else if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
-						&& invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
-				{
-					addMatchErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESR_UNFIT_BPARTNER_ORG));
-				}
-				else
+				if (match)
 				{
 					Services.get(IESRImportBL.class).setInvoice(importLine, invoice);
 
@@ -153,8 +144,8 @@ public class ESRDataLoaderUtil
 					{
 						setValuesFromInvoice(importLine, invoice);
 					}
-
 				}
+
 			}
 			else
 			{

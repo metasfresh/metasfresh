@@ -177,6 +177,13 @@ public class ESRImportBL implements IESRImportBL
 	@VisibleForTesting
 	public void loadAndEvaluateESRImportStream(@NonNull final I_ESR_Import esrImport, @NonNull final InputStream in)
 	{
+		int countLines = 0;
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_CHECK_DUPLICATED, false))
+		{
+			countLines = Services.get(IESRImportDAO.class).countLines(esrImport, null);
+		}
+
 		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in);
 		final ESRStatement esrStatement = loader.load();
 
@@ -196,6 +203,20 @@ public class ESRImportBL implements IESRImportBL
 		for (final ESRTransaction esrTransaction : transactions)
 		{
 			lineNo++;
+
+
+				//
+				// create line only if does not exist
+				I_ESR_ImportLine existentLine = null;
+				// if there are already lines before starting reading the file, means that we already tried to import once
+				if (countLines > 0)
+				{
+					existentLine = Services.get(IESRImportDAO.class).fetchLineForESRLineText(esrImport, currentTextLine);
+if(existentLine != null)
+{
+continue;
+}
+				}
 
 			final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImport);
 			importLine.setLineNo(lineNo * 10);
@@ -234,6 +255,7 @@ public class ESRImportBL implements IESRImportBL
 			importAmt = importAmt.add(importLine.getAmount());
 			trxQty++;
 		}
+			}
 
 		final boolean hasLines = esrImportLines.size() > 0;
 		final boolean fitAmounts = importAmt.compareTo(esrImport.getESR_Control_Amount()) == 0;
@@ -434,10 +456,10 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		final List<I_ESR_ImportLine> linesToProcess = new ArrayList<>();
-
+		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		try
 		{
-			final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
+			
 			if (allLines.isEmpty())
 			{
 				throw new AdempiereException("@NoLines@");
@@ -452,6 +474,15 @@ public class ESRImportBL implements IESRImportBL
 					InterfaceWrapperHelper.save(line);
 					continue;
 				}
+				// skip reverse booking lines from regular processing
+				// the admin should deal with them manually
+				if (isReverseBookingLine(line))
+				{
+					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+					InterfaceWrapperHelper.save(line);
+					continue;
+				}
+
 				// Skip already processed lines
 				if (line.isProcessed())
 				{
@@ -541,6 +572,15 @@ public class ESRImportBL implements IESRImportBL
 			}
 
 			throw new AdempiereException(e.getLocalizedMessage(), e);
+		}
+		finally
+		{
+			// cg: just make sure that the esr import is not set to processed too early
+			if (isAllLinesProcessed(allLines))
+			{
+				esrImport.setProcessed(true);
+				InterfaceWrapperHelper.save(esrImport);
+	}
 		}
 	}
 
@@ -977,6 +1017,36 @@ public class ESRImportBL implements IESRImportBL
 	// }
 
 	@Override
+	public void addErrorMsgInFront(I_ESR_ImportLine importLine, String msg)
+	{
+		if (Check.isEmpty(msg, true))
+		{
+			return;
+		}
+
+		String errorMsg = importLine.getErrorMsg();
+		if (errorMsg == null)
+		{
+			errorMsg = "";
+		}
+
+		final StringBuffer err = new StringBuffer();
+		err.append(msg);
+		if (!Check.isEmpty(errorMsg, true))
+		{
+			err.append("; ");
+		}
+		err.append(errorMsg);
+
+		importLine.setErrorMsg(err.toString());
+	}
+	private boolean isReverseBookingLine(final I_ESR_ImportLine line)
+	{
+		final String trxType = line.getESRTrxType();
+		return ESRConstants.ESRTRXTYPE_ReverseBooking.equals(trxType);
+	}
+
+	@Override
 	public void registerActionHandler(final String actionName, final IESRActionHandler handler)
 	{
 		handlers.put(actionName, handler);
@@ -1215,4 +1285,11 @@ public class ESRImportBL implements IESRImportBL
 		esrImportLine.setC_BankStatementLine_Ref(null);
 		InterfaceWrapperHelper.save(esrImportLine);
 	}
+	
+	@Override
+	public boolean isV11File(String filename)
+	{
+		Check.assume(!Check.isEmpty(filename,true), "Filename can not be empty!");
+		return filename.matches(".*v11") || filename.matches(".*V11");
+}
 }

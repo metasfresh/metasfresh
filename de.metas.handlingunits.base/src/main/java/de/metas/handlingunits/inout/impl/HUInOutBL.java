@@ -24,6 +24,7 @@ package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -245,6 +246,14 @@ public class HUInOutBL implements IHUInOutBL
 	{
 		return MultiVendorHUReturnsInOutProducer.newInstance()
 				.setMovementDate(movementDate)
+				.addHUsToReturn(hus)
+				.create();
+	}
+	
+	@Override
+	public List<I_M_InOut> createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
+	{
+		return MultiCustomerHUReturnsInOutProducer.newInstance()
 				.addHUsToReturn(hus)
 				.create();
 	}

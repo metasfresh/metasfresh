@@ -21,7 +21,6 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
@@ -40,22 +39,16 @@ import de.metas.product.IProductBL;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-/**
- * Builder for vendor return inout lines that are for non-packing material products
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLinesBuilder
+public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLinesBuilder
 {
 
 	// services
@@ -69,12 +62,7 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	 */
 	private final Map<ArrayKey, I_M_InOutLine> _inOutLines = new HashMap<>();
 
-	public static QualityReturnsInOutLinesBuilder newBuilder(final IReference<I_M_InOut> inoutRef)
-	{
-		return new QualityReturnsInOutLinesBuilder(inoutRef);
-	}
-
-	private QualityReturnsInOutLinesBuilder(final IReference<I_M_InOut> inoutRef)
+	protected AbstractQualityReturnsInOutLinesBuilder(final IReference<I_M_InOut> inoutRef)
 	{
 		super();
 
@@ -88,7 +76,7 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 	}
 
 	@Override
-	public QualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage, I_M_InOutLine originInOutLine)
+	public AbstractQualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage, I_M_InOutLine originInOutLine)
 	{
 		final I_M_InOut inout = getM_InOut();
 		InterfaceWrapperHelper.save(inout); // make sure inout header is saved
@@ -155,11 +143,16 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 
 			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
-			handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Shipped);
+			setHUStatus (huContext, hu);
+			
 
 			InterfaceWrapperHelper.save(hu);
 		}
 	}
+	
+	
+
+	protected abstract void setHUStatus(IHUContext huContext, I_M_HU hu);
 
 	/**
 	 * Search the inout lines map (_inOutLines) and check if there is already a line for the given product. In case it already exists, return it. Otherwise, create a line for this product.
@@ -203,7 +196,8 @@ public class QualityReturnsInOutLinesBuilder implements IQualityReturnsInOutLine
 		
 		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
-		newInOutLine.setVendorReturn_Origin_InOutLine(originInOutLine);
+		// TODO: THis column could be used also for customer returns. Rename it
+		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
 
 		// NOTE: we are not saving the inOut line
 

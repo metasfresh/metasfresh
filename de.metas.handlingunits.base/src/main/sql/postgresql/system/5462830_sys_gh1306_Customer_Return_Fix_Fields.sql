@@ -1,0 +1,10 @@
+-- 2017-05-17T10:26:05.865
+-- URL zum Konzept
+UPDATE AD_Field SET IsMandatory='Y',Updated=TO_TIMESTAMP('2017-05-17 10:26:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558493
+;
+
+-- 2017-05-17T10:26:44.801
+-- URL zum Konzept
+UPDATE AD_Field SET IsDisplayed='N', IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2017-05-17 10:26:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558495
+;
+
