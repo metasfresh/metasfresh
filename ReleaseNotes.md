@@ -57,6 +57,8 @@ Here come the actual release notes:
     * The Dashboard now does sow "No data" instaead of error, when no Data is available.
   * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
     * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
+  * #789(https://github.com/metasfresh/metasfresh-webui-frontend/issues/789) Advanced Edit w/ key [ctrl]+e too many [tab] for scroll
+    * Nice Usability Improvement for the keyboard Navigation in Advanced Edit Mode. Scroll w/ page-up/ page-down can be used directly after opening the Advanced Edit mode.
   * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
     * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
 
@@ -69,6 +71,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
     * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
+  * [#804](https://github.com/metasfresh/metasfresh-webui-frontend/issues/804) Clicking on a menu item shall open the view without any filter
+    * When Zooming-To an new window and the user navigates with breadcrumb or sitemap, now the view-id filtering is initializes. This way the user can easily rest the filter the window was opened with.
 
 
 # metasfresh 5.11 (2017-21)
