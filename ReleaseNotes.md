@@ -42,6 +42,8 @@ Here come the actual release notes:
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
+  * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
+    * Adding the Handling Unit Editor to WebUI menu in Logistics group.
  
  
 * metasfresh-webui-api
@@ -51,6 +53,8 @@ Here come the actual release notes:
     * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
   * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
     * The Section Names for Fieldgroup creation are now translatable in WebUI.
+  * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Lookup Field shall provide first dropdown results
+    * New Functionality in Lookup Fields. Just press space key and receive a list of first available selections.
     
 * metasfresh-webui-frontend
   * [#713](https://github.com/metasfresh/metasfresh-webui-frontend/issues/713) KPIs: In case datasets is empty or missing shall show "No data" text
