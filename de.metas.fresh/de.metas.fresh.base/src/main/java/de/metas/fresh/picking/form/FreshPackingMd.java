@@ -13,23 +13,24 @@ package de.metas.fresh.picking.form;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+
+import org.adempiere.util.Check;
 
 import de.metas.adempiere.form.PackingMd;
 import de.metas.adempiere.form.TableRow;
 import de.metas.adempiere.form.TableRowKey;
-import de.metas.adempiere.form.TableRowKeyBuilder;
+import de.metas.adempiere.form.TableRowKey.TableRowKeyBuilder;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.inoutcandidate.api.IPackageable;
 
@@ -44,19 +45,19 @@ public class FreshPackingMd extends PackingMd
 	@Override
 	protected TableRow createTableRow(final IPackageable item)
 	{
-		final TableRowKeyBuilder keyBuilder = new TableRowKeyBuilder();
+		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
 
 		final int bpartnerId = item.getBpartnerId();
-		keyBuilder.setBPartnerId(bpartnerId);
+		keyBuilder.bpartnerId(bpartnerId);
 
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
-		final int bPartnerLocationId = item.getBpartnerLocationId();
+		final int bpartnerLocationId = item.getBpartnerLocationId();
 		final String bPartnerAddress = item.getBpartnerAddress();
-		keyBuilder.setBPartnerAddress(bPartnerAddress);
+		keyBuilder.bpartnerAddress(Check.isEmpty(bPartnerAddress, true) ? null : bPartnerAddress.trim());
 
 		final int warehouseId = item.getWarehouseId();
-		keyBuilder.setWarehouseId(warehouseId);
+		keyBuilder.warehouseId(warehouseId > 0 ? warehouseId : -1);
 		final String warehouseName = item.getWarehouseName();
 
 		final int warehouseDestId;
@@ -65,13 +66,13 @@ public class FreshPackingMd extends PackingMd
 		{
 			warehouseDestId = item.getWarehouseDestId();
 			warehouseDestName = item.getWarehouseDestName();
-			keyBuilder.setWarehouseDestId(warehouseDestId);
+			keyBuilder.warehouseDestId(warehouseDestId);
 		}
 		else
 		{
 			warehouseDestId = 0;
 			warehouseDestName = null;
-			keyBuilder.setWarehouseDestId(-1);
+			keyBuilder.warehouseDestId(-1);
 		}
 
 		final int productId;
@@ -81,15 +82,15 @@ public class FreshPackingMd extends PackingMd
 			productId = item.getProductId();
 			productName = item.getProductName();
 
-			keyBuilder.setProductId(productId);
-			keyBuilder.setWarehouseDestId(-1);
-			keyBuilder.setBPartnerAddress(null);
+			keyBuilder.productId(productId > 0 ? productId : -1);
+			keyBuilder.warehouseDestId(-1);
+			keyBuilder.bpartnerAddress(null);
 		}
 		else
 		{
 			productId = -1;
 			productName = null;
-			keyBuilder.setProductId(-1);
+			keyBuilder.productId(-1);
 		}
 
 		final String deliveryVia = item.getDeliveryVia();
@@ -97,31 +98,33 @@ public class FreshPackingMd extends PackingMd
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final Timestamp deliveryDate = item.getDeliveryDate(); // customer01676
 		final int shipmentScheduleId = item.getShipmentScheduleId();
-		final String bPartnerValue = item.getBpartnerValue();
-		final String bPartnerName = item.getBpartnerName();
-		final String bPartnerLocName = item.getBpartnerLocationName();
+		final String bpartnerValue = item.getBpartnerValue();
+		final String bpartnerName = item.getBpartnerName();
+		final String bPartnerLocationName = item.getBpartnerLocationName();
 		final String shipper = item.getShipperName();
 
 		final boolean isDisplayed = item.isDisplayed();
 
 		final TableRowKey key = getCreateTableRowKey(keyBuilder);
-		final TableRow row = new TableRow(
-				bPartnerLocationId,
-				shipmentScheduleId,
-				qtyToDeliver,
-				bpartnerId, bPartnerValue, bPartnerName,
-				bPartnerLocName,
-				warehouseName,
-				deliveryVia,
-				shipper,
-				isDisplayed,
-				key);
-		row.setWarehouseDestId(warehouseDestId);
-		row.setWarehouseDestName(warehouseDestName);
-		row.setProductId(productId);
-		row.setProductName(productName);
-		row.setDeliveryDate(deliveryDate);
-		row.setPreparationDate(item.getPreparationDate());
+		final TableRow row = TableRow.builder()
+				.bpartnerLocationId(bpartnerLocationId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.qtyToDeliver(qtyToDeliver)
+				.bpartnerId(bpartnerId).bpartnerValue(bpartnerValue).bpartnerName(bpartnerName)
+				.bpartnerLocationName(bPartnerLocationName)
+				.warehouseName(warehouseName)
+				.deliveryVia(deliveryVia)
+				.shipper(shipper)
+				.displayed(isDisplayed)
+				.key(key)
+				//
+				.warehouseDestId(warehouseDestId)
+				.warehouseDestName(warehouseDestName)
+				.productId(productId)
+				.productName(productName)
+				.deliveryDate(deliveryDate)
+				.preparationDate(item.getPreparationDate())
+				.build();
 
 		return row;
 	}
