@@ -150,7 +150,7 @@ class Lookup extends Component {
                                 isModal, recent, rank, updated, filterWidget,
                                 mandatory, validStatus, align, onChange, item,
                                 disabled, fireClickOutside, viewId, subentity,
-                                subentityId, autoFocus, tabId}}
+                                subentityId, autoFocus, tabId, rowId}}
                             />
 
                         } else if (item.source === 'list') {
@@ -167,17 +167,12 @@ class Lookup extends Component {
                                     }
                                 key={index}>
                                     <List
-                                        dataId={dataId}
-                                        entity={entity}
-                                        windowType={windowType}
-                                        filterWidget={filterWidget}
+                                        {...{dataId, entity, windowType,
+                                            filterWidget, tabId, rowId,
+                                            subentity, subentityId, viewId,
+                                            onChange, isInputEmpty
+                                        }}
                                         properties={[item]}
-                                        tabId={tabId}
-                                        rowId={rowId}
-                                        subentity={subentity}
-                                        subentityId={subentityId}
-                                        viewId={viewId}
-                                        onChange={onChange}
                                         lookupList={true}
                                         autofocus={
                                             item.field == property ?
@@ -193,7 +188,6 @@ class Lookup extends Component {
                                         mainProperty={[item]}
                                         blur={!property?true:false}
                                         readonly={disabled || readonly}
-                                        isInputEmpty={isInputEmpty}
                                     />
                                 </div>
                         }
