@@ -91,10 +91,11 @@ class Window extends Component {
 
     renderSections = (sections) => {
         return sections.map((elem, id)=> {
-            const { columns} = elem;
+            const {title, columns} = elem;
             const isFirst = (id === 0);
             return (
                 <div className="row" key={'section' + id}>
+                    {title && <Separator {...{title}} />}
                     {columns && this.renderColumns(columns, isFirst)}
                 </div>
             )
