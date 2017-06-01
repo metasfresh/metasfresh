@@ -49,13 +49,13 @@ FROM
 	-- Unit of measurement and its translation
 	LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 	-- ADR Attribute
-	LEFT OUTER JOIN	(
+	LEFT OUTER JOIN	LATERAL(
 		SELECT 	String_agg ( ai_value, ', ' ) AS Attributes, M_AttributeSetInstance_ID
 		FROM 	Report.fresh_Attributes
 		WHERE	at_Value IN ( '1000015', '1000001' ) -- Marke (ADR), task 08891: also Herkunft
+			AND M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID AND  ol.M_AttributeSetInstance_ID != 0
 		GROUP BY	M_AttributeSetInstance_ID
-	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
-		AND ol.M_AttributeSetInstance_ID != 0
+	) att ON TRUE
 WHERE
 	1=1
 	AND report.IsActive='Y' and reportLine.IsActive='Y'

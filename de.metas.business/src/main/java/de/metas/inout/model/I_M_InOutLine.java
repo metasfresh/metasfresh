@@ -106,10 +106,10 @@ public interface I_M_InOutLine extends org.compiere.model.I_M_InOutLine
 	//
 	// VendorReturn_Origin_InOutLine_ID
 	// @formatter:off
-	public static final String COLUMNNAME_VendorReturn_Origin_InOutLine_ID = "VendorReturn_Origin_InOutLine_ID";
-	public void setVendorReturn_Origin_InOutLine_ID(int VendorReturn_Origin_InOutLine_ID);
-	public void setVendorReturn_Origin_InOutLine(I_M_InOutLine VendorReturn_Origin_InOutLine);
-	public int getVendorReturn_Origin_InOutLine_ID();
-	public I_M_InOutLine getVendorReturn_Origin_InOutLine() throws RuntimeException;
+	public static final String COLUMNNAME_Return_Origin_InOutLine_ID = "Return_Origin_InOutLine_ID";
+	public void setReturn_Origin_InOutLine_ID(int VendorReturn_Origin_InOutLine_ID);
+	public void setReturn_Origin_InOutLine(I_M_InOutLine VendorReturn_Origin_InOutLine);
+	public int getReturn_Origin_InOutLine_ID();
+	public I_M_InOutLine getReturn_Origin_InOutLine() throws RuntimeException;
 	// @formatter:on
 }
