@@ -1,5 +1,6 @@
 package de.metas.payment.esr.spi.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -38,14 +39,12 @@ import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.payment.esr.ESRTestBase;
@@ -77,7 +76,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		esrImportBL.process(esrImport, trxRunConfig);
 
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImportLine, true);
 		esrImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning);
 		save(esrImportLine);
 
@@ -85,11 +84,11 @@ public class ESRActionHandlerTest extends ESRTestBase
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Keep_For_Dunning, new DunningESRActionHandler());
 		esrImportBL.complete(esrImport, "", trxRunConfig);
 
-		InterfaceWrapperHelper.refresh(esrImport, true);
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImport, true);
+		refresh(esrImportLine, true);
 		// Mark for dunning does nothing other than set the line to processed.
-		Assert.assertTrue("Import should be processed", esrImport.isProcessed());
-		Assert.assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue("Import should be processed", esrImport.isProcessed());
+		assertTrue("Line should be processed", esrImportLine.isProcessed());
 
 	}
 
@@ -114,10 +113,10 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		esrImportBL.complete(esrImport, "", trxRunConfig);
 
-		InterfaceWrapperHelper.refresh(esrImport, true);
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
-		Assert.assertTrue("Import should be processed", esrImport.isProcessed());
-		Assert.assertTrue("Line should be processed", esrImportLine.isProcessed());
+		refresh(esrImport, true);
+		refresh(esrImportLine, true);
+		assertTrue("Import should be processed", esrImport.isProcessed());
+		assertTrue("Line should be processed", esrImportLine.isProcessed());
 	}
 
 	/**
@@ -155,8 +154,8 @@ public class ESRActionHandlerTest extends ESRTestBase
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, new MoneyTransferedBackESRActionHandler());
 		esrImportBL.complete(esrImport, "", trxRunConfig);
 
-		InterfaceWrapperHelper.refresh(esrImport, true);
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImport, true);
+		refresh(esrImportLine, true);
 
 		assertTrue("Import should be processed", esrImport.isProcessed());
 		assertTrue("Line should be processed", esrImportLine.isProcessed());
@@ -193,7 +192,6 @@ public class ESRActionHandlerTest extends ESRTestBase
 	@Test
 	public void testWriteoffESRAction()
 	{
-		final String esrImportLineText = "00201059931000000010501536417000120686900000040000012  190013011813011813012100015000400000000000000";
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", "536417000120686", "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
@@ -219,21 +217,21 @@ public class ESRActionHandlerTest extends ESRTestBase
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount, new WriteoffESRActionHandler());
 		esrImportBL.complete(esrImport, "", trxRunConfig);
 
-		InterfaceWrapperHelper.refresh(esrImport, true);
-		InterfaceWrapperHelper.refresh(esrImportLine, true);
+		refresh(esrImport, true);
+		refresh(esrImportLine, true);
 
-		Assert.assertTrue("Import should be processed", esrImport.isProcessed());
-		Assert.assertTrue("Line should be processed", esrImportLine.isProcessed());
+		assertTrue("Import should be processed", esrImport.isProcessed());
+		assertTrue("Line should be processed", esrImportLine.isProcessed());
 
-		Assert.assertEquals("Incorrect number of allocations", 2, POJOLookupMap.get().getRecords(I_C_AllocationHdr.class).size());
-		Assert.assertEquals("Incorrect number of allocation lines", 2, POJOLookupMap.get().getRecords(I_C_AllocationLine.class).size());
+		assertEquals("Incorrect number of allocations", 2, POJOLookupMap.get().getRecords(I_C_AllocationHdr.class).size());
+		assertEquals("Incorrect number of allocation lines", 2, POJOLookupMap.get().getRecords(I_C_AllocationLine.class).size());
 
 		// testAllocation sets the invoice isPaid status, if appropriate. Here, we test that it does not modify it a second time.
 		// testAllocation is called the first time on esrImportBL.process.
 		final boolean ignoreProcessed = false;
 		Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
-		InterfaceWrapperHelper.save(invoice);
-		Assert.assertTrue("Invoice " + invoice + " shall be allocated", invoice.isPaid());
+		save(invoice);
+		assertTrue("Invoice " + invoice + " shall be allocated", invoice.isPaid());
 
 		final I_C_AllocationLine firstAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(0);
 		final I_C_AllocationLine secondAllocationLine = POJOLookupMap.get().getRecords(I_C_AllocationLine.class).get(1);
@@ -245,7 +243,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 
 		final BigDecimal openAmt = Services.get(IInvoiceDAO.class).retrieveOpenAmt(invoice);
 		assertThat("Invoice still has an open amount", openAmt, comparesEqualTo(BigDecimal.ZERO));
-		Assert.assertTrue("Invoice hasn't been paid", invoice.isPaid());
+		assertTrue("Invoice hasn't been paid", invoice.isPaid());
 		assertThat("Second allocation line doesn't have the correct total", secondAllocationLine.getAmount(), comparesEqualTo(BigDecimal.ZERO));
 		assertThat("Second allocation line doesn't have the correct writeoff", secondAllocationLine.getWriteOffAmt(), comparesEqualTo(new BigDecimal("10")));
 		assertThat("Second allocation line doesn't reference our invoice", secondAllocationLine.getC_Invoice_ID(), greaterThan(0));

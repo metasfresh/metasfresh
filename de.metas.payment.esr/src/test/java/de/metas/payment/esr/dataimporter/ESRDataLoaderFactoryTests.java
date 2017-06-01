@@ -1,11 +1,11 @@
-package de.metas.payment.esr.dataImporter;
+package de.metas.payment.esr.dataimporter;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import de.metas.payment.esr.dataImporter.ESRDataLoaderFactory;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
 import de.metas.payment.esr.model.X_ESR_Import;
 
 /*

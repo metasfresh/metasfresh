@@ -1,5 +1,6 @@
 package de.metas.payment.esr;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;
@@ -38,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -223,14 +223,14 @@ public class ESRTestBase
 
 	private void createDocumentSequence(final String tableName)
 	{
-		final I_AD_Sequence adSequence = InterfaceWrapperHelper.create(getCtx(), I_AD_Sequence.class, ITrx.TRXNAME_None);
+		final I_AD_Sequence adSequence = create(getCtx(), I_AD_Sequence.class, ITrx.TRXNAME_None);
 		adSequence.setAD_Org_ID(0);
 		adSequence.setName(MSequence.PREFIX_DOCSEQ + tableName);
 		adSequence.setDescription("DocumentNo/Value for Table " + tableName);
 		// adSequence.setPrefix(prefix);
 		adSequence.setIsTableID(false);
 		adSequence.setIsAutoSequence(true);
-		InterfaceWrapperHelper.save(adSequence);
+		save(adSequence);
 	}
 
 	protected I_ESR_ImportLine setupESR_ImportLine(
@@ -247,43 +247,43 @@ public class ESRTestBase
 		// org
 		final I_AD_Org org = getAD_Org();
 		org.setValue("106");
-		InterfaceWrapperHelper.save(org);
+		save(org);
 
 		// partner
-		final I_C_BPartner partner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue(partnerValue);
 		partner.setAD_Org_ID(org.getAD_Org_ID());
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
-		final I_C_ReferenceNo_Type refNoType = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Type.class, contextProvider);
+		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
-		InterfaceWrapperHelper.save(refNoType);
+		save(refNoType);
 
 		// currency
-		final I_C_Currency currencyEUR = InterfaceWrapperHelper.newInstance(I_C_Currency.class, contextProvider);
+		final I_C_Currency currencyEUR = newInstance(I_C_Currency.class, contextProvider);
 		currencyEUR.setISO_Code("EUR");
 		currencyEUR.setStdPrecision(2);
 		currencyEUR.setIsEuro(true);
-		InterfaceWrapperHelper.save(currencyEUR);
+		save(currencyEUR);
 		POJOWrapper.enableStrictValues(currencyEUR);
 
 		// bank account
-		final I_C_BP_BankAccount account = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setIsEsrAccount(true);
 		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_RenderedAccountNo);
 		account.setC_Currency_ID(currencyEUR.getC_Currency_ID());
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
 		// doc type
-		final I_C_DocType type = InterfaceWrapperHelper.newInstance(I_C_DocType.class, contextProvider);
+		final I_C_DocType type = newInstance(I_C_DocType.class, contextProvider);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal(invAmount);
-		invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class, contextProvider);
+		invoice = newInstance(I_C_Invoice.class, contextProvider);
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setGrandTotal(invoiceGrandTotal);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -294,28 +294,28 @@ public class ESRTestBase
 		invoice.setIsPaid(invPaid);
 		invoice.setIsSOTrx(true);
 		invoice.setProcessed(true);
-		InterfaceWrapperHelper.save(invoice);
+		save(invoice);
 
 		// reference no
-		final I_C_ReferenceNo referenceNo = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo.class, contextProvider);
+		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class, contextProvider);
 		referenceNo.setReferenceNo(refNo);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
 		referenceNo.setAD_Org(getAD_Org());
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		// reference nodoc
-		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = InterfaceWrapperHelper.newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
+		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class, contextProvider);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(invoice.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		// esr line
 		final List<I_ESR_ImportLine> lines = new ArrayList<I_ESR_ImportLine>();
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount(account);
-		InterfaceWrapperHelper.save(esrImport);
+		save(esrImport);
 
 		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
 		esrImportLine.setESR_Import(esrImport);
@@ -324,20 +324,20 @@ public class ESRTestBase
 		esrImportLine.setESRPostParticipantNumber(ESR_RenderedAccountNo.replaceAll("-", ""));
 		esrImportLine.setESRFullReferenceNumber(fullRefNo);
 		esrImportLine.setAmount(new BigDecimal(payAmt));
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		lines.add(esrImportLine);
 
 		if (createAllocation)
 		{
-			final I_C_AllocationHdr allocHdr = InterfaceWrapperHelper.newInstance(I_C_AllocationHdr.class, contextProvider);
+			final I_C_AllocationHdr allocHdr = newInstance(I_C_AllocationHdr.class, contextProvider);
 			allocHdr.setC_Currency_ID(currencyEUR.getC_Currency_ID());
-			InterfaceWrapperHelper.save(allocHdr);
+			save(allocHdr);
 
-			final I_C_AllocationLine allocAmt = InterfaceWrapperHelper.newInstance(I_C_AllocationLine.class, contextProvider);
+			final I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class, contextProvider);
 			allocAmt.setAmount(new BigDecimal(50.0));
 			allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
-			InterfaceWrapperHelper.save(allocAmt);
+			save(allocAmt);
 		}
 
 		return esrImportLine;

@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataImporter.impl;
+package de.metas.payment.esr.dataimporter.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -31,10 +31,10 @@ import de.metas.payment.camt054.jaxb.DateAndDateTimeChoice;
 import de.metas.payment.camt054.jaxb.Document;
 import de.metas.payment.camt054.jaxb.ReportEntry8;
 import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.dataImporter.ESRStatement;
-import de.metas.payment.esr.dataImporter.ESRStatement.ESRStatementBuilder;
-import de.metas.payment.esr.dataImporter.ESRTransaction;
-import de.metas.payment.esr.dataImporter.IESRDataImporter;
+import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.IESRDataImporter;
+import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import lombok.NonNull;
 

@@ -60,7 +60,6 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,7 +88,7 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.api.impl.ESRImportBL;
-import de.metas.payment.esr.dataImporter.impl.v11.ESRTransactionLineMatcherUtil;
+import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -347,7 +346,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(-50)));
 
 		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine.getMatchErrorMsg(), Matchers.notNullValue());
+		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 
 		// check the created payments
 		I_C_Payment esrLine1Payment = esrImportLine.getC_Payment();
@@ -486,7 +485,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(allocLines.get(0).getAmount(), comparesEqualTo(new BigDecimal(25)));
 		assertThat(allocLines.get(0).getC_Invoice_ID(), is(getC_Invoice().getC_Invoice_ID()));
 		assertThat(allocLines.get(1).getWriteOffAmt(), comparesEqualTo(new BigDecimal(25)));
-		assertThat(allocLines.get(1).getC_Invoice_ID(), Matchers.notNullValue());
+		assertThat(allocLines.get(1).getC_Invoice_ID(), notNullValue());
 
 		// esr processed
 		InterfaceWrapperHelper.refresh(esrImport, true);
@@ -874,7 +873,7 @@ public class ESRImportTest extends ESRTestBase
 		// check import line
 		assertThat(esrImportLine.isValid(), is(false));
 		assertThat(esrImportLine.isProcessed(), is(false));
-		assertThat(esrImportLine.getC_BPartner(), Matchers.notNullValue());
+		assertThat(esrImportLine.getC_BPartner(), notNullValue());
 		assertThat(esrImportLine.getESR_Payment_Action(), nullValue());
 		assertThat(esrImportLine.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
@@ -1497,7 +1496,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(msg, esrImportLine.isProcessed(), is(false));
 		assertThat(msg, esrImportLine.getC_Invoice(), nullValue());
 		assertThat(msg, esrImportLine.getC_BPartner_ID(), is(partner.getC_BPartner_ID()));
-		assertThat(msg, esrImportLine.getC_Payment(), Matchers.notNullValue());
+		assertThat(msg, esrImportLine.getC_Payment(), notNullValue());
 		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
 		assertThat(esrImportLine.getMatchErrorMsg(), notNullValue());
 

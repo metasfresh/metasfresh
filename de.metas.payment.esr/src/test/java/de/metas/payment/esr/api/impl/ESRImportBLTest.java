@@ -1,6 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
@@ -40,14 +41,9 @@ import java.util.Set;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.apache.tools.ant.filters.StringInputStream;
@@ -71,7 +67,6 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.payment.esr.ESRTestBase;
 import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.ESRValidationRuleTools;
-import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -184,7 +179,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		// invoke the code under test
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
-		InterfaceWrapperHelper.refresh(esrImport, true);
+		refresh(esrImport, true);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		
@@ -314,7 +309,7 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		esrImportLine.setImportErrorMsg(null);
 		esrImportLine.setMatchErrorMsg(null);
-		InterfaceWrapperHelper.save(esrImportLine);
+		save(esrImportLine);
 
 		// invoke the code under test
 		esrImportBL.setInvoice(esrImportLine, invoice2);
@@ -355,17 +350,17 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		final I_ESR_ImportLine esrImportLine3 = lines.get(2);
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		for (final I_ESR_ImportLine line : lines)
 		{
-			InterfaceWrapperHelper.refresh(line, true);
+			refresh(line, true);
 		}
 		new ESRImportBL().processLinesWithInvoice(lines, ITrx.TRXNAME_None, trxRunConfig);
 
 		// check the created payments
-		InterfaceWrapperHelper.refresh(esrImportLine1, true);
-		InterfaceWrapperHelper.refresh(esrImportLine2, true);
-		InterfaceWrapperHelper.refresh(esrImportLine3, true);
+		refresh(esrImportLine1, true);
+		refresh(esrImportLine2, true);
+		refresh(esrImportLine3, true);
 		assert3Lines_DifferentPayment_Correct(esrImportLine1, esrImportLine2, esrImportLine3);
 
 		// check the line's status and open amounts
@@ -398,19 +393,19 @@ public class ESRImportBLTest extends ESRTestBase
 
 		for (final I_ESR_ImportLine line : lines)
 		{
-			InterfaceWrapperHelper.refresh(line, true);
+			refresh(line, true);
 		}
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2), ITrx.TRXNAME_None, trxRunConfig);
 
 		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine3), ITrx.TRXNAME_None, trxRunConfig);
 
 		// check the created payments
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
-		InterfaceWrapperHelper.refresh(esrImportLine1, true);
-		InterfaceWrapperHelper.refresh(esrImportLine2, true);
-		InterfaceWrapperHelper.refresh(esrImportLine3, true);
+		refresh(esrImportLine1, true);
+		refresh(esrImportLine2, true);
+		refresh(esrImportLine3, true);
 		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
@@ -458,18 +453,18 @@ public class ESRImportBLTest extends ESRTestBase
 
 		for (final I_ESR_ImportLine line : lines)
 		{
-			InterfaceWrapperHelper.refresh(line, true);
+			refresh(line, true);
 		}
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1), ITrx.TRXNAME_None, trxRunConfig);
 		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine2, esrImportLine3), ITrx.TRXNAME_None, trxRunConfig);
 
 		// check the created payments
 		// there is no perfect match (the amount is not matching perfect), so shall be no allocation and no payment match at this moment
-		InterfaceWrapperHelper.refresh(esrImportLine1, true);
-		InterfaceWrapperHelper.refresh(esrImportLine2, true);
-		InterfaceWrapperHelper.refresh(esrImportLine3, true);
+		refresh(esrImportLine1, true);
+		refresh(esrImportLine2, true);
+		refresh(esrImportLine3, true);
 		final I_C_Payment esrLine1Payment = esrImportLine1.getC_Payment();
 		assertThat(esrLine1Payment.getPayAmt(), comparesEqualTo(new BigDecimal(31.0)));
 		assertThat(esrLine1Payment.getC_Invoice_ID(), is(-1));
@@ -514,15 +509,15 @@ public class ESRImportBLTest extends ESRTestBase
 
 		for (final I_ESR_ImportLine line : lines)
 		{
-			InterfaceWrapperHelper.refresh(line, true);
+			refresh(line, true);
 		}
 
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.REQUIRES_NEW, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+		final ITrxRunConfig trxRunConfig = ESRTestUtil.createTrxRunconfig();
 		new ESRImportBL().processLinesWithInvoice(Arrays.asList(esrImportLine1, esrImportLine2, esrImportLine3), ITrx.TRXNAME_None, trxRunConfig);
 
-		InterfaceWrapperHelper.refresh(esrImportLine1, true);
-		InterfaceWrapperHelper.refresh(esrImportLine2, true);
-		InterfaceWrapperHelper.refresh(esrImportLine3, true);
+		refresh(esrImportLine1, true);
+		refresh(esrImportLine2, true);
+		refresh(esrImportLine3, true);
 
 		// check the created payments
 		assert3Lines_DifferentPayment_Correct(esrImportLine1, esrImportLine3, esrImportLine2);

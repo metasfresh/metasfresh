@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.util.Env;
-import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;

@@ -32,7 +32,6 @@ import java.math.BigDecimal;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.model.I_AD_Org;
@@ -363,7 +362,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-059931-0");
 
-		InterfaceWrapperHelper.save(account);
+		save(account);
 
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
@@ -372,33 +371,33 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		referenceNo.setReferenceNo("536417000120686");
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(false);
-		InterfaceWrapperHelper.save(referenceNo);
+		save(referenceNo);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");
-		InterfaceWrapperHelper.save(partner);
+		save(partner);
 
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
-		InterfaceWrapperHelper.save(type);
+		save(type);
 
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo("000120686");
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
-		InterfaceWrapperHelper.save(invoice);
+		save(invoice);
 
 		final I_C_ReferenceNo_Doc esrReferenceNumberDocument = newInstance(I_C_ReferenceNo_Doc.class);
 		esrReferenceNumberDocument.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice.Table_Name));
 		esrReferenceNumberDocument.setRecord_ID(invoice.getC_Invoice_ID());
 		esrReferenceNumberDocument.setC_ReferenceNo(referenceNo);
 
-		InterfaceWrapperHelper.save(esrReferenceNumberDocument);
+		save(esrReferenceNumberDocument);
 
 		I_C_AllocationLine allocAmt = newInstance(I_C_AllocationLine.class);
 		allocAmt.setWriteOffAmt(new BigDecimal(10.0));
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		InterfaceWrapperHelper.save(allocAmt);
+		save(allocAmt);
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);

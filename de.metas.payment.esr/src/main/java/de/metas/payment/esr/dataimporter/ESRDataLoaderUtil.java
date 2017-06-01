@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataImporter;
+package de.metas.payment.esr.dataimporter;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;

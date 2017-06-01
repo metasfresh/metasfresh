@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataImporter;
+package de.metas.payment.esr.dataimporter;
 
 /*
  * #%L

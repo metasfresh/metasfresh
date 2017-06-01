@@ -42,7 +42,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.dataImporter.ESRDataLoaderFactory;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;

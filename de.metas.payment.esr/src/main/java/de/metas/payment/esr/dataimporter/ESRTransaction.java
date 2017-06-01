@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataImporter;
+package de.metas.payment.esr.dataimporter;
 
 import java.math.BigDecimal;
 import java.util.Date;
