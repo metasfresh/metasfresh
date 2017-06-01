@@ -41,10 +41,8 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.terminal.TerminalException;
-import de.metas.adempiere.service.IWarehouseDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
-import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
