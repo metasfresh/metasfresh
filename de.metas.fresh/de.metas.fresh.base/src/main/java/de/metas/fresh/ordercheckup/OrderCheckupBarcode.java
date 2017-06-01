@@ -118,7 +118,8 @@ public final class OrderCheckupBarcode
 
 	public String toBarcodeString()
 	{
-		return version + "_" + adTableId + "_" + recordId;
+		// NOTE: don't use "_" because it might cause problems (see https://github.com/metasfresh/metasfresh/issues/1239#issuecomment-305407684 ).
+		return version + "-" + adTableId + "-" + recordId;
 	}
 
 	public int getC_OrderLine_ID()
