@@ -243,6 +243,18 @@ public class UserSession
 		return data.getLocale();
 	}
 
+	public boolean isUseHttpAcceptLanguage()
+	{
+		return data.isUseHttpAcceptLanguage();
+	}
+
+	public void setUseHttpAcceptLanguage(final boolean useHttpAcceptLanguage)
+	{
+		final boolean useHttpAcceptLanguageOld = data.isUseHttpAcceptLanguage();
+		data.setUseHttpAcceptLanguage(useHttpAcceptLanguage);
+		logSettingChanged("UseHttpAcceptLanguage", useHttpAcceptLanguage, useHttpAcceptLanguageOld);
+	}
+
 	public int getAD_User_ID()
 	{
 		return data.getAD_User_ID();

@@ -7,12 +7,14 @@ import java.util.function.Supplier;
 
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ADLanguageList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
 
@@ -70,13 +72,12 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 		includeLanguageInETag(true);
 		return this;
 	}
-	
+
 	private ETagResponseEntityBuilder<T, R> includeLanguageInETag(final boolean includeLanguageInETag)
 	{
 		this.includeLanguageInETag = includeLanguageInETag;
 		return this;
 	}
-
 
 	public <R2> ETagResponseEntityBuilder<T, R2> map(@NonNull final Function<R, R2> resultMapper)
 	{
@@ -137,9 +138,18 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 
 	private final ResponseEntity.BodyBuilder newResponse(final HttpStatus status, final String etag)
 	{
+
 		ResponseEntity.BodyBuilder response = ResponseEntity.status(status)
 				.eTag(etag)
 				.cacheControl(CacheControl.maxAge(cacheMaxAgeSec, TimeUnit.SECONDS));
+
+		final String adLanguage = getJSONOptions().getAD_Language();
+		if (adLanguage != null && !adLanguage.isEmpty())
+		{
+			final String contentLanguage = ADLanguageList.toHttpLanguageTag(adLanguage);
+			response.header(HttpHeaders.CONTENT_LANGUAGE, contentLanguage);
+			response.header(HttpHeaders.VARY, HttpHeaders.ACCEPT_LANGUAGE); // advice browser to include ACCEPT_LANGUAGE in their caching key
+		}
 
 		return response;
 	}

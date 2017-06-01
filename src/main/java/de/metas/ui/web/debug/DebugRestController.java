@@ -371,5 +371,14 @@ public class DebugRestController
 		userSession.setHttpCacheMaxAge(httpCacheMaxAge);
 		return ImmutableMap.of("value", httpCacheMaxAge, "valueOld", httpCacheMaxAgeOld);
 	}
+	
+	@GetMapping("http.use.AcceptLanguage")
+	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") boolean useHttpAcceptLanguage)
+	{
+		final boolean useHttpAcceptLanguageOld = userSession.isUseHttpAcceptLanguage();
+		userSession.setUseHttpAcceptLanguage(useHttpAcceptLanguage);
+		return ImmutableMap.of("value", useHttpAcceptLanguage, "valueOld", useHttpAcceptLanguageOld);
+	}
+
 
 }

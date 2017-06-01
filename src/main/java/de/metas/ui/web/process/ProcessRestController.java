@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,13 +107,7 @@ public class ProcessRestController
 
 	private JSONOptions newJSONOptions()
 	{
-		final String adLanguage = null; // N/A => use session language
-		return newJSONOptions(adLanguage);
-	}
-
-	private JSONOptions newJSONOptions(@Nullable final String adLanguage)
-	{
-		return JSONOptions.builder(userSession).setAD_LanguageIfNotEmpty(adLanguage).build();
+		return JSONOptions.builder(userSession).build();
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
@@ -144,7 +136,6 @@ public class ProcessRestController
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
-			@RequestParam(name = "lang", required = false, defaultValue = "") final String adLanguage,
 			WebRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -157,7 +148,7 @@ public class ProcessRestController
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(ProcessDescriptor::getLayout)
-				.jsonOptions(() -> newJSONOptions(adLanguage))
+				.jsonOptions(() -> newJSONOptions())
 				.toJson(JSONProcessLayout::of);
 	}
 
