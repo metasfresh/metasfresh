@@ -40,7 +40,7 @@ export default class App extends Component {
 
         axios.defaults.withCredentials = true;
         axios.defaults.headers.common['Content-Type'] = 'application/json';
-        
+
         axios.interceptors.response.use(function (response) {
             return response;
         }, function (error) {
@@ -106,7 +106,7 @@ export default class App extends Component {
             const {defaultValue, values} = response.data;
             const valuesFlatten = values.map(item => Object.keys(item)[0]);
 
-            languageSuccess(valuesFlatten.indexOf(navigator.language) ? 
+            languageSuccess(valuesFlatten.indexOf(navigator.language) ?
                 navigator.language : defaultValue);
         });
     }
