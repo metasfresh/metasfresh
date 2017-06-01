@@ -84,11 +84,13 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
+import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.esr.spi.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.spi.impl.UnableToAssignESRActionHandler;
 import de.metas.payment.esr.spi.impl.WithCurrenttInvoiceESRActionHandler;
@@ -260,6 +262,9 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount(account);
 		InterfaceWrapperHelper.save(esrImport);
+
+		// register listeners
+		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 
 		// start processing
 

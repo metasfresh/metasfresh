@@ -17,21 +17,21 @@ import org.adempiere.service.IValuePreferenceBL.IUserValuePreference;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
  * Login context for {@link Login}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -42,6 +42,7 @@ public class LoginContext
 	private String _remoteAddr = null;
 	private String _remoteHost = null;
 	private String _webSession = null;
+	private boolean webui = false;
 
 	public LoginContext(final Properties ctx)
 	{
@@ -50,7 +51,7 @@ public class LoginContext
 		{
 			throw new IllegalArgumentException("Context missing");
 		}
-		this._ctx = ctx;
+		_ctx = ctx;
 	}
 
 	private final Properties getCtx()
@@ -83,7 +84,7 @@ public class LoginContext
 		return getOptionalPropertyAsInt(name)
 				.orElseThrow(() -> new UnsupportedOperationException("Missing Context: " + name));
 	}
-	
+
 	private final Optional<Integer> getOptionalPropertyAsInt(final String name)
 	{
 		final Properties ctx = getCtx();
@@ -94,7 +95,6 @@ public class LoginContext
 		final int valueInt = Env.getContextAsInt(ctx, name);
 		return Optional.of(valueInt);
 	}
-
 
 	private int getPropertyAsInt(final String name)
 	{
@@ -152,7 +152,7 @@ public class LoginContext
 	{
 		return getMandatoryPropertyAsInt(Env.CTXNAME_AD_User_ID);
 	}
-	
+
 	public Optional<Integer> getAD_User_ID_IfExists()
 	{
 		return getOptionalPropertyAsInt(Env.CTXNAME_AD_User_ID);
@@ -263,7 +263,7 @@ public class LoginContext
 		return getPropertyAsInt("$C_AcctSchema_ID");
 	}
 
-	public void setRemoteAddr(String remoteAddr)
+	public void setRemoteAddr(final String remoteAddr)
 	{
 		_remoteAddr = remoteAddr;
 	}
@@ -273,7 +273,7 @@ public class LoginContext
 		return _remoteAddr;
 	}
 
-	public void setRemoteHost(String remoteHost)
+	public void setRemoteHost(final String remoteHost)
 	{
 		_remoteHost = remoteHost;
 	}
@@ -283,7 +283,7 @@ public class LoginContext
 		return _remoteHost;
 	}
 
-	public void setWebSession(String webSession)
+	public void setWebSession(final String webSession)
 	{
 		_webSession = webSession;
 	}
@@ -291,5 +291,19 @@ public class LoginContext
 	public String getWebSession()
 	{
 		return _webSession;
+	}
+
+	/**
+	 * @param webui true if logging from webui
+	 */
+	public void setWebui(final boolean webui)
+	{
+		this.webui = webui;
+	}
+
+	/** @return true if logging from webui */
+	public boolean isWebui()
+	{
+		return webui;
 	}
 }
