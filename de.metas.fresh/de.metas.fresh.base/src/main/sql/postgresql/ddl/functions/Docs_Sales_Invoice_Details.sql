@@ -152,12 +152,16 @@ GROUP BY x.C_InvoiceLine_ID,	x.shipLocation
 					Report.fresh_IL_TO_IOL_V iliol
 					INNER JOIN M_InOutLine iol ON iliol.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
 					LEFT OUTER JOIN M_HU_PI_Item_Product pi ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
+					LEFT OUTER JOIN M_HU_PI_Item piit ON piit.M_HU_PI_Item_ID = pi.M_HU_PI_Item_ID AND piit.isActive = 'Y'
+					
 					LEFT OUTER JOIN M_HU_Assignment asgn ON asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) ))
 						AND asgn.Record_ID = iol.M_InOutLine_ID AND asgn.isActive = 'Y'
 					LEFT OUTER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
 					LEFT OUTER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
+					--
+					LEFT OUTER JOIN M_HU_PI_Version piv ON piv.M_HU_PI_Version_ID = COALESCE(tu.M_HU_PI_Version_ID, piit.M_HU_PI_Version_ID) AND piv.isActive = 'Y'
 				WHERE
-					COALESCE ( pifb.name, pi.name ) != 'VirtualPI'
+					piv.M_HU_PI_Version_ID != 101
 					AND iliol.C_Invoice_ID = $1
 			) pi
 		GROUP BY C_InvoiceLine_ID
