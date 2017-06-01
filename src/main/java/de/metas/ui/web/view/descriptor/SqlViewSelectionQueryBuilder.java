@@ -1,6 +1,7 @@
 package de.metas.ui.web.view.descriptor;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -17,6 +18,7 @@ import org.adempiere.util.Check;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
@@ -61,7 +63,6 @@ import lombok.NonNull;
  *
  * @see I_T_WEBUI_ViewSelection
  */
-// TODO: used only in one place.. consider removing it from here
 public final class SqlViewSelectionQueryBuilder
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
@@ -70,6 +71,12 @@ public final class SqlViewSelectionQueryBuilder
 	{
 		return new SqlViewSelectionQueryBuilder(entityBinding);
 	}
+	
+	//
+	// Paging constants
+	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
+	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
+	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 
 	private final SqlEntityBinding entityBinding;
 
@@ -372,5 +379,58 @@ public final class SqlViewSelectionQueryBuilder
 
 		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
+	
+	public static IStringExpression buildSqlSelect( //
+			final String sqlTableName //
+			, final String sqlTableAlias //
+			, final String sqlKeyColumnName //
+			, final Collection<String> displayFieldNames //
+			, final Collection<SqlViewRowFieldBinding> allFields //
+	)
+	{
+		// final String sqlTableName = getTableName();
+		// final String sqlTableAlias = getTableAlias();
+		// final String sqlKeyColumnName = getKeyField().getColumnName();
+
+		final List<String> sqlSelectValuesList = new ArrayList<>();
+		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
+		allFields.forEach(field -> {
+			// Collect the SQL select for internal value
+			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
+			sqlSelectValuesList.add(field.getSqlSelectValue());
+
+			// Collect the SQL select for displayed value,
+			// * if there is one
+			// * and if it was required by caller (i.e. present in fieldNames list)
+			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
+			{
+				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
+			}
+		});
+
+		// NOTE: we don't need access SQL here because we assume the records were already filtered
+
+		final CompositeStringExpression.Builder sql = IStringExpression.composer();
+		sql.append("SELECT ")
+				.append("\n").append(sqlTableAlias).append(".*"); // Value fields
+
+		if (!sqlSelectDisplayNamesList.isEmpty())
+		{
+			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
+		}
+
+		sql.append("\n FROM (")
+				.append("\n   SELECT ")
+				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
+				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
+				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
+				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
+				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
+				.append("\n ) " + sqlTableAlias); // FROM
+
+		return sql.build().caching();
+	}
+
 
 }
