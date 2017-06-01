@@ -46,7 +46,8 @@ class RawList extends Component {
 
             if(list.length > 0) {
                 this.setState({
-                    dropdownList: dropdown.concat(list)
+                    dropdownList: dropdown.concat(list),
+                    selected: list[0]
                 });
             }
         }
@@ -256,6 +257,7 @@ class RawList extends Component {
 
     handleKeyDown = (e) => {
         const {selected, isOpen} = this.state;
+        const {onSelect} = this.props;
 
         if(e.keyCode > 47 && e.keyCode < 123){
             this.navigateToAlphanumeric(e.key);
@@ -274,7 +276,12 @@ class RawList extends Component {
                     if(isOpen){
                         e.stopPropagation();
                     }
-                    this.handleSelect(selected);
+                    if(selected){
+                        this.handleSelect(selected);
+                    } else {
+                        onSelect(null);
+                    }
+
                     break;
                 case 'Escape':
                     e.preventDefault();
