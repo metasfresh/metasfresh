@@ -1158,3 +1158,44 @@ td.pulse-off input {
     width: 100%;
     margin-left: 1rem;
 }
+
+.avatar {
+    width: 35px;
+    height: 35px;
+}
+
+.meta-text-primary {
+    font-weight: bold;
+    color: $brand-color-primary;
+}
+
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-dropdown-list {
+    position: absolute;
+    top:54px;
+    right:-1px;
+    z-index:0;
+    min-width: 200px;
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    border-top: 0;
+    pointer-events: all;
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.8);
+}
+
+.user-dropdown-header-item {
+    letter-spacing: .02rem;
+    cursor: default;
+}
+
+.user-dropdown-item {
+    padding: 1rem .7rem;
+}
+
+.user-dropdown-item:not(.user-dropdown-header-item):hover {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
