@@ -20,7 +20,8 @@ class Lookup extends Component {
             isInputEmpty: true,
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
             property: '',
-            fireClickOutside: false
+            fireClickOutside: false,
+            initialFocus: false
         }
     }
 
@@ -93,7 +94,8 @@ class Lookup extends Component {
         onChange(properties, null, false);
         this.setState({
             isInputEmpty: true,
-            property: ''
+            property: '',
+            initialFocus: true
         });
     }
 
@@ -105,7 +107,9 @@ class Lookup extends Component {
             entity, dataId, tabId, subentity, subentityId, viewId, autoFocus
         } = this.props;
 
-        const {isInputEmpty, property, fireClickOutside} = this.state;
+        const {
+            isInputEmpty, property, fireClickOutside, initialFocus
+        } = this.state;
 
         return (
             <div
@@ -144,6 +148,7 @@ class Lookup extends Component {
                                 handleInputEmptyStatus={
                                     this.handleInputEmptyStatus
                                 }
+                                initialFocus={index===0 ? initialFocus : false}
                                 setNextProperty={this.setNextProperty}
                                 {...{placeholder, readonly, tabIndex,
                                 windowType, parameterName, entity, dataId,
@@ -170,7 +175,7 @@ class Lookup extends Component {
                                         {...{dataId, entity, windowType,
                                             filterWidget, tabId, rowId,
                                             subentity, subentityId, viewId,
-                                            onChange, isInputEmpty
+                                            onChange, isInputEmpty, property
                                         }}
                                         properties={[item]}
                                         lookupList={true}
@@ -183,6 +188,9 @@ class Lookup extends Component {
                                             objectValue[
                                                 Object.keys(objectValue)[0]
                                             ] : ''
+                                        }
+                                        initialFocus={
+                                            index===0 ? initialFocus : false
                                         }
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}

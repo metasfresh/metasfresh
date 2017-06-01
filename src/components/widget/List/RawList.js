@@ -22,7 +22,10 @@ class RawList extends Component {
     }
 
     componentDidUpdate = prevProps => {
-        const { list, mandatory, defaultValue, autofocus, blur } = this.props;
+        const {
+            list, mandatory, defaultValue, autofocus, blur, property,
+            initialFocus
+        } = this.props;
 
         if(prevProps.blur != blur){
             blur && this.handleBlur();
@@ -33,7 +36,11 @@ class RawList extends Component {
             list.length === 1 && this.handleSelect(list[0]);
         }
 
-        if(prevProps.defaultValue != defaultValue){
+        if(prevProps.defaultValue != defaultValue && property){
+            this.dropdown && this.dropdown.focus();
+        }
+
+        if(initialFocus && !defaultValue){
             this.dropdown && this.dropdown.focus();
         }
 

@@ -103,7 +103,7 @@ class List extends Component {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
             emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
-            blur
+            blur, initialFocus
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 
@@ -128,6 +128,7 @@ class List extends Component {
                 autofocus={autofocus}
                 lookupList={lookupList}
                 blur={blur}
+                initialFocus={initialFocus}
             />
         )
     }
