@@ -23,7 +23,8 @@ import {
     addNotification,
     logoutSuccess,
     getAvailableLang,
-    setProcessSaved
+    setProcessSaved,
+    languageSuccess
 } from '../actions/AppActions';
 
 import '../assets/css/styles.css';
@@ -104,11 +105,8 @@ export default class App extends Component {
             const {defaultValue, values} = response.data;
             const valuesFlatten = values.map(item => Object.keys(item)[0]);
 
-            if(valuesFlatten.indexOf(navigator.language)){
-                Moment.locale(navigator.language);
-            }else{
-                Moment.locale(defaultValue);
-            }
+            languageSuccess(valuesFlatten.indexOf(navigator.language) ? 
+                navigator.language : defaultValue);
         });
     }
 
