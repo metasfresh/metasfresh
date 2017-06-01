@@ -42,6 +42,10 @@ Here come the actual release notes:
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
+  * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
+    * Adding the Handling Unit Editor to WebUI menu in Logistics group.
+  * [#1707](https://github.com/metasfresh/metasfresh/issues/1707) Add Handling Unit Assignment Tab to Customer Returns Window
+    * Adds the Handling Unitb Assignment Tab to the Customer Returns window, allowing the user to easily zoom-to and maintain the returned Handling Units.
  
  
 * metasfresh-webui-api
@@ -51,6 +55,8 @@ Here come the actual release notes:
     * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
   * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
     * The Section Names for Fieldgroup creation are now translatable in WebUI.
+  * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Lookup Field shall provide first dropdown results
+    * New Functionality in Lookup Fields. Just press space key and receive a list of first available selections.
     
 * metasfresh-webui-frontend
   * [#713](https://github.com/metasfresh/metasfresh-webui-frontend/issues/713) KPIs: In case datasets is empty or missing shall show "No data" text
@@ -59,7 +65,7 @@ Here come the actual release notes:
     * Internal Task for changing API responses for single documents, vie data and Patches.
   * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
     * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
-  * #789(https://github.com/metasfresh/metasfresh-webui-frontend/issues/789) Advanced Edit w/ key [ctrl]+e too many [tab] for scroll
+  * [#789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/789) Advanced Edit w/ key [ctrl]+e too many [tab] for scroll
     * Nice Usability Improvement for the keyboard Navigation in Advanced Edit Mode. Scroll w/ page-up/ page-down can be used directly after opening the Advanced Edit mode.
   * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
     * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
