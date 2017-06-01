@@ -49,7 +49,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.omg.PortableServer.ImplicitActivationPolicyOperations;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -71,12 +70,12 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
-import de.metas.payment.esr.dataloader.ESRDataLoaderFactory;
-import de.metas.payment.esr.dataloader.ESRDataLoaderUtil;
-import de.metas.payment.esr.dataloader.ESRStatement;
-import de.metas.payment.esr.dataloader.ESRTransaction;
-import de.metas.payment.esr.dataloader.IESRDataImporter;
-import de.metas.payment.esr.dataloader.impl.v11.ESRTransactionLineMatcherUtil;
+import de.metas.payment.esr.dataImporter.ESRDataLoaderFactory;
+import de.metas.payment.esr.dataImporter.ESRDataLoaderUtil;
+import de.metas.payment.esr.dataImporter.ESRStatement;
+import de.metas.payment.esr.dataImporter.ESRTransaction;
+import de.metas.payment.esr.dataImporter.IESRDataImporter;
+import de.metas.payment.esr.dataImporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -186,7 +185,7 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in);
-		final ESRStatement esrStatement = loader.load();
+		final ESRStatement esrStatement = loader.importData();
 
 		esrImport.setESR_Control_Amount(esrStatement.getCtrlAmount());
 		esrImport.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());
@@ -233,6 +232,7 @@ public class ESRImportBL implements IESRImportBL
 			importLine.setAccountingDate(TimeUtil.asTimestamp(esrTransaction.getAccountingDate()));
 			importLine.setAmount(esrTransaction.getAmount());
 			importLine.setESRTrxType(esrTransaction.getTrxType());
+			importLine.setESRLineText(esrTransaction.getTransactionKey());
 
 			save(importLine);
 		}
@@ -1261,12 +1261,5 @@ public class ESRImportBL implements IESRImportBL
 		esrImportLine.setC_BankStatementLine(null);
 		esrImportLine.setC_BankStatementLine_Ref(null);
 		InterfaceWrapperHelper.save(esrImportLine);
-	}
-
-	@Override
-	public boolean isV11File(String filename)
-	{
-		Check.assume(!Check.isEmpty(filename, true), "Filename can not be empty!");
-		return filename.matches(".*v11") || filename.matches(".*V11");
 	}
 }

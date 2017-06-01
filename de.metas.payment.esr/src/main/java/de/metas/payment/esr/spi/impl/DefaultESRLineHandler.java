@@ -13,7 +13,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.dataloader.ESRDataLoaderUtil;
+import de.metas.payment.esr.dataImporter.ESRDataLoaderUtil;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.spi.IESRLineHandler;
 

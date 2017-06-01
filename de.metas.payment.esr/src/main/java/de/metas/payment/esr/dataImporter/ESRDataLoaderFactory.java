@@ -1,11 +1,11 @@
-package de.metas.payment.esr.dataloader;
+package de.metas.payment.esr.dataImporter;
 
 import java.io.InputStream;
 
 import org.adempiere.util.Check;
 
-import de.metas.payment.esr.dataloader.impl.ESRDataImporterCamt54;
-import de.metas.payment.esr.dataloader.impl.v11.ESRDataImporterV11;
+import de.metas.payment.esr.dataImporter.impl.ESRDataImporterCamt54;
+import de.metas.payment.esr.dataImporter.impl.v11.ESRDataImporterV11;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.X_ESR_Import;
 import lombok.NonNull;
@@ -50,6 +50,29 @@ public class ESRDataLoaderFactory
 		}
 
 		Check.errorIf(true, "The given ESR_Import has unexpected DataType={}; header={}", header.getDataType(), header);
+		return null;
+	}
+
+	/**
+	 * Tries to guess the {@link I_ESR_Import#COLUMN_DataType} from the given {@code fileName}. May return {@code null}.
+	 * 
+	 * @param fileName
+	 * @return
+	 */
+	public String guessTypeFromFileName(@NonNull final String fileName)
+	{
+		final boolean isV11FileNameEnding = fileName.matches("(?i).*\\.v11");
+		if (isV11FileNameEnding)
+		{
+			return X_ESR_Import.DATATYPE_V11;
+		}
+
+		final boolean isCamtFileNameEnding = fileName.matches("(?i).*\\.(xml|camt|camt\\.?54)");
+		if (isCamtFileNameEnding)
+		{
+			return X_ESR_Import.DATATYPE_Camt54;
+		}
+
 		return null;
 	}
 }

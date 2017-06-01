@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataloader.impl;
+package de.metas.payment.esr.dataImporter.impl;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -8,14 +8,20 @@ import java.sql.Timestamp;
 import java.util.Optional;
 
 import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.Loggables;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.payment.camt054.jaxb.AccountNotification12;
 import de.metas.payment.camt054.jaxb.ActiveOrHistoricCurrencyAndAmount;
@@ -25,10 +31,10 @@ import de.metas.payment.camt054.jaxb.DateAndDateTimeChoice;
 import de.metas.payment.camt054.jaxb.Document;
 import de.metas.payment.camt054.jaxb.ReportEntry8;
 import de.metas.payment.esr.ESRConstants;
-import de.metas.payment.esr.dataloader.ESRStatement;
-import de.metas.payment.esr.dataloader.ESRStatement.ESRStatementBuilder;
-import de.metas.payment.esr.dataloader.ESRTransaction;
-import de.metas.payment.esr.dataloader.IESRDataImporter;
+import de.metas.payment.esr.dataImporter.ESRStatement;
+import de.metas.payment.esr.dataImporter.ESRStatement.ESRStatementBuilder;
+import de.metas.payment.esr.dataImporter.ESRTransaction;
+import de.metas.payment.esr.dataImporter.IESRDataImporter;
 import de.metas.payment.esr.model.I_ESR_Import;
 import lombok.NonNull;
 
@@ -74,14 +80,27 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	}
 
 	@Override
-	public ESRStatement load()
+	public ESRStatement importData()
 	{
-		final Document document = JAXB.unmarshal(input, Document.class);
+		final Document document;
+		try
+		{
+			final JAXBContext context = JAXBContext.newInstance(Document.class);
+			final Unmarshaller unmarshaller = context.createUnmarshaller();
+
+			@SuppressWarnings("unchecked")
+			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(input);
+			document = e.getValue();
+		}
+		catch (final JAXBException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 
 		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = document.getBkToCstmrDbtCdtNtfctn();
 		if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
 		{
-			logger.info("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
+			Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
 		}
 
 		try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
@@ -96,10 +115,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 					final BigDecimal amountValue;
 
 					// verify that the currency is consistent
+					// TODO: this does not really belong into the loader! move it to the matcher code.
 					if (header.getC_BP_BankAccount_ID() > 0)
 					{
 						final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
-						Check.errorIf(headerCurrencyISO.equalsIgnoreCase(amt.getCcy()),
+						Check.errorUnless(headerCurrencyISO.equalsIgnoreCase(amt.getCcy()),
 								"Currency {} of C_BP_BankAccount does not match the currency {} of the current xml ntry; C_BP_BankAccount={}",
 								headerCurrencyISO, amt.getCcy(), header.getC_BP_BankAccount());
 					}
@@ -138,7 +158,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 							.findFirst();
 					Check.errorUnless(esrReferenceNumberString.isPresent(), "Missing ESR creditor reference");
 
-					
 					stmtBuilder.transaction(ESRTransaction.builder()
 							.trxType(trxType)
 							.transactionKey(mkTrxKey(ntry))

@@ -1,4 +1,4 @@
-package de.metas.payment.esr.dataloader.impl.v11;
+package de.metas.payment.esr.dataImporter.impl.v11;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,11 +18,11 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
-import de.metas.payment.esr.dataloader.ESRStatement;
-import de.metas.payment.esr.dataloader.ESRStatement.ESRStatementBuilder;
-import de.metas.payment.esr.dataloader.ESRTransaction;
-import de.metas.payment.esr.dataloader.ESRTransaction.ESRTransactionBuilder;
-import de.metas.payment.esr.dataloader.IESRDataImporter;
+import de.metas.payment.esr.dataImporter.ESRStatement;
+import de.metas.payment.esr.dataImporter.ESRTransaction;
+import de.metas.payment.esr.dataImporter.IESRDataImporter;
+import de.metas.payment.esr.dataImporter.ESRStatement.ESRStatementBuilder;
+import de.metas.payment.esr.dataImporter.ESRTransaction.ESRTransactionBuilder;
 import lombok.NonNull;
 
 /*
@@ -61,7 +61,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 	}
 
 	@Override
-	public ESRStatement load()
+	public ESRStatement importData()
 	{
 		final InputStreamReader inputStreamReader = new InputStreamReader(input);
 

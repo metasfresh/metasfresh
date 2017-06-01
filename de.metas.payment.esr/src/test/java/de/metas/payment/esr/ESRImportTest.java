@@ -89,7 +89,7 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.api.impl.ESRImportBL;
-import de.metas.payment.esr.dataloader.impl.v11.ESRTransactionLineMatcherUtil;
+import de.metas.payment.esr.dataImporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;

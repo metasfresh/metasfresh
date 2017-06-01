@@ -96,7 +96,9 @@
 							<goal>xjc</goal>
 						</goals>
 						<configuration>
-							<schemaFiles>camt.054.001.06.xsd</schemaFiles>
+							<sources>
+								<source>src/main/xsd/camt.054.001.06.xsd</source>
+							</sources>
 							<packageName>de.metas.payment.camt054.jaxb</packageName>
 						</configuration>
 					</execution>

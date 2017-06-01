@@ -38,7 +38,7 @@ import de.metas.payment.esr.model.validator.ESR_ImportLine;
 public interface IESRImportBL extends ISingletonService
 {
 	/**
-	 * Loads the given V11 file by create an entry in attachment and enqueing the esr import for importing in async mode
+	 * Loads the given file by creating an entry in attachment and enqueing the esr import for importing in async mode
 	 *
 	 * @param esrImport
 	 * @param filename
@@ -156,12 +156,4 @@ public interface IESRImportBL extends ISingletonService
 	 * @param bankStatementLineRef
 	 */
 	void unlinkESRImportLinesFor(I_C_BankStatementLine_Ref bankStatementLineRef);
-	
-	/**
-	 * Check is is a v11 filename<bR>
-	 * The check is made by name of the file
-	 * @param filename
-	 * @return
-	 */
-	boolean isV11File(String filename);
 }
