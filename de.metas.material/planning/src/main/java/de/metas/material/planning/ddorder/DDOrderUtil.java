@@ -50,11 +50,11 @@ public class DDOrderUtil
 
 	/**
 	 *
-	 * @param productPlanningData may be null as of gh #1635
-	 * @param networkLine
+	 * @param productPlanningData may be {@code null} as of gh #1635
+	 * @param networkLine may also be {@code null} as of gh #1635
 	 * @return
 	 */
-	public int calculateDurationDays(final I_PP_Product_Planning productPlanningData, @NonNull final I_DD_NetworkDistributionLine networkLine)
+	public int calculateDurationDays(final I_PP_Product_Planning productPlanningData, final I_DD_NetworkDistributionLine networkLine)
 	{
 		//
 		// Leadtime
@@ -71,8 +71,21 @@ public class DDOrderUtil
 
 		//
 		// Transfer time
-		int transferTime = networkLine.getTransfertTime().intValueExact();
-		if (transferTime <= 0 && productPlanningData != null)
+		final int transferTimeFromNetworkLine;
+		if (networkLine != null)
+		{
+			transferTimeFromNetworkLine = networkLine.getTransfertTime().intValueExact();
+		}
+		else
+		{
+			transferTimeFromNetworkLine = 0;
+		}
+		final int transferTime;
+		if (transferTimeFromNetworkLine > 0)
+		{
+			transferTime = transferTimeFromNetworkLine;
+		}
+		else if (productPlanningData != null)
 		{
 			transferTime = productPlanningData.getTransfertTime().intValueExact();
 			Check.assume(transferTime >= 0, MrpException.class, "transferTime >= 0");
