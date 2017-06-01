@@ -1338,4 +1338,27 @@ public interface I_AD_Role
     public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_UserLevel = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "UserLevel", null);
     /** Column name UserLevel */
     public static final String COLUMNNAME_UserLevel = "UserLevel";
+
+	/**
+	 * Set Is webui role.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_Role (boolean WEBUI_Role);
+
+	/**
+	 * Get Is webui role.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isWEBUI_Role();
+
+    /** Column definition for WEBUI_Role */
+    public static final org.adempiere.model.ModelColumn<I_AD_Role, Object> COLUMN_WEBUI_Role = new org.adempiere.model.ModelColumn<I_AD_Role, Object>(I_AD_Role.class, "WEBUI_Role", null);
+    /** Column name WEBUI_Role */
+    public static final String COLUMNNAME_WEBUI_Role = "WEBUI_Role";
 }

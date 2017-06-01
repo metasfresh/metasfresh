@@ -8,6 +8,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -15,7 +16,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 
 import org.adempiere.exceptions.DBException;
-import org.adempiere.util.Check;
+import org.adempiere.user.api.IUserMenuFavoritesDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MTreeNode;
@@ -74,7 +75,7 @@ final class FavoritesGroupContainer
 	private FavoriteItem selectedItemByPopup = null;
 
 	// Database repository
-	private final FavoritesDAO favoritesDAO = new FavoritesDAO();
+	private final transient IUserMenuFavoritesDAO favoritesDAO = Services.get(IUserMenuFavoritesDAO.class);
 	private boolean loading = false;
 	
 	public FavoritesGroupContainer()
@@ -169,6 +170,11 @@ final class FavoritesGroupContainer
 			updateUI();
 		}
 	}
+	
+	private int getLoggedUserId()
+	{
+		return Env.getAD_User_ID(Env.getCtx());
+	}
 
 	public void addItem(final MTreeNode node)
 	{
@@ -188,7 +194,7 @@ final class FavoritesGroupContainer
 		{
 			try
 			{
-				favoritesDAO.add(node.getAD_Tree_ID(), node.getNode_ID());
+				favoritesDAO.add(getLoggedUserId(), node.getNode_ID());
 			}
 			catch (Exception e)
 			{
@@ -260,7 +266,7 @@ final class FavoritesGroupContainer
 		for (final Iterator<FavoritesGroup> it = topNodeId2group.values().iterator(); it.hasNext();)
 		{
 			final FavoritesGroup g = it.next();
-			if (Check.equals(group, g))
+			if (Objects.equals(group, g))
 			{
 				it.remove();
 			}
@@ -306,7 +312,7 @@ final class FavoritesGroupContainer
 
 		// Database sync
 		final MTreeNode node = item.getNode();
-		favoritesDAO.remove(node.getAD_Tree_ID(), node.getNode_ID());
+		favoritesDAO.remove(getLoggedUserId(), node.getNode_ID());
 
 		// UI
 		final FavoritesGroup group = item.getGroup();
