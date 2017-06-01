@@ -70,6 +70,10 @@ Here come the actual release notes:
   * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
     * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
 
+* other
+  * [metasfresh-documentation#71](https://github.com/metasfresh/metasfresh-documentation/issues/71) Describe how to update database in local dev env
+    * Thx [@daveyx](https://github.com/daveyx)
+
 ## Fixes
 
 * metasfresh-backend
