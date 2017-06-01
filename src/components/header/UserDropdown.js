@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import defaultAvatar from '../../assets/images/default-avatar.png';
+import Tooltips from '../tooltips/Tooltips';
 
 import onClickOutside from 'react-onclickoutside';
 
@@ -11,15 +12,20 @@ class UserDropdown extends Component {
     handleClickOutside = () => this.props.handleUDOpen(false);
 
     render() {
-        const {open, handleUDOpen, redirect} = this.props;
+        const {
+            open, handleUDOpen, redirect, shortcut, toggleTooltip, tooltipOpen
+        } = this.props;
+        
         return (
             <div
                 className={
                     'header-item-container header-item-container-static ' +
-                    'pointer user-dropdown-container ' + 
+                    'pointer user-dropdown-container tooltip-parent ' + 
                     (open ? 'header-item-open ' : '')
                 }
                 onClick={() => handleUDOpen(true)}
+                onMouseEnter={() => toggleTooltip(shortcut)}
+                onMouseLeave={() => toggleTooltip('')}
             >
                 <img
                     src={defaultAvatar}
@@ -46,6 +52,11 @@ class UserDropdown extends Component {
                         <i className="meta-icon-logout" /> Log out
                     </div>
                 </div>}
+                {tooltipOpen === shortcut && <Tooltips
+                    name={shortcut}
+                    action={'User menu'}
+                    type={''}
+                />}
             </div>
         );
     }

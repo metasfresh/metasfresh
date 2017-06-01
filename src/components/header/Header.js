@@ -221,6 +221,7 @@ class Header extends Component {
             menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
+            isUDOpen: false,
             isSideListShow: false,
             sideListTab: null,
             isSubheaderShow:
@@ -437,6 +438,10 @@ class Header extends Component {
                                     handleUDOpen={this.handleUDOpen}
                                     disableOnClickOutside={!isUDOpen}
                                     redirect={this.redirect}
+                                    shortcut={
+                                        keymap.GLOBAL_CONTEXT.OPEN_AVATAR_MENU}
+                                    toggleTooltip={this.toggleTooltip}
+                                    {...{tooltipOpen}}
                                 />
 
                                 {showSidelist &&
@@ -530,6 +535,7 @@ class Header extends Component {
                         () => this.handleInboxOpen(false) :
                         () => this.handleInboxOpen(true)
                     }
+                    handleUDOpen = {() => this.handleUDOpen(!isUDOpen)}
                     openModal = {dataId ?
                         () => this.openModal(
                             windowType, 'window', 'Advanced edit', true
