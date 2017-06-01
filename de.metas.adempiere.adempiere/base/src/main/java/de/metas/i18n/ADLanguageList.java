@@ -3,16 +3,24 @@ package de.metas.i18n;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Locale.LanguageRange;
 import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -53,6 +61,8 @@ public final class ADLanguageList
 		return new Builder();
 	}
 
+	private static final transient Logger logger = LogManager.getLogger(ADLanguageList.class);
+
 	private final ImmutableMap<String, ValueNamePair> languagesByADLanguage;
 	private final String baseADLanguage;
 
@@ -90,6 +100,65 @@ public final class ADLanguageList
 	public Set<String> getAD_Languages()
 	{
 		return languagesByADLanguage.keySet();
+	}
+
+	/**
+	 * Extract preferred language from HTTP "Accept-Language" header.
+	 * 
+	 * @param acceptLanguageHeader
+	 * @param defaultValue
+	 * @return preferred language or <code>defaultValue</code>
+	 * @see https://tools.ietf.org/html/rfc5646#section-2.1
+	 */
+	public String getAD_LanguageFromHttpAcceptLanguage(final String acceptLanguageHeader, final String defaultValue)
+	{
+		if (Check.isEmpty(acceptLanguageHeader, true))
+		{
+			return defaultValue;
+		}
+
+		try
+		{
+			final List<LanguageRange> languageRanges = LanguageRange.parse(acceptLanguageHeader);
+			if (languageRanges.isEmpty())
+			{
+				return defaultValue;
+			}
+
+			final BiMap<String, String> adLanguage2tag = Services.get(ILanguageDAO.class).retrieveAvailableLanguages().toHttpLanguageTags();
+
+			final String languageTag = Locale.lookupTag(languageRanges, adLanguage2tag.values());
+			if (languageTag == null)
+			{
+				return defaultValue;
+			}
+
+			final String adLanguage = adLanguage2tag.inverse().get(languageTag.toLowerCase());
+			if (adLanguage == null)
+			{
+				return defaultValue;
+			}
+
+			return adLanguage;
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed fetching AD_Language from {}. Returning {}", acceptLanguageHeader, defaultValue, ex);
+			return defaultValue;
+		}
+	}
+
+	/** @return "adLanguage" to "language tag" bi-map. */
+	private BiMap<String, String> toHttpLanguageTags()
+	{
+		return languagesByADLanguage.keySet()
+				.stream()
+				.collect(ImmutableBiMap.toImmutableBiMap(adLanguage -> adLanguage, adLanguage -> toHttpLanguageTag(adLanguage)));
+	}
+
+	public static final String toHttpLanguageTag(final String adLanguage)
+	{
+		return adLanguage.replace('_', '-').trim().toLowerCase();
 	}
 
 	public boolean isBaseLanguage(final ValueNamePair language)
