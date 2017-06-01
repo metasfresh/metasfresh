@@ -133,6 +133,7 @@ public class WindowRestController
 	public ResponseEntity<JSONDocumentLayout> getLayout(
 			@PathVariable("windowId") final String windowIdStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			@RequestParam(name = "lang", required = false, defaultValue = "") final String adLanguage,
 			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -142,10 +143,11 @@ public class WindowRestController
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(DocumentDescriptor::getLayout)
 				//
-				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
+				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).setAD_LanguageIfNotEmpty(adLanguage).build())
 				.toJson(JSONDocumentLayout::ofHeaderLayout);
 	}
 
@@ -154,6 +156,7 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("tabId") final String tabIdStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
+			@RequestParam(name = "lang", required = false, defaultValue = "") final String adLanguage,
 			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -165,10 +168,11 @@ public class WindowRestController
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(desc -> desc.getLayout().getDetail(detailId))
 				//
-				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).build())
+				.jsonOptions(() -> newJSONOptions().setShowAdvancedFields(advanced).setAD_LanguageIfNotEmpty(adLanguage).build())
 				.toJson(JSONDocumentLayout::ofDetailTab);
 	}
 

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -91,13 +93,19 @@ public class ViewRestController
 
 	@Autowired
 	private ProcessRestController processRestController;
-	
+
 	@Autowired
 	private WindowRestController windowRestController;
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.of(userSession);
+		final String adLanguage = null; // N/A => use session language
+		return newJSONOptions(adLanguage);
+	}
+
+	private JSONOptions newJSONOptions(@Nullable final String adLanguage)
+	{
+		return JSONOptions.builder(userSession).setAD_LanguageIfNotEmpty(adLanguage).build();
 	}
 
 	@PostMapping
@@ -196,6 +204,7 @@ public class ViewRestController
 	public ResponseEntity<JSONViewLayout> getViewLayout(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType,
+			@RequestParam(name = "lang", required = false, defaultValue = "") final String adLanguage,
 			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -204,8 +213,9 @@ public class ViewRestController
 		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType);
 
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.jsonOptions(this::newJSONOptions)
+				.jsonOptions(() -> newJSONOptions(adLanguage))
 				.toJson(JSONViewLayout::of);
 	}
 
@@ -305,9 +315,9 @@ public class ViewRestController
 			@PathVariable("fieldName") final String fieldName)
 	{
 		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
-		
+
 		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
-		
+
 		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}
 }

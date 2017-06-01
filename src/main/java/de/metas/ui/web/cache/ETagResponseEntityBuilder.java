@@ -5,10 +5,13 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.WebRequest;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
@@ -47,6 +50,7 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 	private final Supplier<R> result;
 	private Supplier<JSONOptions> jsonOptions = () -> null;
 	private int cacheMaxAgeSec = 10;
+	private boolean includeLanguageInETag = false;
 
 	private ETagResponseEntityBuilder(@NonNull final WebRequest request, @NonNull final T etagAware, @NonNull final Supplier<R> result)
 	{
@@ -61,24 +65,60 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 		return this;
 	}
 
+	public ETagResponseEntityBuilder<T, R> includeLanguageInETag()
+	{
+		includeLanguageInETag(true);
+		return this;
+	}
+	
+	private ETagResponseEntityBuilder<T, R> includeLanguageInETag(final boolean includeLanguageInETag)
+	{
+		this.includeLanguageInETag = includeLanguageInETag;
+		return this;
+	}
+
+
 	public <R2> ETagResponseEntityBuilder<T, R2> map(@NonNull final Function<R, R2> resultMapper)
 	{
 		final Supplier<R> result = this.result;
 		final Supplier<R2> newResult = () -> resultMapper.apply(result.get());
 		return new ETagResponseEntityBuilder<>(request, etagAware, newResult)
+				.includeLanguageInETag(includeLanguageInETag)
 				.cacheMaxAge(this.cacheMaxAgeSec);
 	}
 
 	public ETagResponseEntityBuilder<T, R> jsonOptions(@NonNull final Supplier<JSONOptions> jsonOptions)
 	{
-		this.jsonOptions = jsonOptions;
+		this.jsonOptions = ExtendedMemorizingSupplier.of(jsonOptions);
 		return this;
+	}
+
+	private JSONOptions getJSONOptions()
+	{
+		final JSONOptions jsonOptions = this.jsonOptions.get();
+		if (jsonOptions == null)
+		{
+			throw new IllegalStateException("jsonOptions not configured");
+		}
+		return jsonOptions;
+	}
+
+	private ETag getETag()
+	{
+		ETag etag = etagAware.getETag();
+		if (includeLanguageInETag)
+		{
+			final String adLanguage = getJSONOptions().getAD_Language();
+			etag = etag.overridingAttributes(ImmutableMap.of("lang", adLanguage));
+		}
+
+		return etag;
 	}
 
 	public <JSONType> ResponseEntity<JSONType> toJson(final BiFunction<R, JSONOptions, JSONType> toJsonMapper)
 	{
 		// Check ETag
-		final String etag = etagAware.getETag().toETagString();
+		final String etag = getETag().toETagString();
 		if (request.checkNotModified(etag))
 		{
 			// Response: 304 Not Modified
@@ -87,7 +127,7 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 
 		// Get the result and convert it to JSON
 		final R result = this.result.get();
-		final JSONOptions jsonOptions = this.jsonOptions.get();
+		final JSONOptions jsonOptions = getJSONOptions();
 		final JSONType json = toJsonMapper.apply(result, jsonOptions);
 
 		// Response: 200 OK

@@ -364,9 +364,14 @@ public final class JSONOptions
 			return new JSONOptions(this);
 		}
 
-		public Builder setAD_Language(final String adLanguage)
+		public Builder setAD_LanguageIfNotEmpty(final String adLanguage)
 		{
-			this.adLanguage = adLanguage;
+			if(Check.isEmpty(adLanguage, true))
+			{
+				return this;
+			}
+			
+			this.adLanguage = adLanguage.trim();
 			return this;
 		}
 

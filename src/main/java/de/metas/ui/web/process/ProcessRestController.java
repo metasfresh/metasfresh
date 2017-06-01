@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,9 +107,15 @@ public class ProcessRestController
 				});
 	}
 
-	private JSONOptions newJsonOpts()
+	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.of(userSession);
+		final String adLanguage = null; // N/A => use session language
+		return newJSONOptions(adLanguage);
+	}
+
+	private JSONOptions newJSONOptions(@Nullable final String adLanguage)
+	{
+		return JSONOptions.builder(userSession).setAD_LanguageIfNotEmpty(adLanguage).build();
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
@@ -136,6 +144,7 @@ public class ProcessRestController
 	@RequestMapping(value = "/{processId}/layout", method = RequestMethod.GET)
 	public ResponseEntity<JSONProcessLayout> getLayout(
 			@PathVariable("processId") final String adProcessIdStr,
+			@RequestParam(name = "lang", required = false, defaultValue = "") final String adLanguage,
 			WebRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -145,9 +154,10 @@ public class ProcessRestController
 		final ProcessDescriptor descriptor = instancesRepository.getProcessDescriptor(processId);
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(ProcessDescriptor::getLayout)
-				.jsonOptions(this::newJsonOpts)
+				.jsonOptions(() -> newJSONOptions(adLanguage))
 				.toJson(JSONProcessLayout::of);
 	}
 
@@ -184,7 +194,7 @@ public class ProcessRestController
 		return Execution.callInNewExecution("pinstance.create", () -> {
 			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request, changesCollector);
-			return JSONProcessInstance.of(processInstance, newJsonOpts());
+			return JSONProcessInstance.of(processInstance, newJSONOptions());
 		});
 	}
 
@@ -201,7 +211,7 @@ public class ProcessRestController
 
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
-		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
+		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJSONOptions()));
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.PATCH)
@@ -224,7 +234,7 @@ public class ProcessRestController
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
-			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
+			return JSONDocument.ofEvents(changesCollector, newJSONOptions());
 		});
 	}
 
