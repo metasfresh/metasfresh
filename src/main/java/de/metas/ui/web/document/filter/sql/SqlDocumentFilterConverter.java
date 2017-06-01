@@ -30,7 +30,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
  */
 
 /**
- * Converts and {@link DocumentFilter} to SQL.
+ * Converts a {@link DocumentFilter} to SQL.
  * 
  * To create and manipulate {@link SqlDocumentFilterConverter}s please use {@link SqlDocumentFilterConverters}.
  *
