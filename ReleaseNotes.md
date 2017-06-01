@@ -19,14 +19,19 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
+  * [#1599](https://github.com/metasfresh/metasfresh/issues/1599) Import full menu from w101
+    * Initial Import of the current full webUI Menu/ Sitemap.
+  * [#1619](https://github.com/metasfresh/metasfresh/issues/1619) Do not process reverse booking lines and improve esr import
   * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
     * Adding the Tax Rate Window to WebUI.
   * [#1647](https://github.com/metasfresh/metasfresh/issues/1647) Rename Empties Return in language de_DE
     * Translation of Emptires Return Window in WebUI. Renamed window, tab and menu entry.
   * [#1654](https://github.com/metasfresh/metasfresh/issues/1654) Customer Returns Window in WebUI
     * Creating the Customer Returns Window for WebUI. Adding to the menu.
+  * [#1659](https://github.com/metasfresh/metasfresh/issues/1659) Make verify BOM available in webUI 
   * [#1657](https://github.com/metasfresh/metasfresh/issues/1657) Initially set Date+Time Filters in WebUI
     * Removing 2 Date Fields from Filter criteria in WebUI that did not have a perfect behavior when using combined filters.
+  * [#1661](https://github.com/metasfresh/metasfresh/issues/1661) make process field autocomplete in table and columns window
   * [#1665](https://github.com/metasfresh/metasfresh/issues/1665) Subtab Advanced Edit Configurations
     * Migrating all Subtab UI Elements to show them in Advanced Edit, also swicthing the UI Element Group UI Styles to be not primary.
   * [#1672](https://github.com/metasfresh/metasfresh/issues/1672) New Tax Category Window in WebUI
@@ -35,6 +40,55 @@ Here come the actual release notes:
     * Adding the window Layout For Payment Term window in WebUI.
   * [#1679](https://github.com/metasfresh/metasfresh/issues/1679) New Window for Country in WebUI
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
+  * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
+    * Creation of the Window Layoutfor the Request Type Window in WebUI.
+  * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
+    * Adding the Handling Unit Editor to WebUI menu in Logistics group.
+  * [#1707](https://github.com/metasfresh/metasfresh/issues/1707) Add Handling Unit Assignment Tab to Customer Returns Window
+    * Adds the Handling Unitb Assignment Tab to the Customer Returns window, allowing the user to easily zoom-to and maintain the returned Handling Units.
+ 
+ 
+* metasfresh-webui-api
+  * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
+    * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
+  * [#414](https://github.com/metasfresh/metasfresh-webui-api/issues/414) Referenced Windows for Subtab Records
+    * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
+  * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
+    * The Section Names for Fieldgroup creation are now translatable in WebUI.
+  * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Lookup Field shall provide first dropdown results
+    * New Functionality in Lookup Fields. Just press space key and receive a list of first available selections.
+    
+* metasfresh-webui-frontend
+  * [#713](https://github.com/metasfresh/metasfresh-webui-frontend/issues/713) KPIs: In case datasets is empty or missing shall show "No data" text
+    * The Dashboard now does sow "No data" instaead of error, when no Data is available.
+  * [#773](https://github.com/metasfresh/metasfresh-webui-frontend/issues/773) frontend: JSON documents: always use "fieldsByName" instead of "fields"
+    * Internal Task for changing API responses for single documents, vie data and Patches.
+  * [#781](https://github.com/metasfresh/metasfresh-webui-frontend/issues/781) Sorting of Included Tab columns
+    * Now it is possible to sort in Included Subtabs. Also possible now: Intial Order By criteria via Window Layout.
+  * [#789](https://github.com/metasfresh/metasfresh-webui-frontend/issues/789) Advanced Edit w/ key [ctrl]+e too many [tab] for scroll
+    * Nice Usability Improvement for the keyboard Navigation in Advanced Edit Mode. Scroll w/ page-up/ page-down can be used directly after opening the Advanced Edit mode.
+  * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
+    * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
+
+## Fixes
+
+* metasfresh-backend
+  * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
+  * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
+  
+* metasfresh-webui-frontend
+  * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
+    * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
+  * [#804](https://github.com/metasfresh/metasfresh-webui-frontend/issues/804) Clicking on a menu item shall open the view without any filter
+    * When Zooming-To an new window and the user navigates with breadcrumb or sitemap, now the view-id filtering is initializes. This way the user can easily rest the filter the window was opened with.
+  * [#811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/811) Print Preview Stopped working
+    * Fixes a Bug with Print action, that did not show the print preview in a new Tab anymore.
+  * [#813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/813) included row: typeahead and dropdown endpoints are wrongly called
+  * [#814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/814) Deleting a row in included tab makes the included tab empty
+    * Fixes a Bug that undisplayed all rows of a Subtab when deleting one of the included rows.
+  * [#815](https://github.com/metasfresh/metasfresh-webui-frontend/issues/815) attributes are missing
+    * Fixing a Bug that prevented attributes to be shown in manufacturing order issue/ receipt.
+
 
 # metasfresh 5.11 (2017-21)
 

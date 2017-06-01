@@ -106,4 +106,23 @@ public interface IESRImportDAO extends ISingletonService
 	List<I_ESR_ImportLine> retrieveAllLinesForBankStatementLineRef(I_C_BankStatementLine_Ref lineRef);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
+	
+
+	/**
+	 * count lines
+	 * 
+	 * @param esrImport
+	 * @param processed
+	 * @return
+	 */
+	int countLines(I_ESR_Import esrImport, Boolean processed);
+	
+	/***
+	 * gets the esr line for the specified esr import header and esrlinetext
+	 * 
+	 * @param import1
+	 * @param esrImportLineText
+	 * @return
+	 */
+	I_ESR_ImportLine fetchLineForESRLineText(I_ESR_Import import1, String esrImportLineText);
 }

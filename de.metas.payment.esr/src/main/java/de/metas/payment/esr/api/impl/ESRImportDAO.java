@@ -90,6 +90,33 @@ public class ESRImportDAO extends AbstractESRImportDAO
 	}
 
 	@Override
+	public int countLines(final I_ESR_Import esrImport, final Boolean processed)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
+		final String trxName = InterfaceWrapperHelper.getTrxName(esrImport);
+
+		final StringBuffer sb = new StringBuffer();
+		final List<Object> params = new ArrayList<Object>();
+
+		sb.append(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID + " = ? ");
+		params.add(esrImport.getESR_Import_ID());
+
+		if (processed != null)
+		{
+			sb.append(" AND " + I_ESR_ImportLine.COLUMNNAME_Processed + " = ? ");
+			params.add(processed);
+		}
+		
+		final String whereClause = sb.toString();
+
+		return new Query(ctx, I_ESR_ImportLine.Table_Name, whereClause, trxName)
+				.setParameters(params)
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.count();
+	}
+
+	@Override
 	protected I_C_ReferenceNo fetchESRInvoiceReferenceNumber(final Properties ctx, final String esrReferenceNumber)
 	{
 		final String trxName = ITrx.TRXNAME_None;
@@ -129,5 +156,29 @@ public class ESRImportDAO extends AbstractESRImportDAO
 		.setParameters(orgID)
 		.setOnlyActiveRecords(true)
 		.iterate(I_ESR_Import.class);
+	}
+
+	@Override
+	public I_ESR_ImportLine fetchLineForESRLineText(final I_ESR_Import esrImport, final String esrImportLineText)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
+		final String trxName = InterfaceWrapperHelper.getTrxName(esrImport);
+
+		final StringBuffer whereClause = new StringBuffer();
+		final List<Object> params = new ArrayList<Object>();
+
+		whereClause.append(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID).append("=?");
+		params.add(esrImport.getESR_Import_ID());
+		whereClause.append(" AND ");
+		whereClause.append(I_ESR_ImportLine.COLUMNNAME_ESRLineText).append(" ilike ?");
+		final String strippedText = esrImportLineText.trim();
+		params.add(strippedText);
+
+		return new Query(ctx, I_ESR_ImportLine.Table_Name, whereClause.toString(), trxName)
+				.setParameters(params)
+				.setOnlyActiveRecords(true)
+				.setClient_ID()
+				.firstOnly(I_ESR_ImportLine.class);
+
 	}
 }

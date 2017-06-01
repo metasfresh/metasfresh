@@ -262,7 +262,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		db.save(refNoType);
 
 		matcher.match(esrImportLine);
-
+		
 		Assert.assertSame("BPartner not the same in ESR Line and Invoice", bp, esrImportLine.getC_BPartner());
 
 	}

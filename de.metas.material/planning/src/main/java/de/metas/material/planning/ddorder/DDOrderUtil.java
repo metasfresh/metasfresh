@@ -48,6 +48,12 @@ public class DDOrderUtil
 		return orgBPLocation.getC_BPartner_Location_ID();
 	}
 
+	/**
+	 *
+	 * @param productPlanningData may be null as of gh #1635
+	 * @param networkLine
+	 * @return
+	 */
 	public int calculateDurationDays(final I_PP_Product_Planning productPlanningData, @NonNull final I_DD_NetworkDistributionLine networkLine)
 	{
 		//
@@ -62,6 +68,7 @@ public class DDOrderUtil
 		{
 			leadtimeDays = 0;
 		}
+
 		//
 		// Transfer time
 		int transferTime = networkLine.getTransfertTime().intValueExact();
