@@ -8,7 +8,6 @@ import {
 import {
     setFilter
 } from '../../actions/ListActions';
-import {push} from 'react-router-redux';
 
 import keymap from '../../keymap.js';
 
@@ -72,11 +71,10 @@ class TableContextMenu extends Component {
             dispatch, type, docId
         } = this.props;
         dispatch(setFilter(filter, refType));
-        dispatch(push(
-            '/window/' + refType +
+        window.open('/window/' + refType +
             '?refType=' + type +
-            '&refId=' + docId
-        ));
+            '&refId=' + docId,
+            '_blank');
     }
 
     render() {
