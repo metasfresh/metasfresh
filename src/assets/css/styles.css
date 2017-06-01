@@ -1195,7 +1195,8 @@ td.pulse-off input {
     padding: 1rem .7rem;
 }
 
-.user-dropdown-item:not(.user-dropdown-header-item):hover {
+.user-dropdown-item:not(.user-dropdown-header-item):hover,
+.user-dropdown-item:not(.user-dropdown-header-item):focus {
     background-color: $brand-color-primary;
     color: #fff;
 }
