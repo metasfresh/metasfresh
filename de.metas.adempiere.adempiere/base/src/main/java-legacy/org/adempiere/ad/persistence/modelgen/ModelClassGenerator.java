@@ -491,6 +491,7 @@ public class ModelClassGenerator
 					.append("\t\treturn bd;").append(NL);
 			addImportClass(java.math.BigDecimal.class);
 			addImportClass(org.compiere.util.Env.class);
+			// addImportClass(org.compiere.util.Env.class); // not needed anymore
 		}
 		else if (clazz.equals(Boolean.class))
 		{
