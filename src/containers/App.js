@@ -39,7 +39,8 @@ export default class App extends Component {
         this.auth = new Auth();
 
         axios.defaults.withCredentials = true;
-
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
+        
         axios.interceptors.response.use(function (response) {
             return response;
         }, function (error) {
