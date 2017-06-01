@@ -1,6 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import {replace} from 'react-router-redux';
+import Moment from 'moment';
 
 // REQUESTS
 
@@ -182,6 +183,11 @@ export function loginSuccess(auth) {
             ));
         });
     }
+}
+
+export function languageSuccess(lang) {
+    Moment.locale(lang);
+    axios.defaults.headers.common['Accept-Language'] = lang;
 }
 
 export function logoutSuccess(auth) {

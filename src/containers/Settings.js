@@ -7,7 +7,8 @@ import {
     getAvailableLang,
     setUserLang,
     getNotifications,
-    getNotificationsSuccess
+    getNotificationsSuccess,
+    languageSuccess
 } from '../actions/AppActions';
 
 import Container from '../components/Container';
@@ -48,7 +49,7 @@ class Settings extends Component {
             this.setState({
                 value: value
             }, () => {
-                Moment.locale(Object.keys(value)[0]);
+                languageSuccess(Object.keys(value)[0]);
                 this.refresh();
             });
         });
