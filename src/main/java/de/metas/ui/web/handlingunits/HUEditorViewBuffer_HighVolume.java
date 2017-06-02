@@ -80,13 +80,13 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	{
 		this.huEditorRepo = huEditorRepo;
 
-		final SqlViewBinding entityBinding = huEditorRepo.getSqlViewBinding();
-		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(entityBinding);
-		sqlSelectHUIdsByPage = entityBinding.getSqlSelectByPage();
+		final SqlViewBinding viewBinding = huEditorRepo.getSqlViewBinding();
+		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(viewBinding);
+		sqlSelectHUIdsByPage = viewBinding.getSqlSelectByPage();
 
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
 
-		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters, entityBinding.getDefaultOrderBys());
+		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters, viewBinding.getDefaultOrderBys());
 		defaultSelectionRef = new AtomicReference<>(defaultSelection);
 
 	}
