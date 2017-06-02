@@ -37,7 +37,8 @@ SELECT
 	ppa.m_attributesetinstance_ID,
 	bp_ip.M_HU_PI_Item_Product_ID as M_HU_PI_Item_Product_ID,
 	uom.X12DE355 as UOM_X12DE355,
-	hupip.Qty as QtyCUsPerTU
+	hupip.Qty as QtyCUsPerTU,
+	it.m_hu_pi_version_id AS m_hu_pi_version_id
 	
 FROM M_ProductPrice pp
 

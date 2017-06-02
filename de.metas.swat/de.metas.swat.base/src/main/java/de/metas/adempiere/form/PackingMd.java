@@ -33,14 +33,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
@@ -51,6 +50,11 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
+
+import de.metas.adempiere.form.TableRowKey.TableRowKeyBuilder;
 import de.metas.adempiere.service.IPackagingBL;
 import de.metas.inoutcandidate.api.IPackageable;
 import de.metas.inoutcandidate.api.IPackageableQuery;
@@ -67,14 +71,14 @@ public class PackingMd extends MvcMdGenForm
 	private final int packingUserId;
 
 	// metas: c.ghita@metas.ro: use this for separating pos
-	public boolean isPOS = false;
+	private boolean posMode = false;
 
-	private final Map<Integer, TableRowKey> uniqueId2Key = new HashMap<Integer, TableRowKey>();
+	private final Map<Integer, TableRowKey> uniqueId2Key = new HashMap<>();
 
-	private final Map<TableRowKey, Collection<TableRow>> buffer = new HashMap<TableRowKey, Collection<TableRow>>();
+	private final ListMultimap<TableRowKey, TableRow> rowsByKey = MultimapBuilder.hashKeys().arrayListValues().build();
 
 	private Comparator<TableRowKey> tableRowKeysComparator = null;
-	private final List<TableRowKey> keys = new ArrayList<TableRowKey>();
+	private final List<TableRowKey> keys = new ArrayList<>();
 
 	//
 	// Search filters
@@ -114,6 +118,16 @@ public class PackingMd extends MvcMdGenForm
 	{
 		super(windowNo);
 		this.packingUserId = packingUserId;
+	}
+
+	public final boolean isPOSMode()
+	{
+		return posMode;
+	}
+
+	public final void setPOSMode(final boolean posMode)
+	{
+		this.posMode = posMode;
 	}
 
 	public int getPackingUserId()
@@ -209,16 +223,6 @@ public class PackingMd extends MvcMdGenForm
 	public List<TableRowKey> getKeys()
 	{
 		return keys;
-	}
-
-	public Map<TableRowKey, Collection<TableRow>> getBuffer()
-	{
-		return buffer;
-	}
-
-	public Map<Integer, TableRowKey> getUniqueId2Key()
-	{
-		return uniqueId2Key;
 	}
 
 	private final IDColumn getIDColumn(final int row)
@@ -353,31 +357,16 @@ public class PackingMd extends MvcMdGenForm
 
 	private List<TableRow> getTableRows(final Predicate<TableRow> filter)
 	{
-		if (buffer == null || buffer.isEmpty())
+		if (rowsByKey.isEmpty())
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
-		final List<TableRow> result = new ArrayList<TableRow>();
-		for (final Collection<TableRow> tableRows : buffer.values())
-		{
-			if (tableRows == null || tableRows.isEmpty())
-			{
-				continue;
-			}
-
-			for (final TableRow tableRow : tableRows)
-			{
-				if (filter != null && !filter.evaluate(tableRow))
-				{
-					continue;
-				}
-
-				result.add(tableRow);
-			}
-		}
-
-		return result;
+		return rowsByKey.values()
+				.stream()
+				.sequential()
+				.filter(row -> filter == null || filter.evaluate(row))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -520,12 +509,7 @@ public class PackingMd extends MvcMdGenForm
 	private Collection<TableRow> getTableRowsForRow(final int row)
 	{
 		final TableRowKey key = getTableRowKeyForRow(row);
-		final Collection<TableRow> tableRows = buffer.get(key);
-		if (tableRows == null)
-		{
-			return Collections.emptyList();
-		}
-		return tableRows;
+		return rowsByKey.get(key);
 	}
 
 	public int getBPartnerLocationIdForRow(final int row)
@@ -535,7 +519,7 @@ public class PackingMd extends MvcMdGenForm
 		int selectedBPLocation = 0;
 		for (final TableRow currentRow : selectedRows)
 		{
-			selectedBPLocation = currentRow.getBPartnerLocationId();
+			selectedBPLocation = currentRow.getBpartnerLocationId();
 		}
 		return selectedBPLocation;
 	}
@@ -583,7 +567,7 @@ public class PackingMd extends MvcMdGenForm
 		final IDColumn id = getIDColumn(selectedIdx);
 
 		final String selectedDeliveryVia = uniqueId2Key.get(id.getRecord_ID()).getDeliveryVia();
-		return !Check.equals(selectedDeliveryVia, X_M_ShipmentSchedule.DELIVERYVIARULE_Pickup); // selectedDeliveryVia might be null
+		return !Objects.equals(selectedDeliveryVia, X_M_ShipmentSchedule.DELIVERYVIARULE_Pickup); // selectedDeliveryVia might be null
 	}
 
 	/**
@@ -591,7 +575,7 @@ public class PackingMd extends MvcMdGenForm
 	 */
 	public void clear()
 	{
-		buffer.clear();
+		rowsByKey.clear();
 		uniqueId2Key.clear();
 		keys.clear();
 		if (getSelection() != null)
@@ -604,11 +588,10 @@ public class PackingMd extends MvcMdGenForm
 	{
 		final TableRowKey key = row.getKey();
 
-		Collection<TableRow> rows = buffer.get(key);
-		if (rows == null)
+		final List<TableRow> rows = rowsByKey.get(key);
+		// System.out.println("key=" + key + " -- rows: " + rows.size() + " -- " + rows);
+		if (rows.isEmpty())
 		{
-			rows = new ArrayList<TableRow>();
-			buffer.put(key, rows);
 			uniqueId2Key.put(key.hashCode(), key);
 
 			if (tableRowKeysComparator != null)
@@ -642,7 +625,7 @@ public class PackingMd extends MvcMdGenForm
 
 	protected TableRow createTableRow(final IPackageable item)
 	{
-		final int bpartnerId = item.getBPartnerId();
+		final int bpartnerId = item.getBpartnerId();
 		final int M_Warehouse_Dest_ID = item.getWarehouseDestId();
 		final BigDecimal qtyToDeliver = item.getQtyToDeliver();
 
@@ -652,15 +635,15 @@ public class PackingMd extends MvcMdGenForm
 			return null;
 		}
 
-		final TableRowKeyBuilder keyBuilder = new TableRowKeyBuilder();
-		keyBuilder.setBPartnerId(bpartnerId);
+		final TableRowKeyBuilder keyBuilder = TableRowKey.builder();
+		keyBuilder.bpartnerId(bpartnerId > 0 ? bpartnerId : -1);
 
-		final int bPartnerLocationId = item.getBPartnerLocationId();
-		final String bPartnerAddress = item.getBPartnerAddress();
-		keyBuilder.setBPartnerAddress(bPartnerAddress);
+		final int bpartnerLocationId = item.getBpartnerLocationId();
+		final String bPartnerAddress = item.getBpartnerAddress();
+		keyBuilder.bpartnerAddress(bPartnerAddress);
 
 		final int warehouseId = item.getWarehouseId();
-		keyBuilder.setWarehouseId(warehouseId);
+		keyBuilder.warehouseId(warehouseId);
 		final String warehouseName = item.getWarehouseName();
 
 		final int warehouseDestId;
@@ -669,13 +652,13 @@ public class PackingMd extends MvcMdGenForm
 		{
 			warehouseDestId = item.getWarehouseDestId();
 			warehouseDestName = item.getWarehouseDestName();
-			keyBuilder.setWarehouseDestId(warehouseDestId);
+			keyBuilder.warehouseDestId(warehouseDestId);
 		}
 		else
 		{
 			warehouseDestId = 0;
 			warehouseDestName = null;
-			keyBuilder.setWarehouseDestId(-1);
+			keyBuilder.warehouseDestId(-1);
 		}
 
 		final int productId;
@@ -685,16 +668,16 @@ public class PackingMd extends MvcMdGenForm
 			productId = item.getProductId();
 			productName = item.getProductName();
 
-			keyBuilder.setProductId(productId);
-			keyBuilder.setWarehouseDestId(-1);
-			keyBuilder.setBPartnerId(-1);
-			keyBuilder.setBPartnerAddress(null);
+			keyBuilder.productId(productId);
+			keyBuilder.warehouseDestId(-1);
+			keyBuilder.bpartnerId(-1);
+			keyBuilder.bpartnerAddress(null);
 		}
 		else
 		{
 			productId = -1;
 			productName = null;
-			keyBuilder.setProductId(-1);
+			keyBuilder.productId(-1);
 		}
 
 		final String deliveryVia = item.getDeliveryVia();
@@ -702,44 +685,49 @@ public class PackingMd extends MvcMdGenForm
 		// final int shipperId = rs.getInt(I_M_Shipper.COLUMNNAME_M_Shipper_ID);
 		final Timestamp deliveryDate = item.getDeliveryDate(); // 01676
 		final int shipmentScheduleId = item.getShipmentScheduleId();
-		final String bPartnerValue = item.getBPartnerValue();
-		final String bPartnerName = item.getBPartnerName();
-		final String bPartnerLocName = item.getBPartnerLocationName();
+		final String bpartnerValue = item.getBpartnerValue();
+		final String bpartnerName = item.getBpartnerName();
+		final String bPartnerLocationName = item.getBpartnerLocationName();
 		final String shipper = item.getShipperName();
 
 		// metas-ts: we need the shipper-ID to be in PackingDetailsMd (see PAcking.createPackingDetailsModel() ), because it needs to be displayed in PackingDetailsV (see
 		// VPackaging.validateSuggestion())
-		keyBuilder.setShipperId(item.getShipperId());
+		keyBuilder.shipperId(item.getShipperId());
 
 		final boolean isDisplayed = item.isDisplayed();
 
 		final TableRowKey key = getCreateTableRowKey(keyBuilder);
-		final TableRow row = new TableRow(
-				bPartnerLocationId,
-				shipmentScheduleId,
-				qtyToDeliver,
-				bpartnerId, bPartnerValue, bPartnerName,
-				bPartnerLocName,
-				warehouseName,
-				deliveryVia, shipper, isDisplayed,
-				key);
-		row.setWarehouseDestId(warehouseDestId);
-		row.setWarehouseDestName(warehouseDestName);
-		row.setProductId(productId);
-		row.setProductName(productName);
-		row.setPreparationDate(item.getPreparationDate());
-		row.setDeliveryDate(deliveryDate);
+		final TableRow row = TableRow.builder()
+				.bpartnerLocationId(bpartnerLocationId)
+				.shipmentScheduleId(shipmentScheduleId)
+				.qtyToDeliver(qtyToDeliver)
+				.bpartnerId(bpartnerId).bpartnerValue(bpartnerValue).bpartnerName(bpartnerName)
+				.bpartnerLocationName(bPartnerLocationName)
+				.warehouseName(warehouseName)
+				.deliveryVia(deliveryVia)
+				.shipper(shipper)
+				.displayed(isDisplayed)
+				.key(key)
+				//
+				.warehouseDestId(warehouseDestId)
+				.warehouseDestName(warehouseDestName)
+				.productId(productId)
+				.productName(productName)
+				.preparationDate(item.getPreparationDate())
+				.deliveryDate(deliveryDate)
+				//
+				.build();
 
 		return row;
 	}
 
-	protected TableRowKey getCreateTableRowKey(final TableRowKeyBuilder keyBuilder)
+	protected TableRowKey getCreateTableRowKey(final TableRowKey.TableRowKeyBuilder keyBuilder)
 	{
 		// Set SeqNo: it actually represent the order that we retrieved from database
 		final int seqNo = keys.size() + 1;
-		keyBuilder.setSeqNo(seqNo);
+		keyBuilder.seqNo(seqNo);
 
-		final TableRowKey key = keyBuilder.createTableRowKey();
+		final TableRowKey key = keyBuilder.build();
 
 		//
 		// Check if we already have that key in our keys list
@@ -768,10 +756,10 @@ public class PackingMd extends MvcMdGenForm
 		//
 		// Filter packageable items and add them to table
 		packageableItemsAll.stream()
-				.filter(i -> isPackageableItemAccepted(i))
-				.map(i -> createTableRow(i))
-				.filter(r -> r != null)
-				.forEach(r -> addTableRow(r));
+				.filter(this::isPackageableItemAccepted)
+				.map(this::createTableRow)
+				.filter(row -> row != null)
+				.forEach(this::addTableRow);
 	}
 
 	private boolean isPackageableItemAccepted(final IPackageable packageableItem)
@@ -785,7 +773,7 @@ public class PackingMd extends MvcMdGenForm
 		// Filter by BPartner
 		if (bpartnerIds != null && !bpartnerIds.isEmpty())
 		{
-			final int bpartnerId = packageableItem.getBPartnerId();
+			final int bpartnerId = packageableItem.getBpartnerId();
 			if (!bpartnerIds.contains(bpartnerId))
 			{
 				return false;
@@ -812,10 +800,8 @@ public class PackingMd extends MvcMdGenForm
 	{
 		if (_packageableItemsAll == null || _requeryNeeded)
 		{
-			final Properties ctx = Env.getCtx();
 			final IPackageableQuery query = createPackageableQuery();
-			final List<IPackageable> packageableItems = IteratorUtils.asList(packagingDAO.retrievePackableLines(ctx, query));
-			_packageableItemsAll = Collections.unmodifiableList(packageableItems);
+			_packageableItemsAll = packagingDAO.retrievePackableLines(query);
 
 			_requeryNeeded = false;
 		}
@@ -831,10 +817,9 @@ public class PackingMd extends MvcMdGenForm
 	 */
 	public int getRowsCount()
 	{
-		return buffer.size();
+		return rowsByKey.size();
 	}
 
-	// public final void setSearchProductId_DELETEME(int searchProductId)
 	public final void setTableRowSearchSelectionMatcher(final ITableRowSearchSelectionMatcher tableRowSearchSelectionMatcher)
 	{
 		Check.assumeNotNull(tableRowSearchSelectionMatcher, "tableRowSearchSelectionMatcher not null");
@@ -929,8 +914,8 @@ public class PackingMd extends MvcMdGenForm
 
 	public TableRow getAggregatedTableRowOrNull(final TableRowKey key)
 	{
-		final Collection<TableRow> rowsForKey = buffer.get(key);
-		if (rowsForKey == null || rowsForKey.isEmpty())
+		final List<TableRow> rowsForKey = rowsByKey.get(key);
+		if (rowsForKey.isEmpty())
 		{
 			return null;
 		}
@@ -942,7 +927,7 @@ public class PackingMd extends MvcMdGenForm
 		// * DeliveryDate
 		// * PreparationTime
 		// * QtyToDeliver
-		final TableRow rowAggregated = rowsForKey.iterator().next().copy();
+		final TableRow rowAggregated = rowsForKey.get(0).copy();
 		rowAggregated.setDeliveryDate(null);
 		rowAggregated.setPreparationDate(null);
 		rowAggregated.setQtyToDeliver(BigDecimal.ZERO);
@@ -1037,12 +1022,7 @@ public class PackingMd extends MvcMdGenForm
 
 	public Collection<TableRow> getTableRowsForKey(final TableRowKey key)
 	{
-		final Collection<TableRow> tableRowsForKey = buffer.get(key);
-		if (tableRowsForKey == null)
-		{
-			return Collections.emptyList();
-		}
-		return tableRowsForKey;
+		return rowsByKey.get(key);
 	}
 
 	public Collection<TableRow> getTableRowsForUniqueId(final int uniqueId)
