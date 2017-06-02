@@ -163,11 +163,11 @@ class RawLookup extends Component {
                 this.setState({
                     list: response.data.values,
                     loading: false,
+                    selected: 0,
                     validLocal: response.data.values.length === 0 &&
                                 handleChangeOnFocus!==true ? false : true
                 });
             });
-
         }else{
             this.setState({
                 isInputEmpty: true,
