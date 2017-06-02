@@ -1281,6 +1281,14 @@ public final class DocumentFieldDescriptor implements Serializable
 
 		public boolean isSupportZoomInto()
 		{
+			// Allow zooming into key column. It shall open precisely this record in a new window
+			// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
+			// In future we shall think to narrow it down only to included tabs and only for those tables which also have a window where they are the header document.
+			if(isKey())
+			{
+				return true;
+			}
+			
 			final DocumentFieldWidgetType widgetType = getWidgetType();
 			if (!widgetType.isSupportZoomInto())
 			{
