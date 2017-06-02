@@ -192,7 +192,7 @@ class TableItem extends Component {
 
     renderTree = (huType) => {
         const {
-            indent, lastSibling, includedDocuments, indentSupported, rowId
+            indent, lastChild, includedDocuments, indentSupported, rowId
         } = this.props;
 
         let indentation = [];
@@ -207,7 +207,7 @@ class TableItem extends Component {
                     <div
                         className={
                             (indent[i] ? 'indent-sign ' : '') +
-                            ((lastSibling && i === indent.length - 1) ?
+                            ((lastChild && i === indent.length - 1) ?
                                 'indent-sign-bot ' : ''
                             )
                         }
@@ -243,7 +243,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
-            indentSupported, contextType, lastSibling, processed,
+            indentSupported, contextType, lastChild, processed,
             includedDocuments, notSaved
         } = this.props;
 
@@ -255,7 +255,7 @@ class TableItem extends Component {
                     (isSelected ? 'row-selected ' : '') +
                     (odd ? 'tr-odd ': 'tr-even ') +
                     (processed ? 'row-disabled ': '') +
-                    ((processed && lastSibling && !includedDocuments) ?
+                    ((processed && lastChild && !includedDocuments) ?
                         'row-boundary ': ''
                     ) +
                     (notSaved ? 'row-not-saved ': '')
