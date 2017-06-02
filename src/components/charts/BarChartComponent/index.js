@@ -128,7 +128,7 @@ class BarChartComponent extends Component {
                                                     <tbody key={index}>
                                                         <tr>
                                                             <td>{field.caption}</td>
-                                                            <td>{item[field.fieldName] + ' ' +field.unit}</td>
+                                                            <td className="table-chart-value">{item[field.fieldName]} {field.unit?field.unit:''}</td>
                                                         </tr>
                                                     </tbody>
                                                 )

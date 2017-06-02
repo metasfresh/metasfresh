@@ -418,9 +418,14 @@ $indent-signs-offset: 6px;
 
 .table .table-included {
     background-color: transparent;
+    height: 100%;
 }
 
 .table.table-included td {
     height: 22px;
     width: 50%;
+}
+
+.table-chart-value {
+    text-align: right;
 }

@@ -20,7 +20,6 @@ class PieChartComponent extends Component {
             .range(colors);
 
         const dimensions = this.setDimensions();
-
         this.setSvg(
             dimensions.width,
             dimensions.height,
@@ -53,8 +52,7 @@ class PieChartComponent extends Component {
         const dimensions =
                 chartWrapp && this.setDimensions(chartWrapp.offsetWidth);
 
-        if(this.props.reRender) {
-
+        if(this.props.reRender && dimensions.width > 0) {
             this.setSvg(
                 dimensions.width,
                 dimensions.height,
@@ -231,7 +229,7 @@ class PieChartComponent extends Component {
                 this.clearChart();
                 const dimensions =
                     chartWrap && this.setDimensions(chartWrap.offsetWidth);
-                this.setSvg(
+                dimensions.width > 0 && this.setSvg(
                     dimensions.width,
                     dimensions.height,
                     dimensions.wrapperWidth
