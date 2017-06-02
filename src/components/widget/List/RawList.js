@@ -22,7 +22,10 @@ class RawList extends Component {
     }
 
     componentDidUpdate = prevProps => {
-        const { list, mandatory, defaultValue, autofocus, blur } = this.props;
+        const {
+            list, mandatory, defaultValue, autofocus, blur, property,
+            initialFocus
+        } = this.props;
 
         if(prevProps.blur != blur){
             blur && this.handleBlur();
@@ -33,7 +36,11 @@ class RawList extends Component {
             list.length === 1 && this.handleSelect(list[0]);
         }
 
-        if(prevProps.defaultValue != defaultValue){
+        if(prevProps.defaultValue != defaultValue && property){
+            this.dropdown && this.dropdown.focus();
+        }
+
+        if(initialFocus && !defaultValue){
             this.dropdown && this.dropdown.focus();
         }
 
@@ -46,7 +53,8 @@ class RawList extends Component {
 
             if(list.length > 0) {
                 this.setState({
-                    dropdownList: dropdown.concat(list)
+                    dropdownList: dropdown.concat(list),
+                    selected: list[0]
                 });
             }
         }
@@ -256,6 +264,7 @@ class RawList extends Component {
 
     handleKeyDown = (e) => {
         const {selected, isOpen} = this.state;
+        const {onSelect} = this.props;
 
         if(e.keyCode > 47 && e.keyCode < 123){
             this.navigateToAlphanumeric(e.key);
@@ -274,7 +283,12 @@ class RawList extends Component {
                     if(isOpen){
                         e.stopPropagation();
                     }
-                    this.handleSelect(selected);
+                    if(selected){
+                        this.handleSelect(selected);
+                    } else {
+                        onSelect(null);
+                    }
+
                     break;
                 case 'Escape':
                     e.preventDefault();

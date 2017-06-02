@@ -70,11 +70,11 @@ class List extends Component {
         } = this.props;
         const {prevValue} = this.state;
 
-         if( prevValue !== option[Object.keys(option)[0]] ) {
+         if( prevValue !== (option && option[Object.keys(option)[0]] )) {
              if(lookupList){
                     onChange(properties[0].field, option);
 
-                    this.setState({
+                    option && this.setState({
                         selectedItem: option,
                         prevValue: option[Object.keys(option)[0]]
                     });
@@ -103,7 +103,7 @@ class List extends Component {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
             emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
-            blur
+            blur, initialFocus
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 
@@ -128,6 +128,7 @@ class List extends Component {
                 autofocus={autofocus}
                 lookupList={lookupList}
                 blur={blur}
+                initialFocus={initialFocus}
             />
         )
     }

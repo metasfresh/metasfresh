@@ -39,6 +39,7 @@ export default class App extends Component {
 
         axios.defaults.withCredentials = true;
         axios.defaults.headers.common['Content-Type'] = 'application/json';
+        
         const cachedLang = localStorage.getItem(LOCAL_LANG);
         if(cachedLang){
             languageSuccess(cachedLang);
