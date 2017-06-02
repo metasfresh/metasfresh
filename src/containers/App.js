@@ -4,13 +4,12 @@ import axios from 'axios';
 
 import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
+import {LOCAL_LANG}  from '../constants/Constants';
 
 import { syncHistoryWithStore, push } from 'react-router-redux';
 import { Router, browserHistory } from 'react-router';
 
 import Auth from '../services/Auth';
-
-import Moment from 'moment';
 
 import NotificationHandler
     from '../components/notifications/NotificationHandler';
@@ -41,6 +40,11 @@ export default class App extends Component {
         axios.defaults.withCredentials = true;
         axios.defaults.headers.common['Content-Type'] = 'application/json';
         
+        const cachedLang = localStorage.getItem(LOCAL_LANG);
+        if(cachedLang){
+            languageSuccess(cachedLang);
+        }
+
         axios.interceptors.response.use(function (response) {
             return response;
         }, function (error) {
@@ -106,7 +110,7 @@ export default class App extends Component {
             const {defaultValue, values} = response.data;
             const valuesFlatten = values.map(item => Object.keys(item)[0]);
 
-            languageSuccess(valuesFlatten.indexOf(navigator.language) ? 
+            languageSuccess(valuesFlatten.indexOf(navigator.language) > -1 ?
                 navigator.language : defaultValue);
         });
     }

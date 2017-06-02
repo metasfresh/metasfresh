@@ -2,6 +2,7 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import {replace} from 'react-router-redux';
 import Moment from 'moment';
+import {LOCAL_LANG}  from '../constants/Constants';
 
 // REQUESTS
 
@@ -186,6 +187,7 @@ export function loginSuccess(auth) {
 }
 
 export function languageSuccess(lang) {
+    localStorage.setItem(LOCAL_LANG, lang);
     Moment.locale(lang);
     axios.defaults.headers.common['Accept-Language'] = lang;
 }
