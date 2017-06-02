@@ -36,13 +36,12 @@ public class SqlDocumentOrderByBuilder
 	{
 		return new SqlDocumentOrderByBuilder(entityBinding::getFieldOrderBy);
 	}
-	
+
 	public static final SqlDocumentOrderByBuilder newInstance(final SqlOrderByBindings bindings)
 	{
 		return new SqlDocumentOrderByBuilder(bindings);
 	}
 
-	
 	public static interface SqlOrderByBindings
 	{
 		IStringExpression getFieldOrderBy(String fieldName);
@@ -54,7 +53,10 @@ public class SqlDocumentOrderByBuilder
 	{
 		this.bindings = bindings;
 	}
-	
+
+	/**
+	 * @return SQL order by (e.g. Column1 ASC, Column2 DESC)
+	 */
 	public IStringExpression buildSqlOrderBy(final List<DocumentQueryOrderBy> orderBys)
 	{
 		if (orderBys.isEmpty())
@@ -70,7 +72,7 @@ public class SqlDocumentOrderByBuilder
 
 		return sqlOrderByFinal;
 	}
-	
+
 	private final IStringExpression buildSqlOrderBy(final DocumentQueryOrderBy orderBy)
 	{
 		final String fieldName = orderBy.getFieldName();
