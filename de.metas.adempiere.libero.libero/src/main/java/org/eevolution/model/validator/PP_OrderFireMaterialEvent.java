@@ -12,6 +12,7 @@ import org.eevolution.api.IPPOrderBOMDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.document.engine.IDocActionBL;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ProductionPlanEvent;
@@ -31,14 +32,23 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 public class PP_OrderFireMaterialEvent
 {
 
-	@ModelChange(timings = {
-			ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
-	}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
+	@ModelChange(timings =
+		{
+				ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE
+		}, ifColumnsChanged = I_PP_Order.COLUMNNAME_DocStatus)
 	public void fireMaterialEvent(final I_PP_Order ppOrder, final int timing)
 	{
-		// when going with @DocAction, here the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
+		// when going with @DocAction, at this point the ppOrder's docStatus would still be "IP" even if we are invoked on afterComplete..
 		// also, it might still be rolled back
 		// those aren't show-stoppers, but we therefore rather work with @ModelChange
+		final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+		if (!docActionBL.isDocumentCompletedOrClosed(ppOrder))
+		{
+			// quick workaround for https://github.com/metasfresh/metasfresh/issues/1581
+			// don't send an event while the PP_Order is not yet completed.
+			// this doesn't help when a PP_Order is reactivated
+			return;
+		}
 		final PPOrderBuilder ppOrderPojoBuilder = PPOrder.builder()
 				.datePromised(ppOrder.getDatePromised())
 				.dateStartSchedule(ppOrder.getDateStartSchedule())
