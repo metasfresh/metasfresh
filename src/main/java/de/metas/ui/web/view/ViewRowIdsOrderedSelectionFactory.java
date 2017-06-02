@@ -33,6 +33,9 @@ public interface ViewRowIdsOrderedSelectionFactory
 {
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters, final List<DocumentQueryOrderBy> orderBys);
 
+	/**
+	 * @return a new {@link ViewRowIdsOrderedSelection} from a given <code>fromSelection</code> ordered by <code>orderBys</code>
+	 */
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
 
 	String getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
