@@ -150,6 +150,7 @@ class Lookup extends Component {
                                 }
                                 initialFocus={index===0 ? initialFocus : false}
                                 setNextProperty={this.setNextProperty}
+                                lookupEmpty={isInputEmpty}
                                 {...{placeholder, readonly, tabIndex,
                                 windowType, parameterName, entity, dataId,
                                 isModal, recent, rank, updated, filterWidget,
