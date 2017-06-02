@@ -52,6 +52,7 @@ Here come the actual release notes:
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
   * [#1687](https://github.com/metasfresh/metasfresh/issues/1687) Refactor Request Tab in Partner Window to allow zoom and advanced edit
+    * Adjustments in Business window Subtab for Requests, now allowing the user the zoom-to Request Window and records directly.
   * [#1701](https://github.com/metasfresh/metasfresh/issues/1701) Customer Return Window additional Fields
     * Including new Fields to Customer Return Lines (QtyTU and HUPIProductItem).
   * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
