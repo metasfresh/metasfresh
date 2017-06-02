@@ -257,7 +257,9 @@ class PieChartComponent extends Component {
             <div className={chartClass+'-wrapper' + ' chart-wrapper'}>
                 <svg className={chartClass} />
                 {isMaximize && 
-                <div className="panel panel-primary panel-bordered chart-data-table-wrapper">
+                <div
+                    className="panel panel-primary panel-bordered chart-data-table-wrapper"
+                >
                     <table className="table table-bordered-vertically table-striped">
                         <thead>
                             <tr>

@@ -88,7 +88,7 @@ export class DraggableWidget extends Component {
             isMaximize: true,
             toggleWidgetMenu: false,
             forceChartReRender: true,
-            height: 600
+            height: 500
         }, () => {
             this.setState({
                 forceChartReRender: false

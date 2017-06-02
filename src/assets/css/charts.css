@@ -4,10 +4,14 @@
     min-height: 425px;
 }
 
+.draggable-widget-maximize .chart-wrapper {
+    height: 100%;
+}
+
 .chart-data-table-wrapper,
 .panel.chart-data-table-wrapper {
     width: 60%;
-    margin: 0 auto;
+    margin: 20px auto;
 }
 
 .pie-path {
