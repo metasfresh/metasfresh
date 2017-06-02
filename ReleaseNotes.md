@@ -62,8 +62,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#86](https://github.com/metasfresh/metasfresh-webui-api/issues/86) Check and get rid of "Parameter 'UOMConversion' not found in context" console warnings
+    * Maintenance Issue, removing all UOM Conversions from Dicplay Logics (wasn't used anywhere until now).
   * [#376](https://github.com/metasfresh/metasfresh-webui-api/issues/376) Hide Roles on Logon that are not ideal for WebUI
+    * New feature, allowing to qualify certain Roles for Usage in Web User Interface.
   * [#410](https://github.com/metasfresh/metasfresh-webui-api/issues/410) Provide view row field zoom-into endpoint
+    * New feature allowing to Zoom-To on included Subtab row level.
   * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
     * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
   * [#414](https://github.com/metasfresh/metasfresh-webui-api/issues/414) Referenced Windows for Subtab Records
@@ -72,7 +75,9 @@ Here come the actual release notes:
   * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
     * The Section Names for Fieldgroup creation are now translatable in WebUI.
   * [#425](https://github.com/metasfresh/metasfresh-webui-api/issues/425) API support for bookmarking menu items
+    * Adding the API Support for Menu entry bookmarks.
   * [#426](https://github.com/metasfresh/metasfresh-webui-api/issues/426) internal: JSONDocument - drop "fields" array field
+    * Clean-Up Issue/ Maintenance Task for JSOn Document eliminating the "fields" property.
   * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Lookup Field shall provide first dropdown results
     * New Functionality in Lookup Fields. Just press space key and receive a list of first available selections.
 
