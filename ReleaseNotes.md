@@ -18,23 +18,29 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1239](https://github.com/metasfresh/metasfresh/issues/1239) Barcode on Bestellkontrolle report
+    * The Sales Order Control Report now has an included Barcode with Code39. Ist allows the users in Manufacturing to scan the control report and the Manufacturign Order is automatically opened, ready for action issue and receipt.
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
   * [#1599](https://github.com/metasfresh/metasfresh/issues/1599) Import full menu from w101
     * Initial Import of the current full webUI Menu/ Sitemap.
   * [#1619](https://github.com/metasfresh/metasfresh/issues/1619) Do not process reverse booking lines and improve esr import
+    * Improvement of the automatic processing workflow of payment imports in swiss ERS format.
   * [#1641](https://github.com/metasfresh/metasfresh/issues/1641) New Tax Rate window in WebUI
     * Adding the Tax Rate Window to WebUI.
   * [#1644](https://github.com/metasfresh/metasfresh/issues/1644) Add email validator syntax
+    * Adding an eMail validator to metasfresh.
   * [#1647](https://github.com/metasfresh/metasfresh/issues/1647) Rename Empties Return in language de_DE
     * Translation of Emptires Return Window in WebUI. Renamed window, tab and menu entry.
   * [#1654](https://github.com/metasfresh/metasfresh/issues/1654) Customer Returns Window in WebUI
     * Creating the Customer Returns Window for WebUI. Adding to the menu.
   * [#1659](https://github.com/metasfresh/metasfresh/issues/1659) Make verify BOM available in webUI
+    * Adding the verify BOM to WebUI, allowing the user to better maintain Bill of Material Configurations.
   * [#1657](https://github.com/metasfresh/metasfresh/issues/1657) Initially set Date+Time Filters in WebUI
     * Removing 2 Date Fields from Filter criteria in WebUI that did not have a perfect behavior when using combined filters.
   * [#1661](https://github.com/metasfresh/metasfresh/issues/1661) make process field autocomplete in table and columns window
+    * Making the process & report fields autocomplete in table and columns configuration.
   * [#1663](https://github.com/metasfresh/metasfresh/issues/1663) new order checkup jasper
+    * Creating a new Order control report that has a more compressed and focused view and reduces the amount of information to the most important.
   * [#1665](https://github.com/metasfresh/metasfresh/issues/1665) Subtab Advanced Edit Configurations
     * Migrating all Subtab UI Elements to show them in Advanced Edit, also swicthing the UI Element Group UI Styles to be not primary.
   * [#1672](https://github.com/metasfresh/metasfresh/issues/1672) New Tax Category Window in WebUI
@@ -47,6 +53,7 @@ Here come the actual release notes:
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
   * [#1687](https://github.com/metasfresh/metasfresh/issues/1687) Refactor Request Tab in Partner Window to allow zoom and advanced edit
   * [#1701](https://github.com/metasfresh/metasfresh/issues/1701) Customer Return Window additional Fields
+    * Including new Fields to Customer Return Lines (QtyTU and HUPIProductItem).
   * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
     * Adding the Handling Unit Editor to WebUI menu in Logistics group.
   * [#1707](https://github.com/metasfresh/metasfresh/issues/1707) Add Handling Unit Assignment Tab to Customer Returns Window
