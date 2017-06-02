@@ -107,24 +107,33 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
+    * Minor Adjustments in the Jasper Reports Layout of the invoice Print Format.
   * [#1640](https://github.com/metasfresh/metasfresh/issues/1640) fix prepare_services_superuser.sh
+    * Maintenance & fix Issue for the prepare_services shell script.
   * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
+    * Hiding the Packing Material Names in Jasper Reports when its a "No Packing Item".
 
 * metasfresh-webui-api
   * [#418](https://github.com/metasfresh/metasfresh-webui-api/issues/418) Disable zoom into string lookups until it's fixed
+    * Avoiding current error, disabling zoom-to String fiels as long as not implmeneted.
   * [#428](https://github.com/metasfresh/metasfresh-webui-api/issues/428) internal: Include AD_Language in layout ETags
+    * Adding the AD_Language into eTags, allowing the language siwtiching to happen instantly without refreshing in other browser windows.
 
 * metasfresh-webui-frontend
   * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
     * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
   * [#744](https://github.com/metasfresh/metasfresh-webui-frontend/issues/744) product/packing lookup does nothing when clicking on the single result
+    * Optimizing the behavior of Lookup Dropdowns in cases of multiple one or nor List entries.
   * [#804](https://github.com/metasfresh/metasfresh-webui-frontend/issues/804) Clicking on a menu item shall open the view without any filter
     * When Zooming-To an new window and the user navigates with breadcrumb or sitemap, now the view-id filtering is initializes. This way the user can easily rest the filter the window was opened with.
   * [#810](https://github.com/metasfresh/metasfresh-webui-frontend/issues/810) quickInput endpoints are wrongly called
+    * Internal fix for the api endpoint calls sometimes missing the correct Tab_ID.
   * [#811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/811) Print Preview Stopped working
     * Fixes a Bug with Print action, that did not show the print preview in a new Tab anymore.
   * [#812](https://github.com/metasfresh/metasfresh-webui-frontend/issues/812) 1 Key Press save action error during typing
+    * Fixes a Bug that sometimes occured inString fields, letting the frontend save after each character recording.
   * [#813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/813) included row: typeahead and dropdown endpoints are wrongly called
+    * Fix for Lookup fields that did not display the dropdown list correctly, mostly empty because the endpoint was wrongly called.
   * [#814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/814) Deleting a row in included tab makes the included tab empty
     * Fixes a Bug that undisplayed all rows of a Subtab when deleting one of the included rows.
   * [#815](https://github.com/metasfresh/metasfresh-webui-frontend/issues/815) attributes are missing
