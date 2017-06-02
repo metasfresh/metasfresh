@@ -17,11 +17,13 @@ import com.google.common.base.Stopwatch;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
+import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlAndParams;
+import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder.SqlCreateSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.NonNull;
 
@@ -49,23 +51,23 @@ import lombok.NonNull;
 
 public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSelectionFactory
 {
-	public static final SqlViewRowIdsOrderedSelectionFactory of(final SqlEntityBinding sqlEntityBinding)
+	public static final SqlViewRowIdsOrderedSelectionFactory of(final SqlViewBinding viewBinding)
 	{
-		return new SqlViewRowIdsOrderedSelectionFactory(sqlEntityBinding);
+		return new SqlViewRowIdsOrderedSelectionFactory(viewBinding);
 	}
 
 	private static final Logger logger = LogManager.getLogger(SqlViewRowIdsOrderedSelectionFactory.class);
 
-	private final SqlEntityBinding sqlEntityBinding;
+	private final SqlViewBinding viewBinding;
 
-	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlEntityBinding sqlEntityBinding)
+	private SqlViewRowIdsOrderedSelectionFactory(@NonNull final SqlViewBinding viewBinding)
 	{
-		this.sqlEntityBinding = sqlEntityBinding;
+		this.viewBinding = viewBinding;
 	}
 
 	private SqlViewSelectionQueryBuilder newSqlViewSelectionQueryBuilder()
 	{
-		return SqlViewSelectionQueryBuilder.newInstance(sqlEntityBinding);
+		return SqlViewSelectionQueryBuilder.newInstance(viewBinding);
 	}
 
 	@Override
@@ -87,15 +89,28 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 		//
 		//
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = newSqlViewSelectionQueryBuilder().buildSqlCreateSelectionFrom(sqlParams, viewEvalCtx, viewId, filters, orderBys, queryLimit);
+		final SqlCreateSelection sqlCreates = newSqlViewSelectionQueryBuilder().buildSqlCreateSelectionFrom(viewEvalCtx, viewId, filters, orderBys, queryLimit);
+		logger.trace("Creating selection using {}", sqlCreates);
 
 		//
-		// Execute it, so we insert in our T_WEBUI_ViewSelection
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final long rowsCount = DB.executeUpdateEx(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
-		stopwatch.stop();
-		logger.trace("Created selection {}, rowsCount={}, duration={} \n SQL: {} -- {}", viewId, rowsCount, stopwatch, sql, sqlParams);
+		// Create selection lines if any => insert into T_WEBUI_ViewSelectionLine
+		if (sqlCreates.getSqlCreateSelectionLines() != null)
+		{
+			final SqlAndParams sqlCreateSelectionLines = sqlCreates.getSqlCreateSelectionLines();
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final long linesCount = DB.executeUpdateEx(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Created selection lines {}, linesCount={}, duration={}", viewId, linesCount, stopwatch);
+		}
+
+		//
+		// Create selection rows => insert into T_WEBUI_ViewSelection
+		final long rowsCount;
+		{
+			final SqlAndParams sqlCreateSelection = sqlCreates.getSqlCreateSelection();
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			logger.trace("Created selection {}, rowsCount={}, duration={}", viewId, rowsCount, stopwatch);
+		}
 
 		return ViewRowIdsOrderedSelection.builder()
 				.setViewId(viewId)
@@ -110,13 +125,30 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	{
 		final WindowId windowId = fromSelection.getWindowId();
 		final String fromSelectionId = fromSelection.getSelectionId();
-
 		final ViewId newViewId = ViewId.random(windowId);
-		final String newSelectionId = newViewId.getViewId();
 
-		final String sqlFinal = newSqlViewSelectionQueryBuilder().buildSqlCreateSelectionFromSelection(viewEvalCtx, orderBys);
+		final int rowsCount;
+		final SqlViewSelectionQueryBuilder viewQueryBuilder = newSqlViewSelectionQueryBuilder();
+		if (viewQueryBuilder.hasGroupingFields())
+		{
+			final SqlAndParams sqlCreateSelectionLines = viewQueryBuilder.buildSqlCreateSelectionLinesFromSelectionLines(viewEvalCtx, newViewId, fromSelectionId);
+			final int linesCount = DB.executeUpdateEx(sqlCreateSelectionLines.getSql(), sqlCreateSelectionLines.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 
-		final int rowsCount = DB.executeUpdateEx(sqlFinal, new Object[] { newSelectionId, fromSelectionId }, ITrx.TRXNAME_ThreadInherited);
+			if (linesCount > 0)
+			{
+				final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelectionLines(viewEvalCtx, newViewId, orderBys);
+				rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+			}
+			else
+			{
+				rowsCount = 0;
+			}
+		}
+		else
+		{
+			final SqlAndParams sqlCreateSelection = viewQueryBuilder.buildSqlCreateSelectionFromSelection(viewEvalCtx, newViewId, fromSelectionId, orderBys);
+			rowsCount = DB.executeUpdateEx(sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+		}
 
 		return ViewRowIdsOrderedSelection.builder()
 				.setViewId(newViewId)
@@ -134,7 +166,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			// nothing changed
 			return selection;
 		}
-		else if(rowIds.isAll())
+		else if (rowIds.isAll())
 		{
 			throw new IllegalArgumentException("Cannot add ALL to selection");
 		}
@@ -212,11 +244,11 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 
 	public boolean containsAnyOfRowIds(final String selectionId, final DocumentIdsSelection rowIds)
 	{
-		if(rowIds.isEmpty())
+		if (rowIds.isEmpty())
 		{
 			return false;
 		}
-		
+
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sqlCount = newSqlViewSelectionQueryBuilder().buildSqlCount(sqlParams, selectionId, rowIds);
 		final int count = DB.executeUpdateEx(sqlCount, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
