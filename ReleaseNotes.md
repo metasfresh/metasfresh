@@ -116,7 +116,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#418](https://github.com/metasfresh/metasfresh-webui-api/issues/418) Disable zoom into string lookups until it's fixed
-    * Avoiding current error, disabling zoom-to String fiels as long as not implmeneted.
+    * Avoiding current error, disabling zoom-to String fields as long as not implemented.
   * [#428](https://github.com/metasfresh/metasfresh-webui-api/issues/428) internal: Include AD_Language in layout ETags
     * Adding the AD_Language into eTags, allowing the language siwtiching to happen instantly without refreshing in other browser windows.
 
