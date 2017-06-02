@@ -5,6 +5,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -12,6 +15,7 @@ import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -72,6 +76,8 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final SqlDocumentFilterConvertersList viewFilterConverters;
 
+	private final SqlViewGroupingBinding groupingBinding;
+
 	private SqlViewBinding(final Builder builder)
 	{
 		super();
@@ -84,7 +90,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		final Collection<String> displayFieldNames = builder.getDisplayFieldNames();
 
 		final Collection<SqlViewRowFieldBinding> allFields = _fieldsByFieldName.values();
-		final IStringExpression sqlSelect = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields);
+		this.groupingBinding = builder.groupingBinding;
+		final IStringExpression sqlSelect = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields, groupingBinding);
 
 		sqlWhereClause = builder.getSqlWhereClause();
 		sqlSelectByPage = sqlSelect.toComposer()
@@ -154,6 +161,15 @@ public class SqlViewBinding implements SqlEntityBinding
 	public String getKeyColumnName()
 	{
 		return getKeyField().getColumnName();
+	}
+
+	public boolean isKeyFieldName(final String fieldName)
+	{
+		if (_keyField == null)
+		{
+			return false;
+		}
+		return Objects.equal(fieldName, _keyField.getFieldName());
 	}
 
 	public Collection<SqlViewRowFieldBinding> getFields()
@@ -227,6 +243,44 @@ public class SqlViewBinding implements SqlEntityBinding
 		return sqlOrderBysIndexedByFieldName.build();
 	}
 
+	public Set<String> getGroupByFieldNames()
+	{
+		if (groupingBinding == null)
+		{
+			return ImmutableSet.of();
+		}
+		return groupingBinding.getGroupByFieldNames();
+	}
+
+	public boolean hasGroupingFields()
+	{
+		return !getGroupByFieldNames().isEmpty();
+	}
+
+	public boolean isGroupBy(final String fieldName)
+	{
+		return getGroupByFieldNames().contains(fieldName);
+	}
+
+	@Nullable
+	public String getSqlAggregatedColumn(final String fieldName)
+	{
+		if (groupingBinding == null)
+		{
+			return null;
+		}
+		return groupingBinding.getColumnSqlByFieldName(fieldName);
+	}
+
+	public boolean isAggregated(final String fieldName)
+	{
+		if (groupingBinding == null)
+		{
+			return false;
+		}
+		return groupingBinding.isAggregated(fieldName);
+	}
+
 	//
 	//
 	//
@@ -246,6 +300,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		private List<DocumentQueryOrderBy> defaultOrderBys;
 		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
+
+		private SqlViewGroupingBinding groupingBinding;
 
 		private Builder()
 		{
@@ -386,6 +442,12 @@ public class SqlViewBinding implements SqlEntityBinding
 				return SqlDocumentFilterConverters.emptyList();
 			}
 			return viewFilterConverters.build();
+		}
+
+		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)
+		{
+			this.groupingBinding = groupingBinding;
+			return this;
 		}
 	}
 
