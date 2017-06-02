@@ -72,7 +72,7 @@ Here come the actual release notes:
   * [#414](https://github.com/metasfresh/metasfresh-webui-api/issues/414) Referenced Windows for Subtab Records
     * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
   * [#415](https://github.com/metasfresh/metasfresh-webui-api/issues/415) Notification for Vendor returns jumps to wrong window
-    * New Unser Interface Functionality allowing to different define Window References for the same underlying table and therefor providing possibilities to zoom-to different windows with the same table depending on the business case.
+    * New User Interface Functionality allowing to define different  Window References for the same underlying table and therefor providing possibilities to zoom-to different windows with the same table depending on the business case.
   * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
     * The Section Names for Fieldgroup creation are now translatable in WebUI.
   * [#425](https://github.com/metasfresh/metasfresh-webui-api/issues/425) API support for bookmarking menu items
