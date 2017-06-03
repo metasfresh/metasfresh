@@ -17,6 +17,8 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1714](https://github.com/metasfresh/metasfresh/issues/1714) Add Validation Rule to Empties Return/ Receive M_Product_ID
     * Changing the Validation Rule for the M_Product_ID in window Empties Return/ Receipt so only have the restrictions in this one specific case.
+  * [#1718](https://github.com/metasfresh/metasfresh/issues/1718) Fix BPartner Contact advanced edit layout
+    * Finetuning of the Business Partner Contact Subtab Layout.
 
 # metasfresh 5.12 (2017-22)
 
