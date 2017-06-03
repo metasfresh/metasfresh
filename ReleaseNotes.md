@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-22**
 
 * metasfresh-backend
+  * [#1681](https://github.com/metasfresh/metasfresh/issues/1681) New Window for Standard Response in WebUI
+    * Creating a new window for Result Schema maintenence in WebUI which is available for the user via menu or zoom-to functionality from Request Window.
   * [#1714](https://github.com/metasfresh/metasfresh/issues/1714) Add Validation Rule to Empties Return/ Receive M_Product_ID
     * Changing the Validation Rule for the M_Product_ID in window Empties Return/ Receipt so only have the restrictions in this one specific case.
   * [#1718](https://github.com/metasfresh/metasfresh/issues/1718) Fix BPartner Contact advanced edit layout
