@@ -31,6 +31,8 @@ Here come the actual release notes:
     * Creating the Request Status Window for WebUI and adding to menu.
   * [#1723](https://github.com/metasfresh/metasfresh/issues/1723) Adjustments to Request Window in WebUI
     * Rearrangements to Request Window in WebUI. Harmonizing Look & Feel to current Layout default.
+  * [#1729](https://github.com/metasfresh/metasfresh/issues/1729) Adjustments to window Product Category in WebUI
+    * Adjusting different windows to out default Layout and Look&Feel including Product Category, Unit of Measure and Attribute Window.
 
 # metasfresh 5.12 (2017-22)
 
