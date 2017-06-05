@@ -79,9 +79,11 @@ class UserDropdown extends Component {
                             Marcus Gronholm
                         </div>
                         <hr className="context-menu-separator" />
+                        {
                         // Placeholder, empty place, to keep focus when it is
                         // not needed (e.g when mouse is in use)
                         // It is always returning back there due to ref action
+                        }
                         <div
                             ref={c => c && c.focus()}
                             tabIndex={0}
