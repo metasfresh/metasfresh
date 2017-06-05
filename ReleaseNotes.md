@@ -41,6 +41,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/830) Layout broken in included Row Grid
     * Fixing the Layout of Included Grid Rows, now showing the element connections nicely again.
+  * [#816](https://github.com/metasfresh/metasfresh-webui-frontend/issues/816) Double arrow-down for Dropdown selection
+    * Fixes a glitch when autocomplete usage and selection took 2 keystrokes with arrow down. Now works with auto selection of first entry and direct reaction after first arrow-down.
 
 # metasfresh 5.12 (2017-22)
 
