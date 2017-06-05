@@ -1164,6 +1164,12 @@ td.pulse-off input {
     height: 35px;
 }
 
+.avatar-container {
+    width: 100%;
+    height: 100%;
+    padding-top: 8px;
+}
+
 .meta-text-primary {
     font-weight: bold;
     color: $brand-color-primary;

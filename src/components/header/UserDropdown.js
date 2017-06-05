@@ -59,14 +59,17 @@ class UserDropdown extends Component {
                     'pointer user-dropdown-container tooltip-parent ' +
                     (open ? 'header-item-open ' : '')
                 }
-                onClick={() => handleUDOpen(true)}
                 onMouseEnter={() => toggleTooltip(shortcut)}
                 onMouseLeave={() => toggleTooltip('')}
             >
-                <img
-                    src={defaultAvatar}
-                    className="header-item avatar img-fluid rounded-circle"
-                />
+                <div
+                    className="header-item avatar-container"
+                    onClick={() => handleUDOpen(true)}>
+                    <img
+                        src={defaultAvatar}
+                        className="avatar img-fluid rounded-circle"
+                    />
+                </div>
 
                 {open &&
                     <div
@@ -91,14 +94,16 @@ class UserDropdown extends Component {
                         />
                         <div
                             className="user-dropdown-item"
-                            onClick={() => redirect('/settings')}
+                            onClick={() => {redirect('/settings');
+                                handleUDOpen(false)}}
                             tabIndex={0}
                         >
                             <i className="meta-icon-settings" /> Settings
                         </div>
                         <div
                             className="user-dropdown-item"
-                            onClick={() => redirect('/logout')}
+                            onClick={() => {redirect('/logout');
+                                handleUDOpen(false)}}
                             tabIndex={0}
                         >
                             <i className="meta-icon-logout" /> Log out
