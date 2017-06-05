@@ -104,7 +104,8 @@ class Lookup extends Component {
             rank, readonly, defaultValue, placeholder, align, isModal, updated,
             filterWidget, mandatory, rowId, tabIndex, validStatus, recent,
             onChange, newRecordCaption, properties, windowType, parameterName,
-            entity, dataId, tabId, subentity, subentityId, viewId, autoFocus
+            entity, dataId, tabId, subentity, subentityId, viewId, autoFocus,
+            newRecordWindowId
         } = this.props;
 
         const {
@@ -139,7 +140,6 @@ class Lookup extends Component {
                             item.widgetType === 'Lookup'){
                             return <RawLookup
                                 key={index}
-                                newRecordCaption={newRecordCaption}
                                 defaultValue={
                                     getItemsByProperty(defaultValue,
                                             'field', item.field)[0].value
@@ -156,7 +156,8 @@ class Lookup extends Component {
                                 isModal, recent, rank, updated, filterWidget,
                                 mandatory, validStatus, align, onChange, item,
                                 disabled, fireClickOutside, viewId, subentity,
-                                subentityId, autoFocus, tabId, rowId}}
+                                subentityId, autoFocus, tabId, rowId,
+                                newRecordCaption, newRecordWindowId}}
                             />
 
                         } else if (item.source === 'list') {
