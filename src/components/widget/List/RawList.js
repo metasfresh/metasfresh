@@ -24,7 +24,7 @@ class RawList extends Component {
     componentDidUpdate = prevProps => {
         const {
             list, mandatory, defaultValue, autofocus, blur, property,
-            initialFocus
+            initialFocus, selected
         } = this.props;
 
         if(prevProps.blur != blur){
@@ -53,10 +53,21 @@ class RawList extends Component {
 
             if(list.length > 0) {
                 this.setState({
-                    dropdownList: dropdown.concat(list),
+                    dropdownList: dropdown.concat(list)
+                });
+            }
+
+            if(list.length > 0 && !defaultValue) {
+                this.setState({
                     selected: list[0]
                 });
             }
+        }
+
+        if(prevProps.selected !== selected){
+            this.setState({
+                selected: selected
+            });
         }
 
         const { isOpen } = this.state;
