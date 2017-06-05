@@ -35,6 +35,12 @@ Here come the actual release notes:
     * Rearrangements to Request Window in WebUI. Harmonizing Look & Feel to current Layout default.
   * [#1729](https://github.com/metasfresh/metasfresh/issues/1729) Adjustments to window Product Category in WebUI
     * Adjusting different windows to out default Layout and Look&Feel including Product Category, Unit of Measure and Attribute Window.
+    
+## Fixes
+
+* metasfresh-webui-frontend
+  * [#830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/830) Layout broken in included Row Grid
+    * Fixing the Layout of Included Grid Rows, now showing the element connections nicely again.
 
 # metasfresh 5.12 (2017-22)
 
