@@ -10,9 +10,10 @@ export default {
         OPEN_ACTIONS_MENU: mod + '+' + '1',
         OPEN_NAVIGATION_MENU: mod + '+' + '2',
         OPEN_INBOX_MENU: mod + '+' + '3',
-        OPEN_SIDEBAR_MENU_0: mod + '+' + '4',
-        OPEN_SIDEBAR_MENU_1: mod + '+' + '5',
-        OPEN_SIDEBAR_MENU_2: mod + '+' + '6',
+        OPEN_AVATAR_MENU: mod + '+' + '4',
+        OPEN_SIDEBAR_MENU_0: mod + '+' + '5',
+        OPEN_SIDEBAR_MENU_1: mod + '+' + '6',
+        OPEN_SIDEBAR_MENU_2: mod + '+' + '7',
         DOC_STATUS: mod + '+' + 'i',
 
         //=========== Document Context =================
