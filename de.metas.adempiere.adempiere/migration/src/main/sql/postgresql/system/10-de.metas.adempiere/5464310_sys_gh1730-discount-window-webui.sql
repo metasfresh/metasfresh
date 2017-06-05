@@ -468,3 +468,153 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2017-06-05 17:30:5
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2017-06-05 17:30:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=545454
 ;
 
+-- 2017-06-05T17:38:09.971
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,5240,0,404,540612,545455,TO_TIMESTAMP('2017-06-05 17:38:09','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Mengenrabatt',20,0,0,TO_TIMESTAMP('2017-06-05 17:38:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-06-05T17:38:44.620
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Mengen Rabatt', PrintName='Mengen Rabatt',Updated=TO_TIMESTAMP('2017-06-05 17:38:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1713
+;
+
+-- 2017-06-05T17:38:44.627
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=1713
+;
+
+-- 2017-06-05T17:38:44.630
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsQuantityBased', Name='Mengen Rabatt', Description='Trade discount break level based on Quantity (not value)', Help='The calculation of the trade discount level is based on the quantity of the order and not the value amount of the order' WHERE AD_Element_ID=1713
+;
+
+-- 2017-06-05T17:38:44.663
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsQuantityBased', Name='Mengen Rabatt', Description='Trade discount break level based on Quantity (not value)', Help='The calculation of the trade discount level is based on the quantity of the order and not the value amount of the order', AD_Element_ID=1713 WHERE UPPER(ColumnName)='ISQUANTITYBASED' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-06-05T17:38:44.665
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsQuantityBased', Name='Mengen Rabatt', Description='Trade discount break level based on Quantity (not value)', Help='The calculation of the trade discount level is based on the quantity of the order and not the value amount of the order' WHERE AD_Element_ID=1713 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-06-05T17:38:44.666
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mengen Rabatt', Description='Trade discount break level based on Quantity (not value)', Help='The calculation of the trade discount level is based on the quantity of the order and not the value amount of the order' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=1713) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-06-05T17:38:44.679
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Mengen Rabatt', Name='Mengen Rabatt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=1713)
+;
+
+-- 2017-06-05T17:39:09.619
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Mengen Rabatt',Updated=TO_TIMESTAMP('2017-06-05 17:39:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=545455
+;
+
+-- 2017-06-05T17:39:52.376
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,5239,0,404,540612,545456,TO_TIMESTAMP('2017-06-05 17:39:52','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Fester Rabatt',30,0,0,TO_TIMESTAMP('2017-06-05 17:39:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-06-05T17:40:11.385
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET AD_Field_ID=10775,Updated=TO_TIMESTAMP('2017-06-05 17:40:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=545456
+;
+
+-- 2017-06-05T17:40:34.565
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Fester Rabatt', PrintName='Fester Rabatt',Updated=TO_TIMESTAMP('2017-06-05 17:40:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2544
+;
+
+-- 2017-06-05T17:40:34.572
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='N' WHERE AD_Element_ID=2544
+;
+
+-- 2017-06-05T17:40:34.576
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsBPartnerFlatDiscount', Name='Fester Rabatt', Description='Use flat discount defined on Business Partner Level', Help='For calculation of the discount, use the discount defined on Business Partner Level' WHERE AD_Element_ID=2544
+;
+
+-- 2017-06-05T17:40:34.604
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsBPartnerFlatDiscount', Name='Fester Rabatt', Description='Use flat discount defined on Business Partner Level', Help='For calculation of the discount, use the discount defined on Business Partner Level', AD_Element_ID=2544 WHERE UPPER(ColumnName)='ISBPARTNERFLATDISCOUNT' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-06-05T17:40:34.606
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsBPartnerFlatDiscount', Name='Fester Rabatt', Description='Use flat discount defined on Business Partner Level', Help='For calculation of the discount, use the discount defined on Business Partner Level' WHERE AD_Element_ID=2544 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-06-05T17:40:34.607
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Fester Rabatt', Description='Use flat discount defined on Business Partner Level', Help='For calculation of the discount, use the discount defined on Business Partner Level' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=2544) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-06-05T17:40:34.620
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Fester Rabatt', Name='Fester Rabatt' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=2544)
+;
+
+-- 2017-06-05T17:41:54.606
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,5239,0,404,540611,545457,TO_TIMESTAMP('2017-06-05 17:41:54','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Fester Rabatt %',20,0,0,TO_TIMESTAMP('2017-06-05 17:41:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-06-05T17:42:25.139
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,5241,0,404,540610,545458,TO_TIMESTAMP('2017-06-05 17:42:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Accumulation level',30,0,0,TO_TIMESTAMP('2017-06-05 17:42:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-06-05T17:42:39.484
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545431
+;
+
+-- 2017-06-05T17:42:39.500
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545432
+;
+
+-- 2017-06-05T17:42:39.509
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545433
+;
+
+-- 2017-06-05T17:42:39.517
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545434
+;
+
+-- 2017-06-05T17:42:59.193
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545430
+;
+
+-- 2017-06-05T17:42:59.219
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=545435
+;
+
+-- 2017-06-05T17:43:02.622
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=540608
+;
+
+-- 2017-06-05T17:43:06.230
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Column WHERE AD_UI_Column_ID=540358
+;
+
+-- 2017-06-05T17:43:11.329
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_UI_Section_Trl WHERE AD_UI_Section_ID=540264
+;
+
+-- 2017-06-05T17:43:11.334
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Section WHERE AD_UI_Section_ID=540264
+;
+
