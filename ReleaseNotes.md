@@ -23,6 +23,8 @@ Here come the actual release notes:
     * Introducting 2 new Fields - Avatarm Language - to User Window and May Profile.
   * [#1709](https://github.com/metasfresh/metasfresh/issues/1709) Pimp the old "My Profile" window to be used in webui as User settings
     * Reusing the old "My Profile" Window for the new Avatar Settings screen in WebUI.
+  * [#1711](https://github.com/metasfresh/metasfresh/issues/1711) Support Product Search in window BOM
+    * Adding Filter and Search possibility to Bill of Material Window in WebUI
   * [#1714](https://github.com/metasfresh/metasfresh/issues/1714) Add Validation Rule to Empties Return/ Receive M_Product_ID
     * Changing the Validation Rule for the M_Product_ID in window Empties Return/ Receipt so only have the restrictions in this one specific case.
   * [#1718](https://github.com/metasfresh/metasfresh/issues/1718) Fix BPartner Contact advanced edit layout
