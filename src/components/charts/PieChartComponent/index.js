@@ -20,7 +20,6 @@ class PieChartComponent extends Component {
             .range(colors);
 
         const dimensions = this.setDimensions();
-
         this.setSvg(
             dimensions.width,
             dimensions.height,
@@ -53,8 +52,7 @@ class PieChartComponent extends Component {
         const dimensions =
                 chartWrapp && this.setDimensions(chartWrapp.offsetWidth);
 
-        if(this.props.reRender) {
-
+        if(this.props.reRender && dimensions.width > 0) {
             this.setSvg(
                 dimensions.width,
                 dimensions.height,
@@ -227,7 +225,7 @@ class PieChartComponent extends Component {
                 this.clearChart();
                 const dimensions =
                     chartWrap && this.setDimensions(chartWrap.offsetWidth);
-                this.setSvg(
+                dimensions.width > 0 && this.setSvg(
                     dimensions.width,
                     dimensions.height,
                     dimensions.wrapperWidth
@@ -247,10 +245,38 @@ class PieChartComponent extends Component {
     };
 
     render() {
-        const {chartClass} = this.props;
+        const {
+            chartClass, data, fields, groupBy, isMaximize, chartTitle
+        } = this.props;
+
         return (
             <div className={chartClass+'-wrapper' + ' chart-wrapper'}>
                 <svg className={chartClass} />
+                {isMaximize &&
+                <div
+                    className={'panel panel-primary panel-bordered '+
+                        'chart-data-table-wrapper'}
+                >
+                    <table className={'table table-bordered-vertically '+
+                        'table-striped'}>
+                        <thead>
+                            <tr>
+                                <th>{chartTitle}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {data.map((item, index)=> {
+                            return(
+                                <tr key={index}>
+                                    <td>{item[groupBy.fieldName]}</td>
+                                    <td>{item[fields[0].fieldName]}</td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                </div>}
             </div>
         );
     }

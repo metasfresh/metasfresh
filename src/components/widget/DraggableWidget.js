@@ -88,7 +88,7 @@ export class DraggableWidget extends Component {
             isMaximize: true,
             toggleWidgetMenu: false,
             forceChartReRender: true,
-            height: 600
+            height: 500
         }, () => {
             this.setState({
                 forceChartReRender: false
@@ -175,6 +175,8 @@ export class DraggableWidget extends Component {
                         reRender={forceChartReRender}
                         responsive={true}
                         height={height}
+                        isMaximize={isMaximize}
+                        chartTitle={text}
                     />
                 </div>
             </div>

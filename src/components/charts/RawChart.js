@@ -84,7 +84,8 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, reRender, height
+            id, chartType, caption, fields, groupBy, reRender, height,
+            isMaximize, chartTitle
         } = this.props;
         const {chartData} = this.state;
         const data = chartData[0] && chartData[0].values;
@@ -95,7 +96,7 @@ class RawChart extends Component {
                     <BarChart
                         {...{
                             data, groupBy, caption, chartType, height, reRender,
-                            fields
+                            fields, isMaximize, chartTitle
                         }}
                         chartClass={'chart-' + id}
                         colors = {[
@@ -108,7 +109,8 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
-                        {...{data, fields, groupBy, height, reRender}}
+                        {...{data, fields, groupBy, height, reRender,
+                            isMaximize, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}
                         colors = {[
