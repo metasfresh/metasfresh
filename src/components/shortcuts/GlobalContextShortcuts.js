@@ -12,7 +12,7 @@ class GlobalContextShortcuts extends Component {
           handlePrint, handleDelete, handleInboxOpen,
           redirect, handleDocStatusToggle, closeOverlays
         } = this.props;
-        
+
         switch (action) {
             case 'OPEN_AVATAR_MENU':
                 event.preventDefault();

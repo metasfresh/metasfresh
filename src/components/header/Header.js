@@ -77,7 +77,7 @@ class Header extends Component {
             isInboxOpen: !!state
         });
     }
-    
+
     handleUDOpen = (state) => {
         this.setState({
             isUDOpen: !!state

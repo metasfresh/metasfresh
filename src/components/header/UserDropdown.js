@@ -10,7 +10,7 @@ class UserDropdown extends Component {
     }
 
     handleClickOutside = () => this.props.handleUDOpen(false);
-    
+
     handleKeyDown = (e) => {
         switch(e.key){
             case 'ArrowDown': {
@@ -51,12 +51,12 @@ class UserDropdown extends Component {
         const {
             open, handleUDOpen, redirect, shortcut, toggleTooltip, tooltipOpen
         } = this.props;
-        
+
         return (
             <div
                 className={
                     'header-item-container header-item-container-static ' +
-                    'pointer user-dropdown-container tooltip-parent ' + 
+                    'pointer user-dropdown-container tooltip-parent ' +
                     (open ? 'header-item-open ' : '')
                 }
                 onClick={() => handleUDOpen(true)}
@@ -67,8 +67,8 @@ class UserDropdown extends Component {
                     src={defaultAvatar}
                     className="header-item avatar img-fluid rounded-circle"
                 />
-                
-                {open && 
+
+                {open &&
                     <div
                         className="user-dropdown-list"
                         onKeyDown={this.handleKeyDown}
