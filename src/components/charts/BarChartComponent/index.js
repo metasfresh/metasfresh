@@ -100,14 +100,18 @@ class BarChartComponent extends Component {
     }
 
     render() {
-        const {chartClass, isMaximize, data, fields, groupBy, chartTitle} = this.props;
+        const {
+            chartClass, isMaximize, data, fields, groupBy, chartTitle
+        } = this.props;
 
         return (
             <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
                 <svg className={chartClass} />
-                {isMaximize && 
-                <div className="panel panel-primary panel-bordered chart-data-table-wrapper">
-                    <table className="table table-bordered-vertically table-striped">
+                {isMaximize &&
+                <div className={'panel panel-primary panel-bordered '+
+                    'chart-data-table-wrapper'}>
+                    <table className={'table table-bordered-vertically '+
+                        'table-striped'}>
                         <thead>
                             <tr>
                                 <th>{chartTitle}</th>
@@ -127,8 +131,13 @@ class BarChartComponent extends Component {
                                                 return (
                                                     <tbody key={index}>
                                                         <tr>
-                                                            <td>{field.caption}</td>
-                                                            <td className="table-chart-value">{item[field.fieldName]} {field.unit?field.unit:''}</td>
+                                                            <td>
+                                                                {field.caption}
+                                                            </td>
+                                                            <td className="table-chart-value">
+                                                                {item[field.fieldName]}
+                                                                {field.unit?field.unit:''}
+                                                            </td>
                                                         </tr>
                                                     </tbody>
                                                 )

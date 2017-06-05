@@ -14,6 +14,31 @@
     margin: 20px auto;
 }
 
+@media (max-width: $breakpoint-md){
+    .chart-data-table-wrapper,
+    .panel.chart-data-table-wrapper {
+        width: 90%;
+    }
+
+    .chart-data-table-wrapper .table td {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+       
+    }
+}
+
+@media (max-width: $breakpoint){
+    .chart-data-table-wrapper,
+    .panel.chart-data-table-wrapper {
+        width: 100%;
+    }
+
+    .chart-data-table-wrapper .table {
+        table-layout: fixed;
+    }
+}
+
 .pie-path {
     stroke: #fff;
     stroke-width: 2px;

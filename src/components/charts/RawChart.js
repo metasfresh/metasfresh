@@ -109,7 +109,8 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
-                        {...{data, fields, groupBy, height, reRender, isMaximize, chartTitle}}
+                        {...{data, fields, groupBy, height, reRender,
+                            isMaximize, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}
                         colors = {[
