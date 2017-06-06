@@ -262,6 +262,16 @@ public class HUInOutBL implements IHUInOutBL
 				.create();
 	}
 
+	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(final I_M_InOut manualCustomerReturn, final Collection<I_M_HU> hus)
+	{
+		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
+
+		return MultiCustomerHUReturnsInOutProducer.newInstance()
+				.addHUsToReturn(hus)
+				.setManualCustomerReturn(manualCustomerReturn)
+				.create();
+	}
+
 	@Override
 	public IDocumentLUTUConfigurationManager createLUTUConfigurationManager(List<I_M_InOutLine> inOutLines)
 	{
@@ -352,7 +362,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public void createHUsForCustomerReturn(final I_M_InOutLine customerReturnLine)
 	{
-		final org.compiere.model.I_M_InOut customerReturn = customerReturnLine.getM_InOut();
+		final I_M_InOut customerReturn = InterfaceWrapperHelper.create(customerReturnLine.getM_InOut(), de.metas.handlingunits.model.I_M_InOut.class);
 
 		Check.assume(isCustomerReturn(customerReturn), "Inout {} is not a customer return ", customerReturn);
 
@@ -391,14 +401,16 @@ public class HUInOutBL implements IHUInOutBL
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		
+
 		// mark HUs as active and create movements to QualityReturnWarehouse for them
 		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
-		
+
 		for (final I_M_HU hu : hus)
 		{
 			Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
 		}
+
+		updateManualCustomerReturnInOutForHUs(customerReturn, hus);
 	}
 
 	@Override
