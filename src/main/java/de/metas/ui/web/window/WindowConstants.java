@@ -49,6 +49,7 @@ public final class WindowConstants
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
 	
 	public static final WindowId WINDOWID_R_Request = WindowId.of(232); // FIXME: HARDCODED
+	public static final WindowId WINDOWID_UserProfile = WindowId.of(53100); // FIXME: HARDCODED
 
 	public static final String FIELDNAME_DocumentNo = "DocumentNo";
 	public static final String FIELDNAME_Value = "Value";

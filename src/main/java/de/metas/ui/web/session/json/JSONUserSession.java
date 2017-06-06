@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.i18n.Language;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -72,6 +74,13 @@ public class JSONUserSession
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
+	
+	@JsonProperty("userProfileWindowId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final WindowId userProfileWindowId;
+	@JsonProperty("userProfileId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer userProfileId;
 
 	private JSONUserSession(final UserSession userSession)
 	{
@@ -89,6 +98,9 @@ public class JSONUserSession
 			
 			final int avatarIdInt = user.getAvatar_ID();
 			avatarId = avatarIdInt > 0 ? String.valueOf(avatarIdInt) : null;
+			
+			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
+			userProfileId = userSession.getAD_User_ID();
 		}
 		else
 		{
@@ -97,6 +109,8 @@ public class JSONUserSession
 			fullname = null;
 			email = null;
 			avatarId = null;
+			userProfileWindowId = null;
+			userProfileId = null;
 		}
 
 		final Language language = userSession.getLanguage();
