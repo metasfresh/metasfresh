@@ -76,8 +76,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 
 	public AbstractPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey)
 	{
-		super();
-
 		Check.assumeNotEmpty(scheds2Qtys, "scheds2Qtys not empty");
 		sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
 

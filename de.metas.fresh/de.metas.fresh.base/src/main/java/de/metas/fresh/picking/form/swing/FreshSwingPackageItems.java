@@ -909,7 +909,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		}
 
 		//
-		// Get the selected shipment sched's C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
+		// Get the selected shipment schedules' C_BPartner_ID and C_BPartner_Location_ID (fresh_06974)
 		final IFreshPackingItem unallocatedPackingItem = productKey.getUnAllocatedPackingItem();
 		Check.assumeNotNull(unallocatedPackingItem, "unallocatedPackingItem not null"); // shall not happen if we reached this point
 		final int bPartnerId = unallocatedPackingItem.getC_BPartner_ID();
@@ -919,8 +919,9 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		// Make sure the picking slot (this is necessary if it's a dynamic one) is allocated to them (fresh_06974)
 		pickingSlotKey.allocateDynamicPickingSlotIfPossible(bPartnerId, bPartnerLocationId);
 
-		// 07161: this also associate the hus to the shipment schedule we are currently picking for,
+		// 07161: this also associates the HUs to the shipment schedule we are currently picking for,
 		// causing the hu's C_BPartner_ID and C_BPartner_Location_ID to be updated from the schedule.
+		// TODO it might be required to split the selected HU's VHU if one HU is assigned to two or more shipment scheds
 		allocateItemToHUs(productKey.getUnAllocatedPackingItem(), husSelected);
 
 		// Move selected HUs directly to Picking slot queue

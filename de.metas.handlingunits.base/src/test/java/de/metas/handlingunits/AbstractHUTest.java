@@ -148,6 +148,9 @@ public abstract class AbstractHUTest
 		initialize();
 	}
 
+	/**
+	 * Balled by the test's {@link Before} method, after the basic master data was set up.
+	 */
 	abstract protected void initialize();
 
 	protected HUTestHelper createHUTestHelper()
