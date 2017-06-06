@@ -77,6 +77,11 @@ public interface IPackingItem
 
 	Map<I_M_ShipmentSchedule, BigDecimal> getQtys();
 
+	/**
+	 * For this item, return the open quantity to be backed for the given {@code sched}.
+	 * @param sched
+	 * @return
+	 */
 	BigDecimal getQtyForSched(final I_M_ShipmentSchedule sched);
 
 	void addSingleSched(final I_M_ShipmentSchedule sched);

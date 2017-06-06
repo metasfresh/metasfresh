@@ -6,7 +6,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.*;
 /*
  * #%L
  * de.metas.fresh.base
@@ -66,8 +66,11 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.model.validator.M_HU_PI;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.*;
 
 public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 {
@@ -84,12 +87,8 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	/** LU */
 	private I_M_HU_PI huDefPalet;
 
-	private static final int COUNT_IFCOs_Per_Palet = 5;
-	private static final int COUNT_Tomatoes_Per_IFCO = 10;
-
 	//
 	// Context
-//	private HU2PackingItemsAllocator hu2PackingItemsAllocator;
 	private I_M_ShipmentSchedule shipmentSchedule;
 	private IFreshPackingItem itemToPack;
 	private IPackingContext packingContext;
@@ -97,15 +96,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	@Override
 	protected HUTestHelper createHUTestHelper()
 	{
-		return new HUTestHelper()
-		{
-			@Override
-			protected String createAndStartTransaction()
-			{
-				// no transaction by default
-				return ITrx.TRXNAME_None;
-			}
-		};
+		return commonCreateHUTestHelper();
 	}
 
 	@Override
@@ -120,17 +111,11 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		//
 		// Handling Units Definition
-		huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		{
-			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, pTomato, BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO), uomEach);
-		}
-		huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
-		{
-			final I_C_BPartner bpartner = null;
-			helper.createHU_PI_Item_IncludedHU(huDefPalet, huDefIFCO, BigDecimal.valueOf(COUNT_IFCOs_Per_Palet), bpartner);
-		}
+		huDefIFCO = createHuDefIFCO(helper);
+		huDefPalet = createHuDefPalet(helper, huDefIFCO);
 	}
+
+	
 
 	private void setupContext(final int qtyToDeliver)
 	{
@@ -328,7 +313,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		assertValidShipmentScheduleTUAssignments(luHU, aggregateVhu, aggregateVhu);
 	}
 
-	private final I_M_ShipmentSchedule createAndAppendShipmentSchedule(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int qtyToDeliver)
+	public I_M_ShipmentSchedule createAndAppendShipmentSchedule(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int qtyToDeliver)
 	{
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
@@ -338,19 +323,12 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		return schedule;
 	}
 
-	private List<I_M_HU> createLUs(final int qtyToLoad)
-	{
-		if (qtyToLoad % COUNT_Tomatoes_Per_IFCO != 0)
-		{
-			throw new AdempiereException("QtyToLoad shall be multiple of " + COUNT_Tomatoes_Per_IFCO + " else method assertValidShipmentScheduleLUTUAssignments will fail");
-		}
-
-		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
-		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(qtyToLoad);
-		final List<I_M_HU> hus = helper.createHUs(huContext, huDefPalet, pTomato, qtyToLoadBD, uomEach);
-
-		return hus;
-	}
+	/**
+	 * Creates as many palets as are needed to contain the given qty within IFCOs
+	 * @param qtyToLoad
+	 * @return
+	 */
+	
 
 	private List<I_M_HU> createTUs(final int qtyToLoad)
 	{
@@ -376,7 +354,6 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		huTrxBL.createHUContextProcessorExecutor(huContext)
 				.run(new IHUContextProcessor()
 				{
-
 					@Override
 					public IMutableAllocationResult process(IHUContext huContext)
 					{
