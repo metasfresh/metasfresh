@@ -185,7 +185,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 				.qtyPicked("10")
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUs.get(0)) // i found that it's the 1st TU by trying out; what matters is that one TU is assigned to this shipment schedule and the other one to
+				.tu(tuHUs.get(1)) // i found that it's the 1st TU by trying out; what matters is that one TU is assigned to this shipment schedule and the other one to
 				.qtyPicked("10")
 				.endExpectation()
 				.assertExpected("");
@@ -195,7 +195,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 				.qtyPicked("10")
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUs.get(1))
+				.tu(tuHUs.get(0))
 				.qtyPicked("10")
 				.endExpectation()
 				.assertExpected("");
