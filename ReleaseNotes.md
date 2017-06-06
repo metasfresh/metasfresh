@@ -10,10 +10,22 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.14 (2017-24)
+
+**upcoming release for week 2017-24**
+
+## Features
+
+## Fixes
+* metasfresh-backend
+  * [#1739](https://github.com/metasfresh/metasfresh/issues/1739) Menu entry for M_ProductCategory window wrong
+    * Adding the correct window to the WebUI menu for Product Category Window.
+
 # metasfresh 5.12 (2017-23)
 
 **upcoming release for week 2017-23**
 
+## Features
 * metasfresh-backend
   * [#1239](https://github.com/metasfresh/metasfresh/issues/1239) Barcode on Bestellkontrolle report
     * The Sales Order Control Report now has an included Barcode with Code39. Ist allows the users in Manufacturing to scan the control report and the Manufacturign Order is automatically opened, ready for action issue and receipt.
