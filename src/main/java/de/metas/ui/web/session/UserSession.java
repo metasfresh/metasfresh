@@ -23,6 +23,7 @@ import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
 
@@ -337,6 +338,12 @@ public class UserSession
 		final String userFullnameOld = data.getUserFullname();
 		data.setUserFullname(userFullname);
 		return userFullnameOld;
+	}
+	
+	/** @return websocket notifications endpoint on which the frontend shall listen */
+	public String getWebsocketEndpoint()
+	{		
+		return WebSocketConfig.buildUserSessionTopicName(getAD_User_ID());
 	}
 
 	public void assertDeprecatedRestAPIAllowed()

@@ -72,6 +72,9 @@ public class JSONUserSession
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
+	
+	@JsonProperty("websocketEndpoint")
+	private final String websocketEndpoint;
 
 	@JsonProperty("userProfileWindowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -96,6 +99,8 @@ public class JSONUserSession
 
 			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
 			userProfileId = userSession.getAD_User_ID();
+			
+			websocketEndpoint = userSession.getWebsocketEndpoint();
 		}
 		else
 		{
@@ -106,6 +111,7 @@ public class JSONUserSession
 			avatarId = null;
 			userProfileWindowId = null;
 			userProfileId = null;
+			websocketEndpoint = null;
 		}
 
 		final Language language = userSession.getLanguage();
