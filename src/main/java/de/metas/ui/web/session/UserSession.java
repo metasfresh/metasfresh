@@ -6,7 +6,10 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -17,6 +20,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
@@ -214,9 +218,14 @@ public class UserSession
 		final String adLanguageNew = data.getAdLanguage();
 		logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, lang);
 
-		// Fire event
 		if (!Objects.equals(adLanguageOld, adLanguageNew))
 		{
+			// Save to database
+			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(getAD_User_ID());
+			user.setAD_Language(adLanguageNew);
+			InterfaceWrapperHelper.save(user);
+			
+			// Fire event
 			eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, getAD_User_ID()));
 		}
 
