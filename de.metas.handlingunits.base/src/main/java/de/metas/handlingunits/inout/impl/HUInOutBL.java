@@ -47,6 +47,7 @@ import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.empties.impl.EmptiesInOutProducer;
@@ -62,6 +63,9 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
@@ -249,7 +253,7 @@ public class HUInOutBL implements IHUInOutBL
 				.addHUsToReturn(hus)
 				.create();
 	}
-	
+
 	@Override
 	public List<I_M_InOut> createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
 	{
@@ -313,6 +317,39 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
+	public boolean isVendorReturn(final org.compiere.model.I_M_InOut inOut)
+	{
+
+		// in the case of returns the docSubType is null
+		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
+
+		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
+				.getDocTypeOrNullForSOTrx(
+						Env.getCtx() // ctx
+						, X_C_DocType.DOCBASETYPE_MaterialDelivery // doc basetype
+						, docSubType // doc subtype
+						, false // isSOTrx
+						, inOut.getAD_Client_ID() // client
+						, inOut.getAD_Org_ID() // org
+						, ITrx.TRXNAME_None); // trx
+
+		if (returnsDocType == null)
+		{
+			// there is no customer return doc type defined in the project. Return false by default
+			return false;
+		}
+
+		if (returnsDocType.getC_DocType_ID() != inOut.getC_DocType_ID())
+		{
+			// the inout is not a customer return
+			return false;
+		}
+
+		// the inout is a customer return
+		return true;
+	}
+
+	@Override
 	public void createHUsForCustomerReturn(final I_M_InOutLine customerReturnLine)
 	{
 		final org.compiere.model.I_M_InOut customerReturn = customerReturnLine.getM_InOut();
@@ -341,11 +378,6 @@ public class HUInOutBL implements IHUInOutBL
 		InterfaceWrapperHelper.save(lutuConfigurationEffective, ITrx.TRXNAME_None);
 		customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
 
-		// huGenerator.generateAllPlanningHUs_InChunks();
-
-		// //lutuConfigurationEffective.setQtyLU(BigDecimal.ONE);
-		// InterfaceWrapperHelper.save(lutuConfigurationEffective);
-		// customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
 		//
 		// Calculate the target CUs that we want to allocate
 		final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
@@ -359,18 +391,34 @@ public class HUInOutBL implements IHUInOutBL
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		Services.get(IHandlingUnitsBL.class).setHUStatusActive(hus);
+		
+		// mark HUs as active and create movements to QualityReturnWarehouse for them
+		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
+		
 		for (final I_M_HU hu : hus)
 		{
-
 			Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
 	@Override
-	public void createHUsForCustomerReturn(org.compiere.model.I_M_InOut customerReturn)
+	public void activateHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
 	{
-		// TODO Auto-generated method stub
+		final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
 
+		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(ctx);
+
+		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
+
+		final I_M_Warehouse qualiytReturnWarehouse = warehouses.get(0);
+
+		Services.get(IHUMovementBL.class).moveHUsToWarehouse(husToReturn, qualiytReturnWarehouse);
+
+		for (final I_M_HU hu : husToReturn)
+		{
+			hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
+		}
 	}
+
 }

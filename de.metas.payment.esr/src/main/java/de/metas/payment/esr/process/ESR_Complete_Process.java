@@ -13,15 +13,14 @@ package de.metas.payment.esr.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -41,6 +40,9 @@ import de.metas.process.JavaProcess;
 
 public class ESR_Complete_Process extends JavaProcess
 {
+	final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+
+	final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private int p_ESR_Import_ID;
 
@@ -68,13 +70,18 @@ public class ESR_Complete_Process extends JavaProcess
 				InterfaceWrapperHelper.getTrxName(esrImport),
 				esrImport,
 				get_TrxName());
-		final ITrxRunConfig trxRunConfig = Services.get(ITrxManager.class).createTrxRunConfig(TrxPropagation.NESTED, OnRunnableSuccess.COMMIT, OnRunnableFail.ASK_RUNNABLE);
+
+		final ITrxRunConfig trxRunConfig = trxManager.newTrxRunConfigBuilder()
+				.setTrxPropagation(TrxPropagation.NESTED)
+				.setOnRunnableSuccess(OnRunnableSuccess.COMMIT)
+				.setOnRunnableFail(OnRunnableFail.ASK_RUNNABLE)
+				.build();
 
 		Check.errorUnless(esrImport.isValid(), "The document can not be processed, since it is not valid.");
 
 		final String description = getProcessInfo().getTitle() + " #" + getAD_PInstance_ID();
-		Services.get(IESRImportBL.class).complete(esrImport, description, trxRunConfig);
-		
+		esrImportBL.complete(esrImport, description, trxRunConfig);
+
 		return "";
 	}
 

@@ -1045,10 +1045,12 @@ public class TimeUtil
 	}
 
 	/** @return date as timestamp or null if the date is null */
-	public static Timestamp asTimestamp(Date date)
+	public static Timestamp asTimestamp(final Date date)
 	{
 		if (date instanceof Timestamp)
+		{
 			return (Timestamp)date;
+		}
 		return date == null ? null : new Timestamp(date.getTime());
 	}
 

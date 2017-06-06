@@ -1,4 +1,4 @@
-package de.metas.payment.esr.spi.impl;
+package de.metas.payment.esr.actionhandler.impl;
 
 /*
  * #%L
@@ -23,30 +23,23 @@ package de.metas.payment.esr.spi.impl;
  */
 
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
-public class UnableToAssignESRActionHandler extends AbstractESRActionHandler
+/**
+ * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Keep_For_Dunning}. In the case of dunning, we do nothing. The ADmpiere dunning module will do everything in that
+ * regard.
+ * <p>
+ * Note that this action actually only makes sense in the case of an underpayment.
+ * 
+ */
+public class DunningESRActionHandler extends AbstractESRActionHandler
 {
-
 	@Override
 	public boolean process(I_ESR_ImportLine line, String message)
 	{
 		super.process(line, message);
-		//04517 : Payment was created on a previous step. Do nothing.
 
-		final I_C_Payment payment = line.getC_Payment();
-		if (null != payment)
-		{
-			final de.metas.banking.model.I_C_Payment paymentExtended = InterfaceWrapperHelper.create(payment, de.metas.banking.model.I_C_Payment.class);
-
-			// 07783 : unset the flag
-			paymentExtended.setIsAutoAllocateAvailableAmt(false);
-			InterfaceWrapperHelper.save(paymentExtended);
-		}
-
+		// 04194 : In the case of dunning actions, do nothing.
 		return true;
 	}
 
