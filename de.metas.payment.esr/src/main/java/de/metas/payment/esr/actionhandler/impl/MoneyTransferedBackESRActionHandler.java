@@ -1,4 +1,4 @@
-package de.metas.payment.esr.spi.impl;
+package de.metas.payment.esr.actionhandler.impl;
 
 /*
  * #%L

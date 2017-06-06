@@ -1,11 +1,15 @@
-package de.metas.process;
+package de.metas.payment.esr.dataimporter;
 
-import org.compiere.model.I_AD_Process_Para;
-import org.compiere.util.Env;
+import java.math.BigDecimal;
+import java.util.List;
+
+import lombok.Builder;
+import lombok.Data;
+import lombok.Singular;
 
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.payment.esr
  * %%
  * Copyright (C) 2017 metas GmbH
  * %%
@@ -24,26 +28,17 @@ import org.compiere.util.Env;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-/**
- * {@link IProcessDefaultParametersProvider}'s parameter.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public interface IProcessDefaultParameter
+@Data
+@Builder
+public class ESRStatement
 {
-	/**
-	 * 
-	 * @return the {@link I_AD_Process_Para#COLUMNNAME_ColumnName} which this parameter is about.
-	 */
-	String getColumnName();
+	private final BigDecimal ctrlAmount;
 
-	/**
-	 * Do something like invoking {@link Env#getContextAsInt(java.util.Properties, int, String)} with the caller's {@code ctx} and {@code WindowNo}.
-	 * 
-	 * @param name
-	 * @return
-	 */
-	int getContextAsInt(final String name);
+	private final BigDecimal ctrlQty;
+	
+	@Singular
+	private final List<ESRTransaction> transactions;
+	
+	@Singular
+	private final List<String> errorMsgs;
 }
