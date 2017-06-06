@@ -37,6 +37,7 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User_Substitute;
 import org.compiere.model.Query;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -119,7 +120,7 @@ public class UserDAO implements IUserDAO
 
 	@Override
 	@Cached(cacheName = I_AD_User.Table_Name)
-	public I_AD_User retrieveUser(@CacheCtx final Properties ctx, final int adUserId)
+	public I_AD_User retrieveUserOrNull(@CacheCtx final Properties ctx, final int adUserId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
@@ -127,4 +128,16 @@ public class UserDAO implements IUserDAO
 				.create()
 				.firstOnly(I_AD_User.class);
 	}
+
+	@Override
+	public I_AD_User retrieveUser(final int adUserId)
+	{
+		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId);
+		if (user == null)
+		{
+			throw new AdempiereException("No user found for ID=" + adUserId);
+		}
+		return user;
+	}
+
 }

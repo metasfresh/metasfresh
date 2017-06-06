@@ -141,12 +141,12 @@ public class MUser extends X_AD_User
 	 *	@param ctx context
 	 *	@param AD_User_ID id
 	 *	@return user
-	 * @deprecated Please use {@link IUserDAO#retrieveUser(Properties, int)}.
+	 * @deprecated Please use {@link IUserDAO#retrieveUserOrNull(Properties, int)}.
 	 */
 	@Deprecated
 	public static MUser get (final Properties ctx, final int AD_User_ID)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(ctx, AD_User_ID);
+		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
 		return LegacyAdapters.convertToPO(user);
 	}	//	get
 
