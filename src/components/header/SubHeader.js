@@ -5,6 +5,8 @@ import onClickOutside from 'react-onclickoutside';
 
 import Actions from './Actions';
 
+import BookmarkButton from './BookmarkButton';
+
 import keymap from '../../keymap.js';
 
 class Subheader extends Component {
@@ -98,21 +100,16 @@ class Subheader extends Component {
         if(
             active.classList.contains('js-subheader-column')
         ) {
-            const child = active.childNodes;
-            if(child[0] && child[0].classList.contains('js-spacer')){
-                return child[0];
-            }else{
-                return child[1];
-            }
+            return active.childNodes[1];
         } else {
-             return active;
+            return active;
         }
     }
 
     renderNavColumn = () => {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
-            handleDelete, docNo, redirect
+            handleDelete, docNo, redirect, breadcrumb
         } = this.props;
 
         const docLinks = dataId && [
@@ -161,7 +158,14 @@ class Subheader extends Component {
                 className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
-                <div className="js-spacer"/>
+                <div
+                    className="subheader-header"
+                >   
+                    <BookmarkButton>
+                        {breadcrumb[breadcrumb.length - 1].caption}
+                    </BookmarkButton>
+                </div>
+                <div className="subheader-break" />
 
                 {windowType && <div
                     className="subheader-item js-subheader-item"

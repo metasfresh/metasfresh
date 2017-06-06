@@ -494,20 +494,16 @@ class Header extends Component {
                 </nav>
 
                 {isSubheaderShow && <Subheader
-                    dataId={dataId}
-                    windowType={windowType}
                     closeSubheader={() => this.closeOverlays('isSubheaderShow')}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
                     redirect={this.redirect}
-                    selected={selected}
-                    selectedWindowType={selectedWindowType}
-                    entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
-                    query={query}
-                    notfound={notfound}
+                    {...{breadcrumb, notfound, query, entity, selectedWindowType,
+                        selected, dataId, windowType
+                    }}
                 />}
 
                 {showSidelist && isSideListShow && <SideList
