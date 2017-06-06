@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.inoutcandidate.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_ReceiptSchedule_Alloc
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 1 - Org 
+    /** AccessLevel = 1 - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
 
@@ -103,7 +87,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * Get Erstellt durch.
 	 * Nutzer, der diesen Eintrag erstellt hat
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -113,6 +97,33 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, org.compiere.model.I_AD_User>(I_M_ReceiptSchedule_Alloc.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	public java.lang.String getDocStatus();
+
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_ReceiptSchedule_Alloc, Object>(I_M_ReceiptSchedule_Alloc.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Aktiv.
@@ -140,27 +151,33 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Shipment/Receipt.
+	 * Set Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Shipment/Receipt.
+	 * Get Lieferung/Wareneingang.
 	 * Material Shipment Document
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getM_InOut_ID();
 
+	@Deprecated
 	public org.compiere.model.I_M_InOut getM_InOut();
 
+	@Deprecated
 	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
 
     /** Column definition for M_InOut_ID */
@@ -172,9 +189,9 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * Set Versand-/Wareneingangsposition.
 	 * Position auf Versand- oder Wareneingangsbeleg
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
@@ -182,9 +199,9 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * Get Versand-/Wareneingangsposition.
 	 * Position auf Versand- oder Wareneingangsbeleg
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getM_InOutLine_ID();
 
@@ -223,7 +240,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	/**
 	 * Set Wareneingangsdisposition.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -232,7 +249,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	/**
 	 * Get Wareneingangsdisposition.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -271,7 +288,8 @@ public interface I_M_ReceiptSchedule_Alloc
     public static final String COLUMNNAME_QtyAllocated = "QtyAllocated";
 
 	/**
-	 * Set QtyWithIssues.
+	 * Set Minderwertige Menge.
+	 * Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -280,7 +298,8 @@ public interface I_M_ReceiptSchedule_Alloc
 	public void setQtyWithIssues (java.math.BigDecimal QtyWithIssues);
 
 	/**
-	 * Get QtyWithIssues.
+	 * Get Minderwertige Menge.
+	 * Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -298,8 +317,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQualityDiscountPercent (java.math.BigDecimal QualityDiscountPercent);
 
 	/**
@@ -307,8 +328,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.math.BigDecimal getQualityDiscountPercent();
 
     /** Column definition for QualityDiscountPercent */
@@ -321,8 +344,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setQualityNote (java.lang.String QualityNote);
 
 	/**
@@ -330,8 +355,10 @@ public interface I_M_ReceiptSchedule_Alloc
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getQualityNote();
 
     /** Column definition for QualityNote */
@@ -358,7 +385,7 @@ public interface I_M_ReceiptSchedule_Alloc
 	 * Get Aktualisiert durch.
 	 * Nutzer, der diesen Eintrag aktualisiert hat
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

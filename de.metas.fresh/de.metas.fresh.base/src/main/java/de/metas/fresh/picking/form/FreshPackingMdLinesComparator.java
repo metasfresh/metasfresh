@@ -24,6 +24,7 @@ package de.metas.fresh.picking.form;
 
 
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.util.Check;
@@ -57,7 +58,7 @@ public class FreshPackingMdLinesComparator implements Comparator<TableRowKey>
 	@Override
 	public int compare(final TableRowKey o1, final TableRowKey o2)
 	{
-		if (Check.equals(o1, o2))
+		if (Objects.equals(o1, o2))
 		{
 			return 0;
 		}

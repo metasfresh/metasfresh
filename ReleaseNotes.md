@@ -10,6 +10,42 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.13 (2017-23)
+
+**upcoming release for week 2017-22**
+
+* metasfresh-backend
+  * [#1677](https://github.com/metasfresh/metasfresh/issues/1677) Adjustments to Product Window in WebUI
+    * Adjustments to Product Window, refining the Layout and Look&Feel of Fields in main View and Advanced Edit. Harmonizing to our current default Layout.
+  * [#1681](https://github.com/metasfresh/metasfresh/issues/1681) New Window for Standard Response in WebUI
+    * Creating a new window for Result Schema maintenence in WebUI which is available for the user via menu or zoom-to functionality from Request Window.
+  * [#1695](https://github.com/metasfresh/metasfresh/issues/1695) Introduce AD_User.Avatar_ID and AD_Language fields
+    * Introducting 2 new Fields - Avatarm Language - to User Window and May Profile.
+  * [#1709](https://github.com/metasfresh/metasfresh/issues/1709) Pimp the old "My Profile" window to be used in webui as User settings
+    * Reusing the old "My Profile" Window for the new Avatar Settings screen in WebUI.
+  * [#1711](https://github.com/metasfresh/metasfresh/issues/1711) Support Product Search in window BOM
+    * Adding Filter and Search possibility to Bill of Material Window in WebUI
+  * [#1714](https://github.com/metasfresh/metasfresh/issues/1714) Add Validation Rule to Empties Return/ Receive M_Product_ID
+    * Changing the Validation Rule for the M_Product_ID in window Empties Return/ Receipt so only have the restrictions in this one specific case.
+  * [#1718](https://github.com/metasfresh/metasfresh/issues/1718) Fix BPartner Contact advanced edit layout
+    * Finetuning of the Business Partner Contact Subtab Layout.
+  * [#1722](https://github.com/metasfresh/metasfresh/issues/1722) New Window for Request Status in WebUI
+    * Creating the Request Status Window for WebUI and adding to menu.
+  * [#1723](https://github.com/metasfresh/metasfresh/issues/1723) Adjustments to Request Window in WebUI
+    * Rearrangements to Request Window in WebUI. Harmonizing Look & Feel to current Layout default.
+  * [#1729](https://github.com/metasfresh/metasfresh/issues/1729) Adjustments to window Product Category in WebUI
+    * Adjusting different windows to out default Layout and Look&Feel including Product Category, Unit of Measure and Attribute Window.
+  * [#1730](https://github.com/metasfresh/metasfresh/issues/1730) New Window for Discount Maintenance in WebUI
+    * New Window for Discount Maintenance in WebUI. Allowing to define flat discounts or discount Quantity breaks as Discount Schema.
+    
+## Fixes
+
+* metasfresh-webui-frontend
+  * [#830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/830) Layout broken in included Row Grid
+    * Fixing the Layout of Included Grid Rows, now showing the element connections nicely again.
+  * [#816](https://github.com/metasfresh/metasfresh-webui-frontend/issues/816) Double arrow-down for Dropdown selection
+    * Fixes a glitch when autocomplete usage and selection took 2 keystrokes with arrow down. Now works with auto selection of first entry and direct reaction after first arrow-down.
+
 # metasfresh 5.12 (2017-22)
 
 **upcoming release for week 2017-22**
@@ -52,6 +88,7 @@ Here come the actual release notes:
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
   * [#1687](https://github.com/metasfresh/metasfresh/issues/1687) Refactor Request Tab in Partner Window to allow zoom and advanced edit
+    * Adjustments in Business window Subtab for Requests, now allowing the user the zoom-to Request Window and records directly.
   * [#1701](https://github.com/metasfresh/metasfresh/issues/1701) Customer Return Window additional Fields
     * Including new Fields to Customer Return Lines (QtyTU and HUPIProductItem).
   * [#1705](https://github.com/metasfresh/metasfresh/issues/1705) Add Handling Unit Editor Window to WebUI Menu
@@ -61,22 +98,29 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#86](https://github.com/metasfresh/metasfresh-webui-api/issues/86) Check and get rid of "Parameter 'UOMConversion' not found in context" console warnings
+    * Maintenance Issue, removing all UOM Conversions from Dicplay Logics (wasn't used anywhere until now).
   * [#376](https://github.com/metasfresh/metasfresh-webui-api/issues/376) Hide Roles on Logon that are not ideal for WebUI
+    * New feature, allowing to qualify certain Roles for Usage in Web User Interface.
   * [#410](https://github.com/metasfresh/metasfresh-webui-api/issues/410) Provide view row field zoom-into endpoint
+    * New feature allowing to Zoom-To on included Subtab row level.
   * [#413](https://github.com/metasfresh/metasfresh-webui-api/issues/413) Subtab Fields not shown in Advanced Edit although Displayed = 'Y'
     * Now the Subtab Fields are shown in Advanced Edit mode when Displayed = 'Y'.
   * [#414](https://github.com/metasfresh/metasfresh-webui-api/issues/414) Referenced Windows for Subtab Records
     * New Functionality to jump to referenced data from SUbtab rows. Opens a new browser Tab with the referenced window and record.
   * [#415](https://github.com/metasfresh/metasfresh-webui-api/issues/415) Notification for Vendor returns jumps to wrong window
+    * New User Interface Functionality allowing to define different  Window References for the same underlying table and therefor providing possibilities to zoom-to different windows with the same table depending on the business case.
   * [#416](https://github.com/metasfresh/metasfresh-webui-api/issues/416) AD_UI_Section's Name and Description shall be translatable
     * The Section Names for Fieldgroup creation are now translatable in WebUI.
   * [#425](https://github.com/metasfresh/metasfresh-webui-api/issues/425) API support for bookmarking menu items
+    * Adding the API Support for Menu entry bookmarks.
   * [#426](https://github.com/metasfresh/metasfresh-webui-api/issues/426) internal: JSONDocument - drop "fields" array field
+    * Clean-Up Issue/ Maintenance Task for JSOn Document eliminating the "fields" property.
   * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Lookup Field shall provide first dropdown results
     * New Functionality in Lookup Fields. Just press space key and receive a list of first available selections.
 
 * metasfresh-webui-frontend
   * [#600](https://github.com/metasfresh/metasfresh-webui-frontend/issues/600) Lookup revamp – collective issue
+    * Completely redone lookup widget functionality in Web User Interface allowing to select elements of combined fields separately. Additionallly allowing a smooth and efficient assistant like workflow during data recording.
   * [#713](https://github.com/metasfresh/metasfresh-webui-frontend/issues/713) KPIs: In case datasets is empty or missing shall show "No data" text
     * The Dashboard now does sow "No data" instaead of error, when no Data is available.
   * [#773](https://github.com/metasfresh/metasfresh-webui-frontend/issues/773) frontend: JSON documents: always use "fieldsByName" instead of "fields"
@@ -88,7 +132,9 @@ Here come the actual release notes:
   * [#790](https://github.com/metasfresh/metasfresh-webui-frontend/issues/790) Advanced edit section header for better structuring
     * Adding the possibility to have Fieldgroups in WebUI Advanced Edit Windows.
   * [#801](https://github.com/metasfresh/metasfresh-webui-frontend/issues/801) Included row: show row's references in context menu
+    * New Functionality allowing to jump to referenced from included Subtab Views.
   * [#819](https://github.com/metasfresh/metasfresh-webui-frontend/issues/819) HTTP header "Accept-Language" shall be correctly set
+    * Now setting the Language Header in API-calls correctly.
 
 * other
   * [metasfresh-documentation#71](https://github.com/metasfresh/metasfresh-documentation/issues/71) Describe how to update database in local dev env
@@ -98,24 +144,33 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1559](https://github.com/metasfresh/metasfresh/issues/1559) Minor Invoice Layout Issues
+    * Minor Adjustments in the Jasper Reports Layout of the invoice Print Format.
   * [#1640](https://github.com/metasfresh/metasfresh/issues/1640) fix prepare_services_superuser.sh
+    * Maintenance & fix Issue for the prepare_services shell script.
   * [#1656](https://github.com/metasfresh/metasfresh/issues/1656) No Packing Item in jaspers
+    * Hiding the Packing Material Names in Jasper Reports when its a "No Packing Item".
 
 * metasfresh-webui-api
   * [#418](https://github.com/metasfresh/metasfresh-webui-api/issues/418) Disable zoom into string lookups until it's fixed
+    * Avoiding current error, disabling zoom-to String fields as long as not implemented.
   * [#428](https://github.com/metasfresh/metasfresh-webui-api/issues/428) internal: Include AD_Language in layout ETags
+    * Adding the AD_Language into eTags, allowing the language siwtiching to happen instantly without refreshing in other browser windows.
 
 * metasfresh-webui-frontend
   * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
     * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
   * [#744](https://github.com/metasfresh/metasfresh-webui-frontend/issues/744) product/packing lookup does nothing when clicking on the single result
+    * Optimizing the behavior of Lookup Dropdowns in cases of multiple one or nor List entries.
   * [#804](https://github.com/metasfresh/metasfresh-webui-frontend/issues/804) Clicking on a menu item shall open the view without any filter
     * When Zooming-To an new window and the user navigates with breadcrumb or sitemap, now the view-id filtering is initializes. This way the user can easily rest the filter the window was opened with.
   * [#810](https://github.com/metasfresh/metasfresh-webui-frontend/issues/810) quickInput endpoints are wrongly called
+    * Internal fix for the api endpoint calls sometimes missing the correct Tab_ID.
   * [#811](https://github.com/metasfresh/metasfresh-webui-frontend/issues/811) Print Preview Stopped working
     * Fixes a Bug with Print action, that did not show the print preview in a new Tab anymore.
   * [#812](https://github.com/metasfresh/metasfresh-webui-frontend/issues/812) 1 Key Press save action error during typing
+    * Fixes a Bug that sometimes occured inString fields, letting the frontend save after each character recording.
   * [#813](https://github.com/metasfresh/metasfresh-webui-frontend/issues/813) included row: typeahead and dropdown endpoints are wrongly called
+    * Fix for Lookup fields that did not display the dropdown list correctly, mostly empty because the endpoint was wrongly called.
   * [#814](https://github.com/metasfresh/metasfresh-webui-frontend/issues/814) Deleting a row in included tab makes the included tab empty
     * Fixes a Bug that undisplayed all rows of a Subtab when deleting one of the included rows.
   * [#815](https://github.com/metasfresh/metasfresh-webui-frontend/issues/815) attributes are missing

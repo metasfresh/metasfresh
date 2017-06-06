@@ -4,7 +4,7 @@ package de.metas.ui.web.base.model;
  * #%L
  * de.metas.ui.web.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,15 +22,15 @@ package de.metas.ui.web.base.model;
  * #L%
  */
 
-public interface I_T_WEBUI_ViewSelection
+public interface I_T_WEBUI_ViewSelectionLine
 {
-	String Table_Name = "T_WEBUI_ViewSelection";
+	String Table_Name = "T_WEBUI_ViewSelectionLine";
 
 	String COLUMNNAME_UUID = "UUID";
 
-	/** i.e. the sequence number for ordering */
-	String COLUMNNAME_Line = "Line";
-
 	/** Record ID / Aggregate record ID / Root record ID */
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/** Line ID / Included record ID */
+	String COLUMNNAME_Line_ID = "Line_ID";
 }

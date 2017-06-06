@@ -44,7 +44,7 @@ public class TableRowBPartnersCollector implements Predicate<TableRow>
 	@Override
 	public boolean evaluate(final TableRow currentRow)
 	{
-		final int bpartnerId = currentRow.getBPartnerId();
+		final int bpartnerId = currentRow.getBpartnerId();
 		if (bpartnerId <= 0)
 		{
 			// invalid BPartner ID; shall not happen
@@ -57,7 +57,7 @@ public class TableRowBPartnersCollector implements Predicate<TableRow>
 			return false;
 		}
 
-		final String bpartnerName = currentRow.getbPartnerName();
+		final String bpartnerName = currentRow.getBpartnerName();
 		final KeyNamePair bpartner = new KeyNamePair(bpartnerId, bpartnerName);
 		bpartners.add(bpartner);
 
