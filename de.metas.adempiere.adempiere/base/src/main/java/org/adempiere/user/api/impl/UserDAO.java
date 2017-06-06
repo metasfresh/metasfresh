@@ -140,4 +140,21 @@ public class UserDAO implements IUserDAO
 		return user;
 	}
 
+	// NOTE: never cache it
+	@Override
+	public I_AD_User retrieveUserInTrx(final int adUserId)
+	{
+		final I_AD_User user = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
+				.create()
+				.firstOnlyNotNull(I_AD_User.class);
+		if (user == null)
+		{
+			throw new AdempiereException("No user found for ID=" + adUserId);
+		}
+		return user;
+	}
+
+
 }

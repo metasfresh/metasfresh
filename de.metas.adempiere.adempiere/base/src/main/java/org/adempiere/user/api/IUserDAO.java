@@ -57,4 +57,6 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User retrieveUser(int adUserId);
 
+	I_AD_User retrieveUserInTrx(int adUserId);
+
 }
