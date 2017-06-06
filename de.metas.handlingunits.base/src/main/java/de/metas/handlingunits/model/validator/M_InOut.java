@@ -153,6 +153,13 @@ public class M_InOut
 		{
 			return;
 		}
+		
+		// task #1306: Do not genertate empties movements for customer returns
+		
+		if(Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+		{
+			return;
+		}
 
 		// do nothing if this is not an empties shipment/receipt
 		final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);

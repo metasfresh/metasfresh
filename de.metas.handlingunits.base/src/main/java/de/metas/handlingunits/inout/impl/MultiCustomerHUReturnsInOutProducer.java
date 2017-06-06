@@ -25,6 +25,7 @@ import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -159,9 +160,15 @@ public class MultiCustomerHUReturnsInOutProducer
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 					.notify(returnInOuts);
+			
+
+			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
+			// mark HUs as active and create movements to QualityReturnWarehouse for them
+			Services.get(IHUInOutBL.class).activateHUsForCustomerReturn(ctx, getHUsToReturn());
+			
+			handlingUnitsBL.setHUStatusActive(_husToReturn);
 		}
 
-		handlingUnitsBL.setHUStatusActive(_husToReturn);
 
 		// return the created vendor returns
 		return returnInOuts;

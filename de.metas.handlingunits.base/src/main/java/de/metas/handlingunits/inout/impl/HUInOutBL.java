@@ -47,6 +47,7 @@ import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.ILUTUProducerAllocationDestination;
 import de.metas.handlingunits.empties.impl.EmptiesInOutProducer;
@@ -62,6 +63,9 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
@@ -387,11 +391,33 @@ public class HUInOutBL implements IHUInOutBL
 		//
 		// Generate the HUs
 		final List<I_M_HU> hus = huGenerator.generate();
-		Services.get(IHandlingUnitsBL.class).setHUStatusActive(hus);
+		
+		// mark HUs as active and create movements to QualityReturnWarehouse for them
+		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
+		
 		for (final I_M_HU hu : hus)
 		{
-
 			Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
+		}
+	}
+
+	@Override
+	public void activateHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
+	{
+		final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
+
+		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(ctx);
+
+		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
+
+		final I_M_Warehouse qualiytReturnWarehouse = warehouses.get(0);
+
+		Services.get(IHUMovementBL.class).moveHUsToWarehouse(husToReturn, qualiytReturnWarehouse);
+
+		for (final I_M_HU hu : husToReturn)
+		{
+			hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
