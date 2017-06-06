@@ -38,6 +38,7 @@ import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
 import de.metas.ui.web.notification.UserNotificationsService;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.session.UserSessionRepository;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 
@@ -71,6 +72,9 @@ public class LoginRestController
 
 	@Autowired
 	private UserSession userSession;
+
+	@Autowired
+	private UserSessionRepository userSessionRepo;
 
 	@Autowired
 	private UserNotificationsService userNotificationsService;
@@ -270,6 +274,9 @@ public class LoginRestController
 		userPreference.setProperty(UserPreference.P_ORG, loginCtx.getAD_Org_ID());
 		userPreference.setProperty(UserPreference.P_WAREHOUSE, loginCtx.getM_Warehouse_ID());
 		userPreference.savePreference();
+		
+		//
+		userSessionRepo.load(userSession);
 
 		//
 		// Mark session as logged in
@@ -284,21 +291,6 @@ public class LoginRestController
 	public boolean isLoggedIn()
 	{
 		return userSession.isLoggedIn();
-	}
-
-	@RequestMapping(value = "/language", method = RequestMethod.PUT)
-	public String setAD_Language(@RequestBody final String adLanguage)
-	{
-		userSession.setAD_Language(adLanguage);
-		final String adLanguageNew = userSession.getAD_Language();
-
-		return adLanguageNew;
-	}
-
-	@RequestMapping(value = "/language", method = RequestMethod.GET)
-	public String getAD_Language()
-	{
-		return userSession.getAD_Language();
 	}
 
 	@RequestMapping(value = "/availableLanguages", method = RequestMethod.GET)

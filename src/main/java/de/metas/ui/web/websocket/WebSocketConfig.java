@@ -61,9 +61,15 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
 
 	private static final String ENDPOINT = "/stomp";
+	private static final String TOPIC_UserSession = "/userSession";
 	private static final String TOPIC_Notifications = "/notifications";
 	private static final String TOPIC_View = "/view";
 	public static final String TOPIC_Devices = "/devices";
+
+	public static final String buildUserSessionTopicName(final int adUserId)
+	{
+		return TOPIC_UserSession + "/" + adUserId;
+	}
 
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
@@ -92,11 +98,11 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	public void configureMessageBroker(final MessageBrokerRegistry config)
 	{
 		// use the /topic prefix for outgoing WebSocket communication
-		config.enableSimpleBroker( //
-				TOPIC_Notifications //
-				, TOPIC_View //
-				, TOPIC_Devices //
-		);
+		config.enableSimpleBroker(
+				TOPIC_UserSession,
+				TOPIC_Notifications,
+				TOPIC_View,
+				TOPIC_Devices);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");
@@ -196,7 +202,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 				response.setStatusCode(HttpStatus.UNAUTHORIZED);
 				return false;
 			}
-			
+
 			return true;
 		}
 

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.i18n.Language;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -35,7 +34,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONUserSession
 {
 	public static final JSONUserSession of(final UserSession userSession)
@@ -56,11 +55,10 @@ public class JSONUserSession
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String fullname;
 
-	
 	@JsonProperty("email")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String email;
-	
+
 	@JsonProperty("avatarId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String avatarId;
@@ -74,7 +72,7 @@ public class JSONUserSession
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
-	
+
 	@JsonProperty("userProfileWindowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final WindowId userProfileWindowId;
@@ -91,14 +89,11 @@ public class JSONUserSession
 		{
 			username = userSession.getUserName();
 			rolename = userSession.getRoleName();
-			
-			final I_AD_User user = userSession.getAD_User();
-			fullname = user.getName();
-			email = user.getEMail();
-			
-			final int avatarIdInt = user.getAvatar_ID();
-			avatarId = avatarIdInt > 0 ? String.valueOf(avatarIdInt) : null;
-			
+
+			fullname = userSession.getUserFullname();
+			email = userSession.getUserEmail();
+			avatarId = userSession.getAvatarId();
+
 			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
 			userProfileId = userSession.getAD_User_ID();
 		}

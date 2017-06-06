@@ -6,10 +6,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -20,13 +17,13 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
 
 /*
@@ -88,6 +85,21 @@ public class UserSession
 				}
 			}
 		}
+		return userSession;
+	}
+
+	public static UserSession getCurrentIfMatchingOrNull(final int adUserId)
+	{
+		final UserSession userSession = getCurrentOrNull();
+		if (userSession == null)
+		{
+			return null;
+		}
+		if (userSession.getAD_User_ID() != adUserId)
+		{
+			return null;
+		}
+
 		return userSession;
 	}
 
@@ -210,7 +222,7 @@ public class UserSession
 	 * @param adLanguage
 	 * @return old AD_Language
 	 */
-	public String setAD_Language(final String adLanguage)
+	String setAD_Language(final String adLanguage)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);
@@ -218,14 +230,9 @@ public class UserSession
 		final String adLanguageNew = data.getAdLanguage();
 		logger.info("Changed AD_Language: {} -> {}, {}", adLanguageOld, adLanguageNew, lang);
 
+		// Fire event
 		if (!Objects.equals(adLanguageOld, adLanguageNew))
 		{
-			// Save to database
-			final I_AD_User user = getAD_User();
-			user.setAD_Language(adLanguageNew);
-			InterfaceWrapperHelper.save(user);
-			
-			// Fire event
 			eventPublisher.publishEvent(new LanguagedChangedEvent(adLanguageNew, getAD_User_ID()));
 		}
 
@@ -245,6 +252,12 @@ public class UserSession
 	public Language getLanguage()
 	{
 		return data.getLanguage();
+	}
+
+	public JSONLookupValue getLanguageAsJson()
+	{
+		final Language language = getLanguage();
+		return JSONLookupValue.of(language.getAD_Language(), language.getName());
 	}
 
 	public Locale getLocale()
@@ -268,13 +281,6 @@ public class UserSession
 	{
 		return data.getAD_User_ID();
 	}
-	
-	public I_AD_User getAD_User()
-	{
-		assertLoggedIn();
-		return Services.get(IUserDAO.class).retrieveUser(data.getAD_User_ID());
-	}
-
 
 	public String getUserName()
 	{
@@ -295,6 +301,42 @@ public class UserSession
 	public IUserRolePermissions getUserRolePermissions()
 	{
 		return Env.getUserRolePermissions(data.getCtx());
+	}
+
+	public String getAvatarId()
+	{
+		return data.getAvatarId();
+	}
+
+	public String getUserEmail()
+	{
+		return data.getUserEmail();
+	}
+
+	public String getUserFullname()
+	{
+		return data.getUserFullname();
+	}
+
+	String setAvatarId(final String avatarId)
+	{
+		final String avatarIdOld = data.getAvatarId();
+		data.setAvatarId(avatarId);
+		return avatarIdOld;
+	}
+
+	String setUserEmail(final String userEmail)
+	{
+		final String userEmailOld = data.getUserEmail();
+		data.setUserEmail(userEmail);
+		return userEmailOld;
+	}
+
+	String setUserFullname(final String userFullname)
+	{
+		final String userFullnameOld = data.getUserFullname();
+		data.setUserFullname(userFullname);
+		return userFullnameOld;
 	}
 
 	public void assertDeprecatedRestAPIAllowed()
