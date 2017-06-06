@@ -17,7 +17,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -41,13 +40,16 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
 public class HU2PackingItemTestCommons
 {
-	final int COUNT_IFCOs_Per_Palet = 5;
-	final int COUNT_Tomatoes_Per_IFCO = 10;
+	final static int COUNT_IFCOs_Per_Palet = 5;
+	final static int COUNT_Tomatoes_Per_IFCO = 10;
 
-	public HUTestHelper commonCreateHUTestHelper()
+	private HU2PackingItemTestCommons()
+	{
+	}
+
+	public static HUTestHelper commonCreateHUTestHelper()
 	{
 		return new HUTestHelper()
 		{
@@ -60,7 +62,7 @@ public class HU2PackingItemTestCommons
 		};
 	}
 
-	public I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper)
+	public static I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper)
 	{
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
@@ -77,7 +79,7 @@ public class HU2PackingItemTestCommons
 	 * @param tuHuDef
 	 * @return
 	 */
-	public I_M_HU_PI_Item createHuDefPalet(@NonNull final HUTestHelper helper, @NonNull final I_M_HU_PI_Item_Product tuHuDef)
+	public static I_M_HU_PI_Item createHuDefPalet(@NonNull final HUTestHelper helper, @NonNull final I_M_HU_PI_Item_Product tuHuDef)
 	{
 		final I_M_HU_PI huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 		final I_C_BPartner bpartner = null;
@@ -99,7 +101,7 @@ public class HU2PackingItemTestCommons
 	 * @param qtyToLoad
 	 * @return
 	 */
-	public List<I_M_HU> createLUs(
+	public static List<I_M_HU> createLUs(
 			@NonNull final HUTestHelper helper,
 			@NonNull final I_M_HU_PI_Item luHuDef,
 			@NonNull final I_M_HU_PI_Item_Product tuHuDef,
@@ -111,12 +113,11 @@ public class HU2PackingItemTestCommons
 		}
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
 		final List<I_M_HU> luHUs = helper.createLUs(huContext, luHuDef, tuHuDef, new BigDecimal(qtyToLoad));
-		
+
 		return luHUs;
 	}
-	
-	
-	public List<I_M_HU> createTUs(
+
+	public static List<I_M_HU> createTUs(
 			@NonNull final HUTestHelper helper,
 			@NonNull final I_M_HU_PI_Item_Product tuHuDef,
 			final int qtyToLoad)
@@ -132,11 +133,11 @@ public class HU2PackingItemTestCommons
 
 		return hus;
 	}
-	
+
 	/**
 	 * Creates HU to Packing Items Allocator (i.e. class under test)
 	 */
-	public HU2PackingItemsAllocator createHU2PackingItemsAllocator(
+	public static HU2PackingItemsAllocator createHU2PackingItemsAllocator(
 			@NonNull final IPackingContext packingContext,
 			@NonNull final IFreshPackingItem itemToPack)
 	{
