@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.inoutcandidate.model;
 
 
@@ -32,7 +16,7 @@ public interface I_M_ShipmentSchedule
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 3 - Client - Org 
+    /** AccessLevel = 3 - Client - Org
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
 
@@ -89,8 +73,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setAD_PInstance_ShipmentRun_ID (int AD_PInstance_ShipmentRun_ID);
 
 	/**
@@ -98,12 +84,16 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getAD_PInstance_ShipmentRun_ID();
 
+	@Deprecated
 	public org.compiere.model.I_AD_PInstance getAD_PInstance_ShipmentRun();
 
+	@Deprecated
 	public void setAD_PInstance_ShipmentRun(org.compiere.model.I_AD_PInstance AD_PInstance_ShipmentRun);
 
     /** Column definition for AD_PInstance_ShipmentRun_ID */
@@ -146,7 +136,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setAD_User_ID (int AD_User_ID);
 
@@ -156,7 +146,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getAD_User_ID();
 
@@ -201,8 +191,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setAD_User_ShipmentRun_ID (int AD_User_ShipmentRun_ID);
 
 	/**
@@ -210,12 +202,16 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getAD_User_ShipmentRun_ID();
 
+	@Deprecated
 	public org.compiere.model.I_AD_User getAD_User_ShipmentRun();
 
+	@Deprecated
 	public void setAD_User_ShipmentRun(org.compiere.model.I_AD_User AD_User_ShipmentRun);
 
     /** Column definition for AD_User_ShipmentRun_ID */
@@ -251,7 +247,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setBPartnerAddress (java.lang.String BPartnerAddress);
 
@@ -260,7 +256,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public java.lang.String getBPartnerAddress();
 
@@ -291,6 +287,35 @@ public interface I_M_ShipmentSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BPartnerAddress_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "BPartnerAddress_Override", null);
     /** Column name BPartnerAddress_Override */
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
+
+	/**
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_BP_Location_Override_ID();
+
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
+
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
+
+    /** Column definition for C_BP_Location_Override_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ShipmentSchedule.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
+    /** Column name C_BP_Location_Override_ID */
+    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Geschäftspartner.
@@ -327,7 +352,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
@@ -337,7 +362,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getC_BPartner_Location_ID();
 
@@ -407,42 +432,15 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
 
 	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BP_Location_Override_ID();
-
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override();
-
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override);
-
-    /** Column definition for C_BP_Location_Override_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BP_Location_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_BPartner_Location>(I_M_ShipmentSchedule.class, "C_BP_Location_Override_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BP_Location_Override_ID */
-    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
-
-	/**
 	 * Set Währung.
 	 * Die Währung für diesen Eintrag
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
@@ -451,12 +449,16 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getC_Currency_ID();
 
+	@Deprecated
 	public org.compiere.model.I_C_Currency getC_Currency();
 
+	@Deprecated
 	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
     /** Column definition for C_Currency_ID */
@@ -470,7 +472,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setC_DocType_ID (int C_DocType_ID);
 
@@ -480,7 +482,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getC_DocType_ID();
 
@@ -499,7 +501,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setC_Order_ID (int C_Order_ID);
 
@@ -509,7 +511,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getC_Order_ID();
 
@@ -552,6 +554,41 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public int getC_UOM_ID();
+
+	@Deprecated
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	@Deprecated
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM>(I_M_ShipmentSchedule.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -580,35 +617,6 @@ public interface I_M_ShipmentSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_AD_User>(I_M_ShipmentSchedule.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_UOM>(I_M_ShipmentSchedule.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Auftragsdatum.
@@ -659,21 +667,25 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_DeliveryDate = "DeliveryDate";
 
 	/**
-	 * Set DeliveryDate_Effective.
+	 * Set Lieferdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDeliveryDate_Effective (java.sql.Timestamp DeliveryDate_Effective);
 
 	/**
-	 * Get DeliveryDate_Effective.
+	 * Get Lieferdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.sql.Timestamp getDeliveryDate_Effective();
 
     /** Column definition for DeliveryDate_Effective */
@@ -710,7 +722,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setDeliveryRule (java.lang.String DeliveryRule);
 
@@ -720,7 +732,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public java.lang.String getDeliveryRule();
 
@@ -758,7 +770,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
@@ -768,7 +780,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public java.lang.String getDeliveryViaRule();
 
@@ -947,37 +959,14 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set Erhält EDI-Belege.
-	 * Erhält EDI-Belege
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public void setIsEdiRecipient (boolean IsEdiRecipient);
-
-	/**
-	 * Get Erhält EDI-Belege.
-	 * Erhält EDI-Belege
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isEdiRecipient();
-
-    /** Column definition for IsEdiRecipient */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsEdiRecipient = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsEdiRecipient", null);
-    /** Column name IsEdiRecipient */
-    public static final String COLUMNNAME_IsEdiRecipient = "IsEdiRecipient";
-
-	/**
 	 * Set Lieferlauf beendet.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsShipmentRunDone (boolean IsShipmentRunDone);
 
 	/**
@@ -985,8 +974,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isShipmentRunDone();
 
     /** Column definition for IsShipmentRunDone */
@@ -1000,8 +991,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsToRecompute (boolean IsToRecompute);
 
 	/**
@@ -1010,8 +1003,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isToRecompute();
 
     /** Column definition for IsToRecompute */
@@ -1025,7 +1020,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
@@ -1035,7 +1030,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public java.math.BigDecimal getLineNetAmt();
 
@@ -1045,8 +1040,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Set Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1055,8 +1050,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Instanz des Merkmals-Satzes zum Produkt
+	 * Get Merkmale.
+	 * Merkmals Ausprägungen zum Produkt
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1106,7 +1101,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setM_Product_ID (int M_Product_ID);
 
@@ -1116,7 +1111,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getM_Product_ID();
 
@@ -1157,8 +1152,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
@@ -1166,12 +1163,16 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getM_Warehouse_Dest_ID();
 
+	@Deprecated
 	public org.compiere.model.I_M_Warehouse getM_Warehouse_Dest();
 
+	@Deprecated
 	public void setM_Warehouse_Dest(org.compiere.model.I_M_Warehouse M_Warehouse_Dest);
 
     /** Column definition for M_Warehouse_Dest_ID */
@@ -1185,7 +1186,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
@@ -1195,7 +1196,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getM_Warehouse_ID();
 
@@ -1214,7 +1215,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setM_Warehouse_Override_ID (int M_Warehouse_Override_ID);
 
@@ -1224,7 +1225,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public int getM_Warehouse_Override_ID();
 
@@ -1236,6 +1237,35 @@ public interface I_M_ShipmentSchedule
     public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_Override_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Warehouse>(I_M_ShipmentSchedule.class, "M_Warehouse_Override_ID", org.compiere.model.I_M_Warehouse.class);
     /** Column name M_Warehouse_Override_ID */
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
+
+	/**
+	 * Set Referenz.
+	 * Referenz-Nummer des Kunden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setPOReference (java.lang.String POReference);
+
+	/**
+	 * Get Referenz.
+	 * Referenz-Nummer des Kunden
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.lang.String getPOReference();
+
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set PostageFreeAmt.
@@ -1286,21 +1316,25 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
-	 * Set PreparationDate_Effective.
+	 * Set Bereitstellungsdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPreparationDate_Effective (java.sql.Timestamp PreparationDate_Effective);
 
 	/**
-	 * Get PreparationDate_Effective.
+	 * Get Bereitstellungsdatum eff..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.sql.Timestamp getPreparationDate_Effective();
 
     /** Column definition for PreparationDate_Effective */
@@ -1309,7 +1343,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_PreparationDate_Effective = "PreparationDate_Effective";
 
 	/**
-	 * Set PreparationDate_Override.
+	 * Set Bereitstellungsdatum abw..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1318,7 +1352,7 @@ public interface I_M_ShipmentSchedule
 	public void setPreparationDate_Override (java.sql.Timestamp PreparationDate_Override);
 
 	/**
-	 * Get PreparationDate_Override.
+	 * Get Bereitstellungsdatum abw..
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1409,8 +1443,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProcessing (boolean Processing);
 
 	/**
@@ -1418,8 +1454,10 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public boolean isProcessing();
 
     /** Column definition for Processing */
@@ -1433,7 +1471,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public void setProductDescription (java.lang.String ProductDescription);
 
@@ -1443,7 +1481,7 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: false (lazy loading)
 	 */
 	public java.lang.String getProductDescription();
 

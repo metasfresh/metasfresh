@@ -31,9 +31,9 @@ import org.adempiere.tools.AdempiereToolsHelper;
 import org.compiere.util.DB;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
 
 /**
  *  Generate Model Classes extending PO.
@@ -129,7 +129,7 @@ public class GenerateModel
 		String directory = null;
 		if (args.length > 0)
 		{
-			directory = args[0];
+			directory = new File(args[0]).getAbsolutePath();
 		}
 		if (directory == null || directory.length() == 0)
 		{

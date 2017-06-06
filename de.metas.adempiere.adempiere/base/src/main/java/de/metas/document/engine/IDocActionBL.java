@@ -70,7 +70,7 @@ public interface IDocActionBL extends ISingletonService
 	void processEx(Object document, String docAction, String expectedDocStatus);
 
 	/**
-	 * Check if a document is completed.
+	 * Check if a document is completed via it's {@code DocStatus} value.
 	 *
 	 * A documented is considered complete when it is COmpleted or CLosed.
 	 *
