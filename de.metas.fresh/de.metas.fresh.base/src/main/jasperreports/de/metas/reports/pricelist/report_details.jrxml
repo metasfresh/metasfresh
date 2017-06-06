@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-02-13T17:44:43 -->
+<!-- 2017-06-06T12:00:56 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/pricelist/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -48,6 +48,8 @@
 	<field name="m_productprice_id" class="java.lang.Integer"/>
 	<field name="m_attributesetinstance_id" class="java.lang.Integer"/>
 	<field name="m_hu_pi_item_product_id" class="java.lang.Integer"/>
+	<field name="currency" class="java.lang.String"/>
+	<field name="currency2" class="java.lang.String"/>
 	<variable name="LINE_COUNT" class="java.lang.Number" calculation="Count">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
@@ -107,7 +109,7 @@
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{Price_New} : $R{Price})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{Price_New} + " "+ $F{currency} : $R{Price})]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="440" y="0" width="36" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
@@ -130,7 +132,7 @@
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{Price_Old} : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[( $P{Alt_PriceList_Version_ID} != null ? $R{Price_Old}  + " "+ $F{currency2}  : "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

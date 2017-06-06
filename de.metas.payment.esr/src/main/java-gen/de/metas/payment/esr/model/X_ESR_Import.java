@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.payment.esr.model;
 
@@ -32,7 +16,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1130510194L;
+	private static final long serialVersionUID = 814321415L;
 
     /** Standard Constructor */
     public X_ESR_Import (Properties ctx, int ESR_Import_ID, String trxName)
@@ -105,6 +89,35 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 		return ii.intValue();
 	}
 
+	/** 
+	 * DataType AD_Reference_ID=540728
+	 * Reference name: ESR_Import_DataType
+	 */
+	public static final int DATATYPE_AD_Reference_ID=540728;
+	/** V11 = V11 */
+	public static final String DATATYPE_V11 = "V11";
+	/** camt.54 = camt.54 */
+	public static final String DATATYPE_Camt54 = "camt.54";
+	/** Set Daten-Typ.
+		@param DataType 
+		Art der Daten
+	  */
+	@Override
+	public void setDataType (java.lang.String DataType)
+	{
+
+		set_Value (COLUMNNAME_DataType, DataType);
+	}
+
+	/** Get Daten-Typ.
+		@return Art der Daten
+	  */
+	@Override
+	public java.lang.String getDataType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DataType);
+	}
+
 	/** Set Belegdatum.
 		@param DateDoc 
 		Datum des Belegs
@@ -155,7 +168,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ESR_Control_Amount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -174,12 +187,12 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ESR_Control_Trx_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
-	/** Set ESR_Import.
-		@param ESR_Import_ID ESR_Import	  */
+	/** Set ESR Zahlungsimport.
+		@param ESR_Import_ID ESR Zahlungsimport	  */
 	@Override
 	public void setESR_Import_ID (int ESR_Import_ID)
 	{
@@ -189,8 +202,8 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, Integer.valueOf(ESR_Import_ID));
 	}
 
-	/** Get ESR_Import.
-		@return ESR_Import	  */
+	/** Get ESR Zahlungsimport.
+		@return ESR Zahlungsimport	  */
 	@Override
 	public int getESR_Import_ID () 
 	{

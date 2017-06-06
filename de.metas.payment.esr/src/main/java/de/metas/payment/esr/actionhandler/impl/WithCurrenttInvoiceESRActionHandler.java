@@ -1,4 +1,4 @@
-package de.metas.payment.esr.spi.impl;
+package de.metas.payment.esr.actionhandler.impl;
 
 /*
  * #%L
@@ -26,17 +26,21 @@ package de.metas.payment.esr.spi.impl;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.invoice.service.IInvoiceBL;
+import org.adempiere.util.Services;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+
+import de.metas.payment.esr.actionhandler.IESRActionHandler;
+import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.impl.ESRImportBL;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
 /**
- * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice}. This handler updates the line's payment, setting
- * C_Payment.IsAutoAllocateAvailableAmt = 'Y'. Therefore the system will automatically allocate the yet unallocated money to the next invoice(s) of the same BPartner.
+ * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice}. Invokes {@link IESRImportBL#linkInvoiceToPayment(I_ESR_ImportLine)}.
  * 
  */
-public class WithNextInvoiceESRActionHandler extends AbstractESRActionHandler
+public class WithCurrenttInvoiceESRActionHandler implements IESRActionHandler
 {
 
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
@@ -44,16 +48,15 @@ public class WithNextInvoiceESRActionHandler extends AbstractESRActionHandler
 	@Override
 	public boolean process(final I_ESR_ImportLine line, final String message)
 	{
-		super.process(line, message);
 
 		final I_C_Payment payment = line.getC_Payment();
-		if (null != payment)
+		final I_C_Invoice invoice = line.getC_Invoice();
+		if (null != payment && null != invoice)
 		{
-			final de.metas.banking.model.I_C_Payment paymentExtended = InterfaceWrapperHelper.create(payment, de.metas.banking.model.I_C_Payment.class);
+			Services.get(IESRImportBL.class).linkInvoiceToPayment(line);
 
-			// 04193 : Just set the flag, the logic is handled on completion of an invoice.
-			paymentExtended.setIsAutoAllocateAvailableAmt(true);
-			InterfaceWrapperHelper.save(paymentExtended);
+			final boolean ignoreProcessed = false;
+			Services.get(IInvoiceBL.class).testAllocation(invoice, ignoreProcessed);
 		}
 		else
 		{

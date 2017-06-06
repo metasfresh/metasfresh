@@ -1,4 +1,4 @@
-package de.metas.payment.esr.api.impl;
+package de.metas.payment.esr.actionhandler;
 
 /*
  * #%L
@@ -25,13 +25,19 @@ package de.metas.payment.esr.api.impl;
 
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 
-class ESRPaymentLineMatcher extends AbstractESRLineMatcher
+/**
+ * Every implementor handles a specific {@link I_ESR_ImportLine#COLUMNNAME_ESR_Payment_Action}.
+ * 
+ */
+public interface IESRActionHandler
 {
 
-	@Override
-	public void match(I_ESR_ImportLine importLine)
-	{
-		throw new IllegalStateException("ESR TrxType Payment not supported"); // TODO: 995 line
-	}
-
+	/**
+	 * Processes the ESR import line according to its assigned payment action.
+	 * 
+	 * @param line The line to process. The handlers don't save by design, it has to be done after the call.
+	 * @param message Stores information about the process calling the handler. Currently used when writing off.
+	 * @return if the line shall be flagged as processed after the handler has been invoked.
+	 */
+	boolean process(I_ESR_ImportLine line, String message);
 }

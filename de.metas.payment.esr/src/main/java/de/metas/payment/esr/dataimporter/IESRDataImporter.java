@@ -1,10 +1,10 @@
-package de.metas.payment.esr.spi;
+package de.metas.payment.esr.dataimporter;
 
 /*
  * #%L
  * de.metas.payment.esr
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,21 +23,7 @@ package de.metas.payment.esr.spi;
  */
 
 
-import de.metas.payment.esr.model.I_ESR_ImportLine;
-
-/**
- * Every implementor handles a specific {@link I_ESR_ImportLine#COLUMNNAME_ESR_Payment_Action}.
- * 
- */
-public interface IESRActionHandler
+public interface IESRDataImporter
 {
-
-	/**
-	 * Processes the ESR import line according to its assigned payment action.
-	 * 
-	 * @param line The line to process. The handlers don't save by design, it has to be done after the call.
-	 * @param message Stores information about the process calling the handler. Currently used when writing off.
-	 * @return if the line shall be flagged as processed after the handler has been invoked.
-	 */
-	boolean process(I_ESR_ImportLine line, String message);
+	ESRStatement importData();
 }

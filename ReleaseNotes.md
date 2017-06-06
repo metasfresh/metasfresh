@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Rearrangements to Request Window in WebUI. Harmonizing Look & Feel to current Layout default.
   * [#1729](https://github.com/metasfresh/metasfresh/issues/1729) Adjustments to window Product Category in WebUI
     * Adjusting different windows to out default Layout and Look&Feel including Product Category, Unit of Measure and Attribute Window.
+  * [#1730](https://github.com/metasfresh/metasfresh/issues/1730) New Window for Discount Maintenance in WebUI
+    * New Window for Discount Maintenance in WebUI. Allowing to define flat discounts or discount Quantity breaks as Discount Schema.
     
 ## Fixes
 

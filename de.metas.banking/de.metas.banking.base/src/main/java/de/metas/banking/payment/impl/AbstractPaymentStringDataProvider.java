@@ -32,8 +32,6 @@ public abstract class AbstractPaymentStringDataProvider implements IPaymentStrin
 
 	public AbstractPaymentStringDataProvider(final IPaymentString paymentString)
 	{
-		super();
-
 		this.paymentString = paymentString;
 	}
 
