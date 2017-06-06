@@ -1,13 +1,20 @@
 package de.metas.fresh.picking.service.impl;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 
+import de.metas.fresh.picking.form.IFreshPackingItem;
+import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -39,7 +46,7 @@ public class HU2PackingItemTestCommons
 {
 	final int COUNT_IFCOs_Per_Palet = 5;
 	final int COUNT_Tomatoes_Per_IFCO = 10;
-	
+
 	public HUTestHelper commonCreateHUTestHelper()
 	{
 		return new HUTestHelper()
@@ -53,23 +60,88 @@ public class HU2PackingItemTestCommons
 		};
 	}
 
-	public I_M_HU_PI createHuDefIFCO(@NonNull final HUTestHelper helper)
+	public I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper)
 	{
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-		{
-			final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-			helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO), helper.uomEach);
-		}
-		return huDefIFCO;
+
+		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
+		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO), helper.uomEach);
+
+		return huPiItemProduct;
 	}
 
-	public I_M_HU_PI createHuDefPalet(@NonNull final HUTestHelper helper, @NonNull final I_M_HU_PI tuHuDef)
+	/**
+	 * Creates a {@link I_M_HU_PI} for a loading unit, links the given transport unit's {@code tuHuDef} and returns the respective {@link I_M_HU_PI_Item} (which therefore has type=HU).
+	 * 
+	 * @param helper
+	 * @param tuHuDef
+	 * @return
+	 */
+	public I_M_HU_PI_Item createHuDefPalet(@NonNull final HUTestHelper helper, @NonNull final I_M_HU_PI_Item_Product tuHuDef)
 	{
 		final I_M_HU_PI huDefPalet = helper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+		final I_C_BPartner bpartner = null;
+		final I_M_HU_PI_Item huPiItem = helper.createHU_PI_Item_IncludedHU(
+				huDefPalet,
+				tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(),
+				BigDecimal.valueOf(COUNT_IFCOs_Per_Palet),
+				bpartner);
+
+		return huPiItem;
+	}
+
+	/**
+	 * Creates as many palets as are needed to contain the given qty within IFCOs.
+	 * 
+	 * @param helper
+	 * @param luHuDef
+	 * @param tuHuDef
+	 * @param qtyToLoad
+	 * @return
+	 */
+	public List<I_M_HU> createLUs(
+			@NonNull final HUTestHelper helper,
+			@NonNull final I_M_HU_PI_Item luHuDef,
+			@NonNull final I_M_HU_PI_Item_Product tuHuDef,
+			final int qtyToLoad)
+	{
+		if (qtyToLoad % COUNT_Tomatoes_Per_IFCO != 0)
 		{
-			final I_C_BPartner bpartner = null;
-			helper.createHU_PI_Item_IncludedHU(huDefPalet, tuHuDef, BigDecimal.valueOf(COUNT_IFCOs_Per_Palet), bpartner);
+			throw new AdempiereException("QtyToLoad shall be multiple of " + COUNT_Tomatoes_Per_IFCO + " else method assertValidShipmentScheduleLUTUAssignments will fail");
 		}
-		return huDefPalet;
+		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
+		final List<I_M_HU> luHUs = helper.createLUs(huContext, luHuDef, tuHuDef, new BigDecimal(qtyToLoad));
+		
+		return luHUs;
+	}
+	
+	
+	public List<I_M_HU> createTUs(@NonNull final HUTestHelper helper,
+			@NonNull final I_M_HU_PI_Item_Product tuHuDef,
+			final int qtyToLoad)
+	{
+		if (qtyToLoad % COUNT_Tomatoes_Per_IFCO != 0)
+		{
+			throw new AdempiereException("QtyToLoad shall be multiple of " + COUNT_Tomatoes_Per_IFCO + " else method assertValidShipmentScheduleLUTUAssignments will fail");
+		}
+
+		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);
+		final BigDecimal qtyToLoadBD = BigDecimal.valueOf(qtyToLoad);
+		final List<I_M_HU> hus = helper.createHUs(huContext, tuHuDef.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI(), helper.pTomato, qtyToLoadBD, helper.uomEach);
+
+		return hus;
+	}
+	
+	/**
+	 * Creates HU to Packing Items Allocator (i.e. class under test)
+	 */
+	public HU2PackingItemsAllocator createHU2PackingItemsAllocator(
+			@NonNull final IPackingContext packingContext,
+			@NonNull final IFreshPackingItem itemToPack)
+	{
+		final HU2PackingItemsAllocator hu2PackingItemsAllocator = new HU2PackingItemsAllocator();
+		hu2PackingItemsAllocator.setItemToPack(itemToPack);
+		hu2PackingItemsAllocator.setPackingContext(packingContext);
+		return hu2PackingItemsAllocator;
 	}
 }

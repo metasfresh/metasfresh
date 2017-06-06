@@ -13,15 +13,14 @@ package de.metas.fresh.picking.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -177,8 +176,12 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 				for (final I_M_ShipmentSchedule sched : itemPacked.getShipmentSchedules())
 				{
 					final BigDecimal schedQty = itemPacked.getQtyForSched(sched); // qty to pack, available on current shipment schedule
-					final I_C_UOM uom = itemPacked.getC_UOM();
-					onQtyAllocated(sched, schedQty, uom, vhu);
+					if (schedQty.signum() != 0)
+					{
+						// gh #1712: only create M_ShipmentSchedule_QtyPicked etc etc for 'sched' if there is an actual quantity.
+						final I_C_UOM uom = itemPacked.getC_UOM();
+						onQtyAllocated(sched, schedQty, uom, vhu);
+					}
 				}
 			}
 		};
