@@ -21,7 +21,8 @@ class Lookup extends Component {
             propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
             property: '',
             fireClickOutside: false,
-            initialFocus: false
+            initialFocus: false,
+            localClearing: false
         }
     }
 
@@ -89,13 +90,20 @@ class Lookup extends Component {
         });
     }
 
+    resetLocalClearing = () => {
+        this.setState({
+            localClearing: false
+        })
+    }
+
     handleClear = () => {
         const {onChange, properties} = this.props;
         onChange(properties, null, false);
         this.setState({
             isInputEmpty: true,
             property: '',
-            initialFocus: true
+            initialFocus: true,
+            localClearing: true
         });
     }
 
@@ -109,7 +117,8 @@ class Lookup extends Component {
         } = this.props;
 
         const {
-            isInputEmpty, property, fireClickOutside, initialFocus
+            isInputEmpty, property, fireClickOutside, initialFocus,
+            localClearing
         } = this.state;
 
         return (
@@ -148,6 +157,7 @@ class Lookup extends Component {
                                 handleInputEmptyStatus={
                                     this.handleInputEmptyStatus
                                 }
+                                resetLocalClearing={this.resetLocalClearing}
                                 initialFocus={index===0 ? initialFocus : false}
                                 setNextProperty={this.setNextProperty}
                                 lookupEmpty={isInputEmpty}
@@ -157,7 +167,8 @@ class Lookup extends Component {
                                 mandatory, validStatus, align, onChange, item,
                                 disabled, fireClickOutside, viewId, subentity,
                                 subentityId, autoFocus, tabId, rowId,
-                                newRecordCaption, newRecordWindowId}}
+                                newRecordCaption, newRecordWindowId,
+                                localClearing}}
                             />
 
                         } else if (item.source === 'list') {

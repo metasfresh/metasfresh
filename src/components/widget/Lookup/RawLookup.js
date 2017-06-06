@@ -50,8 +50,14 @@ class RawLookup extends Component {
 
         const {
             autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus,
-            filterWidget, initialFocus, lookupEmpty
+            filterWidget, initialFocus, lookupEmpty, localClearing,
+            resetLocalClearing
         } = this.props;
+
+        if(localClearing && !defaultValue) {
+            this.inputSearch.value ='';
+            resetLocalClearing();
+        }
 
         const {shouldBeFocused} = this.state;
         if(autoFocus && !this.inputSearch.value && shouldBeFocused){
@@ -171,6 +177,8 @@ class RawLookup extends Component {
                 query: this.inputSearch.value,
                 list: recent
             });
+
+            handleInputEmptyStatus(true);
         }
     }
 
