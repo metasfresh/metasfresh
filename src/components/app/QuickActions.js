@@ -112,12 +112,16 @@ class QuickActions extends Component {
         } = this.state;
 
         const {
-            shouldNotUpdate, processStatus, hidden
+            shouldNotUpdate, processStatus, disabled
         } = this.props;
 
-        if(actions.length && !hidden){
+        if(actions.length){
             return (
-                <div className="js-not-unselect">
+                <div
+                    className={'js-not-unselect ' +
+                        (disabled ? 'disabled ' : '')
+                    }
+                >
                     <span className="spacer-right">Actions:</span>
                     <div className="quick-actions-wrapper">
                         <div

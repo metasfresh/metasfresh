@@ -474,13 +474,14 @@ class DocumentList extends Component {
                 <div
                     className={
                         'document-list-wrapper ' +
-                        (isIncluded ? 'document-list-included ' : '')
+                        (isIncluded ? 'document-list-included ' : '') +
+                        (hasIncluded ? 'document-list-has-included ' : '')
                     }
                 >
                         {!readonly && <div
                             className="panel panel-primary panel-spaced panel-inline document-list-header"
                         >
-                            {!hasIncluded && <div>
+                            <div className={hasIncluded ? 'disabled' : ''}>
                                 {layout.supportNewRecord && !isModal &&
                                     <button
                                         className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
@@ -498,13 +499,13 @@ class DocumentList extends Component {
                                     filtersActive={filters}
                                     updateDocList={this.handleFilterChange}
                                 />}
-                            </div>}
+                            </div>
                             <QuickActions
                                 {...{windowType, selectedWindowType, viewId,
                                     refresh, processStatus}}
                                 selected={selectionValid ? selected : undefined}
                                 fetchOnInit={fetchQuickActionsOnInit}
-                                hidden={hasIncluded}
+                                disabled={hasIncluded}
                                 shouldNotUpdate={inBackground && !hasIncluded}
                             />
                         </div>}
