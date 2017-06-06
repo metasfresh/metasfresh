@@ -138,13 +138,12 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(InterfaceWrapperHelper.getCtx(hu), inOutLine, huTopLevel, luHU, tuHU, trxName)
 					.build();
 
-			// mark hu as shipped ( if vendor return)  or Active (if customer return)
+			// mark hu as shipped ( if vendor return) or Active (if customer return)
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
 			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
 			setHUStatus(huContext, hu);
-
 
 		}
 	}
@@ -180,6 +179,13 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		if (existingInOutLine != null)
 		{
 			return existingInOutLine;
+		}
+
+		// #1306 verify if the origin line belongs to the manually created return ( _inOutRef)
+		if (originInOutLine.getM_InOut_ID() == inout.getM_InOut_ID())
+		{
+			_inOutLines.put(inOutLineKey, originInOutLine);
+			return originInOutLine;
 		}
 
 		//
