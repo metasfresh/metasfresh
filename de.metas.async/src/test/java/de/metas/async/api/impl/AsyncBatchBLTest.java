@@ -53,9 +53,9 @@ public class AsyncBatchBLTest
 	public void test_Processed()
 	{
 		
-		final Timestamp FirstEnqueued = TimeUtil.addMinutess(now, -5);
-		final Timestamp LastEnqueued = TimeUtil.addMinutess(now, -4);
-		final Timestamp LastProcessed = TimeUtil.addMinutess(now, -3);
+		final Timestamp FirstEnqueued = TimeUtil.addMinutes(now, -5);
+		final Timestamp LastEnqueued = TimeUtil.addMinutes(now, -4);
+		final Timestamp LastProcessed = TimeUtil.addMinutes(now, -3);
 		final int CountEnqueued = 2;
 		final int CountProcessed = 2;
 
