@@ -210,7 +210,7 @@ public class ProductTableRowSearchSelectionMatcher implements ITableRowSearchSel
 	@Override
 	public boolean match(final TableRowKey key)
 	{
-		bpartnerId = key.getBPartnerId();
+		bpartnerId = key.getBpartnerId();
 
 		//
 		// Attempt to search for the productId in the selected UPCs first

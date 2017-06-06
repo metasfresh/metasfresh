@@ -13,11 +13,11 @@ package de.metas.ui.web.base.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -25,7 +25,12 @@ package de.metas.ui.web.base.model;
 public interface I_T_WEBUI_ViewSelection
 {
 	String Table_Name = "T_WEBUI_ViewSelection";
+
 	String COLUMNNAME_UUID = "UUID";
-	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/** i.e. the sequence number for ordering */
 	String COLUMNNAME_Line = "Line";
+
+	/** Record ID / Aggregate record ID / Root record ID */
+	String COLUMNNAME_Record_ID = "Record_ID";
 }

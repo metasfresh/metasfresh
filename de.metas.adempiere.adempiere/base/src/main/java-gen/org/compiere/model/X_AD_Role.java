@@ -4,7 +4,6 @@ package org.compiere.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for AD_Role
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1926184843L;
+	private static final long serialVersionUID = 1821128746L;
 
     /** Standard Constructor */
     public X_AD_Role (Properties ctx, int AD_Role_ID, String trxName)
@@ -25,73 +24,43 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
       /** if (AD_Role_ID == 0)
         {
 			setAD_Role_ID (0);
-			setAllow_Info_Account (false);
-// N
-			setAllow_Info_Asset (false);
-// N
-			setAllow_Info_BPartner (false);
-// N
-			setAllow_Info_CashJournal (false);
-// N
-			setAllow_Info_CRP (true);
-// Y
-			setAllow_Info_InOut (false);
-// N
-			setAllow_Info_Invoice (false);
-// N
-			setAllow_Info_MRP (true);
-// Y
-			setAllow_Info_Order (false);
-// N
-			setAllow_Info_Payment (false);
-// N
-			setAllow_Info_Product (true);
-// Y
-			setAllow_Info_Resource (false);
-// N
-			setAllow_Info_Schedule (false);
-// N
-			setConfirmQueryRecords (0);
-// 0
-			setIsAccessAllOrgs (false);
-// N
-			setIsAllowLoginDateOverride (false);
-// N
-			setIsAutoRoleLogin (false);
-// N
+			setAllow_Info_Account (false); // N
+			setAllow_Info_Asset (false); // N
+			setAllow_Info_BPartner (false); // N
+			setAllow_Info_CashJournal (false); // N
+			setAllow_Info_CRP (true); // Y
+			setAllow_Info_InOut (false); // N
+			setAllow_Info_Invoice (false); // N
+			setAllow_Info_MRP (true); // Y
+			setAllow_Info_Order (false); // N
+			setAllow_Info_Payment (false); // N
+			setAllow_Info_Product (true); // Y
+			setAllow_Info_Resource (false); // N
+			setAllow_Info_Schedule (false); // N
+			setConfirmQueryRecords (0); // 0
+			setIsAccessAllOrgs (false); // N
+			setIsAllowLoginDateOverride (false); // N
+			setIsAutoRoleLogin (false); // N
 			setIsCanApproveOwnDoc (false);
-			setIsCanExport (true);
-// Y
-			setIsCanReport (true);
-// Y
-			setIsChangeLog (false);
-// N
+			setIsCanExport (true); // Y
+			setIsCanReport (true); // Y
+			setIsChangeLog (false); // N
 			setIsDiscountAllowedOnTotal (false);
 			setIsDiscountUptoLimitPrice (false);
 			setIsManual (false);
-			setIsMenuAvailable (true);
-// Y
-			setIsPersonalAccess (false);
-// N
-			setIsPersonalLock (false);
-// N
-			setIsRoleAlwaysUseBetaFunctions (false);
-// N
-			setIsShowAcct (false);
-// N
-			setIsShowAllEntityTypes (false);
-// N
-			setIsUseUserOrgAccess (false);
-// N
-			setMaxQueryRecords (0);
-// 0
+			setIsMenuAvailable (true); // Y
+			setIsPersonalAccess (false); // N
+			setIsPersonalLock (false); // N
+			setIsRoleAlwaysUseBetaFunctions (false); // N
+			setIsShowAcct (false); // N
+			setIsShowAllEntityTypes (false); // N
+			setIsUseUserOrgAccess (false); // N
+			setMaxQueryRecords (0); // 0
 			setName (null);
-			setOverwritePriceLimit (false);
-// N
-			setPreferenceType (null);
-// O
-			setUserLevel (null);
-// __O
+			setOverwritePriceLimit (false); // N
+			setPreferenceType (null); // O
+			setUserLevel (null); // __O
+			setWEBUI_Role (true); // Y
         } */
     }
 
@@ -1348,5 +1317,28 @@ public class X_AD_Role extends org.compiere.model.PO implements I_AD_Role, org.c
 	public java.lang.String getUserLevel () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_UserLevel);
+	}
+
+	/** Set Is webui role.
+		@param WEBUI_Role Is webui role	  */
+	@Override
+	public void setWEBUI_Role (boolean WEBUI_Role)
+	{
+		set_Value (COLUMNNAME_WEBUI_Role, Boolean.valueOf(WEBUI_Role));
+	}
+
+	/** Get Is webui role.
+		@return Is webui role	  */
+	@Override
+	public boolean isWEBUI_Role () 
+	{
+		Object oo = get_Value(COLUMNNAME_WEBUI_Role);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 }
