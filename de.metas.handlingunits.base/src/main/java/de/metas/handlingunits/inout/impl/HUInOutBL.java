@@ -249,7 +249,7 @@ public class HUInOutBL implements IHUInOutBL
 				.addHUsToReturn(hus)
 				.create();
 	}
-	
+
 	@Override
 	public List<I_M_InOut> createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
 	{
@@ -313,6 +313,39 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
+	public boolean isVendorReturn(final org.compiere.model.I_M_InOut inOut)
+	{
+
+		// in the case of returns the docSubType is null
+		final String docSubType = IDocTypeDAO.DOCSUBTYPE_NONE;
+
+		final I_C_DocType returnsDocType = Services.get(IDocTypeDAO.class)
+				.getDocTypeOrNullForSOTrx(
+						Env.getCtx() // ctx
+						, X_C_DocType.DOCBASETYPE_MaterialDelivery // doc basetype
+						, docSubType // doc subtype
+						, false // isSOTrx
+						, inOut.getAD_Client_ID() // client
+						, inOut.getAD_Org_ID() // org
+						, ITrx.TRXNAME_None); // trx
+
+		if (returnsDocType == null)
+		{
+			// there is no customer return doc type defined in the project. Return false by default
+			return false;
+		}
+
+		if (returnsDocType.getC_DocType_ID() != inOut.getC_DocType_ID())
+		{
+			// the inout is not a customer return
+			return false;
+		}
+
+		// the inout is a customer return
+		return true;
+	}
+
+	@Override
 	public void createHUsForCustomerReturn(final I_M_InOutLine customerReturnLine)
 	{
 		final org.compiere.model.I_M_InOut customerReturn = customerReturnLine.getM_InOut();
@@ -341,11 +374,6 @@ public class HUInOutBL implements IHUInOutBL
 		InterfaceWrapperHelper.save(lutuConfigurationEffective, ITrx.TRXNAME_None);
 		customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
 
-		// huGenerator.generateAllPlanningHUs_InChunks();
-
-		// //lutuConfigurationEffective.setQtyLU(BigDecimal.ONE);
-		// InterfaceWrapperHelper.save(lutuConfigurationEffective);
-		// customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
 		//
 		// Calculate the target CUs that we want to allocate
 		final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
@@ -367,10 +395,4 @@ public class HUInOutBL implements IHUInOutBL
 		}
 	}
 
-	@Override
-	public void createHUsForCustomerReturn(org.compiere.model.I_M_InOut customerReturn)
-	{
-		// TODO Auto-generated method stub
-
-	}
 }

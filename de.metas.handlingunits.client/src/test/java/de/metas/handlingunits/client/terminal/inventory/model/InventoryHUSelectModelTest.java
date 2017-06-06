@@ -97,7 +97,7 @@ public class InventoryHUSelectModelTest extends InventoryHUSelectModelTestTempla
 				Arrays.asList(
 						hu_bp01_wh01_active
 						, hu_bp01_wh01_picked
-						, hu_bp01_wh01_shipped
+						//, hu_bp01_wh01_shipped :  #1062 #1327 The shipped HUs shall no longer be displayed in the inventory POS
 						, hu_bp02_wh01_active
 						, hu_bp03loc01_wh01_active
 						, hu_bp03loc02_wh01_active

@@ -55,7 +55,7 @@ import de.metas.inout.event.ReturnInOutProcessedEventBus;
 
 /**
  * Note: For the time being ( task #1306) there is no requirement to have returns from customer created for more than 1 customer at the same time.
- *  But nevertheless, I am writing the implementation similar with the Vendor Return part, to have them structured and to allow the possibility to perform the return from customer also from a POS.
+ * But nevertheless, I am writing the implementation similar with the Vendor Return part, to have them structured and to allow the possibility to perform the return from customer also from a POS.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -110,10 +110,10 @@ public class MultiCustomerHUReturnsInOutProducer
 				final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
 				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, topLevelHU);
 			}
-			
-			if(inOutLineHUAssignments.isEmpty())
+
+			if (inOutLineHUAssignments.isEmpty())
 			{
-				inOutLineHUAssignments =  huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, hu);
+				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, hu);
 			}
 
 			//
@@ -128,8 +128,8 @@ public class MultiCustomerHUReturnsInOutProducer
 
 				// Find out the the Vendor BPartner
 				final I_M_InOutLine inoutLine = InterfaceWrapperHelper.loadOutOfTrx(originalShipmentInOutLineId, I_M_InOutLine.class);
-				
-				if(inoutLine == null)
+
+				if (inoutLine == null)
 				{
 					continue;
 				}
@@ -160,6 +160,8 @@ public class MultiCustomerHUReturnsInOutProducer
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 					.notify(returnInOuts);
 		}
+
+		handlingUnitsBL.setHUStatusActive(_husToReturn);
 
 		// return the created vendor returns
 		return returnInOuts;
