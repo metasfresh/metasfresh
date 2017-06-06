@@ -63,6 +63,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -309,6 +310,15 @@ public class Login
 				Ini.setProperty(Ini.P_UID, "");
 			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && MSystem.isSwingRememberPasswordAllowed())
 				Ini.setProperty(Ini.P_PWD, password);
+		}
+		
+		//
+		// Use user's AD_Language, if any
+		if (!Check.isEmpty(user.getAD_Language()))
+		{
+			final Language language = Language.getLanguage(user.getAD_Language());
+			Env.verifyLanguage(language);
+			ctx.setAD_Language(language.getAD_Language());
 		}
 
 		//
