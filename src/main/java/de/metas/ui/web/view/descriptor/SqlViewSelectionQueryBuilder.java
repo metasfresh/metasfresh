@@ -830,4 +830,50 @@ public final class SqlViewSelectionQueryBuilder
 		return sql.build().caching();
 	}
 
+	public static IStringExpression buildSqlSelectLines(
+			final String sqlTableName,
+			final String sqlTableAlias,
+			final String sqlKeyColumnName,
+			final Collection<String> displayFieldNames,
+			final Collection<SqlViewRowFieldBinding> allFields)
+	{
+		final List<String> sqlSelectValuesList = new ArrayList<>();
+		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
+		allFields.forEach(field -> {
+			// Collect the SQL select for internal value
+			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
+			sqlSelectValuesList.add(field.getSqlSelectValue());
+
+			// Collect the SQL select for displayed value,
+			// * if there is one
+			// * and if it was required by caller (i.e. present in fieldNames list)
+			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
+			{
+				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
+			}
+		});
+
+		// NOTE: we don't need access SQL here because we assume the records were already filtered
+
+		final CompositeStringExpression.Builder sql = IStringExpression.composer();
+		sql.append("SELECT ")
+				.append("\n").append(sqlTableAlias).append(".*"); // Value fields
+
+		if (!sqlSelectDisplayNamesList.isEmpty())
+		{
+			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
+		}
+
+		sql.append("\n FROM (")
+				.append("\n   SELECT ")
+				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
+				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
+				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
+				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
+				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
+				.append("\n ) " + sqlTableAlias); // FROM
+
+		return sql.build().caching();
+	}
+
 }

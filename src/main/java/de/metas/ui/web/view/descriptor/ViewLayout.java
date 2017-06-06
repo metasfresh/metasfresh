@@ -101,7 +101,7 @@ public class ViewLayout implements ETagAware
 	}
 
 	/** copy and override constructor */
-	private ViewLayout(final ViewLayout from, final ImmutableList<DocumentFilterDescriptor> filters, final String allowNewCaption)
+	private ViewLayout(final ViewLayout from, final ImmutableList<DocumentFilterDescriptor> filters, final String allowNewCaption, final boolean hasTreeSupport)
 	{
 		super();
 		windowId = from.windowId;
@@ -118,7 +118,7 @@ public class ViewLayout implements ETagAware
 		idFieldName = from.idFieldName;
 
 		hasAttributesSupport = from.hasAttributesSupport;
-		hasTreeSupport = from.hasTreeSupport;
+		this.hasTreeSupport = hasTreeSupport;
 		hasIncludedViewSupport = from.hasIncludedViewSupport;
 		this.allowNewCaption = allowNewCaption;
 
@@ -179,15 +179,16 @@ public class ViewLayout implements ETagAware
 		return filters;
 	}
 
-	public ViewLayout withFilters(final Collection<DocumentFilterDescriptor> filtersToSet)
+	public ViewLayout withFiltersAndTreeSupport(final Collection<DocumentFilterDescriptor> filtersToSet, final boolean hasTreeSupportToSet)
 	{
 		final ImmutableList<DocumentFilterDescriptor> filtersToSetEffective = filtersToSet != null ? ImmutableList.copyOf(filtersToSet) : ImmutableList.of();
-		if (Objects.equals(filters, filtersToSetEffective))
+		if (Objects.equals(filters, filtersToSetEffective)
+				&& this.hasTreeSupport == hasTreeSupportToSet)
 		{
 			return this;
 		}
 
-		return new ViewLayout(this, filtersToSetEffective, allowNewCaption);
+		return new ViewLayout(this, filtersToSetEffective, allowNewCaption, hasTreeSupportToSet);
 	}
 
 	public ViewLayout withAllowNewRecordIfPresent(final Optional<String> allowNewCaption)
@@ -203,7 +204,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		return new ViewLayout(this, filters, allowNewCaptionToSet);
+		return new ViewLayout(this, filters, allowNewCaptionToSet, hasTreeSupport);
 	}
 
 	public List<DocumentLayoutElementDescriptor> getElements()
@@ -368,7 +369,7 @@ public class ViewLayout implements ETagAware
 		{
 			return !elementBuilders.isEmpty();
 		}
-		
+
 		public List<DocumentLayoutElementDescriptor.Builder> getElements()
 		{
 			return elementBuilders;

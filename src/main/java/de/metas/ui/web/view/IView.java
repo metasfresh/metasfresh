@@ -74,10 +74,11 @@ public interface IView
 
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
-	default ViewResult getPage(final int firstRow, final int pageLength, final String orderBysListStr)
+	default List<? extends IViewRow> getIncludedRows(final DocumentId rowId, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
-		return getPage(firstRow, pageLength, orderBys);
+		// TODO: apply the sorting.
+		// NOTE: not so important because this method is not used....
+		return getById(rowId).getIncludedRows();
 	}
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;

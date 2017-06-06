@@ -260,6 +260,16 @@ public class DefaultView implements IView
 	}
 
 	@Override
+	public List<IViewRow> getIncludedRows(final DocumentId rowId, final List<DocumentQueryOrderBy> orderBys)
+	{
+		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
+
+		final List<IViewRow> lines = viewDataRepository.retrieveRowLines(evalCtx, orderedSelection, rowId);
+		return lines;
+	}
+
+	@Override
 	public IViewRow getById(final DocumentId rowId)
 	{
 		assertNotClosed();

@@ -70,6 +70,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final IStringExpression sqlWhereClause;
 	private final IStringExpression sqlSelectByPage;
 	private final IStringExpression sqlSelectById;
+	private final IStringExpression sqlSelectLinesByRowId;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
@@ -107,6 +108,14 @@ public class SqlViewBinding implements SqlEntityBinding
 				.append("\n AND " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
 				.build();
 
+		sqlSelectLinesByRowId = SqlViewSelectionQueryBuilder.buildSqlSelectLines(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields)
+				.toComposer()
+				.append("\n WHERE ")
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?")
+				.append("\n AND " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
+				.build();
+
+		
 		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
 		for (final SqlViewRowFieldBinding field : allFields)
 		{
@@ -202,6 +211,11 @@ public class SqlViewBinding implements SqlEntityBinding
 	public IStringExpression getSqlSelectById()
 	{
 		return sqlSelectById;
+	}
+	
+	public IStringExpression getSqlSelectLinesByRowId()
+	{
+		return sqlSelectLinesByRowId;
 	}
 
 	public List<SqlViewRowFieldLoader> getRowFieldLoaders()
