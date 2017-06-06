@@ -211,7 +211,7 @@ public abstract class Packing extends MvcGenForm
 			// g one representative row for the current key
 			final TableRow currentRow = tableRowsForKey.iterator().next();
 
-			String bpartnerAddress = currentRow.getBPartnerAddress();
+			String bpartnerAddress = currentRow.getKey().getBpartnerAddress();
 			if (bpartnerAddress != null)
 			{
 				bpartnerAddress = bpartnerAddress.replace('\n', ' ');
@@ -219,8 +219,8 @@ public abstract class Packing extends MvcGenForm
 
 			// set values
 			miniTable.setValueAt(new IDColumn(key.hashCode()), rowIdx, 0); //
-			miniTable.setValueAt(currentRow.getBPartnerValue(), rowIdx, 1); // Value
-			miniTable.setValueAt(currentRow.getbPartnerName(), rowIdx, 2); // Name
+			miniTable.setValueAt(currentRow.getBpartnerValue(), rowIdx, 1); // Value
+			miniTable.setValueAt(currentRow.getBpartnerName(), rowIdx, 2); // Name
 			miniTable.setValueAt(bpartnerAddress, rowIdx, 3); // "Lieferadresse"
 			miniTable.setValueAt(currentRow.getDeliveryVia(), rowIdx, 4);
 			miniTable.setValueAt(currentRow.getShipper(), rowIdx, 5);
@@ -341,7 +341,7 @@ public abstract class Packing extends MvcGenForm
 
 			detailsModel = createPackingDetailsModel(ctx, rows, unallocatedLines, nonItemScheds);
 
-			if (model.isPOS == true)
+			if (model.isPOSMode())
 			{
 				markAsProcessed();
 				return;
