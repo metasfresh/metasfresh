@@ -10,6 +10,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
@@ -99,13 +100,19 @@ class MultiVendorHUReturnsInOutProducer
 
 			//
 			// Find out the HU assignments to original vendor material receipt
-			List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
+			List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, hu);
 			// if the given HU does not have any inout line HU assignments, it might be that it is an aggregated HU.
 			// fallback on the HU assignments of the top level HU
 			if (inOutLineHUAssignments.isEmpty())
 			{
 				final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, topLevelHU);
+				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, topLevelHU);
+			}
+
+			// there were no HU Asignments for inoutlines.
+			if (inOutLineHUAssignments.isEmpty())
+			{
+				throw new AdempiereException("No InOutLine HUAssignments for selected HU");
 			}
 
 			//
@@ -146,6 +153,12 @@ class MultiVendorHUReturnsInOutProducer
 			ReturnInOutProcessedEventBus.newInstance()
 					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 					.notify(returnInOuts);
+		}
+
+		for (final I_M_HU hu : _husToReturn)
+		{
+			hu.setIsActive(false);
+			InterfaceWrapperHelper.save(hu);
 		}
 
 		// return the created vendor returns

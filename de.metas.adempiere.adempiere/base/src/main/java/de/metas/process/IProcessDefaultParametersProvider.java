@@ -38,7 +38,7 @@ public interface IProcessDefaultParametersProvider
 	/**
 	 * Gets process parameter's default value.
 	 *
-	 * @param parameter
+	 * @param parameter never {@code null}.
 	 * @return
 	 * 		<ul>
 	 *         <li>not null value

@@ -1,5 +1,7 @@
 package de.metas.payment.esr.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -13,15 +15,14 @@ package de.metas.payment.esr.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.Properties;
@@ -41,17 +42,23 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
+import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
 import de.metas.payment.esr.model.I_ESR_Import;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.RunOutOfTrx;
+import lombok.NonNull;
 
 /**
- * Creates ESR import lines for the given V11 file and matches them against system invoices and bPartners.
  * 
- * @author ts
- * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
  */
-public class ESR_Import_LoadFromFile extends JavaProcess
+public class ESR_Import_LoadFromFile
+		extends JavaProcess
+		implements IProcessDefaultParametersProvider
 {
 	// services
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
@@ -61,59 +68,34 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 	private final transient IClientUI clientUI = Services.get(IClientUI.class);
 
 	// Parameters
+	@Param(mandatory = false, parameterName = I_ESR_Import.COLUMNNAME_ESR_Import_ID)
 	private int p_ESR_Import_ID;
+
+	@Param(mandatory = true, parameterName = "FileName")
 	private String p_FileName;
+
+	@Param(mandatory = true, parameterName = I_C_Async_Batch.COLUMNNAME_Name)
 	private String p_AsyncBatchName = "ESR Import";
+
+	@Param(mandatory = true, parameterName = I_C_Async_Batch.COLUMNNAME_Description)
 	private String p_AsyncBatchDesc = "ESR Import process";
 
 	@Override
-	protected void prepare()
-	{
-		for (ProcessInfoParameter para : getParametersAsArray())
-		{
-			String name = para.getParameterName();
-			if (para.getParameter() == null)
-				;
-			else if ("FileName".equals(name))
-			{
-				p_FileName = (String)para.getParameter();
-			}
-			else if (I_ESR_Import.COLUMNNAME_ESR_Import_ID.equals(name))
-			{
-				p_ESR_Import_ID = para.getParameterAsInt();
-			}
-			 else if (I_C_Async_Batch.COLUMNNAME_Name.equals(name))
-			 {
-			 p_AsyncBatchName = (String)para.getParameter();
-			 }
-			 else if (I_C_Async_Batch.COLUMNNAME_Description.equals(name))
-			 {
-			 p_AsyncBatchDesc = (String)para.getParameter();
-			 }
-		}
-
-		if (I_ESR_Import.Table_Name.equals(getTableName()))
-		{
-			p_ESR_Import_ID = getRecord_ID();
-		}
-	}
-
-	@Override
+	@RunOutOfTrx // ...because we might show a dialog to the user
 	protected String doIt() throws Exception
 	{
 		if (p_ESR_Import_ID <= 0)
 		{
-			throw new FillMandatoryException(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
+			if (I_ESR_Import.Table_Name.equals(getTableName()))
+			{
+				p_ESR_Import_ID = getRecord_ID();
+			}
+			if (p_ESR_Import_ID <= 0)
+			{
+				throw new FillMandatoryException(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
+			}
 		}
 
-		if (!esrImportBL.isV11File(p_FileName))
-		{
-			final String  msg = Services.get(IMsgBL.class).getMsg(getCtx(), "ESR_Import_LoadFromFile.CheckV11File");
-			Services.get(IClientUI.class).error(0, msg);
-			
-			throw new AdempiereException(msg);
-		}
-		
 		//
 		// Create Async Batch for tracking
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
@@ -125,6 +107,33 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 				.build();
 
 		final I_ESR_Import esrImport = InterfaceWrapperHelper.create(getCtx(), p_ESR_Import_ID, I_ESR_Import.class, get_TrxName());
+		if (Check.isEmpty(esrImport.getDataType()))
+		{
+			// see if the filename tells us which type to assume
+			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(p_FileName);
+			if (Check.isEmpty(guessedType))
+			{
+				final String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "ESR_Import_LoadFromFile.CantGuessFileType");
+				throw new AdempiereException(msg);
+			}
+			else
+			{
+				addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
+				esrImport.setDataType(guessedType);
+				save(esrImport);
+			}
+		}
+		else
+		{
+			// see if the filename tells us that the user made a mistake
+			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(p_FileName);
+			if (!Check.isEmpty(guessedType) && !guessedType.equalsIgnoreCase(esrImport.getDataType()))
+			{
+				// throw error, telling the user to check the ESI_import's type
+				final String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "ESR_Import_LoadFromFile.InconsitentTypes");
+				throw new AdempiereException(msg);
+			}
+		}
 
 		final String preventDuplicates = sysConfigBL.getValue(ESRConstants.SYSCONFIG_PreventDuplicateImportFiles);
 
@@ -134,7 +143,6 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 		{
 			// the sys config not defined. Functionality to work as before
 		}
-
 		else
 		{
 
@@ -147,7 +155,6 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 
 			while (esrImports.hasNext())
 			{
-
 				if (esrHash.equals(esrImports.next().getHash()))
 				{
 					seen = true;
@@ -160,9 +167,7 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 				if ("W".equalsIgnoreCase(preventDuplicates))
 				{
 					// when sys config is set to prevent Duplicates with warning then show the user a warning with yes and no
-
 					final boolean answer = clientUI.ask(Env.WINDOW_MAIN, ESRConstants.ASK_PreventDuplicateImportFiles);
-
 					if (answer == false)
 					{
 						// If the user doesn't want to re-import the file, the process stops here
@@ -173,7 +178,6 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 				else if ("E".equalsIgnoreCase(preventDuplicates))
 				{
 					// when sys config is set to prevent Duplicates entirely then show the user a warning with OK button
-
 					clientUI.warn(Env.WINDOW_MAIN, ESRConstants.WARN_PreventDuplicateImportFilesEntirely);
 					return "File not imported";
 				}
@@ -186,17 +190,24 @@ public class ESR_Import_LoadFromFile extends JavaProcess
 
 		// Set the hash of the file in the esr header
 		esrImport.setHash(esrHash);
-
-		InterfaceWrapperHelper.save(esrImport);
-
-		// 04582: making sure we will use the trxName of this process in our business logic
-		Check.assume(get_TrxName().equals(InterfaceWrapperHelper.getTrxName(esrImport)), "TrxName {} of {} is equal to the process-TrxName {}",
-				InterfaceWrapperHelper.getTrxName(esrImport),
-				esrImport,
-				get_TrxName());
+		save(esrImport);
 
 		esrImportBL.loadESRImportFile(esrImport, p_FileName, asyncBatch);
 
 		return MSG_OK;
+	}
+
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		if (I_ESR_Import.COLUMNNAME_ESR_Import_ID.equals(parameter.getColumnName()))
+		{
+			final int esrImportId = parameter.getContextAsInt(I_ESR_Import.COLUMNNAME_ESR_Import_ID);
+			if (esrImportId > 0)
+			{
+				return esrImportId;
+			}
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 }
