@@ -528,6 +528,17 @@ public class WindowRestController
 				final WindowId windowId = null;
 				return ImmutablePair.of(recordRef, windowId);
 			}
+			// Key Field
+			else if (field.isKey())
+			{
+				// Allow zooming into key column. It shall open precisely this record in a new window.
+				// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
+				final String tableName = document.getEntityDescriptor().getTableName();
+				final int recordId = document.getDocumentIdAsInt();
+				final ITableRecordReference recordRef = TableRecordReference.of(tableName, recordId);
+				final WindowId windowId = null;
+				return ImmutablePair.of(recordRef, windowId);
+			}
 			// Regular lookup value
 			else
 			{
