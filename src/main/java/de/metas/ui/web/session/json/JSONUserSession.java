@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.i18n.Language;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
@@ -43,9 +44,24 @@ public class JSONUserSession
 	@JsonProperty("loggedIn")
 	private final boolean loggedIn;
 
+	/** login user */
 	@JsonProperty("username")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String username;
+
+	/** user's full name/display name */
+	@JsonProperty("fullname")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String fullname;
+
+	
+	@JsonProperty("email")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String email;
+	
+	@JsonProperty("avatarId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String avatarId;
 
 	@JsonProperty("rolename")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -66,11 +82,21 @@ public class JSONUserSession
 		{
 			username = userSession.getUserName();
 			rolename = userSession.getRoleName();
+			
+			final I_AD_User user = userSession.getAD_User();
+			fullname = user.getName();
+			email = user.getEMail();
+			
+			final int avatarIdInt = user.getAvatar_ID();
+			avatarId = avatarIdInt > 0 ? String.valueOf(avatarIdInt) : null;
 		}
 		else
 		{
 			username = null;
 			rolename = null;
+			fullname = null;
+			email = null;
+			avatarId = null;
 		}
 
 		final Language language = userSession.getLanguage();

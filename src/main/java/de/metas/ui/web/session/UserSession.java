@@ -221,7 +221,7 @@ public class UserSession
 		if (!Objects.equals(adLanguageOld, adLanguageNew))
 		{
 			// Save to database
-			final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(getAD_User_ID());
+			final I_AD_User user = getAD_User();
 			user.setAD_Language(adLanguageNew);
 			InterfaceWrapperHelper.save(user);
 			
@@ -268,6 +268,13 @@ public class UserSession
 	{
 		return data.getAD_User_ID();
 	}
+	
+	public I_AD_User getAD_User()
+	{
+		assertLoggedIn();
+		return Services.get(IUserDAO.class).retrieveUser(data.getAD_User_ID());
+	}
+
 
 	public String getUserName()
 	{
