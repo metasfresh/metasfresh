@@ -50,6 +50,7 @@ class Table extends Component {
             promptOpen: false,
             isBatchEntry: false,
             rows: [],
+            collapsedRows: [],
             pendingInit: true
         }
     }
@@ -578,6 +579,14 @@ class Table extends Component {
             }
         }
     }
+    
+    handleRowCollapse = (id) => {
+        this.setState(prev => update(prev, {
+            collapsedRows: {$splice: [[prev.collapsedRows.indexOf(id), 1, id]]}
+        }), () => {
+            console.log(this.state.collapsedRows)
+        })
+    }
 
     renderTableBody = () => {
         const {
@@ -585,7 +594,7 @@ class Table extends Component {
             mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
 
-        const {selected, rows} = this.state;
+        const {selected, rows, collapsedRows} = this.state;
 
         if(rows){
             let keys = Object.keys(rows);
@@ -593,6 +602,9 @@ class Table extends Component {
             let ret = [];
             for(let i=0; i < keys.length; i++) {
                 const key = keys[i];
+                const id = item[key][keyProperty];
+                if(collapsedRows.indexOf(id) > -1) continue;
+
                 ret.push(
                     <tbody key={i}>
                         <TableItem
@@ -601,23 +613,23 @@ class Table extends Component {
                                 selected, docId, tabIndex, readonly}}
                             key={i}
                             odd={i & 1}
-                            rowId={item[key][keyProperty]}
+                            rowId={id}
                             tabId={tabid}
                             onDoubleClick={() => onDoubleClick &&
-                                onDoubleClick(item[key][keyProperty])
+                                onDoubleClick(id)
                             }
                             onMouseDown={(e) =>
-                                this.handleClick(e, item[key][keyProperty])
+                                this.handleClick(e, id)
                             }
                             handleRightClick={(e, fieldName) =>
                                 this.handleRightClick(
-                                    e, item[key][keyProperty], fieldName)
+                                    e, id, fieldName)
                             }
                             changeListenOnTrue={() => this.changeListen(true)}
                             changeListenOnFalse={() => this.changeListen(false)}
                             newRow={i === keys.length-1 ? newRow : false}
                             isSelected={
-                                selected.indexOf(item[key][keyProperty]) > -1 ||
+                                selected.indexOf(id) > -1 ||
                                 selected[0] === 'all'
                             }
                             handleSelect={this.selectRangeProduct}
@@ -627,6 +639,7 @@ class Table extends Component {
                                 !item[key].saveStatus.saved
                             }
                             getSizeClass={this.getSizeClass}
+                            handleRowCollapse={this.handleRowCollapse}
                         />
                     </tbody>
                 );

@@ -810,12 +810,16 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-export function mapIncluded(node, indent, isParentLastChild = false) {
+export function mapIncluded(
+    node, indent, isParentLastChild = false, childrenIds
+) {
     let ind = indent ? indent : [];
+    let childIds = childrenIds ? childrenIds : [];
     let result = [];
 
     const nodeCopy = Object.assign({}, node, {
-        indent: ind
+        indent: ind,
+        childrenIds: childIds
     });
 
     result = result.concat([nodeCopy]);
@@ -832,9 +836,11 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
                     lastChild: true
                 });
             }
+            
+            childIds.push(node.id);
 
             result = result.concat(
-                mapIncluded(copy, ind.concat([true]), node.lastChild)
+                mapIncluded(copy, ind.concat([true]), node.lastChild, childIds)
             )
         }
     }

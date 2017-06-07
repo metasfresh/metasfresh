@@ -216,35 +216,31 @@ class TableItem extends Component {
             )
         }
 
-        if(indentSupported){
-            return (
+        return (
+            <div
+                className="indent"
+                onClick={(e) =>
+                    this.handleIndentSelect(e, rowId, includedDocuments)
+                }
+            >
+                {indentation}
+
+                {includedDocuments && <div className="indent-bot"/>}
+
                 <div
-                    className="indent"
-                    onClick={(e) =>
-                        this.handleIndentSelect(e, rowId, includedDocuments)
-                    }
+                    className="indent-icon"
                 >
-                    {indentation}
-
-                    {includedDocuments && <div className="indent-bot"/>}
-
-                    <div
-                        className="indent-icon"
-                    >
-                        <i className={this.getIconClassName(huType)} />
-                    </div>
+                    <i className={this.getIconClassName(huType)} />
                 </div>
-            );
-        }else{
-            return false;
-        }
+            </div>
+        );
     }
 
     render() {
         const {
             isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
             indentSupported, contextType, lastChild, processed,
-            includedDocuments, notSaved
+            includedDocuments, notSaved, handleRowCollapse
         } = this.props;
 
         return (
@@ -261,6 +257,13 @@ class TableItem extends Component {
                     (notSaved ? 'row-not-saved ': '')
                 }
             >
+                {indentSupported &&
+                    <td
+                        onClick={handleRowCollapse}
+                    >
+                        {includedDocuments ? '+' : ''}
+                    </td>
+                }
                 {indentSupported &&
                     <td className="indented">
                         {this.renderTree(contextType)}
