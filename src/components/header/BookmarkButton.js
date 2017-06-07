@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
+import {connect} from 'react-redux';
 
 import {patchRequest} from '../../actions/GenericActions';
+import {addNotification} from '../../actions/AppActions';
 
 class BookmarkButton extends Component {
     constructor(props) {
@@ -26,13 +28,18 @@ class BookmarkButton extends Component {
     }
 
     handleClick = () => {
-        const {nodeId, updateData} = this.props;
+        const {dispatch, nodeId, updateData} = this.props;
         const {isBookmark} = this.state;
 
         patchRequest(
             'menu', null, null, null, null, 'favorite', !isBookmark, 'node',
             nodeId
         ).then(response => {
+            dispatch(addNotification(
+                'Bookmarks', 
+                'Bookmark ' + (!isBookmark ? 'added.' : 'removed.'), 5000, 
+                'primary'
+            ));
             this.setState({isBookmark: !isBookmark})
             updateData && updateData(response.data);
         });
@@ -66,5 +73,7 @@ class BookmarkButton extends Component {
         );
     }
 }
+
+BookmarkButton = connect()(BookmarkButton)
 
 export default BookmarkButton;
