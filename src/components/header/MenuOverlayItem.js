@@ -6,6 +6,8 @@ import {
     getWindowBreadcrumb
 } from '../../actions/MenuActions';
 
+import BookmarkButton from './BookmarkButton';
+
 class MenuOverlayItem extends Component {
     constructor(props){
         super(props);
@@ -128,7 +130,7 @@ class MenuOverlayItem extends Component {
     render() {
         const {
             nodeId, type, elementId, caption, children, handleClickOnFolder,
-            query, printChildren
+            query, printChildren, favourite
         } = this.props;
 
         return (
@@ -142,19 +144,24 @@ class MenuOverlayItem extends Component {
             >
 
             { !query &&
-                <span
-                    className={
-                        (children ? 'menu-overlay-expand' : 'menu-overlay-link')
-                    }
-                    onClick={e => {
-                        children ?
-                            handleClickOnFolder(e, nodeId) :
-                            this.clickedItem(e, elementId, nodeId, type)
-                    }}
+                <BookmarkButton
+                    isBookmark={favourite}
+                    nodeId={nodeId}
                 >
-                    {caption}
-                </span>
-
+                    <span
+                        className={
+                            (children ?
+                                'menu-overlay-expand' : 'menu-overlay-link')
+                        }
+                        onClick={e => {
+                            children ?
+                                handleClickOnFolder(e, nodeId) :
+                                this.clickedItem(e, elementId, nodeId, type)
+                        }}
+                    >
+                        {caption}
+                    </span>
+                </BookmarkButton>
             }
 
             { query &&

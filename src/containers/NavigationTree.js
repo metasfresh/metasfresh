@@ -97,52 +97,6 @@ class NavigationTree extends Component {
         this.getData(this.clearValue);
     }
 
-    renderTree = () => {
-      const {rootResults, queriedResults, query} = this.state;
-
-      return(
-          <div>
-              <div className="search-wrapper">
-                  <div className="input-flex input-primary">
-                    <i className="input-icon meta-icon-preview"/>
-                    <DebounceInput
-                        debounceTimeout={250}
-                        type="text" id="search-input"
-                        className="input-field"
-                        placeholder="Type phrase here"
-                        onChange={e => this.handleQuery(e) }
-                    />
-                    {this.state.query && <i
-                        className="input-icon meta-icon-close-alt pointer"
-                        onClick={e => this.handleClear(e) }
-                    />}
-                  </div>
-              </div>
-              <p
-                  className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced"
-              >
-                  {rootResults.caption}
-              </p>
-              <div className="column-wrapper">
-                    {queriedResults && queriedResults.map((subitem, subindex) =>
-                        <MenuOverlayContainer
-                            key={subindex}
-                            printChildren={true}
-                            handleClickOnFolder={this.handleDeeper}
-                            handleRedirect={this.handleRedirect}
-                            handleNewRedirect={this.handleNewRedirect}
-                            openModal={this.openModal}
-                            {...subitem}
-                        />
-                    )}
-                    { queriedResults.length === 0 && query!='' &&
-                        <span>There are no results</span>
-                    }
-              </div>
-          </div>
-      )
-
-  }
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
         dispatch(push('/window/' + elementId));
@@ -168,6 +122,54 @@ class NavigationTree extends Component {
         this.setState(Object.assign({}, this.state, {
             deepNode: null
         }))
+    }
+    
+    
+    renderTree = () => {
+        const {rootResults, queriedResults, query} = this.state;
+    
+        return(
+            <div>
+                <div className="search-wrapper">
+                    <div className="input-flex input-primary">
+                        <i className="input-icon meta-icon-preview"/>
+                        <DebounceInput
+                            debounceTimeout={250}
+                            type="text" id="search-input"
+                            className="input-field"
+                            placeholder="Type phrase here"
+                            onChange={e => this.handleQuery(e) }
+                            />
+                        {query && <i
+                            className="input-icon meta-icon-close-alt pointer"
+                            onClick={e => this.handleClear(e) }
+                            />}
+                    </div>
+                </div>
+                <p
+                    className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced"
+                    >
+                    {rootResults.caption}
+                </p>
+                <div className="column-wrapper">
+                    {queriedResults && queriedResults.map((subitem, subindex) =>
+                        <MenuOverlayContainer
+                            key={subindex}
+                            printChildren={true}
+                            showBookmarks={true}
+                            handleClickOnFolder={this.handleDeeper}
+                            handleRedirect={this.handleRedirect}
+                            handleNewRedirect={this.handleNewRedirect}
+                            openModal={this.openModal}
+                            {...subitem}
+                        />
+                    )}
+                    { queriedResults.length === 0 && query != '' &&
+                        <span>There are no results</span>
+                    }
+                </div>
+            </div>
+        )
     }
 
     render() {
