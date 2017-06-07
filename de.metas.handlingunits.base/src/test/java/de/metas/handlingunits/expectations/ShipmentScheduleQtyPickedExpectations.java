@@ -54,6 +54,12 @@ public class ShipmentScheduleQtyPickedExpectations extends AbstractHUExpectation
 		super(null);
 	}
 
+	/**
+	 * Asserts only the expectations for this instance's included shipment schedule. You might rather want to call {@link #assertExpected(String)}.
+	 * 
+	 * @param message
+	 * @return
+	 */
 	public ShipmentScheduleQtyPickedExpectations assertExpected_ShipmentSchedule(final String message)
 	{
 		if (shipmentSchedule == null)

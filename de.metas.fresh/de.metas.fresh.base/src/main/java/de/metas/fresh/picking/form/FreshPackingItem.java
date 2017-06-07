@@ -28,6 +28,7 @@ package de.metas.fresh.picking.form;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -115,7 +116,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public int getC_BPartner_ID()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return -1;
@@ -128,7 +129,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return null;
@@ -164,7 +165,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public int getC_BPartner_Location_ID()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return -1;
@@ -181,7 +182,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public Set<I_M_Warehouse> getWarehouses()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return Collections.emptySet();
@@ -214,7 +215,7 @@ public class FreshPackingItem extends AbstractPackingItem implements IFreshPacki
 	@Override
 	public Set<Integer> getWarehouseIds()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return Collections.emptySet();

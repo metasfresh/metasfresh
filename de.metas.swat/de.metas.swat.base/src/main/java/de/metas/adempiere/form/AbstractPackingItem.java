@@ -26,15 +26,17 @@ package de.metas.adempiere.form;
  */
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,24 +64,36 @@ public abstract class AbstractPackingItem implements IPackingItem
 {
 	private static final int GROUPINGKEY_ToBeGenerated = Integer.MIN_VALUE;
 
+	private final List<I_M_ShipmentSchedule> sched;
 	private final IdentityHashMap<I_M_ShipmentSchedule, BigDecimal> sched2qty;
+
 	private final int groupingKey;
 	private I_M_Product product; // lazy
 	private final I_C_UOM uom;
 	private BigDecimal weightSingle;
 	private boolean isClosed = false;
 
+	/**
+	 * See {@link #AbstractPackingItem(Map, int)}.
+	 * 
+	 * @param scheds2Qtys
+	 */
 	protected AbstractPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys)
 	{
 		this(scheds2Qtys, GROUPINGKEY_ToBeGenerated);
 	}
 
+	/**
+	 * 
+	 * @param scheds2Qtys this instance's {@link #getShipmentSchedules()} will return the schedules in the order they were retunred by the given map's {@link Map#entrySet()} implementation.
+	 *            So, if you care for that order, then I suggest to call this constructor with an {@link LinkedHashMap} or similar.
+	 * @param groupingKey
+	 */
 	public AbstractPackingItem(final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys, final int groupingKey)
 	{
-		super();
-
 		Check.assumeNotEmpty(scheds2Qtys, "scheds2Qtys not empty");
 		sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
+		sched = scheds2Qtys.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
 
 		final I_M_ShipmentSchedule sched = scheds2Qtys.keySet().iterator().next();
 		if (groupingKey == GROUPINGKEY_ToBeGenerated)
@@ -100,11 +114,11 @@ public abstract class AbstractPackingItem implements IPackingItem
 	/** Copy constructor */
 	protected AbstractPackingItem(final IPackingItem copyFrom)
 	{
-		super();
 		if (copyFrom instanceof AbstractPackingItem)
 		{
 			final AbstractPackingItem copyFromItem = (AbstractPackingItem)copyFrom;
 			sched2qty = new IdentityHashMap<>(copyFromItem.sched2qty);
+			sched = new ArrayList<>(copyFromItem.sched);
 			groupingKey = copyFromItem.groupingKey;
 			product = copyFromItem.product;
 			uom = copyFromItem.uom;
@@ -127,6 +141,10 @@ public abstract class AbstractPackingItem implements IPackingItem
 		final AbstractPackingItem itemCasted = (AbstractPackingItem)item;
 		sched2qty.clear();
 		sched2qty.putAll(itemCasted.sched2qty);
+
+		sched.clear();
+		sched.addAll(itemCasted.sched);
+
 		// this.groupingKey = itemCasted.groupingKey;
 		product = itemCasted.product;
 		// this.uom = itemCasted.uom;
@@ -209,9 +227,9 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final Set<I_M_ShipmentSchedule> getShipmentSchedules()
+	public final List<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
-		return new HashSet<I_M_ShipmentSchedule>(sched2qty.keySet());
+		return new ArrayList<>(sched);
 	}
 
 	@Override
@@ -293,7 +311,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	@Override
 	public final int getProductId()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return -1;
@@ -318,7 +336,9 @@ public abstract class AbstractPackingItem implements IPackingItem
 	@Override
 	public final Map<I_M_ShipmentSchedule, BigDecimal> getQtys()
 	{
-		return Collections.unmodifiableMap(sched2qty);
+		final LinkedHashMap<I_M_ShipmentSchedule, BigDecimal> result = new LinkedHashMap<>();
+		sched.stream().forEach(s -> result.put(s, sched2qty.get(s)));
+		return result;
 	}
 
 	@Override
@@ -419,6 +439,9 @@ public abstract class AbstractPackingItem implements IPackingItem
 		{
 			sched2qty.clear();
 			sched2qty.putAll(sched2qtyCopy);
+
+			sched.clear();
+			sched.addAll(sched2qty.keySet());
 		}
 
 		//
@@ -451,6 +474,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 		if (removeExistingOnes)
 		{
 			sched2qty.clear();
+			sched.clear();
 		}
 
 		//
@@ -473,6 +497,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 			{
 				// don't invoke addSched because we might have been called by addSched ourselves
 				sched2qty.put(schedToAdd, qtyToAdd);
+				sched.add(schedToAdd);
 			}
 			else
 			{
