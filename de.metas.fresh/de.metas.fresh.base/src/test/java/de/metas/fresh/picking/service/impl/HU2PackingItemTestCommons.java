@@ -62,12 +62,12 @@ public class HU2PackingItemTestCommons
 		};
 	}
 
-	public static I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper)
+	public static I_M_HU_PI_Item_Product createHuDefIFCO(@NonNull final HUTestHelper helper, final int cuQty)
 	{
 		final I_M_HU_PI huDefIFCO = helper.createHUDefinition(HUTestHelper.NAME_IFCO_Product, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
 		final I_M_HU_PI_Item itemMA = helper.createHU_PI_Item_Material(huDefIFCO);
-		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(COUNT_Tomatoes_Per_IFCO), helper.uomEach);
+		final I_M_HU_PI_Item_Product huPiItemProduct = helper.assignProduct(itemMA, helper.pTomato, BigDecimal.valueOf(cuQty), helper.uomEach);
 
 		return huPiItemProduct;
 	}
@@ -117,14 +117,22 @@ public class HU2PackingItemTestCommons
 		return luHUs;
 	}
 
+	/**
+	 * Create one of more TUs which in sum contain the given {@code qtyToLoad}.
+	 * 
+	 * @param helper
+	 * @param tuHuDef
+	 * @param qtyToLoad
+	 * @return
+	 */
 	public static List<I_M_HU> createTUs(
 			@NonNull final HUTestHelper helper,
 			@NonNull final I_M_HU_PI_Item_Product tuHuDef,
 			final int qtyToLoad)
 	{
-		if (qtyToLoad % COUNT_Tomatoes_Per_IFCO != 0)
+		if (qtyToLoad % tuHuDef.getQty().intValueExact() != 0)
 		{
-			throw new AdempiereException("QtyToLoad shall be multiple of " + COUNT_Tomatoes_Per_IFCO + " else method assertValidShipmentScheduleLUTUAssignments will fail");
+			throw new AdempiereException("QtyToLoad shall be multiple of " + tuHuDef.getQty().intValueExact() + " else method assertValidShipmentScheduleLUTUAssignments will fail");
 		}
 
 		final IHUContext huContext = helper.createMutableHUContextForProcessing(ITrx.TRXNAME_None);

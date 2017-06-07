@@ -98,7 +98,6 @@ public abstract class AbstractPackingItem implements IPackingItem
 	/** Copy constructor */
 	protected AbstractPackingItem(final IPackingItem copyFrom)
 	{
-		super();
 		if (copyFrom instanceof AbstractPackingItem)
 		{
 			final AbstractPackingItem copyFromItem = (AbstractPackingItem)copyFrom;
