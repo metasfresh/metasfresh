@@ -1,5 +1,6 @@
 package de.metas.fresh.picking.service.impl;
 
+import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.COUNT_Tomatoes_Per_IFCO;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.commonCreateHUTestHelper;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHU2PackingItemsAllocator;
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createHuDefIFCO;
@@ -8,13 +9,13 @@ import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.crea
 import static de.metas.fresh.picking.service.impl.HU2PackingItemTestCommons.createTUs;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,6 +23,8 @@ import java.util.Set;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Services;
 import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.IPackingItem;
 import de.metas.adempiere.form.PackingItemsMap;
@@ -77,7 +80,8 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
 	private I_M_HU_PI_Item huDefPalet;
-	private I_M_HU_PI_Item_Product huDefIFCO;
+	private I_M_HU_PI_Item_Product huDefIFCOWithTen;
+	private I_M_HU_PI_Item_Product huDefIFCOWithEleven;
 
 	private IFreshPackingItem itemToPack;
 	private IPackingContext packingContext;
@@ -92,8 +96,9 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		//
 		// Handling Units Definition
-		huDefIFCO = createHuDefIFCO(helper);
-		huDefPalet = createHuDefPalet(helper, huDefIFCO);
+		huDefIFCOWithTen = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
+		huDefIFCOWithEleven = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO + 1);
+		huDefPalet = createHuDefPalet(helper, huDefIFCOWithTen);
 	}
 
 	@Override
@@ -112,6 +117,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		{
 			BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
 			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliverBD, BigDecimal.ZERO);
+
 			scheds2Qtys.put(schedule, qtyToDeliverBD);
 			qtyToDeliverSum += qtyToDeliver;
 		}
@@ -119,7 +125,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		// Validate
 
 		assertThat("Invalid itemToPack - Qty", itemToPack.getQtySum(), comparesEqualTo(BigDecimal.valueOf(qtyToDeliverSum)));
-				
+
 		//
 		// Create Packing Items
 		final PackingItemsMap packingItems = new PackingItemsMap();
@@ -147,27 +153,49 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		}
 	}
 
+	/**
+	 * Verifies the following behavior:
+	 * <ul>
+	 * <li>one packing item with two sheds that have a quantity of 11 and 10</li>
+	 * <li>two TUs that have a quantity of 10 resp. 11</li>
+	 * <li>allocate them</li>
+	 * <li>Result: the TU with quantity 11 is partially allocated to the both schedules; The TU with quantity 10 is fully allocate to the schedule with quantity 11</li>
+	 * </ul>
+	 * 
+	 * Note that this reflects the current behavior..not necessarily the desired behavior..
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1712
+	 */
 	@Test
 	public void testTwoHUsTwoShipmentSchedules_TopLevelTUs()
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		setupContext(10, 10);
+
+		assertThat(huDefIFCOWithEleven.getQty(), not(comparesEqualTo(huDefIFCOWithTen.getQty()))); // the two defs need to have different qty, otherwise the test is not significant
+		setupContext(
+				huDefIFCOWithEleven.getQty().intValue(),
+				huDefIFCOWithTen.getQty().intValue());
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
 		final Set<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
+		final I_M_ShipmentSchedule shipmentScheduleWithTen = shipmentSchedules.stream().filter(s -> s.getQtyToDeliver().compareTo(huDefIFCOWithTen.getQty()) == 0).findFirst().get();
+		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.stream().filter(s -> s.getQtyToDeliver().compareTo(huDefIFCOWithEleven.getQty()) == 0).findFirst().get();
 
 		// packing item guards
 		final Map<I_M_ShipmentSchedule, BigDecimal> qtys = itemToPack.getQtys();
 		assertThat("Unexpected qtys.size(); qtys=" + qtys, qtys.size(), is(2));
 		assertThat(shipmentSchedules.size(), is(2));
-		itemToPack.getShipmentSchedules();
 
-		final List<I_M_HU> tuHUs = createTUs(helper, huDefIFCO, 20);
-		assertThat(tuHUs.size(), is(2));
-		tuHUs.forEach(tu -> assertThat(handlingUnitsBL.isTopLevel(tu), is(true)));
+		final List<I_M_HU> tuHUsWithTen = createTUs(helper, huDefIFCOWithTen, 10);
+		assertThat(tuHUsWithTen.size(), is(1));
+		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithTen.get(0)), is(true));
+
+		final List<I_M_HU> tuHUsWithEleven = createTUs(helper, huDefIFCOWithEleven, 11);
+		assertThat(tuHUsWithEleven.size(), is(1));
+		assertThat(handlingUnitsBL.isTopLevel(tuHUsWithEleven.get(0)), is(true));
 
 		final HU2PackingItemsAllocator hu2PackingItemsAllocator = createHU2PackingItemsAllocator(packingContext, itemToPack);
-		hu2PackingItemsAllocator.setFromHUs(tuHUs);
+		hu2PackingItemsAllocator.setFromHUs(ImmutableList.of(tuHUsWithTen.get(0), tuHUsWithEleven.get(0)));
 		hu2PackingItemsAllocator.allocate();
 
 		assertThat(POJOLookupMap.get().getRecords(I_M_ShipmentSchedule.class).size(), is(2));
@@ -175,28 +203,29 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat("We shall have packed items", packingContext.getPackingItemsMap().hasPackedItems(), is(true));
 		assertThat("We shall not have unpacked items", packingContext.getPackingItemsMap().hasUnpackedItems(), is(false));
 
-		final Iterator<I_M_ShipmentSchedule> iterator = shipmentSchedules.iterator();
-		final I_M_ShipmentSchedule shipmentSchedule1 = iterator.next();
-		final I_M_ShipmentSchedule shipmentSchedule2 = iterator.next();
-		assertThat(iterator.hasNext(), is(false));
-
 		new ShipmentScheduleQtyPickedExpectations()
-				.shipmentSchedule(shipmentSchedule1)
-				.qtyPicked("10")
+				.shipmentSchedule(shipmentScheduleWithTen)
+				.qtyPicked(huDefIFCOWithTen.getQty())
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUs.get(1)) // i found that it's the 1st TU by trying out; what matters is that one TU is assigned to this shipment schedule and the other one to
-				.qtyPicked("10")
+				.tu(tuHUsWithEleven.get(0))
+				.qtyPicked(huDefIFCOWithTen.getQty())
 				.endExpectation()
 				.assertExpected("");
 
 		new ShipmentScheduleQtyPickedExpectations()
-				.shipmentSchedule(shipmentSchedule2)
-				.qtyPicked("10")
+				.shipmentSchedule(shipmentScheduleWithEleven)
+				.qtyPicked(huDefIFCOWithEleven.getQty())
 				.newShipmentScheduleQtyPickedExpectation()
 				.noLU()
-				.tu(tuHUs.get(0))
-				.qtyPicked("10")
+				.tu(tuHUsWithTen.get(0))
+				.qtyPicked(BigDecimal.TEN)
+				.endExpectation()
+
+				.newShipmentScheduleQtyPickedExpectation()
+				.noLU()
+				.tu(tuHUsWithEleven.get(0))
+				.qtyPicked(BigDecimal.ONE)
 				.endExpectation()
 				.assertExpected("");
 	}
@@ -221,7 +250,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		assertThat(shipmentSchedules.size(), is(2));
 		itemToPack.getShipmentSchedules();
 
-		final List<I_M_HU> luHUs = createLUs(helper, huDefPalet, huDefIFCO, 20);
+		final List<I_M_HU> luHUs = createLUs(helper, huDefPalet, huDefIFCOWithTen, 20);
 		// HU guards
 		// there shall be one LU with one aggregate TU that represents 2 IFCOs with 10 each
 		assertThat(luHUs.size(), is(1));

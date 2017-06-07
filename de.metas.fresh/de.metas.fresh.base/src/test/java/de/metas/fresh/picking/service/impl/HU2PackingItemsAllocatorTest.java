@@ -111,7 +111,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 
 		//
 		// Handling Units Definition
-		huDefIFCO = createHuDefIFCO(helper);
+		huDefIFCO = createHuDefIFCO(helper, COUNT_Tomatoes_Per_IFCO);
 		huDefPalet = createHuDefPalet(helper, huDefIFCO);
 	}
 

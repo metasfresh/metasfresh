@@ -122,6 +122,10 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 		{
 			queryBuilder.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
 		}
+		if (tuHU != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHU.getValue().getM_HU_ID());
+		}
 		if (vhu != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getValue().getM_HU_ID());
