@@ -13,12 +13,8 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.inout.IHUCustomerReturnAllocBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleAllocBuilder;
+import de.metas.handlingunits.model.I_M_InOutLine_HU_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inout.model.I_M_InOutLine_HU_Alloc;
-import de.metas.inoutcandidate.api.impl.ReceiptScheduleAllocBuilder;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.quantity.Quantity;
 
 /*
@@ -55,7 +51,6 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 
 	private I_M_InOutLine _inOutLine;
 	private BigDecimal _qtyToAllocate;
-	private BigDecimal _qtyWithIssues;
 	private IContextAware _context;
 
 	/*
@@ -92,6 +87,12 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 	@Override
 	public I_M_InOutLine_HU_Alloc build(final I_M_InOutLine_HU_Alloc rsaHU)
 	{//
+		
+		// Quantities
+		final BigDecimal qtyToAllocate = getQtyToAllocate();
+
+		rsaHU.setQtyAllocated(qtyToAllocate);
+		
 		// HU_QtyAllocated
 		final Quantity huQtyAllocatedSrc = get_huQtyAllocated();
 		final BigDecimal huQtyAllocated;
@@ -117,6 +118,8 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 		rsaHU.setM_LU_HU(getM_LU_HU());
 		rsaHU.setM_TU_HU(getM_TU_HU());
 		rsaHU.setVHU(getVHU());
+		
+		return rsaHU;
 	}
 
 	@Override
