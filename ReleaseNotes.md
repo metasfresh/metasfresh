@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-24**
 
 ## Features
+* metasfresh-backend
+  * [#1655](https://github.com/metasfresh/metasfresh/issues/1655) Add CountExpected in Async Batch and improvements
 
 ## Fixes
 * metasfresh-backend

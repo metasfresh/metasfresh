@@ -169,7 +169,6 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		assertAfterWorkpackageProcessedInvoked(task);
 		Assert.assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		Assert.assertEquals("Invalid IsError", false, workpackage.isError());
-		Assert.assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
 		Assert.assertNotNull("Invalid SkippedAt", workpackage.getSkippedAt());
 		Assert.assertEquals("Invalid Skipped_Last_Reason", skipReason, workpackage.getSkipped_Last_Reason());
 		Assert.assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
@@ -195,7 +194,6 @@ public class WorkpackageProcessorTaskTest extends QueueProcessorTestBase
 		assertAfterWorkpackageProcessedInvoked(task);
 		assertEquals("Invalid Processed", false, workpackage.isProcessed());
 		assertEquals("Invalid IsError", false, workpackage.isError());
-		assertNotNull("Invalid AD_Issue", workpackage.getAD_Issue());
 		assertNotNull("Invalid SkippedAt", workpackage.getSkippedAt());
 		assertThat("Invalid Skipped_Last_Reason", workpackage.getSkipped_Last_Reason(), startsWith("Deadlock detected"));
 		assertEquals("Invalid SkipTimeoutMillis", skipTimeoutMillis, workpackage.getSkipTimeoutMillis());
