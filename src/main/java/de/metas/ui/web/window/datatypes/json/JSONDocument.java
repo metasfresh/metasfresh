@@ -358,6 +358,7 @@ public final class JSONDocument extends JSONDocumentBase
 		return includedTabsInfo.values();
 	}
 
+	@JsonIgnore
 	public String getWebsocketEndpointEffective()
 	{
 		if (websocketEndpoint != null)
