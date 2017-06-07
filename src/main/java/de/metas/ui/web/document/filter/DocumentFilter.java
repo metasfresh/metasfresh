@@ -6,7 +6,10 @@ import java.util.List;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.util.Check;
+import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -65,6 +68,15 @@ public final class DocumentFilter
 						.setOperator(Operator.IN_ARRAY)
 						.setValue(ImmutableList.copyOf(values))
 						.build())
+				.build();
+	}
+
+	public static DocumentFilter ofQueryFilter(final String filterId, final IQueryFilter<?> filter)
+	{
+		final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter);
+		return builder()
+				.setFilterId(filterId)
+				.addParameter(DocumentFilterParam.ofSqlWhereClause(true, sqlFilter.getSql(), sqlFilter.getSqlParams(Env.getCtx())))
 				.build();
 	}
 
