@@ -37,10 +37,6 @@ class Lookup extends Component {
         const objectValue = property && getItemsByProperty(
                                 defaultValue, 'field', property
                             )[0].value;
-
-        if(objectValue) {
-            this.setNextProperty(property);
-        }
     }
 
     handleClickOutside = () => {
@@ -67,6 +63,7 @@ class Lookup extends Component {
                 const nextIndex = index+1;
                 if(nextIndex<defaultValue.length &&
                     defaultValue[index].field === prop){
+                        console.log(properties[nextIndex].field);
                     this.setState({
                         property: properties[nextIndex].field
                     })
@@ -120,7 +117,7 @@ class Lookup extends Component {
             isInputEmpty, property, fireClickOutside, initialFocus,
             localClearing
         } = this.state;
-
+console.log(property);
         return (
             <div
                 ref={(c) => this.dropdown = c}
@@ -198,9 +195,7 @@ class Lookup extends Component {
                                         }
                                         defaultValue={
                                             objectValue ?
-                                            objectValue[
-                                                Object.keys(objectValue)[0]
-                                            ] : ''
+                                            objectValue : ''
                                         }
                                         initialFocus={
                                             index===0 ? initialFocus : false

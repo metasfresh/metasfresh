@@ -24,7 +24,7 @@ class List extends Component {
 
         if(defaultValue) {
             this.setState({
-                prevValue: defaultValue
+                prevValue: defaultValue[Object.keys(defaultValue)[0]]
             });
         }
     }
@@ -51,12 +51,15 @@ class List extends Component {
             loading: true
         });
 
+        console.log('dropdownRequest');
+
         dropdownRequest(
             windowType,
             filterWidget ? properties[0].parameterName: properties[0].field,
             dataId, tabId, rowId, entity, subentity, subentityId, viewId,
             attribute
         ).then((res) => {
+            console.log(res.data.values);
             this.setState({
                 list: res.data.values,
                 loading: false
@@ -83,20 +86,6 @@ class List extends Component {
                 onChange(option);
             }
          }
-    }
-
-    handleAutoSelect = (option) => {
-        const {
-            onChange, properties, setNextProperty, mainProperty
-        } = this.props;
-
-        onChange(properties[0].field, option);
-
-        this.setState({
-            selectedItem: option,
-            prevValue: option[Object.keys(option)[0]]
-        });
-        setNextProperty(mainProperty[0].field);
     }
 
     render() {
