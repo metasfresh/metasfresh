@@ -21,7 +21,8 @@ class MenuOverlayContainer extends Component {
         const {
             children, elementId, caption, type, handleClickOnFolder,
             handleRedirect, handleNewRedirect, handlePath, printChildren, deep,
-            back, handleMenuOverlay, openModal, showBookmarks
+            back, handleMenuOverlay, openModal, showBookmarks, updateData,
+            transparentBookmarks
         } = this.props;
 
         return (
@@ -47,7 +48,8 @@ class MenuOverlayContainer extends Component {
                         printChildren={false}
                         {...{showBookmarks, openModal, handleMenuOverlay,
                             handlePath, back, handleNewRedirect, handleRedirect,
-                            handleClickOnFolder, type, caption, elementId
+                            handleClickOnFolder, type, caption, elementId,
+                            updateData, transparentBookmarks
                         }}
                     />
                 }
@@ -60,15 +62,17 @@ class MenuOverlayContainer extends Component {
                             deep={true}
                             {...subitem}
                             {...{showBookmarks, openModal, handleNewRedirect,
-                                handleRedirect, handleClickOnFolder}}
+                                handleRedirect, handleClickOnFolder, updateData,
+                                transparentBookmarks
+                            }}
                         /> :
                         <MenuOverlayItem
                             key={subindex}
                             {...subitem}
                             {...{showBookmarks, handleMenuOverlay, openModal,
-                                back, printChildren, handlePath,
+                                back, printChildren, handlePath, updateData,
                                 handleNewRedirect, handleRedirect,
-                                handleClickOnFolder
+                                handleClickOnFolder, transparentBookmarks
                             }}
                         />
                 )}

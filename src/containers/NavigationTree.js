@@ -57,6 +57,10 @@ class NavigationTree extends Component {
         });
     }
 
+    updateData = () => {
+        this.getData();
+    }
+
     openModal = (windowType, type, caption, isAdvanced) => {
         const {dispatch} = this.props;
         dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
@@ -123,11 +127,10 @@ class NavigationTree extends Component {
             deepNode: null
         }))
     }
-    
-    
+
     renderTree = () => {
         const {rootResults, queriedResults, query} = this.state;
-    
+
         return(
             <div>
                 <div className="search-wrapper">
@@ -161,6 +164,7 @@ class NavigationTree extends Component {
                             handleRedirect={this.handleRedirect}
                             handleNewRedirect={this.handleNewRedirect}
                             openModal={this.openModal}
+                            updateData={this.updateData}
                             {...subitem}
                         />
                     )}

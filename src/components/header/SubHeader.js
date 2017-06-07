@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 
+import {updateBreadcrumb} from '../../actions/MenuActions';
+
 import Actions from './Actions';
 
 import BookmarkButton from './BookmarkButton';
@@ -106,10 +108,15 @@ class Subheader extends Component {
         }
     }
 
+    handleUpdateBreadcrumb = (nodes) => {
+        const {dispatch} = this.props;
+        nodes.map(node => dispatch(updateBreadcrumb(node)));
+    }
+
     renderNavColumn = () => {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
-            handleDelete, docNo, redirect, breadcrumb
+            handleDelete, docNo, redirect, breadcrumb, siteName
         } = this.props;
 
         const docLinks = dataId && [
@@ -153,6 +160,9 @@ class Subheader extends Component {
             </div>
         ]
 
+        const currentNode = breadcrumb &&
+            breadcrumb[breadcrumb.length - 1].children;
+
         return (
             <div
                 className="subheader-column js-subheader-column"
@@ -160,9 +170,16 @@ class Subheader extends Component {
             >
                 <div
                     className="subheader-header"
-                >   
-                    <BookmarkButton>
-                        {breadcrumb[breadcrumb.length - 1].caption}
+                >
+                    <BookmarkButton
+                        isBookmark={currentNode && currentNode.favorite}
+                        nodeId={currentNode && currentNode.nodeId}
+                        transparentBookmarks={!!siteName}
+                        updateData={this.handleUpdateBreadcrumb}
+                    >
+                        <span>
+                            {currentNode ? currentNode.caption : siteName}
+                        </span>
                     </BookmarkButton>
                 </div>
                 <div className="subheader-break" />

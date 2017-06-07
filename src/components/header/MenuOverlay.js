@@ -239,6 +239,7 @@ class MenuOverlay extends Component {
                             handleNewRedirect={this.handleNewRedirect}
                             handlePath={this.handlePath}
                             parent={node}
+                            transparentBookmarks={true}
                             back={e => this.handleClickBack(e)}
                             handleMenuOverlay={handleMenuOverlay}
                             openModal={openModal}
@@ -379,6 +380,7 @@ class MenuOverlay extends Component {
                                     {queriedResults && queriedResults.map(
                                         (result, index) =>
                                             <MenuOverlayItem
+                                                transparentBookmarks={true}
                                                 key={index}
                                                 handleClickOnFolder={
                                                     this.handleDeeper

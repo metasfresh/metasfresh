@@ -130,7 +130,7 @@ class MenuOverlayItem extends Component {
     render() {
         const {
             nodeId, type, elementId, caption, children, handleClickOnFolder,
-            query, printChildren, favourite
+            query, printChildren, favorite, updateData, transparentBookmarks
         } = this.props;
 
         return (
@@ -145,8 +145,8 @@ class MenuOverlayItem extends Component {
 
             { !query &&
                 <BookmarkButton
-                    isBookmark={favourite}
-                    nodeId={nodeId}
+                    isBookmark={favorite}
+                    {...{updateData, nodeId, transparentBookmarks}}
                 >
                     <span
                         className={

@@ -39,12 +39,12 @@ export function queryPathsRequest(query, limit, child) {
     );
 }
 
-export function rootRequest(limit, depth = 0, onlyFavourites) {
+export function rootRequest(limit, depth = 0, onlyFavorites) {
     return axios.get(
         config.API_URL +
         '/menu/root?depth=' + depth +
-        (limit ? '&childrenLimit=' + limit : '') + 
-        (onlyFavourites ? '&favourites=true' : '')
+        (limit ? '&childrenLimit=' + limit : '') +
+        (onlyFavorites ? '&favorites=true' : '')
     );
 }
 
@@ -53,7 +53,14 @@ export function rootRequest(limit, depth = 0, onlyFavourites) {
 export function setBreadcrumb(breadcrumb){
     return {
         type: types.SET_BREADCRUMB,
-        breadcrumb: breadcrumb
+        breadcrumb
+    }
+}
+
+export function updateBreadcrumb(node){
+    return {
+        type: types.UPDATE_BREADCRUMB,
+        node
     }
 }
 

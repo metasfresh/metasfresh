@@ -501,8 +501,9 @@ class Header extends Component {
                     handleDelete={this.handleDelete}
                     redirect={this.redirect}
                     disableOnClickOutside={!isSubheaderShow}
-                    {...{breadcrumb, notfound, query, entity, selectedWindowType,
-                        selected, dataId, windowType
+                    {...{breadcrumb, notfound, query, entity,
+                        selectedWindowType, selected, dataId, windowType,
+                        siteName
                     }}
                 />}
 
