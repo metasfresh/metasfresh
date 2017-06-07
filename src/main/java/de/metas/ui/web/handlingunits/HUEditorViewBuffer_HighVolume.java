@@ -96,11 +96,12 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return defaultSelectionRef.get();
 	}
 
+	/** @return true if selection was really changed */
 	private boolean changeDefaultSelection(final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
 	{
 		final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.get();
 		final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.updateAndGet(mapper);
-		return Objects.equals(defaultSelectionOld, defaultSelectionNew);
+		return !Objects.equals(defaultSelectionOld, defaultSelectionNew);
 	}
 
 	@Override
