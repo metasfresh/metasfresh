@@ -2,7 +2,7 @@ update ad_field_trl
 set name = 'Client', istranslated = 'Y'
 where name = 'Mandant' and ad_language = 'en_US';
 update ad_field_trl
-set name = 'Organizazion', istranslated = 'Y'
+set name = 'Organisation', istranslated = 'Y'
 where name = 'Sektion' and ad_language = 'en_US';
 update ad_field_trl
 set name = 'Created', istranslated = 'Y'
