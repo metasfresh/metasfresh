@@ -6,9 +6,9 @@ import org.adempiere.model.IContextAware;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleAllocBuilder;
+import de.metas.handlingunits.model.I_M_InOutLine_HU_Alloc;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inout.model.I_M_InOutLine_HU_Alloc;
+
 
 /*
  * #%L

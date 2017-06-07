@@ -40,4 +40,27 @@ public interface I_M_InOutLine_HU_Alloc extends de.metas.inout.model.I_M_InOutLi
  	de.metas.handlingunits.model.I_M_HU getM_TU_HU() throws RuntimeException;
  	void setM_TU_HU(de.metas.handlingunits.model.I_M_HU M_HU);
  	// @formatter:on
+
+	// @formatter:off
+ 	String COLUMNNAME_HU_QtyAllocated = "HU_QtyAllocated";
+ 	void setHU_QtyAllocated(java.math.BigDecimal HU_QtyAllocated);
+ 	java.math.BigDecimal getHU_QtyAllocated();
+ 	// @formatter:on
+
+	// @formatter:off
+ 	String COLUMNNAME_M_LU_HU_ID = "M_LU_HU_ID";
+ 	// void setM_LU_HU_ID(int M_LU_HU_ID); // commented out because it's descouraged
+ 	int getM_LU_HU_ID();
+ 	de.metas.handlingunits.model.I_M_HU getM_LU_HU() throws RuntimeException;
+ 	void setM_LU_HU(de.metas.handlingunits.model.I_M_HU M_LU_HU);
+ 	// @formatter:on
+
+	// @formatter:off
+ 	String COLUMNNAME_VHU_ID = "VHU_ID";
+ 	// void setVHU_ID(int VHU_ID); // commented out because it's descouraged
+ 	int getVHU_ID();
+ 	de.metas.handlingunits.model.I_M_HU getVHU() throws RuntimeException;
+ 	void setVHU(de.metas.handlingunits.model.I_M_HU VHU);
+ 	// @formatter:on
+
 }
