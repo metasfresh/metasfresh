@@ -38,7 +38,7 @@ public interface IUserBL extends ISingletonService
 
 	void createResetPasswordByEMailRequest(I_AD_User user);
 
-	void createResetPasswordByEMailRequest(Properties ctx, String userId);
+	void createResetPasswordByEMailRequest(String userId);
 
 	I_AD_User resetPassword(Properties ctx, int adUserId, String passwordResetCode, String newPassword);
 

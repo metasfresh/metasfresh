@@ -58,7 +58,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	@Override
 	public Result processWorkPackage(I_C_Queue_WorkPackage workpackage, String localTrxName)
 	{
-		boolean hasSkippedBatches = false;
+
 		boolean hasError = false;
 		final List<I_C_Async_Batch> batches = Services.get(IQueueDAO.class).retrieveItems(workpackage, I_C_Async_Batch.class, localTrxName);
 		for (final I_C_Async_Batch asyncBatch : batches)
@@ -84,8 +84,8 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 
 			if (!asyncBatch.isProcessed())
 			{
-				hasSkippedBatches = true;
-				continue;
+				final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
+				throw skipExcep;
 			}
 
 		}
@@ -95,11 +95,6 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 			throw new AdempiereException("@IAsyncBatchBL.keepAliveTimeExpired@");
 		}
 
-		if (hasSkippedBatches)
-		{
-			final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis());
-			throw skipExcep;
-		}
 
 		return Result.SUCCESS;
 	}
@@ -119,8 +114,14 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	 * 
 	 * @return
 	 */
-	private final int getWorkpackageSkipTimeoutMillis()
+	private final int getWorkpackageSkipTimeoutMillis(final I_C_Async_Batch asyncBatch)
 	{
+		final int skipTimeoutMillis = asyncBatch.getC_Async_Batch_Type().getSkipTimeoutMillis();
+		if (skipTimeoutMillis > 0)
+		{
+			return skipTimeoutMillis;
+		}
+		
 		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_WorkpackageSkipTimeoutMillis, DEFAULT_WorkpackageSkipTimeoutMillis);
 	}
 }

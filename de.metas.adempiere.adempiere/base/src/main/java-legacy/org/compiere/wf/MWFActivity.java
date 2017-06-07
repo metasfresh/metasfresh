@@ -693,7 +693,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 		// Starting user
-		I_AD_User user = userDAO.retrieveUser(getCtx(), AD_User_ID);
+		I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), AD_User_ID);
 		log.debug("For User=" + user
 				+ ", Amt=" + amount
 				+ ", Own=" + ownDocument);
@@ -748,7 +748,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			// Get Supervisor
 			if (user.getSupervisor_ID() != 0)
 			{
-				user = userDAO.retrieveUser(getCtx(), user.getSupervisor_ID());
+				user = userDAO.retrieveUserOrNull(getCtx(), user.getSupervisor_ID());
 				log.debug("Supervisor: " + user.getName());
 			}
 			else
@@ -759,7 +759,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 				// Get Org Supervisor
 				if (orgInfo.getSupervisor_ID() != 0)
 				{
-					user = userDAO.retrieveUser(getCtx(), orgInfo.getSupervisor_ID());
+					user = userDAO.retrieveUserOrNull(getCtx(), orgInfo.getSupervisor_ID());
 					log.debug("Org=" + org.getName() + ",Supervisor: " + user.getName());
 				}
 				else
@@ -772,7 +772,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 						orgInfo = org.getInfo();
 						if (orgInfo.getSupervisor_ID() != 0)
 						{
-							user = userDAO.retrieveUser(getCtx(), orgInfo.getSupervisor_ID());
+							user = userDAO.retrieveUserOrNull(getCtx(), orgInfo.getSupervisor_ID());
 							log.debug("Parent Org Supervisor: " + user.getName());
 						}
 					}

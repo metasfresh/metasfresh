@@ -39,6 +39,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_AD_User;
+import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
@@ -79,9 +80,13 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public void createResetPasswordByEMailRequest(final Properties ctx, final String userId)
+	public void createResetPasswordByEMailRequest(final String userId)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveLoginUserByUserId(ctx, userId);
+		final I_AD_User user = Services.get(IUserDAO.class).retrieveLoginUserByUserId(userId);
+		if(user.getAD_Client_ID() == Env.CTXVALUE_AD_Client_ID_System)
+		{
+			throw new AdempiereException("Reseting password for system users is not allowed");
+		}
 		createResetPasswordByEMailRequest(user);
 	}
 

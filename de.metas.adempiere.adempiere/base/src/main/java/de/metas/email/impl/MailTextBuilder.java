@@ -272,7 +272,7 @@ class MailTextBuilder implements IMailTextBuilder
 	@Override
 	public IMailTextBuilder setAD_User(final int AD_User_ID)
 	{
-		setAD_User(Services.get(IUserDAO.class).retrieveUser(getCtx(), AD_User_ID));
+		setAD_User(Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), AD_User_ID));
 		return this;
 	}
 

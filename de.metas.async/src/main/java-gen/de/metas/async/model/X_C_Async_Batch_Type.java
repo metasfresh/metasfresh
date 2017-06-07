@@ -222,4 +222,23 @@ public class X_C_Async_Batch_Type extends org.compiere.model.PO implements I_C_A
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_NotificationType);
 	}
+
+	/** Set Skip Timeout (millis).
+		@param SkipTimeoutMillis Skip Timeout (millis)	  */
+	@Override
+	public void setSkipTimeoutMillis (int SkipTimeoutMillis)
+	{
+		set_Value (COLUMNNAME_SkipTimeoutMillis, Integer.valueOf(SkipTimeoutMillis));
+	}
+
+	/** Get Skip Timeout (millis).
+		@return Skip Timeout (millis)	  */
+	@Override
+	public int getSkipTimeoutMillis () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SkipTimeoutMillis);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 }
