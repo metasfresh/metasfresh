@@ -60,7 +60,7 @@ import de.metas.async.spi.NullWorkpackagePrio;
  */
 public class AsyncBatchBL implements IAsyncBatchBL
 {
-	/* package */final static int PROCESSEDTIME_OFFSET_Min = Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMin", 1);
+	/* package */final static int PROCESSEDTIME_OFFSET_Millis = Services.get(ISysConfigBL.class).getIntValue("de.metas.async.api.impl.AsyncBatchBL_ProcessedOffsetMillis", 1);
 
 	// services
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
@@ -236,6 +236,24 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final int countEnqueued = asyncBatch.getCountEnqueued();
 		final int countProcessed = asyncBatch.getCountProcessed();
+		final int countExpected = asyncBatch.getCountExpected();
+		
+		// 
+		// if countExpected has a value, check counters directly; makes no sense to wait more
+		if (countExpected > 0 )
+		{
+			// if enqueued or processed differs from expected, skipp
+			if (countExpected != countEnqueued || countExpected != countProcessed)
+			{
+				return false;
+			}
+			
+			// if all are equals, means is processed
+			if (countExpected == countEnqueued && countExpected == countProcessed)
+			{
+				return true;
+			}
+		}
 
 		// Case: in case enqueued counter or processed counter is zero, we cannot consider this as processed
 		if (countEnqueued <= 0 || countProcessed <= 0)
@@ -256,14 +274,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return false;
 		}
 
-		// Case: when did not pass enough time between fist enqueue time and now
-		final Timestamp now = SystemTime.asTimestamp();
-		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMinutes(now, -2 * PROCESSEDTIME_OFFSET_Min);
-		if (firstEnqueued.compareTo(minTimeAfterFirstEnqueued) > 0)
-		{
-			return false;
-		}
-
 		//
 		final Timestamp lastEnqueued = asyncBatch.getLastEnqueued();
 		if (lastEnqueued == null)
@@ -271,13 +281,24 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			// shall not happen
 			return false;
 		}
-
+		
 		final Timestamp lastProcessed = asyncBatch.getLastProcessed();
 		if (lastProcessed == null)
 		{
 			// shall not happen
 			return false;
 		}
+		
+		
+		// Case: when did not pass enough time between fist enqueue time and now
+		final Timestamp now = SystemTime.asTimestamp();
+		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(now, PROCESSEDTIME_OFFSET_Millis);
+		if (firstEnqueued.compareTo(minTimeAfterFirstEnqueued) > 0)
+		{
+			return false;
+		}
+
+	
 		// Case: when last processed time is before last enqueued time; this means that we still have packages to process
 		if (lastProcessed.compareTo(lastEnqueued) < 0)
 		{
@@ -286,7 +307,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		// Case: when did not pass enough time between last processed time and now - offset
 		// take a bigger time for checking processed because thread could be locked by other thread and we could have some bigger delay
-		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMinutes(now, -3 * PROCESSEDTIME_OFFSET_Min);
+		final Timestamp minTimeAfterLastProcessed = TimeUtil.addMillis(now,  PROCESSEDTIME_OFFSET_Millis);
 		if (lastProcessed.compareTo(minTimeAfterLastProcessed) > 0)
 		{
 			return false;

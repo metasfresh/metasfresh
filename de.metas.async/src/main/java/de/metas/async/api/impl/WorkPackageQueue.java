@@ -576,6 +576,13 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		final I_C_Queue_Block block = enqueueBlock(ctx);
 		final I_C_Queue_WorkPackage workPackage = enqueueWorkPackage(block, PRIORITY_AUTO); // default priority
+		
+		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.C_Async_Batch);
+		if (asyncBatch != null)
+		{
+			workPackage.setC_Async_Batch(asyncBatch);	
+		}
+		
 		final I_C_Queue_Element element = enqueueElement(workPackage, model);
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
