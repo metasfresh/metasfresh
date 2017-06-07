@@ -14,6 +14,7 @@ import com.google.common.collect.Maps;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 
 /*
@@ -47,10 +48,13 @@ import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 // @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE) // cannot use it because of "otherProperties"
 public abstract class JSONDocumentBase
 {
+	@JsonProperty("windowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final WindowId windowId;
 
 	@JsonProperty("id")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String id;
+	private final DocumentId id;
 
 	@JsonProperty("tabId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -63,7 +67,7 @@ public abstract class JSONDocumentBase
 
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String rowId;
+	private final DocumentId rowId;
 
 	@JsonProperty("deleted")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -72,7 +76,7 @@ public abstract class JSONDocumentBase
 	@JsonProperty("fieldsByName")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Map<String, JSONDocumentField> fieldsByName;
-	
+
 	/** Any other properties */
 	private final Map<String, Object> otherProperties = new LinkedHashMap<>();
 
@@ -80,21 +84,24 @@ public abstract class JSONDocumentBase
 	{
 		if (documentPath == null)
 		{
+			windowId = null;
 			id = null;
 			tabId = null;
 			rowId = null;
 		}
 		else if (documentPath.isRootDocument())
 		{
-			id = documentPath.getDocumentId().toJson();
+			windowId = documentPath.getWindowIdOrNull();
+			id = documentPath.getDocumentId();
 			tabId = null;
 			rowId = null;
 		}
 		else if (documentPath.isSingleIncludedDocument())
 		{
-			id = documentPath.getDocumentId().toJson();
+			windowId = documentPath.getWindowIdOrNull();
+			id = documentPath.getDocumentId();
 			tabId = documentPath.getDetailId().toJson();
-			rowId = documentPath.getSingleRowId().toJson();
+			rowId = documentPath.getSingleRowId();
 		}
 		else
 		{
@@ -105,9 +112,19 @@ public abstract class JSONDocumentBase
 		tabid = tabId;
 	}
 
+	protected JSONDocumentBase(final WindowId windowId, final DocumentId id, final String tabId, final DocumentId rowId)
+	{
+		this.windowId = windowId;
+		this.id = id;
+		this.tabId = tabId;
+		this.tabid = tabId;
+		this.rowId = rowId;
+	}
+
 	protected JSONDocumentBase(final DocumentId documentId)
 	{
-		id = documentId.toJson();
+		windowId = null;
+		id = documentId;
 		tabId = null;
 		tabid = tabId;
 		rowId = null;
@@ -118,10 +135,35 @@ public abstract class JSONDocumentBase
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
+				.add("windowId", windowId)
 				.add("id", id)
 				.add("tablId", tabId)
 				.add("rowId", rowId)
 				.toString();
+	}
+	
+	@JsonIgnore
+	public WindowId getWindowId()
+	{
+		return windowId;
+	}
+	
+	@JsonIgnore
+	public DocumentId getId()
+	{
+		return id;
+	}
+	
+	@JsonIgnore
+	public String getTabId()
+	{
+		return tabId;
+	}
+	
+	@JsonIgnore
+	public DocumentId getRowId()
+	{
+		return rowId;
 	}
 
 	public final void setDeleted()
@@ -151,7 +193,7 @@ public abstract class JSONDocumentBase
 	{
 		this.fieldsByName = fields == null ? null : Maps.uniqueIndex(fields, (field) -> field.getField());
 	}
-	
+
 	public final void setFields(final Map<String, JSONDocumentField> fieldsByName)
 	{
 		this.fieldsByName = fieldsByName;
