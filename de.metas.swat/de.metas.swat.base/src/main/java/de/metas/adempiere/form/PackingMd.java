@@ -108,7 +108,7 @@ public class PackingMd extends MvcMdGenForm
 	 * @task http://dewiki908/mediawiki/index.php/05522_Picking_Terminal_extension_-_Regroup_by_product_%28104598600159%29
 	 */
 	private boolean groupByProduct = Services.get(ISysConfigBL.class).getBooleanValue("de.metas.adempiere.form.PackingMd.groupByProduct", false);
-
+	
 	/**
 	 * Requery {@link IPackageable} items from database
 	 */

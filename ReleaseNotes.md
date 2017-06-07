@@ -21,6 +21,8 @@ Here come the actual release notes:
   * [#1655](https://github.com/metasfresh/metasfresh/issues/1655) Add CountExpected in Async Batch and improvements
   * [#1741](https://github.com/metasfresh/metasfresh/issues/1741) New Window for Order Control in WebUI
     * New Window for Order Control Report maintenance in WebUI
+  * [#1746](https://github.com/metasfresh/metasfresh/issues/1746) Layout Optimization of User Window in WebUI
+    * Adding a few Layout Optimzations to User window. Now showing the Login Field in Grid View and deleting the combined Name Field. Additional sized adjustments.
 
 ## Fixes
 * metasfresh-backend
