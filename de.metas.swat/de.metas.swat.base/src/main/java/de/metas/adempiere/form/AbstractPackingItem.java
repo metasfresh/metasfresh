@@ -26,15 +26,15 @@ package de.metas.adempiere.form;
  */
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -206,9 +206,9 @@ public abstract class AbstractPackingItem implements IPackingItem
 	}
 
 	@Override
-	public final Set<I_M_ShipmentSchedule> getShipmentSchedules()
+	public final List<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
-		return new HashSet<I_M_ShipmentSchedule>(sched2qty.keySet());
+		return new ArrayList<I_M_ShipmentSchedule>(sched2qty.keySet());
 	}
 
 	@Override
@@ -290,7 +290,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 	@Override
 	public final int getProductId()
 	{
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = getShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
 		{
 			return -1;

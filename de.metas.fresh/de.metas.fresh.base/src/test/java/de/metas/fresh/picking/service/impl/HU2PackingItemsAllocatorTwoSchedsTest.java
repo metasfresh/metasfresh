@@ -15,10 +15,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.util.Services;
@@ -109,7 +108,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 	private void setupContext(final int... qtysToDeliver)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<I_M_ShipmentSchedule, BigDecimal>();
+		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new LinkedHashMap<>(); // using LinkedHashMap because we want the ordering to be "stable".
 		//
 		// Create Items to Pack
 		int qtyToDeliverSum = 0;
@@ -173,11 +172,11 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		assertThat(huDefIFCOWithEleven.getQty(), not(comparesEqualTo(huDefIFCOWithTen.getQty()))); // the two defs need to have different qty, otherwise the test is not significant
 		setupContext(
-				huDefIFCOWithEleven.getQty().intValue(),
-				huDefIFCOWithTen.getQty().intValue());
+				huDefIFCOWithTen.getQty().intValue(),
+				huDefIFCOWithEleven.getQty().intValue());
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
 		final I_M_ShipmentSchedule shipmentScheduleWithTen = shipmentSchedules.stream().filter(s -> s.getQtyToDeliver().compareTo(huDefIFCOWithTen.getQty()) == 0).findFirst().get();
 		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.stream().filter(s -> s.getQtyToDeliver().compareTo(huDefIFCOWithEleven.getQty()) == 0).findFirst().get();
 
@@ -242,7 +241,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		setupContext(10, 10);
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
-		final Set<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
+		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
 
 		// packing item guards
 		final Map<I_M_ShipmentSchedule, BigDecimal> qtys = itemToPack.getQtys();
