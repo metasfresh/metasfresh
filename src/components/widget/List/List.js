@@ -51,15 +51,12 @@ class List extends Component {
             loading: true
         });
 
-        console.log('dropdownRequest');
-
         dropdownRequest(
             windowType,
             filterWidget ? properties[0].parameterName: properties[0].field,
             dataId, tabId, rowId, entity, subentity, subentityId, viewId,
             attribute
         ).then((res) => {
-            console.log(res.data.values);
             this.setState({
                 list: res.data.values,
                 loading: false
@@ -75,13 +72,19 @@ class List extends Component {
 
          if( prevValue !== (option && option[Object.keys(option)[0]] )) {
              if(lookupList){
-                    onChange(properties[0].field, option);
-
+                    const promise = onChange(properties[0].field, option);
                     option && this.setState({
                         selectedItem: option,
                         prevValue: option[Object.keys(option)[0]]
                     });
-                    setNextProperty(mainProperty[0].field);
+                    if(promise){
+                        promise.then(()=> {
+                            setNextProperty(mainProperty[0].field);
+                        })
+                    } else {
+                        setNextProperty(mainProperty[0].field);
+                    }
+
             } else {
                 onChange(option);
             }

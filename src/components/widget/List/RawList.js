@@ -39,22 +39,11 @@ class RawList extends Component {
             this.dropdown && this.dropdown.focus();
         }
 
-        if(prevProps.defaultValue != defaultValue) {
-            if(list.length > 0 && defaultValue) {
-                this.setState({
-                    selected: defaultValue
-                });
-            }
-        }
-
         if(initialFocus && !defaultValue){
             this.dropdown && this.dropdown.focus();
         }
 
         if(prevProps.list !== list){
-            console.log('list');
-            console.log(list)
-            console.log(property)
             let dropdown = [];
 
             if(!mandatory){
@@ -70,6 +59,12 @@ class RawList extends Component {
             if(list.length > 0 && !defaultValue) {
                 this.setState({
                     selected: list[0]
+                });
+            }
+
+            if(list.length > 0 && defaultValue) {
+                this.setState({
+                    selected: defaultValue
                 });
             }
         }
@@ -236,7 +231,6 @@ class RawList extends Component {
             selected: (next >= 0 && next <= dropdownList.length-1) ?
                 dropdownList[next] : selected
         })
-
     }
 
     navigateToAlphanumeric = (char) => {
@@ -394,7 +388,8 @@ class RawList extends Component {
             isOpen
         } = this.state;
 
-        const value = defaultValue && defaultValue[Object.keys(defaultValue)[0]];
+        const value = defaultValue &&
+                        defaultValue[Object.keys(defaultValue)[0]];
 
         return (
             <div

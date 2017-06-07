@@ -30,15 +30,6 @@ class Lookup extends Component {
         this.checkIfDefaultValue();
     }
 
-    componentDidUpdate() {
-        const {defaultValue} = this.props;
-        const {property} = this.state;
-
-        const objectValue = property && getItemsByProperty(
-                                defaultValue, 'field', property
-                            )[0].value;
-    }
-
     handleClickOutside = () => {
         this.setState({
             fireClickOutside: true,
@@ -60,20 +51,19 @@ class Lookup extends Component {
         const {defaultValue, properties} = this.props;
 
         defaultValue.map((item, index)=>{
-                const nextIndex = index+1;
-                if(nextIndex<defaultValue.length &&
-                    defaultValue[index].field === prop){
-                        console.log(properties[nextIndex].field);
-                    this.setState({
-                        property: properties[nextIndex].field
-                    })
-                    return;
-                } else if(defaultValue[defaultValue.length-1].field === prop){
-                    this.setState({
-                        property: ''
-                    })
-                }
-            })
+            const nextIndex = index+1;
+            if(nextIndex<defaultValue.length &&
+                defaultValue[index].field === prop){
+                this.setState({
+                    property: properties[nextIndex].field
+                })
+                return;
+            } else if(defaultValue[defaultValue.length-1].field === prop){
+                this.setState({
+                    property: ''
+                })
+            }
+        })
     }
 
     checkIfDefaultValue = () => {
@@ -117,7 +107,7 @@ class Lookup extends Component {
             isInputEmpty, property, fireClickOutside, initialFocus,
             localClearing
         } = this.state;
-console.log(property);
+
         return (
             <div
                 ref={(c) => this.dropdown = c}

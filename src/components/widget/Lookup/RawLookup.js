@@ -101,17 +101,30 @@ class RawLookup extends Component {
         }, () => {
 
             if(filterWidget){
-                onChange(mainProperty[0].parameterName, select);
-                setNextProperty(mainProperty[0].parameterName);
+                const promise = onChange(mainProperty[0].parameterName, select);
+                if(promise) {
+                    promise.then(()=> {
+                        setNextProperty(mainProperty[0].parameterName);
+                    })
+                } else {
+                    setNextProperty(mainProperty[0].parameterName);
+                }
+
             } else {
-                onChange(mainProperty[0].field, select);
-                setNextProperty(mainProperty[0].field);
+                const promise = onChange(mainProperty[0].field, select);
+                if(promise){
+                    promise.then(()=> {
+                        setNextProperty(mainProperty[0].field);
+                    })
+                } else {
+                    setNextProperty(mainProperty[0].field);
+                }
+
             }
 
             this.inputSearch.value = select[Object.keys(select)[0]];
             handleInputEmptyStatus(false);
             this.handleBlur();
-
         });
     }
 
