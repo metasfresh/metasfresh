@@ -19,6 +19,8 @@ Here come the actual release notes:
   * [#1513](https://github.com/metasfresh/metasfresh/issues/1513) Translating Shipment Candidates and other fields to en_US
   * [#1590](https://github.com/metasfresh/metasfresh/issues/1590) Translate User Window to en_US
   * [#1655](https://github.com/metasfresh/metasfresh/issues/1655) Add CountExpected in Async Batch and improvements
+  * [#1741](https://github.com/metasfresh/metasfresh/issues/1741) New Window for Order Control in WebUI
+    * New Window for Order Control Report maintenance in WebUI
 
 ## Fixes
 * metasfresh-backend
