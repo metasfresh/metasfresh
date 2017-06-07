@@ -5,9 +5,11 @@ import java.math.BigDecimal;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
+import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.inout.IHUCustomerReturnAllocBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -32,11 +34,11 @@ import de.metas.quantity.Quantity;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -50,35 +52,71 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 	private I_M_HU _luHU;
 	private I_M_HU _tuHU;
 	private I_M_HU _vhu;
-	
 
 	private I_M_InOutLine _inOutLine;
 	private BigDecimal _qtyToAllocate;
 	private BigDecimal _qtyWithIssues;
 	private IContextAware _context;
-	
-	
+
 	/*
-	 * 		builder.setContext(contextProvider)
+	 * builder.setContext(contextProvider)
+	 * 
+	 * .setM_InOutLine(inOutLine)
+	 * .setQtyToAllocate(BigDecimal.ZERO)
+	 * .setQtyWithIssues(BigDecimal.ZERO) // to be sure...
+	 * ;
+	 * builder.setHU_QtyAllocated(qtyToAllocate, uom)
+	 * .setM_LU_HU(luHU)
+	 * .setM_TU_HU(tuHUActual)
+	 * .setVHU(vhu);
+	 * 
+	 * // Create RSA and save it
+	 * builder.buildAndSave();
+	 */
 
-				.setM_InOutLine(inOutLine)
-				.setQtyToAllocate(BigDecimal.ZERO)
-				.setQtyWithIssues(BigDecimal.ZERO) // to be sure...
-		;
-		builder.setHU_QtyAllocated(qtyToAllocate, uom)
-				.setM_LU_HU(luHU)
-				.setM_TU_HU(tuHUActual)
-				.setVHU(vhu);
-
-		// Create RSA and save it
-		builder.buildAndSave();
-		*/
-	
 	@Override
 	public I_M_InOutLine_HU_Alloc build()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		final I_M_InOutLine_HU_Alloc rsa = InterfaceWrapperHelper.newInstance(I_M_InOutLine_HU_Alloc.class, getContext());
+		build(rsa);
+		return rsa;
+	}
+
+	private IContextAware getContext()
+	{
+
+		Check.assumeNotNull(_context, "_context not null");
+		return _context;
+	}
+
+	@Override
+	public I_M_InOutLine_HU_Alloc build(final I_M_InOutLine_HU_Alloc rsaHU)
+	{//
+		// HU_QtyAllocated
+		final Quantity huQtyAllocatedSrc = get_huQtyAllocated();
+		final BigDecimal huQtyAllocated;
+		if (huQtyAllocatedSrc != null)
+		{
+			//
+			// Convert Qty from given UOM to receipt schedule's UOM
+			final I_M_InOutLine inOutLine = get_inOutLine();
+			final I_C_UOM uomTo = inOutLine.getC_UOM();
+			final I_M_Product product = inOutLine.getM_Product();
+			final IUOMConversionContext uomConversionCtx = uomConversionBL.createConversionContext(product);
+			huQtyAllocated = uomConversionBL.convertQuantityTo(huQtyAllocatedSrc, uomConversionCtx, uomTo).getQty();
+		}
+		else
+		{
+			huQtyAllocated = null;
+		}
+		
+		rsaHU.setHU_QtyAllocated(huQtyAllocated);
+
+		//
+		// LU/TU/VHU
+		rsaHU.setM_LU_HU(getM_LU_HU());
+		rsaHU.setM_TU_HU(getM_TU_HU());
+		rsaHU.setVHU(getVHU());
 	}
 
 	@Override
@@ -92,8 +130,8 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 	@Override
 	public IHUCustomerReturnAllocBuilder setContext(IContextAware context)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		this._context = context;
+		return this;
 	}
 
 	private BigDecimal getQtyToAllocate()
@@ -109,16 +147,8 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 		return this;
 	}
 
-
 	@Override
 	public IHUCustomerReturnAllocBuilder setM_InOutLine(I_M_InOutLine receiptLine)
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public I_M_InOutLine_HU_Alloc build(I_M_InOutLine_HU_Alloc huAlloc)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -142,10 +172,8 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 	public void setQtyWithIssues(BigDecimal zero)
 	{
 		// TODO Auto-generated method stub
-		
-	}
 
-	
+	}
 
 	public I_M_InOutLine get_inOutLine()
 	{
@@ -156,7 +184,7 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 	{
 		this._inOutLine = _inOutLine;
 	}
-	
+
 	private I_M_HU getM_LU_HU()
 	{
 		return _luHU;
@@ -191,5 +219,14 @@ public class HUCustomerReturnAllocBuilder implements IHUCustomerReturnAllocBuild
 		return this;
 	}
 
+	public Quantity get_huQtyAllocated()
+	{
+		return _huQtyAllocated;
+	}
+
+	public void set_huQtyAllocated(Quantity _huQtyAllocated)
+	{
+		this._huQtyAllocated = _huQtyAllocated;
+	}
 
 }

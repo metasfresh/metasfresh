@@ -266,7 +266,7 @@ public class HUInOutBL implements IHUInOutBL
 	{
 		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
 
-		return MultiCustomerHUReturnsInOutProducer.newInstance()
+		return ManualCustomerReturnInOutProducer.newInstance()
 				.addHUsToReturn(hus)
 				.setManualCustomerReturn(manualCustomerReturn)
 				.create();
@@ -405,12 +405,12 @@ public class HUInOutBL implements IHUInOutBL
 		// mark HUs as active and create movements to QualityReturnWarehouse for them
 		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
 
-		for (final I_M_HU hu : hus)
-		{
-			Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
-		}
-
 		updateManualCustomerReturnInOutForHUs(customerReturn, hus);
+		
+//		for (final I_M_HU hu : hus)
+//		{
+//			Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
+//		}
 	}
 
 	@Override
