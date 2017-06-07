@@ -10,7 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.14 (2017-24)
+# metasfresh 5.13 (2017-24)
 
 **upcoming release for week 2017-24**
 
@@ -18,6 +18,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-backend
+  * [#1441](https://github.com/metasfresh/metasfresh/issues/1441) move subproject de.metas.endcustomer.mf15.ait to metasfresh-dist repo
+    * Cleanup; Thx [@homebeaver](https://github.com/homebeaver) for the pointer
   * [#1739](https://github.com/metasfresh/metasfresh/issues/1739) Menu entry for M_ProductCategory window wrong
     * Adding the correct window to the WebUI menu for Product Category Window.
 

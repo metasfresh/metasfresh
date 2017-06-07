@@ -42,11 +42,10 @@ public interface IUserDAO extends ISingletonService
 	/**
 	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code>.
 	 * 
-	 * @param ctx
 	 * @param userId
 	 * @return user; never return null
 	 */
-	I_AD_User retrieveLoginUserByUserId(Properties ctx, String userId);
+	I_AD_User retrieveLoginUserByUserId(String userId);
 
 	I_AD_User retrieveUserByPasswordResetCode(Properties ctx, String passwordResetCode);
 
@@ -54,6 +53,10 @@ public interface IUserDAO extends ISingletonService
 
 	List<I_AD_User> retrieveUsersSubstitudedBy(Properties ctx, int adUserId, Timestamp date, String trxName);
 
-	I_AD_User retrieveUser(Properties ctx, int adUserId);
+	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
+
+	I_AD_User retrieveUser(int adUserId);
+
+	I_AD_User retrieveUserInTrx(int adUserId);
 
 }

@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 936190244L;
+	private static final long serialVersionUID = 1440417804L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -23,21 +23,15 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
       /** if (AD_User_ID == 0)
         {
 			setAD_User_ID (0);
-			setIsDefaultContact (false);
-// N
-			setIsFullBPAccess (true);
-// Y
-			setIsInPayroll (false);
-// N
-			setIsMFProcurementUser (false);
-// N
-			setIsPurchaseContact_Default (false);
-// N
-			setIsSalesContact_Default (false);
-// N
+			setIsDefaultContact (false); // N
+			setIsFullBPAccess (true); // Y
+			setIsInPayroll (false); // N
+			setIsMFProcurementUser (false); // N
+			setIsPurchaseContact_Default (false); // N
+			setIsSalesContact_Default (false); // N
+			setIsSystemUser (false); // N
 			setName (null);
-			setNotificationType (null);
-// N
+			setNotificationType (null); // N
         } */
     }
 
@@ -55,6 +49,31 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** 
+	 * AD_Language AD_Reference_ID=327
+	 * Reference name: AD_Language System
+	 */
+	public static final int AD_LANGUAGE_AD_Reference_ID=327;
+	/** Set Sprache.
+		@param AD_Language 
+		Sprache für diesen Eintrag
+	  */
+	@Override
+	public void setAD_Language (java.lang.String AD_Language)
+	{
+
+		set_Value (COLUMNNAME_AD_Language, AD_Language);
+	}
+
+	/** Get Sprache.
+		@return Sprache für diesen Eintrag
+	  */
+	@Override
+	public java.lang.String getAD_Language () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_AD_Language);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Org getAD_OrgTrx() throws RuntimeException
@@ -150,6 +169,40 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getAD_User_InCharge_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Image getAvatar() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_Avatar_ID, org.compiere.model.I_AD_Image.class);
+	}
+
+	@Override
+	public void setAvatar(org.compiere.model.I_AD_Image Avatar)
+	{
+		set_ValueFromPO(COLUMNNAME_Avatar_ID, org.compiere.model.I_AD_Image.class, Avatar);
+	}
+
+	/** Set Avatar.
+		@param Avatar_ID Avatar	  */
+	@Override
+	public void setAvatar_ID (int Avatar_ID)
+	{
+		if (Avatar_ID < 1) 
+			set_Value (COLUMNNAME_Avatar_ID, null);
+		else 
+			set_Value (COLUMNNAME_Avatar_ID, Integer.valueOf(Avatar_ID));
+	}
+
+	/** Get Avatar.
+		@return Avatar	  */
+	@Override
+	public int getAvatar_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Avatar_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -452,9 +505,9 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set EMail.
+	/** Set eMail.
 		@param EMail 
-		Electronic Mail Address
+		EMail-Adresse
 	  */
 	@Override
 	public void setEMail (java.lang.String EMail)
@@ -462,8 +515,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
-	/** Get EMail.
-		@return Electronic Mail Address
+	/** Get eMail.
+		@return EMail-Adresse
 	  */
 	@Override
 	public java.lang.String getEMail () 
@@ -628,6 +681,32 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getIncluded_Tab_ID () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Included_Tab_ID);
+	}
+
+	/** Set IsAccountLocked.
+		@param IsAccountLocked 
+		Flag is yes if account is locked
+	  */
+	@Override
+	public void setIsAccountLocked (boolean IsAccountLocked)
+	{
+		set_Value (COLUMNNAME_IsAccountLocked, Boolean.valueOf(IsAccountLocked));
+	}
+
+	/** Get IsAccountLocked.
+		@return Flag is yes if account is locked
+	  */
+	@Override
+	public boolean isAccountLocked () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsAccountLocked);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Standard-Ansprechpartner.
@@ -846,6 +925,29 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
+	/** Set Systembenutzer.
+		@param IsSystemUser Systembenutzer	  */
+	@Override
+	public void setIsSystemUser (boolean IsSystemUser)
+	{
+		set_Value (COLUMNNAME_IsSystemUser, Boolean.valueOf(IsSystemUser));
+	}
+
+	/** Get Systembenutzer.
+		@return Systembenutzer	  */
+	@Override
+	public boolean isSystemUser () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsSystemUser);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Nachname.
 		@param Lastname Nachname	  */
 	@Override
@@ -879,6 +981,101 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getLDAPUser () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_LDAPUser);
+	}
+
+	/** Set LockedFromIP.
+		@param LockedFromIP 
+		Client IP address that was used when this account was locked 
+	  */
+	@Override
+	public void setLockedFromIP (java.lang.String LockedFromIP)
+	{
+		set_Value (COLUMNNAME_LockedFromIP, LockedFromIP);
+	}
+
+	/** Get LockedFromIP.
+		@return Client IP address that was used when this account was locked 
+	  */
+	@Override
+	public java.lang.String getLockedFromIP () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_LockedFromIP);
+	}
+
+	/** Set Login.
+		@param Login 
+		Used for login. See Help.
+	  */
+	@Override
+	public void setLogin (java.lang.String Login)
+	{
+		set_Value (COLUMNNAME_Login, Login);
+	}
+
+	/** Get Login.
+		@return Used for login. See Help.
+	  */
+	@Override
+	public java.lang.String getLogin () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Login);
+	}
+
+	/** Set LoginFailureCount.
+		@param LoginFailureCount 
+		Failed login count 
+	  */
+	@Override
+	public void setLoginFailureCount (int LoginFailureCount)
+	{
+		set_Value (COLUMNNAME_LoginFailureCount, Integer.valueOf(LoginFailureCount));
+	}
+
+	/** Get LoginFailureCount.
+		@return Failed login count 
+	  */
+	@Override
+	public int getLoginFailureCount () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LoginFailureCount);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set LoginFailureDate.
+		@param LoginFailureDate 
+		Date when was last faild
+	  */
+	@Override
+	public void setLoginFailureDate (java.sql.Timestamp LoginFailureDate)
+	{
+		set_Value (COLUMNNAME_LoginFailureDate, LoginFailureDate);
+	}
+
+	/** Get LoginFailureDate.
+		@return Date when was last faild
+	  */
+	@Override
+	public java.sql.Timestamp getLoginFailureDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_LoginFailureDate);
+	}
+
+	/** Set Handynummer.
+		@param MobilePhone Handynummer	  */
+	@Override
+	public void setMobilePhone (java.lang.String MobilePhone)
+	{
+		set_Value (COLUMNNAME_MobilePhone, MobilePhone);
+	}
+
+	/** Get Handynummer.
+		@return Handynummer	  */
+	@Override
+	public java.lang.String getMobilePhone () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MobilePhone);
 	}
 
 	/** Set Name.
@@ -1120,6 +1317,25 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getTitle () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Title);
+	}
+
+	/** Set UnlockAccount.
+		@param UnlockAccount 
+		Button that will call a process to unlock current selected account
+	  */
+	@Override
+	public void setUnlockAccount (java.lang.String UnlockAccount)
+	{
+		set_Value (COLUMNNAME_UnlockAccount, UnlockAccount);
+	}
+
+	/** Get UnlockAccount.
+		@return Button that will call a process to unlock current selected account
+	  */
+	@Override
+	public java.lang.String getUnlockAccount () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_UnlockAccount);
 	}
 
 	/** Set UserPIN.
