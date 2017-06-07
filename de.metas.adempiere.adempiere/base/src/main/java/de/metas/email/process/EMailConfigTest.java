@@ -135,7 +135,7 @@ public class EMailConfigTest extends JavaProcess
 		if (p_From_User_ID > 0)
 		{
 
-			return userDAO.retrieveUser(getCtx(), p_From_User_ID);
+			return userDAO.retrieveUserOrNull(getCtx(), p_From_User_ID);
 		}
 		else
 		{

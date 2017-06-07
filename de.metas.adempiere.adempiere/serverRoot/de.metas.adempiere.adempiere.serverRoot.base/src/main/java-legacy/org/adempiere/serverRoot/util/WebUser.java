@@ -999,11 +999,6 @@ public class WebUser
 		return m_bp.getSalesRep_ID();
 	}
 
-	public boolean hasBPAccess (String BPAccessType, Object[] params)
-	{
-		return m_bpc.hasBPAccess (BPAccessType, params);
-	}
-	
 	/**
 	 * 	Credit Status is Stop or Hold.
 	 * 	Used in Asset download
