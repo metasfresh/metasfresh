@@ -65,11 +65,11 @@ public class M_InOutLine
 		}
 		
 		// Make sure we are not dealing with customer returns
-//		final I_M_InOut inout = shipmentLine.getM_InOut();
-//		if(huInOutBL.isCustomerReturn(inout))
-//		{
-//			return;
-//		}
+		final I_M_InOut inout = shipmentLine.getM_InOut();
+		if(huInOutBL.isCustomerReturn(inout))
+		{
+			return;
+		}
 
 		//
 		// Make sure our effective values are up2date
