@@ -1221,6 +1221,10 @@ td.pulse-off input {
     opacity: .5;
 }
 
+.btn-bookmark {
+    padding-right: 1.5rem;
+}
+
 .btn-bookmark:hover .btn-bookmark-icon{
     color: $brand-font-color-weak;
 }
