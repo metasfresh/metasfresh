@@ -177,8 +177,12 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 
 		// get a reference to the two scheds now; the allocation() method might remove them from the packing item later on.
 		final List<I_M_ShipmentSchedule> shipmentSchedules = itemToPack.getShipmentSchedules();
-		final I_M_ShipmentSchedule shipmentScheduleWithTen = shipmentSchedules.stream().filter(s -> s.getQtyToDeliver().compareTo(huDefIFCOWithTen.getQty()) == 0).findFirst().get();
-		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.stream().filter(s -> s.getQtyToDeliver().compareTo(huDefIFCOWithEleven.getQty()) == 0).findFirst().get();
+
+		final I_M_ShipmentSchedule shipmentScheduleWithTen = shipmentSchedules.get(0);
+		assertThat(shipmentScheduleWithTen.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithTen.getQty()));
+
+		final I_M_ShipmentSchedule shipmentScheduleWithEleven = shipmentSchedules.get(1);
+		assertThat(shipmentScheduleWithEleven.getQtyToDeliver(), comparesEqualTo(huDefIFCOWithEleven.getQty()));
 
 		// packing item guards
 		final Map<I_M_ShipmentSchedule, BigDecimal> qtys = itemToPack.getQtys();
