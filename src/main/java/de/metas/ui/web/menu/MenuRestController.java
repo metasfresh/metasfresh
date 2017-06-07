@@ -19,6 +19,7 @@ import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
 import de.metas.ui.web.menu.datatypes.json.JSONPatchMenuNodeRequest;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -134,9 +135,11 @@ public class MenuRestController
 	}
 
 	@PatchMapping("/node/{nodeId}")
-	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody final JSONPatchMenuNodeRequest request)
+	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
+
+		final JSONPatchMenuNodeRequest request = JSONPatchMenuNodeRequest.ofChangeEvents(events);
 
 		final MenuTree menuTree = getMenuTree();
 		final MenuNode node = menuTree.getNodeById(nodeId);
