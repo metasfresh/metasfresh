@@ -83,9 +83,15 @@ public class SqlViewFactory implements IViewFactory
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
+		final Collection<DocumentFilterDescriptor> filters = getViewFilterDescriptors(windowId, viewDataType);
+
+		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(windowId, viewDataType.getRequiredFieldCharacteristic());
+		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
+		final boolean hasTreeSupport = sqlViewBinding.hasGroupingFields();
+
 		return documentDescriptorFactory.getDocumentDescriptor(windowId)
 				.getViewLayout(viewDataType)
-				.withFilters(getViewFilterDescriptors(windowId, viewDataType));
+				.withFiltersAndTreeSupport(filters, hasTreeSupport, false/* treeExpanded */);
 	}
 
 	@Override

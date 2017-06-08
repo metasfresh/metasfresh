@@ -188,7 +188,7 @@ public class ViewRestController
 
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final ViewResult result = viewsRepo.getView(viewId)
-				.getPage(firstRow, pageLength, orderBysListStr);
+				.getPage(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
 		return JSONViewResult.of(result);
 	}
 

@@ -74,17 +74,11 @@ public interface IView
 
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
-	default ViewResult getPage(final int firstRow, final int pageLength, final String orderBysListStr)
-	{
-		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
-		return getPage(firstRow, pageLength, orderBys);
-	}
-
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowId)
+	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowIds)
 	{
-		return streamByIds(rowId).collect(ImmutableList.toImmutableList());
+		return streamByIds(rowIds).collect(ImmutableList.toImmutableList());
 	}
 
 	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);

@@ -70,6 +70,7 @@ public class ViewLayout implements ETagAware
 	private final boolean hasAttributesSupport;
 	private final boolean hasTreeSupport;
 	private final boolean hasIncludedViewSupport;
+	private final boolean treeExpanded;
 	private final String allowNewCaption;
 
 	// ETag support
@@ -93,7 +94,10 @@ public class ViewLayout implements ETagAware
 		idFieldName = builder.getIdFieldName();
 
 		hasAttributesSupport = builder.hasAttributesSupport;
+		
 		hasTreeSupport = builder.hasTreeSupport;
+		treeExpanded = builder.treeExpanded;
+		
 		hasIncludedViewSupport = builder.hasIncludedViewSupport;
 		allowNewCaption = null;
 
@@ -101,7 +105,7 @@ public class ViewLayout implements ETagAware
 	}
 
 	/** copy and override constructor */
-	private ViewLayout(final ViewLayout from, final ImmutableList<DocumentFilterDescriptor> filters, final String allowNewCaption)
+	private ViewLayout(final ViewLayout from, final ImmutableList<DocumentFilterDescriptor> filters, final String allowNewCaption, final boolean hasTreeSupport, final boolean treeExpanded)
 	{
 		super();
 		windowId = from.windowId;
@@ -118,7 +122,8 @@ public class ViewLayout implements ETagAware
 		idFieldName = from.idFieldName;
 
 		hasAttributesSupport = from.hasAttributesSupport;
-		hasTreeSupport = from.hasTreeSupport;
+		this.hasTreeSupport = hasTreeSupport;
+		this.treeExpanded = treeExpanded; 
 		hasIncludedViewSupport = from.hasIncludedViewSupport;
 		this.allowNewCaption = allowNewCaption;
 
@@ -179,15 +184,18 @@ public class ViewLayout implements ETagAware
 		return filters;
 	}
 
-	public ViewLayout withFilters(final Collection<DocumentFilterDescriptor> filtersToSet)
+	public ViewLayout withFiltersAndTreeSupport(final Collection<DocumentFilterDescriptor> filtersToSet, final boolean hasTreeSupportToSet, final Boolean treeExpanded)
 	{
 		final ImmutableList<DocumentFilterDescriptor> filtersToSetEffective = filtersToSet != null ? ImmutableList.copyOf(filtersToSet) : ImmutableList.of();
-		if (Objects.equals(filters, filtersToSetEffective))
+		final boolean treeExpandedEffective = treeExpanded != null ? treeExpanded.booleanValue() : this.treeExpanded;
+		if (Objects.equals(filters, filtersToSetEffective)
+				&& this.hasTreeSupport == hasTreeSupportToSet
+				&& this.treeExpanded == treeExpandedEffective)
 		{
 			return this;
 		}
 
-		return new ViewLayout(this, filtersToSetEffective, allowNewCaption);
+		return new ViewLayout(this, filtersToSetEffective, allowNewCaption, hasTreeSupportToSet, treeExpandedEffective);
 	}
 
 	public ViewLayout withAllowNewRecordIfPresent(final Optional<String> allowNewCaption)
@@ -203,7 +211,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		return new ViewLayout(this, filters, allowNewCaptionToSet);
+		return new ViewLayout(this, filters, allowNewCaptionToSet, hasTreeSupport, treeExpanded);
 	}
 
 	public List<DocumentLayoutElementDescriptor> getElements()
@@ -229,6 +237,11 @@ public class ViewLayout implements ETagAware
 	public boolean isTreeSupport()
 	{
 		return hasTreeSupport;
+	}
+	
+	public boolean isTreeExpanded()
+	{
+		return treeExpanded;
 	}
 
 	public boolean isIncludedViewSupport()
@@ -268,6 +281,7 @@ public class ViewLayout implements ETagAware
 
 		private boolean hasAttributesSupport = false;
 		private boolean hasTreeSupport = false;
+		private boolean treeExpanded = true;
 		private boolean hasIncludedViewSupport = false;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
@@ -368,7 +382,7 @@ public class ViewLayout implements ETagAware
 		{
 			return !elementBuilders.isEmpty();
 		}
-		
+
 		public List<DocumentLayoutElementDescriptor.Builder> getElements()
 		{
 			return elementBuilders;
@@ -417,6 +431,12 @@ public class ViewLayout implements ETagAware
 		public Builder setHasTreeSupport(final boolean hasTreeSupport)
 		{
 			this.hasTreeSupport = hasTreeSupport;
+			return this;
+		}
+		
+		public Builder setTreeExpanded(boolean treeExpanded)
+		{
+			this.treeExpanded = treeExpanded;
 			return this;
 		}
 
