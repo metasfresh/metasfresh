@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -199,6 +200,16 @@ public final class CreateViewRequest
 		public Builder setStickyFilters(List<DocumentFilter> stickyFilters)
 		{
 			this.stickyFilters = stickyFilters;
+			return this;
+		}
+		
+		public Builder addStickyFilters(@NonNull final DocumentFilter stickyFilter)
+		{
+			if(stickyFilters == null)
+			{
+				stickyFilters = new ArrayList<>();
+			}
+			stickyFilters.add(stickyFilter);
 			return this;
 		}
 
