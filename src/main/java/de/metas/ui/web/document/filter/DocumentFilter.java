@@ -73,10 +73,10 @@ public final class DocumentFilter
 
 	public static DocumentFilter ofQueryFilter(final String filterId, final IQueryFilter<?> filter)
 	{
-		final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter);
+		final ISqlQueryFilter sqlFilter = ISqlQueryFilter.cast(filter); // assume it's an ISqlQueryFilter
 		return builder()
 				.setFilterId(filterId)
-				.addParameter(DocumentFilterParam.ofSqlWhereClause(true, sqlFilter.getSql(), sqlFilter.getSqlParams(Env.getCtx())))
+				.addParameter(DocumentFilterParam.ofSqlWhereClause(true/* joinAnd */, sqlFilter.getSql(), sqlFilter.getSqlParams(Env.getCtx())))
 				.build();
 	}
 
@@ -159,5 +159,4 @@ public final class DocumentFilter
 			return this;
 		}
 	}
-
 }
