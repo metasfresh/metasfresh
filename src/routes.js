@@ -35,7 +35,7 @@ export const getRoutes = (store, auth) => {
                 }
             })
         }else{
-            loginSuccess(auth)
+            store.dispatch(loginSuccess(auth));
             callback();
         }
     }
