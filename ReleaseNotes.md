@@ -10,10 +10,33 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.13 (2017-24)
+
+**upcoming release for week 2017-24**
+
+## Features
+* metasfresh-backend
+  * [#1513](https://github.com/metasfresh/metasfresh/issues/1513) Translating Shipment Candidates and other fields to en_US
+  * [#1590](https://github.com/metasfresh/metasfresh/issues/1590) Translate User Window to en_US
+  * [#1655](https://github.com/metasfresh/metasfresh/issues/1655) Add CountExpected in Async Batch and improvements
+  * [#1741](https://github.com/metasfresh/metasfresh/issues/1741) New Window for Order Control in WebUI
+    * New Window for Order Control Report maintenance in WebUI
+  * [#1746](https://github.com/metasfresh/metasfresh/issues/1746) Layout Optimization of User Window in WebUI
+    * Adding a few Layout Optimzations to User window. Now showing the Login Field in Grid View and deleting the combined Name Field. Additional sized adjustments.
+
+## Fixes
+* metasfresh-backend
+  * [#1441](https://github.com/metasfresh/metasfresh/issues/1441) move subproject de.metas.endcustomer.mf15.ait to metasfresh-dist repo
+    * Cleanup; Thx [@homebeaver](https://github.com/homebeaver) for the pointer
+  * [#1712](https://github.com/metasfresh/metasfresh/issues/1712) Wrong Handling Unit Assignment in Shipment Schedule via aggregated Picking
+  * [#1739](https://github.com/metasfresh/metasfresh/issues/1739) Menu entry for M_ProductCategory window wrong
+    * Adding the correct window to the WebUI menu for Product Category Window.
+
 # metasfresh 5.12 (2017-23)
 
 **upcoming release for week 2017-23**
 
+## Features
 * metasfresh-backend
   * [#1239](https://github.com/metasfresh/metasfresh/issues/1239) Barcode on Bestellkontrolle report
     * The Sales Order Control Report now has an included Barcode with Code39. Ist allows the users in Manufacturing to scan the control report and the Manufacturign Order is automatically opened, ready for action issue and receipt.

@@ -285,7 +285,7 @@ public class RecordInfo extends CDialog
 		}
 
 		final Properties ctx = Env.getCtx();
-		final I_AD_User user = userDAO.retrieveUser(ctx, userId);
+		final I_AD_User user = userDAO.retrieveUserOrNull(ctx, userId);
 		if (user == null)
 		{
 			return "<" + userId + ">";

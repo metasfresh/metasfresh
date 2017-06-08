@@ -47,6 +47,8 @@ public interface IAsyncBatchBuilder
 	IAsyncBatchBuilder setC_Async_Batch_Type(final String internalName);
 
 	IAsyncBatchBuilder setName(final String name);
+	
+	IAsyncBatchBuilder setCountExpected(final int expected);
 
 	IAsyncBatchBuilder setDescription(final String description);
 

@@ -1,11 +1,10 @@
 package de.metas.handlingunits.pporder.api;
 
-import java.util.List;
-
 import org.adempiere.util.ISingletonService;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 
@@ -29,9 +28,11 @@ public interface IHUPPOrderBL extends ISingletonService
 
 	IHUPPOrderIssueProducer createIssueProducer();
 
-	List<Integer> retrieveHUsAvailableToIssue(int productId);
+	IHUQueryBuilder createHUsAvailableToIssueQuery(int productId);
 
 	void processPlanning(String targetPlanningStatus, int ppOrderId);
 
 	boolean canChangePlanningStatus(String fromPlanningStatus, String toPlanningStatus);
+
+
 }

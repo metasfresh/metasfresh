@@ -14,6 +14,9 @@ It is designed to be Out-of-the-box ready to use and with sophisticated vertical
 
 metasfresh is a perfect fit for midsize companies in wholesale and manufacturing which are in search for high flexibility and high performance in data processing assisted with multi-threading and mass document creation.
 
+## Screenshots
+<img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
+
 ## Installing metasfresh
 We create weekly Releases of metasfresh ERP which can be downloaded from our official Website at [metasfresh.com/en/download/](http://metasfresh.com/en/download/).
 

@@ -28,7 +28,6 @@ import java.util.StringTokenizer;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -142,12 +141,12 @@ public class MUser extends X_AD_User
 	 *	@param ctx context
 	 *	@param AD_User_ID id
 	 *	@return user
-	 * @deprecated Please use {@link IUserDAO#retrieveUser(Properties, int)}.
+	 * @deprecated Please use {@link IUserDAO#retrieveUserOrNull(Properties, int)}.
 	 */
 	@Deprecated
 	public static MUser get (final Properties ctx, final int AD_User_ID)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(ctx, AD_User_ID);
+		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
 		return LegacyAdapters.convertToPO(user);
 	}	//	get
 
@@ -243,24 +242,7 @@ public class MUser extends X_AD_User
 		}
 		return name;
 	}	//	getNameOfUser
-
-
-	/**
-	 * 	User is SalesRep
-	 *	@param AD_User_ID user
-	 *	@return true if sales rep
-	 */
-	public static boolean isSalesRep (int AD_User_ID)
-	{
-		if (AD_User_ID == 0)
-			return false;
-		String sql = "SELECT MAX(AD_User_ID) FROM AD_User u"
-			+ " INNER JOIN C_BPartner bp ON (u.C_BPartner_ID=bp.C_BPartner_ID) "
-			+ "WHERE bp.IsSalesRep='Y' AND AD_User_ID=?";
-		int no = DB.getSQLValue(null, sql, AD_User_ID);
-		return no == AD_User_ID;
-	}	//	isSalesRep
-
+	
 	/**	Static Logger			*/
 	private static Logger	s_log	= LogManager.getLogger(MUser.class);
 
@@ -305,9 +287,6 @@ public class MUser extends X_AD_User
 	{
 		super(ctx, rs, trxName);
 	}	//	MUser
-
-	/** User Access Rights				*/
-	private List<I_AD_UserBPAccess>	m_bpAccess = null;
 
 	/** Is Administrator */
 	private final Supplier<Boolean> m_isAdministratorSupplier = Suppliers.memoize(() -> {
@@ -371,7 +350,7 @@ public class MUser extends X_AD_User
 	private String cleanValue (String value)
 	{
 		char[] chars = value.toCharArray();
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < chars.length; i++)
 		{
 			char ch = chars[i];
@@ -382,24 +361,6 @@ public class MUser extends X_AD_User
 		}
 		return sb.toString ();
 	}	//	cleanValue
-
-	/**
-	 * 	Get First Name
-	 *	@return first name
-	 */
-	public String getFirstName()
-	{
-		return getName (getName(), true);
-	}	//	getFirstName
-
-	/**
-	 * 	Get Last Name
-	 *	@return first name
-	 */
-	public String getLastName()
-	{
-		return getName (getName(), false);
-	}	//	getLastName
 
 	/**
 	 * 	Get First/Last Name
@@ -475,7 +436,7 @@ public class MUser extends X_AD_User
 	@Override
 	public String toString ()
 	{
-		StringBuffer sb = new StringBuffer ("MUser[")
+		StringBuilder sb = new StringBuilder ("MUser[")
 			.append(get_ID())
 			.append(",Name=").append(getName())
 			.append(",EMailUserID=").append(getEMailUser())
@@ -509,7 +470,7 @@ public class MUser extends X_AD_User
 	 * 	Convert EMail
 	 *	@return Valid Internet Address
 	 */
-	public InternetAddress getInternetAddress ()
+	private InternetAddress getInternetAddress ()
 	{
 		String email = getEMail();
 		if (email == null || email.length() == 0)
@@ -538,34 +499,8 @@ public class MUser extends X_AD_User
 	{
 		if (ia == null)
 			return "NoEmail";
-                else return ia.getAddress();
-		/*
-                if (true)
-			return null;
-
-		Hashtable<String,String> env = new Hashtable<String,String>();
-		env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
-	//	env.put(Context.PROVIDER_URL, "dns://admin.adempiere.org");
-		try
-		{
-			DirContext ctx = new InitialDirContext(env);
-		//	Attributes atts = ctx.getAttributes("admin");
-			Attributes atts = ctx.getAttributes("dns://admin.adempiere.org", new String[] {"MX"});
-			NamingEnumeration en = atts.getAll();
-	//		NamingEnumeration en = ctx.list("adempiere.org");
-			while (en.hasMore())
-			{
-				System.out.println(en.next());
-			}
-
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-			return e.getLocalizedMessage();
-		}
-		return null;
-                */
+        else
+        	return ia.getAddress();
 	}	//	validateEmail
 
 	/**
@@ -649,49 +584,6 @@ public class MUser extends X_AD_User
 	}	//	isAdministrator
 
 	/**
-	 * 	Has the user Access to BP info and resources
-	 *	@param BPAccessType access type
-	 *	@param params opt parameter
-	 *	@return true if access
-	 */
-	public boolean hasBPAccess (String BPAccessType, Object[] params)
-	{
-		if (isFullBPAccess())
-			return true;
-		for (final I_AD_UserBPAccess bpAccess : getBPAccess())
-		{
-			if (Check.equals(bpAccess.getBPAccessType(), BPAccessType))
-			{
-				return true;
-			}
-		}
-		return false;
-	}	//	hasBPAccess
-
-	/**
-	 * 	Get active BP Access records
-	 *	@param requery requery
-	 *	@return access list
-	 */
-	private List<I_AD_UserBPAccess> getBPAccess ()
-	{
-		if (m_bpAccess != null)
-		{
-			return m_bpAccess;
-		}
-
-		m_bpAccess = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_UserBPAccess.class, getCtx(), ITrx.TRXNAME_None)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UserBPAccess.COLUMNNAME_AD_User_ID, getAD_User_ID())
-				.create()
-				.list();
-
-		return m_bpAccess;
-	}	//	getBPAccess
-
-
-	/**
 	 * 	Before Save
 	 *	@param newRecord new
 	 *	@return true
@@ -706,24 +598,4 @@ public class MUser extends X_AD_User
 			setValue(super.getValue());
 		return true;
 	}	//	beforeSave
-
-
-	/**
-	 * 	Test
-	 *	@param args ignored
-	 *
-	public static void main (String[] args)
-	{
-		try
-		{
-			validateEmail(new InternetAddress("jjanke@adempiere.org"));
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-
-	//	org.compiere.Adempiere.startupClient();
-	//	System.out.println ( MUser.get(Env.getCtx(), "SuperUser", "22") );
-	}	//	main	/* */
 }	//	MUser
