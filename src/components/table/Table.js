@@ -223,12 +223,14 @@ class Table extends Component {
         if(event.target.parentNode !== document &&
             !event.target.parentNode.className.includes('notification')) {
             const item = event.path;
-            for(let i = 0; i < item.length; i++){
-                if(
-                    item[i].classList &&
-                    item[i].classList.contains('js-not-unselect')
-                ){
-                    return;
+            if(item) {
+                for(let i = 0; i < item.length; i++){
+                    if(
+                        item[i].classList &&
+                        item[i].classList.contains('js-not-unselect')
+                    ){
+                        return;
+                    }
                 }
             }
 
