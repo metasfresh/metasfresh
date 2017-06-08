@@ -16,7 +16,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 14259786L;
+	private static final long serialVersionUID = 253169369L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -38,7 +38,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 			setM_Warehouse_ID (0);
 			setProcessed (false);
 // N
-			setQtyMovedWithIssues (Env.ZERO);
+			setQtyMovedWithIssues (BigDecimal.ZERO);
 // 0
         } */
     }
@@ -199,6 +199,43 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	}
 
 	@Override
+	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
+	}
+
+	/** Set Standort abw..
+		@param C_BP_Location_Override_ID 
+		Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
+	{
+		if (C_BP_Location_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
+	}
+
+	/** Get Standort abw..
+		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	  */
+	@Override
+	public int getC_BP_Location_Override_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
@@ -304,43 +341,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	public int getC_BPartner_Override_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Override_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_BPartner_Location getC_BP_Location_Override() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class);
-	}
-
-	@Override
-	public void setC_BP_Location_Override(org.compiere.model.I_C_BPartner_Location C_BP_Location_Override)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_ID, org.compiere.model.I_C_BPartner_Location.class, C_BP_Location_Override);
-	}
-
-	/** Set Standort abw..
-		@param C_BP_Location_Override_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID)
-	{
-		if (C_BP_Location_Override_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Location_Override_ID, Integer.valueOf(C_BP_Location_Override_ID));
-	}
-
-	/** Get Standort abw..
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
-	@Override
-	public int getC_BP_Location_Override_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Location_Override_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -719,9 +719,9 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Ausprägung Merkmals-Satz.
+	/** Set Merkmale.
 		@param M_AttributeSetInstance_ID 
-		Instanz des Merkmals-Satzes zum Produkt
+		Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
@@ -732,8 +732,8 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
 	}
 
-	/** Get Ausprägung Merkmals-Satz.
-		@return Instanz des Merkmals-Satzes zum Produkt
+	/** Get Merkmale.
+		@return Merkmals Ausprägungen zum Produkt
 	  */
 	@Override
 	public int getM_AttributeSetInstance_ID () 
@@ -776,25 +776,6 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Bewegungs-Datum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
-	{
-		set_Value (COLUMNNAME_MovementDate, MovementDate);
-	}
-
-	/** Get Bewegungs-Datum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
-	@Override
-	public java.sql.Timestamp getMovementDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
 	}
 
 	@Override
@@ -964,6 +945,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
+	/** Set Bewegungs-Datum.
+		@param MovementDate 
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public void setMovementDate (java.sql.Timestamp MovementDate)
+	{
+		set_Value (COLUMNNAME_MovementDate, MovementDate);
+	}
+
+	/** Get Bewegungs-Datum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	  */
+	@Override
+	public java.sql.Timestamp getMovementDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+	}
+
 	/** 
 	 * PriorityRule AD_Reference_ID=154
 	 * Reference name: _PriorityRule
@@ -1072,7 +1072,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMoved);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1091,7 +1091,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyMovedWithIssues);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1113,7 +1113,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1132,7 +1132,25 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrderedOverUnder);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
+	/** Set QtyOrderedTU.
+		@param QtyOrderedTU QtyOrderedTU	  */
+	@Override
+	public void setQtyOrderedTU (java.math.BigDecimal QtyOrderedTU)
+	{
+		throw new IllegalArgumentException ("QtyOrderedTU is virtual column");	}
+
+	/** Get QtyOrderedTU.
+		@return QtyOrderedTU	  */
+	@Override
+	public java.math.BigDecimal getQtyOrderedTU () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrderedTU);
+		if (bd == null)
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1151,7 +1169,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToMove);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1170,7 +1188,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyToMove_Override);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1189,7 +1207,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.payment.esr.model;
 
 
@@ -144,6 +128,31 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Daten-Typ.
+	 * Art der Daten
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDataType (java.lang.String DataType);
+
+	/**
+	 * Get Daten-Typ.
+	 * Art der Daten
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDataType();
+
+    /** Column definition for DataType */
+    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_DataType = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "DataType", null);
+    /** Column name DataType */
+    public static final String COLUMNNAME_DataType = "DataType";
+
+	/**
 	 * Set Belegdatum.
 	 * Datum des Belegs
 	 *
@@ -238,7 +247,7 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_ESR_Control_Trx_Qty = "ESR_Control_Trx_Qty";
 
 	/**
-	 * Set ESR_Import.
+	 * Set ESR Zahlungsimport.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -247,7 +256,7 @@ public interface I_ESR_Import
 	public void setESR_Import_ID (int ESR_Import_ID);
 
 	/**
-	 * Get ESR_Import.
+	 * Get ESR Zahlungsimport.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -389,7 +398,9 @@ public interface I_ESR_Import
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setProcessing (boolean Processing);
 
 	/**

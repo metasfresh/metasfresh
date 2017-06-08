@@ -260,7 +260,7 @@ public class OLCandBL implements IOLCandBL
 					final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, ITrx.TRXNAME_None);
 					note.setRecord(adTableDAO.retrieveTableId(I_C_OLCand.Table_Name), candOfGroup.getC_OLCand_ID());
 
-					final I_AD_User user = userDAO.retrieveUser(ctx, userInChargeId);
+					final I_AD_User user = userDAO.retrieveUserOrNull(ctx, userInChargeId);
 					note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 
 					note.setTextMsg(e.getLocalizedMessage());
@@ -341,7 +341,7 @@ public class OLCandBL implements IOLCandBL
 				final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId, trxName);
 
 				final IUserDAO userDAO = Services.get(IUserDAO.class);
-				final I_AD_User user = userDAO.retrieveUser(ctx, userInChargeId);
+				final I_AD_User user = userDAO.retrieveUserOrNull(ctx, userInChargeId);
 
 				note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 

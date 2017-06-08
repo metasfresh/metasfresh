@@ -25,7 +25,7 @@
 			<artifactId>de.metas.swat.base</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>de.metas.swat</groupId>
 			<artifactId>de.metas.swat.base</artifactId>
@@ -46,27 +46,18 @@
 			<version>1.0.0</version>
 		</dependency>
 
-		<!-- task 07789: we have this dependency to be able to augment SEPA_ExportLines with ESR account ID info -->
-		<!-- 
 		<dependency>
-			<groupId>de.metas.payment.sepa</groupId>
-			<artifactId>de.metas.payment.sepa</artifactId>
+			<groupId>de.metas.util</groupId>
+			<artifactId>de.metas.util</artifactId>
 			<version>1.0.0</version>
 		</dependency>
- 		-->
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 			<version>1.0.0</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util</artifactId>
-			<version>1.0.0</version>
-		  	<classifier>tests</classifier>
-		  	<scope>test</scope>
+			<classifier>tests</classifier>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -77,6 +68,57 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--
+			Lombok
+			See https://github.com/metasfresh/metasfresh/issues/1125
+			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
+			Also note that the version is managed by spring-boot.
+		 -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jaxb2-maven-plugin</artifactId>
+
+				<executions>
+					<!-- source for the xsd: https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip -->
+					<execution>
+						<id>generate-de.metas.payment.esr.camt.054.001.06</id>
+						<goals>
+							<goal>xjc</goal>
+						</goals>
+						<configuration>
+							<sources>
+								<source>src/main/xsd/camt.054.001.06.xsd</source>
+							</sources>
+							<packageName>de.metas.payment.camt054.jaxb</packageName>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<!-- Create tests JAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 
 </project>

@@ -249,7 +249,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 		}
 
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final I_AD_User user = userDAO.retrieveUser(getCtx(), userId);
+		final I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), userId);
 		if (user == null)
 		{
 			throw new TerminalException("@NotFound@ @AD_User_ID@");

@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.payment.esr.model;
 
@@ -32,7 +16,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1690947586L;
+	private static final long serialVersionUID = 1369881824L;
 
     /** Standard Constructor */
     public X_ESR_ImportLine (Properties ctx, int ESR_ImportLine_ID, String trxName)
@@ -122,7 +106,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -217,43 +201,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
-	}
-
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public int getC_BPartner_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccount_ID, org.compiere.model.I_C_BP_BankAccount.class);
@@ -285,6 +232,43 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public int getC_BP_BankAccount_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
+	}
+
+	/** Set Geschäftspartner.
+		@param C_BPartner_ID 
+		Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public void setC_BPartner_ID (int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+	}
+
+	/** Get Geschäftspartner.
+		@return Bezeichnet einen Geschäftspartner
+	  */
+	@Override
+	public int getC_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -414,22 +398,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
 
-	/** Set Fehlermeldung.
-		@param ErrorMsg Fehlermeldung	  */
-	@Override
-	public void setErrorMsg (java.lang.String ErrorMsg)
-	{
-		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
-	}
-
-	/** Get Fehlermeldung.
-		@return Fehlermeldung	  */
-	@Override
-	public java.lang.String getErrorMsg () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ErrorMsg);
-	}
-
 	/** Set Bereits zugeordnet.
 		@param ESR_Amount_Balance Bereits zugeordnet	  */
 	@Override
@@ -444,27 +412,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ESR_Amount_Balance);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
-	}
-
-	/** Set ESR Rechnungsnummer.
-		@param ESR_DocumentNo 
-		Belegnummer der zugeordneten Rechnung
-	  */
-	@Override
-	public void setESR_DocumentNo (java.lang.String ESR_DocumentNo)
-	{
-		set_Value (COLUMNNAME_ESR_DocumentNo, ESR_DocumentNo);
-	}
-
-	/** Get ESR Rechnungsnummer.
-		@return Belegnummer der zugeordneten Rechnung
-	  */
-	@Override
-	public java.lang.String getESR_DocumentNo () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESR_DocumentNo);
 	}
 
 	/** 
@@ -495,6 +444,25 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return (java.lang.String)get_Value(COLUMNNAME_ESR_Document_Status);
 	}
 
+	/** Set ESR Rechnungsnummer.
+		@param ESR_DocumentNo 
+		Belegnummer der zugeordneten Rechnung
+	  */
+	@Override
+	public void setESR_DocumentNo (java.lang.String ESR_DocumentNo)
+	{
+		set_Value (COLUMNNAME_ESR_DocumentNo, ESR_DocumentNo);
+	}
+
+	/** Get ESR Rechnungsnummer.
+		@return Belegnummer der zugeordneten Rechnung
+	  */
+	@Override
+	public java.lang.String getESR_DocumentNo () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESR_DocumentNo);
+	}
+
 	@Override
 	public de.metas.payment.esr.model.I_ESR_Import getESR_Import() throws RuntimeException
 	{
@@ -507,8 +475,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		set_ValueFromPO(COLUMNNAME_ESR_Import_ID, de.metas.payment.esr.model.I_ESR_Import.class, ESR_Import);
 	}
 
-	/** Set ESR_Import.
-		@param ESR_Import_ID ESR_Import	  */
+	/** Set ESR Zahlungsimport.
+		@param ESR_Import_ID ESR Zahlungsimport	  */
 	@Override
 	public void setESR_Import_ID (int ESR_Import_ID)
 	{
@@ -518,8 +486,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, Integer.valueOf(ESR_Import_ID));
 	}
 
-	/** Get ESR_Import.
-		@return ESR_Import	  */
+	/** Get ESR Zahlungsimport.
+		@return ESR Zahlungsimport	  */
 	@Override
 	public int getESR_Import_ID () 
 	{
@@ -569,7 +537,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ESR_Invoice_Grandtotal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -591,7 +559,7 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ESR_Invoice_Openamt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -618,25 +586,6 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return false;
 	}
 
-	/** Set Importierte ESR-Zeile.
-		@param ESRLineText 
-		ESR complete line text
-	  */
-	@Override
-	public void setESRLineText (java.lang.String ESRLineText)
-	{
-		set_Value (COLUMNNAME_ESRLineText, ESRLineText);
-	}
-
-	/** Get Importierte ESR-Zeile.
-		@return ESR complete line text
-	  */
-	@Override
-	public java.lang.String getESRLineText () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESRLineText);
-	}
-
 	/** 
 	 * ESR_Payment_Action AD_Reference_ID=540386
 	 * Reference name: ESR_Payment_Action_List
@@ -658,6 +607,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final String ESR_PAYMENT_ACTION_Control_Line = "C";
 	/** Allocate_Payment_With_Current_Invoice = A */
 	public static final String ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice = "A";
+	/** Reverse_Booking = R */
+	public static final String ESR_PAYMENT_ACTION_Reverse_Booking = "R";
 	/** Set ESR_Payment_Action.
 		@param ESR_Payment_Action ESR_Payment_Action	  */
 	@Override
@@ -673,6 +624,44 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public java.lang.String getESR_Payment_Action () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ESR_Payment_Action);
+	}
+
+	/** Set ESR Referenznummer (komplett).
+		@param ESRFullReferenceNumber 
+		Referenznummer inkl. bankinterner Teilnehmernummer
+	  */
+	@Override
+	public void setESRFullReferenceNumber (java.lang.String ESRFullReferenceNumber)
+	{
+		set_Value (COLUMNNAME_ESRFullReferenceNumber, ESRFullReferenceNumber);
+	}
+
+	/** Get ESR Referenznummer (komplett).
+		@return Referenznummer inkl. bankinterner Teilnehmernummer
+	  */
+	@Override
+	public java.lang.String getESRFullReferenceNumber () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESRFullReferenceNumber);
+	}
+
+	/** Set Importierte ESR-Zeile.
+		@param ESRLineText 
+		ESR complete line text
+	  */
+	@Override
+	public void setESRLineText (java.lang.String ESRLineText)
+	{
+		set_Value (COLUMNNAME_ESRLineText, ESRLineText);
+	}
+
+	/** Get Importierte ESR-Zeile.
+		@return ESR complete line text
+	  */
+	@Override
+	public java.lang.String getESRLineText () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ESRLineText);
 	}
 
 	/** Set Post-Teilnehmernummer.
@@ -694,9 +683,9 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		return (java.lang.String)get_Value(COLUMNNAME_ESRPostParticipantNumber);
 	}
 
-	/** Set ESR Referenznummer.
+	/** Set ESR Referenznummer (Rechnung).
 		@param ESRReferenceNumber 
-		Referenznummer inkl. bankinterne Teilnehmernummer
+		Referenznummer der jeweiligen Rechnung
 	  */
 	@Override
 	public void setESRReferenceNumber (java.lang.String ESRReferenceNumber)
@@ -704,8 +693,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		set_Value (COLUMNNAME_ESRReferenceNumber, ESRReferenceNumber);
 	}
 
-	/** Get ESR Referenznummer.
-		@return Referenznummer inkl. bankinterne Teilnehmernummer
+	/** Get ESR Referenznummer (Rechnung).
+		@return Referenznummer der jeweiligen Rechnung
 	  */
 	@Override
 	public java.lang.String getESRReferenceNumber () 
@@ -727,6 +716,25 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public java.lang.String getESRTrxType () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ESRTrxType);
+	}
+
+	/** Set Import-Fehler.
+		@param ImportErrorMsg 
+		Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
+	  */
+	@Override
+	public void setImportErrorMsg (java.lang.String ImportErrorMsg)
+	{
+		set_Value (COLUMNNAME_ImportErrorMsg, ImportErrorMsg);
+	}
+
+	/** Get Import-Fehler.
+		@return Fehler beim Einlesen der Datei, z.B. Fehler im Format eines Datums
+	  */
+	@Override
+	public java.lang.String getImportErrorMsg () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ImportErrorMsg);
 	}
 
 	/** Set Manuell.
@@ -801,6 +809,25 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Zuordnungsfehler.
+		@param MatchErrorMsg 
+		Fehler beim Zuordnen der Daten, z.B. fehlende Rechnung für eine eingelesene Referenznummer
+	  */
+	@Override
+	public void setMatchErrorMsg (java.lang.String MatchErrorMsg)
+	{
+		set_Value (COLUMNNAME_MatchErrorMsg, MatchErrorMsg);
+	}
+
+	/** Get Zuordnungsfehler.
+		@return Fehler beim Zuordnen der Daten, z.B. fehlende Rechnung für eine eingelesene Referenznummer
+	  */
+	@Override
+	public java.lang.String getMatchErrorMsg () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_MatchErrorMsg);
 	}
 
 	@Override

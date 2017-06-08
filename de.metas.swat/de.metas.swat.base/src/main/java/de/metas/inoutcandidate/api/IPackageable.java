@@ -34,13 +34,11 @@ import java.sql.Timestamp;
  */
 public interface IPackageable
 {
-	int getBPartnerId();
+	int getBpartnerId();
 
 	String getProductName();
 
 	int getProductId();
-
-	String getDocType();
 
 	String getFreightCostRule();
 
@@ -54,27 +52,35 @@ public interface IPackageable
 
 	String getDeliveryVia();
 
-	int getWarehouseDestId();
+	@Deprecated
+	default String getWarehouseDestName()
+	{
+		// NOTE: this is a legacy getter that we inherited from a legacy project
+		throw new UnsupportedOperationException("WarehouseDestName is not supported");
+	}
 
-	String getWarehouseDestName();
+	@Deprecated
+	default int getWarehouseDestId()
+	{
+		// NOTE: this is a legacy getter that we inherited from a legacy project
+		throw new UnsupportedOperationException("WarehouseDestId is not supported");
+	}
 
 	String getWarehouseName();
 
-	String getBPartnerLocationName();
+	String getBpartnerLocationName();
 
-	String getBPartnerName();
+	String getBpartnerName();
 
-	String getBPartnerValue();
+	String getBpartnerValue();
 
 	BigDecimal getQtyToDeliver();
 
 	int getShipmentScheduleId();
 
-	int getBPartnerLocationId();
+	int getBpartnerLocationId();
 
-	String getBPartnerAddress();
-
-//	String getDeliveryViaName();
+	String getBpartnerAddress();
 
 	int getWarehouseId();
 
@@ -91,8 +97,6 @@ public interface IPackageable
 	int getShipperId();
 
 	String getDocSubType();
-
-//	String getFreightCostRuleName();
 
 	Timestamp getPreparationDate();
 }

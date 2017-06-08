@@ -702,8 +702,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		setValueAt(miniTable, COLUMNNAME_Qty, rowIdx, currentRow.getQtyToDeliver());
 		setValueAt(miniTable, COLUMNNAME_DeliveryDate, rowIdx, currentRow.getDeliveryDate());
 		setValueAt(miniTable, COLUMNNAME_PreparationDate, rowIdx, currentRow.getPreparationDate());
-		setValueAt(miniTable, COLUMNNAME_BPValue, rowIdx, currentRow.getBPartnerValue()); // BP Value
-		setValueAt(miniTable, COLUMNNAME_C_BPartner_Location_ID, rowIdx, currentRow.getBPartnerLocationName()); // BP Location Name
+		setValueAt(miniTable, COLUMNNAME_BPValue, rowIdx, currentRow.getBpartnerValue()); // BP Value
+		setValueAt(miniTable, COLUMNNAME_C_BPartner_Location_ID, rowIdx, currentRow.getBpartnerLocationName()); // BP Location Name
 		setValueAt(miniTable, COLUMNNAME_M_Warehouse_Dest_ID, rowIdx, currentRow.getWarehouseDestName());
 
 		final String matchingType;
@@ -832,8 +832,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 	@Override
 	public void setIsPos(boolean isPos)
 	{
-		PackingMd model = getModel();
-		model.isPOS = isPos;
+		final PackingMd model = getModel();
+		model.setPOSMode(isPos);
 	}
 
 	@Override
@@ -909,11 +909,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 			}
 			else
 			{
-				data.append(currentRow.getBPartnerValue())
+				data.append(currentRow.getBpartnerValue())
 						.append("   ")
-						.append(currentRow.getbPartnerName())
+						.append(currentRow.getBpartnerName())
 						.append("<br>")
-						.append(currentRow.getBPartnerAddress());
+						.append(currentRow.getKey().getBpartnerAddress());
 				break; // once is enough
 			}
 		}

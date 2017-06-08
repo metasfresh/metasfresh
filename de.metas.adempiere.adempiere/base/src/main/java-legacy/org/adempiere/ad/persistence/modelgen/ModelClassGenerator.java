@@ -279,22 +279,8 @@ public class ModelClassGenerator
 	 * Create set/get methods for column
 	 * 
 	 * @param mandatory init call for mandatory columns
-	 * @param columnName column name
-	 * @param isUpdateable updateable
-	 * @param isMandatory mandatory
-	 * @param displayType display type
-	 * @param AD_Reference_ID validation reference
-	 * @param fieldLength int
-	 * @param defaultValue default value
-	 * @param ValueMin String
-	 * @param ValueMax String
-	 * @param VFormat String
-	 * @param Callout String
-	 * @param Name String
-	 * @param Description String
-	 * @param virtualColumn virtual column
-	 * @param IsEncrypted stored encrypted
-	 * @return set/get method
+	 * @param columnInfo
+	 * @return set/get methods (java code)
 	 */
 	private String createColumnMethods(final StringBuilder mandatory, final ColumnInfo columnInfo)
 	{
@@ -432,7 +418,9 @@ public class ModelClassGenerator
 		{
 			mandatory.append("\t\t\tset").append(columnName).append(" (");
 			if (clazz.equals(Integer.class))
+			{
 				mandatory.append("0");
+			}
 			else if (clazz.equals(Boolean.class))
 			{
 				if (defaultValue.indexOf('Y') != -1)
@@ -441,14 +429,25 @@ public class ModelClassGenerator
 					mandatory.append("false");
 			}
 			else if (clazz.equals(BigDecimal.class))
+			{
 				mandatory.append("BigDecimal.ZERO");
+			}
 			else if (clazz.equals(Timestamp.class))
+			{
 				mandatory.append("new Timestamp( System.currentTimeMillis() )");
+			}
 			else
+			{
 				mandatory.append("null");
-			mandatory.append(");").append(NL);
+			}
+			mandatory.append(");");
+			
 			if (defaultValue.length() > 0)
-				mandatory.append("// ").append(defaultValue).append(NL);
+			{
+				mandatory.append(" // ").append(defaultValue);
+			}
+			
+			mandatory.append(NL);
 		}
 
 		// ****** Get Comment ******
@@ -490,7 +489,7 @@ public class ModelClassGenerator
 					.append("\t\t\t return BigDecimal.ZERO;").append(NL)
 					.append("\t\treturn bd;").append(NL);
 			addImportClass(java.math.BigDecimal.class);
-			addImportClass(org.compiere.util.Env.class);
+			// addImportClass(org.compiere.util.Env.class); // not needed anymore
 		}
 		else if (clazz.equals(Boolean.class))
 		{

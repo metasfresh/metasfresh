@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -29,6 +30,7 @@ import java.util.TreeSet;
 import org.adempiere.acct.api.IAcctSchemaDAO;
 import org.adempiere.acct.api.IPostingService;
 import org.adempiere.acct.api.exception.AccountingException;
+import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.OrgResource;
@@ -61,7 +63,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Login Manager
@@ -103,6 +107,7 @@ public class Login
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final transient IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final transient IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
@@ -174,8 +179,12 @@ public class Login
 	 */
 	public Login(final Properties ctx)
 	{
-		super();
-		this._loginContext = new LoginContext(ctx);
+		this(new LoginContext(ctx));
+	}
+
+	public Login(@NonNull final LoginContext loginContext)
+	{
+		this._loginContext = loginContext;
 	}
 
 	public LoginContext getCtx()
@@ -186,9 +195,8 @@ public class Login
 	/**
 	 * Login and get roles.
 	 *
-	 * @param username user
-	 * @param password pwd
-	 * @param force ignore pwd
+	 * @param username user or email
+	 * @param password password
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
@@ -218,12 +226,11 @@ public class Login
 		}
 
 		//
-		// If we were authenticated, reset the password becuse we no longer need it
+		// If we were authenticated, reset the password because we no longer need it
 		if (authenticated)
 		{
 			password = null;
 		}
-
 
 		//
 		// If not authenticated so far, use AD_User as backup
@@ -233,147 +240,114 @@ public class Login
 		final MFSession session = startSession();
 		session.setLoginUsername(username);
 
-		final Set<KeyNamePair> roles = new LinkedHashSet<>();
-		//
-		final StringBuilder sql = new StringBuilder("SELECT u.AD_User_ID, r.AD_Role_ID,r.Name, ")
-				.append(" u.LoginFailureCount, u.IsAccountLocked , u.Password , u.LoginFailureDate, ") // metas: ab
-				.append("(CASE WHEN ((u.Password=? AND (SELECT IsEncrypted FROM AD_Column WHERE AD_Column_ID=417)='N') " // #1
-						+ "OR (u.Password=? AND (SELECT IsEncrypted FROM AD_Column WHERE AD_Column_ID=417)='Y'))"	// #2
-						+ " THEN 'Y' ELSE 'N' END) AS PasswordValid")
-				.append(" FROM AD_User u")
-				.append(" INNER JOIN AD_User_Roles ur ON (u.AD_User_ID=ur.AD_User_ID AND ur.IsActive='Y')")
-				.append(" INNER JOIN AD_Role r ON (ur.AD_Role_ID=r.AD_Role_ID AND r.IsActive='Y') ")
-				// 04212: only use the new field "Login" and "Email"
-				.append(" WHERE (u.Login=? OR u.EMail=?)")		// #3,4
-				// US362: Login using email address (2010070610000359) - added EMail=?
-				.append(" AND u.IsActive='Y' AND u.issystemuser='Y'")
-				.append(" AND EXISTS (SELECT 1 FROM AD_Client c WHERE u.AD_Client_ID=c.AD_Client_ID AND c.IsActive='Y')")
+		final I_AD_User user = userDAO.retrieveLoginUserByUserId(username);
+		int loginFailureCount = user.getLoginFailureCount();
 
-		.append(" ORDER BY ")
-				.append(I_AD_Role.COLUMNNAME_SeqNo + " NULLS LAST,")
-				.append(I_AD_Role.COLUMNNAME_AD_Role_ID);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
+		// metas: us902: Update logged in user if not equal.
+		// Because we are creating the session before we know which user will be logged, initially
+		// the AD_Session.CreatedBy is zero.
+		session.setAD_User_ID(user.getAD_User_ID());
+
+		final boolean isAccountLocked = user.isAccountLocked();
+		if (isAccountLocked)
 		{
-			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
-			pstmt.setString(1, password);
-			pstmt.setString(2, SecureEngine.encrypt(password));
-			pstmt.setString(3, username);
-			pstmt.setString(4, username); // US362: Login using email address (2010070610000359)
-
-			// execute a query
-			rs = pstmt.executeQuery();
-
-			if (!rs.next())  		// no record found
-			{
-				throw new AdempiereException("@UserPwdError@"); // TODO: specific exception
-			}
-
-			final int adUserId = rs.getInt(I_AD_User.COLUMNNAME_AD_User_ID);
-			final I_AD_User user = userDAO.retrieveUser(ctx.getSessionContext(), adUserId);
-			int loginFailureCount = user.getLoginFailureCount();
-
-			// metas: us902: Update logged in user if not equal.
-			// Because we are creating the session before we know which user will be logged, initially
-			// the AD_Session.CreatedBy is zero.
-			session.setAD_User_ID(user.getAD_User_ID());
-			// metas: us902: end
-
-			final boolean isAccountLocked = user.isAccountLocked();
-			if (isAccountLocked)
-			{
-				final Timestamp curentLogin = (new Timestamp(System.currentTimeMillis()));
-				long loginFailureTime = user.getLoginFailureDate().getTime();
-				long newloginFailureTime = loginFailureTime + (1000 * 60 * accountLockExpire);
-				Timestamp acountUnlock = new Timestamp(newloginFailureTime);
-				if (curentLogin.compareTo(acountUnlock) > 0)
-				{
-					user.setLoginFailureCount(0);
-					user.setIsAccountLocked(false);
-					InterfaceWrapperHelper.save(user);
-				}
-				else
-				{
-					throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
-				}
-			}
-			boolean isPasswordValid = authenticated;
-			if (!isPasswordValid)
-				isPasswordValid = DisplayType.toBoolean(rs.getString("PasswordValid"));
-			if (!isPasswordValid)
-			{
-				loginFailureCount++;
-				user.setLoginFailureCount(loginFailureCount);
-				user.setLoginFailureDate(new Timestamp(System.currentTimeMillis()));
-				if (user.getLoginFailureCount() >= maxLoginFailure)
-				{
-					user.setIsAccountLocked(true);
-					user.setLockedFromIP(session.getRemote_Addr());
-					InterfaceWrapperHelper.save(user);
-
-					destroySessionOnLoginIncorrect(session);
-					throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
-				}
-
-				InterfaceWrapperHelper.save(user);
-
-				destroySessionOnLoginIncorrect(session);
-				throw new AdempiereException("@UserOrPasswordInvalid@");
-			}
-			else
+			final Timestamp curentLogin = (new Timestamp(System.currentTimeMillis()));
+			long loginFailureTime = user.getLoginFailureDate().getTime();
+			long newloginFailureTime = loginFailureTime + (1000 * 60 * accountLockExpire);
+			Timestamp acountUnlock = new Timestamp(newloginFailureTime);
+			if (curentLogin.compareTo(acountUnlock) > 0)
 			{
 				user.setLoginFailureCount(0);
 				user.setIsAccountLocked(false);
 				InterfaceWrapperHelper.save(user);
 			}
-
-			final int AD_User_ID = rs.getInt(1);
-			ctx.setUser(AD_User_ID, username);
-
-			//
-			if (Ini.isClient())
+			else
 			{
-				if (MSystem.isSwingRememberUserAllowed())
-					Ini.setProperty(Ini.P_UID, username);
-				else
-					Ini.setProperty(Ini.P_UID, "");
-				if (Ini.isPropertyBool(Ini.P_STORE_PWD) && MSystem.isSwingRememberPasswordAllowed())
-					Ini.setProperty(Ini.P_PWD, password);
+				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
 			}
-
-			do	// read all roles
-			{
-				final int AD_Role_ID = rs.getInt(2);
-				if (AD_Role_ID == IUserRolePermissions.SYSTEM_ROLE_ID)
-				{
-					ctx.setSysAdmin(true);
-				}
-				final String roleName = rs.getString(3);
-				final KeyNamePair roleKNP = KeyNamePair.of(AD_Role_ID, roleName);
-				roles.add(roleKNP);
-			}
-			while (rs.next());
-			
-			if (roles.isEmpty())
-			{
-				throw new AdempiereException("No roles"); // TODO: specific exception
-			}
-
-			log.debug("User={} - roles #{}", username, roles);
-			return roles;
 		}
-		catch (SQLException ex)
+		boolean isPasswordValid = authenticated;
+		if (!isPasswordValid)
 		{
-			log.error("SQL error: {}", sql, ex);
-			throw new AdempiereException("@DBLogin@", ex); // TODO: specific exception
+			isPasswordValid = Objects.equals(password, user.getPassword());
 		}
-		finally
+		if (!isPasswordValid)
 		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
+			loginFailureCount++;
+			user.setLoginFailureCount(loginFailureCount);
+			user.setLoginFailureDate(new Timestamp(System.currentTimeMillis()));
+			if (user.getLoginFailureCount() >= maxLoginFailure)
+			{
+				user.setIsAccountLocked(true);
+				user.setLockedFromIP(session.getRemote_Addr());
+				InterfaceWrapperHelper.save(user);
+
+				destroySessionOnLoginIncorrect(session);
+				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
+			}
+
+			InterfaceWrapperHelper.save(user);
+
+			destroySessionOnLoginIncorrect(session);
+			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
+		else
+		{
+			user.setLoginFailureCount(0);
+			user.setIsAccountLocked(false);
+			InterfaceWrapperHelper.save(user);
+		}
+
+		final int AD_User_ID = user.getAD_User_ID();
+		ctx.setUser(AD_User_ID, username);
+
+		//
+		if (Ini.isClient())
+		{
+			if (MSystem.isSwingRememberUserAllowed())
+				Ini.setProperty(Ini.P_UID, username);
+			else
+				Ini.setProperty(Ini.P_UID, "");
+			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && MSystem.isSwingRememberPasswordAllowed())
+				Ini.setProperty(Ini.P_PWD, password);
+		}
+		
+		//
+		// Use user's AD_Language, if any
+		if (!Check.isEmpty(user.getAD_Language()))
+		{
+			final Language language = Language.getLanguage(user.getAD_Language());
+			Env.verifyLanguage(language);
+			ctx.setAD_Language(language.getAD_Language());
+		}
+
+		//
+		// Get user's roles
+		final Set<KeyNamePair> roles = new LinkedHashSet<>();
+		for (final I_AD_Role role : roleDAO.retrieveRolesForUser(ctx.getSessionContext(), user.getAD_User_ID()))
+		{
+			// if webui then skip non-webui roles
+			if (ctx.isWebui() && !role.isWEBUI_Role())
+			{
+				continue;
+			}
+
+			if (role.getAD_Role_ID() == IUserRolePermissions.SYSTEM_ROLE_ID)
+			{
+				ctx.setSysAdmin(true);
+			}
+
+			final KeyNamePair roleKNP = KeyNamePair.of(role.getAD_Role_ID(), role.getName());
+			roles.add(roleKNP);
+		}
+		//
+		if (roles.isEmpty())
+		{
+			throw new AdempiereException("No roles"); // TODO: specific exception
+		}
+
+		log.debug("User={} - roles #{}", username, roles);
+		return roles;
 	}
 
 	private MFSession startSession()
@@ -458,7 +432,7 @@ public class Login
 
 		return clientsList;
 	}
-	
+
 	private IUserRolePermissions getUserRolePermissions(final int AD_Role_ID, final int AD_User_ID)
 	{
 		//
@@ -468,7 +442,7 @@ public class Login
 		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.retrieveUserRolePermissions(AD_Role_ID, AD_User_ID, AD_Client_ID, loginDate);
 		return rolePermissions;
 	}
-	
+
 	public Set<KeyNamePair> getAvailableClients(final int AD_Role_ID, final int AD_User_ID)
 	{
 		return getUserRolePermissions(AD_Role_ID, AD_User_ID)
@@ -500,13 +474,13 @@ public class Login
 
 		return orgsList;
 	}
-	
+
 	public Set<KeyNamePair> getAvailableOrgs(final int AD_Role_ID, final int AD_User_ID, final int AD_Client_ID)
 	{
 		Check.assume(AD_Role_ID >= 0, "AD_Role_ID >= 0");
 		Check.assume(AD_User_ID >= 0, "AD_User_ID >= 0");
 		Check.assume(AD_Client_ID >= 0, "AD_Client_ID >= 0");
-		
+
 		//
 		// Get user role
 		final Date loginDate = SystemTime.asDayTimestamp(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
@@ -525,7 +499,7 @@ public class Login
 			log.warn("No Org for AD_Client_ID={}, AD_Role_ID={}, AD_User_ID={} \nPermissions: {}", AD_Client_ID, AD_Role_ID, AD_User_ID, role);
 			return ImmutableSet.of();
 		}
-		
+
 		return orgsList;
 	}
 
@@ -733,7 +707,7 @@ public class Login
 
 		//
 		// Save Ini properties
-		if(Ini.isClient())
+		if (Ini.isClient())
 		{
 			Ini.saveProperties();
 		}
@@ -1016,7 +990,7 @@ public class Login
 		final boolean defaultValue = true;
 		return sysConfigBL.getBooleanValue(SYSCONFIG_ShowWarehouseOnLogin, defaultValue, Env.CTXVALUE_AD_Client_ID_System, Env.CTXVALUE_AD_Org_ID_System);
 	}
-	
+
 	public boolean isAllowLoginDateOverride()
 	{
 		return getCtx().isAllowLoginDateOverride();
