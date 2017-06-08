@@ -1,4 +1,4 @@
-/**
+﻿/**
  * NOTE: This view affects following Jasper documents: Receipt, Shipment, Sales Invoice, ShippedInOuts (Rüstliste)
  * please do Not change if you can't make sure they all still work.
  */
