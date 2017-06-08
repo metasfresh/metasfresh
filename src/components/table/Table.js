@@ -51,6 +51,7 @@ class Table extends Component {
             isBatchEntry: false,
             rows: [],
             collapsedRows: [],
+            collapsedParentsRows: [],
             pendingInit: true
         }
     }
@@ -579,12 +580,44 @@ class Table extends Component {
             }
         }
     }
-    
-    handleRowCollapse = (id) => {
-        this.setState(prev => update(prev, {
-            collapsedRows: {$splice: [[prev.collapsedRows.indexOf(id), 1, id]]}
-        }), () => {
-            console.log(this.state.collapsedRows)
+
+    handleRowCollapse = (node, collapsed) => {
+        const {keyProperty} = this.props;
+        const {collapsedParentsRows, collapsedRows} = this.state;
+
+        const parentIndex = collapsedParentsRows.indexOf(node[keyProperty]);
+        if(collapsed){
+
+            this.setState(prev => ({
+                collapsedParentsRows:
+                    update(prev.collapsedParentsRows,
+                        {$splice: [[parentIndex, 1]]})
+            }));
+        }else{
+            if(parentIndex > -1) return;
+            this.setState(prev => ({
+                collapsedParentsRows:
+                    prev.collapsedParentsRows.concat(node[keyProperty])
+            }));
+
+        }
+
+        node.includedDocuments && node.includedDocuments.map(node => {
+            const index = collapsedRows.indexOf(node[keyProperty]);
+
+            if(collapsed){
+                this.setState(prev => ({
+                    collapsedRows:
+                        update(prev.collapsedRows, {$splice: [[index, 1]]})
+                }));
+            }else{
+                if(index > -1) return;
+                this.setState(prev => ({
+                    collapsedRows: prev.collapsedRows.concat(node[keyProperty])
+                }));
+                node.includedDocuments &&
+                    this.handleRowCollapse(node, collapsed);
+            }
         })
     }
 
@@ -594,7 +627,9 @@ class Table extends Component {
             mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
 
-        const {selected, rows, collapsedRows} = this.state;
+        const {
+            selected, rows, collapsedRows, collapsedParentsRows
+        } = this.state;
 
         if(rows){
             let keys = Object.keys(rows);
@@ -604,13 +639,16 @@ class Table extends Component {
                 const key = keys[i];
                 const id = item[key][keyProperty];
                 if(collapsedRows.indexOf(id) > -1) continue;
-
                 ret.push(
                     <tbody key={i}>
                         <TableItem
                             {...item[key]}
                             {...{entity, cols, type, mainTable, indentSupported,
                                 selected, docId, tabIndex, readonly}}
+                            collapsed={
+                                collapsedParentsRows
+                                    .indexOf(item[key][keyProperty]) > -1
+                            }
                             key={i}
                             odd={i & 1}
                             rowId={id}
@@ -639,7 +677,11 @@ class Table extends Component {
                                 !item[key].saveStatus.saved
                             }
                             getSizeClass={this.getSizeClass}
-                            handleRowCollapse={this.handleRowCollapse}
+                            handleRowCollapse={() => 
+                                this.handleRowCollapse(item[key],
+                                collapsedParentsRows
+                                    .indexOf(item[key][keyProperty]) > -1)
+                            }
                         />
                     </tbody>
                 );

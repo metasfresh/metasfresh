@@ -836,7 +836,7 @@ export function mapIncluded(
                     lastChild: true
                 });
             }
-            
+
             childIds.push(node.id);
 
             result = result.concat(

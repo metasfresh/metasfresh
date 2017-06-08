@@ -239,7 +239,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
-            indentSupported, contextType, lastChild, processed,
+            indentSupported, contextType, lastChild, processed, collapsed,
             includedDocuments, notSaved, handleRowCollapse
         } = this.props;
 
@@ -261,7 +261,7 @@ class TableItem extends Component {
                     <td
                         onClick={handleRowCollapse}
                     >
-                        {includedDocuments ? '+' : ''}
+                        {includedDocuments ? (collapsed ? '+' : '-') : ''}
                     </td>
                 }
                 {indentSupported &&
