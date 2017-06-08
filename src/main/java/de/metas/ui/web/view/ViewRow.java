@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -46,8 +47,36 @@ public final class ViewRow implements IViewRow
 		return new Builder(windowId);
 	}
 
+	public static final ViewRow cast(final IViewRow row)
+	{
+		return (ViewRow)row;
+	}
+
+	public static enum DefaultRowType implements IViewRowType
+	{
+		Row
+		{
+			@Override
+			public String getName()
+			{
+				// FIXME: use some proper name and icon
+				return HUEditorRowType.LU.getName();
+			}
+		},
+		Line
+		{
+			@Override
+			public String getName()
+			{
+				// FIXME: use some proper name and icon
+				return HUEditorRowType.TU.getName();
+			}
+		},
+	}
+
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
+	private final DocumentId parentRowId;
 	private final IViewRowType type;
 	private final boolean processed;
 
@@ -59,6 +88,7 @@ public final class ViewRow implements IViewRow
 	{
 		documentPath = builder.getDocumentPath();
 		rowId = documentPath.getDocumentId();
+		parentRowId = builder.getParentRowId();
 		type = builder.getType();
 		processed = builder.isProcessed();
 
@@ -74,6 +104,7 @@ public final class ViewRow implements IViewRow
 				.omitNullValues()
 				.add("id", rowId)
 				.add("type", type)
+				.add("parentId", parentRowId)
 				.add("values", values)
 				.add("includedRows.count", includedRows.size())
 				.add("processed", processed)
@@ -90,6 +121,11 @@ public final class ViewRow implements IViewRow
 	public DocumentId getId()
 	{
 		return rowId;
+	}
+
+	public DocumentId getParentId()
+	{
+		return parentRowId;
 	}
 
 	@Override
@@ -144,6 +180,7 @@ public final class ViewRow implements IViewRow
 	{
 		private final WindowId windowId;
 		private DocumentId rowId;
+		private DocumentId parentRowId;
 		private IViewRowType type;
 		private Boolean processed;
 		private final Map<String, Object> values = new LinkedHashMap<>(); // preserve the insertion order of fields
@@ -204,14 +241,30 @@ public final class ViewRow implements IViewRow
 
 		}
 
-		/** @return view row ID */
-		private DocumentId getRowId()
+		/** @return view row ID; never null */
+		public DocumentId getRowId()
 		{
 			if (rowId == null)
 			{
 				throw new IllegalStateException("No rowId was provided for " + this);
 			}
 			return rowId;
+		}
+
+		public Builder setParentRowId(final DocumentId parentRowId)
+		{
+			this.parentRowId = parentRowId;
+			return this;
+		}
+
+		private DocumentId getParentRowId()
+		{
+			return parentRowId;
+		}
+
+		public boolean isRootRow()
+		{
+			return getParentRowId() == null;
 		}
 
 		private IViewRowType getType()

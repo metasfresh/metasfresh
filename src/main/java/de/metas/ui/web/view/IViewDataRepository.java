@@ -57,6 +57,4 @@ public interface IViewDataRepository
 	ViewRowIdsOrderedSelection createOrderedSelection(ViewEvaluationCtx viewEvalCtx, WindowId windowId, List<DocumentFilter> filters);
 
 	ViewRowIdsOrderedSelection createOrderedSelectionFromSelection(final ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection fromSelection, List<DocumentQueryOrderBy> orderBys);
-
-	List<IViewRow> retrieveRowLines(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection orderedSelection, DocumentId rowId);
 }

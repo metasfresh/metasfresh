@@ -34,7 +34,6 @@ import de.metas.ui.web.view.json.JSONViewLayout;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.view.json.JSONViewRow;
 import de.metas.ui.web.window.controller.WindowRestController;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
@@ -191,24 +190,6 @@ public class ViewRestController
 		final ViewResult result = viewsRepo.getView(viewId)
 				.getPage(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
 		return JSONViewResult.of(result);
-	}
-
-	@GetMapping("/{viewId}/{rowId}/includedRows")
-	public List<JSONViewRow> getIncludedRows(
-			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable("viewId") final String viewIdStr//
-			, @PathVariable("rowId") final String rowIdStr//
-			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
-	)
-	{
-		userSession.assertLoggedIn();
-
-		final ViewId viewId = ViewId.of(windowId, viewIdStr);
-		final DocumentId rowId = DocumentId.of(rowIdStr);
-		final List<DocumentQueryOrderBy> orderBys = DocumentQueryOrderBy.parseOrderBysList(orderBysListStr);
-		final List<? extends IViewRow> result = viewsRepo.getView(viewId)
-				.getIncludedRows(rowId, orderBys);
-		return JSONViewRow.ofViewRows(result);
 	}
 
 	@GetMapping("/layout")

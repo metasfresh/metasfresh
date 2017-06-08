@@ -17,6 +17,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -83,6 +84,8 @@ public final class SqlViewSelectionQueryBuilder
 	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
 	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
 	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
+	public static final String COLUMNNAME_Paging_Parent_ID = "_sel_Parent_ID";
+	public static final CtxName Paging_Record_IDsPlaceholder = CtxName.parse("_sel_Record_IDs");
 
 	private final SqlViewBinding _viewBinding;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverters; // lazy
@@ -183,7 +186,7 @@ public final class SqlViewSelectionQueryBuilder
 			final List<DocumentQueryOrderBy> orderBys,
 			final int queryLimit)
 	{
-		if(!hasGroupingFields())
+		if (!hasGroupingFields())
 		{
 			final SqlAndParams sqlCreateSelection = buildSqlCreateSelection_WithoutGrouping(viewEvalCtx, newViewId, filters, orderBys, queryLimit);
 			return SqlCreateSelection.builder().sqlCreateSelection(sqlCreateSelection).build();
@@ -728,8 +731,10 @@ public final class SqlViewSelectionQueryBuilder
 
 		if (!sqlSelectDisplayNamesList.isEmpty())
 		{
-			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
+			sql.append("\n, ").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
+
+		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
@@ -807,6 +812,8 @@ public final class SqlViewSelectionQueryBuilder
 			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
 
+		sql.append("\n, null AS " + COLUMNNAME_Paging_Parent_ID);
+
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")
 				//
@@ -863,6 +870,8 @@ public final class SqlViewSelectionQueryBuilder
 		{
 			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
 		}
+
+		sql.append("\n, " + COLUMNNAME_Paging_Record_ID + " AS " + COLUMNNAME_Paging_Parent_ID);
 
 		sql.append("\n FROM (")
 				.append("\n   SELECT ")

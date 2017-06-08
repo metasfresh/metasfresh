@@ -3,9 +3,12 @@ package de.metas.ui.web.view;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -17,6 +20,8 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -27,9 +32,11 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
+import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -65,7 +72,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final String tableName;
 	private final IStringExpression sqlSelectById;
 	private final IStringExpression sqlSelectByPage;
-	private final IStringExpression sqlSelectLinesByRowId;
+	private final IStringExpression sqlSelectLinesByRowIds;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final List<DocumentQueryOrderBy> defaultOrderBys;
@@ -78,7 +85,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		tableName = sqlBindings.getTableName();
 		sqlSelectById = sqlBindings.getSqlSelectById();
 		sqlSelectByPage = sqlBindings.getSqlSelectByPage();
-		sqlSelectLinesByRowId = sqlBindings.getSqlSelectLinesByRowId();
+		sqlSelectLinesByRowIds = sqlBindings.getSqlSelectLinesByRowIds();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
 		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
 		defaultOrderBys = sqlBindings.getDefaultOrderBys();
@@ -136,9 +143,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Override
 	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
-		final WindowId windowId = viewId.getWindowId();
 		final String viewSelectionId = viewId.getViewId();
-		final String adLanguage = viewEvalCtx.getAD_Language();
 
 		final String sql = sqlSelectById.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
 
@@ -147,38 +152,27 @@ class SqlViewDataRepository implements IViewDataRepository
 		ResultSet rs = null;
 		try
 		{
+			final int limit = 2;
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			pstmt.setMaxRows(1 + 1);
+			pstmt.setMaxRows(limit);
 			DB.setParameters(pstmt, sqlParams);
 
 			rs = pstmt.executeQuery();
 
-			IViewRow firstDocument = null;
-			while (rs.next())
-			{
-				final IViewRow document = loadViewRow(rs, windowId, adLanguage);
-				if (document == null)
-				{
-					continue;
-				}
-
-				if (firstDocument != null)
-				{
-					logger.warn("More than one document found for rowId={} in {}. Returning only the first one: {}", rowId, this, firstDocument);
-					return firstDocument;
-				}
-				else
-				{
-					firstDocument = document;
-				}
-			}
-
-			if (firstDocument == null)
+			final List<IViewRow> documents = loadViewRows(rs, viewEvalCtx, viewId, limit);
+			if (documents.isEmpty())
 			{
 				throw new EntityNotFoundException("No document found for rowId=" + rowId);
 			}
-
-			return firstDocument;
+			else if (documents.size() > 1)
+			{
+				logger.warn("More than one document found for rowId={} in {}. Returning only the first one from: {}", rowId, this, documents);
+				return documents.get(0);
+			}
+			else
+			{
+				return documents.get(0);
+			}
 		}
 		catch (final SQLException | DBException e)
 		{
@@ -191,26 +185,70 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	private final ImmutableList<IViewRow> loadViewRows(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
+	private final ImmutableList<IViewRow> loadViewRows(final ResultSet rs, final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final int limit) throws SQLException
 	{
-		final ImmutableList.Builder<IViewRow> result = ImmutableList.builder();
+		final Map<DocumentId, ViewRow.Builder> rowBuilders = new LinkedHashMap<>();
+		final Set<DocumentId> rootRowIds = new HashSet<>();
 		while (rs.next())
 		{
-			final IViewRow row = loadViewRow(rs, windowId, adLanguage);
-			if (row == null)
+			final ViewRow.Builder rowBuilder = loadViewRow(rs, viewId.getWindowId(), viewEvalCtx.getAD_Language());
+			if (rowBuilder == null)
 			{
 				continue;
 			}
 
-			result.add(row);
+			final DocumentId rowId = rowBuilder.getRowId();
+			rowBuilders.put(rowId, rowBuilder);
+
+			if (rowBuilder.isRootRow())
+			{
+				rootRowIds.add(rowId);
+			}
+
+			// Enforce limit
+			if (limit > 0 && limit <= rowBuilders.size())
+			{
+				break;
+			}
 		}
 
-		return result.build();
+		//
+		// Load lines
+		if (!rootRowIds.isEmpty())
+		{
+			retrieveRowLines(viewEvalCtx, viewId, DocumentIdsSelection.of(rootRowIds))
+					.forEach(line -> {
+						final DocumentId parentId = ViewRow.cast(line).getParentId();
+						final ViewRow.Builder rowBuilder = rowBuilders.get(parentId);
+						if (rowBuilder == null)
+						{
+							// shall not happen
+							return;
+						}
+
+						rowBuilder.addIncludedRow(line);
+					});
+		}
+
+		return rowBuilders.values().stream()
+				.map(rowBuilder -> rowBuilder.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IViewRow loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
+	private ViewRow.Builder loadViewRow(final ResultSet rs, final WindowId windowId, final String adLanguage) throws SQLException
 	{
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
+
+		final int parentIdInt = rs.getInt(SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Parent_ID);
+		if (!rs.wasNull())
+		{
+			viewRowBuilder.setParentRowId(DocumentId.of(parentIdInt));
+			viewRowBuilder.setType(DefaultRowType.Line);
+		}
+		else
+		{
+			viewRowBuilder.setType(DefaultRowType.Row);
+		}
 
 		for (final Map.Entry<String, SqlViewRowFieldLoader> fieldNameAndLoader : rowFieldLoaders.entrySet())
 		{
@@ -232,7 +270,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			viewRowBuilder.putFieldValue(fieldName, value);
 		}
 
-		return viewRowBuilder.build();
+		return viewRowBuilder;
 	}
 
 	@Override
@@ -250,9 +288,8 @@ class SqlViewDataRepository implements IViewDataRepository
 		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
 
 		logger.debug("Using: {}", orderedSelection);
-		final WindowId windowId = orderedSelection.getWindowId();
-		final String viewSelectionId = orderedSelection.getSelectionId();
-		final String adLanguage = viewEvalCtx.getAD_Language();
+		final ViewId viewId = orderedSelection.getViewId();
+		final String viewSelectionId = viewId.getViewId();
 
 		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
 		final int lastSeqNo = firstRow + pageLength;
@@ -269,7 +306,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			rs = pstmt.executeQuery();
 
-			final List<IViewRow> page = loadViewRows(rs, windowId, adLanguage);
+			final List<IViewRow> page = loadViewRows(rs, viewEvalCtx, viewId, pageLength);
 			return page;
 		}
 		catch (final SQLException | DBException e)
@@ -283,19 +320,20 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	@Override
-	public List<IViewRow> retrieveRowLines(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final DocumentId rowId)
+	private List<IViewRow> retrieveRowLines(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentIdsSelection rowIds)
 	{
-		logger.debug("Getting row lines: rowId={} - {}", rowId, this);
+		logger.debug("Getting row lines: rowId={} - {}", rowIds, this);
 
-		logger.debug("Using: {}", orderedSelection);
-		final WindowId windowId = orderedSelection.getWindowId();
-		final String viewSelectionId = orderedSelection.getSelectionId();
-		final String adLanguage = viewEvalCtx.getAD_Language();
+		logger.debug("Using: {}", viewId);
+		final String viewSelectionId = viewId.getViewId();
 
 		// TODO: apply the ORDER BY from orderedSelection
-		String sql = sqlSelectLinesByRowId.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
-		final Object[] sqlParams = new Object[] { viewSelectionId, rowId.toInt() };
+		final String sqlRecordIds = DB.buildSqlList(rowIds.toIntSet());
+		final Evaluatee viewEvalCtxEffective = Evaluatees.ofSingleton(SqlViewSelectionQueryBuilder.Paging_Record_IDsPlaceholder.getName(), sqlRecordIds)
+				.andComposeWith(viewEvalCtx.toEvaluatee());
+
+		final String sql = sqlSelectLinesByRowIds.evaluate(viewEvalCtxEffective, OnVariableNotFound.Fail);
+		final Object[] sqlParams = new Object[] { viewSelectionId };
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
@@ -305,7 +343,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			rs = pstmt.executeQuery();
 
-			final List<IViewRow> lines = loadViewRows(rs, windowId, adLanguage);
+			final List<IViewRow> lines = loadViewRows(rs, viewEvalCtx, viewId, -1/* limit */);
 			return lines;
 		}
 		catch (final SQLException | DBException e)
