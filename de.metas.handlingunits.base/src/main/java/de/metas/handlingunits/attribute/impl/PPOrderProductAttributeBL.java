@@ -252,7 +252,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	private static BigDecimal getValueNumberOrNull(final I_PP_Order_ProductAttribute ppOrderAttribute)
 	{
-		return InterfaceWrapperHelper.isNull(ppOrderAttribute, org.eevolution.model.I_PP_Order_ProductAttribute.COLUMNNAME_ValueNumber) ? null : ppOrderAttribute.getValueNumber();
+		return InterfaceWrapperHelper.isNull(ppOrderAttribute, I_PP_Order_ProductAttribute.COLUMNNAME_ValueNumber) ? null : ppOrderAttribute.getValueNumber();
 	}
 
 	@VisibleForTesting
