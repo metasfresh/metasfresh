@@ -96,6 +96,8 @@ public final class JSONViewLayout implements Serializable
 	//
 	@JsonProperty("supportTree")
 	private final boolean supportTree;
+	@JsonProperty("expanded")
+	private final boolean expanded;
 	//
 	@JsonProperty("supportIncludedView")
 	private final boolean supportIncludedView;
@@ -135,7 +137,10 @@ public final class JSONViewLayout implements Serializable
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
 
 		supportAttributes = layout.isAttributesSupport();
+		
 		supportTree = layout.isTreeSupport();
+		expanded = layout.isTreeExpanded();
+		
 		supportIncludedView = layout.isIncludedViewSupport();
 	}
 
@@ -150,6 +155,7 @@ public final class JSONViewLayout implements Serializable
 			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
 			, @JsonProperty(value = PROPERTY_supportAttributes) final boolean supportAttributes //
 			, @JsonProperty(value = "supportTree") final boolean supportTree //
+			, @JsonProperty(value = "expanded") final boolean expanded //
 			, @JsonProperty(value = "supportIncludedView") final boolean supportIncludedView //
 			//
 			, @JsonProperty("newRecordCaption") final String newRecordCaption //
@@ -169,7 +175,10 @@ public final class JSONViewLayout implements Serializable
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
 
 		this.supportAttributes = supportAttributes;
+		
 		this.supportTree = supportTree;
+		this.expanded = expanded;
+		
 		this.supportIncludedView = supportIncludedView;
 
 		//
