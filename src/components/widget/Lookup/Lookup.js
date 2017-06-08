@@ -30,6 +30,19 @@ class Lookup extends Component {
         this.checkIfDefaultValue();
     }
 
+    componentDidUpdate() {
+        const {defaultValue} = this.props;
+        const {property} = this.state;
+
+        const objectValue = property && getItemsByProperty(
+                                defaultValue, 'field', property
+                            )[0].value;
+
+        if(objectValue) {
+            this.setNextProperty(property);
+        }
+    }
+
     handleClickOutside = () => {
         this.setState({
             fireClickOutside: true,
@@ -51,19 +64,19 @@ class Lookup extends Component {
         const {defaultValue, properties} = this.props;
 
         defaultValue.map((item, index)=>{
-            const nextIndex = index+1;
-            if(nextIndex<defaultValue.length &&
-                defaultValue[index].field === prop){
-                this.setState({
-                    property: properties[nextIndex].field
-                })
-                return;
-            } else if(defaultValue[defaultValue.length-1].field === prop){
-                this.setState({
-                    property: ''
-                })
-            }
-        })
+                const nextIndex = index+1;
+                if(nextIndex<defaultValue.length &&
+                    defaultValue[index].field === prop){
+                    this.setState({
+                        property: properties[nextIndex].field
+                    })
+                    return;
+                } else if(defaultValue[defaultValue.length-1].field === prop){
+                    this.setState({
+                        property: ''
+                    })
+                }
+            })
     }
 
     checkIfDefaultValue = () => {
@@ -185,7 +198,9 @@ class Lookup extends Component {
                                         }
                                         defaultValue={
                                             objectValue ?
-                                            objectValue : ''
+                                            objectValue[
+                                                Object.keys(objectValue)[0]
+                                            ] : ''
                                         }
                                         initialFocus={
                                             index===0 ? initialFocus : false

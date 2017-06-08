@@ -24,7 +24,7 @@ class List extends Component {
 
         if(defaultValue) {
             this.setState({
-                prevValue: defaultValue[Object.keys(defaultValue)[0]]
+                prevValue: defaultValue
             });
         }
     }
@@ -72,23 +72,31 @@ class List extends Component {
 
          if( prevValue !== (option && option[Object.keys(option)[0]] )) {
              if(lookupList){
-                    const promise = onChange(properties[0].field, option);
+                    onChange(properties[0].field, option);
+
                     option && this.setState({
                         selectedItem: option,
                         prevValue: option[Object.keys(option)[0]]
                     });
-                    if(promise){
-                        promise.then(()=> {
-                            setNextProperty(mainProperty[0].field);
-                        })
-                    } else {
-                        setNextProperty(mainProperty[0].field);
-                    }
-
+                    setNextProperty(mainProperty[0].field);
             } else {
                 onChange(option);
             }
          }
+    }
+
+    handleAutoSelect = (option) => {
+        const {
+            onChange, properties, setNextProperty, mainProperty
+        } = this.props;
+
+        onChange(properties[0].field, option);
+
+        this.setState({
+            selectedItem: option,
+            prevValue: option[Object.keys(option)[0]]
+        });
+        setNextProperty(mainProperty[0].field);
     }
 
     render() {
