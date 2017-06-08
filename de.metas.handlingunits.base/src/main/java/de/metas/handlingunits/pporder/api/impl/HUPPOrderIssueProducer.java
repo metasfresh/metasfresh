@@ -45,6 +45,8 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
+import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -75,6 +77,8 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 	private final transient IHULockBL huLockBL = Services.get(IHULockBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	private final transient IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
 
 	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
 	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
@@ -198,6 +202,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 
 		//
 		// Actually create and save the candidate
+		final I_PP_Order_Qty candidate;
 		{
 			final Date movementDate = getMovementDate();
 			final int productId = productStorage.getM_Product_ID();
@@ -207,7 +212,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 			final int locatorId = hu.getM_Locator_ID();
 			final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
 
-			final I_PP_Order_Qty candidate = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
+			candidate = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
 			candidate.setPP_Order_ID(targetPPOrderId);
 			candidate.setPP_Order_BOMLine(targetBOMLine);
 			candidate.setM_Locator_ID(locatorId);
@@ -218,9 +223,12 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 			candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
 			candidate.setProcessed(false);
 			huPPOrderQtyDAO.save(candidate);
-
-			return candidate;
 		}
+		
+		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
+		
+		//
+		return candidate;
 	}
 
 	/** @return how much quantity to take "from" and issue it to given BOM line */
@@ -327,6 +335,10 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 
 		final I_M_HU huToIssue = candidate.getM_HU();
 		huLockBL.unlock(huToIssue, HUPPOrderIssueProducer.lockOwner);
+		
+		//
+		// Delete PP_Order_ProductAttributes for issue candidate's HU
+		ppOrderProductAttributeDAO.deleteForHU(candidate.getPP_Order_ID(), huToIssue.getM_HU_ID());
 
 		//
 		// Delete the candidate
