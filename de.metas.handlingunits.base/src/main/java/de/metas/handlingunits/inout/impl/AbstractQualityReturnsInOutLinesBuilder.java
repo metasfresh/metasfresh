@@ -113,18 +113,21 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
 
-		//
-		// Adjust movement line's qty to move
-		final BigDecimal inOutLine_Qty_Old = inOutLine.getMovementQty();
-		final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMove);
-		inOutLine.setMovementQty(inOutLine_Qty_New);
+		if (!(originInOutLine.getM_InOut_ID() == _inoutRef.getValue().getM_InOut_ID()))
+		{
+			//
+			// Adjust movement line's qty to move
+			final BigDecimal inOutLine_Qty_Old = inOutLine.getMovementQty();
+			final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMove);
+			inOutLine.setMovementQty(inOutLine_Qty_New);
 
-		//
-		// Also set the qty entered
-		inOutLine.setQtyEntered(inOutLine_Qty_New);
+			//
+			// Also set the qty entered
+			inOutLine.setQtyEntered(inOutLine_Qty_New);
 
-		// Make sure the inout line is saved
-		InterfaceWrapperHelper.save(inOutLine);
+			// Make sure the inout line is saved
+			InterfaceWrapperHelper.save(inOutLine);
+		}
 
 		// Assign the HU to the inout line and mark it as shipped
 		{
