@@ -107,11 +107,10 @@ class NavigationTree extends Component {
             case 'ArrowDown':
                 if(document.activeElement === input) {
                     firstMenuItem.focus();
-                } 
+                }
             break;
             case 'Tab':
                 e.preventDefault();
-                console.log(document.activeElement === input);
                 if(document.activeElement === input) {
                     firstMenuItem.focus();
                 } else {

@@ -41,7 +41,6 @@ class MenuOverlayItem extends Component {
     }
 
     handleKeyDown = (e) => {
-        console.log('handleKeyDown');
         const {back, handleMenuOverlay} = this.props;
         const overlay = document.getElementsByClassName('js-menu-overlay')[0];
 
@@ -91,37 +90,52 @@ class MenuOverlayItem extends Component {
         const previousGroup =
             document.activeElement.parentElement.previousSibling;
         const headerLink = document.getElementsByClassName('js-menu-header')[0];
-        if (previousGroup) {
-            const listChildren = previousGroup.childNodes;
-            if(listChildren.length == 1){
-                previousGroup.childNodes[0].focus();
-            }else{
-                listChildren[listChildren.length - 1].focus();
-            }
+
+        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
+            previousGroup.focus();
         } else {
-            headerLink && headerLink.focus()
+            if (previousGroup) {
+                const listChildren = previousGroup.childNodes;
+                const lastChildren = listChildren[listChildren.length - 1];
+                if(listChildren.length == 1){
+                    listChildren[0].focus();
+                }else{
+                    if(lastChildren.classList.contains('js-menu-item')) {
+                        lastChildren.focus();
+                    } else {
+                        lastChildren.children[lastChildren.children.length - 1].focus();
+                    }
+
+                }
+            } else {
+                headerLink && headerLink.focus()
+            }
         }
+
     }
 
     handleArrowDown() {
-console.log(document.activeElement.nextSibling);
-        if (document.activeElement.nextSibling) {
-            if(document.activeElement.nextSibling.classList.contains('js-menu-item')) {
-                document.activeElement.nextSibling.focus();
+        const nextElem = document.activeElement.nextSibling;
+        const parentElem = document.activeElement.parentElement;
+        if (nextElem) {
+            if(nextElem.classList.contains('js-menu-item')) {
+                nextElem.focus();
             } else {
-                document.activeElement.nextSibling.getElementsByClassName('js-menu-item')[0] &&
-                document.activeElement.nextSibling.getElementsByClassName('js-menu-item')[0].focus();
+                nextElem.getElementsByClassName('js-menu-item')[0] &&
+                nextElem.getElementsByClassName('js-menu-item')[0].focus();
             }
-            
+
         } else {
-            if (document.activeElement.parentElement.nextSibling) {
+            if (parentElem.nextSibling) {
                 const listChildren =
-                    document.activeElement.parentElement.nextSibling.childNodes;
+                    parentElem.nextSibling.childNodes;
                 if(listChildren.length == 1){
                     listChildren[0].focus();
                 }else{
                     listChildren[1].focus();
                 }
+            } else if(parentElem.parentElement.nextSibling) {
+                parentElem.parentElement.nextSibling.childNodes[1].focus();
             }
         }
     }
