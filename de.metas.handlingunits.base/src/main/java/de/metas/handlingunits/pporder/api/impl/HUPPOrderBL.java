@@ -1,7 +1,5 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import java.util.List;
-
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -12,6 +10,7 @@ import org.eevolution.model.X_PP_Order;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMultimap;
 
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
@@ -57,7 +56,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public List<Integer> retrieveHUsAvailableToIssue(final int productId)
+	public IHUQueryBuilder createHUsAvailableToIssueQuery(final int productId)
 	{
 		return Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
@@ -67,10 +66,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithProductId(productId)
 				.setOnlyTopLevelHUs()
-				.onlyNotLocked()
-				//
-				.createQuery()
-				.listIds();
+				.onlyNotLocked();
 	}
 	
 	private static final ImmutableMultimap<String, String> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<String, String>builder()
