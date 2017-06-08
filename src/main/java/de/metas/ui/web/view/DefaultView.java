@@ -117,7 +117,6 @@ public class DefaultView implements IView
 		// Selection
 		{
 			final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
-			// orderedSelectionFactory = viewDataRepository.createOrderedSelectionFactory(evalCtx);
 
 			defaultSelection = viewDataRepository.createOrderedSelection(
 					evalCtx //
