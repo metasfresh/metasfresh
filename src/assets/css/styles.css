@@ -587,8 +587,13 @@ body {
 .search-wrapper {
     padding-top: 20px;
 }
+
 .search-wrapper .input-primary {
     background-color: #fff; 
+}
+
+.search-wrapper .input-field {
+    margin-left: .3rem;
 }
 
 .query-results .query-results {
