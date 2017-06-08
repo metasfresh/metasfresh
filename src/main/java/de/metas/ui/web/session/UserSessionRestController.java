@@ -42,6 +42,10 @@ public class UserSessionRestController
 
 	@Autowired
 	private UserSession userSession;
+	
+	@Autowired
+	private UserSessionRepository userSessionRepo;
+
 
 	@GetMapping
 	public JSONUserSession getAll()
@@ -53,7 +57,7 @@ public class UserSessionRestController
 	public JSONLookupValue setLanguage(@RequestBody final JSONLookupValue value)
 	{
 		final String adLanguage = value.getKey();
-		userSession.setAD_Language(adLanguage);
+		userSessionRepo.setAD_Language(userSession.getAD_User_ID(), adLanguage);
 		
 		return getLanguage();
 	}

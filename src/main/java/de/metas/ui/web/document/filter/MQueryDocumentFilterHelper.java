@@ -78,8 +78,9 @@ public final class MQueryDocumentFilterHelper
 			{
 				final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
 				final String sqlWhereClause = mquery.getDirectWhereClause(restrictionIndex);
+				final List<Object> sqlWhereClauseParams = null;
 
-				return DocumentFilterParam.ofSqlWhereClause(joinAnd, sqlWhereClause);
+				return DocumentFilterParam.ofSqlWhereClause(joinAnd, sqlWhereClause, sqlWhereClauseParams);
 			}
 
 			final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);

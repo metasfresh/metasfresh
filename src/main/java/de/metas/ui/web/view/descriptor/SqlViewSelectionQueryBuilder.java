@@ -183,7 +183,7 @@ public final class SqlViewSelectionQueryBuilder
 			final List<DocumentQueryOrderBy> orderBys,
 			final int queryLimit)
 	{
-		if (getGroupByFieldNames().isEmpty())
+		if(!hasGroupingFields())
 		{
 			final SqlAndParams sqlCreateSelection = buildSqlCreateSelection_WithoutGrouping(viewEvalCtx, newViewId, filters, orderBys, queryLimit);
 			return SqlCreateSelection.builder().sqlCreateSelection(sqlCreateSelection).build();

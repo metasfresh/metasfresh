@@ -31,6 +31,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,9 +64,16 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
 
 	private static final String ENDPOINT = "/stomp";
+	private static final String TOPIC_UserSession = "/userSession";
 	private static final String TOPIC_Notifications = "/notifications";
 	private static final String TOPIC_View = "/view";
+	private static final String TOPIC_Document = "/document";
 	public static final String TOPIC_Devices = "/devices";
+
+	public static final String buildUserSessionTopicName(final int adUserId)
+	{
+		return TOPIC_UserSession + "/" + adUserId;
+	}
 
 	public static final String buildNotificationsTopicName(final int adUserId)
 	{
@@ -74,6 +84,11 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	{
 		Check.assumeNotEmpty(viewId, "viewId is not empty");
 		return TOPIC_View + "/" + viewId;
+	}
+
+	public static final String buildDocumentTopicName(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
+	{
+		return TOPIC_Document + "/" + windowId.toJson() + "/" + documentId.toJson();
 	}
 
 	@Override
@@ -92,11 +107,12 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	public void configureMessageBroker(final MessageBrokerRegistry config)
 	{
 		// use the /topic prefix for outgoing WebSocket communication
-		config.enableSimpleBroker( //
-				TOPIC_Notifications //
-				, TOPIC_View //
-				, TOPIC_Devices //
-		);
+		config.enableSimpleBroker(
+				TOPIC_UserSession,
+				TOPIC_Notifications,
+				TOPIC_View,
+				TOPIC_Document,
+				TOPIC_Devices);
 
 		// use the /app prefix for others
 		config.setApplicationDestinationPrefixes("/app");
@@ -196,7 +212,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 				response.setStatusCode(HttpStatus.UNAUTHORIZED);
 				return false;
 			}
-			
+
 			return true;
 		}
 

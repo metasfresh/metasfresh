@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -14,10 +15,12 @@ import org.compiere.util.DB;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -60,26 +63,39 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	private final ViewId viewId;
 	private final HUEditorViewRepository huEditorRepo;
 
-	private final Supplier<CopyOnWriteArraySet<Integer>> huIdsHolder;
+	private final ImmutableList<DocumentFilter> stickyFiltersWithoutHUIdsFilter;
+	
+	private final HUIdsFilterData huIdsFilterData;
+	private final Supplier<Set<Integer>> huIdsSupplier;
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
 
-	HUEditorViewBuffer_FullyCached( //
-			@NonNull final WindowId windowId //
-			, @NonNull final HUEditorViewRepository huEditorRepo //
-			, final Collection<Integer> huIds //
-			, final List<DocumentFilter> filters //
-	)
+	HUEditorViewBuffer_FullyCached(
+			@NonNull final WindowId windowId,
+			@NonNull final HUEditorViewRepository huEditorRepo,
+			final List<DocumentFilter> stickyFilters,
+			final List<DocumentFilter> filters)
 	{
 		viewId = ViewId.random(windowId);
 		this.huEditorRepo = huEditorRepo;
-		if (filters.isEmpty())
+
+		HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterDataOrNull(stickyFilters);
+		if (huIdsFilterData == null)
 		{
-			huIdsHolder = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huIds));
+			huIdsFilterData = HUIdsFilterData.newEmpty();
 		}
 		else
 		{
-			huIdsHolder = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(huIds, filters)));
+			huIdsFilterData = huIdsFilterData.copy();
 		}
+		this.huIdsFilterData = huIdsFilterData;
+
+		this.stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
+				.filter(HUIdsFilterHelper::isNotHUIdsFilter)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
+
+		this.huIdsSupplier = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
 	}
 
 	@Override
@@ -88,9 +104,23 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		return viewId;
 	}
 
-	private CopyOnWriteArraySet<Integer> getHUIds()
+	@Override
+	public List<DocumentFilter> getStickyFilters()
 	{
-		return huIdsHolder.get();
+		return ImmutableList.<DocumentFilter>builder()
+				.add(HUIdsFilterHelper.createFilter(huIdsFilterData.copy()))
+				.addAll(stickyFiltersWithoutHUIdsFilter)
+				.build();
+	}
+
+	private Set<Integer> getHUIds()
+	{
+		return huIdsSupplier.get();
+	}
+
+	private HUIdsFilterData getHUIdsFilterData()
+	{
+		return huIdsFilterData;
 	}
 
 	private IndexedHUEditorRows getRows()
@@ -187,6 +217,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return false;
 		}
 
+		getHUIdsFilterData().mustHUIds(huIdsToAdd);
 		return getHUIds().addAll(huIdsToAdd);
 	}
 
@@ -198,6 +229,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return false;
 		}
 
+		getHUIdsFilterData().shallNotHUIds(huIdsToRemove);
 		return getHUIds().removeAll(huIdsToRemove);
 	}
 
@@ -228,7 +260,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
 		return sqlKeyColumnNameFK + " IN " + DB.buildSqlList(rowIdsEffective.toIntSet());
 	}
-
+	
 	//
 	//
 	//

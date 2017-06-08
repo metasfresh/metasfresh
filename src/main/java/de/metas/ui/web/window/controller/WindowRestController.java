@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -122,6 +123,9 @@ public class WindowRestController
 
 	@Autowired
 	private MenuTreeRepository menuTreeRepository;
+
+	@Autowired
+	private SimpMessagingTemplate websocketMessagingTemplate;
 
 	private JSONOptions.Builder newJSONOptions()
 	{
@@ -306,7 +310,13 @@ public class WindowRestController
 			changesCollector.setPrimaryChange(document.getDocumentPath());
 			return null; // void
 		});
-		return JSONDocument.ofEvents(changesCollector, jsonOpts);
+
+		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+
+		// Extract and send websocket events
+		JSONDocument.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketMessagingTemplate);
+
+		return jsonDocumentEvents;
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")

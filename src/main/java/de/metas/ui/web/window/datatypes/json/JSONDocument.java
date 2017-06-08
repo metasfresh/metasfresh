@@ -5,19 +5,27 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.time.SystemTime;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
@@ -222,6 +230,43 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonDocument;
 	}
 
+	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final SimpMessagingTemplate websocketMessagingTemplate)
+	{
+		if (jsonDocumentEvents == null || jsonDocumentEvents.isEmpty())
+		{
+			return;
+		}
+
+		jsonDocumentEvents.stream()
+				.map(JSONDocument::extractWebsocketEvent)
+				.filter(wsEvent -> wsEvent != null)
+				.forEach(wsEvent -> websocketMessagingTemplate.convertAndSend(wsEvent.getWebsocketEndpointEffective(), wsEvent));
+	}
+
+	/** @return websocket event or null */
+	private static final JSONDocument extractWebsocketEvent(final JSONDocument event)
+	{
+		final WindowId windowId = event.getWindowId();
+		if (windowId == null)
+		{
+			return null;
+		}
+
+		final Set<JSONIncludedTabInfo> tabInfos = event.getIncludedTabsInfos()
+				.stream()
+				.filter(JSONIncludedTabInfo::isStale)
+				.collect(ImmutableSet.toImmutableSet());
+		if (tabInfos.isEmpty())
+		{
+			return null;
+		}
+
+		final JSONDocument wsEvent = new JSONDocument(windowId, event.getId(), event.getTabId(), event.getRowId());
+		wsEvent.setTimestamp();
+		tabInfos.forEach(wsEvent::addIncludedTabInfo);
+		return wsEvent;
+	}
+
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentValidStatus validStatus;
@@ -236,9 +281,37 @@ public final class JSONDocument extends JSONDocumentBase
 	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
 
-	public JSONDocument(final DocumentPath documentPath)
+	@JsonProperty("websocketEndpoint")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String websocketEndpoint;
+
+	/** Event's timestamp. Usually set when this event shall be sent via websocket */
+	@JsonProperty("timestamp")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private String timestamp;
+
+	private JSONDocument(final DocumentPath documentPath)
 	{
 		super(documentPath);
+		this.websocketEndpoint = buildWebsocketEndpointOrNull(getWindowId(), getId());
+	}
+
+	private JSONDocument(final WindowId windowId, final DocumentId id, final String tabId, final DocumentId rowId)
+	{
+		super(windowId, id, tabId, rowId);
+		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
+	}
+
+	private static final String buildWebsocketEndpointOrNull(final WindowId windowId, final DocumentId documentId)
+	{
+		if (windowId != null && documentId != null)
+		{
+			return WebSocketConfig.buildDocumentTopicName(windowId, documentId);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private void setValidStatus(final DocumentValidStatus validStatus)
@@ -261,7 +334,12 @@ public final class JSONDocument extends JSONDocumentBase
 		return saveStatus;
 	}
 
-	private void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
+	public void setTimestamp()
+	{
+		this.timestamp = JSONDate.toJson(SystemTime.millis());
+	}
+
+	public void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
 	{
 		if (includedTabsInfo == null)
 		{
@@ -270,12 +348,34 @@ public final class JSONDocument extends JSONDocumentBase
 		includedTabsInfo.put(tabInfo.tabid, tabInfo);
 	}
 
+	@JsonIgnore
+	public Collection<JSONIncludedTabInfo> getIncludedTabsInfos()
+	{
+		if (includedTabsInfo == null || includedTabsInfo.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		return includedTabsInfo.values();
+	}
+
+	@JsonIgnore
+	public String getWebsocketEndpointEffective()
+	{
+		if (websocketEndpoint != null)
+		{
+			return websocketEndpoint;
+		}
+
+		return buildWebsocketEndpointOrNull(getWindowId(), getId());
+	}
+
 	//
 	//
 	//
 	//
 	//
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@ToString
 	public static final class JSONIncludedTabInfo
 	{
 		@JsonProperty("tabid")
@@ -363,6 +463,11 @@ public final class JSONDocument extends JSONDocumentBase
 			}
 		}
 
+		public String getTabId()
+		{
+			return tabid;
+		}
+
 		public void setAllowCreateNew(final boolean allowCreateNew, final String reason)
 		{
 			this.allowCreateNew = allowCreateNew;
@@ -373,6 +478,11 @@ public final class JSONDocument extends JSONDocumentBase
 		{
 			this.allowDelete = allowDelete;
 			allowDeleteReason = reason;
+		}
+
+		public boolean isStale()
+		{
+			return stale != null && stale.booleanValue();
 		}
 	}
 }

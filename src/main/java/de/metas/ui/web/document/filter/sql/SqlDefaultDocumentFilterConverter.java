@@ -102,6 +102,8 @@ import lombok.NonNull;
 		if (filterParam.isSqlFilter())
 		{
 			final String sqlWhereClause = replaceTableNameWithTableAlias(filterParam.getSqlWhereClause());
+			final List<Object> sqlWhereClauseParams = filterParam.getSqlWhereClauseParams();
+			sqlParams.addAll(sqlWhereClauseParams);
 			return sqlWhereClause;
 		}
 

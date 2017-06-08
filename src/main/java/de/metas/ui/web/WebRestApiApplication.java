@@ -70,7 +70,7 @@ public class WebRestApiApplication
 
 	private static final Logger logger = LogManager.getLogger(WebRestApiApplication.class);
 
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
 		if (Check.isEmpty(System.getProperty("PropertyFile"), true))
 		{
@@ -124,9 +124,9 @@ public class WebRestApiApplication
 		final Adempiere adempiere = Env.getSingleAdempiereInstance();
 		adempiere.setApplicationContext(applicationContext);
 		adempiere.startup(RunMode.WEBUI);
-		
+
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
-		
+
 		return adempiere;
 	}
 
@@ -136,19 +136,19 @@ public class WebRestApiApplication
 		return new EmbeddedServletContainerCustomizer()
 		{
 			@Override
-			public void customize(ConfigurableEmbeddedServletContainer servletContainer)
+			public void customize(final ConfigurableEmbeddedServletContainer servletContainer)
 			{
 				final TomcatEmbeddedServletContainerFactory tomcatContainerFactory = (TomcatEmbeddedServletContainerFactory)servletContainer;
 				tomcatContainerFactory.addConnectorCustomizers(new TomcatConnectorCustomizer()
 				{
 					@Override
-					public void customize(Connector connector)
+					public void customize(final Connector connector)
 					{
 						final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
 						httpProtocol.setCompression("on");
 						httpProtocol.setCompressionMinSize(256);
-						String mimeTypes = httpProtocol.getCompressibleMimeType();
-						String mimeTypesWithJson = mimeTypes + "," + MediaType.APPLICATION_JSON_VALUE + ",application/javascript";
+						final String mimeTypes = httpProtocol.getCompressibleMimeType();
+						final String mimeTypesWithJson = mimeTypes + "," + MediaType.APPLICATION_JSON_VALUE + ",application/javascript";
 						httpProtocol.setCompressibleMimeType(mimeTypesWithJson);
 					}
 				});

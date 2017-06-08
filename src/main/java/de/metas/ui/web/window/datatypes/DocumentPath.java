@@ -283,6 +283,12 @@ public final class DocumentPath
 		Check.assume(documentType == DocumentType.Window, "Expect documentType={} for {}", DocumentType.Window, this);
 		return WindowId.of(documentTypeId);
 	}
+	
+	public WindowId getWindowIdOrNull()
+	{
+		return documentType == DocumentType.Window ? WindowId.of(documentTypeId) : null;
+	}
+
 
 	public int getAD_Window_ID(final int returnIfNotAvailable)
 	{

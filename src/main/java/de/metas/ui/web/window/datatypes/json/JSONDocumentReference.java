@@ -82,7 +82,6 @@ public final class JSONDocumentReference
 
 	private JSONDocumentReference(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
-		super();
 		id = documentReference.getId();
 		caption = documentReference.getCaption(jsonOpts.getAD_Language());
 		windowId = documentReference.getWindowId();

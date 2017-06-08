@@ -19,6 +19,7 @@ import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
 import de.metas.ui.web.menu.datatypes.json.JSONPatchMenuNodeRequest;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -80,12 +81,27 @@ public class MenuRestController
 
 		final MenuTree menuTree = getMenuTree();
 
-		final MenuNode rootNode = onlyFavorites ? menuTree.getRootNodeWithFavoritesOnly(menuTreeRepository) : menuTree.getRootNode();
+		//
+		// Get the root node with favorites only, if asked
+		MenuNode rootNode;
+		if (onlyFavorites)
+		{
+			rootNode = menuTree.getRootNodeWithFavoritesOnly(menuTreeRepository);
+			if (rootNode.getChildren().isEmpty())
+			{
+				// If there were no favorites, return all
+				rootNode = menuTree.getRootNode();
+			}
+		}
+		else
+		{
+			rootNode = menuTree.getRootNode();
+		}
 
 		return JSONMenuNode.builder(rootNode)
 				.setMaxDepth(depth)
 				.setMaxChildrenPerNode(childrenLimit)
-				.setIsFavoriteProvider(menuTreeRepository::isFavorite)
+				.setIsFavoriteProvider(menuTreeRepository)
 				.build();
 	}
 
@@ -119,9 +135,11 @@ public class MenuRestController
 	}
 
 	@PatchMapping("/node/{nodeId}")
-	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody final JSONPatchMenuNodeRequest request)
+	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
+
+		final JSONPatchMenuNodeRequest request = JSONPatchMenuNodeRequest.ofChangeEvents(events);
 
 		final MenuTree menuTree = getMenuTree();
 		final MenuNode node = menuTree.getNodeById(nodeId);
