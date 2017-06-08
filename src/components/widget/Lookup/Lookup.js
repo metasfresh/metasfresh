@@ -131,7 +131,6 @@ class Lookup extends Component {
             {
                 properties && properties.map((item, index) => {
                         const disabled = isInputEmpty && index != 0;
-
                         if(item.source === 'lookup' ||
                             item.widgetType === 'Lookup'){
                             return <RawLookup
