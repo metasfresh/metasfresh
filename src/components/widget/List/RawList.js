@@ -346,12 +346,13 @@ class RawList extends Component {
                 key={index}
                 className={'input-dropdown-list-option'  +
                     (
+                        selected === 0 ? '' :
                         this.areOptionsEqual(selected, option) ?
-                        ' input-dropdown-list-option-key-on' :
+                        ' input-dropdown-list-option-key-on ' :
                         value === option[Object.keys(option)[0]] && !selected ?
-                        ' input-dropdown-list-option-key-on' :
+                        ' input-dropdown-list-option-key-on ' :
                         !value && !selected && index == 1 ?
-                        ' input-dropdown-list-option-key-on':
+                        ' input-dropdown-list-option-key-on ':
                         ''
                     )
                 }
