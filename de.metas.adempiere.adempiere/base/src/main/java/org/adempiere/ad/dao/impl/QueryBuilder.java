@@ -676,9 +676,7 @@ import com.google.common.collect.ImmutableMap;
 	@Override
 	public ICompositeQueryFilter<T> addCompositeQueryFilter()
 	{
-		final ICompositeQueryFilter<T> filter = new CompositeQueryFilter<>(getModelTableName());
-		filters.addFilter(filter);
-		return filter;
+		return filters.addCompositeQueryFilter();
 	}
 
 	@Override
