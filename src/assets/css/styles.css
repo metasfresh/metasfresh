@@ -587,6 +587,9 @@ body {
 .search-wrapper {
     padding-top: 20px;
 }
+.search-wrapper .input-primary {
+    background-color: #fff; 
+}
 
 .query-results .query-results {
     display: inline-block;

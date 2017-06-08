@@ -41,6 +41,7 @@ class MenuOverlayItem extends Component {
     }
 
     handleKeyDown = (e) => {
+        console.log('handleKeyDown');
         const {back, handleMenuOverlay} = this.props;
         const overlay = document.getElementsByClassName('js-menu-overlay')[0];
 
@@ -103,9 +104,15 @@ class MenuOverlayItem extends Component {
     }
 
     handleArrowDown() {
-
+console.log(document.activeElement.nextSibling);
         if (document.activeElement.nextSibling) {
-            document.activeElement.nextSibling.focus();
+            if(document.activeElement.nextSibling.classList.contains('js-menu-item')) {
+                document.activeElement.nextSibling.focus();
+            } else {
+                document.activeElement.nextSibling.getElementsByClassName('js-menu-item')[0] &&
+                document.activeElement.nextSibling.getElementsByClassName('js-menu-item')[0].focus();
+            }
+            
         } else {
             if (document.activeElement.parentElement.nextSibling) {
                 const listChildren =
