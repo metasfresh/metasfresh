@@ -120,14 +120,12 @@ import org.compiere.model.IQuery;
 
 	CompositeQueryFilter(final String tableName)
 	{
-		super();
 		this.tableName = tableName;
 	}
 
 	@Deprecated
 	CompositeQueryFilter()
 	{
-		super();
 		this.tableName = null; // N/A
 	}
 
@@ -956,6 +954,14 @@ import org.compiere.model.IQuery;
 	{
 		final ValidFromToMatchesQueryFilter<T> filter = new ValidFromToMatchesQueryFilter<T>(validFromColumn, validToColumn, dateToMatch);
 		return addFilter(filter);
+	}
+
+	@Override
+	public ICompositeQueryFilter<T> addCompositeQueryFilter()
+	{
+		final ICompositeQueryFilter<T> filter = new CompositeQueryFilter<>(tableName);
+		addFilter(filter);
+		return filter;
 	}
 
 }

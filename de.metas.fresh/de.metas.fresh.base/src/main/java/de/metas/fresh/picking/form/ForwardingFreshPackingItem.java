@@ -1,6 +1,7 @@
 package de.metas.fresh.picking.form;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -218,7 +219,7 @@ public abstract class ForwardingFreshPackingItem implements IFreshPackingItem
 	}
 
 	@Override
-	public Set<I_M_ShipmentSchedule> getShipmentSchedules()
+	public List<I_M_ShipmentSchedule> getShipmentSchedules()
 	{
 		return getDelegate().getShipmentSchedules();
 	}

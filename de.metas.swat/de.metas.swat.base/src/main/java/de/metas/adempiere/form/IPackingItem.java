@@ -1,8 +1,8 @@
 package de.metas.adempiere.form;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_C_UOM;
@@ -77,6 +77,11 @@ public interface IPackingItem
 
 	Map<I_M_ShipmentSchedule, BigDecimal> getQtys();
 
+	/**
+	 * For this item, return the open quantity to be packed for the given {@code sched}.
+	 * @param sched
+	 * @return
+	 */
 	BigDecimal getQtyForSched(final I_M_ShipmentSchedule sched);
 
 	void addSingleSched(final I_M_ShipmentSchedule sched);
@@ -95,7 +100,7 @@ public interface IPackingItem
 
 	BigDecimal getQtySum();
 
-	Set<I_M_ShipmentSchedule> getShipmentSchedules();
+	List<I_M_ShipmentSchedule> getShipmentSchedules();
 
 	void setClosed(boolean isClosed);
 

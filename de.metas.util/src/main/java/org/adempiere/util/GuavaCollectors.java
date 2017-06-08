@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
@@ -79,7 +80,7 @@ public final class GuavaCollectors
 
 	/**
 	 * Collect a stream of elements into an {@link ImmutableList}.
-	 * 
+	 *
 	 * Duplicates will be automatically discarded.
 	 *
 	 * @param keyFunction key function for identifying duplicates
@@ -245,6 +246,22 @@ public final class GuavaCollectors
 	{
 		// NOTE: before changing the "duplicates" behavior please check the callers first!
 		return ImmutableMap.toImmutableMap(keyMapper, value -> value, (valuePrev, valueNow) -> valueNow);
+	}
+
+	/**
+	 * Collects to {@link HashMap}.
+	 *
+	 * If duplicate key was found, the last provided item will be used.
+	 *
+	 * @param keyMapper
+	 * @return {@link HashMap} collector
+	 */
+	public static <K, V> Collector<V, ?, HashMap<K, V>> toHashMapByKey(final Function<? super V, ? extends K> keyMapper)
+	{
+		// NOTE: before changing the "duplicates" behavior please check the callers first!
+		final Function<V, V> valueMapper = value -> value;
+		final BinaryOperator<V> mergeFunction = (valuePrev, valueNow) -> valueNow;
+		return Collectors.toMap(keyMapper, valueMapper, mergeFunction, HashMap::new);
 	}
 
 	/**
