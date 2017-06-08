@@ -11,7 +11,6 @@ import java.util.TreeMap;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
-import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -23,7 +22,6 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -58,7 +56,6 @@ import de.metas.inout.event.ReturnInOutProcessedEventBus;
 public class ManualCustomerReturnInOutProducer
 {
 	// services
-	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	//
@@ -91,7 +88,6 @@ public class ManualCustomerReturnInOutProducer
 		for (final I_M_HU hu : _husToReturn)
 		{
 			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
-			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
 			final int warehouseId = hu.getM_Locator().getM_Warehouse_ID();
 
@@ -112,7 +108,7 @@ public class ManualCustomerReturnInOutProducer
 				final ArrayKey customerReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId);
 				customerReturnProducers.computeIfAbsent(customerReturnProducerKey, k -> createCustomerReturnInOutProducer(bpartnerId, warehouseId))
 						.addHUToReturn(hu, customerReturnLine.getM_InOutLine_ID());
-				
+
 				Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
 			}
 		}
