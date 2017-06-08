@@ -2316,19 +2316,20 @@ public final class DB
 	 * E.g. for <code>paramsIn={1,2,3}</code> it might return the string <code>"(3,1,2)"</code>, depending on the order in which the elements are returned from the given <code>paramIn</code>'s
 	 * iterable.
 	 * <p>
-	 * In other workds, note that depending on the actual type of <code>paramsIn</code>, the ordering might vary, but usually that is not a problem.
+	 * In other words, note that depending on the actual type of <code>paramsIn</code>, the ordering might vary, but usually that is not a problem.
 	 *
-	 * @param paramsIn
-	 * @param paramsOut
-	 * @return SQL list
-	 * @see #buildSqlList(Collection, List)
-	 * @deprecated <b>pls use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
+	 * <p>
+	 * <b>IMPORTANT: Please use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
 	 *
 	 *             <pre>
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
+	 * 
+	 * @param paramsIn
+	 * @param paramsOut
+	 * @return SQL list
+	 * @see #buildSqlList(Collection, List)
 	 */
-	@Deprecated
 	public static String buildSqlList(final Collection<? extends Object> paramsIn)
 	{
 		if (paramsIn == null || paramsIn.isEmpty())
