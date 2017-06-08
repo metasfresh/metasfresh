@@ -175,6 +175,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		// Add
 		boolean hasChanges = false;
 		final String selectionId = selection.getSelectionId();
+		// TODO: add all rowIds in one query!!! Not so urgent because usually there are added just a couple of rowIds, not much
 		for (final DocumentId rowId : rowIds.toSet())
 		{
 			final List<Object> sqlParams = new ArrayList<>();
