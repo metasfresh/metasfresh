@@ -160,7 +160,8 @@ class Modal extends Component {
     }
 
     handleScroll = (event) => {
-        const scrollTop = event.srcElement.scrollTop;
+        const target = event.target || event.srcElement;
+        const scrollTop = target.body.scrollTop;
 
         this.setState({
             scrolled: scrollTop > 0
