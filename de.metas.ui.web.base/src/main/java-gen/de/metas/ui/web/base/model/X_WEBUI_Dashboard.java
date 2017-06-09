@@ -14,7 +14,7 @@ public class X_WEBUI_Dashboard extends org.compiere.model.PO implements I_WEBUI_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 453204059L;
+	private static final long serialVersionUID = -1322904955L;
 
     /** Standard Constructor */
     public X_WEBUI_Dashboard (Properties ctx, int WEBUI_Dashboard_ID, String trxName)
@@ -22,8 +22,7 @@ public class X_WEBUI_Dashboard extends org.compiere.model.PO implements I_WEBUI_
       super (ctx, WEBUI_Dashboard_ID, trxName);
       /** if (WEBUI_Dashboard_ID == 0)
         {
-			setIsDefault (false);
-// N
+			setIsDefault (false); // N
 			setName (null);
 			setWEBUI_Dashboard_ID (0);
         } */

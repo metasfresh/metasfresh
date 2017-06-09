@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.util;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -79,6 +79,14 @@ public class ShipmentScheduleHelper
 				.assertExpected_ShipmentSchedule("shipment schedule");
 	}
 
+	/**
+	 * 
+	 * @param product
+	 * @param uom
+	 * @param qtyToDeliver
+	 * @param qtyPickedInitial is != zero, then this method also creates a {@link I_M_ShipmentSchedule_QtyPicked} record.
+	 * @return
+	 */
 	public I_M_ShipmentSchedule createShipmentSchedule(
 			final org.compiere.model.I_M_Product product,
 			final I_C_UOM uom,
@@ -97,7 +105,7 @@ public class ShipmentScheduleHelper
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class, helper.getContextProvider());
 		shipmentSchedule.setM_Product(product);
 		shipmentSchedule.setC_OrderLine(orderLine);
-		
+
 		// task 09005: set QtyOrdered_calculated because it's the initial value for the newly created shipment schedule
 		shipmentSchedule.setQtyOrdered_Calculated(qtyToDeliver);
 		shipmentSchedule.setQtyToDeliver(qtyToDeliver);
@@ -110,12 +118,14 @@ public class ShipmentScheduleHelper
 				.qtyPicked("0")
 				.assertExpected_ShipmentSchedule("create shipment schedule");
 
-		shipmentScheduleAllocBL.setQtyPicked(shipmentSchedule, qtyPickedInitial);
+		if (qtyPickedInitial != null && qtyPickedInitial.signum() != 0)
+		{
+			shipmentScheduleAllocBL.setQtyPicked(shipmentSchedule, qtyPickedInitial);
 
-		shipmentScheduleExpectations
-				.qtyPicked(qtyPickedInitial)
-				.assertExpected_ShipmentSchedule("create shipment schedule, after setting inital qtyPicked");
-
+			shipmentScheduleExpectations
+					.qtyPicked(qtyPickedInitial)
+					.assertExpected_ShipmentSchedule("create shipment schedule, after setting inital qtyPicked");
+		}
 		return shipmentSchedule;
 	}
 
@@ -140,8 +150,7 @@ public class ShipmentScheduleHelper
 					dummyItem, // VHU M_HU_Item
 					trx.getProduct(),
 					trx.getQuantity().negate(),
-					trx.getDate()
-					);
+					trx.getDate());
 
 			trx.pair(trxCounterpart);
 

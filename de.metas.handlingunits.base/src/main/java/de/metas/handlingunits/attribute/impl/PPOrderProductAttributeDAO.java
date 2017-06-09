@@ -1,6 +1,7 @@
 package de.metas.handlingunits.attribute.impl;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 
 /*
  * #%L
@@ -12,12 +13,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,21 +26,29 @@ import java.math.BigDecimal;
  */
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
+import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_PP_Cost_Collector;
+import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.logging.LogManager;
 
 public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
@@ -52,27 +61,91 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		return queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.filter(new EqualsQueryFilter<I_PP_Order_ProductAttribute>(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Order_ID, ppOrderId))
+				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Order_ID, ppOrderId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list(I_PP_Order_ProductAttribute.class);
 	}
 
+	private Stream<I_PP_Order_ProductAttribute> streamProductAttributesForHUAttributes(final int ppOrderId, final Collection<I_M_HU_Attribute> huAttributes)
+	{
+		if (huAttributes.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_PP_Order_ProductAttribute> queryBuilder = queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.addOnlyActiveRecordsFilter();
+
+		final ICompositeQueryFilter<I_PP_Order_ProductAttribute> huFilters = queryBuilder.addCompositeQueryFilter().setJoinOr();
+		huAttributes.forEach(huAttribute -> {
+			huFilters.addCompositeQueryFilter().setJoinAnd()
+					.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_HU_ID, huAttribute.getM_HU_ID())
+					.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_Attribute_ID, huAttribute.getM_Attribute_ID());
+		});
+
+		return queryBuilder
+				.create()
+				.stream(I_PP_Order_ProductAttribute.class);
+
+	}
+
 	@Override
 	public void addPPOrderProductAttributes(final I_PP_Cost_Collector costCollector, final List<I_M_HU_Attribute> huAttributes)
 	{
-		// create one PP_Order_ProductAttribute for each of the attributes
+		if (huAttributes.isEmpty())
+		{
+			return;
+		}
+
+		final I_PP_Order ppOrder = costCollector.getPP_Order();
+		addPPOrderProductAttributes(ppOrder, huAttributes, ppOrderAttribute -> ppOrderAttribute.setPP_Cost_Collector(costCollector));
+	}
+
+	@Override
+	public void addPPOrderProductAttributesFromIssueCandidate(final I_PP_Order_Qty issueCandidate, final List<I_M_HU_Attribute> huAttributes)
+	{
+		if (huAttributes.isEmpty())
+		{
+			return;
+		}
+
+		final I_PP_Order ppOrder = issueCandidate.getPP_Order();
+		addPPOrderProductAttributes(ppOrder, huAttributes, ppOrderAttribute -> {
+			// ppOrderAttribute.setPP_Order_Qty(issueCandidate); // TODO: shall we add it?
+		});
+	}
+
+	private void addPPOrderProductAttributes(final I_PP_Order ppOrder, final List<I_M_HU_Attribute> huAttributes, final Consumer<I_PP_Order_ProductAttribute> beforeSave)
+	{
+		//
+		// Fetch the existing PP_Order_ProductAttribute records matching given huAttributes (matched by M_HU_ID/M_Attribute_ID)
+		final Map<ArrayKey, I_PP_Order_ProductAttribute> existingPPOrderAttributes = streamProductAttributesForHUAttributes(ppOrder.getPP_Order_ID(), huAttributes)
+				.collect(GuavaCollectors.toHashMapByKey(ppOrderAttribute -> ArrayKey.of(ppOrderAttribute.getM_HU_ID(), ppOrderAttribute.getM_Attribute_ID())));
+
+		//
+		// Iterate and create/update one PP_Order_ProductAttribute for each HU_Attribute
 		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
-			final I_PP_Order_ProductAttribute ppOrderAttribute = InterfaceWrapperHelper.newInstance(I_PP_Order_ProductAttribute.class);
-			ppOrderAttribute.setAD_Org_ID(costCollector.getAD_Org_ID());
-
-			ppOrderAttribute.setPP_Cost_Collector(costCollector);
-			ppOrderAttribute.setPP_Order(costCollector.getPP_Order());
-
 			final I_M_Attribute attribute = huAttribute.getM_Attribute();
-			ppOrderAttribute.setM_Attribute(attribute);
 
+			//
+			// Find existing PP_Order_ProductAttribute or create a new one
+			final ArrayKey key = ArrayKey.of(huAttribute.getM_HU_ID(), huAttribute.getM_Attribute_ID());
+			final I_PP_Order_ProductAttribute ppOrderAttribute = existingPPOrderAttributes.computeIfAbsent(key, k -> {
+				final I_PP_Order_ProductAttribute ppOrderAttributeNew = InterfaceWrapperHelper.newInstance(I_PP_Order_ProductAttribute.class);
+				ppOrderAttributeNew.setAD_Org_ID(ppOrder.getAD_Org_ID());
+				ppOrderAttributeNew.setPP_Order(ppOrder);
+				ppOrderAttributeNew.setM_Attribute(attribute);
+				ppOrderAttributeNew.setM_HU(huAttribute.getM_HU()); // provenance HU
+				return ppOrderAttributeNew;
+			});
+
+			//
+			// Set Value/ValueNumber
 			final String attributeValueType = attribute.getAttributeValueType();
 			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 			{
@@ -98,8 +171,10 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 				continue;
 			}
 
-			ppOrderAttribute.setM_HU(huAttribute.getM_HU()); // provenance HU
+			// Execute beforeSave custom code
+			beforeSave.accept(ppOrderAttribute);
 
+			// save it
 			InterfaceWrapperHelper.save(ppOrderAttribute);
 		}
 	}
@@ -110,12 +185,25 @@ public class PPOrderProductAttributeDAO implements IPPOrderProductAttributeDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class)
-				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Cost_Collector_ID, costCollectorId)
+				.addEqualsFilter(org.eevolution.model.I_PP_Order_ProductAttribute.COLUMNNAME_PP_Cost_Collector_ID, costCollectorId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.updateDirectly()
-				.addSetColumnValue(I_PP_Order_ProductAttribute.COLUMNNAME_IsActive, false) // deactivate all for cost collector
+				.addSetColumnValue(org.eevolution.model.I_PP_Order_ProductAttribute.COLUMNNAME_IsActive, false) // deactivate all for cost collector
 				.execute();
 
+	}
+
+	@Override
+	public void deleteForHU(final int ppOrderId, final int huId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		queryBL.createQueryBuilder(I_PP_Order_ProductAttribute.class)
+				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_PP_Order_ID, ppOrderId)
+				.addEqualsFilter(I_PP_Order_ProductAttribute.COLUMNNAME_M_HU_ID, huId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.deleteDirectly();
 	}
 }

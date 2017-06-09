@@ -62,6 +62,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import lombok.ToString;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
@@ -252,7 +253,7 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 	private static BigDecimal getValueNumberOrNull(final I_PP_Order_ProductAttribute ppOrderAttribute)
 	{
-		return InterfaceWrapperHelper.isNull(ppOrderAttribute, org.eevolution.model.I_PP_Order_ProductAttribute.COLUMNNAME_ValueNumber) ? null : ppOrderAttribute.getValueNumber();
+		return InterfaceWrapperHelper.isNull(ppOrderAttribute, I_PP_Order_ProductAttribute.COLUMNNAME_ValueNumber) ? null : ppOrderAttribute.getValueNumber();
 	}
 
 	@VisibleForTesting
@@ -510,4 +511,17 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			ppOrderProductAttributeDAO.addPPOrderProductAttributes(costCollector, huAttributes);
 		}
 	}
+	
+	@Override
+	public void addPPOrderProductAttributesFromIssueCandidate(final I_PP_Order_Qty issueCandidate)
+	{
+		final I_M_HU topLevelHU = issueCandidate.getM_HU();
+
+		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+		final IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
+		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(topLevelHU);
+
+		ppOrderProductAttributeDAO.addPPOrderProductAttributesFromIssueCandidate(issueCandidate, huAttributes);
+	}
+
 }

@@ -671,6 +671,28 @@ public class TimeUtil
 	{
 		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
 	}
+	
+	
+	/**
+	 * Return DateTime + offset in millis
+	 * 
+	 * @param dateTime Date and Time
+	 * @param offset minute offset
+	 * @return dateTime + offset in millis
+	 */
+	static public Timestamp addMillis(Timestamp dateTime, int offset)
+	{
+		if (dateTime == null)
+			dateTime = new Timestamp(System.currentTimeMillis());
+		if (offset == 0)
+			return dateTime;
+		//
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTime(dateTime);
+		cal.add(Calendar.MILLISECOND, offset);			// may have a problem with negative
+		return new Timestamp(cal.getTimeInMillis());
+	}	// addMillis
+
 
 	/**
 	 * Return DateTime + offset in hours
@@ -1045,10 +1067,12 @@ public class TimeUtil
 	}
 
 	/** @return date as timestamp or null if the date is null */
-	public static Timestamp asTimestamp(Date date)
+	public static Timestamp asTimestamp(final Date date)
 	{
 		if (date instanceof Timestamp)
+		{
 			return (Timestamp)date;
+		}
 		return date == null ? null : new Timestamp(date.getTime());
 	}
 

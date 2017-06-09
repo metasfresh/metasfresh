@@ -141,6 +141,7 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_M_Warehouse;
 import de.metas.javaclasses.model.I_AD_JavaClass;
+import lombok.NonNull;
 
 /**
  * This class sets up basic master data like attributes and HU-items that can be used in testing.
@@ -1191,24 +1192,25 @@ public class HUTestHelper
 		return piItem;
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom)
+	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom)
 	{
 		final I_C_BPartner bpartner = null;
-		return assignProduct(itemPI, product, qty, uom, bpartner);
+		return assignProduct(itemPI, product, capacity, uom, bpartner);
 	}
 
-	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal qty, final I_C_UOM uom, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item_Product assignProduct(final I_M_HU_PI_Item itemPI, final I_M_Product product, final BigDecimal capacity, final I_C_UOM uom, final I_C_BPartner bpartner)
 	{
 		Check.errorUnless(Objects.equals(itemPI.getItemType(), X_M_HU_PI_Item.ITEMTYPE_Material), "Param 'itemPI' needs to have ItemType={}, not={}; itemPI={} material item", X_M_HU_PI_Item.ITEMTYPE_Material, itemPI.getItemType(), itemPI);
 
 		final I_M_HU_PI_Item_Product itemDefProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class, itemPI);
 		itemDefProduct.setM_HU_PI_Item(itemPI);
 		itemDefProduct.setM_Product(product);
-		itemDefProduct.setQty(qty);
+		itemDefProduct.setQty(capacity);
 		itemDefProduct.setC_UOM(uom);
 		itemDefProduct.setValidFrom(TimeUtil.getDay(1970, 1, 1));
 		itemDefProduct.setC_BPartner(bpartner);
 		InterfaceWrapperHelper.save(itemDefProduct);
+
 		return itemDefProduct;
 	}
 
@@ -1453,7 +1455,8 @@ public class HUTestHelper
 	}
 
 	/**
-	 * Create HUs using {@link HUProducerDestination}.
+	 * Create HUs using {@link HUProducerDestination}.<br>
+	 * <b>Important:</b> If you expect e.g. an LU with multiple included TUs, then don't use this method; see the javadoc of {@link HUProducerDestination}.
 	 *
 	 * @param huPI
 	 * @param productToLoad
@@ -1541,10 +1544,19 @@ public class HUTestHelper
 		return hus;
 	}
 
-	public List<I_M_HU> createLUs(final IHUContext huContext,
-			final I_M_HU_PI_Item loadingUnitPIItem,
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
-			final BigDecimal totalQtyCU)
+	/**
+	 * 
+	 * @param huContext
+	 * @param loadingUnitPIItem the PI item with type = HU that link's the LU's PI with the TU's PI. This methods passes it to the {@link ILUTUProducerAllocationDestination}.
+	 * @param tuPIItemProduct
+	 * @param totalQtyCU
+	 * @return
+	 */
+	public List<I_M_HU> createLUs(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU_PI_Item loadingUnitPIItem,
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final BigDecimal totalQtyCU)
 	{
 		final I_C_BPartner bpartner = null;
 		final int bpartnerLocationId = -1;
@@ -2111,7 +2123,12 @@ public class HUTestHelper
 	@Deprecated
 	public void commitAndDumpHU(I_M_HU hu)
 	{
-		Services.get(ITrxManager.class).commit(trxName);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		if (!trxManager.isNull(trxName))
+		{
+			trxManager.commit(trxName);
+		}
+
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml(hu)));
 	}
 
@@ -2123,7 +2140,12 @@ public class HUTestHelper
 	@Deprecated
 	public void commitAndDumpHUs(List<I_M_HU> hus)
 	{
-		Services.get(ITrxManager.class).commit(trxName);
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		if (!trxManager.isNull(trxName))
+		{
+			trxManager.commit(trxName);
+		}
+
 		System.out.println(HUXmlConverter.toString(HUXmlConverter.toXml("HUs", hus)));
 	}
 }

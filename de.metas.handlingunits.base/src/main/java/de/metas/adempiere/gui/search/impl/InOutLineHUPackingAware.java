@@ -13,15 +13,14 @@ package de.metas.adempiere.gui.search.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -36,6 +35,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -102,13 +102,21 @@ public class InOutLineHUPackingAware implements IHUPackingAware
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
-		if (inoutLine.isManualPackingMaterial())
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+
+		final org.compiere.model.I_M_InOut inOut = inoutLine.getM_InOut();
+
+		// Applied only to customer return inout lines.
+		final boolean isCustomerReturnInOutLine = huInOutBL.isCustomerReturn(inOut);
+
+		if (inoutLine.isManualPackingMaterial() || isCustomerReturnInOutLine)
 		{
 			return inoutLine.getM_HU_PI_Item_Product();
 		}
 
 		final I_C_OrderLine orderline = InterfaceWrapperHelper.create(inoutLine.getC_OrderLine(), I_C_OrderLine.class);
-		return orderline.getM_HU_PI_Item_Product();
+
+		return orderline == null ? null : orderline.getM_HU_PI_Item_Product();
 	}
 
 	@Override

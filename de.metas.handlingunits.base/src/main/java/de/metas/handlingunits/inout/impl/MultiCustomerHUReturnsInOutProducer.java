@@ -25,6 +25,7 @@ import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -79,6 +80,8 @@ public class MultiCustomerHUReturnsInOutProducer
 	private Timestamp _movementDate;
 	private final List<I_M_HU> _husToReturn = new ArrayList<>();
 
+	private I_M_InOut _manualCustomerReturn;
+
 	private MultiCustomerHUReturnsInOutProducer()
 	{
 	}
@@ -97,7 +100,9 @@ public class MultiCustomerHUReturnsInOutProducer
 		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class); // The M_InOutLine's table id
 		for (final I_M_HU hu : getHUsToReturn())
 		{
+			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+
 			final int warehouseId = hu.getM_Locator().getM_Warehouse_ID();
 
 			//
@@ -156,19 +161,30 @@ public class MultiCustomerHUReturnsInOutProducer
 		// Send notifications
 		if (!returnInOuts.isEmpty())
 		{
-			ReturnInOutProcessedEventBus.newInstance()
-					.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
-					.notify(returnInOuts);
-		}
+			if (_manualCustomerReturn != null)
+			{
+				ReturnInOutProcessedEventBus.newInstance()
+						.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
+						.notify(returnInOuts);
+			}
+			
+			else
+			{
+				InterfaceWrapperHelper.refresh(_manualCustomerReturn);
+			}
+			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
+			// mark HUs as active and create movements to QualityReturnWarehouse for them
+			Services.get(IHUInOutBL.class).activateHUsForCustomerReturn(ctx, getHUsToReturn());
 
-		handlingUnitsBL.setHUStatusActive(_husToReturn);
+			handlingUnitsBL.setHUStatusActive(_husToReturn);
+		}
 
 		// return the created vendor returns
 		return returnInOuts;
 	}
 
 	/**
-	 * Create vendor return producer, set the details and use it to create the vendor return inout.
+	 * Create customer return producer, set the details and use it to create the customer return inout.
 	 *
 	 * @param partnerId
 	 * @param hus
@@ -191,12 +207,23 @@ public class MultiCustomerHUReturnsInOutProducer
 
 		producer.setMovementDate(getMovementDate());
 
+		if (_manualCustomerReturn != null)
+		{
+			producer.setManualReturnInOut(_manualCustomerReturn);
+		}
+
 		return producer;
 	}
 
 	public MultiCustomerHUReturnsInOutProducer setMovementDate(final Timestamp movementDate)
 	{
 		_movementDate = movementDate;
+		return this;
+	}
+
+	public MultiCustomerHUReturnsInOutProducer setManualCustomerReturn(final I_M_InOut manualCustomerReturn)
+	{
+		_manualCustomerReturn = manualCustomerReturn;
 		return this;
 	}
 

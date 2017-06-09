@@ -154,6 +154,13 @@ public class M_InOut
 			return;
 		}
 
+		// task #1306: Do not genertate empties movements for customer returns
+
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+		{
+			return;
+		}
+
 		// do nothing if this is not an empties shipment/receipt
 		final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 		if (!huEmptiesService.isEmptiesInOut(inout))
@@ -275,15 +282,9 @@ public class M_InOut
 			return;
 		}
 
-		final List<org.compiere.model.I_M_InOutLine> lines = Services.get(IInOutDAO.class).retrieveLines(customerReturn);
+		// create HUs based on the lines in the customer return inout
+		huInOutBL.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
 
-		for (final org.compiere.model.I_M_InOutLine line : lines)
-		{
-
-			final I_M_InOutLine customerReturnLine = InterfaceWrapperHelper.create(line, I_M_InOutLine.class);
-			// create HUs based on the lines inthe customer return inout
-			huInOutBL.createHUsForCustomerReturn(customerReturnLine);
-		}
 	}
 
 }

@@ -14,6 +14,9 @@ It is designed to be Out-of-the-box ready to use and with sophisticated vertical
 
 metasfresh is a perfect fit for midsize companies in wholesale and manufacturing which are in search for high flexibility and high performance in data processing assisted with multi-threading and mass document creation.
 
+## Screenshots
+<img src="/images/screenshot-kpi-dashboard.png" width="33%" alt="KPI Dashboard"></img> <img src="/images/screenshot-sales-order.png" width="33%" alt="Sales Order Window"></img> <img src="/images/screenshot-material-receipt.png" width="33%" alt="Material Receipt Window"></img>
+
 ## Installing metasfresh
 We create weekly Releases of metasfresh ERP which can be downloaded from our official Website at [metasfresh.com/en/download/](http://metasfresh.com/en/download/).
 
@@ -27,8 +30,8 @@ If you would like to get in touch with other contributors then just join our cha
 * [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
 * Issuses
   * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=?&q=is%3Aissue+user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A>2017-04-01+sort%3Aupdated-desc+)
-  * [in `release` brach but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
-  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aissue+user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Astatus%3Aintegrated+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
+  * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
   
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).

@@ -47,6 +47,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	// Parameters
 	private Properties _ctx;
 	private int _adPInstanceId;
+	private int _countExpected;
 	private String _name;
 	private String _description;
 	private I_C_Async_Batch_Type _asyncBatchType;
@@ -70,6 +71,10 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		asyncBatch.setAD_PInstance_ID(getAD_PInstance_Creator_ID());
 		asyncBatch.setName(getName());
 		asyncBatch.setDescription(getDescription());
+		if (getCountExpected()>0)
+		{
+			asyncBatch.setCountExpected(getCountExpected());
+		}
 		asyncBatch.setC_Async_Batch_Type(getC_Async_Batch_Type());
 		queueDAO.saveInLocalTrx(asyncBatch);
 
@@ -92,7 +97,20 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		Check.assumeNotNull(_ctx, "ctx not null");
 		return _ctx;
 	}
-
+	
+	
+	@Override
+	public IAsyncBatchBuilder setCountExpected(int expected)
+	{
+		_countExpected = expected;
+		return this;
+	}
+	
+	private final int getCountExpected()
+	{
+		return _countExpected;
+	}
+	
 	@Override
 	public IAsyncBatchBuilder setAD_PInstance_Creator_ID(final int adPInstanceId)
 	{

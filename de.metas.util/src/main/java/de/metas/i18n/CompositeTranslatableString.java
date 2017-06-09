@@ -32,14 +32,15 @@ import com.google.common.collect.ImmutableSet;
 class CompositeTranslatableString implements ITranslatableString
 {
 	private final ImmutableList<ITranslatableString> list;
-	private static final String joinString = ""; // empty
+	private final String joinString;
 
 	private transient String defaultValue;
 	private transient ImmutableSet<String> adLanguages;
 
-	public CompositeTranslatableString(final List<ITranslatableString> list)
+	public CompositeTranslatableString(final List<ITranslatableString> list, final String joinString)
 	{
 		this.list = ImmutableList.copyOf(list);
+		this.joinString = joinString;
 	}
 
 	@Override

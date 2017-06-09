@@ -51,6 +51,11 @@ public interface IQueryBL extends ISingletonService
 		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_None);
 	}
 
+	/** @return query builder using current context and out of transaction */
+	default IQueryBuilder<Object> createQueryBuilderOutOfTrx(String modelTableName)
+	{
+		return createQueryBuilder(modelTableName, Env.getCtx(), ITrx.TRXNAME_None);
+	}
 
 
 	/**

@@ -404,4 +404,11 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	ICompositeQueryFilter<T> addEndsWithQueryFilter(String columnName, String endsWithString);
 
 	ICompositeQueryFilter<T> addValidFromToMatchesFilter(ModelColumn<T, ?> validFromColumn, ModelColumn<T, ?> validToColumn, Date dateToMatch);
+	
+	/**
+	 * Creates, appends and returns new composite filter.
+	 *
+	 * @return created composite filter
+	 */
+	ICompositeQueryFilter<T> addCompositeQueryFilter();
 }

@@ -26,5 +26,7 @@ public final class TableRowKey
 	private final int shipperId;
 	private final String deliveryVia;
 	// private final int singleShipmentOrderId; // not used anymore
+	private final int orderId;
+	private final int shipmentScheduleId;
 	private final int seqNo;
 }
