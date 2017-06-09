@@ -1,5 +1,7 @@
 package de.metas.ui.web.board;
 
+import java.util.Collection;
+
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
@@ -22,12 +24,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,13 +38,19 @@ import lombok.Value;
 
 @Builder
 @Value
-public class BoardDescriptor
+public final class BoardDescriptor
 {
 	private final int boardId;
 	@NonNull
 	private final ITranslatableString caption;
+	@NonNull
+	private final String websocketEndpoint;
+
 	@Singular
 	private final ImmutableMap<Integer, BoardLaneDescriptor> lanes;
+
+	@Singular("cardFieldByFieldName")
+	final ImmutableMap<String, BoardCardFieldDescriptor> cardFieldsByFieldName;
 
 	// Source document info
 	@NonNull
@@ -54,16 +62,14 @@ public class BoardDescriptor
 	@NonNull
 	private final String tableName;
 	@NonNull
+	private final String tableAlias;
+	@NonNull
 	private final String keyColumnName;
 	private final int adValRuleId;
-	//
 	@NonNull
 	private final String userIdColumnName;
 
-	@NonNull
-	private final String websocketEndpoint;
-
-	public void assertLaneIdExists(int laneId)
+	public void assertLaneIdExists(final int laneId)
 	{
 		if (lanes.get(laneId) == null)
 		{
@@ -71,5 +77,21 @@ public class BoardDescriptor
 					.setParameter("board", this)
 					.setParameter("laneId", laneId);
 		}
+	}
+
+	public Collection<BoardCardFieldDescriptor> getCardFields()
+	{
+		return cardFieldsByFieldName.values();
+	}
+
+	public BoardCardFieldDescriptor getCardFieldByName(final String fieldName)
+	{
+		final BoardCardFieldDescriptor cardField = cardFieldsByFieldName.get(fieldName);
+		if (cardField == null)
+		{
+			throw new AdempiereException("No card field found for " + fieldName)
+					.setParameter("board", this);
+		}
+		return cardField;
 	}
 }
