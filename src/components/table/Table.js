@@ -108,7 +108,10 @@ class Table extends Component {
     }
 
     getIndentData = (selectFirst) => {
-        const {rowData, tabid, indentSupported} = this.props;
+        const {
+            rowData, tabid, indentSupported, collapsible, expandedDepth, 
+            keyProperty
+        } = this.props;
 
         if(indentSupported && rowData[tabid]){
             let rowsData = [];
@@ -121,11 +124,29 @@ class Table extends Component {
                 rows: rowsData,
                 pendingInit: !rowsData
             }, () => {
+                const {rows} = this.state;
+                
                 if(selectFirst){
-                    this.selectOneProduct(this.state.rows[0].id);
+                    this.selectOneProduct(rows[0].id);
                     document.getElementsByClassName('js-table')[0].focus();
                 }
-
+                
+                if(collapsible){
+                    for(let i = 0; i < rows.length; i++){
+                        if(rows[i].indent.length >= expandedDepth){
+                            this.setState(prev => ({
+                                collapsedParentsRows:
+                                    prev.collapsedParentsRows.concat(
+                                        rows[i][keyProperty]
+                                    ),
+                                collapsedRows:
+                                    prev.collapsedRows.concat(
+                                        rows[i][keyProperty]
+                                    )
+                            }));
+                        }
+                    }
+                }
             })
         } else {
             this.setState({
@@ -624,7 +645,7 @@ class Table extends Component {
     renderTableBody = () => {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
-            mainTable, newRow, tabIndex, entity, indentSupported
+            mainTable, newRow, tabIndex, entity, indentSupported, collapsible
         } = this.props;
 
         const {
@@ -644,7 +665,8 @@ class Table extends Component {
                         <TableItem
                             {...item[key]}
                             {...{entity, cols, type, mainTable, indentSupported,
-                                selected, docId, tabIndex, readonly}}
+                                selected, docId, tabIndex, readonly, collapsible
+                            }}
                             collapsed={
                                 collapsedParentsRows
                                     .indexOf(item[key][keyProperty]) > -1

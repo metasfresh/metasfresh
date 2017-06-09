@@ -518,6 +518,8 @@ class DocumentList extends Component {
                                 }
                                 rowData={{1: data.result}}
                                 cols={layout.elements}
+                                collapsible={layout.collapsible || true}
+                                expandedDepth={layout.expandedDepth}
                                 tabid={1}
                                 type={windowType}
                                 emptyText={layout.emptyResultText}
