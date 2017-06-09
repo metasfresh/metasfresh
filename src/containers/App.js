@@ -46,15 +46,7 @@ export default class App extends Component {
             languageSuccess(cachedLang);
         }
 
-        // axios.interceptors.request.use(config => {
-        //     store.dispatch(indicatorState('pending'));
-        //     return config;
-        // }, error => {
-        //     return Promise.reject(error);
-        // });
-
         axios.interceptors.response.use(function (response) {
-            // store.dispatch(indicatorState('saved'));
             return response;
         }, function (error) {
             if(!error.response){
