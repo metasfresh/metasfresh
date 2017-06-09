@@ -87,6 +87,11 @@ public class RecordZoomWindowFinder
 	{
 		return newInstance(record).findAD_Window_ID();
 	}
+	
+	public static final int findAD_Window_ID(final String tableName)
+	{
+		return newInstance(tableName).findAD_Window_ID();
+	}
 
 	public static final RecordZoomWindowFinder newInstance(final MQuery query)
 	{
