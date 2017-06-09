@@ -26,6 +26,8 @@ Here come the actual release notes:
     * Adding a few Layout Optimzations to User window. Now showing the Login Field in Grid View and deleting the combined Name Field. Additional sized adjustments.
   * [#1754](https://github.com/metasfresh/metasfresh/issues/1754) New Window for Transport Disposition in WebUI
     * Adding 2 new Windows to WebUI - Transport Disposition and Transport Shipment - allowing the user to find out which shipments have predefined Tour Deliverydays allocated and which have to be joined to a Shipper Transportation manually.
+  * [#1765](https://github.com/metasfresh/metasfresh/issues/1765) Adjustment of advanced edit in Doctype Window
+    * Refining the Layout of the Document Type WIndow, adding missing fields and adjusting the advanced edit layout.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
