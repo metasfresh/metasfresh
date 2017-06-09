@@ -97,7 +97,7 @@ public class ManualCustomerReturnInOutProducer
 
 			//
 			// Get the HU and the original vendor receipt M_InOutLine_ID and add it to the right producer
-			for (final I_M_InOutLine customerReturnLine : Services.get(IInOutDAO.class).retrieveLines(_manualCustomerReturn, de.metas.handlingunits.model.I_M_InOutLine.class))
+			for (final I_M_InOutLine customerReturnLine : Services.get(IInOutDAO.class).retrieveLines(_manualCustomerReturn, I_M_InOutLine.class))
 			{
 
 				final int bpartnerId = _manualCustomerReturn.getC_BPartner_ID();

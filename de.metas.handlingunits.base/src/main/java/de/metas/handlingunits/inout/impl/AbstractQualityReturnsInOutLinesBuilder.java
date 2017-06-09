@@ -113,7 +113,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
 
-		if (!(originInOutLine.getM_InOut_ID() == _inoutRef.getValue().getM_InOut_ID()))
+		if (originInOutLine.getM_InOut_ID() != _inoutRef.getValue().getM_InOut_ID())
 		{
 			//
 			// Adjust movement line's qty to move
