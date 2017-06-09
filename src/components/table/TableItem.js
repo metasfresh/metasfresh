@@ -192,7 +192,8 @@ class TableItem extends Component {
 
     renderTree = (huType) => {
         const {
-            indent, lastChild, includedDocuments, indentSupported, rowId
+            indent, lastChild, includedDocuments, indentSupported, rowId,
+            collapsed, handleRowCollapse
         } = this.props;
 
         let indentation = [];
@@ -219,16 +220,20 @@ class TableItem extends Component {
         return (
             <div
                 className="indent"
-                onClick={(e) =>
-                    this.handleIndentSelect(e, rowId, includedDocuments)
-                }
             >
                 {indentation}
 
                 {includedDocuments && <div className="indent-bot"/>}
-
+                {includedDocuments ? (collapsed ? 
+                        <i onClick={handleRowCollapse} className="meta-icon-plus indent-collapse-icon" /> : 
+                        <i onClick={handleRowCollapse} className="meta-icon-minus indent-collapse-icon" />) 
+                    : ''}
+                
                 <div
                     className="indent-icon"
+                    onClick={(e) =>
+                        this.handleIndentSelect(e, rowId, includedDocuments)
+                    }
                 >
                     <i className={this.getIconClassName(huType)} />
                 </div>
@@ -257,13 +262,6 @@ class TableItem extends Component {
                     (notSaved ? 'row-not-saved ': '')
                 }
             >
-                {indentSupported &&
-                    <td
-                        onClick={handleRowCollapse}
-                    >
-                        {includedDocuments ? (collapsed ? '+' : '-') : ''}
-                    </td>
-                }
                 {indentSupported &&
                     <td className="indented">
                         {this.renderTree(contextType)}

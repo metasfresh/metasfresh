@@ -323,7 +323,7 @@ th {
 
 $indent-height: 42px;
 $indent-height-mid: 18px;
-$indent-signs-offset: 6px;
+$indent-signs-offset: 30px;
 
 .indent {
     position: relative;
@@ -342,6 +342,7 @@ $indent-signs-offset: 6px;
 
 .indent-item-mid{
     padding-left:$indent-signs-offset;
+    margin-right:10px;
 }
 
 .indent-item-mid .indent-sign {
@@ -371,6 +372,10 @@ $indent-signs-offset: 6px;
     width: 1px;
     height: 6px;
     border-left: 1px solid #afbfca;
+}
+
+.indent-collapse-icon {
+    margin-right: 10px;
 }
 
 /* END OF INDENT SIGN ============ */
