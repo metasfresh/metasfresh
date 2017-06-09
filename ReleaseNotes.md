@@ -47,7 +47,7 @@ Here come the actual release notes:
   * [#1334](https://github.com/metasfresh/metasfresh/issues/1334) Display created/ createdby in BusinessPartner contracts window
     * New Fields Created, CreatedBy now added to the Business Partner contracts window.
   * [#1518](https://github.com/metasfresh/metasfresh/issues/1518) Show currency from pricelist in pricelist / pricelist comparison Jasper
-    * Introduces the Currency infomration to the Pricelist comparinson report.
+    * Introduces the Currency information to the Pricelist comparison report.
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
   * [#1599](https://github.com/metasfresh/metasfresh/issues/1599) Import full menu from w101
@@ -80,10 +80,10 @@ Here come the actual release notes:
     * Adjustments to Product Window, refining the Layout and Look&Feel of Fields in main View and Advanced Edit. Harmonizing to our current default Layout.
   * [#1679](https://github.com/metasfresh/metasfresh/issues/1679) New Window for Country in WebUI
     * New Window in WebUI allowing the maintaineance of Country, Regions and Cities
-  * [#1681](https://github.com/metasfresh/metasfresh/issues/1681) New Window for Standard Response in WebUI
-    * Creating a new window for Result Schema maintenence in WebUI which is available for the user via menu or zoom-to functionality from Request Window.
   * [#1680](https://github.com/metasfresh/metasfresh/issues/1680) New Window or Request Type in WebUI
     * Creation of the Window Layoutfor the Request Type Window in WebUI.
+  * [#1681](https://github.com/metasfresh/metasfresh/issues/1681) New Window for Standard Response in WebUI
+    * Creating a new window for Result Schema maintenence in WebUI which is available for the user via menu or zoom-to functionality from Request Window.
   * [#1687](https://github.com/metasfresh/metasfresh/issues/1687) Refactor Request Tab in Partner Window to allow zoom and advanced edit
     * Adjustments in Business window Subtab for Requests, now allowing the user the zoom-to Request Window and records directly.
   * [#1695](https://github.com/metasfresh/metasfresh/issues/1695) Introduce AD_User.Avatar_ID and AD_Language fields
