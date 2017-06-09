@@ -2,9 +2,13 @@ package de.metas.ui.web.board.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.board.BoardCard;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -20,11 +24,11 @@ import lombok.Value;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -36,27 +40,32 @@ public class JSONBoardCard
 {
 	public static JSONBoardCard of(final BoardCard card, final String adLanguage)
 	{
-		return JSONBoardCard.builder()
+		final JSONBoardCardBuilder jsonCard = JSONBoardCard.builder()
 				.cardId(card.getCardId())
 				.laneId(card.getLaneId())
 				//
 				.caption(card.getCaption().translate(adLanguage))
 				.description(card.getDescription().translate(adLanguage))
-				//
-				.userId(card.getUserId())
-				.userAvatarId(card.getUserAvatarId())
-				.userFullname(card.getUserFullname())
-				//
-				.build();
+				.documentPath(JSONDocumentPath.ofWindowDocumentPath(card.getDocumentPath()));
+
+		// Users
+		card.getUsers()
+				.stream()
+				.map(JSONBoardCardUser::of)
+				.forEach(jsonCard::user);
+
+		return jsonCard.build();
 	}
-	
+
 	private final int cardId;
 	private final int laneId;
-	
+
 	private final String caption;
 	private final String description;
-	
-	private final int userId;
-	private final String userAvatarId;
-	private final String userFullname;
+
+	private final JSONDocumentPath documentPath;
+
+	@Singular
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private ImmutableList<JSONBoardCardUser> users;
 }

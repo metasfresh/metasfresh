@@ -1,12 +1,10 @@
-package de.metas.ui.web.board;
+package de.metas.ui.web.board.json;
 
-import com.google.common.collect.ImmutableList;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.board.BoardCardUser;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -31,21 +29,21 @@ import lombok.Value;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Builder
 @Value
-public class BoardCard
+public class JSONBoardCardUser
 {
-	private final int cardId;
-	private final int laneId;
-	
-	@NonNull
-	private final ITranslatableString caption;
-	@NonNull
-	private final ITranslatableString description;
+	public static final JSONBoardCardUser of(final BoardCardUser user)
+	{
+		return JSONBoardCardUser.builder()
+				.userId(user.getUserId())
+				.avatarId(user.getAvatarId())
+				.fullname(user.getFullname())
+				.build();
+	}
 
-	@NonNull
-	private final DocumentPath documentPath;
-
-	@Singular
-	private ImmutableList<BoardCardUser> users;
+	private final int userId;
+	private final String avatarId;
+	private final String fullname;
 }

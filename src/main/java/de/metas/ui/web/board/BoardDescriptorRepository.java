@@ -40,6 +40,7 @@ import de.metas.ui.web.board.json.JSONBoardCardChangedEvent;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
@@ -260,10 +261,13 @@ public class BoardDescriptorRepository
 				//
 				.caption(ImmutableTranslatableString.constant(caption))
 				.description(ImmutableTranslatableString.constant(description))
+				.documentPath(DocumentPath.rootDocumentPath(boardDescriptor.getRecordWindowId(), DocumentId.of(recordId)))
 				//
-				.userId(userId)
-				.userAvatarId(userAvatarId)
-				.userFullname(userFullname)
+				.user(BoardCardUser.builder()
+						.userId(userId)
+						.avatarId(userAvatarId)
+						.fullname(userFullname)
+						.build())
 				//
 				.build();
 	}
