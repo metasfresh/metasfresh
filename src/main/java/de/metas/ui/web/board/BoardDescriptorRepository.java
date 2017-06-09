@@ -103,7 +103,7 @@ public class BoardDescriptorRepository
 		// Board record mappings
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(boardPO.getAD_Table_ID());
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
-		final String keyColumnNameFQ = tableName + "." + keyColumnName;
+		final String userIdColumnName = "UpdatedBy"; // TODO: hardcoded 
 
 		//
 		// Board record info
@@ -123,8 +123,8 @@ public class BoardDescriptorRepository
 				// Mapping
 				.tableName(tableName)
 				.keyColumnName(keyColumnName)
-				.keyColumnNameFQ(keyColumnNameFQ)
 				.adValRuleId(boardPO.getAD_Val_Rule_ID())
+				.userIdColumnName(userIdColumnName)
 				//
 				.websocketEndpoint(WebSocketConfig.buildBoardTopicName(boardId));
 
@@ -173,7 +173,7 @@ public class BoardDescriptorRepository
 		final String tableAlias = "r";
 		final String keyColumnName = boardDescriptor.getKeyColumnName();
 		final String keyColumnNameFQ = tableAlias + "." + keyColumnName;
-		final String userIdColumnNameFQ = tableAlias + "." + "UpdatedBy"; // FIXME hardcoded
+		final String userIdColumnNameFQ = tableAlias + "." + boardDescriptor.getUserIdColumnName();
 
 		final LookupDescriptorProvider recordLookupProvider = SqlLookupDescriptor.builder()
 				.setColumnName(keyColumnName)

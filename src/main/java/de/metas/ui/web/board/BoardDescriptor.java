@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -37,19 +38,26 @@ import lombok.Value;
 public class BoardDescriptor
 {
 	private final int boardId;
+	@NonNull
 	private final ITranslatableString caption;
 	@Singular
 	private final ImmutableMap<Integer, BoardLaneDescriptor> lanes;
 
 	// Source record info
+	@NonNull
 	private final WindowId recordWindowId;
 
 	// Source record mapping
+	@NonNull
 	private final String tableName;
+	@NonNull
 	private final String keyColumnName;
-	private final String keyColumnNameFQ;
 	private final int adValRuleId;
+	//
+	@NonNull
+	private final String userIdColumnName;
 
+	@NonNull
 	private final String websocketEndpoint;
 
 	public void assertLaneIdExists(int laneId)
