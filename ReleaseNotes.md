@@ -38,8 +38,6 @@ Here come the actual release notes:
 
 # metasfresh 5.12 (2017-23)
 
-**upcoming release for week 2017-23**
-
 ## Features
 * metasfresh-backend
   * [#1239](https://github.com/metasfresh/metasfresh/issues/1239) Barcode on Bestellkontrolle report
