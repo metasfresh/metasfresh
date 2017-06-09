@@ -15,8 +15,7 @@ import NotificationHandler
     from '../components/notifications/NotificationHandler';
 
 import {
-    noConnection,
-    indicatorState
+    noConnection
 } from '../actions/WindowActions';
 
 import {

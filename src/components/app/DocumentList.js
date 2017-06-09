@@ -369,7 +369,7 @@ class DocumentList extends Component {
             id, page, this.pageLength, sortingQuery, windowType
         ).then(response => {
             dispatch(indicatorState('saved'));
-            
+
             this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters
