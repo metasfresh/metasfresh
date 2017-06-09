@@ -93,7 +93,7 @@ class RawLookup extends Component {
     handleSelect = (select) => {
         const {
             onChange, handleInputEmptyStatus, mainProperty, setNextProperty,
-            filterWidget
+            filterWidget, subentity
         } = this.props;
 
         this.setState({
@@ -102,6 +102,7 @@ class RawLookup extends Component {
 
             if(filterWidget){
                 const promise = onChange(mainProperty[0].parameterName, select);
+
                 if(promise) {
                     promise.then(()=> {
                         setNextProperty(mainProperty[0].parameterName);
@@ -111,13 +112,20 @@ class RawLookup extends Component {
                 }
 
             } else {
-                const promise = onChange(mainProperty[0].field, select);
-                if(promise){
-                    promise.then(()=> {
-                        setNextProperty(mainProperty[0].field);
-                    })
+                if(subentity === 'quickInput'){
+                    onChange(
+                        mainProperty[0].field, select,
+                        () => setNextProperty(mainProperty[0].field)
+                    );
                 } else {
-                    setNextProperty(mainProperty[0].field);
+                    const promise = onChange(mainProperty[0].field, select);
+                    if(promise){
+                        promise.then(()=> {
+                            setNextProperty(mainProperty[0].field);
+                        })
+                    } else {
+                        setNextProperty(mainProperty[0].field);
+                    }
                 }
 
             }
