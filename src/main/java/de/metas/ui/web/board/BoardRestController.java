@@ -151,6 +151,10 @@ public class BoardRestController
 			{
 				request.newLaneId(change.getValueAsInteger(-1));
 			}
+			if("position".equals(change.getPath()))
+			{
+				request.newPosition(change.getValueAsInteger(-1));
+			}
 		}
 
 		return request.build();

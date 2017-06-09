@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -33,6 +34,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
@@ -42,8 +44,8 @@ import de.metas.ui.web.base.model.I_WEBUI_Board;
 import de.metas.ui.web.base.model.I_WEBUI_Board_CardField;
 import de.metas.ui.web.base.model.I_WEBUI_Board_Lane;
 import de.metas.ui.web.base.model.I_WEBUI_Board_RecordAssignment;
-import de.metas.ui.web.board.BoardDescriptor.BoardDescriptorBuilder;
 import de.metas.ui.web.board.BoardCardFieldDescriptor.BoardFieldLoader;
+import de.metas.ui.web.board.BoardDescriptor.BoardDescriptorBuilder;
 import de.metas.ui.web.board.json.JSONBoardCardChangedEvent;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
@@ -62,7 +64,9 @@ import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -89,15 +93,15 @@ import lombok.NonNull;
 @Repository
 public class BoardDescriptorRepository
 {
-	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> newCache(I_WEBUI_Board.Table_Name + "#BoardDescriptor", 50, 0)
-			.addResetForTableName(I_WEBUI_Board_Lane.Table_Name)
-			.addResetForTableName(I_WEBUI_Board_CardField.Table_Name);
-
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptors;
 
 	@Autowired
 	private SimpMessagingTemplate websocketMessagingTemplate;
+
+	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> newCache(I_WEBUI_Board.Table_Name + "#BoardDescriptor", 50, 0)
+			.addResetForTableName(I_WEBUI_Board_Lane.Table_Name)
+			.addResetForTableName(I_WEBUI_Board_CardField.Table_Name);
 
 	public BoardDescriptor getBoardDescriptor(final int boardId)
 	{
@@ -240,6 +244,11 @@ public class BoardDescriptorRepository
 	public BoardCard getCard(final int boardId, final int cardId)
 	{
 		return ListUtils.singleElement(retrieveCards(boardId, cardId));
+	}
+
+	private int getLaneIdForCardId(final int boardId, final int cardId)
+	{
+		return getCard(boardId, cardId).getLaneId();
 	}
 
 	private List<BoardCard> retrieveCards(final int boardId, final int cardId)
@@ -457,6 +466,75 @@ public class BoardDescriptorRepository
 		return ITranslatableString.compose(": ", cardField.getCaption(), valueStr);
 	}
 
+	private LaneCardsSequence retrieveCardIdsOrdered(final int boardId, final int laneId)
+	{
+		final List<Integer> cardIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_WEBUI_Board_RecordAssignment.class)
+				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_ID, boardId)
+				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_Lane_ID, laneId)
+				.orderBy()
+				.addColumn(I_WEBUI_Board_RecordAssignment.COLUMN_SeqNo)
+				.addColumn(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_RecordAssignment_ID)
+				.endOrderBy()
+				.create()
+				.listDistinct(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, Integer.class);
+		return new LaneCardsSequence(cardIds);
+	}
+
+	private final void updateCardsOrder(final int boardId, final int laneId, final List<Integer> cardIds, final List<Integer> previousCardIds)
+	{
+		final String sql = "UPDATE " + I_WEBUI_Board_RecordAssignment.Table_Name
+				+ " SET " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_SeqNo + "=?"
+				+ " WHERE " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_WEBUI_Board_ID + "=?"
+				+ " AND " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_WEBUI_Board_Lane_ID + "=?"
+				+ " AND " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID + "=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			for (int newSeqNo = 0; newSeqNo < cardIds.size(); newSeqNo++)
+			{
+				final int cardId = cardIds.get(newSeqNo);
+//				final int oldSeqNo = previousCardIds != null ? previousCardIds.indexOf(cardId) : -1;
+//				if (oldSeqNo >= 0 && oldSeqNo == newSeqNo)
+//				{
+//					continue;
+//				}
+
+				if (pstmt == null)
+				{
+					pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+				}
+				DB.setParameters(pstmt, new Object[] { newSeqNo, boardId, laneId, cardId });
+				pstmt.addBatch();
+			}
+
+			if (pstmt == null)
+			{
+				return;
+			}
+
+			pstmt.executeBatch();
+		}
+		catch (final SQLException ex)
+		{
+			throw DBException.wrapIfNeeded(ex);
+		}
+		finally
+		{
+			DB.close(pstmt);
+		}
+	}
+
+	private final void changeCardsOrder(final int boardId, final int laneId, final Consumer<LaneCardsSequence> reorderCards)
+	{
+		final LaneCardsSequence orderedCardIdsOld = retrieveCardIdsOrdered(boardId, laneId);
+		final LaneCardsSequence orderedCardIdsNew = orderedCardIdsOld.copy();
+
+		reorderCards.accept(orderedCardIdsNew);
+
+		updateCardsOrder(boardId, laneId, orderedCardIdsNew.getCardIds(), orderedCardIdsOld.getCardIds());
+	}
+
 	public BoardCard addCardForDocumentId(final int boardId, final int laneId, @NonNull final DocumentId documentId)
 	{
 		final BoardDescriptor board = getBoardDescriptor(boardId);
@@ -464,12 +542,17 @@ public class BoardDescriptorRepository
 
 		final int cardId = documentId.toInt();
 
-		final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
-		assignment.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		assignment.setWEBUI_Board_ID(boardId);
-		assignment.setWEBUI_Board_Lane_ID(laneId);
-		assignment.setRecord_ID(cardId);
-		InterfaceWrapperHelper.save(assignment);
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
+			final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
+			assignment.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+			assignment.setWEBUI_Board_ID(boardId);
+			assignment.setWEBUI_Board_Lane_ID(laneId);
+			assignment.setRecord_ID(cardId);
+			assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
+			InterfaceWrapperHelper.save(assignment);
+
+			changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardId(cardId));
+		});
 
 		final BoardCard card = getCard(boardId, cardId);
 
@@ -481,14 +564,25 @@ public class BoardDescriptorRepository
 	{
 		final BoardDescriptor board = getBoardDescriptor(boardId);
 
-		final int deletedCount = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_WEBUI_Board_RecordAssignment.class)
-				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_ID, boardId)
-				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_Record_ID, cardId)
-				.create()
-				.deleteDirectly();
+		final boolean deleted = Services.get(ITrxManager.class).call(ITrx.TRXNAME_ThreadInherited, () -> {
+			final int laneId = getLaneIdForCardId(boardId, cardId);
 
-		if (deletedCount > 0)
+			final int deletedCount = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_WEBUI_Board_RecordAssignment.class)
+					.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_ID, boardId)
+					.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_Record_ID, cardId)
+					.create()
+					.deleteDirectly();
+
+			if (deletedCount > 0)
+			{
+				changeCardsOrder(boardId, laneId, cardIds -> cardIds.removeCardId(cardId));
+			}
+
+			return deletedCount > 0;
+		});
+
+		if (deleted)
 		{
 			websocketMessagingTemplate.convertAndSend(board.getWebsocketEndpoint(), JSONBoardCardChangedEvent.cardRemoved(boardId, cardId));
 		}
@@ -500,9 +594,26 @@ public class BoardDescriptorRepository
 
 		Services.get(ITrxManager.class)
 				.run(ITrx.TRXNAME_ThreadInherited, () -> {
-					if (request.getNewLaneId() > 0)
+					final int oldLaneId = getLaneIdForCardId(boardId, cardId);
+					int laneIdEffective = oldLaneId;
+					
+					boolean positionChanged = false;
+
+					if (request.getNewLaneId() > 0 && request.getNewLaneId() != oldLaneId)
 					{
-						changeLane(boardId, cardId, request.getNewLaneId());
+						final int newLaneId = request.getNewLaneId();
+						changeLane(boardId, cardId, newLaneId); // move card to new lane
+						changeCardsOrder(boardId, oldLaneId, cardIds -> cardIds.removeCardId(cardId)); // update cards order in old lane
+						changeCardsOrder(boardId, newLaneId, cardIds -> cardIds.addCardIdAtPosition(cardId, request.getNewPosition())); // update cards order in new lane
+						laneIdEffective = newLaneId;
+						positionChanged = true;
+					}
+
+					if (!positionChanged && request.getNewPosition() >= 0)
+					{
+						final int newPosition = request.getNewPosition();
+						changeCardsOrder(boardId, laneIdEffective, cardIds -> cardIds.addCardIdAtPosition(cardId, newPosition)); // update card's order
+						positionChanged = true;
 					}
 				});
 
@@ -527,6 +638,61 @@ public class BoardDescriptorRepository
 			throw new AdempiereException("Card it's not part this Board")
 					.setParameter("boardId", boardId)
 					.setParameter("cardId", cardId);
+		}
+	}
+
+	@EqualsAndHashCode
+	@ToString
+	private static final class LaneCardsSequence
+	{
+		private final List<Integer> cardIds;
+
+		public LaneCardsSequence(final List<Integer> cardIds)
+		{
+			this.cardIds = new ArrayList<>(cardIds);
+		}
+
+		public LaneCardsSequence copy()
+		{
+			return new LaneCardsSequence(cardIds);
+		}
+		
+		private List<Integer> getCardIds()
+		{
+			return cardIds;
+		}
+
+		public void addCardId(final int cardId)
+		{
+			addCardIdAtPosition(cardId, Integer.MAX_VALUE);
+		}
+
+		public void addCardIdAtPosition(final int cardId, final int position)
+		{
+			Preconditions.checkArgument(cardId > 0, "cardId > 0");
+
+			if (position < 0)
+			{
+				cardIds.remove((Object)cardId);
+				cardIds.add(cardId);
+			}
+			else if (position == Integer.MAX_VALUE || position > cardIds.size() - 1)
+			{
+				cardIds.remove((Object)cardId);
+				cardIds.add(cardId);
+			}
+			else
+			{
+				cardIds.remove((Object)cardId);
+				cardIds.add(position, cardId);
+			}
+		}
+
+		public void removeCardId(final int cardId)
+		{
+			Preconditions.checkArgument(cardId > 0, "cardId > 0");
+
+			cardIds.remove((Object)cardId);
 		}
 	}
 }
