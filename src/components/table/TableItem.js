@@ -223,7 +223,7 @@ class TableItem extends Component {
             >
                 {indentation}
 
-                {includedDocuments && <div className="indent-bot"/>}
+                {includedDocuments && !collapsed && <div className="indent-bot"/>}
                 {includedDocuments ? (collapsed ? 
                         <i onClick={handleRowCollapse} className="meta-icon-plus indent-collapse-icon" /> : 
                         <i onClick={handleRowCollapse} className="meta-icon-minus indent-collapse-icon" />) 
