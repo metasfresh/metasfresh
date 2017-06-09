@@ -33,5 +33,8 @@ import lombok.Value;
 public class JSONBoardCardAddRequest
 {
 	private final int laneId;
+	private final Integer position;
+	
+	// Source
 	private final DocumentId documentId;
 }

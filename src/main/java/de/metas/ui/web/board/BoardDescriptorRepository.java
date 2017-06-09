@@ -535,7 +535,7 @@ public class BoardDescriptorRepository
 		updateCardsOrder(boardId, laneId, orderedCardIdsNew.getCardIds(), orderedCardIdsOld.getCardIds());
 	}
 
-	public BoardCard addCardForDocumentId(final int boardId, final int laneId, @NonNull final DocumentId documentId)
+	public BoardCard addCardForDocumentId(final int boardId, final int laneId, @NonNull final DocumentId documentId, final int position)
 	{
 		final BoardDescriptor board = getBoardDescriptor(boardId);
 		board.assertLaneIdExists(laneId);
@@ -551,7 +551,7 @@ public class BoardDescriptorRepository
 			assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
 			InterfaceWrapperHelper.save(assignment);
 
-			changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardId(cardId));
+			changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardIdAtPosition(cardId, position));
 		});
 
 		final BoardCard card = getCard(boardId, cardId);
@@ -660,11 +660,6 @@ public class BoardDescriptorRepository
 		private List<Integer> getCardIds()
 		{
 			return cardIds;
-		}
-
-		public void addCardId(final int cardId)
-		{
-			addCardIdAtPosition(cardId, Integer.MAX_VALUE);
 		}
 
 		public void addCardIdAtPosition(final int cardId, final int position)

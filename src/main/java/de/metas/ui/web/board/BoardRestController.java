@@ -104,7 +104,8 @@ public class BoardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final BoardCard card = boardsRepo.addCardForDocumentId(boardId, request.getLaneId(), request.getDocumentId());
+		final int position = request.getPosition() != null ? request.getPosition() : Integer.MAX_VALUE;
+		final BoardCard card = boardsRepo.addCardForDocumentId(boardId, request.getLaneId(), request.getDocumentId(), position);
 		return JSONBoardCard.of(card, userSession.getAD_Language());
 	}
 
