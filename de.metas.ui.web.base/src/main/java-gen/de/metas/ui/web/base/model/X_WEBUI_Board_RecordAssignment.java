@@ -14,7 +14,7 @@ public class X_WEBUI_Board_RecordAssignment extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -64761276L;
+	private static final long serialVersionUID = -1717774210L;
 
     /** Standard Constructor */
     public X_WEBUI_Board_RecordAssignment (Properties ctx, int WEBUI_Board_RecordAssignment_ID, String trxName)
@@ -23,6 +23,7 @@ public class X_WEBUI_Board_RecordAssignment extends org.compiere.model.PO implem
       /** if (WEBUI_Board_RecordAssignment_ID == 0)
         {
 			setRecord_ID (0);
+			setSeqNo (0);
 			setWEBUI_Board_ID (0);
 			setWEBUI_Board_Lane_ID (0);
 			setWEBUI_Board_RecordAssignment_ID (0);
@@ -64,6 +65,28 @@ public class X_WEBUI_Board_RecordAssignment extends org.compiere.model.PO implem
 	public int getRecord_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
+		@param SeqNo 
+		Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public void setSeqNo (int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+	}
+
+	/** Get Reihenfolge.
+		@return Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst
+	  */
+	@Override
+	public int getSeqNo () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
