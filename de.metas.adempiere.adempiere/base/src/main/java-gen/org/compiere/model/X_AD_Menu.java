@@ -14,7 +14,7 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1841125837L;
+	private static final long serialVersionUID = 1985262352L;
 
     /** Standard Constructor */
     public X_AD_Menu (Properties ctx, int AD_Menu_ID, String trxName)
@@ -23,13 +23,10 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
       /** if (AD_Menu_ID == 0)
         {
 			setAD_Menu_ID (0);
-			setEntityType (null);
-// U
+			setEntityType (null); // U
 			setInternalName (null);
-			setIsCreateNew (false);
-// N
-			setIsReadOnly (false);
-// N
+			setIsCreateNew (false); // N
+			setIsReadOnly (false); // N
 			setIsSOTrx (false);
 			setIsSummary (false);
 			setName (null);
@@ -70,6 +67,8 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	public static final String ACTION_Form = "X";
 	/** Workbench = B */
 	public static final String ACTION_Workbench = "B";
+	/** Board = K */
+	public static final String ACTION_Board = "K";
 	/** Set Aktion.
 		@param Action 
 		Indicates the Action to be performed
@@ -515,6 +514,40 @@ public class X_AD_Menu extends org.compiere.model.PO implements I_AD_Menu, org.c
 	public java.lang.String getName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+//	@Override
+//	public de.metas.ui.web.base.model.I_WEBUI_Board getWEBUI_Board() throws RuntimeException
+//	{
+//		return get_ValueAsPO(COLUMNNAME_WEBUI_Board_ID, de.metas.ui.web.base.model.I_WEBUI_Board.class);
+//	}
+//
+//	@Override
+//	public void setWEBUI_Board(de.metas.ui.web.base.model.I_WEBUI_Board WEBUI_Board)
+//	{
+//		set_ValueFromPO(COLUMNNAME_WEBUI_Board_ID, de.metas.ui.web.base.model.I_WEBUI_Board.class, WEBUI_Board);
+//	}
+
+	/** Set Board.
+		@param WEBUI_Board_ID Board	  */
+	@Override
+	public void setWEBUI_Board_ID (int WEBUI_Board_ID)
+	{
+		if (WEBUI_Board_ID < 1) 
+			set_Value (COLUMNNAME_WEBUI_Board_ID, null);
+		else 
+			set_Value (COLUMNNAME_WEBUI_Board_ID, Integer.valueOf(WEBUI_Board_ID));
+	}
+
+	/** Get Board.
+		@return Board	  */
+	@Override
+	public int getWEBUI_Board_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_WEBUI_Board_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Browse name.
