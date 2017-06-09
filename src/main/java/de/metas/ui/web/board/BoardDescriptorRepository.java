@@ -186,16 +186,14 @@ public class BoardDescriptorRepository
 		final String userIdColumnNameFQ = tableAlias + "." + boardDescriptor.getUserIdColumnName();
 
 
-		final SqlLookupDescriptor recordLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
-
-		recordLookup.getSqlForFetchingExpression();
+		final SqlLookupDescriptor documentLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final CompositeStringExpression.Builder sqlExpr = IStringExpression.composer()
 				.append("SELECT ")
 				.append("\n  a." + I_WEBUI_Board_RecordAssignment.COLUMNNAME_WEBUI_Board_Lane_ID)
 				.append("\n, a." + I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID)
-				.append("\n, (").append(recordLookup.getSqlForFetchingDisplayNameByIdExpression(keyColumnNameFQ)).append(") AS card$caption")
+				.append("\n, (").append(documentLookup.getSqlForFetchingDisplayNameByIdExpression(keyColumnNameFQ)).append(") AS card$caption")
 				//
 				.append("\n, u." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " AS card$user_id")
 				.append("\n, u." + org.compiere.model.I_AD_User.COLUMNNAME_Avatar_ID + " AS card$user_avatar_id")
