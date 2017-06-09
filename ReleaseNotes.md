@@ -130,7 +130,7 @@ Here come the actual release notes:
     * Adding the API Support for Menu entry bookmarks.
   * [#426](https://github.com/metasfresh/metasfresh-webui-api/issues/426) internal: JSONDocument - drop "fields" array field
     * Clean-Up Issue/ Maintenance Task for JSOn Document eliminating the "fields" property.
-  * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Lookup Field shall provide first dropdown results
+  * [#427](https://github.com/metasfresh/metasfresh-webui-api/issues/427) space in Field shall provide first dropdown results
     * New Functionality in Lookup Fields. Just press space key and receive a list of first available selections.
 
 * metasfresh-webui-frontend
@@ -178,7 +178,8 @@ Here come the actual release notes:
     * Provides a solution for combined picking of Handling Units for more than 1 Shipment Schedlule Line atb the same time.
   * [#1739](https://github.com/metasfresh/metasfresh/issues/1739) Menu entry for M_ProductCategory window wrong
     * Adding the correct window to the WebUI menu for Product Category Window.
-* [#1759](https://github.com/metasfresh/metasfresh/issues/1759) HUTransform might pick the wrong capacity definition
+  * [#1759](https://github.com/metasfresh/metasfresh/issues/1759) HUTransform might pick the wrong capacity definition
+    * Fixes an error that occured when selecting a specific Packing Material in Handling Unit Transform Action. In minor cases the wrong capacity configuration was chosen and processed.
 
 * metasfresh-webui-api
   * [#418](https://github.com/metasfresh/metasfresh-webui-api/issues/418) Disable zoom into string lookups until it's fixed
@@ -210,10 +211,13 @@ Here come the actual release notes:
   * [#816](https://github.com/metasfresh/metasfresh-webui-frontend/issues/816) Double arrow-down for Dropdown selection
     * Fixes a glitch when autocomplete usage and selection took 2 keystrokes with arrow down. Now works with auto selection of first entry and direct reaction after first arrow-down.
   * [#823](https://github.com/metasfresh/metasfresh-webui-frontend/issues/832) Create new bpartner (from lookup) not working
+    * Fixes a Bug in the "Create new Partner" action that can be called in Lookup fields.
   * [#829](https://github.com/metasfresh/metasfresh-webui-frontend/issues/829) Filter criteria not shown when typing error
+    * Eliminates a Bug in Filtering and Typeahead. Now the Search criteria is shown and possibility to type more than 1 character is provided.
   * [#830](https://github.com/metasfresh/metasfresh-webui-frontend/issues/830) Layout broken in included Row Grid
     * Fixing the Layout of Included Grid Rows, now showing the element connections nicely again.
   * [#842](https://github.com/metasfresh/metasfresh-webui-frontend/issues/842) Lookup Field clear w/o selection does not work
+    * Now it is possible to uses the clear-x-circle to empty recording before initial confirmation with [enter]
   
 # metasfresh 5.11 (2017-21)
 
