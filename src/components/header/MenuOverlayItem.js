@@ -65,7 +65,7 @@ class MenuOverlayItem extends Component {
             case 'Enter':
                 e.preventDefault();
                 document.activeElement.childNodes[0].click();
-                overlay.focus();
+                overlay && overlay.focus();
                 break;
             case 'Escape':
                 e.preventDefault();
