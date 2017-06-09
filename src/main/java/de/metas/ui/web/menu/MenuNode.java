@@ -48,9 +48,7 @@ public final class MenuNode
 
 	public static enum MenuNodeType
 	{
-		Group //
-		, Window, NewRecord //
-		, Process, Report //
+		Group, Window, NewRecord, Process, Report, Board,
 	}
 
 	@FunctionalInterface
