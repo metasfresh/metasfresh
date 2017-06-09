@@ -218,6 +218,8 @@ Here come the actual release notes:
     * Fixing the Layout of Included Grid Rows, now showing the element connections nicely again.
   * [#842](https://github.com/metasfresh/metasfresh-webui-frontend/issues/842) Lookup Field clear w/o selection does not work
     * Now it is possible to uses the clear-x-circle to empty recording before initial confirmation with [enter]
+  * [#860](https://github.com/metasfresh/metasfresh-webui-frontend/issues/860) Change Placeholder name "Marcus Gronholm" to "Profile"
+    * Adding another name as placeholder in Avatar dropdown, as long as name is not taken from Avarat API property.
   
 # metasfresh 5.11 (2017-21)
 
