@@ -112,14 +112,24 @@ public class BoardDescriptorRepository
 		{
 			adWindowId = RecordZoomWindowFinder.findAD_Window_ID(tableName);
 		}
-		final WindowId recordWindowId = WindowId.of(adWindowId);
+		final WindowId documentWindowId = WindowId.of(adWindowId);
+		
+		//
+		//
+		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
+				.setColumnName(keyColumnName)
+				.setDisplayType(DisplayType.Search)
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setAD_Val_Rule_ID(boardPO.getAD_Val_Rule_ID())
+				.buildProvider();
 
 		final IModelTranslationMap boardTrlMap = InterfaceWrapperHelper.getModelTranslationMap(boardPO);
 		final BoardDescriptorBuilder boardDescriptor = BoardDescriptor.builder()
 				.boardId(boardPO.getWEBUI_Board_ID())
 				.caption(boardTrlMap.getColumnTrl(I_WEBUI_Board.COLUMNNAME_Name, boardPO.getName()))
 				//
-				.recordWindowId(recordWindowId)
+				.documentWindowId(documentWindowId)
+				.documentLookupDescriptorProvider(documentLookupDescriptorProvider)
 				// Mapping
 				.tableName(tableName)
 				.keyColumnName(keyColumnName)
@@ -175,14 +185,8 @@ public class BoardDescriptorRepository
 		final String keyColumnNameFQ = tableAlias + "." + keyColumnName;
 		final String userIdColumnNameFQ = tableAlias + "." + boardDescriptor.getUserIdColumnName();
 
-		final LookupDescriptorProvider recordLookupProvider = SqlLookupDescriptor.builder()
-				.setColumnName(keyColumnName)
-				.setDisplayType(DisplayType.Search)
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setAD_Val_Rule_ID(boardDescriptor.getAdValRuleId())
-				.buildProvider();
 
-		final SqlLookupDescriptor recordLookup = SqlLookupDescriptor.cast(recordLookupProvider.provideForScope(LookupScope.DocumentField));
+		final SqlLookupDescriptor recordLookup = SqlLookupDescriptor.cast(boardDescriptor.getDocumentLookupDescriptorProvider().provideForScope(LookupScope.DocumentField));
 
 		recordLookup.getSqlForFetchingExpression();
 
@@ -261,7 +265,7 @@ public class BoardDescriptorRepository
 				//
 				.caption(ImmutableTranslatableString.constant(caption))
 				.description(ImmutableTranslatableString.constant(description))
-				.documentPath(DocumentPath.rootDocumentPath(boardDescriptor.getRecordWindowId(), DocumentId.of(recordId)))
+				.documentPath(DocumentPath.rootDocumentPath(boardDescriptor.getDocumentWindowId(), DocumentId.of(recordId)))
 				//
 				.user(BoardCardUser.builder()
 						.userId(userId)

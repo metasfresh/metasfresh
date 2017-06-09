@@ -163,7 +163,7 @@ public class BoardRestController
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
 
-		final CreateViewRequest request = CreateViewRequest.builder(boardDescriptor.getRecordWindowId(), JSONViewDataType.list)
+		final CreateViewRequest request = CreateViewRequest.builder(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list)
 				// TODO: apply board's AD_Val_Rule_ID
 				.build();
 		final IView view = viewsRepo.createView(request);

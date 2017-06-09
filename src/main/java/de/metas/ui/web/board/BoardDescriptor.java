@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -43,9 +44,11 @@ public class BoardDescriptor
 	@Singular
 	private final ImmutableMap<Integer, BoardLaneDescriptor> lanes;
 
-	// Source record info
+	// Source document info
 	@NonNull
-	private final WindowId recordWindowId;
+	private final WindowId documentWindowId;
+	@NonNull
+	private LookupDescriptorProvider documentLookupDescriptorProvider;
 
 	// Source record mapping
 	@NonNull
