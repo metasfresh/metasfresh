@@ -33,7 +33,6 @@ class RawList extends Component {
 
         if(this.dropdown && autofocus) {
             this.dropdown.focus();
-            list.length === 1 && this.handleSelect(list[0]);
         }
 
         if(prevProps.defaultValue != defaultValue && property){
@@ -60,6 +59,12 @@ class RawList extends Component {
             if(list.length > 0 && !defaultValue) {
                 this.setState({
                     selected: list[0]
+                });
+            }
+
+            if(list.length > 0 && defaultValue) {
+                this.setState({
+                    selected: defaultValue
                 });
             }
         }
@@ -198,20 +203,6 @@ class RawList extends Component {
         }, () => this.handleBlur())
     }
 
-    handleAutoSelect = (option) => {
-        const {autoSelect} = this.props;
-
-        if(option){
-            autoSelect(option);
-        }else{
-            autoSelect(null);
-        }
-
-        this.setState({
-            selected: (option || 0)
-        }, () => this.handleBlur())
-    }
-
     handleSwitch = (option) => {
         this.setState({
             selected: (option || 0)
@@ -240,7 +231,6 @@ class RawList extends Component {
             selected: (next >= 0 && next <= dropdownList.length-1) ?
                 dropdownList[next] : selected
         })
-
     }
 
     navigateToAlphanumeric = (char) => {
@@ -349,17 +339,20 @@ class RawList extends Component {
         const {defaultValue} = this.props;
         const {selected} = this.state;
 
+        const value = defaultValue && defaultValue[Object.keys(defaultValue)[0]]
+
         return (
             <div
                 key={index}
                 className={'input-dropdown-list-option'  +
                     (
+                        selected === 0 ? '' :
                         this.areOptionsEqual(selected, option) ?
-                        ' input-dropdown-list-option-key-on' :
-                        defaultValue === option[Object.keys(option)[0]] ?
-                        ' input-dropdown-list-option-key-on' :
-                        !defaultValue && !selected && index == 1 ?
-                        ' input-dropdown-list-option-key-on':
+                        ' input-dropdown-list-option-key-on ' :
+                        value === option[Object.keys(option)[0]] && !selected ?
+                        ' input-dropdown-list-option-key-on ' :
+                        !value && !selected && index == 1 ?
+                        ' input-dropdown-list-option-key-on ':
                         ''
                     )
                 }
@@ -395,6 +388,9 @@ class RawList extends Component {
         const {
             isOpen
         } = this.state;
+
+        const value = defaultValue &&
+                        defaultValue[Object.keys(defaultValue)[0]];
 
         return (
             <div
@@ -437,8 +433,8 @@ class RawList extends Component {
                             }
                             readOnly
                             tabIndex={-1}
-                            placeholder={defaultValue}
-                            value={lookupList ? defaultValue : (selected ?
+                            placeholder={value}
+                            value={lookupList ? value : (selected ?
                                 selected[Object.keys(selected)[0]] : '')}
                             onChange={this.handleChange}
                             ref={(c) => this.inputSearch = c}
