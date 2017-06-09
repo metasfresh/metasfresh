@@ -71,6 +71,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return new Builder();
 	}
 
+	public static final SqlLookupDescriptor cast(final LookupDescriptor descriptor)
+	{
+		return (SqlLookupDescriptor)descriptor;
+	}
+
 	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
