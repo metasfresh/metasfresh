@@ -91,7 +91,7 @@ public class SqlViewFactory implements IViewFactory
 
 		return documentDescriptorFactory.getDocumentDescriptor(windowId)
 				.getViewLayout(viewDataType)
-				.withFiltersAndTreeSupport(filters, hasTreeSupport, false/* treeExpanded */);
+				.withFiltersAndTreeSupport(filters, hasTreeSupport, true/* treeCollapsible */, ViewLayout.TreeExpandedDepth_AllCollapsed);
 	}
 
 	@Override

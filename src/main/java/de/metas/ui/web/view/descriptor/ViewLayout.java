@@ -68,10 +68,15 @@ public class ViewLayout implements ETagAware
 	private final String idFieldName;
 
 	private final boolean hasAttributesSupport;
-	private final boolean hasTreeSupport;
 	private final boolean hasIncludedViewSupport;
-	private final boolean treeExpanded;
 	private final String allowNewCaption;
+
+	private final boolean hasTreeSupport;
+	private final boolean treeCollapsible;
+	private final int treeExpandedDepth;
+	public static final int TreeExpandedDepth_AllCollapsed = 0;
+	public static final int TreeExpandedDepth_ExpandedFirstLevel = 1;
+	public static final int TreeExpandedDepth_AllExpanded = 100;
 
 	// ETag support
 	private static final AtomicInteger nextETagVersionSupplier = new AtomicInteger(1);
@@ -94,10 +99,11 @@ public class ViewLayout implements ETagAware
 		idFieldName = builder.getIdFieldName();
 
 		hasAttributesSupport = builder.hasAttributesSupport;
-		
+
 		hasTreeSupport = builder.hasTreeSupport;
-		treeExpanded = builder.treeExpanded;
-		
+		treeCollapsible = builder.treeCollapsible;
+		treeExpandedDepth = builder.treeExpandedDepth;
+
 		hasIncludedViewSupport = builder.hasIncludedViewSupport;
 		allowNewCaption = null;
 
@@ -105,7 +111,10 @@ public class ViewLayout implements ETagAware
 	}
 
 	/** copy and override constructor */
-	private ViewLayout(final ViewLayout from, final ImmutableList<DocumentFilterDescriptor> filters, final String allowNewCaption, final boolean hasTreeSupport, final boolean treeExpanded)
+	private ViewLayout(final ViewLayout from,
+			final ImmutableList<DocumentFilterDescriptor> filters,
+			final String allowNewCaption,
+			final boolean hasTreeSupport, final boolean treeCollapsible, final int treeExpandedDepth)
 	{
 		super();
 		windowId = from.windowId;
@@ -123,7 +132,8 @@ public class ViewLayout implements ETagAware
 
 		hasAttributesSupport = from.hasAttributesSupport;
 		this.hasTreeSupport = hasTreeSupport;
-		this.treeExpanded = treeExpanded; 
+		this.treeCollapsible = treeCollapsible;
+		this.treeExpandedDepth = treeExpandedDepth;
 		hasIncludedViewSupport = from.hasIncludedViewSupport;
 		this.allowNewCaption = allowNewCaption;
 
@@ -184,18 +194,27 @@ public class ViewLayout implements ETagAware
 		return filters;
 	}
 
-	public ViewLayout withFiltersAndTreeSupport(final Collection<DocumentFilterDescriptor> filtersToSet, final boolean hasTreeSupportToSet, final Boolean treeExpanded)
+	public ViewLayout withFiltersAndTreeSupport(final Collection<DocumentFilterDescriptor> filtersToSet,
+			final boolean hasTreeSupportToSet, final Boolean treeCollapsibleToSet, final Integer treeExpandedDepthToSet)
 	{
 		final ImmutableList<DocumentFilterDescriptor> filtersToSetEffective = filtersToSet != null ? ImmutableList.copyOf(filtersToSet) : ImmutableList.of();
-		final boolean treeExpandedEffective = treeExpanded != null ? treeExpanded.booleanValue() : this.treeExpanded;
+		final boolean treeCollapsibleEffective = treeCollapsibleToSet != null ? treeCollapsibleToSet.booleanValue() : treeCollapsible;
+		final int treeExpandedDepthEffective = treeExpandedDepthToSet != null ? treeExpandedDepthToSet.intValue() : treeExpandedDepth;
+
+		// If there will be no change then return this
 		if (Objects.equals(filters, filtersToSetEffective)
-				&& this.hasTreeSupport == hasTreeSupportToSet
-				&& this.treeExpanded == treeExpandedEffective)
+				&& hasTreeSupport == hasTreeSupportToSet
+				&& treeCollapsible == treeCollapsibleEffective
+				&& treeExpandedDepth == treeExpandedDepthEffective)
 		{
 			return this;
 		}
 
-		return new ViewLayout(this, filtersToSetEffective, allowNewCaption, hasTreeSupportToSet, treeExpandedEffective);
+		// Create a copy of this layout and override what was required
+		return new ViewLayout(this,
+				filtersToSetEffective,
+				allowNewCaption,
+				hasTreeSupportToSet, treeCollapsibleEffective, treeExpandedDepthEffective);
 	}
 
 	public ViewLayout withAllowNewRecordIfPresent(final Optional<String> allowNewCaption)
@@ -205,13 +224,16 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		final String allowNewCaptionToSet = allowNewCaption.get();
-		if (Objects.equals(this.allowNewCaption, allowNewCaptionToSet))
+		final String allowNewCaptionEffective = allowNewCaption.get();
+		if (Objects.equals(this.allowNewCaption, allowNewCaptionEffective))
 		{
 			return this;
 		}
 
-		return new ViewLayout(this, filters, allowNewCaptionToSet, hasTreeSupport, treeExpanded);
+		return new ViewLayout(this,
+				filters,
+				allowNewCaptionEffective,
+				hasTreeSupport, treeCollapsible, treeExpandedDepth);
 	}
 
 	public List<DocumentLayoutElementDescriptor> getElements()
@@ -238,10 +260,15 @@ public class ViewLayout implements ETagAware
 	{
 		return hasTreeSupport;
 	}
-	
-	public boolean isTreeExpanded()
+
+	public boolean isTreeCollapsible()
 	{
-		return treeExpanded;
+		return treeCollapsible;
+	}
+
+	public int getTreeExpandedDepth()
+	{
+		return treeExpandedDepth;
 	}
 
 	public boolean isIncludedViewSupport()
@@ -280,9 +307,11 @@ public class ViewLayout implements ETagAware
 		private Collection<DocumentFilterDescriptor> filters = null;
 
 		private boolean hasAttributesSupport = false;
-		private boolean hasTreeSupport = false;
-		private boolean treeExpanded = true;
 		private boolean hasIncludedViewSupport = false;
+
+		private boolean hasTreeSupport = false;
+		private boolean treeCollapsible = false;
+		private int treeExpandedDepth = TreeExpandedDepth_AllExpanded;
 
 		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
 
@@ -428,22 +457,29 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public Builder setHasTreeSupport(final boolean hasTreeSupport)
-		{
-			this.hasTreeSupport = hasTreeSupport;
-			return this;
-		}
-		
-		public Builder setTreeExpanded(boolean treeExpanded)
-		{
-			this.treeExpanded = treeExpanded;
-			return this;
-		}
-
 		public Builder setHasIncludedViewSupport(final boolean hasIncludedViewSupport)
 		{
 			this.hasIncludedViewSupport = hasIncludedViewSupport;
 			return this;
 		}
+
+		public Builder setHasTreeSupport(final boolean hasTreeSupport)
+		{
+			this.hasTreeSupport = hasTreeSupport;
+			return this;
+		}
+
+		public Builder setTreeCollapsible(final boolean treeCollapsible)
+		{
+			this.treeCollapsible = treeCollapsible;
+			return this;
+		}
+
+		public Builder setTreeExpandedDepth(final int treeExpandedDepth)
+		{
+			this.treeExpandedDepth = treeExpandedDepth;
+			return this;
+		}
+
 	}
 }
