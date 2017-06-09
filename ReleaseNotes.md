@@ -41,8 +41,11 @@ Here come the actual release notes:
   * [#1239](https://github.com/metasfresh/metasfresh/issues/1239) Barcode on Bestellkontrolle report
     * The Sales Order Control Report now has an included Barcode with Code39. Ist allows the users in Manufacturing to scan the control report and the Manufacturign Order is automatically opened, ready for action issue and receipt.
   * [#1327](https://github.com/metasfresh/metasfresh/issues/1327) Do not display Destroyed HUs in Korrektur panel
+    * Refining the base Filtering of Handling Units in WebUI Handlign Unit Editot (here Correction Panel in material Receipt), now not showing destroyed Handling Units anymore.
   * [#1334](https://github.com/metasfresh/metasfresh/issues/1334) Display created/ createdby in BusinessPartner contracts window
+    * New Fields Created, CreatedBy now added to the Business Partner contracts window.
   * [#1518](https://github.com/metasfresh/metasfresh/issues/1518) Show currency from pricelist in pricelist / pricelist comparison Jasper
+    * Introduces the Currency infomration to the Pricelist comparinson report.
   * [#1564](https://github.com/metasfresh/metasfresh/issues/1564) New Window for Packing Material in WebUI
     * New Window that allows to maintain Packing Material in WebUI.
   * [#1599](https://github.com/metasfresh/metasfresh/issues/1599) Import full menu from w101
