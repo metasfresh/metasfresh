@@ -178,21 +178,6 @@ UPDATE AD_TreeNodeMM SET Parent_ID=218, SeqNo=11, Updated=now(), UpdatedBy=100 W
 UPDATE AD_TreeNodeMM SET Parent_ID=218, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540691 AND AD_Tree_ID=10
 ;
 
--- 2017-06-09T13:55:21.887
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO WEBUI_Board_CardField (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,WEBUI_Board_CardField_ID,WEBUI_Board_ID) VALUES (0,2181,0,TO_TIMESTAMP('2017-06-09 13:55:21','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-06-09 13:55:21','YYYY-MM-DD HH24:MI:SS'),100,540000,1000000)
-;
-
--- 2017-06-09T13:55:29.798
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO WEBUI_Board_CardField (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,WEBUI_Board_CardField_ID,WEBUI_Board_ID) VALUES (0,2762,0,TO_TIMESTAMP('2017-06-09 13:55:29','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-06-09 13:55:29','YYYY-MM-DD HH24:MI:SS'),100,540001,1000000)
-;
-
--- 2017-06-09T13:55:35.369
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO WEBUI_Board_CardField (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,WEBUI_Board_CardField_ID,WEBUI_Board_ID) VALUES (0,2201,0,TO_TIMESTAMP('2017-06-09 13:55:35','YYYY-MM-DD HH24:MI:SS'),100,'Y',30,TO_TIMESTAMP('2017-06-09 13:55:35','YYYY-MM-DD HH24:MI:SS'),100,540002,1000000)
-;
-
 -- 2017-06-09T18:13:46.398
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,CacheInvalidateParent,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,556920,566,0,11,540826,'N','N','SeqNo',TO_TIMESTAMP('2017-06-09 18:13:46','YYYY-MM-DD HH24:MI:SS'),100,'N','Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst','de.metas.ui.web',10,'"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','Y','N','N','Y','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Reihenfolge',0,TO_TIMESTAMP('2017-06-09 18:13:46','YYYY-MM-DD HH24:MI:SS'),100,0)
