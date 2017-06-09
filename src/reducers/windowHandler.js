@@ -34,7 +34,8 @@ const initialState = {
         saveStatus: {},
         validStatus: {},
         includedTabsInfo: {},
-        docId: undefined
+        docId: undefined,
+        websocket: null
     },
     indicator: 'saved',
     latestNewDocument: null,
@@ -108,7 +109,8 @@ export default function windowHandler(state = initialState, action) {
                     rowData: {},
                     saveStatus: action.saveStatus,
                     validStatus: action.validStatus,
-                    includedTabsInfo: action.includedTabsInfo
+                    includedTabsInfo: action.includedTabsInfo,
+                    websocket: action.websocket
                 })
             });
 
