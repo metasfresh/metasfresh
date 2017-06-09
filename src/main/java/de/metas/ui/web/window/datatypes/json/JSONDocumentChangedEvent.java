@@ -70,4 +70,14 @@ public class JSONDocumentChangedEvent
 	{
 		return DisplayType.toBoolean(value, defaultValue);
 	}
+	
+	public int getValueAsInteger(final int defaultValueIfNull)
+	{
+		if(value == null)
+		{
+			return defaultValueIfNull;
+		}
+		return Integer.parseInt(value.toString());
+	}
+
 }
