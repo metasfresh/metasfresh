@@ -15,8 +15,9 @@ import NotificationHandler
     from '../components/notifications/NotificationHandler';
 
 import {
-    noConnection
-} from '../actions/WindowActions'
+    noConnection,
+    indicatorState
+} from '../actions/WindowActions';
 
 import {
     addNotification,
@@ -45,7 +46,15 @@ export default class App extends Component {
             languageSuccess(cachedLang);
         }
 
+        // axios.interceptors.request.use(config => {
+        //     store.dispatch(indicatorState('pending'));
+        //     return config;
+        // }, error => {
+        //     return Promise.reject(error);
+        // });
+
         axios.interceptors.response.use(function (response) {
+            // store.dispatch(indicatorState('saved'));
             return response;
         }, function (error) {
             if(!error.response){
