@@ -27,6 +27,10 @@ Here come the actual release notes:
   * [#1754](https://github.com/metasfresh/metasfresh/issues/1754) New Window for Transport Disposition in WebUI
     * Adding 2 new Windows to WebUI - Transport Disposition and Transport Shipment - allowing the user to find out which shipments have predefined Tour Deliverydays allocated and which have to be joined to a Shipper Transportation manually.
 
+* metasfresh-webui-api
+  * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
+    * Implementing the metasfresh API for the generic Board configuration functionality.
+
 ## Fixes
 * metasfresh-backend
   * [#1441](https://github.com/metasfresh/metasfresh/issues/1441) move subproject de.metas.endcustomer.mf15.ait to metasfresh-dist repo
