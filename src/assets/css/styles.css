@@ -434,7 +434,12 @@ body {
 
 .document-list-included {
     flex: .7;
-    margin-left: .1rem;
+    margin-left: 3px;
+}
+
+.document-list-has-included {
+    padding-right: 3px;
+    border-right: 2px solid $brand-border-color;
 }
 
 .document-list-header {
@@ -954,7 +959,7 @@ td.pulse-off input {
     background-color: #fff;
     border-radius: 3px;
     border: 1px solid $brand-border-color;
-    margin-left: .5rem;
+    margin-left: 3px;
     
     overflow: auto;
     overflow-x: hidden;
@@ -1205,4 +1210,9 @@ td.pulse-off input {
 .user-dropdown-item:not(.user-dropdown-header-item):focus {
     background-color: $brand-color-primary;
     color: #fff;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: .5;
 }

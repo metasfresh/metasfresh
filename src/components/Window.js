@@ -46,7 +46,7 @@ class Window extends Component {
             return;
         }
 
-        const dataId = data.ID.value;
+        const dataId = data.ID && data.ID.value;
 
         return(
             <Tabs
