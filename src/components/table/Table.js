@@ -766,17 +766,15 @@ class Table extends Component {
                 </div>
 
                 {page && pageLength &&
-                    <div className="row">
-                        <div className="col-xs-12">
-                            <TablePagination
-                                {...{handleChangePage, pageLength, size,
-                                    selected, page, orderBy, queryLimitHit,
-                                    disablePaginationShortcuts}}
-                                handleSelectAll={this.selectAll}
-                                handleSelectRange={this.selectRangeProduct}
-                                deselect={this.deselectAllProducts}
-                            />
-                        </div>
+                    <div>
+                        <TablePagination
+                            {...{handleChangePage, pageLength, size,
+                                selected, page, orderBy, queryLimitHit,
+                                disablePaginationShortcuts}}
+                            handleSelectAll={this.selectAll}
+                            handleSelectRange={this.selectRangeProduct}
+                            deselect={this.deselectAllProducts}
+                        />
                     </div>
                 }
                 {promptOpen &&
