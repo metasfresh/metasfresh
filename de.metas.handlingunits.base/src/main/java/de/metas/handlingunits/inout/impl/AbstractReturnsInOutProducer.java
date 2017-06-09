@@ -67,6 +67,8 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private Date _movementDate = null;
 	private boolean _complete = true;
 
+	private I_M_InOut _manualReturnInOut = null;
+
 	/** #643 The order on based on which the empties inout is created (if it was selected) */
 	private I_C_Order _order = null;
 
@@ -128,7 +130,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			}
 
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
-			
+
 			afterInOutProcessed(inout);
 
 			return inout;
@@ -143,7 +145,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 			return inout;
 		}
 	}
-	
+
 	protected void afterInOutProcessed(final I_M_InOut inout)
 	{
 		// nothing at this level
@@ -184,6 +186,12 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 
 	protected I_M_InOut createInOutHeader()
 	{
+		// #1306: If the inout was already manually created ( customer return case)  return it as it is, do not create a new document/
+		if (_manualReturnInOut != null)
+		{
+			return _manualReturnInOut;
+		}
+		
 		final IContextAware contextProvider = getContextProvider();
 
 		final I_M_InOut emptiesInOut = InterfaceWrapperHelper.newInstance(I_M_InOut.class, contextProvider);
@@ -257,6 +265,14 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		assertConfigurable();
 
 		_movementType = movementType;
+		return this;
+	}
+
+	public IReturnsInOutProducer setManualReturnInOut(final I_M_InOut manualReturnInOut)
+	{
+		assertConfigurable();
+		_manualReturnInOut = manualReturnInOut;
+
 		return this;
 	}
 
