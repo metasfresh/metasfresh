@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -26,8 +28,10 @@ import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Reads all Messages and stores them in a HashMap
@@ -80,14 +84,7 @@ public final class Msg
 	{
 		final String adLanguageToUse = notNullOrBaseLanguage(adLanguage);
 
-		return adLanguage2messages.get(adLanguageToUse, new Callable<CCache<String, Message>>()
-		{
-			@Override
-			public CCache<String, Message> call() throws Exception
-			{
-				return retrieveMessagesCache(adLanguageToUse);
-			}
-		});
+		return adLanguage2messages.getOrLoad(adLanguageToUse, () -> retrieveMessagesCache(adLanguageToUse));
 	}
 
 	/** @return given adLanguage if not null or base language */
@@ -149,7 +146,7 @@ public final class Msg
 				final String adMessage = rs.getString(1);
 				final String msgText = rs.getString(2);
 				final String msgTip = rs.getString(3);
-				msg.put(adMessage, Message.ofTextAndTip(msgText, msgTip));
+				msg.put(adMessage, Message.ofTextAndTip(adMessage, msgText, msgTip));
 			}
 		}
 		catch (final SQLException e)
@@ -288,6 +285,18 @@ public final class Msg
 		}
 		return messages.get(text);
 	}   // lookup
+
+	private Stream<Message> lookupForPrefix(@NonNull final String adLanguage, @NonNull final String prefix)
+	{
+		final CCache<String, Message> messages = getMessagesForLanguage(adLanguage);
+		if (messages == null)
+		{
+			return Stream.empty();
+		}
+
+		return messages.values().stream()
+				.filter(message -> message.getAD_Message().startsWith(prefix));
+	}
 
 	/**************************************************************************
 	 * Get translated text for AD_Message
@@ -445,6 +454,23 @@ public final class Msg
 		}
 		return retStr;
 	}	// getMsg
+
+	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
+	{
+		final Function<Message, String> keyFunction;
+		if (removePrefix)
+		{
+			final int beginIndex = prefix.length();
+			keyFunction = message -> message.getAD_Message().substring(beginIndex);
+		}
+		else
+		{
+			keyFunction = Message::getAD_Message;
+		}
+		
+		return get().lookupForPrefix(adLanguage, prefix)
+				.collect(ImmutableMap.toImmutableMap(keyFunction, Message::getMsgText));
+	}
 
 	/**************************************************************************
 	 * Get Amount in Words
@@ -835,9 +861,9 @@ public final class Msg
 		public static final Message EMPTY = ofMissingADMessage("");
 
 		/** @return instance for given message text and tip */
-		public static final Message ofTextAndTip(final String msgText, final String msgTip)
+		public static final Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
 		{
-			return new Message(msgText, msgTip);
+			return new Message(adMessage, msgText, msgTip);
 		}
 
 		/** @return instance of given missing adMessage */
@@ -845,16 +871,18 @@ public final class Msg
 		{
 			final String msgText = adMessage;
 			final String msgTip = null; // no tip
-			return new Message(msgText, msgTip);
+			return new Message(adMessage, msgText, msgTip);
 		}
 
+		private final String adMessage;
 		private final String msgText;
 		private final String msgTip;
 		private final String msgTextAndTip;
 
-		private Message(final String msgText, final String msgTip)
+		private Message(@NonNull final String adMessage, final String msgText, final String msgTip)
 		{
 			super();
+			this.adMessage = adMessage;
 			this.msgText = msgText == null ? "" : msgText;
 			this.msgTip = msgTip == null ? "" : msgTip;
 
@@ -871,9 +899,15 @@ public final class Msg
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
+					.add("adMessage", adMessage)
 					.add("msgText", msgText)
 					.add("msgTip", msgTip)
 					.toString();
+		}
+
+		public String getAD_Message()
+		{
+			return adMessage;
 		}
 
 		public String getMsgText()
