@@ -110,14 +110,12 @@ class Header extends Component {
     }
 
     handleScroll = (event) => {
-        const target = event.target || event.srcElement;
-        let scrollTop = target.body.scrollTop;
+        const target = event.srcElement;
+        let scrollTop = target && target.body.scrollTop;
 
-
-        //document.documentElement.scrollTop - scroll top on firefox
-
-        console.log('scrollTop');
-        console.log(scrollTop);
+        if(!scrollTop){
+            scrollTop = document.documentElement.scrollTop;
+        }
 
         if(scrollTop > 0) {
             this.setState({
