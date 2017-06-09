@@ -682,6 +682,9 @@ public final class SqlViewSelectionQueryBuilder
 		return TypedSqlQueryFilter.of(sql, sqlParams);
 	}
 
+	/**
+	 * SQL Parameters required: 1=UUID
+	 */
 	public static IStringExpression buildSqlSelect(
 			final String sqlTableName,
 			final String sqlTableAlias,
@@ -744,6 +747,8 @@ public final class SqlViewSelectionQueryBuilder
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
+				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
+				.append("\n   WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
 				.append("\n ) " + sqlTableAlias); // FROM
 
 		return sql.build().caching();
@@ -827,6 +832,9 @@ public final class SqlViewSelectionQueryBuilder
 				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on (sl.UUID=sel.UUID and sl.Record_ID=sel.Record_ID)")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
 				//
+				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
+				.append("\n   WHERE sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=?")
+				//
 				.append("\n   GROUP BY ")
 				.append("\n   sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line)
 				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID)
@@ -880,6 +888,8 @@ public final class SqlViewSelectionQueryBuilder
 				.append("\n , sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
 				.append("\n   FROM " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
+				// Filter by UUID. Keep this closer to the source table, see https://github.com/metasfresh/metasfresh-webui-api/issues/437
+				.append("\n   WHERE sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=?")
 				.append("\n ) " + sqlTableAlias); // FROM
 
 		return sql.build().caching();
