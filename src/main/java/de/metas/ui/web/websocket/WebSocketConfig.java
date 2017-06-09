@@ -121,6 +121,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 				TOPIC_Notifications,
 				TOPIC_View,
 				TOPIC_Document,
+				TOPIC_Board,
 				TOPIC_Devices);
 
 		// use the /app prefix for others

@@ -29,6 +29,7 @@ import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Repository;
@@ -40,13 +41,16 @@ import com.google.common.collect.ImmutableList;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_WEBUI_Board;
 import de.metas.ui.web.base.model.I_WEBUI_Board_CardField;
 import de.metas.ui.web.base.model.I_WEBUI_Board_Lane;
 import de.metas.ui.web.base.model.I_WEBUI_Board_RecordAssignment;
 import de.metas.ui.web.board.BoardCardFieldDescriptor.BoardFieldLoader;
 import de.metas.ui.web.board.BoardDescriptor.BoardDescriptorBuilder;
-import de.metas.ui.web.board.json.JSONBoardCardChangedEvent;
+import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList;
+import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList.JSONBoardChangedEventsListBuilder;
+import de.metas.ui.web.board.json.events.JSONBoardLaneChangedEvent;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -93,6 +97,8 @@ import lombok.ToString;
 @Repository
 public class BoardDescriptorRepository
 {
+	private static final transient Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
+
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptors;
 
@@ -102,6 +108,18 @@ public class BoardDescriptorRepository
 	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> newCache(I_WEBUI_Board.Table_Name + "#BoardDescriptor", 50, 0)
 			.addResetForTableName(I_WEBUI_Board_Lane.Table_Name)
 			.addResetForTableName(I_WEBUI_Board_CardField.Table_Name);
+
+	private void sendEvents(final BoardDescriptor board, final JSONBoardChangedEventsList events)
+	{
+		if (events.isEmpty())
+		{
+			return;
+		}
+
+		final String websocketEndpoint = board.getWebsocketEndpoint();
+		websocketMessagingTemplate.convertAndSend(websocketEndpoint, events);
+		logger.trace("Notified WS {}: {}", websocketEndpoint, events);
+	}
 
 	public BoardDescriptor getBoardDescriptor(final int boardId)
 	{
@@ -478,10 +496,10 @@ public class BoardDescriptorRepository
 				.endOrderBy()
 				.create()
 				.listDistinct(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, Integer.class);
-		return new LaneCardsSequence(cardIds);
+		return new LaneCardsSequence(laneId, cardIds);
 	}
 
-	private final void updateCardsOrder(final int boardId, final int laneId, final List<Integer> cardIds, final List<Integer> previousCardIds)
+	private final void updateCardsOrder(final int boardId, final int laneId, final List<Integer> cardIds)
 	{
 		final String sql = "UPDATE " + I_WEBUI_Board_RecordAssignment.Table_Name
 				+ " SET " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_SeqNo + "=?"
@@ -494,11 +512,6 @@ public class BoardDescriptorRepository
 			for (int newSeqNo = 0; newSeqNo < cardIds.size(); newSeqNo++)
 			{
 				final int cardId = cardIds.get(newSeqNo);
-//				final int oldSeqNo = previousCardIds != null ? previousCardIds.indexOf(cardId) : -1;
-//				if (oldSeqNo >= 0 && oldSeqNo == newSeqNo)
-//				{
-//					continue;
-//				}
 
 				if (pstmt == null)
 				{
@@ -525,14 +538,16 @@ public class BoardDescriptorRepository
 		}
 	}
 
-	private final void changeCardsOrder(final int boardId, final int laneId, final Consumer<LaneCardsSequence> reorderCards)
+	private final LaneCardsSequence changeCardsOrder(final int boardId, final int laneId, final Consumer<LaneCardsSequence> reorderCards)
 	{
 		final LaneCardsSequence orderedCardIdsOld = retrieveCardIdsOrdered(boardId, laneId);
 		final LaneCardsSequence orderedCardIdsNew = orderedCardIdsOld.copy();
 
 		reorderCards.accept(orderedCardIdsNew);
 
-		updateCardsOrder(boardId, laneId, orderedCardIdsNew.getCardIds(), orderedCardIdsOld.getCardIds());
+		updateCardsOrder(boardId, laneId, orderedCardIdsNew.getCardIds());
+
+		return orderedCardIdsNew;
 	}
 
 	public BoardCard addCardForDocumentId(final int boardId, final int laneId, @NonNull final DocumentId documentId, final int position)
@@ -541,6 +556,8 @@ public class BoardDescriptorRepository
 		board.assertLaneIdExists(laneId);
 
 		final int cardId = documentId.toInt();
+
+		final JSONBoardChangedEventsListBuilder eventsCollector = JSONBoardChangedEventsList.builder();
 
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
 			final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
@@ -551,12 +568,13 @@ public class BoardDescriptorRepository
 			assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
 			InterfaceWrapperHelper.save(assignment);
 
-			changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardIdAtPosition(cardId, position));
+			final LaneCardsSequence orderedCardIds = changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardIdAtPosition(cardId, position));
+			eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, laneId, orderedCardIds.getCardIds()));
 		});
 
 		final BoardCard card = getCard(boardId, cardId);
 
-		websocketMessagingTemplate.convertAndSend(board.getWebsocketEndpoint(), JSONBoardCardChangedEvent.cardAdded(boardId, cardId));
+		sendEvents(board, eventsCollector.build());
 		return card;
 	}
 
@@ -564,7 +582,9 @@ public class BoardDescriptorRepository
 	{
 		final BoardDescriptor board = getBoardDescriptor(boardId);
 
-		final boolean deleted = Services.get(ITrxManager.class).call(ITrx.TRXNAME_ThreadInherited, () -> {
+		final JSONBoardChangedEventsListBuilder eventsCollector = JSONBoardChangedEventsList.builder();
+
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
 			final int laneId = getLaneIdForCardId(boardId, cardId);
 
 			final int deletedCount = Services.get(IQueryBL.class)
@@ -576,35 +596,38 @@ public class BoardDescriptorRepository
 
 			if (deletedCount > 0)
 			{
-				changeCardsOrder(boardId, laneId, cardIds -> cardIds.removeCardId(cardId));
+				final LaneCardsSequence orderedCardIds = changeCardsOrder(boardId, laneId, cardIds -> cardIds.removeCardId(cardId));
+				eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, laneId, orderedCardIds.getCardIds()));
 			}
-
-			return deletedCount > 0;
 		});
 
-		if (deleted)
-		{
-			websocketMessagingTemplate.convertAndSend(board.getWebsocketEndpoint(), JSONBoardCardChangedEvent.cardRemoved(boardId, cardId));
-		}
+		sendEvents(board, eventsCollector.build());
 	}
 
 	public BoardCard changeCard(final int boardId, final int cardId, final BoardCardChangeRequest request)
 	{
 		final BoardDescriptor board = getBoardDescriptor(boardId);
 
+		final JSONBoardChangedEventsListBuilder eventsCollector = JSONBoardChangedEventsList.builder();
+
 		Services.get(ITrxManager.class)
 				.run(ITrx.TRXNAME_ThreadInherited, () -> {
 					final int oldLaneId = getLaneIdForCardId(boardId, cardId);
 					int laneIdEffective = oldLaneId;
-					
+
 					boolean positionChanged = false;
 
 					if (request.getNewLaneId() > 0 && request.getNewLaneId() != oldLaneId)
 					{
 						final int newLaneId = request.getNewLaneId();
 						changeLane(boardId, cardId, newLaneId); // move card to new lane
-						changeCardsOrder(boardId, oldLaneId, cardIds -> cardIds.removeCardId(cardId)); // update cards order in old lane
-						changeCardsOrder(boardId, newLaneId, cardIds -> cardIds.addCardIdAtPosition(cardId, request.getNewPosition())); // update cards order in new lane
+
+						final LaneCardsSequence oldLane_cardIds = changeCardsOrder(boardId, oldLaneId, cardIds -> cardIds.removeCardId(cardId)); // update cards order in old lane
+						eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, oldLane_cardIds.getLaneId(), oldLane_cardIds.getCardIds()));
+
+						final LaneCardsSequence newLane_cardIds = changeCardsOrder(boardId, newLaneId, cardIds -> cardIds.addCardIdAtPosition(cardId, request.getNewPosition())); // update cards order in new lane
+						eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, newLane_cardIds.getLaneId(), newLane_cardIds.getCardIds()));
+
 						laneIdEffective = newLaneId;
 						positionChanged = true;
 					}
@@ -612,14 +635,16 @@ public class BoardDescriptorRepository
 					if (!positionChanged && request.getNewPosition() >= 0)
 					{
 						final int newPosition = request.getNewPosition();
-						changeCardsOrder(boardId, laneIdEffective, cardIds -> cardIds.addCardIdAtPosition(cardId, newPosition)); // update card's order
+						final LaneCardsSequence laneCardIds = changeCardsOrder(boardId, laneIdEffective, cardIds -> cardIds.addCardIdAtPosition(cardId, newPosition)); // update card's order
+						eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, laneCardIds.getLaneId(), laneCardIds.getCardIds()));
+
 						positionChanged = true;
 					}
 				});
 
 		final BoardCard card = getCard(boardId, cardId);
 
-		websocketMessagingTemplate.convertAndSend(board.getWebsocketEndpoint(), JSONBoardCardChangedEvent.cardChanged(boardId, cardId));
+		sendEvents(board, eventsCollector.build());
 		return card;
 	}
 
@@ -645,18 +670,25 @@ public class BoardDescriptorRepository
 	@ToString
 	private static final class LaneCardsSequence
 	{
+		private final int laneId;
 		private final List<Integer> cardIds;
 
-		public LaneCardsSequence(final List<Integer> cardIds)
+		public LaneCardsSequence(final int laneId, final List<Integer> cardIds)
 		{
+			this.laneId = laneId;
 			this.cardIds = new ArrayList<>(cardIds);
 		}
 
 		public LaneCardsSequence copy()
 		{
-			return new LaneCardsSequence(cardIds);
+			return new LaneCardsSequence(laneId, cardIds);
 		}
-		
+
+		public int getLaneId()
+		{
+			return laneId;
+		}
+
 		private List<Integer> getCardIds()
 		{
 			return cardIds;
