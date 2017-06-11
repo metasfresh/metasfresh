@@ -32,6 +32,10 @@ Here come the actual release notes:
     * Refining the Layout of the Document Type Window, adding missing fields and adjusting the advanced edit layout.
   * [#1769](https://github.com/metasfresh/metasfresh/issues/1769) Window Adjustments for Dashboard Configuration
     * Refining the window Layout of User Dashboard Configuration Window in WebUI.
+  * [#1770](https://github.com/metasfresh/metasfresh/issues/1770) New Window for KPI Widgets in WebUI
+    * Adds the default 2-column Layout to the KPI Widget Configuration Window in WebUI.
+  * [#1773](https://github.com/metasfresh/metasfresh/issues/1773) Add Description Field to User Dashboard
+    * New Description Field in Dashboard Window that allows to add a few notes what the Dashboard Configuration is about.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
