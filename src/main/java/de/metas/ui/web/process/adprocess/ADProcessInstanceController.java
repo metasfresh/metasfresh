@@ -279,6 +279,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				//
 				// Execute the process/report
 				.buildAndPrepareExecution()
+				.onErrorThrowException() // throw exception directly... this will allow the original exception (including exception params) to be sent back to frontend
 				.executeSync();
 		final ProcessExecutionResult processExecutionResult = processExecutor.getResult();
 
