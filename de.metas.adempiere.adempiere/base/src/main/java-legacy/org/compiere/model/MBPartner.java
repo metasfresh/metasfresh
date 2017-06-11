@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.CustomColNames;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
@@ -436,10 +436,9 @@ public class MBPartner extends X_C_BPartner
 	 *            if true users will be requeried
 	 * @return contacts
 	 */
-	public MUser[] getContacts(boolean reload)
+	public List<I_AD_User> getContacts(boolean reload)
 	{
-		final List<I_AD_User> contacts = Services.get(IBPartnerDAO.class).retrieveContacts(this);
-		return LegacyAdapters.convertToPOArray(contacts, MUser.class);
+		return Services.get(IBPartnerDAO.class).retrieveContacts(this);
 	}
 
 	/**
@@ -449,17 +448,17 @@ public class MBPartner extends X_C_BPartner
 	 *            optional user
 	 * @return contact or null
 	 */
-	public MUser getContact(int AD_User_ID)
+	public I_AD_User getContact(int AD_User_ID)
 	{
-		MUser[] users = getContacts(false);
-		if (users.length == 0)
+		List<I_AD_User> users = getContacts(false);
+		if (users.isEmpty())
 			return null;
-		for (int i = 0; AD_User_ID != 0 && i < users.length; i++)
+		for (final I_AD_User user : users)
 		{
-			if (users[i].getAD_User_ID() == AD_User_ID)
-				return users[i];
+			if (user.getAD_User_ID() == AD_User_ID)
+				return user;
 		}
-		return users[0];
+		return users.get(0);
 	} // getContact
 
 	/**
@@ -704,12 +703,9 @@ public class MBPartner extends X_C_BPartner
 	{
 		if (m_primaryAD_User_ID == null)
 		{
-			MUser[] users = getContacts(false);
-			// for (int i = 0; i < users.length; i++)
-			// {
-			// }
-			if (m_primaryAD_User_ID == null && users.length > 0)
-				setPrimaryAD_User_ID(users[0].getAD_User_ID());
+			final List<I_AD_User> users = getContacts(false);
+			if (m_primaryAD_User_ID == null && users.size() > 0)
+				setPrimaryAD_User_ID(users.get(0).getAD_User_ID());
 		}
 		if (m_primaryAD_User_ID == null)
 			return 0;
@@ -855,16 +851,14 @@ public class MBPartner extends X_C_BPartner
 	public static int getDefaultContactId(final int cBPartnerId)
 	{
 
-		for (MUser user : MUser.getOfBPartner(Env.getCtx(), cBPartnerId))
+		for (final I_AD_User user : Services.get(IBPartnerDAO.class).retrieveContacts(Env.getCtx(), cBPartnerId, ITrx.TRXNAME_None))
 		{
-
-			if (Boolean.TRUE.equals(user
-					.get_Value(CustomColNames.AD_USER_ISDEFAULTCONTACT)))
+			if(user.isDefaultContact())
 			{
-				return user.get_ID();
+				return user.getAD_User_ID();
 			}
 		}
-		LogManager.getLogger(MBPartner.class).warn("Every BPartner with associated contacts is expected to have exactly one default contact, but C_BPartner_ID " + cBPartnerId + " doesn't have one.");
+		LogManager.getLogger(MBPartner.class).warn("Every BPartner with associated contacts is expected to have exactly one default contact, but C_BPartner_ID {} doesn't have one.", cBPartnerId);
 		return -1;
 	}
 

@@ -42,6 +42,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.TableAccessLevel;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridField;
@@ -49,7 +50,6 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
@@ -196,7 +196,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 		Timestamp ts = new Timestamp(System.currentTimeMillis());
 		String s = formatter.format(ts);
-		String name = MUser.getNameOfUser(Env.getAD_User_ID(getCtx()));
+		String name = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(getCtx()));
 
 		final String language = Env.getAD_Language(getCtx());
 		String msg = "(" + msgBL.getMsg(language, "CopiedOn", new String[] { s }) + " " + name + ")";

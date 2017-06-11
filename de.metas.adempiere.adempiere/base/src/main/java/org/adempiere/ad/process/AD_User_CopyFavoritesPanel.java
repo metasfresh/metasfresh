@@ -30,9 +30,10 @@ import java.util.List;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_TreeBar;
-import org.compiere.model.MUser;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
@@ -74,7 +75,8 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 		
 		Check.assume(targetUser_ID > 0, "There is no record selected! ");
 
-		Check.assume(InterfaceWrapperHelper.create(MUser.get(getCtx(), targetUser_ID), I_AD_User.class).isSystemUser(), "Selected user is not system user! ");
+		final I_AD_User targetUser = Services.get(IUserDAO.class).retrieveUser(targetUser_ID);
+		Check.assume(targetUser.isSystemUser(), "Selected user is not system user! ");
 
 		final String whereClause = I_AD_TreeBar.COLUMNNAME_AD_User_ID + " = ? ";
 

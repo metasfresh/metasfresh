@@ -26,17 +26,17 @@ package org.adempiere.user.process;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MSysConfig;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public class UserAccountExpireLocks extends JavaProcess
 {
@@ -76,12 +76,9 @@ public class UserAccountExpireLocks extends JavaProcess
 
 			while (rs.next())
 			{
-				final int AD_User_IDToUnlock = rs.getInt(MUser.COLUMNNAME_AD_User_ID);
+				final int AD_User_IDToUnlock = rs.getInt(I_AD_User.COLUMNNAME_AD_User_ID);
 				no = no + unlockUser(accountLockExpire, AD_User_IDToUnlock);
 			}
-			rs.close();
-			pstmt.close();
-			pstmt = null;
 		}
 		catch (Exception e)
 		{
