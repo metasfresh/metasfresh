@@ -40,6 +40,8 @@ Here come the actual release notes:
     * New Description Field in Dashboard Window that allows to add a few notes what the Dashboard Configuration is about.
   * [#1778](https://github.com/metasfresh/metasfresh/issues/1778) New Window/ Tab for KPI Field Translation
     * New Window for KPI Field Translation maintenance.
+  * [#1782](https://github.com/metasfresh/metasfresh/issues/1782) My profile window: take out Password field
+    * Removing the Password Field from my Profile Window.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
