@@ -70,6 +70,7 @@ import org.adempiere.ad.security.asp.IASPFiltersFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
@@ -86,9 +87,9 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.model.GridField;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Tab;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MQuery;
 import org.compiere.model.MTreeNode;
-import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CFrame;
@@ -919,7 +920,7 @@ public class Viewer extends CFrame
 	private void cmd_sendMail()
 	{
 		String to = "";
-		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		String subject = m_reportEngine.getName();
 		String message = "";
 		File attachment = null;

@@ -677,8 +677,6 @@ public final class ALogin extends CDialog
 	 */
 	private void connectionOK()
 	{
-		log.info("");
-		//
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		confirmPanel.getOKButton().setEnabled(false);
 		try
@@ -928,7 +926,7 @@ public final class ALogin extends CDialog
 				return;
 			}
 
-			log.info("role changed: {}", role);
+			log.trace("role changed: {}", role);
 
 			final Set<KeyNamePair> clients = m_login.setRoleAndGetClients(role);
 			clientCombo.setModel(ListComboBoxModel.ofNullable(clients));
@@ -986,7 +984,7 @@ public final class ALogin extends CDialog
 			{
 				return;
 			}
-			log.info("client changed: {}", client);
+			log.trace("client changed: {}", client);
 			
 			showHideDateField();
 			
@@ -1061,7 +1059,7 @@ public final class ALogin extends CDialog
 				return;
 			}
 			
-			log.info("org changed: {}", org);
+			log.trace("org changed: {}", org);
 			
 			final Set<KeyNamePair> warehouses = m_login.getWarehouses(org);
 			warehouseCombo.setModel(ListComboBoxModel.ofNullable(warehouses));

@@ -13,22 +13,19 @@ package org.adempiere.user.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_User;
-
-
 
 public interface IUserBL extends ISingletonService
 {
@@ -43,11 +40,28 @@ public interface IUserBL extends ISingletonService
 	I_AD_User resetPassword(Properties ctx, int adUserId, String passwordResetCode, String newPassword);
 
 	/**
-	 * generates random password
+	 * Change given user's password.
 	 * 
-	 * @return
+	 * @param ctx context, IMPORTANT because will be used to fetch current logged in user credentials
+	 * @param adUserId the AD_User_ID of which the password shall be changed
+	 * @param oldPassword old/current password
+	 * @param newPassword new password
+	 * @param newPasswordRetype new password again
 	 */
-	String generatePassword();
+	void changePassword(final Properties ctx, final int adUserId, final String oldPassword, final String newPassword, final String newPasswordRetype);
+
+	/**
+	 * Generates and sets a new password for given user. The user will be also saved.
+	 * 
+	 * @param user
+	 * @return new password
+	 */
+	String generatedAndSetPassword(I_AD_User user);
+
+	/**
+	 * Asserts given user password is valid according to our security settings.
+	 */
+	void assertValidPassword(String password);
 
 	/**
 	 * Checks if given user has a C_BPartner which is an employee.
@@ -56,7 +70,7 @@ public interface IUserBL extends ISingletonService
 	 * @return true if is employee
 	 */
 	boolean isEmployee(final org.compiere.model.I_AD_User user);
-	
+
 	String buildContactName(final String firstName, final String lastName);
 
 	/**
@@ -74,4 +88,18 @@ public interface IUserBL extends ISingletonService
 	boolean isNotificationNote(I_AD_User user);
 
 	boolean isNotifyUserIncharge(I_AD_User recipient);
+
+	/**
+	 * Is the email valid
+	 * 
+	 * @return return true if email is valid (artificial check)
+	 */
+	boolean isEMailValid(I_AD_User user);
+
+	/**
+	 * Could we send an email from this user
+	 * 
+	 * @return true if EMail Uwer/PW exists
+	 */
+	boolean isCanSendEMail(I_AD_User user);
 }

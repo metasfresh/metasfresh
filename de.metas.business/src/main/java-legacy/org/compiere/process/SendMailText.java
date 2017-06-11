@@ -21,11 +21,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MInterestArea;
 import org.compiere.model.MStore;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
 
@@ -34,8 +36,8 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
 import de.metas.i18n.Msg;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *  Send Mail to Interest Area Subscribers
@@ -54,7 +56,7 @@ public class SendMailText extends JavaProcess
 	/** Client Info				*/
 	private MClient			m_client = null;
 	/**	From					*/
-	private MUser			m_from = null;
+	private I_AD_User		m_from = null;
 	/** Recipient List to prevent duplicate mails	*/
 	private ArrayList<Integer>	m_list = new ArrayList<Integer>();
 
@@ -119,9 +121,7 @@ public class SendMailText extends JavaProcess
 		//
 		if (m_AD_User_ID > 0)
 		{
-			m_from = new MUser (getCtx(), m_AD_User_ID, get_TrxName());
-			if (m_from.getAD_User_ID() == 0)
-				throw new Exception ("No found @AD_User_ID@=" + m_AD_User_ID);
+			m_from = Services.get(IUserDAO.class).retrieveUser(m_AD_User_ID);
 		}
 		log.debug("From " + m_from);
 		long start = System.currentTimeMillis();
@@ -273,7 +273,7 @@ public class SendMailText extends JavaProcess
 			return null;
 		m_list.add(ii);
 		//
-		MUser to = new MUser (getCtx(), AD_User_ID, null);
+		I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
 		mailTextBuilder.setAD_User(AD_User_ID);		//	parse context
 		String message = mailTextBuilder.getFullMailText();
 		//	Unsubscribe
@@ -292,8 +292,8 @@ public class SendMailText extends JavaProcess
 		{
 			log.warn("NOT VALID - " + email);
 			to.setIsActive(false);
-			to.addDescription("Invalid EMail");
-			to.save();
+			addDescription(to, "Invalid EMail");
+			InterfaceWrapperHelper.save(to);
 			return Boolean.FALSE;
 		}
 
@@ -308,5 +308,17 @@ public class SendMailText extends JavaProcess
 		addLog(0, null, null, (OK ? "@OK@" : "@ERROR@") + " - " + to.getEMail());
 		return new Boolean(OK);
 	}	//	sendIndividualMail
+	
+	private static final void addDescription(final I_AD_User user, String description)
+	{
+		if (description == null || description.length() == 0)
+			return;
+		String descr = user.getDescription();
+		if (descr == null || descr.length() == 0)
+			user.setDescription(description);
+		else
+			user.setDescription(descr + " - " + description);
+	}	// addDescription
+
 
 }	//	SendMailText

@@ -200,4 +200,9 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void deletePrivateAccess(int adUserId, int adTableId, int recordId);
 
 	Set<Integer> retrievePrivateAccessRecordIds(int adUserId, int adTableId);
+
+	/**
+	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()} 
+	 */
+	boolean isAdministrator(Properties ctx, int adUserId);
 }

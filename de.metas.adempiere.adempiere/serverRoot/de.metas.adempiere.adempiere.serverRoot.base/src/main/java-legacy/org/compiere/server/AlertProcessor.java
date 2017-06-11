@@ -27,7 +27,9 @@ import java.util.Collection;
 
 import org.adempiere.impexp.ArrayExcelExporter;
 import org.adempiere.user.api.IUserBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
@@ -36,7 +38,6 @@ import org.compiere.model.MAttachment;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.MSysConfig;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -255,12 +256,13 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	private int notifyUsers(Collection<Integer> users, String subject, String message, Collection<File> attachments)
 	{
+		final IUserBL userBL = Services.get(IUserBL.class);
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		
 		int countMail = 0;
 		for (int user_id : users)
 		{
-			final IUserBL userBL = Services.get(IUserBL.class);
-
-			MUser user = MUser.get(getCtx(), user_id);
+			I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), user_id);
 			if (userBL.isNotificationEMail(user)) {
 				if (m_client.sendEMailAttachments (user_id, subject, message, attachments))
 				{

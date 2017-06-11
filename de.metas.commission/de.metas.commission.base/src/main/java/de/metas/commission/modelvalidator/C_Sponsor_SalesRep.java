@@ -68,9 +68,7 @@ public class C_Sponsor_SalesRep
 				defaultContact.setLogin(bp.getValue());
 				defaultContact.setIsSystemUser(true);
 				
-				final String password = Services.get(IUserBL.class).generatePassword();
-				defaultContact.setPassword(password);
-				InterfaceWrapperHelper.save(defaultContact);
+				Services.get(IUserBL.class).generatedAndSetPassword(defaultContact);
 				
 				final Properties ctx = InterfaceWrapperHelper.getCtx(defaultContact);
 				final String trxName = InterfaceWrapperHelper.getTrxName(defaultContact);
