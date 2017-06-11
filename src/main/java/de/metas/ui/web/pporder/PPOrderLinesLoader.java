@@ -8,6 +8,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -26,6 +27,9 @@ import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
@@ -107,6 +111,7 @@ public class PPOrderLinesLoader
 	public PPOrderLinesViewData retrieveData(final int ppOrderId)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), ppOrderId, I_PP_Order.class, ITrx.TRXNAME_None);
+		final ITranslatableString ppOrder_description = extractDescription(ppOrder);
 		final String ppOrder_planningStatus = ppOrder.getPlanningStatus();
 		final boolean readonly = X_PP_Order.PLANNINGSTATUS_Complete.equals(ppOrder_planningStatus);
 
@@ -128,7 +133,26 @@ public class PPOrderLinesLoader
 						.thenComparing(row -> row.getPP_Order_BOMLine_ID())) // BOM lines order
 				.forEach(records::add);
 
-		return new PPOrderLinesViewData(ppOrder_planningStatus, records.build());
+		return new PPOrderLinesViewData(ppOrder_description, ppOrder_planningStatus, records.build());
+	}
+	
+	private static final ITranslatableString extractDescription(final I_PP_Order ppOrder)
+	{
+		final ITranslatableString docTypeStr;
+		final I_C_DocType docType = ppOrder.getC_DocType();
+		if(docType != null)
+		{
+			final IModelTranslationMap docTypeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(docType);
+			docTypeStr = docTypeTrlMap.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
+		}
+		else
+		{
+			docTypeStr = ImmutableTranslatableString.empty();
+		}
+		
+		final ITranslatableString documentNoStr = ImmutableTranslatableString.constant(ppOrder.getDocumentNo());
+		
+		return ITranslatableString.compose(" ", docTypeStr, documentNoStr);
 	}
 
 	private static final String extractPackingInfoString(final I_M_HU_LUTU_Configuration lutuConfig)

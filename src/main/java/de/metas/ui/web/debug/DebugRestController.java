@@ -167,10 +167,12 @@ public class DebugRestController
 	@RequestMapping(value = "/views/list", method = RequestMethod.GET)
 	public List<JSONViewResult> getViewsList()
 	{
+		final String adLanguage = userSession.getAD_Language();
+		
 		return viewsRepo.getViews()
 				.stream()
 				.map(ViewResult::ofView)
-				.map(JSONViewResult::of)
+				.map(view -> JSONViewResult.of(view, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 

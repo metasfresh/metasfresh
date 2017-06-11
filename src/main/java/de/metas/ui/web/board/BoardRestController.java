@@ -172,6 +172,6 @@ public class BoardRestController
 				// TODO: apply board's AD_Val_Rule_ID
 				.build();
 		final IView view = viewsRepo.createView(request);
-		return JSONViewResult.of(ViewResult.ofView(view));
+		return JSONViewResult.of(ViewResult.ofView(view), userSession.getAD_Language());
 	}
 }

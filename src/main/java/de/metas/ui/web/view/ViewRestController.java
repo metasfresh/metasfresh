@@ -131,7 +131,7 @@ public class ViewRestController
 			result = ViewResult.ofView(view);
 		}
 
-		return JSONViewResult.of(result);
+		return JSONViewResult.of(result, userSession.getAD_Language());
 	}
 
 	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
@@ -163,7 +163,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
-		return JSONViewResult.of(ViewResult.ofView(newView));
+		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
 	}
 
 	@DeleteMapping("/{viewId}")
@@ -189,7 +189,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final ViewResult result = viewsRepo.getView(viewId)
 				.getPage(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
-		return JSONViewResult.of(result);
+		return JSONViewResult.of(result, userSession.getAD_Language());
 	}
 
 	@GetMapping("/layout")

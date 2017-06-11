@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -108,6 +109,12 @@ public class PPOrderLinesView implements IView
 				.asiAttributesProvider(asiAttributesProvider)
 				.build()
 				.retrieveData(ppOrderId));
+	}
+
+	@Override
+	public ITranslatableString getDescription()
+	{
+		return getData().getDescription();
 	}
 
 	public String getPlanningStatus()

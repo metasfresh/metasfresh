@@ -21,6 +21,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
@@ -170,6 +172,12 @@ public class DefaultView implements IView
 	public JSONViewDataType getViewType()
 	{
 		return viewType;
+	}
+	
+	@Override
+	public ITranslatableString getDescription()
+	{
+		return ImmutableTranslatableString.empty();
 	}
 	
 	@Override

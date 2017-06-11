@@ -9,6 +9,7 @@ import org.adempiere.util.Check;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
@@ -64,6 +65,7 @@ public final class ViewResult
 	// View info
 	private final ViewId viewId;
 	private final ViewId parentViewId;
+	private final ITranslatableString viewDescription;
 	private final long size;
 	private final int queryLimit;
 	private final boolean queryLimitHit;
@@ -90,6 +92,7 @@ public final class ViewResult
 		super();
 		this.viewId = view.getViewId();
 		this.parentViewId = view.getParentViewId();
+		this.viewDescription = view.getDescription();
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
@@ -111,6 +114,7 @@ public final class ViewResult
 		super();
 		this.viewId = view.getViewId();
 		this.parentViewId = view.getParentViewId();
+		this.viewDescription = view.getDescription();
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
@@ -153,6 +157,16 @@ public final class ViewResult
 	public ViewId getParentViewId()
 	{
 		return parentViewId;
+	}
+	
+	public String getViewDescription(final String adLanguage)
+	{
+		if(viewDescription == null)
+		{
+			return null;
+		}
+		final String viewDescriptionStr = viewDescription.translate(adLanguage);
+		return !Check.isEmpty(viewDescriptionStr, true) ? viewDescriptionStr : null;
 	}
 	
 	public long getSize()

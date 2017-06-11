@@ -9,6 +9,7 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
@@ -44,6 +45,8 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 public interface IView
 {
 	ViewId getViewId();
+
+	ITranslatableString getDescription();
 
 	JSONViewDataType getViewType();
 

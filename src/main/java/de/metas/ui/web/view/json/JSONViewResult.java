@@ -39,9 +39,9 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @SuppressWarnings("serial")
 public final class JSONViewResult implements Serializable
 {
-	public static final JSONViewResult of(final ViewResult result)
+	public static final JSONViewResult of(final ViewResult result, final String adLanguage)
 	{
-		return new JSONViewResult(result);
+		return new JSONViewResult(result, adLanguage);
 	}
 
 	//
@@ -62,6 +62,11 @@ public final class JSONViewResult implements Serializable
 	@JsonProperty(value = "parentViewId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String parentViewId;
+
+	/** View description (e.g. Manufacturing order 12345). See https://github.com/metasfresh/metasfresh-webui-api/issues/433 */
+	@JsonProperty(value = "description")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String description;
 
 	@JsonProperty(value = "size")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -85,7 +90,7 @@ public final class JSONViewResult implements Serializable
 	// * empty => frontend will consider there is a page loaded and it's empty
 	// * null (excluded from JSON) => frontend will consider the page is not loaded, so it won't update the result on it's side
 	// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/330
-	// 
+	//
 	@JsonProperty(value = "result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<JSONViewRow> result;
@@ -97,7 +102,7 @@ public final class JSONViewResult implements Serializable
 	@JsonProperty(value = "pageLength")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer pageLength;
-	
+
 	//
 	// Query limit informations
 	@JsonProperty("queryLimitHit")
@@ -107,20 +112,22 @@ public final class JSONViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer queryLimit;
 
-	public JSONViewResult(final ViewResult viewResult)
+	public JSONViewResult(final ViewResult viewResult, final String adLanguage)
 	{
 		super();
 
 		//
 		// View informations
-		final ViewId viewId = viewResult.getViewId(); 
+		final ViewId viewId = viewResult.getViewId();
 		this.viewId = viewId.getViewId();
 		this.windowId = viewId.getWindowId();
 		type = windowId;
-		
+
 		final ViewId parentViewId = viewResult.getParentViewId();
 		this.parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
-		this.parentViewId = parentViewId == null?null : parentViewId.getViewId();
+		this.parentViewId = parentViewId == null ? null : parentViewId.getViewId();
+
+		this.description = viewResult.getViewDescription(adLanguage);
 
 		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
@@ -144,7 +151,7 @@ public final class JSONViewResult implements Serializable
 			firstRow = null;
 			pageLength = null;
 		}
-		
+
 		//
 		// Query limit informations
 		queryLimit = viewResult.getQueryLimit() > 0 ? viewResult.getQueryLimit() : null;
@@ -158,6 +165,8 @@ public final class JSONViewResult implements Serializable
 			//
 			, @JsonProperty("parentWindowId") final WindowId parentWindowId //
 			, @JsonProperty("parentViewId") final String parentViewId //
+			//
+			, @JsonProperty("description") final String description //
 			//
 			, @JsonProperty("size") final Long size //
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
@@ -183,6 +192,8 @@ public final class JSONViewResult implements Serializable
 		this.parentWindowId = parentWindowId;
 		this.parentViewId = parentViewId;
 		//
+		this.description = description;
+		//
 		this.size = size;
 		this.filters = filters == null ? ImmutableList.of() : filters;
 		this.stickyFilters = stickyFilters == null ? ImmutableList.of() : stickyFilters;
@@ -193,7 +204,7 @@ public final class JSONViewResult implements Serializable
 		this.result = result;
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
-		
+
 		//
 		// Query limit hit
 		this.queryLimit = queryLimit;
