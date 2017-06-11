@@ -13,11 +13,11 @@ package org.adempiere.bpartner.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -99,6 +99,16 @@ public interface IBPartnerBL extends ISingletonService
 	void setAddress(I_C_BPartner_Location bpLocation);
 
 	I_AD_User retrieveShipContact(org.compiere.model.I_C_BPartner bpartner);
+
+	/**
+	 * Creates a draft contact linked to given partner.
+	 * 
+	 * It's up to the caller to set the other fields and then save it or not.
+	 * 
+	 * @param bpartner
+	 * @return draft contact
+	 */
+	I_AD_User createDraftContact(final org.compiere.model.I_C_BPartner bpartner);
 
 	/**
 	 * @param partner the partner to check for. Internally working with {@link de.metas.interfaces.I_C_BPartner}.
