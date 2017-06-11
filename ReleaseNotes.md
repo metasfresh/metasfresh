@@ -28,6 +28,8 @@ Here come the actual release notes:
     * New Window to Filter/ Search for Material Transaction in WebUI. Alowing the user to search for Products, Business Partners, Dates and Transaction Types.
   * [#1754](https://github.com/metasfresh/metasfresh/issues/1754) New Window for Transport Disposition in WebUI
     * Adding 2 new Windows to WebUI - Transport Disposition and Transport Shipment - allowing the user to find out which shipments have predefined Tour Deliverydays allocated and which have to be joined to a Shipper Transportation manually.
+  * [#1757](https://github.com/metasfresh/metasfresh/issues/1757) New Window Shipper Transportation in WebUI
+    * Creates the new Window for Shipper Transportation in WebUI.
   * [#1765](https://github.com/metasfresh/metasfresh/issues/1765) Adjustment of advanced edit in Doctype Window
     * Refining the Layout of the Document Type Window, adding missing fields and adjusting the advanced edit layout.
   * [#1769](https://github.com/metasfresh/metasfresh/issues/1769) Window Adjustments for Dashboard Configuration
