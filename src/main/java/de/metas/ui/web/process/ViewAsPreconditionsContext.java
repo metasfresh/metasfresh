@@ -129,6 +129,12 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		return selectedDocumentIds.getSingleDocumentId();
 	}
+	
+	@Override
+	public int getSingleSelectedRecordId()
+	{
+		return getSingleSelectedDocumentId().toInt();
+	}
 
 	@Override
 	public <T> T getSelectedModel(final Class<T> modelClass)
