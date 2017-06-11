@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Adds the default 2-column Layout to the KPI Widget Configuration Window in WebUI.
   * [#1773](https://github.com/metasfresh/metasfresh/issues/1773) Add Description Field to User Dashboard
     * New Description Field in Dashboard Window that allows to add a few notes what the Dashboard Configuration is about.
+  * [#1778](https://github.com/metasfresh/metasfresh/issues/1778) New Window/ Tab for KPI Field Translation
+    * New Window for KPI Field Translation maintenance.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
