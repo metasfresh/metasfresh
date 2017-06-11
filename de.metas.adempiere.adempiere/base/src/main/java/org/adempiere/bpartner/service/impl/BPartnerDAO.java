@@ -23,7 +23,6 @@ package org.adempiere.bpartner.service.impl;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -264,9 +263,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	public List<org.compiere.model.I_AD_User> retrieveContacts(final int partnerId, final boolean reload, final String trxName)
 	{
 		final MBPartner bPArtner = new MBPartner(Env.getCtx(), partnerId, trxName);
-		final org.compiere.model.I_AD_User[] users = bPArtner.getContacts(reload);
-
-		return Arrays.asList(users);
+		final List<I_AD_User> users = bPArtner.getContacts(reload);
+		return InterfaceWrapperHelper.wrapToImmutableList(users, org.compiere.model.I_AD_User.class);
 	}
 
 	@Override

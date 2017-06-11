@@ -23,13 +23,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
 
@@ -578,10 +582,10 @@ public class MTimeExpense extends X_S_TimeExpense implements DocAction
 			return m_AD_User_ID;
 		if (getC_BPartner_ID() != 0)
 		{
-			MUser[] users = MUser.getOfBPartner(getCtx(), getC_BPartner_ID());
-			if (users.length > 0)
+			final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(getCtx(), getC_BPartner_ID(), ITrx.TRXNAME_None);
+			if (!users.isEmpty())
 			{
-				m_AD_User_ID = users[0].getAD_User_ID();
+				m_AD_User_ID = users.get(0).getAD_User_ID();
 				return m_AD_User_ID;
 			}
 		}

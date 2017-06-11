@@ -49,6 +49,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
@@ -878,9 +879,9 @@ public class MInOut extends X_M_InOut implements DocAction
 			log.error("Has no To Address: {}", bp);
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
-		if (contacts != null && contacts.length > 0)  // get first User
-			setAD_User_ID(contacts[0].getAD_User_ID());
+		List<I_AD_User> contacts = bp.getContacts(false);
+		if (contacts != null && contacts.size() > 0)  // get first User
+			setAD_User_ID(contacts.get(0).getAD_User_ID());
 	} // setBPartner
 
 	/**

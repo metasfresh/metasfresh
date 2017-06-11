@@ -51,6 +51,8 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IAttachmentBL;
+import org.adempiere.user.api.IUserBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -72,7 +74,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MRMA;
 import org.compiere.model.MRequest;
-import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
@@ -189,7 +190,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	{
 		final Object baseObject = editor.getBaseObject();
 		final Map<String, Object> variables = createEditorContext(baseObject);
-		final MUser from = (MUser)variables.get(MADBoilerPlate.VAR_SalesRep);
+		final I_AD_User from = InterfaceWrapperHelper.create(variables.get(MADBoilerPlate.VAR_SalesRep), I_AD_User.class);
 		final String toEmail = (String)variables.get(MADBoilerPlate.VAR_EMail);
 		if (Check.isEmpty(toEmail, true))
 		{
@@ -764,7 +765,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		else
 			attrs.put(VAR_WindowNo, 0);
 
-		MUser salesRep = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
 		{
 			attrs.put(VAR_SalesRep, salesRep);
@@ -772,16 +773,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 
 		int C_BPartner_ID = -1;
-		MUser user = null;
+		I_AD_User user = null;
 		int AD_User_ID = getValueAsInt(object, "AD_User_ID");
 		String email = null;
 		//
 		if (AD_User_ID > 0)
 		{
-			user = MUser.get(ctx, AD_User_ID);
+			user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
 			attrs.put(VAR_AD_User_ID, user.getAD_User_ID());
 			attrs.put(VAR_AD_User, user);
-			if (user.isEMailValid())
+			if(Services.get(IUserBL.class).isEMailValid(user))
 			{
 				email = user.getEMail();
 				attrs.put(VAR_EMail, email);
@@ -798,12 +799,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
 			if (email == null)
 			{
-				final MUser contact = getDefaultContactOrFirstWithValidEMail(bp);
+				final I_AD_User contact = getDefaultContactOrFirstWithValidEMail(bp);
 				if (contact != null)
 				{
 					attrs.put(VAR_AD_User_ID, contact.getAD_User_ID());
 					attrs.put(VAR_AD_User, contact);
-					if (contact.isEMailValid())
+					if(Services.get(IUserBL.class).isEMailValid(contact))
 					{
 						email = contact.getEMail();
 						attrs.put(VAR_EMail, email);
@@ -852,11 +853,13 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return attrs;
 	}
 	
-	private static MUser getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
+	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
 	{
-		MUser firstContact = null;
-		MUser firstValidContact = null;
-		for (final MUser contact : bpartner.getContacts(false))
+		final IUserBL userBL = Services.get(IUserBL.class);
+		
+		I_AD_User firstContact = null;
+		I_AD_User firstValidContact = null;
+		for (final I_AD_User contact : bpartner.getContacts(false))
 		{
 			if(contact.isDefaultContact())
 			{
@@ -867,8 +870,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			{
 				firstContact = contact;
 			}
-			
-			if (contact.isEMailValid())
+
+			if (userBL.isEMailValid(contact))
 			{
 				if(firstValidContact == null)
 				{

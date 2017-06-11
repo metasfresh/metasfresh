@@ -23,6 +23,9 @@ import java.sql.Timestamp;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MChangeRequest;
 import org.compiere.model.MClient;
 import org.compiere.model.MGroup;
@@ -31,7 +34,6 @@ import org.compiere.model.MRequestProcessor;
 import org.compiere.model.MRequestProcessorLog;
 import org.compiere.model.MRequestProcessorRoute;
 import org.compiere.model.MStatus;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -381,12 +383,12 @@ public class RequestProcessor extends AdempiereServer
 	private boolean escalate (MRequest request)
 	{
 		//  Get Supervisor
-		MUser supervisor = request.getSalesRep();	//	self
+		I_AD_User supervisor = request.getSalesRep();	//	self
 		int supervisor_ID = request.getSalesRep().getSupervisor_ID();
 		if (supervisor_ID == 0 && m_model.getSupervisor_ID() != 0)
 			supervisor_ID = m_model.getSupervisor_ID();
 		if (supervisor_ID != 0 && supervisor_ID != request.getAD_User_ID())
-			supervisor = MUser.get(getCtx(), supervisor_ID);
+			supervisor = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), supervisor_ID);
 		
 		//  Escalated: Request {} to {}
 		String subject = Msg.getMsg(m_client.getAD_Language(), "RequestEscalate", 

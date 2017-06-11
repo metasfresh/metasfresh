@@ -53,6 +53,9 @@ public interface IProcessPreconditionsContext
 	 * @return all selected rows's model(s)
 	 */
 	<T> List<T> getSelectedModels(final Class<T> modelClass);
+	
+	/** @return single Record_ID; throws exception otherwise */
+	int getSingleSelectedRecordId();
 
 	/**
 	 * Gets how many rows were selected.

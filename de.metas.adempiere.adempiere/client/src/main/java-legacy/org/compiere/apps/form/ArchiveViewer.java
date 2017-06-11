@@ -28,10 +28,6 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.InputStream;
 import java.sql.Timestamp;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -43,6 +39,7 @@ import org.adempiere.images.Images;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.pdf.viewer.PDFViewerBean;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.grid.ed.VDate;
@@ -50,7 +47,6 @@ import org.compiere.grid.ed.VLookup;
 import org.compiere.grid.ed.VString;
 import org.compiere.grid.ed.VText;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CCheckBox;
 import org.compiere.swing.CComboBox;
@@ -61,6 +57,8 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
+
+import de.metas.i18n.Msg;
 
 /**
  * Arvhive Viewer
@@ -391,7 +389,7 @@ public class ArchiveViewer extends Archive
 		//
 		positionInfo.setText(m_index + 1 + " of " + m_archives.length);
 		I_AD_Archive ar = m_archives[m_index];
-		createdByField.setText(MUser.getNameOfUser(ar.getCreatedBy()));
+		createdByField.setText(Services.get(IUserDAO.class).retrieveUserFullname(ar.getCreatedBy()));
 		createdField.setValue(ar.getCreated());
 		nameField.setText(ar.getName());
 		descriptionField.setText(ar.getDescription());
