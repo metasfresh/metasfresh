@@ -586,56 +586,44 @@ class Table extends Component {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
-
         const {selected, rows} = this.state;
-
-        if(rows){
-            let keys = Object.keys(rows);
-            const item = rows;
-            let ret = [];
-            for(let i=0; i < keys.length; i++) {
-                const key = keys[i];
-                ret.push(
-                    <tbody key={i}>
-                        <TableItem
-                            {...item[key]}
-                            {...{entity, cols, type, mainTable, indentSupported,
-                                selected, docId, tabIndex, readonly}}
-                            key={i}
-                            odd={i & 1}
-                            rowId={item[key][keyProperty]}
-                            tabId={tabid}
-                            onDoubleClick={() => onDoubleClick &&
-                                onDoubleClick(item[key][keyProperty])
-                            }
-                            onMouseDown={(e) =>
-                                this.handleClick(e, item[key][keyProperty])
-                            }
-                            handleRightClick={(e, fieldName) =>
-                                this.handleRightClick(
-                                    e, item[key][keyProperty], fieldName)
-                            }
-                            changeListenOnTrue={() => this.changeListen(true)}
-                            changeListenOnFalse={() => this.changeListen(false)}
-                            newRow={i === keys.length-1 ? newRow : false}
-                            isSelected={
-                                selected.indexOf(item[key][keyProperty]) > -1 ||
-                                selected[0] === 'all'
-                            }
-                            handleSelect={this.selectRangeProduct}
-                            contextType={item[key].type}
-                            notSaved={
-                                item[key].saveStatus &&
-                                !item[key].saveStatus.saved
-                            }
-                            getSizeClass={this.getSizeClass}
-                        />
-                    </tbody>
-                );
-            }
-
-            return ret;
-        }
+        const ret = rows && rows.map((item, i) => (
+            <tbody key={i}>
+                <TableItem
+                    {...item}
+                    {...{entity, cols, type, mainTable, indentSupported,
+                        selected, docId, tabIndex, readonly}}
+                    odd={i & 1}
+                    rowId={item[keyProperty]}
+                    tabId={tabid}
+                    onDoubleClick={() => onDoubleClick &&
+                        onDoubleClick(item[keyProperty])
+                    }
+                    onMouseDown={(e) =>
+                        this.handleClick(e, item[keyProperty])
+                    }
+                    handleRightClick={(e, fieldName) =>
+                        this.handleRightClick(
+                            e, item[keyProperty], fieldName)
+                    }
+                    changeListenOnTrue={() => this.changeListen(true)}
+                    changeListenOnFalse={() => this.changeListen(false)}
+                    newRow={i === rows.length - 1 ? newRow : false}
+                    isSelected={
+                        selected.indexOf(item[keyProperty]) > -1 ||
+                        selected[0] === 'all'
+                    }
+                    handleSelect={this.selectRangeProduct}
+                    contextType={item.type}
+                    notSaved={
+                        item.saveStatus &&
+                        !item.saveStatus.saved
+                    }
+                    getSizeClass={this.getSizeClass}
+                />
+            </tbody>
+        ));
+        return ret;
     }
 
     renderEmptyInfo = (data, tabId) => {
