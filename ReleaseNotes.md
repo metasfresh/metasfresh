@@ -44,10 +44,22 @@ Here come the actual release notes:
     * Removing the Password Field from my Profile Window.
   * [#1794](https://github.com/metasfresh/metasfresh/issues/1794) Advanced Edit: Business Partner Main View and Customer
     * First Prototype of Advanced Edit Screen, here done in Business Partner window Main View and Customer Subtab.
+  * [#1798](https://github.com/metasfresh/metasfresh/issues/1798) Prototype Dashboard for Board frontend development
+    * Adds a prototype Project Board to WebUI menu.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
+    
+* metasfresh-webui-frontend
+  * [#839](https://github.com/metasfresh/metasfresh-webui-frontend/issues/839) Combined Fields/ Lookup adjustment
+    * Nice Improvements to Combined Lookup fields adding a step-by-step workflow when recording data in those fields.
+  * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
+    * Navigation Improvements in Sitemap Screen. Now allowing easy switch between filtered menu treee and search field.
+  * [#862](https://github.com/metasfresh/metasfresh-webui-frontend/issues/862) Modal view: show view description if available
+    * Additional Descriptions to modal Overlay windows. First Implementation of this feature in Manufacturing Window Issue/ Receipt now showing the Document Type and Document No.
+  * [#865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/865) Clickable URL in Fields
+    * New Widget Type for URL Fields that allow the user to open a new browser Tab with the recorded link.
 
 * others
   * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
