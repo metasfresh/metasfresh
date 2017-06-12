@@ -401,6 +401,10 @@ body {
     height: 1rem;
 }
 
+.icon-spaced {
+    margin: 0 .3rem;
+}
+
 @keyframes rotation {
     from {
         transform: rotate(0deg);
@@ -1223,4 +1227,27 @@ td.pulse-off input {
 .disabled {
     pointer-events: none;
     opacity: .5;
+}
+
+.btn-bookmark {
+    padding-right: 1.5rem;
+}
+
+.btn-bookmark:hover .btn-bookmark-icon{
+    color: $brand-font-color-weak;
+}
+
+.btn-bookmark-icon {
+    cursor: pointer;
+    font-size: .9em;
+    color: $brand-icon-off;
+    padding: .3rem .2rem .2rem 0;
+}
+
+.btn-bookmark-icon.active {
+    color: $brand-success-color;
+}
+
+.btn-bookmark:hover .btn-bookmark-icon.active {
+    color: $brand-success-dark-color;
 }

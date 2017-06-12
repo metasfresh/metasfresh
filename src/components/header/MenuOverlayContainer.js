@@ -21,7 +21,8 @@ class MenuOverlayContainer extends Component {
         const {
             children, elementId, caption, type, handleClickOnFolder,
             handleRedirect, handleNewRedirect, handlePath, printChildren, deep,
-            back, handleMenuOverlay, openModal, onKeyDown
+            back, handleMenuOverlay, openModal, showBookmarks, updateData,
+            transparentBookmarks, onKeyDown
         } = this.props;
 
         return (
@@ -45,43 +46,35 @@ class MenuOverlayContainer extends Component {
                 }
                 {type !== 'group' &&
                     <MenuOverlayItem
-                        elementId={elementId}
-                        caption={caption}
-                        type={type}
-                        handleClickOnFolder={handleClickOnFolder}
-                        handleRedirect={handleRedirect}
-                        handleNewRedirect={handleNewRedirect}
-                        handlePath={handlePath}
-                        back={back}
-                        handleMenuOverlay={handleMenuOverlay}
                         printChildren={false}
-                        openModal={openModal}
-                        />
+                        {...{showBookmarks, openModal, handleMenuOverlay,
+                            handlePath, back, handleNewRedirect, handleRedirect,
+                            handleClickOnFolder, type, caption, elementId,
+                            updateData, transparentBookmarks
+                        }}
+                    />
                 }
 
                 {children && children.map((subitem, subindex) =>
                     subitem.children && printChildren ?
                         <MenuOverlayContainer
                             key={subindex}
-                            handleClickOnFolder={handleClickOnFolder}
-                            handleRedirect={handleRedirect}
-                            handleNewRedirect={handleNewRedirect}
                             printChildren={true}
                             deep={true}
-                            openModal={openModal}
                             {...subitem}
+                            {...{showBookmarks, openModal, handleNewRedirect,
+                                handleRedirect, handleClickOnFolder, updateData,
+                                transparentBookmarks
+                            }}
                         /> :
                         <MenuOverlayItem
                             key={subindex}
-                            handleClickOnFolder={handleClickOnFolder}
-                            handleRedirect={handleRedirect}
-                            handleNewRedirect={handleNewRedirect}
-                            handlePath={handlePath}
-                            printChildren={printChildren}
-                            back={back}
-                            handleMenuOverlay={handleMenuOverlay}
-                            openModal={openModal}
                             {...subitem}
+                            {...{showBookmarks, handleMenuOverlay, openModal,
+                                back, printChildren, handlePath, updateData,
+                                handleNewRedirect, handleRedirect,
+                                handleClickOnFolder, transparentBookmarks
+                            }}
                         />
                 )}
             </div>

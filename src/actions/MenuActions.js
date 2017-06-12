@@ -6,7 +6,8 @@ import axios from 'axios';
 export function pathRequest(nodeId) {
     return axios.get(
         config.API_URL +
-        '/menu/path?nodeId=' + nodeId +
+        '/menu/' + nodeId +
+        '/path/' +
         '&inclusive=true'
     );
 }
@@ -14,8 +15,8 @@ export function pathRequest(nodeId) {
 export function nodePathsRequest(nodeId, limit) {
     return axios.get(
         config.API_URL +
-        '/menu/node?nodeId=' + nodeId +
-        '&depth=2' +
+        '/menu/node/' + nodeId +
+        '?depth=2' +
         (limit ? '&childrenLimit=' + limit : '')
     );
 }
@@ -38,11 +39,13 @@ export function queryPathsRequest(query, limit, child) {
     );
 }
 
-export function rootRequest(limit, depth=0) {
+export function rootRequest(limit, depth = 0, onlyFavorites) {
     return axios.get(
         config.API_URL +
         '/menu/root?depth=' + depth +
-        (limit ? '&childrenLimit=' + limit : ''));
+        (limit ? '&childrenLimit=' + limit : '') +
+        (onlyFavorites ? '&favorites=true' : '')
+    );
 }
 
 // END OF REQUESTS
@@ -50,12 +53,19 @@ export function rootRequest(limit, depth=0) {
 export function setBreadcrumb(breadcrumb){
     return {
         type: types.SET_BREADCRUMB,
-        breadcrumb: breadcrumb
+        breadcrumb
+    }
+}
+
+export function updateBreadcrumb(node){
+    return {
+        type: types.UPDATE_BREADCRUMB,
+        node
     }
 }
 
 export function getRootBreadcrumb() {
-    return rootRequest(6, 10).then(root => ({
+    return rootRequest(6, 10, true).then(root => ({
         nodeId: '0', children: root.data.children
     }));
 }

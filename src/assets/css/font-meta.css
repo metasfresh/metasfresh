@@ -206,3 +206,6 @@
 .meta-icon-receipt:before {
   content: '\33';
 }
+.meta-icon-star:before {
+  content: '\34';
+}
