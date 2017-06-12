@@ -424,7 +424,7 @@ class RawWidget extends Component {
                             onMouseUp={() => {this.rawWidget.type = 'password'}}
                             className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
                         >
-                            <i className="meta-icon-edit" />
+                            <i className="meta-icon-show" />
                         </div>}
                     </div>
                 )
