@@ -54,6 +54,8 @@ Here come the actual release notes:
     * API Implementation of the new URL Widget in frontend.
     
 * metasfresh-webui-frontend
+  * [#803](https://github.com/metasfresh/metasfresh-webui-frontend/issues/803) Bookmark a window/process/report and show in Quick Menu
+    * New Fuctionality that allows the user so bookmark favorite menu entries and show these in the navivation action menu.
   * [#839](https://github.com/metasfresh/metasfresh-webui-frontend/issues/839) Combined Fields/ Lookup adjustment
     * Nice Improvements to Combined Lookup fields adding a step-by-step workflow when recording data in those fields.
   * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
