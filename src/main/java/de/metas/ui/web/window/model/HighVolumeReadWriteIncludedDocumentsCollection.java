@@ -68,14 +68,14 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 
 	private final IncludedDocumentsCollectionActions actions;
 	private final ActionsContext actionsContext = new ActionsContext();
-	private LogicExpressionResult parentReadonly = null;
+	private DocumentReadonly parentReadonly = null;
 	private boolean staled = false;
 
 	private HighVolumeReadWriteIncludedDocumentsCollection(@NonNull final Document parentDocument, @NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		this.parentDocument = parentDocument;
-		this.parentDocumentPath = parentDocument.getDocumentPath();
-		this.detailId = entityDescriptor.getDetailId();
+		parentDocumentPath = parentDocument.getDocumentPath();
+		detailId = entityDescriptor.getDetailId();
 		this.entityDescriptor = entityDescriptor;
 
 		_documentsWithChanges = new LinkedHashMap<>();
@@ -162,7 +162,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	public OrderedDocumentsList getDocuments(final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Map<DocumentId, Document> documentsWithChanges = new LinkedHashMap<>(getInnerDocumentsWithChanges());
-		OrderedDocumentsList documents = DocumentQuery.builder(entityDescriptor)
+		final OrderedDocumentsList documents = DocumentQuery.builder(entityDescriptor)
 				.setParentDocument(parentDocument)
 				.setExistingDocumentsSupplier(documentsWithChanges::remove)
 				.setChangesCollector(NullDocumentChangesCollector.instance)
@@ -209,7 +209,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	@Override
 	public void updateStatusFromParent()
 	{
-		setParentReadonlyAndCollect(parentDocument.getReadonlyLogic());
+		setParentReadonlyAndCollect(parentDocument.getReadonly());
 
 		actions.updateAndGetAllowCreateNewDocument(actionsContext);
 		actions.updateAndGetAllowDeleteDocument(actionsContext);
@@ -217,20 +217,22 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 
 	/**
 	 * Sets parent's readonly logic.
-	 * 
+	 *
 	 * If parent readonly status changed then a "collectStaleDetail" will be issued.
 	 * In that case, all documents from here are changed, so it's better invalidate the tab/detail.
-	 * 
+	 *
 	 * @param parentReadonlyNew
 	 */
-	private void setParentReadonlyAndCollect(LogicExpressionResult parentReadonlyNew)
+	private void setParentReadonlyAndCollect(final DocumentReadonly parentReadonlyNew)
 	{
-		final LogicExpressionResult parentReadonlyOld = this.parentReadonly; // might be null
-		this.parentReadonly = parentReadonlyNew;
-		if (!parentReadonlyNew.equalsByValue(parentReadonlyOld)) // NOTE parentReadonlyOld might be null
+		final DocumentReadonly parentReadonlyOld = parentReadonly; // might be null
+		parentReadonly = parentReadonlyNew;
+		if (parentReadonlyOld == null || !parentReadonlyNew.equals(parentReadonlyOld))
 		{
 			parentDocument.getChangesCollector().collectStaleDetailId(parentDocumentPath, detailId);
 		}
+
+		getChangedDocuments().forEach(changedDocument -> changedDocument.setParentReadonly(parentReadonlyNew));
 	}
 
 	@Override

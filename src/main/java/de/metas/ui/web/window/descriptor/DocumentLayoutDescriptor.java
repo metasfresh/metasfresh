@@ -61,7 +61,7 @@ public final class DocumentLayoutDescriptor
 	/** Special element: DocStatus/DocAction */
 	private final DocumentLayoutElementDescriptor docActionElement;
 
-	private final DocumentLayoutHeader singleRowLayout;
+	private final DocumentLayoutSingleRow singleRowLayout;
 	private final ViewLayout gridView;
 	/** Side list layout */
 	private final ViewLayout sideListView;
@@ -128,7 +128,7 @@ public final class DocumentLayoutDescriptor
 		return docActionElement;
 	}
 
-	public DocumentLayoutHeader getSingleRowLayout()
+	public DocumentLayoutSingleRow getSingleRowLayout()
 	{
 		return singleRowLayout;
 	}
@@ -183,7 +183,7 @@ public final class DocumentLayoutDescriptor
 		private DocumentLayoutElementDescriptor documentSummaryElement;
 		private DocumentLayoutElementDescriptor docActionElement;
 
-		private DocumentLayoutHeader.Builder singleRowLayout;
+		private DocumentLayoutSingleRow.Builder singleRowLayout;
 		private ViewLayout.Builder _gridView;
 		private ViewLayout _sideListView;
 
@@ -255,10 +255,8 @@ public final class DocumentLayoutDescriptor
 		{
 			return detailsBuilders
 					.stream()
-					.map(detailBuilder -> detailBuilder
-							.setWindowId(windowId)
-							.build())
-					.filter(detail -> detail.hasElements())
+					.map(detailBuilder -> detailBuilder.build())
+					.filter(detail -> !detail.isEmpty())
 					.collect(GuavaCollectors.toImmutableMapByKey(detail -> detail.getDetailId()));
 		}
 
@@ -298,13 +296,13 @@ public final class DocumentLayoutDescriptor
 			return this;
 		}
 
-		public Builder setSingleRowLayout(DocumentLayoutHeader.Builder singleRowLayout)
+		public Builder setSingleRowLayout(DocumentLayoutSingleRow.Builder singleRowLayout)
 		{
 			this.singleRowLayout = singleRowLayout;
 			return this;
 		}
 
-		private DocumentLayoutHeader.Builder getSingleRowLayout()
+		private DocumentLayoutSingleRow.Builder getSingleRowLayout()
 		{
 			return singleRowLayout;
 		}
@@ -326,7 +324,7 @@ public final class DocumentLayoutDescriptor
 				return this;
 			}
 
-			if (!detailBuilder.hasElements())
+			if (detailBuilder.isEmpty())
 			{
 				logger.trace("Skip adding detail tab to layout because it does not have elements: {}", detailBuilder);
 				return this;

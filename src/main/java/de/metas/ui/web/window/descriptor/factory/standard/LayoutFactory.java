@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.GridWindowVO;
@@ -23,12 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
@@ -42,8 +43,8 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Fi
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutHeader;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSectionDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
 
@@ -76,12 +77,12 @@ public class LayoutFactory
 		final GridTabVO parentTab = null; // no parent
 		return new LayoutFactory(gridWindowVO, mainTabVO, parentTab);
 	}
-	
+
 	public static final LayoutFactory ofIncludedTab(final GridWindowVO gridWindowVO, final GridTabVO mainTabVO, final GridTabVO detailTabVO)
 	{
 		return new LayoutFactory(gridWindowVO, detailTabVO, mainTabVO);
 	}
-	
+
 	// services
 	private static final transient Logger logger = LogManager.getLogger(LayoutFactory.class);
 	@Autowired
@@ -177,7 +178,7 @@ public class LayoutFactory
 	{
 		return _adWindowId;
 	}
-	
+
 	public ITranslatableString getWindowCaption()
 	{
 		return windowCaption;
@@ -186,7 +187,7 @@ public class LayoutFactory
 	/**
 	 * Single row layout: sections list
 	 */
-	public DocumentLayoutHeader.Builder layoutSingleRow()
+	public DocumentLayoutSingleRow.Builder layoutSingleRow()
 	{
 		// NOTE, according to (FRESH-686 #26), we are putting all elements in one list, one after another, no sections, no columns etc
 		final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
@@ -200,12 +201,23 @@ public class LayoutFactory
 			return null;
 		}
 
-		return DocumentLayoutHeader.builder()
+		//
+		// Layout sections
+		List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList = layoutSectionsList();
+		// In case there were no layout sections defined then use the grid view elements and put them in one column.
+		// Usually this happens when generating the single row layout for included tabs.
+		if (!layoutSectionsList.stream().anyMatch(DocumentLayoutSectionDescriptor.Builder::isNotEmpty))
+		{
+			DocumentLayoutSectionDescriptor.Builder oneLayoutSection = DocumentLayoutSectionDescriptor.builder().addColumn(layoutGridView().getElements());
+			layoutSectionsList = ImmutableList.of(oneLayoutSection);
+		}
+
+		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
-				.addSections(layoutSectionsList());
+				.addSections(layoutSectionsList);
 	}
-	
+
 	private List<DocumentLayoutSectionDescriptor.Builder> layoutSectionsList()
 	{
 		final List<I_AD_UI_Section> uiSections = getUISections();
@@ -228,8 +240,11 @@ public class LayoutFactory
 	 */
 	private DocumentLayoutSectionDescriptor.Builder layoutSection(final I_AD_UI_Section uiSection)
 	{
+		final IModelTranslationMap uiSectionTrls = InterfaceWrapperHelper.getModelTranslationMap(uiSection);
 		final DocumentLayoutSectionDescriptor.Builder layoutSectionBuilder = DocumentLayoutSectionDescriptor.builder()
-				.setInternalName(uiSection.toString());
+				.setInternalName(uiSection.toString())
+				.setCaption(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Name, uiSection.getName()))
+				.setDescription(uiSectionTrls.getColumnTrl(I_AD_UI_Section.COLUMNNAME_Description, uiSection.getDescription()));
 
 		if (!uiSection.isActive())
 		{
@@ -381,7 +396,7 @@ public class LayoutFactory
 			{
 				layoutElementBuilder.setWidgetType(field.getWidgetType());
 			}
-			
+
 			layoutElementBuilder.setButtonActionDescriptor(field.getButtonActionDescriptor());
 
 			layoutElementBuilder.addField(layoutElementFieldBuilder);
@@ -512,49 +527,10 @@ public class LayoutFactory
 			return null;
 		}
 
-		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder()
-				.setDetailId(entityDescriptor.getDetailId())
-				.setCaption(entityDescriptor.getCaption())
-				.setDescription(entityDescriptor.getDescription())
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+		final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder(entityDescriptor.getWindowId(), entityDescriptor.getDetailId())
+				.setGridLayout(layoutGridView())
+				.setSingleRowLayout(layoutSingleRow())
 				.setQueryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
-
-		//
-		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
-		{
-			streamAD_UI_Elements()
-					.filter(adUIElement -> adUIElement.isDisplayedGrid())
-					.sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
-					.map(adUIElement -> layoutElement(adUIElement))
-					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement.setGridElement())
-					.forEach(layoutDetail::addElement);
-		}
-
-		//
-		// Fallback: when no elements were found: creating the view using the single row layout
-		if (!layoutDetail.hasElements())
-		{
-			logger.warn("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
-			streamAD_UI_Elements()
-					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
-					.map(adUIElement -> layoutElement(adUIElement))
-					.filter(uiElement -> uiElement != null)
-					.peek(uiElement -> uiElement.setGridElement())
-					.forEach(layoutDetail::addElement);
-		}
-
-		//
-		// Fallback:
-		if (!layoutDetail.hasElements())
-		{
-			logger.warn("No grid layout found for {}. Continuing", entityDescriptor);
-		}
-
-		//
-		// Make sure all added elements have the GridViewField characteristic
-		descriptorsFactory.addFieldsCharacteristic(layoutDetail.getFieldNames(), Characteristic.GridViewField);
 
 		//
 		// Quick input
@@ -571,6 +547,78 @@ public class LayoutFactory
 		return layoutDetail;
 	}
 
+	// private DocumentLayoutDetailDescriptor.Builder layoutDetail_OLD()
+	// {
+	// final DocumentEntityDescriptor.Builder entityDescriptor = documentEntity();
+	// logger.trace("Generating layout detail for {}", entityDescriptor);
+	//
+	// // If the detail is never displayed then don't add it to layout
+	// final ILogicExpression tabDisplayLogic = descriptorsFactory.getTabDisplayLogic();
+	// if (tabDisplayLogic.isConstantFalse())
+	// {
+	// logger.trace("Skip adding detail tab to layout because it's never displayed: {}, tabDisplayLogic={}", entityDescriptor, tabDisplayLogic);
+	// return null;
+	// }
+	//
+	// final DocumentLayoutDetailDescriptor.Builder layoutDetail = DocumentLayoutDetailDescriptor.builder()
+	// .setDetailId(entityDescriptor.getDetailId())
+	// .setCaption(entityDescriptor.getCaption())
+	// .setDescription(entityDescriptor.getDescription())
+	// .setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
+	// .setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+	// .setQueryOnActivate(entityDescriptor.isQueryIncludedTabOnActivate());
+	//
+	// //
+	// // Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
+	// {
+	// streamAD_UI_Elements()
+	// .filter(adUIElement -> adUIElement.isDisplayedGrid())
+	// .sorted(Comparator.comparing(I_AD_UI_Element::getSeqNoGrid))
+	// .map(adUIElement -> layoutElement(adUIElement))
+	// .filter(uiElement -> uiElement != null)
+	// .peek(uiElement -> uiElement.setGridElement())
+	// .forEach(layoutDetail::addGridLayoutElement);
+	// }
+	//
+	// //
+	// // Fallback: when no elements were found: creating the view using the single row layout
+	// if (!layoutDetail.hasElements())
+	// {
+	// logger.warn("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
+	// streamAD_UI_Elements()
+	// .filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
+	// .map(adUIElement -> layoutElement(adUIElement))
+	// .filter(uiElement -> uiElement != null)
+	// .peek(uiElement -> uiElement.setGridElement())
+	// .forEach(layoutDetail::addGridLayoutElement);
+	// }
+	//
+	// //
+	// // Fallback:
+	// if (!layoutDetail.hasElements())
+	// {
+	// logger.warn("No grid layout found for {}. Continuing", entityDescriptor);
+	// }
+	//
+	// //
+	// // Make sure all added elements have the GridViewField characteristic
+	// descriptorsFactory.addFieldsCharacteristic(layoutDetail.getFieldNames(), Characteristic.GridViewField);
+	//
+	// //
+	// // Quick input
+	// {
+	// final boolean supportQuickInput = quickInputDescriptors.hasQuickInputEntityDescriptor( //
+	// entityDescriptor.getDocumentType() //
+	// , entityDescriptor.getDocumentTypeId() //
+	// , entityDescriptor.getTableNameOrNull() //
+	// , entityDescriptor.getDetailId() //
+	// );
+	// layoutDetail.setSupportQuickInput(supportQuickInput);
+	// }
+	//
+	// return layoutDetail;
+	// }
+
 	private final DocumentLayoutElementFieldDescriptor.Builder layoutElementField(final DocumentFieldDescriptor.Builder field)
 	{
 		logger.trace("Building layout element field for {}", field);
@@ -580,18 +628,11 @@ public class LayoutFactory
 		{
 			field.addCharacteristic(Characteristic.PublicField);
 		}
-		
-		boolean supportZoomInfo = field.getWidgetType().isSupportZoomInto();
-		final String lookupTableName = field.getLookupTableName().orElse(null);
-		if(WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName))
-		{
-			supportZoomInfo = false;
-		}
 
 		final DocumentLayoutElementFieldDescriptor.Builder layoutElementFieldBuilder = DocumentLayoutElementFieldDescriptor.builder(fieldName)
 				.setLookupSource(field.getLookupSourceType())
 				.setPublicField(field.hasCharacteristic(Characteristic.PublicField))
-				.setSupportZoomInto(supportZoomInfo)
+				.setSupportZoomInto(field.isSupportZoomInto())
 				.trackField(field);
 
 		logger.trace("Built layout element field for {}: {}", field, layoutElementFieldBuilder);

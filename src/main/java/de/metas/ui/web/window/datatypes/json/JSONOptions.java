@@ -4,14 +4,22 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.ILanguageDAO;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -351,12 +359,14 @@ public final class JSONOptions
 		private boolean showAdvancedFields = false;
 		private String dataFieldsListStr = null;
 		private String adLanguage;
+		private final String sessionADLanguage;
 		private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 		private Builder(final UserSession userSession)
 		{
 			super();
-			this._userSession = userSession;
+			_userSession = userSession;
+			sessionADLanguage = userSession != null ? userSession.getAD_Language() : null;
 		}
 
 		public JSONOptions build()
@@ -364,9 +374,14 @@ public final class JSONOptions
 			return new JSONOptions(this);
 		}
 
-		public Builder setAD_Language(final String adLanguage)
+		public Builder setAD_LanguageIfNotEmpty(final String adLanguage)
 		{
-			this.adLanguage = adLanguage;
+			if (Check.isEmpty(adLanguage, true))
+			{
+				return this;
+			}
+
+			this.adLanguage = adLanguage.trim();
 			return this;
 		}
 
@@ -377,12 +392,50 @@ public final class JSONOptions
 				return adLanguage;
 			}
 
-			if (_userSession != null)
+			//
+			// Try fetching the AD_Language from "Accept-Language" HTTP header
+			if(_userSession != null && _userSession.isUseHttpAcceptLanguage())
 			{
-				return _userSession.getAD_Language();
+				HttpServletRequest httpServletRequest = getHttpServletRequest();
+				if (httpServletRequest != null)
+				{
+					final String httpAcceptLanguage = httpServletRequest.getHeader(HttpHeaders.ACCEPT_LANGUAGE);
+					if (!Check.isEmpty(httpAcceptLanguage, true))
+					{
+						final String requestLanguage = Services.get(ILanguageDAO.class).retrieveAvailableLanguages()
+								.getAD_LanguageFromHttpAcceptLanguage(httpAcceptLanguage, sessionADLanguage);
+						if (requestLanguage != null)
+						{
+							return requestLanguage;
+						}
+					}
+				}
+			}
+
+			//
+			// Use session language
+			if (sessionADLanguage != null)
+			{
+				return sessionADLanguage;
 			}
 
 			throw new IllegalStateException("Cannot detect the AD_Language");
+		}
+
+		private static final HttpServletRequest getHttpServletRequest()
+		{
+			RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+			if (requestAttributes == null)
+			{
+				return null;
+			}
+			if (!(requestAttributes instanceof ServletRequestAttributes))
+			{
+				return null;
+			}
+
+			final HttpServletRequest servletRequest = ((ServletRequestAttributes)requestAttributes).getRequest();
+			return servletRequest;
 		}
 
 		private Supplier<JSONDocumentPermissions> getPermissionsSupplier()
@@ -435,7 +488,7 @@ public final class JSONOptions
 			return newRecordDescriptorsProvider;
 		}
 
-		public Builder setNewRecordDescriptorsProvider(NewRecordDescriptorsProvider newRecordDescriptorsProvider)
+		public Builder setNewRecordDescriptorsProvider(final NewRecordDescriptorsProvider newRecordDescriptorsProvider)
 		{
 			this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
 			return this;

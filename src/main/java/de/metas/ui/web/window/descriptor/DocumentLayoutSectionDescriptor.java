@@ -12,7 +12,10 @@ import org.slf4j.Logger;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -27,11 +30,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -44,12 +47,15 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 		return new Builder();
 	}
 
+	private final ITranslatableString caption;
+	private final ITranslatableString description;
 	private final String internalName;
 	private final List<DocumentLayoutColumnDescriptor> columns;
 
 	private DocumentLayoutSectionDescriptor(final Builder builder)
 	{
-		super();
+		caption = builder.caption;
+		description = builder.description;
 		internalName = builder.internalName;
 		columns = ImmutableList.copyOf(builder.buildColumns());
 	}
@@ -62,6 +68,16 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 				.add("internalName", internalName)
 				.add("columns", columns.isEmpty() ? null : columns)
 				.toString();
+	}
+
+	public String getCaption(final String adLanguage)
+	{
+		return caption.translate(adLanguage);
+	}
+
+	public String getDescription(final String adLanguage)
+	{
+		return description.translate(adLanguage);
 	}
 
 	public List<DocumentLayoutColumnDescriptor> getColumns()
@@ -78,6 +94,8 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentLayoutSectionDescriptor.Builder.class);
 
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
+		private ITranslatableString description = ImmutableTranslatableString.empty();
 		private String internalName;
 		private final List<DocumentLayoutColumnDescriptor.Builder> columnsBuilders = new ArrayList<>();
 		private String invalidReason;
@@ -127,6 +145,18 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return true;
 		}
 
+		public Builder setCaption(@NonNull final ITranslatableString caption)
+		{
+			this.caption = caption;
+			return this;
+		}
+
+		public Builder setDescription(@NonNull final ITranslatableString description)
+		{
+			this.description = description;
+			return this;
+		}
+
 		public Builder setInternalName(final String internalName)
 		{
 			this.internalName = internalName;
@@ -140,20 +170,22 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return this;
 		}
 
-		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
+		public Builder addColumn(final List<DocumentLayoutElementDescriptor.Builder> elementsBuilders)
 		{
-			for (final DocumentLayoutColumnDescriptor.Builder columnBuilder : columnsBuilders)
+			if (elementsBuilders == null || elementsBuilders.isEmpty())
 			{
-				final DocumentLayoutElementDescriptor.Builder elementBuilder = columnBuilder.findElementBuilderByFieldName(fieldName);
-				if (elementBuilder == null)
-				{
-					continue;
-				}
-
-				return elementBuilder;
-
+				return this;
 			}
-			return null;
+
+			final DocumentLayoutElementGroupDescriptor.Builder elementsGroupBuilder = DocumentLayoutElementGroupDescriptor.builder();
+			elementsBuilders.stream()
+					.map(elementBuilder -> DocumentLayoutElementLineDescriptor.builder().addElement(elementBuilder))
+					.forEach(elementLineBuilder -> elementsGroupBuilder.addElementLine(elementLineBuilder));
+
+			final DocumentLayoutColumnDescriptor.Builder column = DocumentLayoutColumnDescriptor.builder().addElementGroup(elementsGroupBuilder);
+
+			addColumn(column);
+			return this;
 		}
 
 		public Builder setInvalid(final String invalidReason)
@@ -179,16 +211,19 @@ public final class DocumentLayoutSectionDescriptor implements Serializable
 			return invalidReason;
 		}
 
+		public boolean isNotEmpty()
+		{
+			return streamElementBuilders().findAny().isPresent();
+		}
+
 		private Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
-			return columnsBuilders.stream()
-					.flatMap(columnsBuilder -> columnsBuilder.streamElementBuilders());
+			return columnsBuilders.stream().flatMap(DocumentLayoutColumnDescriptor.Builder::streamElementBuilders);
 		}
 
 		public Builder setExcludeSpecialFields()
 		{
-			streamElementBuilders()
-					.forEach(elementBuilder -> elementBuilder.setExcludeSpecialFields());
+			streamElementBuilders().forEach(elementBuilder -> elementBuilder.setExcludeSpecialFields());
 			return this;
 		}
 	}

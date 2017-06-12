@@ -46,6 +46,8 @@ import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroup;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReferencesGroupList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -140,6 +142,7 @@ public class WindowRestController
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(DocumentDescriptor::getLayout)
 				//
@@ -163,6 +166,7 @@ public class WindowRestController
 		DocumentPermissionsHelper.checkWindowAccess(descriptor.getEntityDescriptor(), userSession.getUserRolePermissions());
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(desc -> desc.getLayout().getDetail(detailId))
 				//
@@ -396,7 +400,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
-	
+
 	/**
 	 * Typeahead for included document's field
 	 */
@@ -414,7 +418,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldTypeahead(documentPath, fieldName, query);
 	}
-	
+
 	/** Typeahead: unified implementation */
 	private JSONLookupValuesList getDocumentFieldTypeahead(final DocumentPath documentPath, final String fieldName, final String query)
 	{
@@ -436,7 +440,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
-	
+
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/dropdown")
 	public JSONLookupValuesList getDocumentFieldDropdown(
 			@PathVariable("windowId") final String windowIdStr //
@@ -450,7 +454,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldDropdown(documentPath, fieldName);
 	}
-	
+
 	private JSONLookupValuesList getDocumentFieldDropdown(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
@@ -472,7 +476,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
-	
+
 	@ApiOperation("field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
@@ -487,7 +491,7 @@ public class WindowRestController
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId);
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
-	
+
 	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
@@ -524,6 +528,17 @@ public class WindowRestController
 				final WindowId windowId = null;
 				return ImmutablePair.of(recordRef, windowId);
 			}
+			// Key Field
+			else if (field.isKey())
+			{
+				// Allow zooming into key column. It shall open precisely this record in a new window.
+				// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
+				final String tableName = document.getEntityDescriptor().getTableName();
+				final int recordId = document.getDocumentIdAsInt();
+				final ITableRecordReference recordRef = TableRecordReference.of(tableName, recordId);
+				final WindowId windowId = null;
+				return ImmutablePair.of(recordRef, windowId);
+			}
 			// Regular lookup value
 			else
 			{
@@ -537,7 +552,7 @@ public class WindowRestController
 		final WindowId zoomIntoWindowId = zoomIntoInfo.getRight();
 		if (zoomInfoTableRecordRef == null)
 		{
-			throw new EntityNotFoundException("Cannot fetch ZoomInto infos from a null value")
+			throw new EntityNotFoundException("Cannot zoom into empty fields")
 					.setParameter("documentPath", documentPath)
 					.setParameter("fieldName", fieldName);
 		}
@@ -567,6 +582,27 @@ public class WindowRestController
 					.filter(WebuiRelatedProcessDescriptor::isEnabledOrNotSilent)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
+	}
+
+	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/references")
+	public JSONDocumentReferencesGroup getDocumentReferences(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("rowId") final String rowIdStr)
+	{
+		userSession.assertLoggedIn();
+
+		// Get document references
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
+		final List<DocumentReference> documentReferences = documentReferencesService.getDocumentReferences(documentPath);
+
+		final JSONOptions jsonOpts = newJSONOptions().build();
+		return JSONDocumentReferencesGroup.builder()
+				.caption("References")
+				.references(JSONDocumentReference.ofList(documentReferences, jsonOpts))
+				.build();
 	}
 
 	@GetMapping(value = "/{windowId}/{documentId}/references")

@@ -43,12 +43,14 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
+import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -91,8 +93,9 @@ public class DocumentEntityDescriptor
 
 	private final ILogicExpression allowCreateNewLogic;
 	private final ILogicExpression allowDeleteLogic;
+	private final ILogicExpression readonlyLogic;
 	private final ILogicExpression displayLogic;
-
+	
 	private final Map<String, DocumentFieldDescriptor> fields;
 	private final DocumentFieldDescriptor idField;
 
@@ -132,6 +135,7 @@ public class DocumentEntityDescriptor
 
 		allowCreateNewLogic = builder.getAllowCreateNewLogic();
 		allowDeleteLogic = builder.getAllowDeleteLogic();
+		readonlyLogic = builder.getReadonlyLogic();
 		displayLogic = builder.getDisplayLogic();
 
 		fields = ImmutableMap.copyOf(builder.getFields());
@@ -237,6 +241,11 @@ public class DocumentEntityDescriptor
 	public ILogicExpression getAllowDeleteLogic()
 	{
 		return allowDeleteLogic;
+	}
+	
+	public ILogicExpression getReadonlyLogic()
+	{
+		return readonlyLogic;
 	}
 
 	public ILogicExpression getDisplayLogic()
@@ -480,6 +489,12 @@ public class DocumentEntityDescriptor
 
 			return id.toString();
 		}
+		
+		public WindowId getWindowId()
+		{
+			Check.assume(_documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, _documentType);
+			return WindowId.of(_documentTypeId);
+		}
 
 		public Builder setDetailId(final DetailId detailId)
 		{
@@ -676,6 +691,9 @@ public class DocumentEntityDescriptor
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
+			
+			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly, getReadonlyLogic().getParameters(), DependencyType.DocumentReadonlyLogic);
+			
 			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
@@ -849,9 +867,8 @@ public class DocumentEntityDescriptor
 			return _displayLogic;
 		}
 
-		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
+		public Builder setReadonlyLogic(@NonNull final ILogicExpression readonlyLogic)
 		{
-			Check.assumeNotNull(readonlyLogic, "Parameter readonlyLogic is not null");
 			_readonlyLogic = readonlyLogic;
 			updateFieldBuilders(fieldBuilder -> fieldBuilder.setEntityReadonlyLogic(readonlyLogic));
 			return this;

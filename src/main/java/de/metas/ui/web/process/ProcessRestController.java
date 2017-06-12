@@ -105,9 +105,9 @@ public class ProcessRestController
 				});
 	}
 
-	private JSONOptions newJsonOpts()
+	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.of(userSession);
+		return JSONOptions.builder(userSession).build();
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
@@ -145,9 +145,10 @@ public class ProcessRestController
 		final ProcessDescriptor descriptor = instancesRepository.getProcessDescriptor(processId);
 
 		return ETagResponseEntityBuilder.ofETagAware(request, descriptor)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
 				.map(ProcessDescriptor::getLayout)
-				.jsonOptions(this::newJsonOpts)
+				.jsonOptions(() -> newJSONOptions())
 				.toJson(JSONProcessLayout::of);
 	}
 
@@ -184,7 +185,7 @@ public class ProcessRestController
 		return Execution.callInNewExecution("pinstance.create", () -> {
 			final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 			final IProcessInstanceController processInstance = instancesRepository.createNewProcessInstance(request, changesCollector);
-			return JSONProcessInstance.of(processInstance, newJsonOpts());
+			return JSONProcessInstance.of(processInstance, newJSONOptions());
 		});
 	}
 
@@ -201,7 +202,7 @@ public class ProcessRestController
 
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
-		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJsonOpts()));
+		return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> JSONProcessInstance.of(processInstance, newJSONOptions()));
 	}
 
 	@RequestMapping(value = "/{processId}/{pinstanceId}", method = RequestMethod.PATCH)
@@ -224,7 +225,7 @@ public class ProcessRestController
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});
-			return JSONDocument.ofEvents(changesCollector, newJsonOpts());
+			return JSONDocument.ofEvents(changesCollector, newJSONOptions());
 		});
 	}
 

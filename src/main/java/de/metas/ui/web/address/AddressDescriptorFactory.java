@@ -178,7 +178,7 @@ public class AddressDescriptorFactory
 				.addField(DocumentLayoutElementFieldDescriptor.builder(fieldDescriptor.getFieldName())
 						.setLookupSource(fieldDescriptor.getLookupSourceType())
 						.setPublicField(true)
-						.setSupportZoomInto(fieldDescriptor.getWidgetType().isSupportZoomInto()));
+						.setSupportZoomInto(fieldDescriptor.isSupportZoomInto()));
 	}
 
 	private static class AddressDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder

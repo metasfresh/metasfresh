@@ -1,9 +1,9 @@
 package de.metas.ui.web.menu.datatypes.json;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.lang.MutableInt;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,6 +14,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.menu.MenuNode;
+import de.metas.ui.web.menu.MenuNodeFavoriteProvider;
 
 /*
  * #%L
@@ -28,11 +29,11 @@ import de.metas.ui.web.menu.MenuNode;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -40,7 +41,7 @@ import de.metas.ui.web.menu.MenuNode;
 @SuppressWarnings("serial")
 public final class JSONMenuNode implements Serializable
 {
-	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode)
+	public static final JSONMenuNode ofPath(final List<MenuNode> path, final boolean skipRootNode, final boolean includeLastNode, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (path == null || path.isEmpty())
 		{
@@ -57,34 +58,50 @@ public final class JSONMenuNode implements Serializable
 		for (int i = lastIndex; i >= 0; i--)
 		{
 			final MenuNode node = path.get(i);
-			if(node.isRoot())
+			if (node.isRoot())
 			{
 				continue;
 			}
-			jsonChildNode = new JSONMenuNode(node, jsonChildNode);
+
+			final boolean favorite = menuNodeFavoriteProvider.isFavorite(node);
+			jsonChildNode = new JSONMenuNode(node, favorite, jsonChildNode);
 		}
-		
-		if(jsonChildNode == null)
+
+		if (jsonChildNode == null)
 		{
 			throw new IllegalArgumentException("Invalid path");
 		}
-		
+
 		return jsonChildNode;
 	}
 
-	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes)
+	public static List<JSONMenuNode> ofList(final Collection<MenuNode> nodes, final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	{
+		if (nodes.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final JSONMenuNode jsonChildNode = null;
+		return nodes.stream()
+				.map(node -> new JSONMenuNode(node, menuNodeFavoriteProvider.isFavorite(node), jsonChildNode))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private static JSONMenuNode newInstanceOrNull(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		if (maxLeafNodes.getValue() <= 0)
 		{
 			return null;
 		}
-		
-		if(node.isEffectiveLeafNode())
+
+		if (node.isEffectiveLeafNode())
 		{
 			maxLeafNodes.decrementAndGet();
 		}
-		
-		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes);
+
+		return new JSONMenuNode(node, depth, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider);
 	}
 
 	public static final Builder builder(final MenuNode node)
@@ -94,20 +111,20 @@ public final class JSONMenuNode implements Serializable
 
 	@JsonProperty("nodeId")
 	private final String nodeId;
-	
+
 	@JsonProperty("parentId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String parentId;
-	
+
 	@JsonProperty("caption")
 	private final String caption;
-	
+
 	@JsonProperty("captionBreadcrumb")
 	private final String captionBreadcrumb;
-	
+
 	@JsonProperty("type")
 	private final JSONMenuNodeType type;
-	
+
 	@JsonProperty("elementId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String elementId;
@@ -120,7 +137,11 @@ public final class JSONMenuNode implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Boolean matched;
 
-	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes)
+	@JsonProperty("favorite")
+	private final boolean favorite;
+
+	private JSONMenuNode(final MenuNode node, final int depth, final int childrenLimit, final MutableInt maxLeafNodes,
+			final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
 		super();
 		nodeId = node.getId();
@@ -130,6 +151,7 @@ public final class JSONMenuNode implements Serializable
 		type = JSONMenuNodeType.fromNullable(node.getType());
 		elementId = node.getElementId();
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
+		favorite = menuNodeFavoriteProvider.isFavorite(node);
 
 		if (depth <= 0)
 		{
@@ -140,9 +162,9 @@ public final class JSONMenuNode implements Serializable
 			children = node.getChildren()
 					.stream()
 					.limit(childrenLimit > 0 ? childrenLimit : Long.MAX_VALUE)
-					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes))
+					.map(childNode -> newInstanceOrNull(childNode, depth - 1, childrenLimit, maxLeafNodes, menuNodeFavoriteProvider))
 					.filter(jsonNode -> jsonNode != null)
-					.collect(GuavaCollectors.toImmutableList());
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 
@@ -152,7 +174,7 @@ public final class JSONMenuNode implements Serializable
 	 * @param node
 	 * @param jsonChildNode
 	 */
-	private JSONMenuNode(final MenuNode node, final JSONMenuNode jsonChildNode)
+	private JSONMenuNode(final MenuNode node, final boolean favorite, final JSONMenuNode jsonChildNode)
 	{
 		super();
 		nodeId = node.getId();
@@ -163,21 +185,21 @@ public final class JSONMenuNode implements Serializable
 		elementId = node.getElementId();
 		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
+		this.favorite = favorite;
 	}
 
 	@JsonCreator
 	private JSONMenuNode(
-			@JsonProperty("nodeId") final String nodeId //
-			, @JsonProperty("parentId") final String parentId //
-			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("captionBreadcrumb") final String captionBreadcrumb //
-			, @JsonProperty("type") final JSONMenuNodeType type //
-			, @JsonProperty("elementId") final String elementId //
-			, @JsonProperty("children") final List<JSONMenuNode> children //
-			, @JsonProperty("matched") final Boolean matchedByFilter //
-	)
+			@JsonProperty("nodeId") final String nodeId,
+			@JsonProperty("parentId") final String parentId,
+			@JsonProperty("caption") final String caption,
+			@JsonProperty("captionBreadcrumb") final String captionBreadcrumb,
+			@JsonProperty("type") final JSONMenuNodeType type,
+			@JsonProperty("elementId") final String elementId,
+			@JsonProperty("children") final List<JSONMenuNode> children,
+			@JsonProperty("matched") final Boolean matchedByFilter,
+			@JsonProperty("favorite") final boolean favorite)
 	{
-		super();
 		this.nodeId = nodeId;
 		this.parentId = parentId;
 		this.caption = caption;
@@ -185,7 +207,8 @@ public final class JSONMenuNode implements Serializable
 		this.type = type;
 		this.elementId = elementId;
 		this.children = children == null ? ImmutableList.of() : ImmutableList.copyOf(children);
-		this.matched = matchedByFilter;
+		matched = matchedByFilter;
+		this.favorite = favorite;
 	}
 
 	@Override
@@ -232,24 +255,25 @@ public final class JSONMenuNode implements Serializable
 	{
 		return children;
 	}
-	
+
 	@JsonIgnore
 	public boolean isLeaf()
 	{
 		return children == null || children.isEmpty();
 	}
-	
+
 	public Boolean getMatched()
 	{
 		return matched;
 	}
-	
+
 	public static final class Builder
 	{
 		private final MenuNode node;
 		private int maxDepth = Integer.MAX_VALUE;
 		private int maxChildrenPerNode = Integer.MAX_VALUE;
 		private int maxLeafNodes = Integer.MAX_VALUE;
+		private MenuNodeFavoriteProvider menuNodeFavoriteProvider;
 
 		private Builder(final MenuNode node)
 		{
@@ -260,24 +284,30 @@ public final class JSONMenuNode implements Serializable
 		public JSONMenuNode build()
 		{
 			final MutableInt maxLeafNodes = new MutableInt(this.maxLeafNodes);
-			return JSONMenuNode.newInstanceOrNull(node, maxDepth, maxChildrenPerNode, maxLeafNodes);
+			return newInstanceOrNull(node, maxDepth, maxChildrenPerNode, maxLeafNodes, menuNodeFavoriteProvider);
 		}
-		
-		public Builder setMaxDepth(int maxDepth)
+
+		public Builder setMaxDepth(final int maxDepth)
 		{
 			this.maxDepth = maxDepth > 0 ? maxDepth : Integer.MAX_VALUE;
 			return this;
 		}
-		
-		public Builder setMaxChildrenPerNode(int maxChildrenPerNode)
+
+		public Builder setMaxChildrenPerNode(final int maxChildrenPerNode)
 		{
 			this.maxChildrenPerNode = maxChildrenPerNode > 0 ? maxChildrenPerNode : Integer.MAX_VALUE;
 			return this;
 		}
-		
-		public Builder setMaxLeafNodes(int maxLeafNodes)
+
+		public Builder setMaxLeafNodes(final int maxLeafNodes)
 		{
 			this.maxLeafNodes = maxLeafNodes > 0 ? maxLeafNodes : Integer.MAX_VALUE;
+			return this;
+		}
+
+		public Builder setIsFavoriteProvider(final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+		{
+			this.menuNodeFavoriteProvider = menuNodeFavoriteProvider;
 			return this;
 		}
 	}

@@ -2,9 +2,12 @@ package de.metas.ui.web.menu;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
@@ -22,6 +25,7 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -53,7 +57,7 @@ public final class MenuTree
 	}
 
 	private static final Logger logger = LogManager.getLogger(MenuTree.class);
-	
+
 	private final long version;
 
 	private final MenuNode rootNode;
@@ -100,7 +104,7 @@ public final class MenuTree
 				.add("version", version)
 				.toString();
 	}
-	
+
 	public long getVersion()
 	{
 		return version;
@@ -119,6 +123,13 @@ public final class MenuTree
 			throw new NoMenuNodesFoundException("No menu node found for nodeId=" + nodeId);
 		}
 		return node;
+	}
+
+	public Stream<MenuNode> streamNodesByAD_Menu_ID(final int adMenuId)
+	{
+		return nodesById.values()
+				.stream()
+				.filter(node -> node.getAD_Menu_ID() == adMenuId);
 	}
 
 	private MenuNode getFirstNodeByElementIdOrNull(final MenuNodeType type, final String elementId)
@@ -275,5 +286,49 @@ public final class MenuTree
 		String s = Normalizer.normalize(string, Normalizer.Form.NFD);
 		s = s.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
 		return s;
+	}
+
+	public MenuNode getRootNodeWithFavoritesOnly(@NonNull final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
+	{
+		final Set<String> parentNodeIdsToAlwaysAccept = new HashSet<>();
+
+		return getRootNode()
+				.deepCopy(node -> {
+					if (node.isRoot())
+					{
+						return MenuNodeFilterResolution.Accept;
+					}
+
+					if (menuNodeFavoriteProvider.isFavorite(node))
+					{
+						// If favorite grouping node then we shall include all it's children, no matter what
+						if (node.isGroupingNode())
+						{
+							parentNodeIdsToAlwaysAccept.add(node.getId());
+						}
+
+						return MenuNodeFilterResolution.Accept;
+					}
+
+					if (parentNodeIdsToAlwaysAccept.contains(node.getParentId()))
+					{
+						// If grouping node which is a child of a favorite grouping node then we shall include all it's children, no matter what
+						if (node.isGroupingNode())
+						{
+							parentNodeIdsToAlwaysAccept.add(node.getId());
+						}
+
+						return MenuNodeFilterResolution.Accept;
+					}
+
+					if (node.isGroupingNode())
+					{
+						return MenuNodeFilterResolution.AcceptIfHasChildren;
+					}
+					else
+					{
+						return MenuNodeFilterResolution.Reject;
+					}
+				});
 	}
 }

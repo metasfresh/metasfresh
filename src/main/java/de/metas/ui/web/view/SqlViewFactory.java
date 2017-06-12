@@ -10,10 +10,12 @@ import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewGroupingBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -141,13 +143,30 @@ public class SqlViewFactory implements IViewFactory
 		final SqlDocumentEntityDataBindingDescriptor entityBinding = SqlDocumentEntityDataBindingDescriptor.cast(entityDescriptor.getDataBinding());
 		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
 
+		final SqlViewGroupingBinding groupingBinding;
+		if (entityDescriptor.getWindowId().toIntOr(-1) == 540345) // FIXME: HARDCODED
+		{
+			groupingBinding = SqlViewGroupingBinding.builder()
+					.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
+					.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
+					.columnSql(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, "SUM(QtyToDeliver)")
+					.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
+					.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, "IF_MIN(DeliveryDate, PreparationDate)")
+					.build();
+		}
+		else
+		{
+			groupingBinding = null;
+		}
+
 		final SqlViewBinding.Builder builder = SqlViewBinding.builder()
 				.setTableName(entityBinding.getTableName())
 				.setTableAlias(entityBinding.getTableAlias())
 				.setDisplayFieldNames(displayFieldNames)
 				.setViewFilterDescriptors(filterDescriptors)
 				.setSqlWhereClause(entityBinding.getSqlWhereClause())
-				.setOrderBys(entityBinding.getDefaultOrderBys());
+				.setOrderBys(entityBinding.getDefaultOrderBys())
+				.setGroupingBinding(groupingBinding);
 
 		entityBinding.getFields()
 				.stream()

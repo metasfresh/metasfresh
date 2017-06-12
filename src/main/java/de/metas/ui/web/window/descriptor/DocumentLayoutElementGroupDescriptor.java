@@ -27,11 +27,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -168,26 +168,9 @@ public final class DocumentLayoutElementGroupDescriptor implements Serializable
 			return !elementLinesBuilders.isEmpty();
 		}
 
-		public DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
-		{
-			for (final DocumentLayoutElementLineDescriptor.Builder elementsLineBuilder : elementLinesBuilders)
-			{
-				final DocumentLayoutElementDescriptor.Builder elementBuilder = elementsLineBuilder.findElementBuilderByFieldName(fieldName);
-				if (elementBuilder == null)
-				{
-					continue;
-				}
-
-				return elementBuilder;
-
-			}
-			return null;
-		}
-
 		public Stream<DocumentLayoutElementDescriptor.Builder> streamElementBuilders()
 		{
-			return elementLinesBuilders.stream()
-					.flatMap(elementLineBuilder -> elementLineBuilder.streamElementBuilders());
+			return elementLinesBuilders.stream().flatMap(DocumentLayoutElementLineDescriptor.Builder::streamElementBuilders);
 		}
 	}
 }

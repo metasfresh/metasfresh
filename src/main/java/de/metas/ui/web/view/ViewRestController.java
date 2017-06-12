@@ -91,13 +91,13 @@ public class ViewRestController
 
 	@Autowired
 	private ProcessRestController processRestController;
-	
+
 	@Autowired
 	private WindowRestController windowRestController;
 
 	private JSONOptions newJSONOptions()
 	{
-		return JSONOptions.of(userSession);
+		return JSONOptions.builder(userSession).build();
 	}
 
 	@PostMapping
@@ -204,8 +204,9 @@ public class ViewRestController
 		final ViewLayout viewLayout = viewsRepo.getViewLayout(windowId, viewDataType);
 
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
+				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.jsonOptions(this::newJSONOptions)
+				.jsonOptions(() -> newJSONOptions())
 				.toJson(JSONViewLayout::of);
 	}
 
@@ -305,9 +306,9 @@ public class ViewRestController
 			@PathVariable("fieldName") final String fieldName)
 	{
 		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
-		
+
 		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
-		
+
 		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
 	}
 }

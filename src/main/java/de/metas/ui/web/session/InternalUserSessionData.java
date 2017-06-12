@@ -83,6 +83,12 @@ import de.metas.ui.web.base.session.UserPreference;
 	@Value("${metasfresh.webui.http.cache.maxAge:60}")
 	private int defaultHttpCacheMaxAge;
 	private int httpCacheMaxAge;
+	
+	// TODO: set default to "true" after https://github.com/metasfresh/metasfresh-webui-frontend/issues/819
+	@Value("${metasfresh.webui.http.use.AcceptLanguage:false}")
+	private boolean defaultUseHttpAcceptLanguage;
+	private boolean useHttpAcceptLanguage;
+
 
 	//
 	public InternalUserSessionData()
@@ -117,6 +123,7 @@ import de.metas.ui.web.base.session.UserPreference;
 		setShowColumnNamesForCaption(defaultShowColumnNamesForCaption);
 		setAllowDeprecatedRestAPI(defaultAllowDeprecatedRestAPI);
 		setHttpCacheMaxAge(defaultHttpCacheMaxAge);
+		setUseHttpAcceptLanguage(defaultUseHttpAcceptLanguage);
 	}
 
 	@Override
@@ -128,6 +135,7 @@ import de.metas.ui.web.base.session.UserPreference;
 				.add("loggedIn", loggedIn)
 				.add("locale", locale)
 				.add("userPreferences", userPreference)
+				.add("defaultUseHttpAcceptLanguage", defaultUseHttpAcceptLanguage)
 				.toString();
 	}
 

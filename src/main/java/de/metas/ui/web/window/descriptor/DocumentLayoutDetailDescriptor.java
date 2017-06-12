@@ -1,20 +1,12 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
 import org.adempiere.util.Check;
-import org.adempiere.util.GuavaCollectors;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -38,23 +30,19 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class DocumentLayoutDetailDescriptor implements Serializable
+public final class DocumentLayoutDetailDescriptor
 {
-	public static final Builder builder()
+	public static final Builder builder(final WindowId windowId, final DetailId detailId)
 	{
-		return new Builder();
+		return new Builder(windowId, detailId);
 	}
 
 	private final WindowId windowId;
 	private final DetailId detailId;
-	private final ITranslatableString caption;
-	private final ITranslatableString description;
-	private final ITranslatableString emptyResultText;
-	private final ITranslatableString emptyResultHint;
 
-	private final List<DocumentLayoutElementDescriptor> elements;
-	
+	private final ViewLayout gridLayout;
+	private final DocumentLayoutSingleRow singleRowLayout;
+
 	private final boolean supportQuickInput;
 	private final boolean queryOnActivate;
 
@@ -62,13 +50,12 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 	{
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
-		
-		detailId = builder.getDetailId();
-		caption = builder.caption != null ? builder.caption : ImmutableTranslatableString.empty();
-		description = builder.description != null ? builder.description : ImmutableTranslatableString.empty();
-		emptyResultText = ImmutableTranslatableString.copyOfNullable(builder.emptyResultText);
-		emptyResultHint = ImmutableTranslatableString.copyOfNullable(builder.emptyResultHint);
-		elements = ImmutableList.copyOf(builder.buildElements());
+
+		detailId = builder.detailId;
+
+		gridLayout = builder.buildGridLayout();
+		singleRowLayout = builder.buildSingleRowLayout();
+
 		supportQuickInput = builder.isSupportQuickInput();
 		queryOnActivate = builder.queryOnActivate;
 	}
@@ -79,8 +66,6 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("detailId", detailId)
-				.add("caption", caption)
-				.add("elements", elements.isEmpty() ? null : elements)
 				.toString();
 	}
 
@@ -94,34 +79,19 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 		return detailId;
 	}
 
-	public String getCaption(final String adLanguage)
+	public ViewLayout getGridLayout()
 	{
-		return caption.translate(adLanguage);
+		return gridLayout;
 	}
 
-	public String getDescription(final String adLanguage)
+	public DocumentLayoutSingleRow getSingleRowLayout()
 	{
-		return description.translate(adLanguage);
+		return singleRowLayout;
 	}
 
-	public String getEmptyResultText(final String adLanguage)
+	public boolean isEmpty()
 	{
-		return emptyResultText.translate(adLanguage);
-	}
-
-	public String getEmptyResultHint(final String adLanguage)
-	{
-		return emptyResultHint.translate(adLanguage);
-	}
-
-	public List<DocumentLayoutElementDescriptor> getElements()
-	{
-		return elements;
-	}
-
-	public boolean hasElements()
-	{
-		return !elements.isEmpty();
+		return !gridLayout.hasElements() && singleRowLayout.isEmpty();
 	}
 
 	public boolean isSupportQuickInput()
@@ -136,22 +106,20 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 
 	public static final class Builder
 	{
-		public WindowId windowId;
-		private DetailId detailId;
-		private ITranslatableString caption;
-		private ITranslatableString description;
-		private ITranslatableString emptyResultText;
-		private ITranslatableString emptyResultHint;
+		private final WindowId windowId;
+		private final DetailId detailId;
 
-		private final List<DocumentLayoutElementDescriptor.Builder> elementBuilders = new ArrayList<>();
+		private ViewLayout.Builder gridLayout = null;
+		private DocumentLayoutSingleRow.Builder singleRowLayout = null;
 
 		private boolean _supportQuickInput;
 
 		private boolean queryOnActivate;
 
-		private Builder()
+		private Builder(@NonNull final WindowId windowId, @NonNull final DetailId detailId)
 		{
-			super();
+			this.windowId = windowId;
+			this.detailId = detailId;
 		}
 
 		public DocumentLayoutDetailDescriptor build()
@@ -159,115 +127,49 @@ public final class DocumentLayoutDetailDescriptor implements Serializable
 			return new DocumentLayoutDetailDescriptor(this);
 		}
 
-		private List<DocumentLayoutElementDescriptor> buildElements()
+		private ViewLayout buildGridLayout()
 		{
-			return elementBuilders
-					.stream()
-					.filter(elementBuilder -> elementBuilder.getFieldsCount() > 0)
-					.map(elementBuilder -> elementBuilder.build())
-					.collect(GuavaCollectors.toImmutableList());
+			return gridLayout.build();
 		}
 
+		private DocumentLayoutSingleRow buildSingleRowLayout()
+		{
+			return singleRowLayout.build();
+		}
+		
 		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
 					.add("detailId", detailId)
-					.add("caption", caption)
-					.add("elements-count", elementBuilders.size())
 					.toString();
 		}
 
-		public Builder setWindowId(WindowId windowId)
+		public Builder setGridLayout(@NonNull final ViewLayout.Builder gridLayout)
 		{
-			this.windowId = windowId;
+			this.gridLayout = gridLayout;
+			gridLayout.setWindowId(windowId);
+			gridLayout.setDetailId(detailId);
 			return this;
 		}
 
-		public Builder setDetailId(final DetailId detailId)
+		public Builder setSingleRowLayout(@NonNull final DocumentLayoutSingleRow.Builder singleRowLayout)
 		{
-			this.detailId = detailId;
+			this.singleRowLayout = singleRowLayout;
+			singleRowLayout.setWindowId(windowId);
 			return this;
 		}
 
-		public DetailId getDetailId()
+		/* package */ boolean isEmpty()
 		{
-			return detailId;
-		}
-
-		public Builder setCaption(final ITranslatableString caption)
-		{
-			this.caption = caption;
-			return this;
-		}
-
-		public Builder setDescription(final ITranslatableString description)
-		{
-			this.description = description;
-			return this;
-		}
-
-		public Builder setEmptyResultText(final ITranslatableString emptyResultText)
-		{
-			this.emptyResultText = emptyResultText;
-			return this;
-		}
-
-		public Builder setEmptyResultHint(final ITranslatableString emptyResultHint)
-		{
-			this.emptyResultHint = emptyResultHint;
-			return this;
+			return (gridLayout == null || !gridLayout.hasElements())
+					&& (singleRowLayout == null || singleRowLayout.isEmpty());
 		}
 
 		public Builder setQueryOnActivate(final boolean queryOnActivate)
 		{
 			this.queryOnActivate = queryOnActivate;
 			return this;
-		}
-
-		public Builder addElement(final DocumentLayoutElementDescriptor.Builder elementBuilder)
-		{
-			Check.assumeNotNull(elementBuilder, "Parameter elementBuilder is not null");
-			elementBuilders.add(elementBuilder);
-			return this;
-		}
-
-		public Builder addElements(final Stream<DocumentLayoutElementDescriptor.Builder> elementBuilders)
-		{
-			Check.assumeNotNull(elementBuilders, "Parameter elementBuilders is not null");
-			elementBuilders.forEach(this::addElement);
-			return this;
-		}
-
-		public boolean hasElements()
-		{
-			return !elementBuilders.isEmpty();
-		}
-
-		private final DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
-		{
-			for (final DocumentLayoutElementDescriptor.Builder elementBuilder : elementBuilders)
-			{
-				if (elementBuilder.hasFieldName(fieldName))
-				{
-					return elementBuilder;
-				}
-			}
-
-			return null;
-		}
-
-		public boolean hasElement(final String fieldName)
-		{
-			return findElementBuilderByFieldName(fieldName) != null;
-		}
-
-		public Set<String> getFieldNames()
-		{
-			return elementBuilders
-					.stream()
-					.flatMap(element -> element.getFieldNames().stream())
-					.collect(GuavaCollectors.toImmutableSet());
 		}
 
 		public Builder setSupportQuickInput(final boolean supportQuickInput)

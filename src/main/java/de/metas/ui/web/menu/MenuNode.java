@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-import org.adempiere.util.Check;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
@@ -65,14 +65,15 @@ public final class MenuNode
 	}
 
 	private final String id;
+	private final int adMenuId;
 	private final String caption;
 	private final String captionBreadcrumb;
 	private final MenuNodeType type;
 	private final String elementId;
 	private final String mainTableName;
-	
+
 	private final List<MenuNode> children;
-	
+
 	private MenuNode parent;
 
 	//
@@ -85,8 +86,8 @@ public final class MenuNode
 	{
 		super();
 
-		Check.assumeNotNull(builder.id, "Parameter ID is not null");
-		id = builder.id;
+		id = builder.getId();
+		adMenuId = builder.getAD_Menu_ID();
 
 		caption = builder.caption;
 		captionBreadcrumb = builder.captionBreadcrumb;
@@ -114,6 +115,7 @@ public final class MenuNode
 	{
 		super();
 		id = node.id;
+		adMenuId = node.adMenuId;
 		caption = node.caption;
 		captionBreadcrumb = node.captionBreadcrumb;
 		type = node.type;
@@ -179,6 +181,11 @@ public final class MenuNode
 		return id;
 	}
 
+	public int getAD_Menu_ID()
+	{
+		return adMenuId;
+	}
+
 	public String getCaption()
 	{
 		return caption;
@@ -213,7 +220,7 @@ public final class MenuNode
 	{
 		return elementId;
 	}
-	
+
 	/** @return window's main table name or null */
 	public String getMainTableName()
 	{
@@ -319,7 +326,7 @@ public final class MenuNode
 
 	public static final class Builder
 	{
-		private String id;
+		private int adMenuId;
 
 		private String caption;
 		private String captionBreadcrumb;
@@ -339,16 +346,32 @@ public final class MenuNode
 			return new MenuNode(this);
 		}
 
-		public Builder setId(final int id)
+		public Builder setAD_Menu_ID(final int adMenuId)
 		{
-			this.id = String.valueOf(id);
+			this.adMenuId = adMenuId;
 			return this;
 		}
 
-		public Builder setId(final String id)
+		private int getAD_Menu_ID()
 		{
-			this.id = id;
-			return this;
+			if (adMenuId <= 0)
+			{
+				throw new AdempiereException("AD_Menu_ID not set");
+			}
+			return adMenuId;
+		}
+
+		private String getId()
+		{
+			final int adMenuId = getAD_Menu_ID();
+			if (type == MenuNodeType.NewRecord)
+			{
+				return adMenuId + "-new";
+			}
+			else
+			{
+				return String.valueOf(adMenuId);
+			}
 		}
 
 		public Builder setCaption(final String caption)

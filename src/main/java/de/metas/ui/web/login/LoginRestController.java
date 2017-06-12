@@ -77,7 +77,9 @@ public class LoginRestController
 
 	private Login getLoginService()
 	{
-		return new Login(userSession.getCtx());
+		final LoginContext loginCtx = new LoginContext(Env.getCtx());
+		loginCtx.setWebui(true);
+		return new Login(loginCtx);
 	}
 
 	private void assertAuthenticated()

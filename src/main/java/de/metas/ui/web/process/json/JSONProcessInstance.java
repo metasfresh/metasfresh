@@ -1,7 +1,7 @@
 package de.metas.ui.web.process.json;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.Map;
 
 import org.adempiere.util.GuavaCollectors;
 
@@ -24,11 +24,11 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -43,17 +43,19 @@ public class JSONProcessInstance implements Serializable
 
 	@JsonProperty("pinstanceId")
 	private final String pinstanceId;
-	@JsonProperty("parameters")
-	private final List<JSONDocumentField> parameters;
+
+	/** Parameters */
+	@JsonProperty("fieldsByName")
+	private final Map<String, JSONDocumentField> fieldsByName;
 
 	private JSONProcessInstance(final IProcessInstanceController pinstance, final JSONOptions jsonOpts)
 	{
 		super();
 		pinstanceId = pinstance.getInstanceId().toJson();
 
-		parameters = pinstance.getParameters()
+		fieldsByName = pinstance.getParameters()
 				.stream()
 				.map(param -> JSONDocumentField.ofDocumentField(param, jsonOpts.getAD_Language()))
-				.collect(GuavaCollectors.toImmutableList());
+				.collect(GuavaCollectors.toImmutableMapByKey(JSONDocumentField::getField));
 	}
 }

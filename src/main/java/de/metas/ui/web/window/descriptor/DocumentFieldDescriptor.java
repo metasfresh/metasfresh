@@ -15,12 +15,10 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
-import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -98,7 +96,8 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Class<?> valueClass;
 
 	private final LookupDescriptorProvider lookupDescriptorProvider;
-	
+	private final boolean supportZoomInto;
+
 	private final boolean virtualField;
 	private final Optional<IDocumentFieldValueProvider> virtualFieldValueProvider;
 
@@ -116,12 +115,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		, SpecialField_DocumentNo //
 		, SpecialField_DocStatus //
 		, SpecialField_DocAction //
-//		, SpecialField_DocumentSummary //
+		// , SpecialField_DocumentSummary //
 		;
 	};
 
 	private static final List<Characteristic> SPECIALFIELDS_ToExcludeFromLayout = ImmutableList.of(
-//			Characteristic.SpecialField_DocumentNo // NOP, don't exclude it (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 )
+			// Characteristic.SpecialField_DocumentNo // NOP, don't exclude it (see https://github.com/metasfresh/metasfresh-webui-api/issues/291 )
 			Characteristic.SpecialField_DocStatus //
 			, Characteristic.SpecialField_DocAction //
 	// , SpecialField_DocumentSummary // NOP, don't exclude DocumentSummary because if it's layout it shall be editable at least when new (e.g. C_BPartner.Name)
@@ -155,9 +154,10 @@ public final class DocumentFieldDescriptor implements Serializable
 		valueClass = builder.getValueClass();
 
 		lookupDescriptorProvider = builder.getLookupDescriptorProvider();
+		supportZoomInto = builder.isSupportZoomInto();
 
 		defaultValueExpression = Preconditions.checkNotNull(builder.defaultValueExpression, "defaultValueExpression not null");
-		
+
 		virtualField = builder.isVirtualField();
 		virtualFieldValueProvider = builder.getVirtualFieldValueProvider();
 
@@ -196,7 +196,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return caption;
 	}
-	
+
 	public ITranslatableString getDescription()
 	{
 		return description;
@@ -221,7 +221,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return virtualField;
 	}
-	
+
 	public Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
 	{
 		return virtualFieldValueProvider;
@@ -236,7 +236,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return widgetType;
 	}
-	
+
 	public ButtonFieldActionDescriptor getButtonActionDescriptor()
 	{
 		return buttonActionDescriptor;
@@ -246,7 +246,12 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return valueClass;
 	}
-	
+
+	public boolean isSupportZoomInto()
+	{
+		return supportZoomInto;
+	}
+
 	public LookupDescriptor getLookupDescriptor(final LookupScope scope)
 	{
 		return lookupDescriptorProvider.provideForScope(scope);
@@ -257,12 +262,12 @@ public final class DocumentFieldDescriptor implements Serializable
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 		return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 	}
-	
+
 	public Optional<String> getLookupTableName()
 	{
 		return extractLookupTableName(lookupDescriptorProvider);
 	}
-	
+
 	private static final Optional<String> extractLookupTableName(final LookupDescriptorProvider lookupDescriptorProvider)
 	{
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
@@ -468,7 +473,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			else if (Boolean.class == targetType)
 			{
 				final Object valueToConv;
-				if(value instanceof StringLookupValue)
+				if (value instanceof StringLookupValue)
 				{
 					// If String lookup value then consider only the Key.
 					// usage example 1: the Posted column which can be Y, N and some other error codes.
@@ -480,7 +485,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					valueToConv = value;
 				}
-				
+
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)DisplayType.toBoolean(valueToConv, Boolean.FALSE);
 				return valueConv;
@@ -492,8 +497,8 @@ public final class DocumentFieldDescriptor implements Serializable
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
 					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
-					
-					if(Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+
+					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
 					{
 						// corner case: the frontend sent a lookup value like '{ 1234567 : "" }'
 						// => we need to resolve the name against the lookup
@@ -537,6 +542,7 @@ public final class DocumentFieldDescriptor implements Serializable
 				}
 				else if (StringLookupValue.class == fromType)
 				{
+					// TODO: implement https://github.com/metasfresh/metasfresh-webui-api/issues/417
 					final StringLookupValue stringLookupValue = (StringLookupValue)value;
 					@SuppressWarnings("unchecked")
 					final T valueConv = (T)IntegerLookupValue.of(stringLookupValue);
@@ -549,9 +555,9 @@ public final class DocumentFieldDescriptor implements Serializable
 				{
 					@SuppressWarnings("unchecked")
 					final Map<String, String> map = (Map<String, String>)value;
-					StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
-					
-					if(Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
+					final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
+
+					if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
 					{
 						// corner case: the frontend sent a lookup value like '{ "someKey" : "" }'
 						// => we need to resolve the name against the lookup
@@ -590,7 +596,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
-			else if(ITableRecordReference.class.isAssignableFrom(targetType))
+			else if (ITableRecordReference.class.isAssignableFrom(targetType))
 			{
 				@SuppressWarnings("unchecked")
 				final T valueConv = (T)convertToTableRecordReference(fieldName, value, widgetType, targetType, lookupDataSource);
@@ -601,29 +607,28 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			throw new AdempiereException("Failed converting " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 					+ "\n LookupDataSource: " + lookupDataSource //
-					+ "\n Widget type: " + widgetType
-					, e);
+					+ "\n Widget type: " + widgetType, e);
 		}
 
 		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 				+ "\n LookupDataSource: " + lookupDataSource //
 		);
 	}
-	
+
 	private static final ITableRecordReference convertToTableRecordReference(
 			final String fieldName //
 			, final Object value //
 			, final DocumentFieldWidgetType widgetType //
 			, final Class<?> targetType //
 			, @NonNull final LookupValueByIdSupplier lookupDataSource //
-			)
+	)
 	{
 		final IntegerLookupValue lookupValue = convertToValueClass(fieldName, value, widgetType, IntegerLookupValue.class, lookupDataSource);
-		if(lookupValue == null)
+		if (lookupValue == null)
 		{
 			return null;
 		}
-		
+
 		return lookupDataSource.toTableRecordReference(lookupValue.getIdAsInt());
 	}
 
@@ -637,18 +642,6 @@ public final class DocumentFieldDescriptor implements Serializable
 	 */
 	public static final class Builder
 	{
-		/** Logic expression which evaluates as <code>true</code> when IsActive flag exists but it's <code>false</code> */
-		private static final ILogicExpression LOGICEXPRESSION_NotActive;
-		/** Logic expression which evaluates as <code>true</code> when Processed flag exists and it's <code>true</code> */
-		private static final ILogicExpression LOGICEXPRESSION_Processed;
-
-		static
-		{
-			final IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-			LOGICEXPRESSION_NotActive = expressionFactory.compile("@" + WindowConstants.FIELDNAME_IsActive + "/Y@=N", ILogicExpression.class);
-			LOGICEXPRESSION_Processed = expressionFactory.compile("@" + WindowConstants.FIELDNAME_Processed + "/N@=Y | @" + WindowConstants.FIELDNAME_Processing + "/N@=Y", ILogicExpression.class);
-		}
-
 		private DocumentFieldDescriptor _fieldBuilt;
 
 		private final String fieldName;
@@ -829,14 +822,14 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			assertNotBuilt();
 			this.virtualField = virtualField;
-			this.virtualFieldValueProvider = Optional.empty();
+			virtualFieldValueProvider = Optional.empty();
 			return this;
 		}
-		
+
 		public Builder setVirtualField(@NonNull final IDocumentFieldValueProvider virtualFieldValueProvider)
 		{
 			assertNotBuilt();
-			this.virtualField = true;
+			virtualField = true;
 			this.virtualFieldValueProvider = Optional.of(virtualFieldValueProvider);
 			return this;
 		}
@@ -845,7 +838,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return virtualField;
 		}
-		
+
 		private Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
 		{
 			return virtualFieldValueProvider;
@@ -857,10 +850,10 @@ public final class DocumentFieldDescriptor implements Serializable
 			this.calculated = calculated;
 			return this;
 		}
-		
+
 		private boolean isCalculated()
 		{
-			if(isVirtualField())
+			if (isVirtualField())
 			{
 				return true;
 			}
@@ -870,7 +863,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
 		{
 			assertNotBuilt();
-			this._widgetType = widgetType;
+			_widgetType = widgetType;
 			return this;
 		}
 
@@ -910,7 +903,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupScope.DocumentField);
 			return lookupDescriptor == null ? null : lookupDescriptor.getLookupSourceType();
 		}
-		
+
 		public Optional<String> getLookupTableName()
 		{
 			return extractLookupTableName(lookupDescriptorProvider);
@@ -919,7 +912,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		public Builder setValueClass(final Class<?> valueClass)
 		{
 			assertNotBuilt();
-			this._valueClass = valueClass;
+			_valueClass = valueClass;
 			return this;
 		}
 
@@ -1046,7 +1039,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			// Case: DocumentNo/Value special field not be readonly
 			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
 			{
-				return LOGICEXPRESSION_NotActive.or(LOGICEXPRESSION_Processed);
+				return ILogicExpression.FALSE;
 			}
 
 			// Case: DocAction
@@ -1079,23 +1072,6 @@ public final class DocumentFieldDescriptor implements Serializable
 			if (!entityReadonlyLogic.isConstantFalse())
 			{
 				readonlyLogic = entityReadonlyLogic.or(fieldReadonlyLogic);
-			}
-
-			//
-			// Consider field readonly if the row is not active
-			// .. and this property is not the IsActive flag.
-			if (!WindowConstants.FIELDNAME_IsActive.equals(fieldName))
-			{
-				readonlyLogic = LOGICEXPRESSION_NotActive.or(readonlyLogic);
-			}
-
-			//
-			// Consider field readonly if the row is processed.
-			// In case we deal with an AlwaysUpdateable field, this logic do not apply.
-			final boolean alwaysUpdateable = isAlwaysUpdateable();
-			if (!alwaysUpdateable)
-			{
-				readonlyLogic = LOGICEXPRESSION_Processed.or(readonlyLogic);
 			}
 
 			return readonlyLogic;
@@ -1257,9 +1233,9 @@ public final class DocumentFieldDescriptor implements Serializable
 			{
 				dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues);
 			}
-			
+
 			final IDocumentFieldValueProvider virtualFieldValueProvider = getVirtualFieldValueProvider().orElse(null);
-			if(virtualFieldValueProvider != null)
+			if (virtualFieldValueProvider != null)
 			{
 				dependencyMapBuilder.add(fieldName, virtualFieldValueProvider.getDependsOnFieldNames(), DependencyType.FieldValue);
 			}
@@ -1291,16 +1267,47 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			return ImmutableList.copyOf(callouts);
 		}
-		
-		public Builder setButtonActionDescriptor(ButtonFieldActionDescriptor buttonActionDescriptor)
+
+		public Builder setButtonActionDescriptor(final ButtonFieldActionDescriptor buttonActionDescriptor)
 		{
 			this.buttonActionDescriptor = buttonActionDescriptor;
 			return this;
 		}
-		
+
 		public ButtonFieldActionDescriptor getButtonActionDescriptor()
 		{
 			return buttonActionDescriptor;
+		}
+
+		public boolean isSupportZoomInto()
+		{
+			// Allow zooming into key column. It shall open precisely this record in a new window
+			// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
+			// In future we shall think to narrow it down only to included tabs and only for those tables which also have a window where they are the header document.
+			if(isKey())
+			{
+				return true;
+			}
+			
+			final DocumentFieldWidgetType widgetType = getWidgetType();
+			if (!widgetType.isSupportZoomInto())
+			{
+				return false;
+			}
+
+			final Class<?> valueClass = getValueClass();
+			if (StringLookupValue.class.isAssignableFrom(valueClass))
+			{
+				return false;
+			}
+
+			final String lookupTableName = getLookupTableName().orElse(null);
+			if (WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName))
+			{
+				return false;
+			}
+
+			return true;
 		}
 	}
 }

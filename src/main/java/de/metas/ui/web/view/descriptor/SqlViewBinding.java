@@ -5,21 +5,22 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.util.Check;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -60,12 +61,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		return new Builder();
 	}
 
-	//
-	// Paging constants
-	private static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
-	private static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
-	private static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
-
 	private final String _tableName;
 	private final String _tableAlias;
 
@@ -81,6 +76,8 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final SqlDocumentFilterConvertersList viewFilterConverters;
 
+	private final SqlViewGroupingBinding groupingBinding;
+
 	private SqlViewBinding(final Builder builder)
 	{
 		super();
@@ -93,20 +90,21 @@ public class SqlViewBinding implements SqlEntityBinding
 		final Collection<String> displayFieldNames = builder.getDisplayFieldNames();
 
 		final Collection<SqlViewRowFieldBinding> allFields = _fieldsByFieldName.values();
-		final IStringExpression sqlSelect = buildSqlSelect(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields);
+		this.groupingBinding = builder.groupingBinding;
+		final IStringExpression sqlSelect = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields, groupingBinding);
 
 		sqlWhereClause = builder.getSqlWhereClause();
 		sqlSelectByPage = sqlSelect.toComposer()
 				.append("\n WHERE ")
-				.append("\n " + SqlViewBinding.COLUMNNAME_Paging_UUID + "=?")
-				.append("\n AND " + SqlViewBinding.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
-				.append("\n ORDER BY " + SqlViewBinding.COLUMNNAME_Paging_SeqNo)
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?")
+				.append("\n AND " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
+				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
 				.build();
 
 		sqlSelectById = sqlSelect.toComposer()
 				.append("\n WHERE ")
-				.append("\n " + SqlViewBinding.COLUMNNAME_Paging_UUID + "=?")
-				.append("\n AND " + SqlViewBinding.COLUMNNAME_Paging_Record_ID + "=?")
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?")
+				.append("\n AND " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
 				.build();
 
 		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
@@ -165,6 +163,15 @@ public class SqlViewBinding implements SqlEntityBinding
 		return getKeyField().getColumnName();
 	}
 
+	public boolean isKeyFieldName(final String fieldName)
+	{
+		if (_keyField == null)
+		{
+			return false;
+		}
+		return Objects.equal(fieldName, _keyField.getFieldName());
+	}
+
 	public Collection<SqlViewRowFieldBinding> getFields()
 	{
 		return _fieldsByFieldName.values();
@@ -179,58 +186,6 @@ public class SqlViewBinding implements SqlEntityBinding
 			throw new IllegalArgumentException("No field found for '" + fieldName + "' in " + this);
 		}
 		return field;
-	}
-
-	private static IStringExpression buildSqlSelect( //
-			final String sqlTableName //
-			, final String sqlTableAlias //
-			, final String sqlKeyColumnName //
-			, final Collection<String> displayFieldNames //
-			, final Collection<SqlViewRowFieldBinding> allFields //
-	)
-	{
-		// final String sqlTableName = getTableName();
-		// final String sqlTableAlias = getTableAlias();
-		// final String sqlKeyColumnName = getKeyField().getColumnName();
-
-		final List<String> sqlSelectValuesList = new ArrayList<>();
-		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
-		allFields.forEach(field -> {
-			// Collect the SQL select for internal value
-			// NOTE: we need to collect all fields because, even if the field is not needed it might be present in some where clause
-			sqlSelectValuesList.add(field.getSqlSelectValue());
-
-			// Collect the SQL select for displayed value,
-			// * if there is one
-			// * and if it was required by caller (i.e. present in fieldNames list)
-			if (field.isUsingDisplayColumn() && displayFieldNames.contains(field.getFieldName()))
-			{
-				sqlSelectDisplayNamesList.add(field.getSqlSelectDisplayValue());
-			}
-		});
-
-		// NOTE: we don't need access SQL here because we assume the records were already filtered
-
-		final CompositeStringExpression.Builder sql = IStringExpression.composer();
-		sql.append("SELECT ")
-				.append("\n").append(sqlTableAlias).append(".*"); // Value fields
-
-		if (!sqlSelectDisplayNamesList.isEmpty())
-		{
-			sql.append(", \n").appendAllJoining("\n, ", sqlSelectDisplayNamesList); // DisplayName fields
-		}
-
-		sql.append("\n FROM (")
-				.append("\n   SELECT ")
-				.append("\n   ").append(Joiner.on("\n   , ").join(sqlSelectValuesList))
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Line + " AS " + COLUMNNAME_Paging_SeqNo)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + " AS " + COLUMNNAME_Paging_UUID)
-				.append("\n , sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + " AS " + COLUMNNAME_Paging_Record_ID)
-				.append("\n   FROM " + I_T_WEBUI_ViewSelection.Table_Name + " sel")
-				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_Record_ID + ")")
-				.append("\n ) " + sqlTableAlias); // FROM
-
-		return sql.build().caching();
 	}
 
 	@Override
@@ -288,6 +243,44 @@ public class SqlViewBinding implements SqlEntityBinding
 		return sqlOrderBysIndexedByFieldName.build();
 	}
 
+	public Set<String> getGroupByFieldNames()
+	{
+		if (groupingBinding == null)
+		{
+			return ImmutableSet.of();
+		}
+		return groupingBinding.getGroupByFieldNames();
+	}
+
+	public boolean hasGroupingFields()
+	{
+		return !getGroupByFieldNames().isEmpty();
+	}
+
+	public boolean isGroupBy(final String fieldName)
+	{
+		return getGroupByFieldNames().contains(fieldName);
+	}
+
+	@Nullable
+	public String getSqlAggregatedColumn(final String fieldName)
+	{
+		if (groupingBinding == null)
+		{
+			return null;
+		}
+		return groupingBinding.getColumnSqlByFieldName(fieldName);
+	}
+
+	public boolean isAggregated(final String fieldName)
+	{
+		if (groupingBinding == null)
+		{
+			return false;
+		}
+		return groupingBinding.isAggregated(fieldName);
+	}
+
 	//
 	//
 	//
@@ -307,6 +300,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		private List<DocumentQueryOrderBy> defaultOrderBys;
 		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
+
+		private SqlViewGroupingBinding groupingBinding;
 
 		private Builder()
 		{
@@ -447,6 +442,12 @@ public class SqlViewBinding implements SqlEntityBinding
 				return SqlDocumentFilterConverters.emptyList();
 			}
 			return viewFilterConverters.build();
+		}
+
+		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)
+		{
+			this.groupingBinding = groupingBinding;
+			return this;
 		}
 	}
 

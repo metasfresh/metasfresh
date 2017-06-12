@@ -58,22 +58,22 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	private final IStringExpression sqlOrderBy;
 
 	private final SqlViewRowFieldLoader fieldLoader;
-
+	
 	@Builder
 	private SqlViewRowFieldBinding(
-			@NonNull final String fieldName //
-			, final String columnName //
-			, final String columnSql //
-			, final boolean keyColumn //
-			, @NonNull final DocumentFieldWidgetType widgetType //
+			@NonNull final String fieldName,
+			final String columnName,
+			final String columnSql,
+			final boolean keyColumn,
+			@NonNull final DocumentFieldWidgetType widgetType,
 			//
-			, @NonNull final Class<?> sqlValueClass //
-			, final String sqlSelectValue //
-			, final IStringExpression sqlSelectDisplayValue //
-			, final boolean usingDisplayColumn //
+			@NonNull final Class<?> sqlValueClass,
+			final String sqlSelectValue,
+			final IStringExpression sqlSelectDisplayValue,
+			final boolean usingDisplayColumn, //
 			//
-			, final IStringExpression sqlOrderBy //
-			, @NonNull final SqlViewRowFieldLoader fieldLoader //
+			final IStringExpression sqlOrderBy,
+			@NonNull final SqlViewRowFieldLoader fieldLoader
 	)
 	{
 		this.fieldName = fieldName;

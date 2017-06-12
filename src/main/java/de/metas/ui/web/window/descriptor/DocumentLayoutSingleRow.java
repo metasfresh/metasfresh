@@ -35,7 +35,13 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
-public class DocumentLayoutHeader
+/**
+ * Single row layout (applies for header document but also for included document, when editing in advanced mode).
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class DocumentLayoutSingleRow
 {
 	public static final Builder builder()
 	{
@@ -49,7 +55,7 @@ public class DocumentLayoutHeader
 	private final List<DocumentLayoutSectionDescriptor> sections;
 	private transient List<DocumentLayoutElementDescriptor> _elements = null;
 
-	private DocumentLayoutHeader(final Builder builder)
+	private DocumentLayoutSingleRow(final Builder builder)
 	{
 		windowId = builder.windowId;
 		Check.assumeNotNull(windowId, "Parameter windowId is not null");
@@ -123,9 +129,9 @@ public class DocumentLayoutHeader
 			super();
 		}
 
-		public DocumentLayoutHeader build()
+		public DocumentLayoutSingleRow build()
 		{
-			return new DocumentLayoutHeader(this);
+			return new DocumentLayoutSingleRow(this);
 		}
 
 		private List<DocumentLayoutSectionDescriptor> buildSections()

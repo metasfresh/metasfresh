@@ -368,23 +368,10 @@ public class ViewLayout implements ETagAware
 		{
 			return !elementBuilders.isEmpty();
 		}
-
-		private final DocumentLayoutElementDescriptor.Builder findElementBuilderByFieldName(final String fieldName)
+		
+		public List<DocumentLayoutElementDescriptor.Builder> getElements()
 		{
-			for (final DocumentLayoutElementDescriptor.Builder elementBuilder : elementBuilders)
-			{
-				if (elementBuilder.hasFieldName(fieldName))
-				{
-					return elementBuilder;
-				}
-			}
-
-			return null;
-		}
-
-		public boolean hasElement(final String fieldName)
-		{
-			return findElementBuilderByFieldName(fieldName) != null;
+			return elementBuilders;
 		}
 
 		private Collection<DocumentFilterDescriptor> getFilters()

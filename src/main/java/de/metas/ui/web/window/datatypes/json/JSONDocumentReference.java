@@ -1,10 +1,14 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -25,11 +29,11 @@ import de.metas.ui.web.window.model.DocumentReference;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,6 +52,19 @@ public final class JSONDocumentReference
 			logger.warn("Failed convering {} to {}. Skipped", documentReference, JSONDocumentReference.class, ex);
 			return null;
 		}
+	}
+
+	public static final List<JSONDocumentReference> ofList(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
+	{
+		if (documentReferences.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return documentReferences.stream()
+				.map(documentReference -> of(documentReference, jsonOpts))
+				.filter(jsonDocumentReference -> jsonDocumentReference != null)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static final transient Logger logger = LogManager.getLogger(JSONDocumentReference.class);
