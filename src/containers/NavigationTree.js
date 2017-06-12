@@ -33,6 +33,7 @@ class NavigationTree extends Component {
 
     componentDidMount = () => {
         this.getData();
+        document.getElementById('search-input').focus();
     }
 
     getData = (callback) => {
@@ -101,6 +102,28 @@ class NavigationTree extends Component {
         this.getData(this.clearValue);
     }
 
+    handleKeyDown = (e) => {
+        const input = document.getElementById('search-input');
+        const firstMenuItem =
+            document.getElementsByClassName('js-menu-item')[0];
+
+        switch(e.key) {
+            case 'ArrowDown':
+                if(document.activeElement === input) {
+                    firstMenuItem.focus();
+                }
+            break;
+            case 'Tab':
+                e.preventDefault();
+                if(document.activeElement === input) {
+                    firstMenuItem.focus();
+                } else {
+                    input.focus();
+                }
+            break;
+        }
+    }
+
     handleRedirect = (elementId) => {
         const {dispatch} = this.props;
         dispatch(push('/window/' + elementId));
@@ -142,7 +165,9 @@ class NavigationTree extends Component {
                             className="input-field"
                             placeholder="Type phrase here"
                             onChange={e => this.handleQuery(e) }
-                            />
+                            onKeyDown={(e) =>
+                                this.handleKeyDown(e)}
+                        />
                         {query && <i
                             className="input-icon meta-icon-close-alt pointer"
                             onClick={e => this.handleClear(e) }
@@ -165,6 +190,7 @@ class NavigationTree extends Component {
                             handleNewRedirect={this.handleNewRedirect}
                             openModal={this.openModal}
                             updateData={this.updateData}
+                            onKeyDown={(e) => this.handleKeyDown(e)}
                             {...subitem}
                         />
                     )}

@@ -79,7 +79,7 @@ class UserDropdown extends Component {
                         <div
                             className="user-dropdown-item user-dropdown-header-item meta-text-primary"
                         >
-                            Marcus Gronholm
+                            Profile
                         </div>
                         <hr className="context-menu-separator" />
                         {

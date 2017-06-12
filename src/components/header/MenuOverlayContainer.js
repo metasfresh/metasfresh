@@ -22,12 +22,13 @@ class MenuOverlayContainer extends Component {
             children, elementId, caption, type, handleClickOnFolder,
             handleRedirect, handleNewRedirect, handlePath, printChildren, deep,
             back, handleMenuOverlay, openModal, showBookmarks, updateData,
-            transparentBookmarks
+            transparentBookmarks, onKeyDown
         } = this.props;
 
         return (
             <div
                 tabIndex={0}
+                onKeyDown={onKeyDown}
                 className={
                     'menu-overlay-node-container ' +
                     (deep ? 'menu-overlay-node-spaced ' :
