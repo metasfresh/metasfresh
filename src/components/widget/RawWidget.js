@@ -375,7 +375,7 @@ class RawWidget extends Component {
                         validStatus={widgetData[0].validStatus}
                     />
                 )
-                
+
             case 'Link':
                 return (
                     <a

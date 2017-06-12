@@ -1168,12 +1168,13 @@ td.pulse-off input {
     align-items: center;
     justify-content: flex-start;
     
-    margin-top: .5rem;
+    margin-top: 2rem;
 }
 
 .separator-title {
     white-space: nowrap;
     color: $brand-font-color-weak;
+    font-size: 15px;
 }
 
 .avatar {
