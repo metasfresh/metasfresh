@@ -8,7 +8,9 @@ import {
     clearMasterData,
     getTab,
     addRowData,
-    sortTab
+    sortTab,
+    connectWS,
+    disconnectWS
 } from '../actions/WindowActions';
 
 import {
@@ -44,6 +46,32 @@ class MasterWindow extends Component {
         const {master, modal, params, dispatch} = this.props;
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
+
+        if(prevProps.master.websocket !== master.websocket && master.websocket){
+            connectWS.call(this, master.websocket, msg => {
+                const {includedTabsInfo} = msg;
+                const {master} = this.props;
+                console.log(includedTabsInfo)
+                includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
+                    const tabLayout = master.layout.tabs.filter(tab => 
+                        tab.tabId === tabId
+                    )[0];
+                    if(
+                        tabLayout && tabLayout.queryOnActivate &&
+                        master.layout.activeTab !== tabId
+                    ){
+                        return;
+                    }
+                    includedTabsInfo[tabId] &&
+                        getTab(tabId, params.windowType, master.docId)
+                            .then(tab => {
+                                dispatch(
+                                    addRowData({[tabId]: tab}, 'master')
+                                );
+                            });
+                })
+            });
+        }
 
         if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
             window.addEventListener('beforeunload', this.confirm)
@@ -81,6 +109,7 @@ class MasterWindow extends Component {
         }
 
         dispatch(clearMasterData());
+        disconnectWS.call(this);
     }
 
     confirm = (e) => {
