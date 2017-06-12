@@ -82,7 +82,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
 	/**
-	 * List of handling units that have to be returned to vendor
+	 * List of handling units that have to be returned from customer
 	 */
 	private final Set<HUToReturn> _husToReturn = new TreeSet<>(Comparator.comparing(HUToReturn::getM_HU_ID)
 			.thenComparing(HUToReturn::getOriginalReceiptInOutLineId));
