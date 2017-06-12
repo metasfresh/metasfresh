@@ -109,7 +109,13 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		final I_M_Product product = productStorage.getM_Product();
 
-		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine);
+		
+		if(originInOutLine.getM_Product_ID() != product.getM_Product_ID())
+		{
+			return;
+		}
+			
+		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine, product);
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
@@ -171,7 +177,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	 * @param product
 	 * @return
 	 */
-	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine)
+	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
 
 		// services
@@ -187,7 +193,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		//
 		// Check if we already have a movement line for our key
-		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine);
+		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine, product);
 		final I_M_InOutLine existingInOutLine = _inOutLines.get(inOutLineKey);
 
 		// return the existing inout line if found
@@ -232,9 +238,9 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	 * @param product
 	 * @return
 	 */
-	private ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine)
+	private ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
-		return Util.mkKey(originInOutLine.getM_InOutLine_ID());
+		return Util.mkKey(originInOutLine.getM_InOutLine_ID(), product.getM_Product_ID());
 	}
 
 	@Override
