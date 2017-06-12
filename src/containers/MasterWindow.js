@@ -51,7 +51,6 @@ class MasterWindow extends Component {
             connectWS.call(this, master.websocket, msg => {
                 const {includedTabsInfo} = msg;
                 const {master} = this.props;
-                console.log(includedTabsInfo)
                 includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
                     const tabLayout = master.layout.tabs.filter(tab => 
                         tab.tabId === tabId
@@ -82,12 +81,13 @@ class MasterWindow extends Component {
 
         // When closing modal, we need to update the stale tabs
         if(!modal.visible && modal.visible !== prevProps.modal.visible){
-            Object.keys(master.includedTabsInfo).map(tabId => {
-                getTab(tabId, params.windowType, master.docId)
-                    .then(tab => {
-                        dispatch(addRowData({[tabId]: tab}, 'master'));
-                    });
-            })
+            master.includedTabsInfo && 
+                Object.keys(master.includedTabsInfo).map(tabId => {
+                    getTab(tabId, params.windowType, master.docId)
+                        .then(tab => {
+                            dispatch(addRowData({[tabId]: tab}, 'master'));
+                        });
+                })
         }
     }
 
