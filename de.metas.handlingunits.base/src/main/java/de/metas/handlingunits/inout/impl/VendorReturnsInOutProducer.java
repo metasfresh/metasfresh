@@ -1,7 +1,9 @@
 package de.metas.handlingunits.inout.impl;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -90,7 +92,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	/**
 	 * List of handling units that have to be returned to vendor
 	 */
-	private final List<HUToReturn> _husToReturn = new ArrayList<>();
+	private final Set<HUToReturn> _husToReturn = new TreeSet<>(Comparator.comparing(HUToReturn::getM_HU_ID)
+			.thenComparing(HUToReturn::getOriginalReceiptInOutLineId));
 
 	public VendorReturnsInOutProducer()
 	{
@@ -182,7 +185,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return this;
 	}
 
-	private List<HUToReturn> getHUsToReturn()
+	private Set<HUToReturn> getHUsToReturn()
 	{
 		Check.assumeNotEmpty(_husToReturn, "husToReturn is not empty");
 		return _husToReturn;
@@ -201,10 +204,14 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	}
 
 	@Value
-	private final class HUToReturn
+	private static final class HUToReturn
 	{
-		private final I_M_HU hu;
+		private @NonNull final I_M_HU hu;
 		private final int originalReceiptInOutLineId;
-	}
 
+		private int getM_HU_ID()
+		{
+			return hu.getM_HU_ID();
+		}
+	}
 }
