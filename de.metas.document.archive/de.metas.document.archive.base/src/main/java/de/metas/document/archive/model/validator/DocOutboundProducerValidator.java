@@ -134,7 +134,7 @@ import de.metas.document.engine.IDocActionBL;
 					return null;
 				}
 
-				if (po.is_ValueChanged(DocAction.COLUMNNAME_DocStatus) && Services.get(IDocActionBL.class).isDocumentReversedOrVoided(po))
+				if (po.is_ValueChanged(DocAction.DocStatus) && Services.get(IDocActionBL.class).isDocumentReversedOrVoided(po))
 				{
 					voidDocOutbound(po);
 				}

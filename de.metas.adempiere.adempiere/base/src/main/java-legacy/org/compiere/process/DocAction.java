@@ -94,9 +94,23 @@ public interface DocAction
 	/** DocAction Ref_List values **/
 	public static final int AD_REFERENCE_ID = 135;
 
-	public static final String COLUMNNAME_DocStatus = "DocStatus";
+	/**
+	 * Constant value for the DocDtatus column. Note that we don't call it {@code COLUMNNAME_DocStatus} to avoid a compiler error saying
+	 * <pre>
+	 * reference to COLUMNNAME_DocStatus is ambiguous
+	 * </pre> in (legacy) sub classes of this class.
+	 *
+	 */
+	public static final String DocStatus = "DocStatus";
 
-	public static final String COLUMNNAME_Reversal_ID = "Reversal_ID";
+	/**
+	 * Constant value for the Reversal_ID column. Note that we don't call it {@code COLUMNNAME_Reversal_ID} to avoid a compiler error saying
+	 * <pre>
+	 * reference to COLUMNNAME_Reversal_ID is ambiguous
+	 * </pre> in (legacy) sub classes of this class.
+	 *
+	 */
+	public static final String Reversal_ID = "Reversal_ID";
 
 	/**
 	 * 	Set Doc Status
