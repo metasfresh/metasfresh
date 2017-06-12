@@ -180,6 +180,7 @@ public final class ViewRow implements IViewRow
 	{
 		private final WindowId windowId;
 		private DocumentId rowId;
+		private DocumentId _rowIdEffective; // lazy
 		private DocumentId parentRowId;
 		private IViewRowType type;
 		private Boolean processed;
@@ -205,6 +206,7 @@ public final class ViewRow implements IViewRow
 		public Builder setRowId(final DocumentId rowId)
 		{
 			this.rowId = rowId;
+			_rowIdEffective = null;
 			return this;
 		}
 
@@ -244,16 +246,30 @@ public final class ViewRow implements IViewRow
 		/** @return view row ID; never null */
 		public DocumentId getRowId()
 		{
-			if (rowId == null)
+			if (_rowIdEffective == null)
 			{
-				throw new IllegalStateException("No rowId was provided for " + this);
+				if (rowId == null)
+				{
+					throw new IllegalStateException("No rowId was provided for " + this);
+				}
+
+				if (isRootRow())
+				{
+					_rowIdEffective = rowId;
+				}
+				else
+				{
+					_rowIdEffective = DocumentId.ofString("D" + rowId.toJson());
+				}
 			}
-			return rowId;
+			
+			return _rowIdEffective;
 		}
 
 		public Builder setParentRowId(final DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
+			_rowIdEffective = null;
 			return this;
 		}
 
