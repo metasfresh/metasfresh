@@ -21,9 +21,10 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.product.IProductBL;
 
 /*
@@ -112,6 +113,8 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
+		
+		final I_M_HU hu = productStorage.getM_HU();
 
 		if (originInOutLine.getM_InOut_ID() != _inoutRef.getValue().getM_InOut_ID())
 		{
@@ -121,17 +124,26 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMove);
 			inOutLine.setMovementQty(inOutLine_Qty_New);
 
+			// Adjust qtyTU
+			inOutLine.setQtyEnteredTU(originInOutLine.getQtyEnteredTU());
 			//
 			// Also set the qty entered
 			inOutLine.setQtyEntered(inOutLine_Qty_New);
-
+			
+			// try to set m_hu_PI_Item_Product
+			final I_M_HU_PI_Item_Product huPIItemProduct = hu.getM_HU_PI_Item_Product();
+			if(huPIItemProduct != null)
+			{
+				inOutLine.setM_HU_PI_Item_Product(huPIItemProduct);
+			}
+			
 			// Make sure the inout line is saved
 			InterfaceWrapperHelper.save(inOutLine);
 		}
 
 		// Assign the HU to the inout line and mark it as shipped
 		{
-			final I_M_HU hu = productStorage.getM_HU();
+		
 			final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 			final I_M_HU huTopLevel = handlingUnitsBL.getTopLevelParent(hu);

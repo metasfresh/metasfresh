@@ -1,5 +1,6 @@
 package de.metas.handlingunits.inout.impl;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -132,6 +133,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 				}
 			}
 		}
+		
+		final int qtyTU = collector.getAndResetCountTUs();
 
 		final List<HUPackingMaterialDocumentLineCandidate> pmCandidates = collector.getAndClearCandidates();
 
