@@ -65,7 +65,7 @@ class RawModal extends Component {
 
     render() {
         const {
-            modalTitle, children
+            modalTitle, children, modalDescription
         } = this.props;
 
         const {
@@ -85,7 +85,11 @@ class RawModal extends Component {
                     >
                         <span className="panel-modal-header-title">
                             {modalTitle ? modalTitle : 'Modal'}
+                            <span className="panel-modal-description">
+                                {modalDescription ? modalDescription : ''}
+                            </span>
                         </span>
+
                         <div className="items-row-2">
                             <button
                                 className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
