@@ -198,7 +198,8 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			return "";
 		}
 
-		return " / " + summary;
+		return summary;
+		// return " / " + summary; // don't prefix with "/". That shall be done by frontend if and when needed
 	}
 
 	private static interface FieldValueExtractor
