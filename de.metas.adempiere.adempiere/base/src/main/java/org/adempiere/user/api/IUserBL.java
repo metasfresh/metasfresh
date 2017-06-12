@@ -32,6 +32,7 @@ public interface IUserBL extends ISingletonService
 {
 	String PARAM_ACTION = "action";
 	String ACTION_ResetPassword = "ResetPassword";
+	String ACTION_CreateNewUser = "CreateNewUser";
 	String PARAM_AccountPasswordResetCode = "AccountPasswordResetCode";
 
 	void createResetPasswordByEMailRequest(I_AD_User user);
