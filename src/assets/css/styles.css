@@ -405,6 +405,11 @@ body {
     margin: 0 .3rem;
 }
 
+.widget-link {
+    line-height: 35px;
+    color: $brand-link-color;
+}
+
 @keyframes rotation {
     from {
         transform: rotate(0deg);
