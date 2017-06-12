@@ -216,7 +216,6 @@
     min-width: 38px;
     text-align: center;
 }
-
 .page-link-compressed{
     border:0;
     background-color: transparent;
@@ -410,4 +409,22 @@ $indent-signs-offset: 6px;
 
 .table-fade-out {
     opacity: .65;
+}
+
+.table.table-striped  .table-included tr {
+    background-color: transparent;
+}
+
+.table .table-included {
+    background-color: transparent;
+    height: 100%;
+}
+
+.table.table-included td {
+    height: 22px;
+    width: 50%;
+}
+
+.table-chart-value {
+    text-align: right;
 }

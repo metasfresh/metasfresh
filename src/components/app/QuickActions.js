@@ -91,14 +91,13 @@ class QuickActions extends Component {
     }
 
     fetchActions = () => {
-        const {dispatch, windowType, viewId, selected} = this.props;
-        dispatch(
-            quickActionsRequest(windowType, viewId, selected)
-        ).then(response => {
-            this.mounted && this.setState({
-                actions: response.data.actions
-            })
-        });
+        const {windowType, viewId, selected} = this.props;
+        quickActionsRequest(windowType, viewId, selected)
+            .then(response => {
+                this.mounted && this.setState({
+                    actions: response.data.actions
+                })
+            });
     }
 
     toggleDropdown = (option) => {
@@ -113,12 +112,16 @@ class QuickActions extends Component {
         } = this.state;
 
         const {
-            shouldNotUpdate, processStatus, hidden
+            shouldNotUpdate, processStatus, disabled
         } = this.props;
 
-        if(actions.length && !hidden){
+        if(actions.length){
             return (
-                <div className="js-not-unselect">
+                <div
+                    className={'js-not-unselect ' +
+                        (disabled ? 'disabled ' : '')
+                    }
+                >
                     <span className="spacer-right">Actions:</span>
                     <div className="quick-actions-wrapper">
                         <div

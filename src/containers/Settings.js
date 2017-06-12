@@ -1,14 +1,13 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import Moment from 'moment';
-import Modal from '../components/app/Modal';
 
 import {
     getAvailableLang,
     setUserLang,
     getNotifications,
-    getNotificationsSuccess
+    getNotificationsSuccess,
+    languageSuccess
 } from '../actions/AppActions';
 
 import Container from '../components/Container';
@@ -26,9 +25,7 @@ class Settings extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch} = this.props;
-
-        dispatch(getAvailableLang()).then(response => {
+        getAvailableLang().then(response => {
             const {values, defaultValue} = response.data;
             let chosenLang = '';
 
@@ -47,13 +44,11 @@ class Settings extends Component {
     }
 
     patch = (value) => {
-        const {dispatch} = this.props;
-
-        dispatch(setUserLang(value)).then(() => {
+        setUserLang(value).then(() => {
             this.setState({
                 value: value
             }, () => {
-                Moment.locale(Object.keys(value)[0]);
+                languageSuccess(Object.keys(value)[0]);
                 this.refresh();
             });
         });
@@ -69,7 +64,7 @@ class Settings extends Component {
             })
         })
 
-        dispatch(getNotifications()).then(response => {
+        getNotifications().then(response => {
             dispatch(getNotificationsSuccess(
                 response.data.notifications,
                 response.data.unreadCount
@@ -84,21 +79,8 @@ class Settings extends Component {
             <Container
                 hideHeader={hideHeader}
                 siteName="Settings"
+                {...{modal, rawModal}}
             >
-                {modal.visible &&
-                    <Modal
-                        windowType={modal.type}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        rawModalVisible={rawModal && rawModal.visible}
-                     />
-                 }
                 <div className="window-wrapper">
                     <div className="row">
                         <div className="col-sm-6">

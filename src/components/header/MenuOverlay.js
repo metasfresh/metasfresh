@@ -30,9 +30,9 @@ class MenuOverlay extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch, nodeId} = this.props;
+        const {nodeId} = this.props;
         if(nodeId == '0'){
-            dispatch(getRootBreadcrumb()).then(response => {
+            getRootBreadcrumb().then(response => {
                 this.setState({
                     data: response
                 })
@@ -52,13 +52,12 @@ class MenuOverlay extends Component {
     }
 
     handleQuery = (e) => {
-        const {dispatch} = this.props;
         e.preventDefault();
         if(e.target.value){
             this.setState({
                 query: e.target.value
             })
-            dispatch(queryPathsRequest(e.target.value, 9)).then(response => {
+            queryPathsRequest(e.target.value, 9).then(response => {
                 this.setState({
                     queriedResults: flattenLastElem(response.data)
                 })
@@ -91,9 +90,8 @@ class MenuOverlay extends Component {
     }
 
     handleDeeper = (e, nodeId) => {
-        const {dispatch} = this.props;
         e.preventDefault();
-        dispatch(nodePathsRequest(nodeId, 8)).then(response => {
+        nodePathsRequest(nodeId, 8).then(response => {
             this.setState({
                 deepNode: response.data
             })
@@ -103,8 +101,7 @@ class MenuOverlay extends Component {
     }
 
     handleSubDeeper = (nodeId) => {
-        const {dispatch} = this.props;
-        dispatch(nodePathsRequest(nodeId, 8)).then(response => {
+        nodePathsRequest(nodeId, 8).then(response => {
             this.setState({
                 deepSubNode: response.data
             })
@@ -126,12 +123,9 @@ class MenuOverlay extends Component {
     }
 
     handleRedirect = (elementId) => {
-        const {dispatch, windowType, docId} = this.props;
+        const {dispatch} = this.props;
         this.handleClickOutside();
 
-        if(!docId && windowType == elementId){
-           return;
-        }
         dispatch(push('/window/' + elementId));
     }
 
@@ -142,8 +136,7 @@ class MenuOverlay extends Component {
     }
 
     handlePath = (nodeId) => {
-        const {dispatch} = this.props;
-        dispatch(pathRequest(nodeId)).then(response => {
+        pathRequest(nodeId).then(response => {
             let pathArray = [];
             let node = response.data;
 
@@ -165,8 +158,7 @@ class MenuOverlay extends Component {
     }
 
     handleSubPath = (nodeId) => {
-        const {dispatch} = this.props;
-        dispatch(pathRequest(nodeId)).then(response => {
+        pathRequest(nodeId).then(response => {
             let pathArray = [];
             let node = response.data;
 

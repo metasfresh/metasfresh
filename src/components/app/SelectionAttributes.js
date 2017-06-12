@@ -6,10 +6,6 @@ import {
     getData
 } from '../../actions/GenericActions';
 
-import {
-    findRowByPropName
-} from '../../actions/WindowActions';
-
 import RawWidget from '../widget/RawWidget';
 
 class SelectionAttributes extends Component {
@@ -47,17 +43,15 @@ class SelectionAttributes extends Component {
     fetchActions = () => {
         const {
             windowType, viewId, selected, entity, DLWrapperSetData,
-            DLWrapperSetLayout, dispatch
+            DLWrapperSetLayout
         } = this.props;
 
-        dispatch(initLayout(entity, windowType, selected[0], null, viewId)
-            ).then(response => {
+        initLayout(entity, windowType, selected[0], null, viewId)
+            .then(response => {
                 DLWrapperSetLayout(response.data.elements);
-                return dispatch(
-                    getData(entity, windowType, viewId, selected[0])
-                );
+                return getData(entity, windowType, viewId, selected[0]);
             }).then(response => {
-                DLWrapperSetData(response.data.fields, response.data.id);
+                DLWrapperSetData(response.data.fieldsByName, response.data.id);
             }).catch(() => {});
     }
 
@@ -105,7 +99,7 @@ class SelectionAttributes extends Component {
                             windowType={windowType}
                             viewId={viewId}
                             widgetData={item.fields.map(elem =>
-                                findRowByPropName(DLWrapperData, elem.field)
+                                DLWrapperData[elem.field] || -1
                             )}
                             gridAlign={item.gridAlign}
                             key={id}
@@ -117,8 +111,7 @@ class SelectionAttributes extends Component {
                             handleChange={DLWrapperHandleChange}
                             tabIndex={this.getTabId(
                                 item.fields.map(elem =>
-                                    findRowByPropName(
-                                        DLWrapperData, elem.field)
+                                    DLWrapperData[elem.field] || -1
                                 )
                             )}
                         />

@@ -1,16 +1,10 @@
 import * as types from '../constants/MenuTypes'
 import axios from 'axios';
 
-export function setBreadcrumb(breadcrumb){
-    return {
-        type: types.SET_BREADCRUMB,
-        breadcrumb: breadcrumb
-    }
-}
+// REQUESTS
 
-// THUNK ACTIONS
 export function pathRequest(nodeId) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/menu/path?nodeId=' + nodeId +
         '&inclusive=true'
@@ -18,7 +12,7 @@ export function pathRequest(nodeId) {
 }
 
 export function nodePathsRequest(nodeId, limit) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/menu/node?nodeId=' + nodeId +
         '&depth=2' +
@@ -27,7 +21,7 @@ export function nodePathsRequest(nodeId, limit) {
 }
 
 export function elementPathRequest(pathType, elementId) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/menu/elementPath?type=' + pathType +
         '&elementId=' + elementId +
@@ -36,7 +30,7 @@ export function elementPathRequest(pathType, elementId) {
 }
 
 export function queryPathsRequest(query, limit, child) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/menu/queryPaths?nameQuery=' + query +
         (limit ? '&childrenLimit=' + limit : '') +
@@ -45,22 +39,30 @@ export function queryPathsRequest(query, limit, child) {
 }
 
 export function rootRequest(limit, depth=0) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/menu/root?depth=' + depth +
         (limit ? '&childrenLimit=' + limit : ''));
 }
 
+// END OF REQUESTS
+
+export function setBreadcrumb(breadcrumb){
+    return {
+        type: types.SET_BREADCRUMB,
+        breadcrumb: breadcrumb
+    }
+}
+
 export function getRootBreadcrumb() {
-    return (dispatch) =>
-        dispatch(rootRequest(6, 10)).then(root => {
-            return {nodeId: '0', children: root.data.children};
-        });
+    return rootRequest(6, 10).then(root => ({
+        nodeId: '0', children: root.data.children
+    }));
 }
 
 export function getWindowBreadcrumb(id){
     return dispatch => {
-        dispatch(elementPathRequest('window', id)).then(response => {
+        elementPathRequest('window', id).then(response => {
             let req = 0;
             let pathData = flattenOneLine(response.data);
 
@@ -70,7 +72,7 @@ export function getWindowBreadcrumb(id){
                 for(let i = 0; i < pathData.length; i++){
                     const node = pathData[i];
 
-                    dispatch(nodePathsRequest(node.nodeId, 10)).then(item => {
+                    nodePathsRequest(node.nodeId, 10).then(item => {
                         node.children = item.data;
                         req += 1;
 

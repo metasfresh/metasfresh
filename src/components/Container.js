@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Header from './header/Header';
 import ErrorScreen from './app/ErrorScreen';
+import Modal from './app/Modal';
+import RawModal from './app/RawModal';
+import DocumentList from './app/DocumentList';
 
 class Container extends Component {
     constructor(props){
@@ -11,11 +14,13 @@ class Container extends Component {
 
     render() {
         const {
-            docActionElem, docStatusData, docNoData, docId,
+            docActionElem, docStatusData, docNoData, docId, processStatus,
             docSummaryData, dataId, windowType, breadcrumb, references, actions,
             showSidelist, siteName, connectionError, noMargin, entity, children,
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
-            handleDeletedStatus, dropzoneFocused, notfound
+            handleDeletedStatus, dropzoneFocused, notfound, rawModal, modal,
+            selected, selectedWindowType, indicator, modalTitle, setModalTitle,
+            includedView, closeModalCallback
         } = this.props;
 
         return (
@@ -39,6 +44,77 @@ class Container extends Component {
                         (noMargin ? 'dashboard' : 'container-fluid')
                     }
                 >
+                {modal.visible &&
+                    <Modal
+                        windowType={modal.type}
+                        dataId={modal.dataId ? modal.dataId : dataId}
+                        data={modal.data}
+                        layout={modal.layout}
+                        rowData={modal.rowData}
+                        tabId={modal.tabId}
+                        rowId={modal.rowId}
+                        modalTitle={modal.title}
+                        modalType={modal.modalType}
+                        modalViewId={modal.viewId}
+                        isAdvanced={modal.isAdvanced}
+                        relativeType={windowType}
+                        relativeDataId={dataId}
+                        triggerField={modal.triggerField}
+                        query={query}
+                        selected={selected}
+                        viewId={query && query.viewId}
+                        rawModalVisible={rawModal.visible}
+                        indicator={indicator}
+                        modalViewDocumentIds={modal.viewDocumentIds}
+                        closeCallback={closeModalCallback}
+                        modalSaveStatus={
+                            modal.saveStatus &&
+                            modal.saveStatus.saved !== undefined ?
+                                modal.saveStatus.saved : true
+                        }
+                        isDocumentNotSaved={
+                            (modal.saveStatus && !modal.saveStatus.saved) &&
+                            (modal.validStatus &&
+                                !modal.validStatus.initialValue)
+                        }
+                     />
+                 }
+
+                     {rawModal.visible &&
+                         <RawModal
+                             modalTitle={modalTitle}
+                         >
+                            <div className="document-lists-wrapper">
+                                 <DocumentList
+                                     type="grid"
+                                     windowType={rawModal.type}
+                                     defaultViewId={rawModal.viewId}
+                                     selected={selected}
+                                     selectedWindowType={selectedWindowType}
+                                     setModalTitle={setModalTitle}
+                                     isModal={true}
+                                     processStatus={processStatus}
+                                     includedView={includedView}
+                                     inBackground={
+                                         includedView.windowType &&
+                                            includedView.viewId
+                                     }
+                                 >
+                                 </DocumentList>
+                                 {includedView.windowType &&
+                                     includedView.viewId &&
+                                     <DocumentList
+                                         type="includedView"
+                                         selected={selected}
+                                         selectedWindowType={selectedWindowType}
+                                         windowType={includedView.windowType}
+                                         defaultViewId={includedView.viewId}
+                                         isIncluded={true}
+                                     />
+                                 }
+                            </div>
+                         </RawModal>
+                     }
                     {children}
                 </div>
             </div>

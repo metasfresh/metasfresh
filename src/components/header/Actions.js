@@ -19,7 +19,7 @@ class Actions extends Component {
 
     componentDidMount = () => {
         const {
-            dispatch, windowType, entity, docId, rowId, notfound
+            windowType, entity, docId, rowId, notfound
         } = this.props;
 
         if(!windowType || docId === 'notfound' || notfound){
@@ -29,9 +29,9 @@ class Actions extends Component {
             return;
         }
 
-        dispatch(actionsRequest(
+        actionsRequest(
             entity, windowType, docId, rowId
-        )).then((response) => {
+        ).then((response) => {
             this.setState({
                 data: response.data.actions
             });

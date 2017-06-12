@@ -107,7 +107,7 @@ body {
 .context-menu {
     position: fixed;
     display: none;
-    width: 150px;
+    width: 180px;
     background-color: #fff;
     left: 0;
     top: 0;
@@ -434,7 +434,12 @@ body {
 
 .document-list-included {
     flex: .7;
-    margin-left: .1rem;
+    margin-left: 3px;
+}
+
+.document-list-has-included {
+    padding-right: 3px;
+    border-right: 2px solid $brand-border-color;
 }
 
 .document-list-header {
@@ -775,11 +780,11 @@ th {
 
 .pulse-on {
     background: $brand-pulse-effect !important;
-    transition: all .33s;
+    transition: background-color .33s;
 }
 
 .pulse-off {
-    transition: all 1.33s;
+    transition: background-color 1.33s;
 }
 
 td.pulse-on input {
@@ -954,7 +959,7 @@ td.pulse-off input {
     background-color: #fff;
     border-radius: 3px;
     border: 1px solid $brand-border-color;
-    margin-left: .5rem;
+    margin-left: 3px;
     
     overflow: auto;
     overflow-x: hidden;
@@ -1138,4 +1143,76 @@ td.pulse-off input {
 .zoom-into:hover {
     text-decoration: underline;
     cursor: pointer;
+}
+
+.separator {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    
+    margin-top: .5rem;
+}
+
+.separator-title {
+    white-space: nowrap;
+    color: $brand-font-color-weak;
+}
+
+.separator-hr {
+    width: 100%;
+    margin-left: 1rem;
+}
+
+.avatar {
+    width: 35px;
+    height: 35px;
+}
+
+.avatar-container {
+    width: 100%;
+    height: 100%;
+    padding-top: 8px;
+}
+
+.meta-text-primary {
+    font-weight: bold;
+    color: $brand-color-primary;
+}
+
+.user-dropdown-container {
+    position: relative;
+}
+
+.user-dropdown-list {
+    position: absolute;
+    top:54px;
+    right:-1px;
+    z-index:0;
+    min-width: 200px;
+    background-color: #F8FAFB;
+    border: 1px solid #e1e8ee;
+    border-top: 0;
+    pointer-events: all;
+    box-shadow: 0 6px 10px 0 rgba(165, 165, 165, 0.8);
+}
+
+.user-dropdown-header-item {
+    letter-spacing: .02rem;
+    cursor: default;
+}
+
+.user-dropdown-item {
+    padding: 1rem .7rem;
+}
+
+.user-dropdown-item:not(.user-dropdown-header-item):hover,
+.user-dropdown-item:not(.user-dropdown-header-item):focus {
+    background-color: $brand-color-primary;
+    color: #fff;
+}
+
+.disabled {
+    pointer-events: none;
+    opacity: .5;
 }

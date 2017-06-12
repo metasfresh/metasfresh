@@ -6,6 +6,7 @@ import {push} from 'react-router-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
 import Subheader from './SubHeader';
+import UserDropdown from './UserDropdown';
 import Breadcrumb from './Breadcrumb';
 import MasterWidget from '../widget/MasterWidget';
 import SideList from './SideList';
@@ -40,6 +41,7 @@ class Header extends Component {
             menuOverlay: null,
             scrolled: false,
             isInboxOpen: false,
+            isUDOpen: false,
             tooltipOpen: '',
             prompt: {
                 open: false
@@ -74,6 +76,12 @@ class Header extends Component {
         this.setState({
             isInboxOpen: !!state
         });
+    }
+
+    handleUDOpen = (state) => {
+        this.setState({
+            isUDOpen: !!state
+        })
     }
 
     handleMenuOverlay = (e, nodeId) => {
@@ -143,12 +151,10 @@ class Header extends Component {
     }
 
     handlePrint = (windowType, docId, docNo) => {
-        const {dispatch} = this.props;
-
-        dispatch(openFile(
+        openFile(
             'window', windowType, docId, 'print',
             windowType + '_' + (docNo ? docNo : docId) + '.pdf'
-        ));
+        );
     }
 
     handleDelete = () => {
@@ -175,7 +181,7 @@ class Header extends Component {
                 open: false
             })
         }, () => {
-            dispatch(deleteRequest('window', windowType, null, null, [docId]))
+            deleteRequest('window', windowType, null, null, [docId])
                 .then(() => {
                     handleDeletedStatus(true);
                     dispatch(push('/window/' + windowType));
@@ -215,6 +221,7 @@ class Header extends Component {
             menuOverlay: null,
             isMenuOverlayShow: false,
             isInboxOpen: false,
+            isUDOpen: false,
             isSideListShow: false,
             sideListTab: null,
             isSubheaderShow:
@@ -245,7 +252,7 @@ class Header extends Component {
 
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
-            isMenuOverlayShow, tooltipOpen, prompt, sideListTab
+            isMenuOverlayShow, tooltipOpen, prompt, sideListTab, isUDOpen
         } = this.state;
 
         return (
@@ -426,6 +433,17 @@ class Header extends Component {
                                     inbox={inbox}
                                 />
 
+                                <UserDropdown
+                                    open={isUDOpen}
+                                    handleUDOpen={this.handleUDOpen}
+                                    disableOnClickOutside={!isUDOpen}
+                                    redirect={this.redirect}
+                                    shortcut={
+                                        keymap.GLOBAL_CONTEXT.OPEN_AVATAR_MENU}
+                                    toggleTooltip={this.toggleTooltip}
+                                    {...{tooltipOpen}}
+                                />
+
                                 {showSidelist &&
                                     <div
                                         className={
@@ -517,6 +535,7 @@ class Header extends Component {
                         () => this.handleInboxOpen(false) :
                         () => this.handleInboxOpen(true)
                     }
+                    handleUDOpen = {() => this.handleUDOpen(!isUDOpen)}
                     openModal = {dataId ?
                         () => this.openModal(
                             windowType, 'window', 'Advanced edit', true

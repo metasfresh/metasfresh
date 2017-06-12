@@ -4,13 +4,12 @@ import axios from 'axios';
 
 import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
+import {LOCAL_LANG}  from '../constants/Constants';
 
 import { syncHistoryWithStore, push } from 'react-router-redux';
 import { Router, browserHistory } from 'react-router';
 
 import Auth from '../services/Auth';
-
-import Moment from 'moment';
 
 import NotificationHandler
     from '../components/notifications/NotificationHandler';
@@ -23,7 +22,8 @@ import {
     addNotification,
     logoutSuccess,
     getAvailableLang,
-    setProcessSaved
+    setProcessSaved,
+    languageSuccess
 } from '../actions/AppActions';
 
 import '../assets/css/styles.css';
@@ -38,6 +38,12 @@ export default class App extends Component {
         this.auth = new Auth();
 
         axios.defaults.withCredentials = true;
+        axios.defaults.headers.common['Content-Type'] = 'application/json';
+
+        const cachedLang = localStorage.getItem(LOCAL_LANG);
+        if(cachedLang){
+            languageSuccess(cachedLang);
+        }
 
         axios.interceptors.response.use(function (response) {
             return response;
@@ -100,15 +106,12 @@ export default class App extends Component {
             }
         }.bind(this));
 
-        store.dispatch(getAvailableLang()).then(response => {
+        getAvailableLang().then(response => {
             const {defaultValue, values} = response.data;
             const valuesFlatten = values.map(item => Object.keys(item)[0]);
 
-            if(valuesFlatten.indexOf(navigator.language)){
-                Moment.locale(navigator.language);
-            }else{
-                Moment.locale(defaultValue);
-            }
+            languageSuccess(valuesFlatten.indexOf(navigator.language) > -1 ?
+                navigator.language : defaultValue);
         });
     }
 

@@ -24,7 +24,7 @@ import {
 export const getRoutes = (store, auth) => {
     const authRequired = (nextState, replace, callback) => {
         if( !localStorage.isLogged ){
-            store.dispatch(localLoginRequest()).then((resp) => {
+            localLoginRequest().then((resp) => {
                 if(resp.data){
                     store.dispatch(loginSuccess(auth));
                     callback(null, nextState.location.pathname);
@@ -35,14 +35,14 @@ export const getRoutes = (store, auth) => {
                 }
             })
         }else{
-            store.dispatch(loginSuccess(auth));
+            loginSuccess(auth)
             callback();
         }
     }
 
     const logout = () => {
-        store.dispatch(logoutRequest()).then(()=>
-            store.dispatch(logoutSuccess(auth))
+        logoutRequest().then(()=>
+            logoutSuccess(auth)
         ).then(()=>
             store.dispatch(push('/login'))
         );

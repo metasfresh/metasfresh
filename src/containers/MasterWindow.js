@@ -4,11 +4,11 @@ import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
 
 import {
-    findRowByPropName,
     attachFileAction,
     clearMasterData,
     getTab,
-    addRowData
+    addRowData,
+    sortTab
 } from '../actions/WindowActions';
 
 import {
@@ -17,9 +17,6 @@ import {
 
 import Window from '../components/Window';
 import BlankPage from '../components/BlankPage';
-import Modal from '../components/app/Modal';
-import RawModal from '../components/app/RawModal';
-import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
 
 class MasterWindow extends Component {
@@ -58,7 +55,7 @@ class MasterWindow extends Component {
         // When closing modal, we need to update the stale tabs
         if(!modal.visible && modal.visible !== prevProps.modal.visible){
             Object.keys(master.includedTabsInfo).map(tabId => {
-                dispatch(getTab(tabId, params.windowType, master.docId))
+                getTab(tabId, params.windowType, master.docId)
                     .then(tab => {
                         dispatch(addRowData({[tabId]: tab}, 'master'));
                     });
@@ -113,7 +110,7 @@ class MasterWindow extends Component {
         }
 
         const { dispatch, master } = this.props;
-        const dataId = findRowByPropName(master.data, 'ID').value;
+        const dataId = master.data ? master.data.ID.value : -1;
         const { type } = master.layout;
 
         let fd = new FormData();
@@ -153,122 +150,30 @@ class MasterWindow extends Component {
 
     handleDeletedStatus = (param) => {
         this.setState({
-                isDeleted: param
-            })
+            isDeleted: param
+        })
     }
 
-    renderBody = () => {
-        const {
-            master, modal, rawModal, selected, indicator, selectedWindowType,
-            includedView, processStatus
-        } = this.props;
-        const {newRow, modalTitle} = this.state;
-        const {type} = master.layout;
+    sort = (asc, field, startPage, page, tabId) => {
+        const {dispatch, master} = this.props;
+        const {windowType} = this.props.params;
+        const orderBy = (asc ? '+' : '-') + field;
         const dataId = master.docId;
 
-        let body = [];
-
-        if(modal.visible){
-            body.push(
-                <Modal
-                    key="modal"
-                    relativeType={type}
-                    relativeDataId={dataId}
-                    triggerField={modal.triggerField}
-                    windowType={modal.type}
-                    dataId={modal.dataId ? modal.dataId : dataId}
-                    data={modal.data}
-                    layout={modal.layout}
-                    rowData={modal.rowData}
-                    tabId={modal.tabId}
-                    rowId={modal.rowId}
-                    modalTitle={modal.title}
-                    modalType={modal.modalType}
-                    modalViewId={modal.viewId}
-                    isAdvanced={modal.isAdvanced}
-                    viewId={null}
-                    modalViewDocumentIds={modal.viewDocumentIds}
-                    closeCallback={this.closeModalCallback}
-                    rawModalVisible={rawModal.visible}
-                    indicator={indicator}
-                    modalSaveStatus={
-                        modal.saveStatus &&
-                        modal.saveStatus.saved !== undefined ?
-                            modal.saveStatus.saved : true
-                    }
-                    isDocumentNotSaved={modal.saveStatus ?
-                        !modal.saveStatus.saved &&
-                        !modal.validStatus.initialValue : false
-                    }
-                 />
-            )
-        }
-
-        if(rawModal.visible){
-            body.push(
-                <RawModal
-                    key="rawModal"
-                    modalTitle={modalTitle}
-                >
-                    <div className="document-lists-wrapper">
-                        <DocumentList
-                            type="grid"
-                            windowType={rawModal.type}
-                            defaultViewId={rawModal.viewId}
-                            selected={selected}
-                            selectedWindowType={selectedWindowType}
-                            isModal={true}
-                            setModalTitle={this.setModalTitle}
-                            processStatus={processStatus}
-                            includedView={includedView}
-                            inBackground={
-                                includedView.windowType && includedView.viewId
-                            }
-                        >
-                        </DocumentList>
-                        {includedView.windowType && includedView.viewId &&
-                            <DocumentList
-                                type="includedView"
-                                selected={selected}
-                                selectedWindowType={selectedWindowType}
-                                windowType={includedView.windowType}
-                                defaultViewId={includedView.viewId}
-                                isIncluded={true}
-                            />
-                        }
-                    </div>
-                </RawModal>
-            )
-        }
-
-        body.push(
-            <Window
-                key="window"
-                data={master.data}
-                layout={master.layout}
-                rowData={master.rowData}
-                tabsInfo={master.includedTabsInfo}
-                dataId={dataId}
-                isModal={false}
-                newRow={newRow}
-                handleDragStart={this.handleDragStart}
-                handleDropFile={accepted => this.handleDropFile(accepted)}
-                handleRejectDropped={
-                    rejected => this.handleRejectDropped(rejected)
-                }
-            />
-        )
-
-        return body;
+        dispatch(sortTab('master', tabId, field, asc));
+        getTab(tabId, windowType, dataId, orderBy).then(res => {
+            dispatch(addRowData({[tabId]: res}, 'master'));
+        });
     }
 
     render() {
         const {
-            master, modal, breadcrumb, params
+            master, modal, breadcrumb, params, rawModal, selected,
+            selectedWindowType, includedView, processStatus
         } = this.props;
 
         const {
-            dropzoneFocused
+            dropzoneFocused, newRow, modalTitle
         } = this.state;
 
         const {
@@ -276,19 +181,16 @@ class MasterWindow extends Component {
         } = master.layout;
 
         const dataId = master.docId;
-
-        const docNoData = findRowByPropName(master.data, 'DocumentNo');
+        const docNoData = master.data.DocumentNo;
 
         const docStatusData = {
-            'status': findRowByPropName(master.data, 'DocStatus'),
-            'action': findRowByPropName(master.data, 'DocAction'),
+            'status': master.data.DocStatus || -1,
+            'action': master.data.DocAction || -1,
             'displayed': true
         };
 
-        const docSummaryData = findRowByPropName(
-            master.data,
-            documentSummaryElement && documentSummaryElement.fields[0].field
-        );
+        const docSummaryData = documentSummaryElement &&
+            master.data[documentSummaryElement.fields[0].field];
 
         const isDocumentNotSaved = dataId !== 'notfound' &&
         (master.saveStatus.saved !== undefined && !master.saveStatus.saved) &&
@@ -298,8 +200,13 @@ class MasterWindow extends Component {
         return (
             <Container
                 entity="window"
-                {...{dropzoneFocused, docStatusData, docSummaryData,
-                    dataId, breadcrumb, docNoData, isDocumentNotSaved}}
+                {...{dropzoneFocused, docStatusData, docSummaryData, modal,
+                    dataId, breadcrumb, docNoData, isDocumentNotSaved, rawModal,
+                    selected, selectedWindowType, modalTitle, includedView,
+                    processStatus
+                }}
+                closeModalCallback={this.closeModalCallback}
+                setModalTitle={this.setModalTitle}
                 docActionElem = {docActionElement}
                 windowType={params.windowType}
                 docId={params.docId}
@@ -308,7 +215,24 @@ class MasterWindow extends Component {
                 handleDeletedStatus={this.handleDeletedStatus}
             >
                 {dataId === 'notfound' ?
-                    <BlankPage what="Document" /> : this.renderBody()
+                    <BlankPage what="Document" /> :
+                    <Window
+                        key="window"
+                        data={master.data}
+                        layout={master.layout}
+                        rowData={master.rowData}
+                        tabsInfo={master.includedTabsInfo}
+                        sort={this.sort}
+                        dataId={dataId}
+                        isModal={false}
+                        newRow={newRow}
+                        handleDragStart={this.handleDragStart}
+                        handleDropFile={accepted =>
+                            this.handleDropFile(accepted)}
+                        handleRejectDropped={
+                            rejected => this.handleRejectDropped(rejected)
+                        }
+                    />
                 }
             </Container>
         );

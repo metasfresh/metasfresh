@@ -74,14 +74,12 @@ class ActionButton extends Component {
     }
 
     fetchStatusList(){
-        const {dispatch, windowType, fields, dataId} = this.props;
+        const {windowType, fields, dataId} = this.props;
         if(!dataId){
             return;
         }
-        dispatch(
-            dropdownRequest(
-                windowType, fields[1].field, dataId, null, null, 'window'
-            )
+        dropdownRequest(
+            windowType, fields[1].field, dataId, null, null, 'window'
         ).then((res) => {
             this.setState({list: res.data});
         });

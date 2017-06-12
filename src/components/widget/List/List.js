@@ -13,13 +13,37 @@ class List extends Component {
         super(props);
         this.state = {
             list: [],
-            loading: false
+            loading: false,
+            selectedItem: '',
+            prevValue: ''
+        }
+    }
+
+    componentDidMount(){
+        const {defaultValue} = this.props;
+
+        if(defaultValue) {
+            this.setState({
+                prevValue: defaultValue
+            });
+        }
+    }
+
+    componentDidUpdate(prevProps){
+        const {isInputEmpty} = this.props;
+
+        if(isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
+
+            this.setState({
+                prevValue: ''
+            });
+
         }
     }
 
     handleFocus = () => {
         const {
-            properties, dispatch, dataId, rowId, tabId, windowType,
+            properties, dataId, rowId, tabId, windowType,
             filterWidget, entity, subentity, subentityId, viewId, attribute
         } = this.props;
 
@@ -27,12 +51,12 @@ class List extends Component {
             loading: true
         });
 
-        dispatch(dropdownRequest(
+        dropdownRequest(
             windowType,
             filterWidget ? properties[0].parameterName: properties[0].field,
             dataId, tabId, rowId, entity, subentity, subentityId, viewId,
             attribute
-        )).then((res) => {
+        ).then((res) => {
             this.setState({
                 list: res.data.values,
                 loading: false
@@ -41,16 +65,47 @@ class List extends Component {
     }
 
     handleSelect = (option) => {
-        const {onChange} = this.props;
-        onChange(option);
+        const {
+            onChange, lookupList, properties, setNextProperty, mainProperty
+        } = this.props;
+        const {prevValue} = this.state;
+
+         if( prevValue !== (option && option[Object.keys(option)[0]] )) {
+             if(lookupList){
+                    onChange(properties[0].field, option);
+
+                    option && this.setState({
+                        selectedItem: option,
+                        prevValue: option[Object.keys(option)[0]]
+                    });
+                    setNextProperty(mainProperty[0].field);
+            } else {
+                onChange(option);
+            }
+         }
+    }
+
+    handleAutoSelect = (option) => {
+        const {
+            onChange, properties, setNextProperty, mainProperty
+        } = this.props;
+
+        onChange(properties[0].field, option);
+
+        this.setState({
+            selectedItem: option,
+            prevValue: option[Object.keys(option)[0]]
+        });
+        setNextProperty(mainProperty[0].field);
     }
 
     render() {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
-            emptyText, tabIndex, mandatory, validStatus
+            emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
+            blur, initialFocus
         } = this.props;
-        const {list, loading} = this.state;
+        const {list, loading, selectedItem} = this.state;
 
         return (
             <RawList
@@ -58,10 +113,11 @@ class List extends Component {
                 loading={loading}
                 onFocus={this.handleFocus}
                 onSelect={option => this.handleSelect(option)}
+                autoSelect={option => this.handleAutoSelect(option)}
                 rank={rank}
                 readonly={readonly}
                 defaultValue={defaultValue}
-                selected={selected}
+                selected={lookupList ? selectedItem : selected}
                 align={align}
                 updated={updated}
                 rowId={rowId}
@@ -69,6 +125,10 @@ class List extends Component {
                 tabIndex={tabIndex}
                 mandatory={mandatory}
                 validStatus={validStatus}
+                autofocus={autofocus}
+                lookupList={lookupList}
+                blur={blur}
+                initialFocus={initialFocus}
             />
         )
     }

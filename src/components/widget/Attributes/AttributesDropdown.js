@@ -5,10 +5,6 @@ import onClickOutside from 'react-onclickoutside';
 
 import RawWidget from '../RawWidget';
 
-import {
-    findRowByPropName
-} from '../../../actions/WindowActions'
-
 class AttributesDropdown extends Component {
     constructor(props) {
         super(props);
@@ -83,9 +79,8 @@ class AttributesDropdown extends Component {
 
         if(layout){
             return layout.map((item, id) => {
-                const widgetData = item.fields.map(elem =>
-                    findRowByPropName(data, elem.field)
-                );
+                const widgetData =
+                    item.fields.map(elem => data[elem.field] || -1);
                 return (<RawWidget
                     entity={attributeType}
                     widgetType={item.widgetType}

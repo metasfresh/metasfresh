@@ -100,11 +100,56 @@ class BarChartComponent extends Component {
     }
 
     render() {
-        const {chartClass} = this.props;
+        const {
+            chartClass, isMaximize, data, fields, groupBy, chartTitle
+        } = this.props;
 
         return (
             <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
                 <svg className={chartClass} />
+                {isMaximize &&
+                <div className={'panel panel-primary panel-bordered '+
+                    'chart-data-table-wrapper'}>
+                    <table className={'table table-bordered-vertically '+
+                        'table-striped'}>
+                        <thead>
+                            <tr>
+                                <th>{chartTitle}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {data.map((item, index)=> {
+                            return(
+                                <tr key={index}>
+                                    <td>
+                                        {item[groupBy.fieldName]}
+                                    </td>
+                                    <td>
+                                        <table className="table table-included">
+                                            {fields.map((field, index)=> {
+                                                return (
+                                                    <tbody key={index}>
+                                                        <tr>
+                                                            <td>
+                                                                {field.caption}
+                                                            </td>
+                                                            <td className="table-chart-value">
+                                                                {item[field.fieldName]}
+                                                                {field.unit?field.unit:''}
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                )
+                                            })}
+                                        </table>
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                        </tbody>
+                    </table>
+                </div>}
             </div>
         );
     }

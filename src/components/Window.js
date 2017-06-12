@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 
 import Dropzone from './Dropzone';
-
-import {
-    findRowByPropName
-} from '../actions/WindowActions';
+import Separator from './Separator';
 
 import MasterWidget from '../components/widget/MasterWidget';
 import Tabs from '../components/tabs/Tabs';
@@ -42,9 +39,14 @@ class Window extends Component {
 
     renderTabs = (tabs) => {
         const {type} = this.props.layout;
-        const {data, rowData, newRow, tabsInfo} = this.props;
+        const {data, rowData, newRow, tabsInfo, sort} = this.props;
         const {fullScreen} = this.state;
-        const dataId = findRowByPropName(data, 'ID').value;
+
+        if(!Object.keys(data).length){
+            return;
+        }
+
+        const dataId = data.ID.value;
 
         return(
             <Tabs
@@ -56,17 +58,21 @@ class Window extends Component {
                 {tabs.map(elem => {
                     const {
                         tabid, caption, elements, emptyResultText,
-                        emptyResultHint, queryOnActivate, supportQuickInput
+                        emptyResultHint, queryOnActivate, supportQuickInput,
+                        orderBy
                     } = elem;
                     return (
                         <Table
                             entity="window"
                             caption={caption}
+                            keyProperty="rowId"
                             key={tabid}
                             rowData={rowData}
                             cols={elements}
                             tabid={tabid}
                             type={type}
+                            sort={sort}
+                            orderBy={orderBy}
                             docId={dataId}
                             emptyText={emptyResultText}
                             emptyHint={emptyResultHint}
@@ -85,20 +91,22 @@ class Window extends Component {
 
     renderSections = (sections) => {
         return sections.map((elem, id)=> {
-            const columns = elem.columns;
+            const {title, columns} = elem;
+            const isFirst = (id === 0);
             return (
                 <div className="row" key={'section' + id}>
-                    {columns && this.renderColumns(columns)}
+                    {title && <Separator {...{title}} />}
+                    {columns && this.renderColumns(columns, isFirst)}
                 </div>
             )
        })
     }
 
-    renderColumns = (columns) => {
+    renderColumns = (columns, isSectionFirst) => {
         const maxRows = 12;
         const colWidth = Math.floor(maxRows / columns.length);
         return columns.map((elem, id)=> {
-            const isFirst = (id === 0);
+            const isFirst = id === 0 && isSectionFirst;
             const elementGroups = elem.elementGroups;
             return (
                 <div className={'col-sm-' + colWidth} key={'col' + id}>
@@ -111,6 +119,7 @@ class Window extends Component {
     }
 
     renderElementGroups = (group, isFirst) => {
+        const {isModal} = this.props;
         return group.map((elem, id)=> {
             const {type, elementsLine} = elem;
             const shouldBeFocused = isFirst && (id === 0);
@@ -123,6 +132,13 @@ class Window extends Component {
                 elementsLine && elementsLine.length > 0 &&
                     <div
                         key={'elemGroups' + id}
+                        ref={c => {
+                            if(this.focused)
+                                return;
+                            if(isModal && shouldBeFocused && c)
+                                c.focus();
+                            this.focused = true;
+                        }}
                         tabIndex={shouldBeFocused ? 0 : undefined}
                         className={
                             'panel panel-spaced panel-distance ' +
@@ -160,10 +176,8 @@ class Window extends Component {
 
         return elements.map((elem, id)=> {
             const autoFocus = isFocused && (id === 0);
-            const widgetData = elem.fields.map(item =>
-                findRowByPropName(data, item.field)
-            );
-            const relativeDocId = findRowByPropName(data, 'ID').value;
+            const widgetData = elem.fields.map(item => data[item.field] || -1);
+            const relativeDocId = data.ID && data.ID.value;
             return (
                 <MasterWidget
                     entity="window"
@@ -177,7 +191,7 @@ class Window extends Component {
                     relativeDocId={relativeDocId}
                     isAdvanced={isAdvanced}
                     tabIndex={tabIndex}
-                    autoFocus={autoFocus}
+                    autoFocus={!modal && autoFocus}
                     fullScreen={fullScreen}
                     {...elem}
                 />

@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 
 import BarChart from './BarChartComponent';
 import PieChart from './PieChartComponent';
+import Indicator from './Indicator';
 
 import {
     getKPIData,
@@ -18,32 +19,6 @@ class RawChart extends Component {
             intervalId: null,
             err: null
         }
-    }
-
-    getData(){
-        const { id, chartType } = this.props;
-
-        if (chartType === 'Indicator') {
-            return getTargetIndicatorsData(id)()
-                .then(response => {
-                    return response.data.datasets[0].values
-                }).catch(err => {throw err});
-        }
-
-        return getKPIData(id)()
-            .then(response => {
-                return response.data.datasets[0].values
-            })
-            .catch(err => {throw err});
-    }
-
-    fetchData(){
-        this.getData()
-            .then(chartData => {
-                this.setState({ chartData: chartData, err: null });
-            }).catch(err => {
-                this.setState({ err })
-            })
     }
 
     componentDidMount(){
@@ -72,6 +47,32 @@ class RawChart extends Component {
         }
     }
 
+    getData() {
+        const { id, chartType } = this.props;
+
+        if (chartType === 'Indicator') {
+            return getTargetIndicatorsData(id)
+                .then(response => {
+                    return response.data.datasets
+                }).catch(err => {throw err});
+        }
+
+        return getKPIData(id)
+            .then(response => {
+                return response.data.datasets
+            })
+            .catch(err => {throw err});
+    }
+
+    fetchData(){
+        this.getData()
+            .then(chartData => {
+                this.setState({ chartData: chartData, err: null });
+            }).catch(err => {
+                this.setState({ err })
+            })
+    }
+
     renderError() {
         return(
             <div className="error-load-data">
@@ -83,22 +84,21 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, reRender, height
+            id, chartType, caption, fields, groupBy, reRender, height,
+            isMaximize, chartTitle
         } = this.props;
         const {chartData} = this.state;
+        const data = chartData[0] && chartData[0].values;
 
         switch(chartType){
             case 'BarChart':
                 return(
                     <BarChart
-                        chartType={chartType}
-                        caption={caption}
-                        fields={fields}
-                        groupBy={groupBy}
-                        data={chartData}
+                        {...{
+                            data, groupBy, caption, chartType, height, reRender,
+                            fields, isMaximize, chartTitle
+                        }}
                         chartClass={'chart-' + id}
-                        height={height}
-                        reRender={reRender}
                         colors = {[
                             '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
                             '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
@@ -109,13 +109,10 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
+                        {...{data, fields, groupBy, height, reRender,
+                            isMaximize, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}
-                        data={chartData}
-                        fields={fields}
-                        groupBy={groupBy}
-                        height={height}
-                        reRender={reRender}
                         colors = {[
                             '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
                             '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
@@ -125,15 +122,25 @@ class RawChart extends Component {
                 );
             case 'Indicator':
                 return(
-                    <div className="indicator">
-                        <div className="indicator-value">{
-                            chartData[0][fields[0].fieldName] +
-                            (fields[0].unit ? ' ' + fields[0].unit : '')}</div>
-                        <div className="indicator-kpi-caption">{caption}</div>
-                    </div>
+                    <Indicator
+                        value={data[0][fields[0].fieldName] +
+                            (fields[0].unit ? ' ' + fields[0].unit : '')}
+                        {...{caption}}
+                    />
                 );
             default:
                 return <div>{ chartType }</div>;
+        }
+    }
+
+    renderNoData() {
+        const {chartType} = this.props;
+
+        switch(chartType){
+            case 'Indicator':
+                return <Indicator value="No data" />
+            default:
+                return <div>No data</div>
         }
     }
 
@@ -143,8 +150,9 @@ class RawChart extends Component {
         return err ?
             this.renderError() :
             (chartData && chartData.length > 0 ?
-                this.renderChart() : <div>No data</div>)
-
+                this.renderChart() :
+                this.renderNoData()
+            )
     }
 }
 

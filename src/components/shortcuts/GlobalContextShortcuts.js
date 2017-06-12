@@ -8,15 +8,21 @@ class GlobalContextShortcuts extends Component {
     }
     handleShortcuts = (action, event) => {
         const {
-          handleMenuOverlay, openModal, handleSidelistToggle,
+          handleMenuOverlay, openModal, handleSidelistToggle, handleUDOpen,
           handlePrint, handleDelete, handleInboxOpen,
           redirect, handleDocStatusToggle, closeOverlays
         } = this.props;
+
         switch (action) {
+            case 'OPEN_AVATAR_MENU':
+                event.preventDefault();
+                closeOverlays(null, () => {
+                    handleUDOpen();
+                });
+                break;
             case 'OPEN_ACTIONS_MENU':
                 event.preventDefault();
                 closeOverlays('isSubheaderShow');
-
                 break;
             case 'OPEN_NAVIGATION_MENU':
                 event.preventDefault();

@@ -6,7 +6,6 @@ import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import Container from '../components/Container';
-import Modal from '../components/app/Modal';
 
 import {
     rootRequest,
@@ -37,8 +36,7 @@ class NavigationTree extends Component {
     }
 
     getData = (callback) => {
-        const {dispatch} = this.props;
-        dispatch(rootRequest()).then(response => {
+        rootRequest().then(response => {
             this.setState(Object.assign({}, this.state, {
                 rootResults: response.data,
                 queriedResults: response.data.children,
@@ -65,15 +63,13 @@ class NavigationTree extends Component {
     }
 
     handleQuery = (e) => {
-        const {dispatch} = this.props;
-
         e.preventDefault();
         if(e.target.value){
             this.setState({
                 query: e.target.value
             });
 
-            dispatch(queryPathsRequest(e.target.value, '', true))
+            queryPathsRequest(e.target.value, '', true)
                 .then(response => {
                     this.setState({
                         queriedResults: response.data.children
@@ -158,11 +154,9 @@ class NavigationTree extends Component {
     }
 
     handleDeeper = (e, nodeId) => {
-        const {dispatch} = this.props;
-
         e.preventDefault();
 
-        dispatch(nodePathsRequest(nodeId, 4)).then(response => {
+        nodePathsRequest(nodeId, 4).then(response => {
             this.setState(Object.assign({}, this.state, {
                 deepNode: response.data
             }))
@@ -177,27 +171,14 @@ class NavigationTree extends Component {
     }
 
     render() {
-        const {rawModalVisible, modal} = this.props;
+        const {rawModal, modal} = this.props;
         const {rootResults} = this.state;
 
         return (
             <Container
                 siteName = "Sitemap"
+                {...{modal, rawModal}}
             >
-                {modal.visible &&
-                    <Modal
-                        windowType={modal.type}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        rawModalVisible={rawModalVisible}
-                     />
-                 }
                 {this.renderTree(rootResults)}
             </Container>
         );
@@ -208,24 +189,22 @@ function mapStateToProps(state) {
     const { windowHandler } = state;
 
     const {
-        modal
+        modal,
+        rawModal
     } = windowHandler || {
-        modal: {}
+        modal: {},
+        rawModal: {}
     }
-    const {
-        visible
-    } = windowHandler.rawModal || false;
 
     return {
-        modal,
-        rawModalVisible: visible
+        modal, rawModal
     }
 }
 
 NavigationTree.propTypes = {
     dispatch: PropTypes.func.isRequired,
     modal: PropTypes.object.isRequired,
-    rawModalVisible: PropTypes.bool.isRequired
+    rawModal: PropTypes.object.isRequired,
 };
 
 NavigationTree = connect(mapStateToProps)(NavigationTree);

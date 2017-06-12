@@ -6,7 +6,7 @@ export function initLayout(
     entity, docType, tabId, subentity = null, docId = null, isAdvanced, list,
     supportTree
 ) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/' + entity + '/' + docType +
         (docId ? '/' + docId : '') +
@@ -20,9 +20,10 @@ export function initLayout(
 }
 
 export function getData(
-    entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced
+    entity, docType, docId, tabId, rowId, subentity, subentityId, isAdvanced,
+    orderBy
 ) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/' + entity +
         '/' + docType +
@@ -31,12 +32,13 @@ export function getData(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        (isAdvanced ? '?advanced=true' : '')
+        (isAdvanced ? '?advanced=true' : '') +
+        (orderBy ? '?orderBy=' + orderBy : '')
     );
 }
 
 export function createInstance(entity, docType, docId, tabId, subentity) {
-    return () => axios.post(
+    return axios.post(
         config.API_URL +
         '/' + entity +
         '/' + docType +
@@ -73,7 +75,7 @@ export function patchRequest(
         payload = [];
     }
 
-    return () => axios.patch(
+    return axios.patch(
         config.API_URL +
         '/' + entity +
         (docType ? '/' + docType : '') +
@@ -87,7 +89,7 @@ export function patchRequest(
 }
 
 export function getDataByIds(entity, docType, viewId, docIds) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/' + entity +
         (docType ? '/' + docType : '') +
@@ -100,7 +102,7 @@ export function getDataByIds(entity, docType, viewId, docIds) {
 export function completeRequest(
     entity, docType, docId, tabId, rowId, subentity, subentityId
 ) {
-    return () => axios.post(
+    return axios.post(
         config.API_URL +
         '/' + entity + '/' +
         (docType ? '/' + docType : '') +
@@ -117,7 +119,7 @@ export function autocompleteRequest(
     docType, propertyName, query, docId, tabId, rowId, entity, subentity,
     subentityId, viewId, attribute
 ) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/' + entity +
         (docType ? '/' + docType : '') +
@@ -127,7 +129,7 @@ export function autocompleteRequest(
         (rowId ? '/' + rowId : '') +
         (subentity ? '/' + subentity : '') +
         (subentityId ? '/' + subentityId : '') +
-        (attribute ? '/attribute/' : '/field/') + 
+        (attribute ? '/attribute/' : '/field/') +
         propertyName +
         '/typeahead' + '?query=' + encodeURIComponent(query)
     );
@@ -137,7 +139,7 @@ export function dropdownRequest(
     docType, propertyName, docId, tabId, rowId, entity, subentity, subentityId,
     viewId, attribute
 ) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL +
         '/' + entity +
         (docType ? '/' + docType : '') +
@@ -156,7 +158,7 @@ export function dropdownRequest(
 export function deleteRequest(
     entity, docType, docId, tabId, ids, subentity, subentityId
 ) {
-    return () => axios.delete(
+    return axios.delete(
         config.API_URL +
         '/' + entity +
         (docType ? '/' + docType : '') +
@@ -175,7 +177,7 @@ export function actionsRequest(entity, type, id, selected){
     }
     query = query.substring(1);
 
-    return () => axios.get(
+    return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
@@ -186,18 +188,20 @@ export function actionsRequest(entity, type, id, selected){
     );
 }
 
-export function referencesRequest(entity, type, id){
-    return () => axios.get(
+export function referencesRequest(entity, type, docId, tabId, rowId){
+    return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         type + '/' +
-        id +
+        docId +
+        (tabId ? '/' + tabId : '') +
+        (rowId ? '/' + rowId : '') +
         '/references'
     );
 }
 
 export function attachmentsRequest(entity, docType, docId) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         docType + '/' +
@@ -207,7 +211,7 @@ export function attachmentsRequest(entity, docType, docId) {
 }
 
 export function processNewRecord(entity, docType, docId) {
-    return () => axios.get(
+    return axios.get(
         config.API_URL + '/' +
         entity + '/' +
         docType + '/' +
@@ -217,15 +221,13 @@ export function processNewRecord(entity, docType, docId) {
 }
 
 export function openFile(entity, docType, docId, fileType, fileId) {
-    return () => {
-        const url =
-            config.API_URL + '/' +
-            entity + '/' +
-            docType + '/' +
-            docId + '/' +
-            fileType + '/' +
-            fileId;
+    const url =
+        config.API_URL + '/' +
+        entity + '/' +
+        docType + '/' +
+        docId + '/' +
+        fileType + '/' +
+        fileId;
 
-        window.open(url, '_blank');
-    }
+    window.open(url, '_blank');
 }

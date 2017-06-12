@@ -20,17 +20,16 @@ class Attachments extends Component {
     }
 
     componentDidMount = () => {
-        const {dispatch, windowType, docId} = this.props;
+        const {windowType, docId} = this.props;
 
-        dispatch(
-            attachmentsRequest('window', windowType, docId)
-        ).then(response => {
-            this.setState({
-                data: response.data
-            }, () => {
-                this.attachments && this.attachments.focus();
-            })
-        });
+        attachmentsRequest('window', windowType, docId)
+            .then(response => {
+                this.setState({
+                    data: response.data
+                }, () => {
+                    this.attachments && this.attachments.focus();
+                })
+            });
     }
 
     toggleAttachmentDelete = (value) => {
@@ -40,23 +39,20 @@ class Attachments extends Component {
     }
 
     handleAttachmentClick = (id) => {
-        const {dispatch, windowType, docId} = this.props;
-        dispatch(openFile(
-            'window', windowType, docId, 'attachments',
-            id
-        ));
+        const {windowType, docId} = this.props;
+        openFile('window', windowType, docId, 'attachments', id);
     }
 
     handleAttachmentDelete = (e, id) => {
-        const {dispatch, windowType, docId} = this.props;
+        const {windowType, docId} = this.props;
         e.stopPropagation();
 
-        dispatch(deleteRequest(
+        deleteRequest(
             'window', windowType, docId, null, null, 'attachments', id
-        )).then(() => {
-            return dispatch(attachmentsRequest(
+        ).then(() => {
+            return attachmentsRequest(
                 'window', windowType, docId
-            ))
+            )
         }).then((response) => {
             this.setState({
                 data: response.data

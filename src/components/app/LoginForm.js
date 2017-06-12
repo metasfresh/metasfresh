@@ -48,7 +48,7 @@ class LoginForm extends Component {
     handleSuccess = () => {
         const {redirect, dispatch} = this.props;
 
-        dispatch(getUserLang()).then(response => {
+        getUserLang().then(response => {
             //GET language shall always return a result
             Moment.locale(Object.keys(response.data)[0]);
 
@@ -62,10 +62,9 @@ class LoginForm extends Component {
     }
 
     checkIfAlreadyLogged(err){
-        const {dispatch} = this.props;
         const {router} = this.context;
 
-        return dispatch(localLoginRequest())
+        return localLoginRequest()
             .then(response => {
                 if (response.data){
                     return router.push('/')
@@ -83,14 +82,14 @@ class LoginForm extends Component {
             pending: true
         }, () => {
             if(roleSelect){
-                return dispatch(loginCompletionRequest(role))
+                return loginCompletionRequest(role)
                     .then(() => {
                         dispatch(loginSuccess(auth));
                         this.handleSuccess();
                     })
             }
 
-            dispatch(loginRequest(this.login.value, this.passwd.value))
+            loginRequest(this.login.value, this.passwd.value)
                 .then(response =>{
                     if(response.data.loginComplete){
                         return this.handleSuccess();

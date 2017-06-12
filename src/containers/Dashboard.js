@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/widget/DraggableWrapper';
-import Modal from '../components/app/Modal';
 
 export class Dashboard extends Component {
     constructor(props){
@@ -12,38 +11,17 @@ export class Dashboard extends Component {
 
     render() {
         const {
-            location, modal, selected, rawModal,
-            indicator
+            location, modal, selected, rawModal, indicator, processStatus,
+            includedView
         } = this.props;
 
         return (
             <Container
                 siteName="Dashboard"
                 noMargin={true}
+                {...{modal, rawModal, selected, indicator, processStatus,
+                    includedView}}
             >
-                {modal.visible &&
-                    <Modal
-                        windowType={modal.type}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        selected={selected}
-                        viewId={null}
-                        rawModalVisible={rawModal.visible}
-                        indicator={indicator}
-                        isDocumentNotSaved={
-                            (modal.saveStatus && !modal.saveStatus.saved) &&
-                            (modal.validStatus &&
-                                !modal.validStatus.initialValue)
-                        }
-                     />
-                 }
-
                 <div className="container-fluid dashboard-wrapper">
                     <DraggableWrapper
                         dashboard={location.pathname}
@@ -60,14 +38,14 @@ Dashboard.propTypes = {
 
 function mapStateToProps(state) {
     const {
-        windowHandler
+        windowHandler, listHandler, appHandler
     } = state;
 
     const {
         modal,
         rawModal,
         selected,
-        indicator
+        indicator,
     } = windowHandler || {
         modal: false,
         rawModal: false,
@@ -75,8 +53,20 @@ function mapStateToProps(state) {
         indicator: ''
     }
 
+    const {
+        includedView
+    } = listHandler || {
+        includedView: {}
+    }
+
+    const {
+        processStatus
+    } = appHandler || {
+        processStatus: ''
+    }
+
     return {
-        modal, selected, indicator, rawModal
+        modal, selected, indicator, rawModal, processStatus, includedView
     }
 }
 

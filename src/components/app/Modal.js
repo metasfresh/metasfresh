@@ -113,7 +113,6 @@ class Modal extends Component {
                     )
                 ).catch(err => {
                     this.handleClose();
-
                     if(err.toString() !== 'Error: close_modal'){
                         throw err;
                     }
@@ -144,8 +143,8 @@ class Modal extends Component {
         const {isNew, isNewDoc} = this.state;
 
         if(isNewDoc) {
-            dispatch(
-                processNewRecord('window', windowType, dataId)
+            processNewRecord(
+                'window', windowType, dataId
             ).then(response => {
                 dispatch(patch(
                     'window', relativeType, relativeDataId, null, null,
@@ -189,9 +188,9 @@ class Modal extends Component {
         this.setState({
             pending: true
         }, () => {
-            dispatch(startProcess(
+            startProcess(
                 windowType, layout.pinstanceId
-            )).then(response => {
+            ).then(response => {
                 this.setState({
                     pending: false
                 }, () => {
@@ -263,7 +262,7 @@ class Modal extends Component {
         } = this.state;
 
         return(
-            data.length > 0 && <div
+            Object.keys(data).length > 0 && <div
                 className="screen-freeze js-not-unselect"
             >
             <div className="panel panel-modal panel-modal-primary">

@@ -11,7 +11,7 @@ const initialState = {
         rowId: null,
         viewId: null,
         layout: {},
-        data: [],
+        data: {},
         rowData: {},
         modalTitle: '',
         modalType: '',
@@ -44,6 +44,7 @@ const initialState = {
 };
 
 export default function windowHandler(state = initialState, action) {
+
     switch(action.type){
 
         case types.NO_CONNECTION:
@@ -114,11 +115,28 @@ export default function windowHandler(state = initialState, action) {
         case types.CLEAR_MASTER_DATA:
             return Object.assign({}, state, {
                 master: Object.assign({}, state.master, {
-                    data: [],
+                    data: {},
                     rowData: {},
                     docId: undefined
                 })
             });
+
+        case types.SORT_TAB:
+            return Object.assign({}, state, {
+                [action.scope]: Object.assign({}, state[action.scope], {
+                    layout: Object.assign({}, state[action.scope].layout, {
+                        tabs: state[action.scope].layout.tabs.map(tab =>
+                            tab.tabId === action.tabId ?
+                            Object.assign({}, tab, {
+                                orderBy: [{
+                                    fieldName: action.field,
+                                    ascending: action.asc
+                                }]
+                            }) : tab
+                        )
+                    })
+                })
+            })
 
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
@@ -133,9 +151,9 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$merge: {
-                            [action.rowid]: action.item
-                        }}
+                        [action.tabid]: {
+                            $push: [action.item]
+                        }
                     }
                 }
             });
@@ -144,16 +162,9 @@ export default function windowHandler(state = initialState, action) {
             return update(state, {
                 [action.scope]: {
                     rowData: {
-                        [action.tabid]: {$set:
-                            Object.keys(
-                                state[action.scope].rowData[action.tabid]
-                            ).filter(key => key !== action.rowid)
-                            .reduce((result, current) => {
-                                result[current] =
-                                    state[action.scope]
-                                        .rowData[action.tabid][current];
-                                return result;
-                            }, {})
+                        [action.tabid]: {
+                            $set: state[action.scope].rowData[action.tabid]
+                                .filter((item) => item.rowId !== action.rowid)
                         }
                     }
                 }
@@ -162,11 +173,14 @@ export default function windowHandler(state = initialState, action) {
         case types.UPDATE_DATA_FIELD_PROPERTY:
             return update(state, {
                 [action.scope]: {
-                    data: {$set: state[action.scope].data.map(item =>
-                        item.field === action.property ?
-                        Object.assign({}, item, action.item) :
-                        item
-                    )}
+                    data: {
+                        [action.property]: {$set:
+                            Object.assign({},
+                                state[action.scope].data[action.property],
+                                action.item
+                            )
+                        }
+                    }
                 }
             });
 
@@ -185,36 +199,47 @@ export default function windowHandler(state = initialState, action) {
                 }
             });
 
-        case types.UPDATE_ROW_FIELD_PROPERTY:
-            return update(state, {
-                [action.scope]: {
-                    rowData: {
-                        [action.tabid]: {
-                            [action.rowid]: {
-                                fields: {$set:
-                                    state[action.scope]
-                                        .rowData[action.tabid][action.rowid]
-                                        .fields.map(item =>
-                                        item.field === action.property ?
-                                            Object.assign(
-                                                {}, item, action.item
-                                            ) : item
+            case types.UPDATE_ROW_FIELD_PROPERTY:
+                return update(state, {
+                    [action.scope]: {
+                        rowData: {
+                            [action.tabid]: {
+                                $set: state[action.scope].rowData[action.tabid]
+                                    .map((item, index) =>
+                                        item.rowId === action.rowid ? {
+                                            ...state[action.scope]
+                                                .rowData[action.tabid][index],
+                                            fieldsByName: {
+                                                ...state[action.scope]
+                                                    .rowData[action.tabid][index]
+                                                    .fieldsByName,
+                                                [action.property]: {
+                                                    ...state[action.scope]
+                                                        .rowData[action.tabid][index]
+                                                        .fieldsByName[action.property],
+                                                    ...action.item
+                                                    }
+                                            }
+                                        } : item
                                     )
-                                }
                             }
                         }
                     }
-                }
-            });
+                });
 
-        case types.UPDATE_ROW_PROPERTY:
+         case types.UPDATE_ROW_PROPERTY:
             return update(state, {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [action.rowid]: {$merge: {
-                                [action.property]: action.item
-                            }}
+                            $set: state[action.scope].rowData[action.tabid]
+                                .map((item, index) =>
+                                    item.rowId === action.rowid ? {
+                                        ...state[action.scope]
+                                            .rowData[action.tabid][index],
+                                        [action.property]: action.item
+                                    } : item
+                                )
                         }
                     }
                 }
@@ -225,9 +250,12 @@ export default function windowHandler(state = initialState, action) {
                 [action.scope]: {
                     rowData: {
                         [action.tabid]: {
-                            [action.rowid]: {
-                                saveStatus: {$set: action.saveStatus}
-                            }
+                             $set: state[action.scope].rowData[action.tabid]
+                             .map(item =>
+                                item.rowId === action.rowid ?
+                                {$set : action.saveStatus}
+                                : item
+                            )
                         }
                     }
                 }

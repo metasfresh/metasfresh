@@ -4,8 +4,6 @@ import {connect} from 'react-redux';
 
 import DocumentList from '../components/app/DocumentList';
 import Container from '../components/Container';
-import Modal from '../components/app/Modal';
-import RawModal from '../components/app/RawModal';
 
 import {
     getWindowBreadcrumb
@@ -32,7 +30,6 @@ class DocList extends Component {
 
     componentDidMount = () => {
         const {dispatch, windowType, latestNewDocument} = this.props;
-
         dispatch(getWindowBreadcrumb(windowType));
 
         if(latestNewDocument){
@@ -79,76 +76,12 @@ class DocList extends Component {
         return (
             <Container
                 entity="documentView"
-                breadcrumb={breadcrumb}
-                windowType={windowType}
-                query={query}
-                notfound={notfound}
+                {...{modal, rawModal, breadcrumb, windowType, query, notfound,
+                    selected, selectedWindowType, indicator, modalTitle,
+                    processStatus, includedView}}
+                setModalTitle={this.setModalTitle}
                 showIndicator={!modal.visible && !rawModal.visible}
             >
-                {modal.visible &&
-                    <Modal
-                        windowType={modal.type}
-                        dataId={modal.dataId ? modal.dataId : ''}
-                        data={modal.data}
-                        layout={modal.layout}
-                        rowData={modal.rowData}
-                        tabId={modal.tabId}
-                        rowId={modal.rowId}
-                        modalTitle={modal.title}
-                        modalType={modal.modalType}
-                        modalViewId={modal.viewId}
-                        query={query}
-                        selected={selected}
-                        viewId={query.viewId}
-                        rawModalVisible={rawModal.visible}
-                        indicator={indicator}
-                        modalSaveStatus={
-                            modal.saveStatus &&
-                            modal.saveStatus.saved !== undefined ?
-                                modal.saveStatus.saved : true
-                        }
-                        isDocumentNotSaved={
-                            (modal.saveStatus && !modal.saveStatus.saved) &&
-                            (modal.validStatus &&
-                                !modal.validStatus.initialValue)
-                        }
-                     />
-                 }
-
-                 {rawModal.visible &&
-                     <RawModal
-                         modalTitle={modalTitle}
-                     >
-                        <div className="document-lists-wrapper">
-                             <DocumentList
-                                 type="grid"
-                                 windowType={rawModal.type}
-                                 defaultViewId={rawModal.viewId}
-                                 selected={selected}
-                                 selectedWindowType={selectedWindowType}
-                                 setModalTitle={this.setModalTitle}
-                                 isModal={true}
-                                 processStatus={processStatus}
-                                 includedView={includedView}
-                                 inBackground={
-                                     includedView.windowType &&
-                                        includedView.viewId
-                                 }
-                             >
-                             </DocumentList>
-                             {includedView.windowType && includedView.viewId &&
-                                 <DocumentList
-                                     type="includedView"
-                                     selected={selected}
-                                     selectedWindowType={selectedWindowType}
-                                     windowType={includedView.windowType}
-                                     defaultViewId={includedView.viewId}
-                                     isIncluded={true}
-                                 />
-                             }
-                        </div>
-                     </RawModal>
-                 }
                  <DocumentList
                      type="grid"
                      updateUri={this.updateUriCallback}
