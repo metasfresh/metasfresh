@@ -91,6 +91,7 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final boolean calculated;
 
 	private final DocumentFieldWidgetType widgetType;
+	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final Class<?> valueClass;
@@ -150,6 +151,7 @@ public final class DocumentFieldDescriptor implements Serializable
 		calculated = builder.isCalculated();
 
 		widgetType = builder.getWidgetType();
+		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		valueClass = builder.getValueClass();
 
@@ -235,6 +237,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	public DocumentFieldWidgetType getWidgetType()
 	{
 		return widgetType;
+	}
+	
+	public boolean isAllowShowPassword()
+	{
+		return allowShowPassword;
 	}
 
 	public ButtonFieldActionDescriptor getButtonActionDescriptor()
@@ -656,7 +663,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		private boolean calculated;
 
 		private DocumentFieldWidgetType _widgetType;
-		public Class<?> _valueClass;
+		private Class<?> _valueClass;
+		private boolean _allowShowPassword = false; // in case widgetType is Password
+
 
 		// Lookup
 		private LookupDescriptorProvider lookupDescriptorProvider = LookupDescriptorProvider.NULL;
@@ -871,6 +880,17 @@ public final class DocumentFieldDescriptor implements Serializable
 		{
 			Preconditions.checkNotNull(_widgetType, "widgetType is null");
 			return _widgetType;
+		}
+		
+		public Builder setAllowShowPassword(boolean allowShowPassword)
+		{
+			this._allowShowPassword = allowShowPassword;
+			return this;
+		}
+		
+		private boolean isAllowShowPassword()
+		{
+			return _allowShowPassword;
 		}
 
 		public Builder setLookupDescriptorProvider(final LookupDescriptorProvider lookupDescriptorProvider)

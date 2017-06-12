@@ -205,6 +205,8 @@ import lombok.NonNull;
 
 		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor);
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
+		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password ? true : false; // process parameters shall always allow displaying the password
+
 
 		final ILogicExpression readonlyLogic = expressionFactory.compileOrDefault(adProcessParam.getReadOnlyLogic(), ConstantLogicExpression.FALSE, ILogicExpression.class);
 		final ILogicExpression displayLogic = expressionFactory.compileOrDefault(adProcessParam.getDisplayLogic(), ConstantLogicExpression.TRUE, ILogicExpression.class);
@@ -225,6 +227,7 @@ import lombok.NonNull;
 				//
 				.setValueClass(valueClass)
 				.setWidgetType(widgetType)
+				.setAllowShowPassword(allowShowPassword)
 				.setLookupDescriptorProvider(lookupDescriptorProvider)
 				//
 				.setDefaultValueExpression(defaultValueExpr)

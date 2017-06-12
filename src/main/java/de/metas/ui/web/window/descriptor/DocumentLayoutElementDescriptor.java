@@ -81,6 +81,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 	private final DocumentFieldWidgetType widgetType;
 	private final Optional<Integer> precision;
+	private final boolean allowShowPassword; // in case widgetType is Password
 	private final ButtonFieldActionDescriptor buttonActionDescriptor;
 
 	private final LayoutType layoutType;
@@ -104,6 +105,7 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 
 		widgetType = builder.getWidgetType();
 		precision = Optional.ofNullable(builder.getPrecision());
+		allowShowPassword = builder.isAllowShowPassword();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 
 		layoutType = builder.getLayoutType();
@@ -161,6 +163,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 	{
 		return precision;
 	}
+	
+	public boolean isAllowShowPassword()
+	{
+		return allowShowPassword;
+	}
 
 	public LayoutType getLayoutType()
 	{
@@ -204,8 +211,11 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		private String _internalName;
 		private ITranslatableString _caption = null;
 		private ITranslatableString _description = null;
+		
 		private DocumentFieldWidgetType _widgetType;
+		private boolean _allowShowPassword = false; // in case widgetType is Password
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
+		
 		private LayoutType _layoutType;
 		private WidgetSize _widgetSize;
 		private boolean _gridElement = false;
@@ -359,6 +369,17 @@ public final class DocumentLayoutElementDescriptor implements Serializable
 		{
 			Check.assumeNotNull(_widgetType, DocumentLayoutBuildException.class, "Parameter widgetType is not null for {}", this);
 			return _widgetType;
+		}
+		
+		public Builder setAllowShowPassword(boolean allowShowPassword)
+		{
+			this._allowShowPassword = allowShowPassword;
+			return this;
+		}
+		
+		private boolean isAllowShowPassword()
+		{
+			return _allowShowPassword;
 		}
 
 		private Integer getPrecision()
