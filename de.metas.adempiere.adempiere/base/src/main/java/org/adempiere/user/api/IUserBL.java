@@ -10,12 +10,12 @@ package org.adempiere.user.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,6 +25,7 @@ package org.adempiere.user.api;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 
 public interface IUserBL extends ISingletonService
@@ -41,7 +42,7 @@ public interface IUserBL extends ISingletonService
 
 	/**
 	 * Change given user's password.
-	 * 
+	 *
 	 * @param ctx context, IMPORTANT because will be used to fetch current logged in user credentials
 	 * @param adUserId the AD_User_ID of which the password shall be changed
 	 * @param oldPassword old/current password
@@ -52,7 +53,7 @@ public interface IUserBL extends ISingletonService
 
 	/**
 	 * Generates and sets a new password for given user. The user will be also saved.
-	 * 
+	 *
 	 * @param user
 	 * @return new password
 	 */
@@ -64,8 +65,17 @@ public interface IUserBL extends ISingletonService
 	void assertValidPassword(String password);
 
 	/**
+	 * create a new user in specified org with the specified name
+	 *
+	 * @param name
+	 * @param org
+	 * @return
+	 */
+	I_AD_User createUser(String name, I_AD_Org org);
+
+	/**
 	 * Checks if given user has a C_BPartner which is an employee.
-	 * 
+	 *
 	 * @param user
 	 * @return true if is employee
 	 */
@@ -91,14 +101,14 @@ public interface IUserBL extends ISingletonService
 
 	/**
 	 * Is the email valid
-	 * 
+	 *
 	 * @return return true if email is valid (artificial check)
 	 */
 	boolean isEMailValid(I_AD_User user);
 
 	/**
 	 * Could we send an email from this user
-	 * 
+	 *
 	 * @return true if EMail Uwer/PW exists
 	 */
 	boolean isCanSendEMail(I_AD_User user);

@@ -43,6 +43,7 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
@@ -80,14 +81,14 @@ public class UserBL implements IUserBL
 	private final String generatePassword()
 	{
 		final Random rand = new Random(System.currentTimeMillis());
-		
+
 		int passwordLength = this.passwordLength;
 		final int minPasswordLength = getMinPasswordLength();
 		if(minPasswordLength > 0 && passwordLength < minPasswordLength)
 		{
 			passwordLength = minPasswordLength;
 		}
-		
+
 		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < passwordLength; i++)
 		{
@@ -96,7 +97,7 @@ public class UserBL implements IUserBL
 		}
 		return sb.toString();
 	}
-	
+
 	@Override
 	public String generatedAndSetPassword(final I_AD_User user)
 	{
@@ -286,12 +287,12 @@ public class UserBL implements IUserBL
 				throw new AdempiereException("@OldPasswordNoMatch@")
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
 			}
-			
+
 			if(Check.isEmpty(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordMandatory@");
 			}
-			
+
 			if (!Objects.equals(oldPassword, userPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@");
@@ -303,12 +304,12 @@ public class UserBL implements IUserBL
 		user.setPassword(newPassword);
 		InterfaceWrapperHelper.save(user);
 	}
-	
+
 	private boolean isOldPasswordRequired(final Properties ctx, final int adUserId)
 	{
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.of(ctx));
-		
+
 		// Changing your own password always requires entering the old password
 		if(loggedInPermissions.getAD_User_ID() == adUserId)
 		{
@@ -391,6 +392,19 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public I_AD_User createUser(final String name, final I_AD_Org org)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(org, true);
+		final String trxName = InterfaceWrapperHelper.getTrxName(org);
+		final I_AD_User user = InterfaceWrapperHelper.create(ctx, I_AD_User.class, trxName);
+		user.setName(name);
+		user.setAD_Org_ID(org.getAD_Org_ID());
+		InterfaceWrapperHelper.save(user);
+
+		return user;
+	}
+
+	@Override
 	public boolean isNotificationEMail(final I_AD_User user)
 	{
 		final String s = user.getNotificationType();
@@ -417,7 +431,7 @@ public class UserBL implements IUserBL
 	{
 		return validateEmail(getInternetAddress(user)) != null;
 	}	//	isEMailValid
-	
+
 	/**
 	 * 	Validate Email (does not work).
 	 * 	Check DNS MX record
@@ -432,7 +446,7 @@ public class UserBL implements IUserBL
         	return ia.getAddress();
 	}	//	validateEmail
 
-	
+
 	/**
 	 * 	Convert EMail
 	 *	@return Valid Internet Address
@@ -464,7 +478,7 @@ public class UserBL implements IUserBL
 		{
 			return false;
 		}
-		
+
 		// If SMTP authorization is not required, then don't check password - teo_sarca [ 1723309 ]
 		if (!MClient.get(Env.getCtx()).isSmtpAuthorization())
 		{
