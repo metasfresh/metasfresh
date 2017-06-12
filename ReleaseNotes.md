@@ -52,7 +52,9 @@ Here come the actual release notes:
     * Implementing the metasfresh API for the generic Board configuration functionality.
     
 * metasfresh-webui-frontend
-  * #840(https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
+  * [#839](https://github.com/metasfresh/metasfresh-webui-frontend/issues/839) Combined Fields/ Lookup adjustment
+    * Nice Improvements to Combined Lookup fields adding a step-by-step workflow when recording data in those fields.
+  * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
     * Navigation Improvements in Sitemap Screen. Now allowing easy switch between filtered menu treee and search field.
 
 * others
