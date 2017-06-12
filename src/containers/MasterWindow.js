@@ -52,7 +52,7 @@ class MasterWindow extends Component {
                 const {includedTabsInfo} = msg;
                 const {master} = this.props;
                 includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
-                    const tabLayout = master.layout.tabs.filter(tab => 
+                    const tabLayout = master.layout.tabs.filter(tab =>
                         tab.tabId === tabId
                     )[0];
                     if(
@@ -81,7 +81,7 @@ class MasterWindow extends Component {
 
         // When closing modal, we need to update the stale tabs
         if(!modal.visible && modal.visible !== prevProps.modal.visible){
-            master.includedTabsInfo && 
+            master.includedTabsInfo &&
                 Object.keys(master.includedTabsInfo).map(tabId => {
                     getTab(tabId, params.windowType, master.docId)
                         .then(tab => {

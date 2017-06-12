@@ -36,8 +36,8 @@ class BookmarkButton extends Component {
             nodeId
         ).then(response => {
             dispatch(addNotification(
-                'Bookmarks', 
-                'Bookmark ' + (!isBookmark ? 'added.' : 'removed.'), 5000, 
+                'Bookmarks',
+                'Bookmark ' + (!isBookmark ? 'added.' : 'removed.'), 5000,
                 'primary'
             ));
             this.setState({isBookmark: !isBookmark})
