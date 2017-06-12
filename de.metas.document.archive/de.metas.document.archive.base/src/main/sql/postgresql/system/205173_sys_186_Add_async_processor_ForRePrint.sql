@@ -36,7 +36,7 @@ WHERE NOT EXISTS (select 1 from C_Queue_PackageProcessor where C_Queue_PackagePr
 
 -- 20.01.2017 10:17:03
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_Async_Batch_Type (AD_Client_ID,AD_Org_ID,C_Async_Batch_Type_ID,Created,CreatedBy,InternalName,IsActive,IsSendMail,IsSendNotification,KeepAliveTimeHours,NotificationType,SkipTimeoutMillis,Updated,UpdatedBy 
+INSERT INTO C_Async_Batch_Type (AD_Client_ID,AD_Org_ID,C_Async_Batch_Type_ID,Created,CreatedBy,InternalName,IsActive,IsSendMail,IsSendNotification,KeepAliveTimeHours,NotificationType,SkipTimeoutMillis,Updated,UpdatedBy)
 SELECT 0,0,540007,TO_TIMESTAMP('2017-01-20 10:17:02','YYYY-MM-DD HH24:MI:SS'),100,'ReCreatePDF','Y','N','N','24','ABP',0,TO_TIMESTAMP('2017-01-20 10:17:02','YYYY-MM-DD HH24:MI:SS'),100
 WHERE NOT EXISTS (select 1 from C_Async_Batch_Type where C_Async_Batch_Type_ID=540007);
 ;
