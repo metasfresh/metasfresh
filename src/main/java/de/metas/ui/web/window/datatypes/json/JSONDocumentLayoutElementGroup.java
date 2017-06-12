@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementGroupDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -53,12 +52,6 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 		return new JSONDocumentLayoutElementGroup(elementGroup, jsonOpts);
 	}
 
-	static List<JSONDocumentLayoutElementGroup> ofElements(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
-	{
-		final JSONDocumentLayoutElementGroup elementGroup = new JSONDocumentLayoutElementGroup(elements, jsonOpts);
-		return ImmutableList.of(elementGroup);
-	}
-
 	/** Element group type (primary aka bordered, transparent etc) */
 	@JsonProperty("type")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -79,18 +72,6 @@ public final class JSONDocumentLayoutElementGroup implements Serializable
 	{
 		this.type = type;
 		this.elementLines = elementLines == null ? ImmutableList.of() : ImmutableList.copyOf(elementLines);
-	}
-
-	/**
-	 * From detail tab constructor
-	 *
-	 * @param detailLayout
-	 * @param jsonOpts
-	 */
-	private JSONDocumentLayoutElementGroup(List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
-	{
-		type = null;
-		elementLines = JSONDocumentLayoutElementLine.ofElementsOnePerLine(elements, jsonOpts);
 	}
 
 	@Override

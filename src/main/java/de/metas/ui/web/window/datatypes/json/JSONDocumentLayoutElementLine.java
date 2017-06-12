@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementLineDescriptor;
 import io.swagger.annotations.ApiModel;
 
@@ -49,14 +48,6 @@ public class JSONDocumentLayoutElementLine implements Serializable
 				.collect(GuavaCollectors.toImmutableList());
 	}
 	
-	static List<JSONDocumentLayoutElementLine> ofElementsOnePerLine(final List<DocumentLayoutElementDescriptor> elements, final JSONOptions jsonOpts)
-	{
-		return JSONDocumentLayoutElement.ofList(elements, jsonOpts)
-				.stream()
-				.map(element -> new JSONDocumentLayoutElementLine(element))
-				.collect(GuavaCollectors.toImmutableList());
-	}
-
 	private static JSONDocumentLayoutElementLine ofDocumentLayoutElementLineDescriptor(final DocumentLayoutElementLineDescriptor elementLine, final JSONOptions jsonOpts)
 	{
 		return new JSONDocumentLayoutElementLine(elementLine, jsonOpts);
