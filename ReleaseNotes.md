@@ -50,6 +50,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
+  * [#452](https://github.com/metasfresh/metasfresh-webui-api/issues/452) Introduce URL widget type
+    * API Implementation of the new URL Widget in frontend.
     
 * metasfresh-webui-frontend
   * [#839](https://github.com/metasfresh/metasfresh-webui-frontend/issues/839) Combined Fields/ Lookup adjustment
