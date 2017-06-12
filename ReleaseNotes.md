@@ -49,6 +49,7 @@ Here come the actual release notes:
 
 * others
   * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
+  * [metasfresh/metasfresh-scripts#8](https://github.com/metasfresh/metasfresh-scripts/issues/8) implement crude pagination for `cherry-pick-issue-script`
 
 ## Fixes
 * metasfresh-backend
