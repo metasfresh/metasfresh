@@ -15,6 +15,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
@@ -130,11 +131,12 @@ class MultiVendorHUReturnsInOutProducer
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 				final int bpartnerId = inout.getC_BPartner_ID();
 
+				final I_C_Order order = inout.getC_Order();
 				// Add the HU to the right producer
 				// NOTE: There will be one return inout for each partner and warehouse
 				// The return inout lines will be created based on the origin inoutlines (from receipts)
-				final ArrayKey vendorReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId);
-				vendorReturnProducers.computeIfAbsent(vendorReturnProducerKey, k -> createVendorReturnInOutProducer(bpartnerId, warehouseId))
+				final ArrayKey vendorReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId, order.getC_Order_ID());
+				vendorReturnProducers.computeIfAbsent(vendorReturnProducerKey, k -> createVendorReturnInOutProducer(bpartnerId, warehouseId, order))
 						.addHUToReturn(hu, originalReceiptInOutLineId);
 			}
 		}
@@ -172,7 +174,7 @@ class MultiVendorHUReturnsInOutProducer
 	 * @param hus
 	 * @return
 	 */
-	private VendorReturnsInOutProducer createVendorReturnInOutProducer(final int partnerId, final int warehouseId)
+	private VendorReturnsInOutProducer createVendorReturnInOutProducer(final int partnerId, final int warehouseId, final I_C_Order originOrder)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final Properties ctx = Env.getCtx();
@@ -188,6 +190,8 @@ class MultiVendorHUReturnsInOutProducer
 		producer.setM_Warehouse(warehouse);
 
 		producer.setMovementDate(getMovementDate());
+		
+		producer.setC_Order(originOrder);
 
 		return producer;
 	}
