@@ -47,6 +47,9 @@ Here come the actual release notes:
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
 
+* others
+  * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
+
 ## Fixes
 * metasfresh-backend
   * [#1441](https://github.com/metasfresh/metasfresh/issues/1441) move subproject de.metas.endcustomer.mf15.ait to metasfresh-dist repo
