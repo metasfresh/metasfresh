@@ -290,6 +290,7 @@ stage('Invoke downstream job')
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	{
 		// wait=true; if a downstream job fails with this parent pom then we want to know about it
+		invokeDownStreamJobs('metasfresh-admin', MF_UPSTREAM_BRANCH, true);
 		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BRANCH, true);
 	}
 	else
