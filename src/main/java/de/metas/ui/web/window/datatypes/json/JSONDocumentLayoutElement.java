@@ -56,6 +56,7 @@ public final class JSONDocumentLayoutElement
 		return elements.stream()
 				.filter(jsonOpts.documentLayoutElementFilter())
 				.map(element -> new JSONDocumentLayoutElement(element, jsonOpts))
+				.filter(JSONDocumentLayoutElement::hasFields) // IMPORTANT: we shall avoid having elements without any field, see https://github.com/metasfresh/metasfresh-webui-frontend/issues/870#issuecomment-307770832
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -177,5 +178,10 @@ public final class JSONDocumentLayoutElement
 				, (String)null // newRecordCaption
 				, widgetType.isSupportZoomInto() // supportZoomInfo
 		));
+	}
+	
+	private boolean hasFields()
+	{
+		return !fields.isEmpty();
 	}
 }
