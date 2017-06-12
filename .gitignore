@@ -26,3 +26,6 @@ de.metas.endcustomer.mf15/metasfresh.properties
 # ignore eclipse data folders. Also see http://stackoverflow.com/a/33783023/1012103
 .metadata/
 .recommenders/
+
+# Ignore JRebel files because those contains file paths from local system
+**/rebel.xml

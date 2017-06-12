@@ -22,6 +22,8 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUTrxBL;
@@ -137,13 +139,13 @@ public class HUTransferService
 		this.referencedObjects = Preconditions.checkNotNull(referencedObjects, "Param 'referencedOjects' may noot be null");
 		return this;
 	}
-	
+
 	private List<TableRecordReference> getReferencedObjects()
 	{
 		// TODO: in case there were no referenced objects, i think we shall search & retrieve all the referenced documents/lines
 		return referencedObjects;
 	}
-	
+
 	private IAllocationRequest createCUAllocationRequest(
 			final IHUContext huContext, final I_M_Product cuProduct, final I_C_UOM cuUOM, final BigDecimal cuQty, final boolean forceAllocation)
 	{
@@ -214,16 +216,16 @@ public class HUTransferService
 				setParent(cuHU, null,
 						// before
 						localHuContext -> {
-							final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuHU);
-							final I_M_HU oldLuHU = oldTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
-							updateAllocation(oldLuHU, oldTuHU, cuHU, qtyCU, true, localHuContext);
-						},
+								final I_M_HU oldTuHU = handlingUnitsDAO.retrieveParent(cuHU);
+								final I_M_HU oldLuHU = oldTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
+								updateAllocation(oldLuHU, oldTuHU, cuHU, qtyCU, true, localHuContext);
+							},
 						// after
 						localHuContext -> {
-							final I_M_HU newTuHU = handlingUnitsDAO.retrieveParent(cuHU);
-							final I_M_HU newLuHU = newTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
-							updateAllocation(newLuHU, newTuHU, cuHU, qtyCU, false, localHuContext);
-						});
+								final I_M_HU newTuHU = handlingUnitsDAO.retrieveParent(cuHU);
+								final I_M_HU newLuHU = newTuHU == null ? null : handlingUnitsDAO.retrieveParent(cuHU);
+								updateAllocation(newLuHU, newTuHU, cuHU, qtyCU, false, localHuContext);
+							});
 				return ImmutableList.of(cuHU);
 			}
 		}
@@ -336,23 +338,23 @@ public class HUTransferService
 
 		// iterate the child CUs and set their parent item
 		childCUs.forEach(newChildCU -> {
-			setParent(newChildCU,
-					tuMaterialItem.get(0),
+				setParent(newChildCU,
+						tuMaterialItem.get(0),
 
-					// before the newChildCU's parent item is set,
+						// before the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
-						final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
-						updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
-					},
+								final I_M_HU oldParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+								final I_M_HU oldParentLU = oldParentTU == null ? null : handlingUnitsDAO.retrieveParent(oldParentTU);
+								updateAllocation(oldParentLU, oldParentTU, sourceCuHU, qtyCU, true, localHuContext);
+							},
 
-					// after the newChildCU's parent item is set,
+						// after the newChildCU's parent item is set,
 					localHuContext -> {
-						final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
-						final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
-						updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
-					});
-		});
+								final I_M_HU newParentTU = handlingUnitsDAO.retrieveParent(newChildCU);
+								final I_M_HU newParentLU = newParentTU == null ? null : handlingUnitsDAO.retrieveParent(newParentTU);
+								updateAllocation(newParentLU, newParentTU, newChildCU, qtyCU, false, localHuContext);
+							});
+			});
 	}
 
 	/**
@@ -455,25 +457,25 @@ public class HUTransferService
 
 		tuHUsToAttachToLU.forEach(tuToAttach -> {
 
-			final I_M_HU_PI piOfChildHU = tuToAttach.getM_HU_PI_Version().getM_HU_PI();
+				final I_M_HU_PI piOfChildHU = tuToAttach.getM_HU_PI_Version().getM_HU_PI();
 
-			final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, piOfChildHU, huContext);
-			Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", luHU, piOfChildHU);
+				final I_M_HU_PI_Item parentPIItem = handlingUnitsDAO.retrieveParentPIItemForChildHUOrNull(luHU, piOfChildHU, huContext);
+				Check.errorIf(parentPIItem == null, "parentPIItem==null for parentHU={} and piOfChildHU={}", luHU, piOfChildHU);
 
-			final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
+				final I_M_HU_Item parentItem = handlingUnitsDAO.createHUItemIfNotExists(luHU, parentPIItem).getLeft();
 
-			setParent(tuToAttach,
-					parentItem,
+				setParent(tuToAttach,
+						parentItem,
 					localHuContext -> {
-						// before
-						final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
-						updateAllocation(oldParentLU, tuToAttach, null, null, true, localHuContext);
-					},
+								// before
+								final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
+								updateAllocation(oldParentLU, tuToAttach, null, null, true, localHuContext);
+							},
 					localHuContext -> {
-						final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
-						updateAllocation(newParentLU, tuToAttach, null, null, false, localHuContext);
-					});
-		});
+								final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(tuToAttach);
+								updateAllocation(newParentLU, tuToAttach, null, null, false, localHuContext);
+							});
+			});
 	}
 
 	/**
@@ -495,6 +497,11 @@ public class HUTransferService
 		final LUTUProducerDestination destination = new LUTUProducerDestination();
 		destination.setTUPI(tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI());
 		destination.setIsHUPlanningReceiptOwnerPM(isOwnPackingMaterials);
+
+		// gh #1759: explicitly take the capacity from the tuPIItemProduct which the user selected
+		final IHUCapacityDefinition capacity = Services.get(IHUCapacityBL.class).getCapacity(tuPIItemProduct, tuPIItemProduct.getM_Product(), tuPIItemProduct.getC_UOM());
+		destination.addTUCapacity(capacity);
+
 		destination.setNoLU();
 
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
@@ -538,13 +545,13 @@ public class HUTransferService
 			{
 				setParent(sourceTuHU, null,
 						localHuContext -> {
-							final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
-							updateAllocation(oldParentLU, sourceTuHU, sourceTuHU, null, true, localHuContext);
-						},
+								final I_M_HU oldParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
+								updateAllocation(oldParentLU, sourceTuHU, sourceTuHU, null, true, localHuContext);
+							},
 						localHuContext -> {
-							final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
-							updateAllocation(newParentLU, sourceTuHU, sourceTuHU, null, false, localHuContext);
-						});
+								final I_M_HU newParentLU = handlingUnitsDAO.retrieveParent(sourceTuHU);
+								updateAllocation(newParentLU, sourceTuHU, sourceTuHU, null, false, localHuContext);
+							});
 				return ImmutableList.of(sourceTuHU);
 			}
 		}
@@ -619,15 +626,15 @@ public class HUTransferService
 				setParent(tu, null,
 						// beforeParentChange
 						localHuContext -> {
-							final I_M_HU cu = null;
-							updateAllocation(sourceLU, tu, cu, null, true, localHuContext);
-						},
+								final I_M_HU cu = null;
+								updateAllocation(sourceLU, tu, cu, null, true, localHuContext);
+							},
 						// afterParentChange
 						localHuContext -> {
-							final I_M_HU newParentLU = null;
-							final I_M_HU cu = null;
-							updateAllocation(newParentLU, tu, cu, null, false, localHuContext);
-						});
+								final I_M_HU newParentLU = null;
+								final I_M_HU cu = null;
+								updateAllocation(newParentLU, tu, cu, null, false, localHuContext);
+							});
 
 				extractedTUs.add(tu);
 				qtyTUsRemaining--;
@@ -731,13 +738,13 @@ public class HUTransferService
 			setParent(sourceTuHU,
 					newParentItemOfSourceTuHU,
 					localHuContext -> {
-						final I_M_HU oldParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
-						updateAllocation(oldParentLu, sourceTuHU, null, null, true, localHuContext);
-					},
+							final I_M_HU oldParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
+							updateAllocation(oldParentLu, sourceTuHU, null, null, true, localHuContext);
+						},
 					localHuContext -> {
-						final I_M_HU newParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
-						updateAllocation(newParentLu, sourceTuHU, null, null, false, localHuContext);
-					});
+							final I_M_HU newParentLu = handlingUnitsDAO.retrieveParent(sourceTuHU);
+							updateAllocation(newParentLu, sourceTuHU, null, null, false, localHuContext);
+						});
 
 			// update the haItemOfLU if needed
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
@@ -841,8 +848,8 @@ public class HUTransferService
 
 			final BigDecimal qtyCU = Preconditions.checkNotNull(currentHuProductStorage.getQty(), "Qty of currentHuProductStorage=%s may not be null", currentHuProductStorage);
 			createdTUs.forEach(createdTU -> {
-				cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
-			});
+					cuToExistingTU(currentHuProductStorage.getM_HU(), qtyCU, createdTU);
+				});
 		}
 
 		return createdTUs;
@@ -862,8 +869,8 @@ public class HUTransferService
 		{
 			handlingUnitsDAO.retrieveIncludedHUs(tuHU)
 					.forEach(cuHU -> {
-						productStorages.addAll(storageFactory.getStorage(cuHU).getProductStorages());
-					});
+							productStorages.addAll(storageFactory.getStorage(cuHU).getProductStorages());
+						});
 		}
 		Preconditions.checkState(!productStorages.isEmpty(), "The list of productStorages below the given 'tuHU' may not be empty; tuHU=%s", tuHU);
 		return productStorages;

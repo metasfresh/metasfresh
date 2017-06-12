@@ -112,7 +112,7 @@ public class LanguageDAO implements ILanguageDAO
 	}
 	
 	@Override
-	public void maintainTranslations(@NonNull I_AD_Language language, @NonNull final String maintenanceMode)
+	public void maintainTranslations(@NonNull final I_AD_Language language, @NonNull final String maintenanceMode)
 	{
 		logger.info("Mode={},  language={}", maintenanceMode, language);
 		

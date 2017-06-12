@@ -222,10 +222,7 @@ public class MTree extends MTree_Base
 		final StringBuilder sql = new StringBuilder("SELECT "
 				+ "tn.Node_ID,tn.Parent_ID,tn.SeqNo,tb.IsActive "
 				+ "FROM ").append(getNodeTableName()).append(" tn"
-						+ " LEFT OUTER JOIN AD_TreeBar tb ON (tn.AD_Tree_ID=tb.AD_Tree_ID"
-						+ " AND tn.Node_ID=tb.Node_ID "
-						+ (AD_User_ID != -1 ? " AND tb.AD_User_ID=? " : "") 	// #1 (conditional)
-						+ ") "
+						+ " LEFT OUTER JOIN " + I_AD_TreeBar.Table_Name + " tb ON (tn.Node_ID=tb.Node_ID " + (AD_User_ID != -1 ? " AND tb.AD_User_ID=? " : "") + ") " // #1 (conditional)
 						+ "WHERE tn.AD_Tree_ID=?");								// #2
 
 		if (!m_editable)

@@ -40,7 +40,6 @@ public final class FreshPackingItemHelper
 {
 	private FreshPackingItemHelper()
 	{
-		super();
 	}
 
 	/**

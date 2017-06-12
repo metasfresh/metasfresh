@@ -62,6 +62,7 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.ICountryDAO;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Login Manager
@@ -174,9 +175,14 @@ public class Login
 	 */
 	public Login(final Properties ctx)
 	{
-		super();
-		this._loginContext = new LoginContext(ctx);
+		this(new LoginContext(ctx));
 	}
+	
+	public Login(@NonNull final LoginContext loginContext)
+	{
+		this._loginContext = loginContext;
+	}
+
 
 	public LoginContext getCtx()
 	{
@@ -247,9 +253,14 @@ public class Login
 				.append(" WHERE (u.Login=? OR u.EMail=?)")		// #3,4
 				// US362: Login using email address (2010070610000359) - added EMail=?
 				.append(" AND u.IsActive='Y' AND u.issystemuser='Y'")
-				.append(" AND EXISTS (SELECT 1 FROM AD_Client c WHERE u.AD_Client_ID=c.AD_Client_ID AND c.IsActive='Y')")
+				.append(" AND EXISTS (SELECT 1 FROM AD_Client c WHERE u.AD_Client_ID=c.AD_Client_ID AND c.IsActive='Y')");
+		
+		if(ctx.isWebui())
+		{
+			sql.append(" AND r.").append(I_AD_Role.COLUMNNAME_WEBUI_Role).append("='Y'");
+		}
 
-		.append(" ORDER BY ")
+		sql.append(" ORDER BY ")
 				.append(I_AD_Role.COLUMNNAME_SeqNo + " NULLS LAST,")
 				.append(I_AD_Role.COLUMNNAME_AD_Role_ID);
 		PreparedStatement pstmt = null;

@@ -18,8 +18,8 @@ import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialEventService;
 import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrder.DDOrderBuilder;
-import de.metas.material.planning.ddorder.DDOrderUtil;
 import de.metas.material.event.ddorder.DDOrderLine;
+import de.metas.material.planning.ddorder.DDOrderUtil;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MaterialEventService}.<br>
@@ -54,7 +54,7 @@ public class DD_OrderFireMaterialEvent
 		for (final I_DD_OrderLine line : ddOrderLines)
 		{
 			final int durationDays = DDOrderUtil.calculateDurationDays(ddOrder.getPP_Product_Planning(), line.getDD_NetworkDistributionLine());
-			
+
 			ddOrderPojoBuilder.line(DDOrderLine.builder()
 					.attributeSetInstanceId(line.getM_AttributeSetInstance_ID())
 					.ddOrderLineId(line.getDD_OrderLine_ID())

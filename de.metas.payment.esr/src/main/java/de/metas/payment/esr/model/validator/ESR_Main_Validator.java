@@ -32,14 +32,16 @@ import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
 import de.metas.banking.bankstatement.match.spi.impl.ESRPaymentBatchProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.WriteoffESRActionHandler;
 import de.metas.payment.esr.api.IESRImportBL;
+import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
-import de.metas.payment.esr.spi.impl.DunningESRActionHandler;
-import de.metas.payment.esr.spi.impl.MoneyTransferedBackESRActionHandler;
-import de.metas.payment.esr.spi.impl.UnableToAssignESRActionHandler;
-import de.metas.payment.esr.spi.impl.WithCurrenttInvoiceESRActionHandler;
-import de.metas.payment.esr.spi.impl.WithNextInvoiceESRActionHandler;
-import de.metas.payment.esr.spi.impl.WriteoffESRActionHandler;
+import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.spi.impl.ESRCreaLogixStringParser;
 import de.metas.payment.spi.impl.ESRRegularLineParser;
 
@@ -84,5 +86,9 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		//
 		// Bank statement listener
 		Services.get(IBankStatementListenerService.class).addListener(ESRBankStatementListener.instance);
+		
+		//
+		// ESR match listener
+		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 	}
 }

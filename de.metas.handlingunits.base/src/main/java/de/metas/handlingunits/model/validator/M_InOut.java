@@ -108,9 +108,9 @@ public class M_InOut
 		{
 			return;
 		}
-		
+
 		// make sure we are not dealing with a customer return
-		if(Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
 		{
 			return;
 		}
@@ -150,6 +150,13 @@ public class M_InOut
 	{
 		// do nothing if completing the reversal document
 		if (inout.getReversal_ID() > 0)
+		{
+			return;
+		}
+		
+		// task #1306: Do not genertate empties movements for customer returns
+		
+		if(Services.get(IHUInOutBL.class).isCustomerReturn(inout))
 		{
 			return;
 		}
@@ -264,6 +271,14 @@ public class M_InOut
 		if (!huInOutBL.isCustomerReturn(customerReturn))
 		{
 			// do nothing if the inout is not a customer return
+			return;
+		}
+
+		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
+
+		if (!existingHandlingUnits.isEmpty())
+		{
+			// the handling units are already created
 			return;
 		}
 

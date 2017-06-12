@@ -52,7 +52,7 @@ public final class OrderCheckupBarcode
 
 	public static OrderCheckupBarcode fromBarcodeString(final String barcode)
 	{
-		final List<String> barcodeParts = Splitter.on("_").splitToList(barcode);
+		final List<String> barcodeParts = Splitter.on(SEPARATOR).splitToList(barcode);
 		if (barcodeParts.isEmpty())
 		{
 			throw new IllegalArgumentException("Invalid barcode: " + barcode);
@@ -87,6 +87,7 @@ public final class OrderCheckupBarcode
 		return new OrderCheckupBarcode(VERSION_1, adTableId, recordId);
 	}
 
+	private static final String SEPARATOR = "-";
 	private static final transient String VERSION_1 = "1";
 	/** @see I_C_OrderLine#Table_ID */
 	private static final transient int C_OrderLine_Table_ID = 260;
@@ -118,7 +119,8 @@ public final class OrderCheckupBarcode
 
 	public String toBarcodeString()
 	{
-		return version + "_" + adTableId + "_" + recordId;
+		// NOTE: don't use "_" because it might cause problems (see https://github.com/metasfresh/metasfresh/issues/1239#issuecomment-305407684 ).
+		return version + SEPARATOR + adTableId + SEPARATOR + recordId;
 	}
 
 	public int getC_OrderLine_ID()
