@@ -149,6 +149,33 @@ public interface I_WEBUI_Board_RecordAssignment
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
+	 * Set Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setSeqNo (int SeqNo);
+
+	/**
+	 * Get Reihenfolge.
+	 * Zur Bestimmung der Reihenfolge der Einträge;
+ die kleinste Zahl kommt zuerst
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getSeqNo();
+
+    /** Column definition for SeqNo */
+    public static final org.adempiere.model.ModelColumn<I_WEBUI_Board_RecordAssignment, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_WEBUI_Board_RecordAssignment, Object>(I_WEBUI_Board_RecordAssignment.class, "SeqNo", null);
+    /** Column name SeqNo */
+    public static final String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

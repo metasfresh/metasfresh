@@ -2,6 +2,17 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
+/**
+ * According to the documentation at https://docs.docker.com/engine/reference/commandline/tag/ :
+ * A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes. A tag name may not start with a period or a dash and may contain a maximum of 128 characters.
+ */
+ def String mkDockerTag(String input)
+ {
+ 	return input
+ 		.replaceFirst('^[#\\.]', '') // delete the first letter if it is a period or dash
+ 		.replaceAll('[^a-zA-Z0-9_#\\.]', '_'); // replace everything that's not allowed with an underscore
+ }
+
 def String getEffectiveDownStreamJobName(final String jobFolderName, final String upstreamBranch)
 {
 	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
@@ -367,8 +378,9 @@ node('agent && linux')
 				{
 					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
 					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
-					app.push "${MF_UPSTREAM_BRANCH}-latest";
-					app.push "${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}";
+
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
 				}
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage

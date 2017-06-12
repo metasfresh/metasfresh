@@ -16,11 +16,13 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import org.compiere.model.MUser;
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
 import org.compiere.process.StateEngine;
 
-import de.metas.process.ProcessInfoParameter;
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Manage Workflow Process
@@ -42,6 +44,7 @@ public class WFProcessManage extends JavaProcess
 	/**
 	 *  Prepare - e.g., get Parameters.
 	 */
+	@Override
 	protected void prepare()
 	{
 		ProcessInfoParameter[] para = getParametersAsArray();
@@ -67,12 +70,14 @@ public class WFProcessManage extends JavaProcess
 	 *  @return Message (variables are parsed)
 	 *  @throws Exception if not successful
 	 */
+	@Override
 	protected String doIt() throws Exception
 	{
 		MWFProcess process = new MWFProcess (getCtx(), p_AD_WF_Process_ID, get_TrxName());
 		log.info("doIt - " + process);
 		
-		MUser user = MUser.get(getCtx(), getAD_User_ID());
+		final IUserDAO userDAO = Services.get(IUserDAO.class);
+		I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), getAD_User_ID());
 		//	Abort
 		if (p_IsAbort)
 		{
@@ -86,8 +91,8 @@ public class WFProcessManage extends JavaProcess
 		//	Change User
 		if (p_AD_User_ID != 0 && process.getAD_User_ID() != p_AD_User_ID)
 		{
-			MUser from = MUser.get(getCtx(), process.getAD_User_ID());
-			MUser to = MUser.get(getCtx(), p_AD_User_ID);
+			I_AD_User from = userDAO.retrieveUserOrNull(getCtx(), process.getAD_User_ID());
+			I_AD_User to = userDAO.retrieveUserOrNull(getCtx(), p_AD_User_ID);
 			msg = user.getName() + ": " + from.getName() + " -> " + to.getName();
 			process.setTextMsg(msg);
 			process.setAD_User_ID(p_AD_User_ID);

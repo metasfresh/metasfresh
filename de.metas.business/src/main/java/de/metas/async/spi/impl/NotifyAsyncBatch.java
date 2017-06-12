@@ -33,7 +33,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MClient;
-import org.compiere.model.MUser;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -118,7 +117,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 				}
 
 				@Override
-				public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+				public EMail sendEMail(org.compiere.model.I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
 				{
 					final MClient client = MClient.get(ctx, Env.getAD_Client_ID(ctx));
 

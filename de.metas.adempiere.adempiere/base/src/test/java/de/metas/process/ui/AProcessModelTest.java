@@ -87,6 +87,12 @@ public class AProcessModelTest
 			{
 				throw new UnsupportedOperationException();
 			}
+			
+			@Override
+			public int getSingleSelectedRecordId()
+			{
+				throw new UnsupportedOperationException();
+			}
 
 			@Override
 			public int getSelectionSize()

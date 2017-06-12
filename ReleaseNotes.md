@@ -24,12 +24,31 @@ Here come the actual release notes:
   * [#1742](https://github.com/metasfresh/metasfresh/issues/1742) Translation for en_US in WebUI
   * [#1746](https://github.com/metasfresh/metasfresh/issues/1746) Layout Optimization of User Window in WebUI
     * Adding a few Layout Optimzations to User window. Now showing the Login Field in Grid View and deleting the combined Name Field. Additional sized adjustments.
+  * [#1753](https://github.com/metasfresh/metasfresh/issues/1753) New Window for Material Transactions in WebUI
+    * New Window to Filter/ Search for Material Transaction in WebUI. Alowing the user to search for Products, Business Partners, Dates and Transaction Types.
   * [#1754](https://github.com/metasfresh/metasfresh/issues/1754) New Window for Transport Disposition in WebUI
     * Adding 2 new Windows to WebUI - Transport Disposition and Transport Shipment - allowing the user to find out which shipments have predefined Tour Deliverydays allocated and which have to be joined to a Shipper Transportation manually.
+  * [#1757](https://github.com/metasfresh/metasfresh/issues/1757) New Window Shipper Transportation in WebUI
+    * Creates the new Window for Shipper Transportation in WebUI.
+  * [#1765](https://github.com/metasfresh/metasfresh/issues/1765) Adjustment of advanced edit in Doctype Window
+    * Refining the Layout of the Document Type Window, adding missing fields and adjusting the advanced edit layout.
+  * [#1769](https://github.com/metasfresh/metasfresh/issues/1769) Window Adjustments for Dashboard Configuration
+    * Refining the window Layout of User Dashboard Configuration Window in WebUI.
+  * [#1770](https://github.com/metasfresh/metasfresh/issues/1770) New Window for KPI Widgets in WebUI
+    * Adds the default 2-column Layout to the KPI Widget Configuration Window in WebUI.
+  * [#1773](https://github.com/metasfresh/metasfresh/issues/1773) Add Description Field to User Dashboard
+    * New Description Field in Dashboard Window that allows to add a few notes what the Dashboard Configuration is about.
+  * [#1778](https://github.com/metasfresh/metasfresh/issues/1778) New Window/ Tab for KPI Field Translation
+    * New Window for KPI Field Translation maintenance.
+  * [#1782](https://github.com/metasfresh/metasfresh/issues/1782) My profile window: take out Password field
+    * Removing the Password Field from my Profile Window.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
+
+* others
+  * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
 
 ## Fixes
 * metasfresh-backend

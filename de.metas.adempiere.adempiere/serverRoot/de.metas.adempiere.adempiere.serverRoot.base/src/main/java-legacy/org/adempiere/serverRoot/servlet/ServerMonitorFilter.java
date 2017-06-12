@@ -31,7 +31,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.bind.DatatypeConverter;
 
-import org.compiere.model.MUser;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -57,7 +60,7 @@ public class ServerMonitorFilter implements Filter
 	}
 
 	/** Logger */
-	private static final Logger log = LogManager.getLogger(ServerMonitorFilter.class);
+	private static final transient Logger log = LogManager.getLogger(ServerMonitorFilter.class);
 
 	/** Authorization ID */
 	private static final String ATTRIBUTE_AUTHORIZATIONKEY = "ServerAuthorization";
@@ -125,7 +128,7 @@ public class ServerMonitorFilter implements Filter
 	 * @param authorization authorization
 	 * @return true if authenticated
 	 */
-	private boolean checkAuthorization(String authorization)
+	private boolean checkAuthorization(final String authorization)
 	{
 		if (authorization == null)
 		{
@@ -140,23 +143,24 @@ public class ServerMonitorFilter implements Filter
 			final int index = namePassword.indexOf(':');
 			final String name = namePassword.substring(0, index);
 			final String password = namePassword.substring(index + 1);
-			final MUser user = MUser.get(Env.getCtx(), name, password);
+			final I_AD_User user = Services.get(IUserDAO.class).retrieveLoginUserByUserIdAndPassword(name, password);
 			if (user == null)
 			{
-				log.warn("User not found: '" + name + "/" + password + "'");
+				log.warn("User not found or password did not match: {}", name);
 				return false;
 			}
-			if (!user.isAdministrator())
+			
+			if(!Services.get(IUserRolePermissionsDAO.class).isAdministrator(Env.getCtx(), user.getAD_User_ID()))
 			{
-				log.warn("Not a Sys Admin = " + name);
+				log.warn("Not a Sys Admin: {}", name);
 				return false;
 			}
-			log.info("Name=" + name);
+			log.info("Authorization OK: {}", name);
 			return true;
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			log.error("check", e);
+			log.error("Authorization failed", ex);
 		}
 		return false;
 	}	// check
