@@ -375,6 +375,21 @@ class RawWidget extends Component {
                         validStatus={widgetData[0].validStatus}
                     />
                 )
+                
+            case 'Link':
+                return (
+                    <a
+                        className={
+                            'widget-link ' +
+                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
+                        }
+                        tabIndex={fullScreen ? -1 : tabIndex}
+                        href={widgetData[0].value}
+                        target="_blank"
+                    >
+                        {widgetData[0].value}
+                    </a>
+                )
             case 'Text':
                 return (
                     <div className={
