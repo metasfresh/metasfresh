@@ -259,6 +259,9 @@ public final class ViewRow implements IViewRow
 				}
 				else
 				{
+					// NOTE: we have to do this because usually, the root row can have the same ID as one of the included rows,
+					// because the root/aggregated rows are build on demand and they don't really exist in database.
+					// Also see https://github.com/metasfresh/metasfresh-webui-frontend/issues/835#issuecomment-307783959
 					_rowIdEffective = DocumentId.ofString("D" + rowId.toJson());
 				}
 			}
