@@ -42,6 +42,8 @@ Here come the actual release notes:
     * New Window for KPI Field Translation maintenance.
   * [#1782](https://github.com/metasfresh/metasfresh/issues/1782) My profile window: take out Password field
     * Removing the Password Field from my Profile Window.
+  * [#1794](https://github.com/metasfresh/metasfresh/issues/1794) Advanced Edit: Business Partner Main View and Customer
+    * First Prototype of Advanced Edit Screen, here done in Business Partner window Main View and Customer Subtab.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
