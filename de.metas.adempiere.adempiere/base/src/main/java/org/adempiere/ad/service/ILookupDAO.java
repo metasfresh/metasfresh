@@ -157,7 +157,7 @@ public interface ILookupDAO extends ISingletonService
 	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link ITableRefInfo} was not found, an warning is logged
 	 * 
 	 * @param AD_Reference_Value_ID
-	 * @return table reference info
+	 * @return table reference info or <code>null</code> if not found
 	 */
 	ITableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
 
