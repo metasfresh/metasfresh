@@ -33,6 +33,7 @@ class NavigationTree extends Component {
 
     componentDidMount = () => {
         this.getData();
+        document.getElementById('search-input').focus();
     }
 
     getData = (callback) => {
@@ -97,6 +98,28 @@ class NavigationTree extends Component {
         this.getData(this.clearValue);
     }
 
+    handleKeyDown = (e) => {
+        const input = document.getElementById('search-input');
+        const firstMenuItem =
+            document.getElementsByClassName('js-menu-item')[0];
+
+        switch(e.key) {
+            case 'ArrowDown':
+                if(document.activeElement === input) {
+                    firstMenuItem.focus();
+                }
+            break;
+            case 'Tab':
+                e.preventDefault();
+                if(document.activeElement === input) {
+                    firstMenuItem.focus();
+                } else {
+                    input.focus();
+                }
+            break;
+        }
+    }
+
     renderTree = () => {
       const {rootResults, queriedResults, query} = this.state;
 
@@ -111,6 +134,8 @@ class NavigationTree extends Component {
                         className="input-field"
                         placeholder="Type phrase here"
                         onChange={e => this.handleQuery(e) }
+                        onKeyDown={(e) =>
+                            this.handleKeyDown(e)}
                     />
                     {this.state.query && <i
                         className="input-icon meta-icon-close-alt pointer"
@@ -132,6 +157,7 @@ class NavigationTree extends Component {
                             handleRedirect={this.handleRedirect}
                             handleNewRedirect={this.handleNewRedirect}
                             openModal={this.openModal}
+                            onKeyDown={(e) => this.handleKeyDown(e)}
                             {...subitem}
                         />
                     )}
