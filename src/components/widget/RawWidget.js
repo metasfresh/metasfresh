@@ -9,6 +9,7 @@ import List from './List/List';
 import ActionButton from './ActionButton';
 import Checkbox from './Checkbox';
 import Image from './Image';
+import Link from './Link';
 import DevicesWidget from './Devices/DevicesWidget';
 
 import {DATE_FORMAT}  from '../../constants/Constants';
@@ -378,17 +379,12 @@ class RawWidget extends Component {
                 
             case 'Link':
                 return (
-                    <a
-                        className={
-                            'widget-link ' +
-                            (gridAlign ? 'text-xs-' + gridAlign + ' ' : '')
-                        }
-                        tabIndex={fullScreen ? -1 : tabIndex}
-                        href={widgetData[0].value}
-                        target="_blank"
-                    >
-                        {widgetData[0].value}
-                    </a>
+                    <Link
+                        getClassnames={() => this.getClassnames(true)}
+                        {...{isEdited, widgetProperties, icon, widgetData,
+                            tabIndex, fullScreen
+                        }}
+                    />
                 )
             case 'Text':
                 return (

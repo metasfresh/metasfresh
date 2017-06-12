@@ -406,8 +406,9 @@ body {
 }
 
 .widget-link {
-    line-height: 35px;
     color: $brand-link-color;
+    display:block;
+    padding:1px;
 }
 
 @keyframes rotation {
