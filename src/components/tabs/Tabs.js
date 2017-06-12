@@ -1,12 +1,26 @@
 import React, { Component } from 'react';
+import {connect} from 'react-redux';
+import PropTypes from 'prop-types';
 
 import Tab from './Tab';
+import {activateTab} from '../../actions/WindowActions';
 
 class Tabs extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selected: this.props.children[0].key
+        }
+    }
+
+    componentDidMount = () => {
+        this.props.dispatch(activateTab('master', this.state.selected));
+    }
+
+    componentDidUpdate = (prevProps, prevState) => {
+        const {dispatch} = this.props;
+        if(prevState.selected !== this.state.selected){
+            dispatch(activateTab('master', this.state.selected));
         }
     }
 
@@ -111,5 +125,11 @@ class Tabs extends Component {
         )
     }
 }
+
+Tabs.propTypes = {
+    dispatch: PropTypes.func.isRequired
+};
+
+Tabs = connect()(Tabs);
 
 export default Tabs;

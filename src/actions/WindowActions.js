@@ -47,6 +47,14 @@ export function closeRawModal() {
     }
 }
 
+export function activateTab(scope, tabId) {
+    return {
+        type: types.ACTIVATE_TAB,
+        scope,
+        tabId
+    }
+}
+
 export function initLayoutSuccess(layout, scope) {
     return {
         type: types.INIT_LAYOUT_SUCCESS,
@@ -470,8 +478,6 @@ function updateRow(row, scope){
 
 function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
     return (dispatch) => {
-        let staleTabIds = [];
-
         data.map((item, index) => {
             const parsedItem = item.fieldsByName ? Object.assign({}, item, {
                 fieldsByName: parseToDisplay(item.fieldsByName)

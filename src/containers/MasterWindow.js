@@ -41,7 +41,6 @@ class MasterWindow extends Component {
             window.addEventListener('beforeunload', this.confirm);
         }
     }
-    
 
     componentDidUpdate(prevProps) {
         const {master, modal, params, dispatch} = this.props;
@@ -51,19 +50,25 @@ class MasterWindow extends Component {
         if(prevProps.master.websocket !== master.websocket && master.websocket){
             connectWS.call(this, master.websocket, msg => {
                 const {includedTabsInfo} = msg;
-
+                const {master} = this.props;
+                console.log(includedTabsInfo)
                 includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
-                    console.log(master.layout);
-                    const tabLayout = master.layout.tabs
-                        .filter(tab => tab.tabId === tabId);
-                        console.log(tabLayout)
-                    // includedTabsInfo[tabId] &&
-                    //     getTab(tabId, params.windowType, master.docId)
-                    //         .then(tab => {
-                    //            dispatch(
-                    //                addRowData({[tabId]: tab}, 'master')
-                    //            );
-                    //         });
+                    const tabLayout = master.layout.tabs.filter(tab => 
+                        tab.tabId === tabId
+                    )[0];
+                    if(
+                        tabLayout && tabLayout.queryOnActivate &&
+                        master.layout.activeTab !== tabId
+                    ){
+                        return;
+                    }
+                    includedTabsInfo[tabId] &&
+                        getTab(tabId, params.windowType, master.docId)
+                            .then(tab => {
+                                dispatch(
+                                    addRowData({[tabId]: tab}, 'master')
+                                );
+                            });
                 })
             });
         }

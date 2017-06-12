@@ -140,6 +140,15 @@ export default function windowHandler(state = initialState, action) {
                 })
             })
 
+        case types.ACTIVATE_TAB:
+            return update(state, {
+                [action.scope]: {
+                    layout: {
+                        activeTab: {$set: action.tabId}
+                    }
+                }
+            })
+
         case types.ADD_ROW_DATA:
             return Object.assign({}, state, {
                 [action.scope]: Object.assign({}, state[action.scope], {

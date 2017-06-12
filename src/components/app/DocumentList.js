@@ -10,9 +10,6 @@ import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 
-import SockJs from 'sockjs-client';
-import Stomp from 'stompjs/lib/stomp.min.js';
-
 import {
     initLayout,
     getDataByIds
