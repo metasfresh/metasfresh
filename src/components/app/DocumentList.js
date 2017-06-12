@@ -19,6 +19,7 @@ import {
     selectTableItems,
     getItemsByProperty,
     mapIncluded,
+    indicatorState,
     connectWS,
     disconnectWS
 } from '../../actions/WindowActions';
@@ -337,9 +338,12 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery, refresh) => {
-        const {windowType, updateUri, setNotFound} = this.props;
+        const {
+            dispatch, windowType, updateUri, setNotFound
+        } = this.props;
 
         setNotFound && setNotFound(false);
+        dispatch(indicatorState('pending'));
 
         if(updateUri){
             id && updateUri('viewId', id);
@@ -350,6 +354,8 @@ class DocumentList extends Component {
         return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
         ).then(response => {
+            dispatch(indicatorState('saved'));
+
             this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters
