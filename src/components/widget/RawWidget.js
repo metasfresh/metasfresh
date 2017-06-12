@@ -404,18 +404,28 @@ class RawWidget extends Component {
                 )
             case 'Password':
                 return (
-                    <div className={
+                    <div className="input-inner-container">
+                        <div className={
                             this.getClassnames(true) +
                             (isEdited ? 'input-focused ' : '')
-                        }
-                    >
-                        <input
-                            {...widgetProperties}
-                            type="password"
-                        />
-                        {icon &&
-                            <i className="meta-icon-edit input-icon-right"/>
-                        }
+                            }
+                        >
+                            <input
+                                {...widgetProperties}
+                                type="password"
+                                ref={c => this.rawWidget = c}
+                            />
+                            {icon &&
+                                <i className="meta-icon-edit input-icon-right"/>
+                            }
+                        </div>
+                        {fields[0].allowShowPassword && <div
+                            onMouseDown={() => {this.rawWidget.type = 'text'}}
+                            onMouseUp={() => {this.rawWidget.type = 'password'}}
+                            className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
+                        >
+                            <i className="meta-icon-edit" />
+                        </div>}
                     </div>
                 )
             case 'Integer':

@@ -37,6 +37,11 @@ input {
     text-align: inherit;
 }
 
+.input-inner-container {
+    display: flex;
+    flex-direction: row;
+}
+
 .form-group-flex {
     display: flex;
     flex-direction: row;

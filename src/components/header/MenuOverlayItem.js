@@ -105,7 +105,8 @@ class MenuOverlayItem extends Component {
                     if(lastChildren.classList.contains('js-menu-item')) {
                         lastChildren.focus();
                     } else {
-                        lastChildren.children[lastChildren.children.length - 1].focus();
+                        lastChildren.children[lastChildren.children.length - 1]
+                            .focus();
                     }
 
                 }
