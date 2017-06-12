@@ -44,6 +44,8 @@ Here come the actual release notes:
     * Removing the Password Field from my Profile Window.
   * [#1794](https://github.com/metasfresh/metasfresh/issues/1794) Advanced Edit: Business Partner Main View and Customer
     * First Prototype of Advanced Edit Screen, here done in Business Partner window Main View and Customer Subtab.
+  * [#1798](https://github.com/metasfresh/metasfresh/issues/1798) Prototype Dashboard for Board frontend development
+    * Adds a prototype Project Board to WebUI menu.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
