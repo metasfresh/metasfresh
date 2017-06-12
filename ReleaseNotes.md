@@ -60,8 +60,10 @@ Here come the actual release notes:
     * Nice Improvements to Combined Lookup fields adding a step-by-step workflow when recording data in those fields.
   * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
     * Navigation Improvements in Sitemap Screen. Now allowing easy switch between filtered menu treee and search field.
+  * [#854](https://github.com/metasfresh/metasfresh-webui-frontend/issues/854) After login to account, go to sitemap page, open developer tab and start using scroll.
+    * Additional Improvement for the Usage of Firefox Browser with metasfresh WebUI.
   * [#855](https://github.com/metasfresh/metasfresh-webui-frontend/issues/855) Missing shadow under top menu
-    * Improvement of User Interface when Usinfg Firefox Browser. Now showing the shadow underneath top navigation when scrolling down.
+    * Improvement of User Interface when using Firefox Browser. Now showing the shadow underneath top navigation when scrolling down.
   * [#862](https://github.com/metasfresh/metasfresh-webui-frontend/issues/862) Modal view: show view description if available
     * Additional Descriptions to modal Overlay windows. First Implementation of this feature in Manufacturing Window Issue/ Receipt now showing the Document Type and Document No.
   * [#865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/865) Clickable URL in Fields
