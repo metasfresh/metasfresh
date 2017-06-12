@@ -66,6 +66,14 @@ class DocumentList extends Component {
         this.mounted = true
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        const { setModalDescription } = this.props;
+        const { data } = this.state;
+        if(prevState.data !== data){
+            setModalDescription && setModalDescription(data.description);
+        }
+    }
+
     componentWillUnmount() {
         this.mounted = false;
         disconnectWS.call(this);

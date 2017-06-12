@@ -51,9 +51,8 @@ class MasterWindow extends Component {
             connectWS.call(this, master.websocket, msg => {
                 const {includedTabsInfo} = msg;
                 const {master} = this.props;
-                console.log(includedTabsInfo)
                 includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
-                    const tabLayout = master.layout.tabs.filter(tab => 
+                    const tabLayout = master.layout.tabs.filter(tab =>
                         tab.tabId === tabId
                     )[0];
                     if(
