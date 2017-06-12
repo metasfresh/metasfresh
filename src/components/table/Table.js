@@ -587,7 +587,7 @@ class Table extends Component {
             mainTable, newRow, tabIndex, entity, indentSupported
         } = this.props;
         const {selected, rows} = this.state;
-        const ret = rows && rows.length && rows.map((item, i) => (
+        const ret = (rows && !!rows.length) && rows.map((item, i) => (
             <tbody key={i}>
                 <TableItem
                     {...item}
