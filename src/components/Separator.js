@@ -10,7 +10,6 @@ class Separator extends Component {
         return (
             <div className="separator col-xs-12">
                 <span className="separator-title">{title}</span>
-                <hr className="separator-hr" />
             </div>
         );
     }

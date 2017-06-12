@@ -1171,11 +1171,6 @@ td.pulse-off input {
     color: $brand-font-color-weak;
 }
 
-.separator-hr {
-    width: 100%;
-    margin-left: 1rem;
-}
-
 .avatar {
     width: 35px;
     height: 35px;
