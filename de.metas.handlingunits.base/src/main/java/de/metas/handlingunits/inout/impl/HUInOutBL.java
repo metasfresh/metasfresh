@@ -382,44 +382,9 @@ public class HUInOutBL implements IHUInOutBL
 			hus.addAll(huGenerator.generate());
 		}
 
-		// //
-		// // Get/Create and Edit LU/TU configuration
-		// final IDocumentLUTUConfigurationManager lutuConfigurationManager = huGenerator.getLUTUConfigurationManager();
-		// final I_M_HU_LUTU_Configuration lutuConfigurationEffective = lutuConfigurationManager.getCreateLUTUConfiguration();
-		//
-		// //
-		// // No configuration => user cancelled => don't open editor
-		// if (lutuConfigurationEffective == null)
-		// {
-		// return Collections.emptyList();
-		// }
-		//
-		// InterfaceWrapperHelper.save(lutuConfigurationEffective, ITrx.TRXNAME_None);
-		// customerReturnLine.setM_HU_LUTU_Configuration(lutuConfigurationEffective);
-		//
-		// //
-		// // Calculate the target CUs that we want to allocate
-		// final ILUTUProducerAllocationDestination lutuProducer = huGenerator.getLUTUProducerAllocationDestination();
-		// final Quantity qtyCUsTotal = lutuProducer.calculateTotalQtyCU();//Quantity.of(customerReturnLine.getQtyEntered(), customerReturnLine.getC_UOM());
-		// if (qtyCUsTotal.isInfinite())
-		// {
-		// throw new TerminalException("LU/TU configuration is resulting to infinite quantity: " + lutuConfigurationEffective);
-		// }
-		// huGenerator.setQtyToAllocateTarget(qtyCUsTotal);
-
-		//
-		// Generate the HUs
-		// final List<I_M_HU> hus = huGenerator.generate();
-
-		// mark HUs as active and create movements to QualityReturnWarehouse for them
 		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
 
 		updateManualCustomerReturnInOutForHUs(customerReturn, hus);
-
-		// for (final I_M_HU hu : hus)
-		// {
-		// Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
-		// }
 
 		return hus;
 	}
