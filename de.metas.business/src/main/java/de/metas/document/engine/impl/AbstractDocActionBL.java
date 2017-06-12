@@ -423,4 +423,21 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 		// Fallback: use toString()
 		return String.valueOf(model);
 	}
+
+	@Override
+	public boolean isReversalDocument(@NonNull final Object model)
+	{
+		// Try Reversal_ID column if available
+		final Integer original_ID = InterfaceWrapperHelper.getValueOrNull(model, DocAction.COLUMNNAME_Reversal_ID);
+		if (original_ID != null && original_ID > 0)
+		{
+			final int reversal_id = InterfaceWrapperHelper.getId(model);
+			if (reversal_id > original_ID)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

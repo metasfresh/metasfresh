@@ -10,12 +10,12 @@ package org.adempiere.archive.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -33,7 +33,7 @@ import org.compiere.model.I_AD_User;
 
 public class ArchiveEventManager implements IArchiveEventManager
 {
-	private final CopyOnWriteArrayList<IArchiveEventListener> listeners = new CopyOnWriteArrayList<IArchiveEventListener>();
+	private final CopyOnWriteArrayList<IArchiveEventListener> listeners = new CopyOnWriteArrayList<>();
 
 	@Override
 	public void registerArchiveEventListener(final IArchiveEventListener listener)
@@ -43,11 +43,11 @@ public class ArchiveEventManager implements IArchiveEventManager
 	}
 
 	@Override
-	public void firePdfUpdate(final I_AD_Archive archive, final I_AD_User user)
+	public void firePdfUpdate(final I_AD_Archive archive, final I_AD_User user, final String action)
 	{
 		for (final IArchiveEventListener listener : listeners)
 		{
-			listener.onPdfUpdate(archive, user);
+			listener.onPdfUpdate(archive, user, action);
 		}
 	}
 
@@ -66,6 +66,15 @@ public class ArchiveEventManager implements IArchiveEventManager
 		for (final IArchiveEventListener listener : listeners)
 		{
 			listener.onPrintOut(archive, user, printerName, copies, status);
+		}
+	}
+
+	@Override
+	public void fireVoidDocument(final I_AD_Archive archive)
+	{
+		for (final IArchiveEventListener listener : listeners)
+		{
+			listener.onVoidDocument(archive);
 		}
 	}
 }

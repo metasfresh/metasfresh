@@ -94,6 +94,10 @@ public interface DocAction
 	/** DocAction Ref_List values **/
 	public static final int AD_REFERENCE_ID = 135;
 
+	public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	public static final String COLUMNNAME_Reversal_ID = "Reversal_ID";
+
 	/**
 	 * 	Set Doc Status
 	 *	@param newStatus new Status

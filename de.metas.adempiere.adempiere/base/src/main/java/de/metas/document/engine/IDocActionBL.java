@@ -211,4 +211,13 @@ public interface IDocActionBL extends ISingletonService
 	 */
 	String getSummary(Object model);
 
+	/**
+	 * Return {@code true} if the given {@code model} has are {@code Reversal_ID} and its own ID is bigger than its reversal partner's ID.
+	 * In other words, returns {@code true}, if the given {@code model} is the reversal and not the reversed document.
+	 *  
+	 * @param model
+	 * @return
+	 */
+	boolean isReversalDocument(Object model);
+
 }

@@ -29,6 +29,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -147,6 +149,15 @@ public class DefaultModelArchiver
 			archive = InterfaceWrapperHelper.create(archiveBL.archive(pdfData, printInfo, forceArchive, ITrx.TRXNAME_ThreadInherited), I_AD_Archive.class);
 			// archive.setIsDirectPrint(true);
 			archive.setC_Doc_Outbound_Config(getC_Doc_Outbound_Config_OrNull()); // 09417: reference the config and it's settings will decide if a printing queue item shall be created
+
+			//
+			// forward async batch if there is one
+			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(_record, Async_Constants.C_Async_Batch);
+			if (asyncBatch != null)
+			{
+				InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.C_Async_Batch, asyncBatch);
+			}
+
 			InterfaceWrapperHelper.save(archive);
 			logger.debug("Archive: {}", archive);
 		}
@@ -166,13 +177,13 @@ public class DefaultModelArchiver
 		this._pdfData = pdfData;
 		return archive;
 	}
-	
+
 	public I_AD_Archive getAD_Archive()
 	{
 		assertProcessed();
 		return _archive;
 	}
-	
+
 	public byte[] getPdfData()
 	{
 		assertProcessed();
@@ -193,7 +204,7 @@ public class DefaultModelArchiver
 	{
 		Check.assume(!_processed.get(), "not already processed: {}", this);
 	}
-	
+
 	protected final void assertProcessed()
 	{
 		Check.assume(_processed.get(), "processed: {}", this);
