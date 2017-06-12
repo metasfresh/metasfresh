@@ -133,8 +133,8 @@ public final class JSONViewResult implements Serializable
 		this.size = size >= 0 ? size : null;
 
 		// NOTE: stickyFilters are not used by frontend but we are adding them to ease the troubleshooting
-		stickyFilters = JSONDocumentFilter.ofList(viewResult.getStickyFilters());
-		filters = JSONDocumentFilter.ofList(viewResult.getFilters());
+		stickyFilters = JSONDocumentFilter.ofList(viewResult.getStickyFilters(), adLanguage);
+		filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
 		orderBy = JSONViewOrderBy.ofList(viewResult.getOrderBys());
 
 		//

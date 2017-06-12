@@ -14,6 +14,8 @@ import org.compiere.util.Env;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import lombok.NonNull;
 
@@ -81,6 +83,7 @@ public final class DocumentFilter
 	}
 
 	private final String filterId;
+	private final ITranslatableString caption;
 	private final List<DocumentFilterParam> parameters;
 
 	private DocumentFilter(final Builder builder)
@@ -89,6 +92,8 @@ public final class DocumentFilter
 
 		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
+		
+		caption = builder.caption;
 
 		parameters = builder.parameters == null ? ImmutableList.of() : ImmutableList.copyOf(builder.parameters);
 	}
@@ -99,6 +104,7 @@ public final class DocumentFilter
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
 				.add("filterId", filterId)
+				.add("caption", caption)
 				.add("parameters", parameters.isEmpty() ? null : parameters)
 				.toString();
 	}
@@ -106,6 +112,11 @@ public final class DocumentFilter
 	public String getFilterId()
 	{
 		return filterId;
+	}
+	
+	public String getCaption(final String adLanguage)
+	{
+		return caption != null ? caption.translate(adLanguage) : null;
 	}
 
 	public List<DocumentFilterParam> getParameters()
@@ -125,6 +136,7 @@ public final class DocumentFilter
 	public static final class Builder
 	{
 		private String filterId;
+		private ITranslatableString caption = ImmutableTranslatableString.empty();
 		private List<DocumentFilterParam> parameters;
 
 		private Builder()
@@ -140,6 +152,12 @@ public final class DocumentFilter
 		public Builder setFilterId(final String filterId)
 		{
 			this.filterId = filterId;
+			return this;
+		}
+
+		public Builder setCaption(@NonNull final ITranslatableString caption)
+		{
+			this.caption = caption;
 			return this;
 		}
 

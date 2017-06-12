@@ -11,6 +11,7 @@ import org.adempiere.util.GuavaCollectors;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
@@ -145,7 +146,7 @@ public final class JSONDocumentFilter implements Serializable
 		return filter.build();
 	}
 
-	public static final List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters)
+	public static final List<JSONDocumentFilter> ofList(final List<DocumentFilter> filters, final String adLanguage)
 	{
 		if (filters == null || filters.isEmpty())
 		{
@@ -153,11 +154,11 @@ public final class JSONDocumentFilter implements Serializable
 		}
 
 		return filters.stream()
-				.map(filter -> of(filter))
+				.map(filter -> of(filter, adLanguage))
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final JSONDocumentFilter of(final DocumentFilter filter)
+	public static final JSONDocumentFilter of(final DocumentFilter filter, final String adLanguage)
 	{
 		final String filterId = filter.getFilterId();
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
@@ -167,24 +168,29 @@ public final class JSONDocumentFilter implements Serializable
 				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return new JSONDocumentFilter(filterId, jsonParameters);
+		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), jsonParameters);
 	}
 
 	@JsonProperty("filterId")
 	private final String filterId;
+
+	@JsonProperty("caption")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String caption;
 
 	@JsonProperty("parameters")
 	private final List<JSONDocumentFilterParam> parameters;
 
 	@JsonCreator
 	private JSONDocumentFilter(
-			@JsonProperty("filterId") final String filterId //
-			, @JsonProperty("parameters") final List<JSONDocumentFilterParam> parameters //
-	)
+			@JsonProperty("filterId") final String filterId,
+			@JsonProperty("caption") final String caption,
+			@JsonProperty("parameters") final List<JSONDocumentFilterParam> parameters)
 	{
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
-		
+
 		this.filterId = filterId;
+		this.caption = caption;
 		this.parameters = parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
 	}
 }
