@@ -56,6 +56,8 @@ Here come the actual release notes:
     * API Implementation of the new URL Widget in frontend.
     
 * metasfresh-webui-frontend
+  * [#802](https://github.com/metasfresh/metasfresh-webui-frontend/issues/802) User/ Session Settings w/ Avatar and Logout
+    * New Settings Section that allows the user to change User dependant infomration and reset the password. Further on having possibility to upload a user avatar picure that is shown in the header bar of metasfresh.
   * [#803](https://github.com/metasfresh/metasfresh-webui-frontend/issues/803) Bookmark a window/process/report and show in Quick Menu
     * New Fuctionality that allows the user so bookmark favorite menu entries and show these in the navivation action menu.
   * [#839](https://github.com/metasfresh/metasfresh-webui-frontend/issues/839) Combined Fields/ Lookup adjustment
