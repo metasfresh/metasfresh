@@ -68,7 +68,7 @@ class UserDropdown extends Component {
                     className="header-item avatar-container"
                     onClick={() => handleUDOpen(true)}>
                     <img
-                        src={me.avatarId ? 
+                        src={me.avatarId ?
                             getAvatar(me.avatarId) : defaultAvatar}
                         className="avatar img-fluid rounded-circle"
                     />

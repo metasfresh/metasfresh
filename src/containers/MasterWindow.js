@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import {push} from 'react-router-redux';
+import {push, replace} from 'react-router-redux';
 
 import {
     attachFileAction,
@@ -46,6 +46,17 @@ class MasterWindow extends Component {
         const {master, modal, params, dispatch} = this.props;
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
+
+        if(
+            prevProps.me.language !== undefined &&
+            JSON.stringify(prevProps.me.language) !==
+            JSON.stringify(this.props.me.language)
+        ){
+            dispatch(replace(''));
+            dispatch(replace(
+                '/window/' + params.windowType + '/' + params.docId)
+            );
+        }
 
         if(prevProps.master.websocket !== master.websocket && master.websocket){
             connectWS.call(this, master.websocket, msg => {
@@ -276,6 +287,7 @@ MasterWindow.propTypes = {
     selected: PropTypes.array,
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
+    me: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
@@ -303,9 +315,11 @@ function mapStateToProps(state) {
     }
 
     const {
-        processStatus
+        processStatus,
+        me
     } = appHandler || {
-        processStatus: ''
+        processStatus: '',
+        me: {}
     }
 
     const {
@@ -323,7 +337,8 @@ function mapStateToProps(state) {
         indicator,
         selectedWindowType,
         includedView,
-        processStatus
+        processStatus,
+        me
     }
 }
 

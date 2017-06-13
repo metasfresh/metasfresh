@@ -103,7 +103,7 @@ export function markAsRead(id) {
 export function getAttributesInstance(
     attrType, tmpId, docType, docId, tabId, rowId, fieldName, entity
 ) {
-    const type = entity === 'process' ? 'processId':'windowId';
+    const type = entity === 'process' ? 'processId' : 'windowId';
 
     return axios.post(config.API_URL + '/' + attrType, {
         'templateId': tmpId,
