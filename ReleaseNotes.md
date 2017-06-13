@@ -70,6 +70,8 @@ Here come the actual release notes:
     * Additional Descriptions to modal Overlay windows. First Implementation of this feature in Manufacturing Window Issue/ Receipt now showing the Document Type and Document No.
   * [#865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/865) Clickable URL in Fields
     * New Widget Type for URL Fields that allow the user to open a new browser Tab with the recorded link.
+  * [#867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/867) Layout Adjustment for UI Section Headlines
+    * New Layout for Section Headlines, allowing more and better visibility/ readability for the uiser.
   * [#872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/872) Breadcrumb: separate the document summary and last breadcrumb node with a slash
     * Additional Slash Character in Breadcrumb to seperate the window Name and Document Identifier.
 
