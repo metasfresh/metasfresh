@@ -834,7 +834,7 @@ export function mapIncluded(
                     lastChild: true
                 });
             }
-            
+
             result = result.concat(
                 mapIncluded(copy, ind.concat([true]), node.lastChild)
             )

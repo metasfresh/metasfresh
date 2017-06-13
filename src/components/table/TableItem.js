@@ -192,7 +192,7 @@ class TableItem extends Component {
 
     renderTree = (huType) => {
         const {
-            indent, lastChild, includedDocuments, indentSupported, rowId,
+            indent, lastChild, includedDocuments, rowId,
             collapsed, handleRowCollapse, collapsible
         } = this.props;
 
@@ -203,7 +203,7 @@ class TableItem extends Component {
                 <div
                     key={i}
                     className={
-                        'indent-item-mid ' + 
+                        'indent-item-mid ' +
                         (collapsible ? 'indent-collapsible-item-mid ' : '')
                     }
                 >
@@ -224,16 +224,20 @@ class TableItem extends Component {
             <div className={'indent'}>
                 {indentation}
                 {includedDocuments && !collapsed &&
-                    <div 
+                    <div
                         className={
                             'indent-bot ' +
                             (collapsible ? 'indent-collapsible-bot ' : '')
                         }
                     />
                 }
-                {includedDocuments && collapsible ? (collapsed ? 
-                        <i onClick={handleRowCollapse} className="meta-icon-plus indent-collapse-icon" /> : 
-                        <i onClick={handleRowCollapse} className="meta-icon-minus indent-collapse-icon" />) 
+                {includedDocuments && collapsible ? (collapsed ?
+                        <i
+                            onClick={handleRowCollapse}
+                            className="meta-icon-plus indent-collapse-icon" /> :
+                        <i
+                            onClick={handleRowCollapse}
+                            className="meta-icon-minus indent-collapse-icon" />)
                     : ''}
                 <div
                     className="indent-icon"
@@ -250,8 +254,8 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
-            indentSupported, contextType, lastChild, processed, collapsed,
-            includedDocuments, notSaved, handleRowCollapse
+            indentSupported, contextType, lastChild, processed,
+            includedDocuments, notSaved
         } = this.props;
 
         return (
