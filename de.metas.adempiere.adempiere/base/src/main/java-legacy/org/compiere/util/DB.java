@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
@@ -75,15 +75,29 @@ import de.metas.process.IADPInstanceDAO;
  *
  * @author Jorg Janke
  * @version $Id: DB.java,v 1.8 2006/10/09 00:22:29 jjanke Exp $ ---
- * @author Ashley Ramdass (Posterita) <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
+ * @author Ashley Ramdass (Posterita)
+ *         <li>Modifications: removed static references to database connection and instead always get a new connection from database pool manager which manages all
  *         connections set rw/ro properties for the connection accordingly.
  *
- * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1647864 ] WAN: delete record error <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods <li>FR [ 1904460 ] DB.executeUpdate should handle
- *         Boolean params <li>BF [ 1962568 ] DB.executeUpdate should handle null params <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
- *         Object[], String) <li>BF [ 2030233 ] Remove duplicate code from DB class <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods <li>FR
- *         [ 2781053 ] Introduce DB.getValueNamePairs <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
+ * @author Teo Sarca, SC ARHIPAC SERVICE SRL
+ *         <li>BF [ 1647864 ] WAN: delete record error
+ *         <li>FR [ 1884435 ] Add more DB.getSQLValue helper methods
+ *         <li>FR [ 1904460 ] DB.executeUpdate should handle
+ *         Boolean params
+ *         <li>BF [ 1962568 ] DB.executeUpdate should handle null params
+ *         <li>FR [ 1984268 ] DB.executeUpdateEx should throw DBException
+ *         <li>FR [ 1986583 ] Add DB.executeUpdateEx(String,
+ *         Object[], String)
+ *         <li>BF [ 2030233 ] Remove duplicate code from DB class
+ *         <li>FR [ 2107062 ] Add more DB.getKeyNamePairs methods
+ *         <li>FR [ 2448461 ] Introduce DB.getSQLValue*Ex methods
+ *         <li>FR
+ *         [ 2781053 ] Introduce DB.getValueNamePairs
+ *         <li>FR [ 2818480 ] Introduce DB.createT_Selection helper method
  *         https://sourceforge.net/tracker/?func=detail&aid=2818480&group_id=176962&atid=879335
- * @author Teo Sarca, teo.sarca@gmail.com <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332 <li>FR [
+ * @author Teo Sarca, teo.sarca@gmail.com
+ *         <li>BF [ 2873324 ] DB.TO_NUMBER should be a static method https://sourceforge.net/tracker/?func=detail&aid=2873324&group_id=176962&atid=879332
+ *         <li>FR [
  *         2873891 ] DB.getKeyNamePairs should use trxName https://sourceforge.net/tracker/?func=detail&aid=2873891&group_id=176962&atid=879335
  */
 public final class DB
@@ -916,7 +930,7 @@ public final class DB
 				// conn.commit();
 			}
 		}
-		catch(final DBException ex)
+		catch (final DBException ex)
 		{
 			throw ex;
 		}
@@ -1599,25 +1613,25 @@ public final class DB
 	public static boolean isSOTrx(final String tableName, final String whereClause)
 	{
 		final boolean defaultIsSOTrx = true;
-		
-		if(Check.isEmpty(tableName, true))
+
+		if (Check.isEmpty(tableName, true))
 		{
 			log.error("No TableName");
 			return defaultIsSOTrx;
 		}
-		
-		if(Check.isEmpty(whereClause, true))
+
+		if (Check.isEmpty(whereClause, true))
 		{
 			log.error("No Where Clause");
 			return defaultIsSOTrx;
 		}
-		
+
 		//
 		// Extract the SQL to select the IsSOTrx column
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		final String sqlSelectIsSOTrx;
 		// Case: tableName has the "IsSOTrx" column
-		if(poInfo != null && poInfo.isPhysicalColumn("IsSOTrx"))
+		if (poInfo != null && poInfo.isPhysicalColumn("IsSOTrx"))
 		{
 			sqlSelectIsSOTrx = "SELECT IsSOTrx FROM " + tableName + " WHERE " + whereClause;
 		}
@@ -1643,7 +1657,7 @@ public final class DB
 		{
 			return defaultIsSOTrx;
 		}
-		
+
 		//
 		// Fetch IsSOTrx value if possible
 		PreparedStatement pstmt = null;
@@ -1668,7 +1682,7 @@ public final class DB
 		{
 			final SQLException sqlEx = DBException.extractSQLExceptionOrNull(ex);
 			log.trace("Error while checking isSOTrx (SQL: {})", sqlSelectIsSOTrx, sqlEx);
-			
+
 			return defaultIsSOTrx;
 		}
 		finally
@@ -1812,7 +1826,7 @@ public final class DB
 	 * @see org.compiere.util.DisplayType
 	 * @see org.compiere.util.Env
 	 *
-	 * */
+	 */
 	public static String TO_CHAR(String columnName, final int displayType, @Nullable final String AD_Language_NOTUSED)
 	{
 		return getDatabase().TO_CHAR(columnName, displayType);
@@ -1918,10 +1932,10 @@ public final class DB
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
 	}
-	
+
 	/**
 	 * @param comment
-	 * @return SQL multiline comment 
+	 * @return SQL multiline comment
 	 */
 	public static final String TO_COMMENT(final String comment)
 	{
@@ -1929,10 +1943,10 @@ public final class DB
 		{
 			return "";
 		}
-		
+
 		return "/* "
 				+ comment.replace("/*", " ").replace("*/", " ")
-				+" */";
+				+ " */";
 	}
 
 	/**
@@ -2321,7 +2335,7 @@ public final class DB
 	 * <p>
 	 * <b>IMPORTANT: Please use {@link #buildSqlList(Collection, List)} instead!</b> When we used this method with Integer paramters, we got stuff which caused syntax errors! Example:
 	 *
-	 *             <pre>
+	 * <pre>
 	 * WHERE M_ShipmentSchedule_ID IN (1150174'1150174',1150175'1150175',..
 	 * </pre>
 	 * 
@@ -2428,6 +2442,20 @@ public final class DB
 	{
 		Check.assumeNotEmpty(tableName, "tableName not empty");
 		return tableName + "_SEQ";
+	}
+
+	/**
+	 * Create database table sequence for given table name.
+	 */
+	public static final void createTableSequence(final String tableName)
+	{
+		final String sequenceName = getTableSequenceName(tableName);
+		CConnection.get().getDatabase().createSequence(sequenceName,
+				1, // increment
+				1, // minvalue
+				Integer.MAX_VALUE, // maxvalue
+				1000000, // start
+				ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2586,4 +2614,3 @@ public final class DB
 	}
 
 } // DB
-
