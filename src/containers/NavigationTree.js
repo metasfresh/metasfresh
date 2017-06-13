@@ -112,7 +112,7 @@ class NavigationTree extends Component {
                 if(document.activeElement === input) {
                     firstMenuItem.focus();
                 }
-            break;
+                break;
             case 'Tab':
                 e.preventDefault();
                 if(document.activeElement === input) {
@@ -120,7 +120,11 @@ class NavigationTree extends Component {
                 } else {
                     input.focus();
                 }
-            break;
+                break;
+            case 'Enter':
+                e.preventDefault();
+                document.activeElement.childNodes[0].childNodes[0].click();
+                break;
         }
     }
 
