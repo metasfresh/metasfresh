@@ -48,6 +48,8 @@ Here come the actual release notes:
     * Adds a prototype Project Board to WebUI menu.
   * [#1801](https://github.com/metasfresh/metasfresh/issues/1801) Translation of My Profile Window to en_US
     * Translating the new Avatar Settings of my Profile Windw to en_US Language.
+  * [#1805](https://github.com/metasfresh/metasfresh/issues/1805) Add the new Picking Window to WebUI Menu
+    * Adding the prototype Picking window to WebUI menu.
 
 * metasfresh-webui-api
   * [#434](https://github.com/metasfresh/metasfresh-webui-api/issues/434) Provide endpoints for user avatar and user settings
