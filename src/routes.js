@@ -3,7 +3,6 @@ import {Route, IndexRoute, NoMatch} from 'react-router';
 import {push} from 'react-router-redux';
 
 import Login from './containers/Login.js';
-import Settings from './containers/Settings.js';
 import Dashboard from './containers/Dashboard.js';
 import MasterWindow from './containers/MasterWindow.js';
 import DocList from './containers/DocList.js';
@@ -69,7 +68,6 @@ export const getRoutes = (store, auth) => {
                     )}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
-                <Route path="/settings" component={Settings} />
                 <Route path="/inbox" component={InboxAll} />
                 <Route path="/logout" onEnter={logout} />
                 <Route path="/dashboard1" component={Dashboard} />
