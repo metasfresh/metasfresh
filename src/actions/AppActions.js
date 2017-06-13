@@ -213,10 +213,8 @@ export function languageSuccess(lang) {
 }
 
 export function logoutSuccess(auth) {
-    return () => {
-        auth.close();
-        localStorage.removeItem('isLogged');
-    }
+    auth.close();
+    localStorage.removeItem('isLogged');
 }
 
 export function addNotification(title, msg, time, notifType, shortMsg){
