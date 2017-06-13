@@ -4,6 +4,8 @@ import Tooltips from '../tooltips/Tooltips';
 
 import onClickOutside from 'react-onclickoutside';
 
+import {getAvatar} from '../../actions/AppActions';
+
 class UserDropdown extends Component {
     constructor(props) {
         super(props);
@@ -49,9 +51,9 @@ class UserDropdown extends Component {
 
     render() {
         const {
-            open, handleUDOpen, redirect, shortcut, toggleTooltip, tooltipOpen
+            open, handleUDOpen, redirect, shortcut, toggleTooltip, tooltipOpen,
+            me
         } = this.props;
-
         return (
             <div
                 className={
@@ -66,7 +68,8 @@ class UserDropdown extends Component {
                     className="header-item avatar-container"
                     onClick={() => handleUDOpen(true)}>
                     <img
-                        src={defaultAvatar}
+                        src={me.avatarId ? 
+                            getAvatar(me.avatarId) : defaultAvatar}
                         className="avatar img-fluid rounded-circle"
                     />
                 </div>
@@ -79,7 +82,7 @@ class UserDropdown extends Component {
                         <div
                             className="user-dropdown-item user-dropdown-header-item meta-text-primary"
                         >
-                            Profile
+                            {me.fullname}
                         </div>
                         <hr className="context-menu-separator" />
                         {
@@ -94,7 +97,11 @@ class UserDropdown extends Component {
                         />
                         <div
                             className="user-dropdown-item"
-                            onClick={() => {redirect('/settings');
+                            onClick={() => {
+                                redirect('/window/' +
+                                    me.userProfileWindowId +
+                                    '/' + me.userProfileId
+                                );
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
