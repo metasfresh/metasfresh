@@ -68,6 +68,8 @@ Here come the actual release notes:
     * Improvement of User Interface when using Firefox Browser. Now showing the shadow underneath top navigation when scrolling down.
   * [#862](https://github.com/metasfresh/metasfresh-webui-frontend/issues/862) Modal view: show view description if available
     * Additional Descriptions to modal Overlay windows. First Implementation of this feature in Manufacturing Window Issue/ Receipt now showing the Document Type and Document No.
+  * [#863](https://github.com/metasfresh/metasfresh-webui-frontend/issues/863) Show password option for Password widget
+    * New Functionality to allow the user to make the passoword visible in Password changing workflow.
   * [#865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/865) Clickable URL in Fields
     * New Widget Type for URL Fields that allow the user to open a new browser Tab with the recorded link.
   * [#867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/867) Layout Adjustment for UI Section Headlines
