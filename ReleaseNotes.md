@@ -60,6 +60,8 @@ Here come the actual release notes:
     * New Settings Section that allows the user to change User dependant infomration and reset the password. Further on having possibility to upload a user avatar picure that is shown in the header bar of metasfresh.
   * [#803](https://github.com/metasfresh/metasfresh-webui-frontend/issues/803) Bookmark a window/process/report and show in Quick Menu
     * New Fuctionality that allows the user so bookmark favorite menu entries and show these in the navivation action menu.
+  * [#835](https://github.com/metasfresh/metasfresh-webui-frontend/issues/835) Collapse functionality in Grid View included rows
+    * A new User Interface Functionality allowing to define collapsible/ expandable Tree Grids in metasfresh. This functionality will be used first time in Picking Terminal and then later in retraceabbility Window too.
   * [#839](https://github.com/metasfresh/metasfresh-webui-frontend/issues/839) Combined Fields/ Lookup adjustment
     * Nice Improvements to Combined Lookup fields adding a step-by-step workflow when recording data in those fields.
   * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
