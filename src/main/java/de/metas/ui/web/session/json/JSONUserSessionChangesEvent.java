@@ -54,6 +54,7 @@ public class JSONUserSessionChangesEvent
 
 	@JsonProperty("avatarId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	// IMPORTANT: empty avatarId is perfectly valid and means the avatar was removed 
 	private final String avatarId;
 
 	@JsonProperty("language")

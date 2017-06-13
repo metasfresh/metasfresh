@@ -15,6 +15,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Strings;
+
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
@@ -89,7 +91,8 @@ public class UserSessionRepository
 			final String avatarIdNew = userSession.getAvatarId();
 			if (!Objects.equals(avatarIdNew, avatarIdOld))
 			{
-				changesCollector.avatarId(avatarIdNew);
+				// IMPORTANT: convert the null to empty string to make sure the "avatarId" is communicated to frontend.
+				changesCollector.avatarId(Strings.nullToEmpty(avatarIdNew));
 			}
 		}
 
