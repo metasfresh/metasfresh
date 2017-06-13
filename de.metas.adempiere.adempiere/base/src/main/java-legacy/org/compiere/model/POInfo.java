@@ -167,9 +167,10 @@ public final class POInfo implements Serializable
 
 	private static final transient Logger logger = LogManager.getLogger(POInfo.class);
 
+	public static final String CACHE_PREFIX = "POInfo";
 	/** Cache of POInfo */
-	private static final CCache<Integer, Optional<POInfo>> s_cache = new CCache<>("POInfo", 200);
-	private static final CCache<String, Optional<POInfo>> s_cacheByTableNameUC = new CCache<>("POInfo_ByTableName", 200);
+	private static final CCache<Integer, Optional<POInfo>> s_cache = new CCache<>(CACHE_PREFIX, 200);
+	private static final CCache<String, Optional<POInfo>> s_cacheByTableNameUC = new CCache<>(CACHE_PREFIX + "#ByTableName", 200);
 
 	private POInfo(final String tableName, final String trxName)
 	{
