@@ -50,6 +50,8 @@ Here come the actual release notes:
     * Translating the new Avatar Settings of my Profile Windw to en_US Language.
 
 * metasfresh-webui-api
+  * [#434](https://github.com/metasfresh/metasfresh-webui-api/issues/434) Provide endpoints for user avatar and user settings
+    * New Implementation in Rest-API that provided endpoints for the new Avatar and User Settings Functionality.
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
   * [#452](https://github.com/metasfresh/metasfresh-webui-api/issues/452) Introduce URL widget type
