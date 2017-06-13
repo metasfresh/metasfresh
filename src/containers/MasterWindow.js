@@ -8,7 +8,9 @@ import {
     clearMasterData,
     getTab,
     addRowData,
-    sortTab
+    sortTab,
+    connectWS,
+    disconnectWS
 } from '../actions/WindowActions';
 
 import {
@@ -45,6 +47,31 @@ class MasterWindow extends Component {
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
 
+        if(prevProps.master.websocket !== master.websocket && master.websocket){
+            connectWS.call(this, master.websocket, msg => {
+                const {includedTabsInfo} = msg;
+                const {master} = this.props;
+                includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
+                    const tabLayout = master.layout.tabs.filter(tab =>
+                        tab.tabId === tabId
+                    )[0];
+                    if(
+                        tabLayout && tabLayout.queryOnActivate &&
+                        master.layout.activeTab !== tabId
+                    ){
+                        return;
+                    }
+                    includedTabsInfo[tabId] &&
+                        getTab(tabId, params.windowType, master.docId)
+                            .then(tab => {
+                                dispatch(
+                                    addRowData({[tabId]: tab}, 'master')
+                                );
+                            });
+                })
+            });
+        }
+
         if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
             window.addEventListener('beforeunload', this.confirm)
         }
@@ -54,12 +81,13 @@ class MasterWindow extends Component {
 
         // When closing modal, we need to update the stale tabs
         if(!modal.visible && modal.visible !== prevProps.modal.visible){
-            Object.keys(master.includedTabsInfo).map(tabId => {
-                getTab(tabId, params.windowType, master.docId)
-                    .then(tab => {
-                        dispatch(addRowData({[tabId]: tab}, 'master'));
-                    });
-            })
+            master.includedTabsInfo &&
+                Object.keys(master.includedTabsInfo).map(tabId => {
+                    getTab(tabId, params.windowType, master.docId)
+                        .then(tab => {
+                            dispatch(addRowData({[tabId]: tab}, 'master'));
+                        });
+                })
         }
     }
 
@@ -81,6 +109,7 @@ class MasterWindow extends Component {
         }
 
         dispatch(clearMasterData());
+        disconnectWS.call(this);
     }
 
     confirm = (e) => {

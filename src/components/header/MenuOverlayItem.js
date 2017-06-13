@@ -6,6 +6,8 @@ import {
     getWindowBreadcrumb
 } from '../../actions/MenuActions';
 
+import BookmarkButton from './BookmarkButton';
+
 class MenuOverlayItem extends Component {
     constructor(props){
         super(props);
@@ -65,7 +67,7 @@ class MenuOverlayItem extends Component {
             case 'Enter':
                 e.preventDefault();
                 document.activeElement.childNodes[0].click();
-                overlay.focus();
+                overlay && overlay.focus();
                 break;
             case 'Escape':
                 e.preventDefault();
@@ -90,31 +92,53 @@ class MenuOverlayItem extends Component {
         const previousGroup =
             document.activeElement.parentElement.previousSibling;
         const headerLink = document.getElementsByClassName('js-menu-header')[0];
-        if (previousGroup) {
-            const listChildren = previousGroup.childNodes;
-            if(listChildren.length == 1){
-                previousGroup.childNodes[0].focus();
-            }else{
-                listChildren[listChildren.length - 1].focus();
-            }
+
+        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
+            previousGroup.focus();
         } else {
-            headerLink && headerLink.focus()
+            if (previousGroup) {
+                const listChildren = previousGroup.childNodes;
+                const lastChildren = listChildren[listChildren.length - 1];
+                if(listChildren.length == 1){
+                    listChildren[0].focus();
+                }else{
+                    if(lastChildren.classList.contains('js-menu-item')) {
+                        lastChildren.focus();
+                    } else {
+                        lastChildren.children[lastChildren.children.length - 1]
+                            .focus();
+                    }
+
+                }
+            } else {
+                headerLink && headerLink.focus()
+            }
         }
+
     }
 
     handleArrowDown() {
+        const nextElem = document.activeElement.nextSibling;
+        const parentElem = document.activeElement.parentElement;
+        if (nextElem) {
+            if(nextElem.classList.contains('js-menu-item')) {
+                nextElem.focus();
+            } else {
+                nextElem.getElementsByClassName('js-menu-item')[0] &&
+                nextElem.getElementsByClassName('js-menu-item')[0].focus();
+            }
 
-        if (document.activeElement.nextSibling) {
-            document.activeElement.nextSibling.focus();
         } else {
-            if (document.activeElement.parentElement.nextSibling) {
+            if (parentElem.nextSibling) {
                 const listChildren =
-                    document.activeElement.parentElement.nextSibling.childNodes;
+                    parentElem.nextSibling.childNodes;
                 if(listChildren.length == 1){
                     listChildren[0].focus();
                 }else{
                     listChildren[1].focus();
                 }
+            } else if(parentElem.parentElement.nextSibling) {
+                parentElem.parentElement.nextSibling.childNodes[1].focus();
             }
         }
     }
@@ -128,7 +152,7 @@ class MenuOverlayItem extends Component {
     render() {
         const {
             nodeId, type, elementId, caption, children, handleClickOnFolder,
-            query, printChildren
+            query, printChildren, favorite, updateData, transparentBookmarks
         } = this.props;
 
         return (
@@ -142,19 +166,24 @@ class MenuOverlayItem extends Component {
             >
 
             { !query &&
-                <span
-                    className={
-                        (children ? 'menu-overlay-expand' : 'menu-overlay-link')
-                    }
-                    onClick={e => {
-                        children ?
-                            handleClickOnFolder(e, nodeId) :
-                            this.clickedItem(e, elementId, nodeId, type)
-                    }}
+                <BookmarkButton
+                    isBookmark={favorite}
+                    {...{updateData, nodeId, transparentBookmarks}}
                 >
-                    {caption}
-                </span>
-
+                    <span
+                        className={
+                            (children ?
+                                'menu-overlay-expand' : 'menu-overlay-link')
+                        }
+                        onClick={e => {
+                            children ?
+                                handleClickOnFolder(e, nodeId) :
+                                this.clickedItem(e, elementId, nodeId, type)
+                        }}
+                    >
+                        {caption}
+                    </span>
+                </BookmarkButton>
             }
 
             { query &&

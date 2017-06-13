@@ -149,6 +149,8 @@ class Breadcrumb extends Component {
                         this.renderBtn(item, index+1)
                     )}
 
+                {docSummaryData && <div className="divider">/</div>}
+
                 {docSummaryData &&
                     <div
                         className="hidden-xs-down header-breadcrumb-line"

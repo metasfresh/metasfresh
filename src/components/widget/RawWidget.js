@@ -9,6 +9,7 @@ import List from './List/List';
 import ActionButton from './ActionButton';
 import Checkbox from './Checkbox';
 import Image from './Image';
+import Link from './Link';
 import DevicesWidget from './Devices/DevicesWidget';
 
 import {DATE_FORMAT}  from '../../constants/Constants';
@@ -375,6 +376,16 @@ class RawWidget extends Component {
                         validStatus={widgetData[0].validStatus}
                     />
                 )
+
+            case 'Link':
+                return (
+                    <Link
+                        getClassnames={() => this.getClassnames(true)}
+                        {...{isEdited, widgetProperties, icon, widgetData,
+                            tabIndex, fullScreen
+                        }}
+                    />
+                )
             case 'Text':
                 return (
                     <div className={
@@ -404,18 +415,28 @@ class RawWidget extends Component {
                 )
             case 'Password':
                 return (
-                    <div className={
+                    <div className="input-inner-container">
+                        <div className={
                             this.getClassnames(true) +
                             (isEdited ? 'input-focused ' : '')
-                        }
-                    >
-                        <input
-                            {...widgetProperties}
-                            type="password"
-                        />
-                        {icon &&
-                            <i className="meta-icon-edit input-icon-right"/>
-                        }
+                            }
+                        >
+                            <input
+                                {...widgetProperties}
+                                type="password"
+                                ref={c => this.rawWidget = c}
+                            />
+                            {icon &&
+                                <i className="meta-icon-edit input-icon-right"/>
+                            }
+                        </div>
+                        {fields[0].allowShowPassword && <div
+                            onMouseDown={() => {this.rawWidget.type = 'text'}}
+                            onMouseUp={() => {this.rawWidget.type = 'password'}}
+                            className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
+                        >
+                            <i className="meta-icon-show" />
+                        </div>}
                     </div>
                 )
             case 'Integer':

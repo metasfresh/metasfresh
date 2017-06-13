@@ -253,12 +253,14 @@ class Table extends Component {
         if(event.target.parentNode !== document &&
             !event.target.parentNode.className.includes('notification')) {
             const item = event.path;
-            for(let i = 0; i < item.length; i++){
-                if(
-                    item[i].classList &&
-                    item[i].classList.contains('js-not-unselect')
-                ){
-                    return;
+            if(item) {
+                for(let i = 0; i < item.length; i++){
+                    if(
+                        item[i].classList &&
+                        item[i].classList.contains('js-not-unselect')
+                    ){
+                        return;
+                    }
                 }
             }
 
@@ -656,6 +658,7 @@ class Table extends Component {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported, collapsible
         } = this.props;
+
         const {
             selected, rows, collapsedRows, collapsedParentsRows
         } = this.state;

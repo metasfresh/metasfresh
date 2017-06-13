@@ -215,3 +215,9 @@
 .meta-icon-plus:before {
   content: '\2b';
 }
+.meta-icon-show:before {
+  content: '\35';
+}
+.meta-icon-hide:before {
+  content: '\36';
+}

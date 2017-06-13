@@ -110,7 +110,12 @@ class Header extends Component {
     }
 
     handleScroll = (event) => {
-        let scrollTop = event.srcElement.body.scrollTop;
+        const target = event.srcElement;
+        let scrollTop = target && target.body.scrollTop;
+
+        if(!scrollTop){
+            scrollTop = document.documentElement.scrollTop;
+        }
 
         if(scrollTop > 0) {
             this.setState({
@@ -494,20 +499,17 @@ class Header extends Component {
                 </nav>
 
                 {isSubheaderShow && <Subheader
-                    dataId={dataId}
-                    windowType={windowType}
                     closeSubheader={() => this.closeOverlays('isSubheaderShow')}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
                     redirect={this.redirect}
-                    selected={selected}
-                    selectedWindowType={selectedWindowType}
-                    entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
-                    query={query}
-                    notfound={notfound}
+                    {...{breadcrumb, notfound, query, entity,
+                        selectedWindowType, selected, dataId, windowType,
+                        siteName
+                    }}
                 />}
 
                 {showSidelist && isSideListShow && <SideList

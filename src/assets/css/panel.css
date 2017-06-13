@@ -92,6 +92,11 @@
     transition: all 0.2s ease;
 }
 
+.panel-modal-description {
+    display: block;
+    font-size: 1rem;
+}
+
 .panel-modal-content {
     position: relative;
     max-height: calc(100% - 77px);

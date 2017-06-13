@@ -16,7 +16,7 @@ import NotificationHandler
 
 import {
     noConnection
-} from '../actions/WindowActions'
+} from '../actions/WindowActions';
 
 import {
     addNotification,

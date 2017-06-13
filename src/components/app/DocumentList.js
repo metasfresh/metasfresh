@@ -10,9 +10,6 @@ import Filters from '../filters/Filters';
 import SelectionAttributes from './SelectionAttributes';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 
-import SockJs from 'sockjs-client';
-import Stomp from 'stompjs/lib/stomp.min.js';
-
 import {
     initLayout,
     getDataByIds
@@ -21,7 +18,10 @@ import {
 import {
     selectTableItems,
     getItemsByProperty,
-    mapIncluded
+    mapIncluded,
+    indicatorState,
+    connectWS,
+    disconnectWS
 } from '../../actions/WindowActions';
 
 import {
@@ -66,9 +66,17 @@ class DocumentList extends Component {
         this.mounted = true
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        const { setModalDescription } = this.props;
+        const { data } = this.state;
+        if(prevState.data !== data){
+            setModalDescription && setModalDescription(data.description);
+        }
+    }
+
     componentWillUnmount() {
         this.mounted = false;
-        this.disconnectWS();
+        disconnectWS.call(this);
     }
 
     componentWillReceiveProps(props) {
@@ -181,36 +189,28 @@ class DocumentList extends Component {
 
     connectWS = (viewId) => {
         const {windowType} = this.props;
-        (this.sockClient && this.sockClient.connected) &&
-            this.sockClient.disconnect();
-
-        this.sock = new SockJs(config.WS_URL);
-        this.sockClient = Stomp.Stomp.over(this.sock);
-        this.sockClient.debug = null;
-        this.sockClient.connect({}, () => {
-            this.sockClient.subscribe('/view/'+ viewId, msg => {
-                const {fullyChanged, changedIds} = JSON.parse(msg.body);
-                if(changedIds){
-                    getDataByIds(
-                        'documentView', windowType, viewId, changedIds.join()
-                    ).then(response => {
-                        response.data.map(row => {
-                            this.setState({
-                                data: Object.assign(this.state.data, {}, {
-                                    result: this.state.data.result.map(
-                                        resultRow =>
-                                            resultRow.id === row.id ?
-                                                row : resultRow
-                                    )
-                                })
+        connectWS.call(this, '/view/' + viewId, (msg) => {
+            const {fullyChanged, changedIds} = msg.body;
+            if(changedIds){
+                getDataByIds(
+                    'documentView', windowType, viewId, changedIds.join()
+                ).then(response => {
+                    response.data.map(row => {
+                        this.setState({
+                            data: Object.assign(this.state.data, {}, {
+                                result: this.state.data.result.map(
+                                    resultRow =>
+                                        resultRow.id === row.id ?
+                                            row : resultRow
+                                )
                             })
                         })
-                    });
-                }
-                if(fullyChanged == true){
-                    this.browseView(true);
-                }
-            });
+                    })
+                });
+            }
+            if(fullyChanged == true){
+                this.browseView(true);
+            }
         });
     }
 
@@ -238,11 +238,6 @@ class DocumentList extends Component {
 
     getTableData = (data) => {
         return data;
-    }
-
-    disconnectWS = () => {
-        (this.sockClient && this.sockClient.connected) &&
-            this.sockClient.disconnect();
     }
 
     redirectToNewDocument = () => {
@@ -351,9 +346,12 @@ class DocumentList extends Component {
     }
 
     getData = (id, page, sortingQuery, refresh) => {
-        const {windowType, updateUri, setNotFound} = this.props;
+        const {
+            dispatch, windowType, updateUri, setNotFound
+        } = this.props;
 
         setNotFound && setNotFound(false);
+        dispatch(indicatorState('pending'));
 
         if(updateUri){
             id && updateUri('viewId', id);
@@ -364,6 +362,8 @@ class DocumentList extends Component {
         return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
         ).then(response => {
+            dispatch(indicatorState('saved'));
+
             this.mounted && this.setState(Object.assign({}, {
                 data: response.data,
                 filters: response.data.filters
