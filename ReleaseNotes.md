@@ -46,6 +46,8 @@ Here come the actual release notes:
     * First Prototype of Advanced Edit Screen, here done in Business Partner window Main View and Customer Subtab.
   * [#1798](https://github.com/metasfresh/metasfresh/issues/1798) Prototype Dashboard for Board frontend development
     * Adds a prototype Project Board to WebUI menu.
+  * [#1801](https://github.com/metasfresh/metasfresh/issues/1801) Translation of My Profile Window to en_US
+    * Translating the new Avatar Settings of my Profile Windw to en_US Language.
 
 * metasfresh-webui-api
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
