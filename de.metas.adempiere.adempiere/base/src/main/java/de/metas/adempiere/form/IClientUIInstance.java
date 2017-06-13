@@ -42,6 +42,13 @@ import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncRunnable;
  */
 public interface IClientUIInstance
 {
+	/**
+	 * @deprecated this method is implemented by legacy zk code only. Please avoid using it in any new code.
+	 * @task https://github.com/metasfresh/metasfresh/issues/1771
+	 */
+	@Deprecated
+	void infoNoWait(int WindowNo, String AD_Message);
+
 	void info(int WindowNo, String AD_Message);
 
 	void info(int WindowNo, String AD_Message, String message);
@@ -121,7 +128,7 @@ public interface IClientUIInstance
 	 * @param runnable
 	 * @see #invoke()
 	 * @see IClientUIInvoker#setLongOperation(boolean)
-	 * 
+	 *
 	 * @deprecated Please consider using {@link #invokeAsync()}.
 	 */
 	@Deprecated
@@ -155,7 +162,7 @@ public interface IClientUIInstance
 
 	/**
 	 * Creates an UI invoker which is able to execute a long running {@link IClientUIAsyncRunnable} in a background thread.
-	 * 
+	 *
 	 * @return async invoker
 	 */
 	IClientUIAsyncInvoker invokeAsync();

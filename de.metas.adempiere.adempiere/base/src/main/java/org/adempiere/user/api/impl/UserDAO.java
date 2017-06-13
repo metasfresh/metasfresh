@@ -10,12 +10,12 @@ package org.adempiere.user.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -83,13 +84,12 @@ public class UserDAO implements IUserDAO
 	public I_AD_User retrieveLoginUserByUserIdAndPassword(String userId, final String password)
 	{
 		final I_AD_User user = retrieveLoginUserByUserId(userId);
-		if(!Objects.equals(password, user.getPassword()))
+		if (!Objects.equals(password, user.getPassword()))
 		{
 			throw new AdempiereException("@UserOrPasswordInvalid@");
 		}
 		return user;
 	}
-
 
 	@Override
 	public I_AD_User retrieveUserByPasswordResetCode(final Properties ctx, final String passwordResetCode)
@@ -183,4 +183,16 @@ public class UserDAO implements IUserDAO
 		return !Check.isEmpty(fullname) ? fullname : "?";
 	}
 
+	@Override
+	public List<I_AD_User> retrieveSystemUsers()
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_AD_User.class, PlainContextAware.newOutOfTrx())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
+				.orderBy().addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false).endOrderBy()
+				.create()
+				.list(I_AD_User.class);
+	}
 }

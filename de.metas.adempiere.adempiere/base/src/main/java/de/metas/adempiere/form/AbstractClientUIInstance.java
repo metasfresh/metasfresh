@@ -136,4 +136,17 @@ public abstract class AbstractClientUIInstance implements IClientUIInstance
 	{
 		// nothing
 	}
+
+	/**
+	 * This method throws an UnsupportedOperationException.
+	 *
+	 * @deprecated please check out the deprecation notice in {@link IClientUIInstance#infoNoWait(int, String)}.
+	 * @throws UnsupportedOperationException
+	 */
+	@Deprecated
+	@Override
+	public void infoNoWait(int WindowNo, String AD_Message)
+	{
+		throw new UnsupportedOperationException("not implemented");
+	}
 }
