@@ -801,7 +801,9 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-export function mapIncluded(node, indent, isParentLastChild = false) {
+export function mapIncluded(
+    node, indent, isParentLastChild = false
+) {
     let ind = indent ? indent : [];
     let result = [];
 

@@ -50,6 +50,8 @@ class Table extends Component {
             promptOpen: false,
             isBatchEntry: false,
             rows: [],
+            collapsedRows: [],
+            collapsedParentsRows: [],
             pendingInit: true
         }
     }
@@ -106,7 +108,10 @@ class Table extends Component {
     }
 
     getIndentData = (selectFirst) => {
-        const {rowData, tabid, indentSupported} = this.props;
+        const {
+            rowData, tabid, indentSupported, collapsible, expandedDepth,
+            keyProperty
+        } = this.props;
 
         if(indentSupported && rowData[tabid]){
             let rowsData = [];
@@ -119,11 +124,36 @@ class Table extends Component {
                 rows: rowsData,
                 pendingInit: !rowsData
             }, () => {
+                const {rows} = this.state;
+
                 if(selectFirst){
-                    this.selectOneProduct(this.state.rows[0].id);
+                    this.selectOneProduct(rows[0].id);
                     document.getElementsByClassName('js-table')[0].focus();
                 }
 
+                if(collapsible){
+                    rows && !!rows.length && rows.map(row => {
+                        if(
+                            row.indent.length >= expandedDepth &&
+                            row.includedDocuments
+                        ){
+                            this.setState(prev => ({
+                                collapsedParentsRows:
+                                    prev.collapsedParentsRows.concat(
+                                        row[keyProperty]
+                                    )
+                            }));
+                        }
+                        if(row.indent.length > expandedDepth){
+                            this.setState(prev => ({
+                                collapsedRows:
+                                    prev.collapsedRows.concat(
+                                        row[keyProperty]
+                                    )
+                            }));
+                        }
+                    })
+                }
             })
         } else {
             this.setState({
@@ -581,49 +611,108 @@ class Table extends Component {
         }
     }
 
+    handleRowCollapse = (node, collapsed) => {
+        const {keyProperty} = this.props;
+        const {collapsedParentsRows, collapsedRows} = this.state;
+
+        if(collapsed){
+            this.setState(prev => ({
+                collapsedParentsRows:
+                    update(prev.collapsedParentsRows,
+                        {$splice: [[
+                            prev.collapsedParentsRows
+                                .indexOf(node[keyProperty]), 1
+                            ]]
+                        })
+            }));
+        }else{
+            if(collapsedParentsRows.indexOf(node[keyProperty]) > -1) return;
+            this.setState(prev => ({
+                collapsedParentsRows:
+                    prev.collapsedParentsRows.concat(node[keyProperty])
+            }));
+        }
+
+        node.includedDocuments && node.includedDocuments.map(node => {
+            if(collapsed){
+                this.setState(prev => ({
+                    collapsedRows: update(prev.collapsedRows, {
+                        $splice: [[
+                            prev.collapsedRows.indexOf(node[keyProperty]), 1
+                        ]]
+                    })
+                }));
+            }else{
+                if(collapsedRows.indexOf(node[keyProperty]) > -1) return;
+                this.setState(prev => ({
+                    collapsedRows: prev.collapsedRows.concat(node[keyProperty])
+                }));
+                node.includedDocuments &&
+                    this.handleRowCollapse(node, collapsed);
+            }
+        })
+    }
+
     renderTableBody = () => {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
-            mainTable, newRow, tabIndex, entity, indentSupported
+            mainTable, newRow, tabIndex, entity, indentSupported, collapsible
         } = this.props;
-        const {selected, rows} = this.state;
-        const ret = (rows && !!rows.length) && rows.map((item, i) => (
-            <tbody key={i}>
-                <TableItem
-                    {...item}
-                    {...{entity, cols, type, mainTable, indentSupported,
-                        selected, docId, tabIndex, readonly}}
-                    odd={i & 1}
-                    rowId={item[keyProperty]}
-                    tabId={tabid}
-                    onDoubleClick={() => onDoubleClick &&
-                        onDoubleClick(item[keyProperty])
-                    }
-                    onMouseDown={(e) =>
-                        this.handleClick(e, item[keyProperty])
-                    }
-                    handleRightClick={(e, fieldName) =>
-                        this.handleRightClick(
-                            e, item[keyProperty], fieldName)
-                    }
-                    changeListenOnTrue={() => this.changeListen(true)}
-                    changeListenOnFalse={() => this.changeListen(false)}
-                    newRow={i === rows.length - 1 ? newRow : false}
-                    isSelected={
-                        selected.indexOf(item[keyProperty]) > -1 ||
-                        selected[0] === 'all'
-                    }
-                    handleSelect={this.selectRangeProduct}
-                    contextType={item.type}
-                    notSaved={
-                        item.saveStatus &&
-                        !item.saveStatus.saved
-                    }
-                    getSizeClass={this.getSizeClass}
-                />
-            </tbody>
+
+        const {
+            selected, rows, collapsedRows, collapsedParentsRows
+        } = this.state;
+
+        if (!rows || !rows.length) return;
+
+        return rows
+            .filter(row => collapsedRows.indexOf(row[keyProperty]) === -1)
+            .map((item, i) => (
+                <tbody key={i}>
+                    <TableItem
+                        {...item}
+                        {...{entity, cols, type, mainTable, indentSupported,
+                            selected, docId, tabIndex, readonly, collapsible
+                        }}
+                        collapsed={
+                            collapsedParentsRows
+                                .indexOf(item[keyProperty]) > -1
+                        }
+                        odd={i & 1}
+                        rowId={item[keyProperty]}
+                        tabId={tabid}
+                        onDoubleClick={() => onDoubleClick &&
+                            onDoubleClick(item[keyProperty])
+                        }
+                        onMouseDown={(e) =>
+                            this.handleClick(e, item[keyProperty])
+                        }
+                        handleRightClick={(e, fieldName) =>
+                            this.handleRightClick(
+                                e, item[keyProperty], fieldName)
+                            }
+                        changeListenOnTrue={() => this.changeListen(true)}
+                        changeListenOnFalse={() => this.changeListen(false)}
+                        newRow={i === rows.length - 1 ? newRow : false}
+                        isSelected={
+                            selected.indexOf(item[keyProperty]) > -1 ||
+                            selected[0] === 'all'
+                        }
+                        handleSelect={this.selectRangeProduct}
+                        contextType={item.type}
+                        notSaved={
+                            item.saveStatus &&
+                            !item.saveStatus.saved
+                        }
+                        getSizeClass={this.getSizeClass}
+                        handleRowCollapse={() =>
+                            this.handleRowCollapse(item,
+                            collapsedParentsRows
+                                .indexOf(item[keyProperty]) > -1)
+                        }
+                    />
+                </tbody>
         ));
-        return ret;
     }
 
     renderEmptyInfo = (data, tabId) => {

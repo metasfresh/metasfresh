@@ -324,6 +324,7 @@ th {
 $indent-height: 42px;
 $indent-height-mid: 18px;
 $indent-signs-offset: 6px;
+$indent-collapsible-offset: 24px;
 
 .indent {
     position: relative;
@@ -342,6 +343,11 @@ $indent-signs-offset: 6px;
 
 .indent-item-mid{
     padding-left:$indent-signs-offset;
+}
+
+.indent-collapsible-item-mid {
+    margin-right:10px;
+    padding-left: calc($indent-signs-offset + $indent-collapsible-offset);
 }
 
 .indent-item-mid .indent-sign {
@@ -371,6 +377,14 @@ $indent-signs-offset: 6px;
     width: 1px;
     height: 6px;
     border-left: 1px solid #afbfca;
+}
+
+.indent-collapsible-bot {
+    margin-left: calc($indent-signs-offset + $indent-collapsible-offset);
+}
+
+.indent-collapse-icon {
+    margin-right: 10px;
 }
 
 /* END OF INDENT SIGN ============ */

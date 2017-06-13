@@ -62,9 +62,7 @@ class TableHeader extends Component {
         return (
             <tr>
                 {indentSupported &&
-                    <th
-                        className="indent"
-                    />
+                    <th key={0} className="indent" />
                 }
                 {this.renderCols(cols)}
             </tr>
