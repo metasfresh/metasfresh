@@ -1,3 +1,11 @@
+
+--
+-- metas-ts: i hand-checked a number of those lines for this originally very old migration script (01500_US743_ResetAccountPassword)
+-- It was already applied to our DBs a long time ago, even if there is no corresponding record in AD_MigrationScript
+--
+SELECT 'nothing to do';
+
+/*
 -- 12-Oct-2010 12:19:31 EEST
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Org_ID,AD_Element_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,AD_Client_ID,UpdatedBy) VALUES (0,54323,'PasswordResetCode',TO_TIMESTAMP('2010-10-12 12:19:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Password Reset Code','Password Reset Code',TO_TIMESTAMP('2010-10-12 12:19:30','YYYY-MM-DD HH24:MI:SS'),0,100)
@@ -232,4 +240,4 @@ UPDATE AD_Message SET MsgText='Forgot password? Please click here.',Updated=TO_T
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Message_Trl SET IsTranslated='N' WHERE AD_Message_ID=53113
 ;
-
+*/
