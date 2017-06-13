@@ -132,20 +132,16 @@ class Table extends Component {
                 }
                 
                 if(collapsible){
-                    for(let i = 0; i < rows.length; i++){
-                        if(rows[i].indent.length >= expandedDepth){
+                    rows && rows.map(row => {
+                        if(row.indent.length > expandedDepth){
                             this.setState(prev => ({
-                                collapsedParentsRows:
-                                    prev.collapsedParentsRows.concat(
-                                        rows[i][keyProperty]
-                                    ),
                                 collapsedRows:
                                     prev.collapsedRows.concat(
-                                        rows[i][keyProperty]
+                                        row[keyProperty]
                                     )
                             }));
                         }
-                    }
+                    })
                 }
             })
         } else {
