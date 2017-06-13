@@ -148,7 +148,8 @@ class RawWidget extends Component {
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
-            listenOnKeysFalse, closeTableField, handleZoomInto, attribute
+            listenOnKeysFalse, closeTableField, handleZoomInto, attribute,
+            allowShowPassword
         } = this.props;
 
         const {isEdited} = this.state;
@@ -430,7 +431,7 @@ class RawWidget extends Component {
                                 <i className="meta-icon-edit input-icon-right"/>
                             }
                         </div>
-                        {fields[0].allowShowPassword && <div
+                        {allowShowPassword && <div
                             onMouseDown={() => {this.rawWidget.type = 'text'}}
                             onMouseUp={() => {this.rawWidget.type = 'password'}}
                             className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
