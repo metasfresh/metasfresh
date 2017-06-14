@@ -94,4 +94,10 @@ public class PlainMsgBL implements IMsgBL
 	{
 		return ImmutableTranslatableString.constant(adMessage);
 	}
+	
+	@Override
+	public void cacheReset()
+	{
+		// nothing
+	}
 }
