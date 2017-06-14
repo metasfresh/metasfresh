@@ -124,7 +124,7 @@ class RawList extends Component {
         const { list, mandatory } = this.props;
         const { selected } = this.state;
 
-        if (selected === 0){
+        if (selected === 0 || !selected){
             return 0;
         }
 
@@ -315,9 +315,9 @@ class RawList extends Component {
         }
 
         const optionKeys = Object.keys(option);
-        const selectedKeys = Object.keys(selected);
+        const selectedKeys = selected && Object.keys(selected);
         const firstOption = option[optionKeys[0]];
-        const firstSelected = selected[selectedKeys[0]];
+        const firstSelected = selected && selected[selectedKeys[0]];
 
         // objects, and first elements are not
         if (
@@ -389,8 +389,14 @@ class RawList extends Component {
             isOpen
         } = this.state;
 
-        const value = defaultValue &&
+        let value = '';
+
+        if(typeof defaultValue === 'string') {
+            value = defaultValue;
+        } else {
+            value = defaultValue &&
                         defaultValue[Object.keys(defaultValue)[0]];
+        }
 
         return (
             <div
