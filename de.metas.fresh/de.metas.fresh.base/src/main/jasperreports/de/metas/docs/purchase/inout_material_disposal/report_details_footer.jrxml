@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-05-12T18:36:23 -->
+<!-- 2017-06-14T13:35:11 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout_material_disposal/report" uuid="24208fd1-eaa1-4f8e-a2aa-22ed9c4e6234">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -38,10 +38,11 @@
 	<detail>
 		<band height="70" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField>
-				<reportElement x="36" y="57" width="134" height="12" uuid="6cbff022-d8a0-43ba-b45b-09a495dbc12d">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="36" y="57" width="144" height="12" uuid="6cbff022-d8a0-43ba-b45b-09a495dbc12d">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -49,7 +50,10 @@
 				<textFieldExpression><![CDATA[$R{signature1}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="170" y="69" width="259" height="1" uuid="13296e00-b149-4032-aa06-5710568bdf68"/>
+				<reportElement x="180" y="69" width="249" height="1" uuid="13296e00-b149-4032-aa06-5710568bdf68">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
 				<graphicElement>
 					<pen lineStyle="Solid"/>
 				</graphicElement>
@@ -68,7 +72,7 @@
 				<textFieldExpression><![CDATA[$R{note21}+" "+$F{iso_code}+"               "+ $R{note22}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="36" y="53" width="264" height="12" uuid="8f81fee7-7369-47b3-a3ce-5e296f711675">
+				<reportElement x="36" y="53" width="392" height="12" uuid="8f81fee7-7369-47b3-a3ce-5e296f711675">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
@@ -89,10 +93,11 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}+":"]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="36" y="48" width="164" height="12" uuid="9cdc2007-62be-4417-8fb3-46447659a589">
+			<textField isStretchWithOverflow="true">
+				<reportElement x="36" y="48" width="174" height="12" uuid="9cdc2007-62be-4417-8fb3-46447659a589">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
@@ -100,7 +105,10 @@
 				<textFieldExpression><![CDATA[$R{signature2}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="202" y="59" width="225" height="1" uuid="ee6d35d7-c1f4-405d-ad62-d4ad8b50fc53"/>
+				<reportElement x="212" y="59" width="217" height="1" uuid="ee6d35d7-c1f4-405d-ad62-d4ad8b50fc53">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
 				<graphicElement>
 					<pen lineStyle="Solid"/>
 				</graphicElement>
