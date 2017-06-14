@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.minventory.api.IInventoryBL;
@@ -58,6 +59,7 @@ import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_InventoryLine;
@@ -138,11 +140,17 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			final I_M_HU_Item huItem = InterfaceWrapperHelper.create(
 					request.getHUContext().getCtx(), reference.getRecord_ID(), I_M_HU_Item.class, trxName);
 
+
 			final I_M_HU hu = huItem.getM_HU();
 
-			final I_M_HU topLevelParent = handlingUnitsBL.getTopLevelParent(hu);
+			List<I_M_InOutLine> inOutLines = Services.get(IHUAssignmentDAO.class).retrieveModelsForHU(hu, I_M_InOutLine.class);
 
-			final List<I_M_InOutLine> inOutLines = Services.get(IHUAssignmentDAO.class).retrieveModelsForHU(topLevelParent, I_M_InOutLine.class);
+			if (inOutLines.isEmpty())
+			{
+				// fallback on top level HU
+				final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
+				 inOutLines = Services.get(IHUAssignmentDAO.class).retrieveDerivedModelsForHU(request.getHUContext().getCtx(), I_M_InOutLine.class, topLevelHU, topLevelHU, hu, trxName);
+			}
 
 			for (final I_M_InOutLine inOutLine : inOutLines)
 			{
@@ -159,7 +167,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				}
 
 				// create the inventory line based on the info from inoutline and request
-				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, topLevelParent, request);
+				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, hu, request);
 
 				final BigDecimal qtyInternalUseOld = inventoryLine.getQtyInternalUse();
 				final BigDecimal qtyInternalUseNew = qtyInternalUseOld.add(qty);
