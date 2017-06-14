@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
@@ -330,74 +331,100 @@ public class ZoomInfoFactory
 	{
 		final int targetAD_Window_ID = -1;
 		final boolean checkRecordsCount = true;
-		return retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount);
+		return streamZoomInfos(source, targetAD_Window_ID, checkRecordsCount)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
-	 * Retrieves all {@link ZoomInfo}s for given {@link IZoomSource}.
+	 * Stream all {@link ZoomInfo}s for given {@link IZoomSource}.
 	 */
-	private List<ZoomInfo> retrieveZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
+	public Stream<ZoomInfo> streamZoomInfos(final IZoomSource source)
+	{
+		final int targetAD_Window_ID = -1;
+		final boolean checkRecordsCount = true;
+		return streamZoomInfos(source, targetAD_Window_ID, checkRecordsCount);
+	}
+
+	private Stream<ZoomInfo> streamZoomInfos(final IZoomSource source, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
 		logger.debug("source={}", source);
-
-		final ImmutableList.Builder<ZoomInfo> result = ImmutableList.builder();
 		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
-		for (final IZoomProvider zoomProvider : zoomProviders)
-		{
-			logger.debug("Checking zoom provider: {}", zoomProvider);
 
-			try
-			{
-				for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount))
-				{
+		return zoomProviders.stream()
+				.flatMap(zoomProvider -> {
+					try
+					{
+						return zoomProvider.retrieveZoomInfos(source, targetAD_Window_ID, checkRecordsCount).stream();
+					}
+					catch (Exception ex)
+					{
+						logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, ex);
+						return Stream.empty();
+					}
+				})
+				//
+				// Filter by targetAD_Window_ID if any.
+				// If not our target window ID, skip it.
+				// This shall not happen because we asked the zoomProvider to return only those for our target window,
+				// but if is happening (because of a bug zoom provider) we shall not be so fragile.
+				.filter(zoomInfo -> {
+					if (targetAD_Window_ID <= 0)
+					{
+						return true; // accept
+					}
+
 					final int adWindowId = zoomInfo.getAD_Window_ID();
 
 					// If not our target window ID, skip it
 					// This shall not happen because we asked the zoomProvider to return only those for our target window,
 					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
-					if (targetAD_Window_ID > 0 && targetAD_Window_ID != adWindowId)
+					if (targetAD_Window_ID != adWindowId)
 					{
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
 								+ "\n zoomInfo: " + zoomInfo
-								+ "\n zoomProvider: " + zoomProvider
+						// + "\n zoomProvider: " + zoomProvider
 								+ "\n targetAD_Window_ID: " + targetAD_Window_ID
 								+ "\n source: " + source
 								+ "\n checkRecordsCount: " + checkRecordsCount)
 										.throwIfDeveloperModeOrLogWarningElse(logger);
-						continue;
+						return false; // reject
 					}
 
-					// #1062
-					// Only consider a window already seen if it actually has record count > 0
-					if (checkRecordsCount && zoomInfo.getRecordCount() > 0)
+					return true; // accept
+				})
+				//
+				// Only consider a window already seen if it actually has record count > 0 (task #1062)
+				.sequential() // important because our filter is stateful
+				.filter(zoomInfo -> {
+					if (!checkRecordsCount)
 					{
+						return true; // accept
+					}
+
+					if (zoomInfo.getRecordCount() > 0)
+					{
+						final int adWindowId = zoomInfo.getAD_Window_ID();
 						if (!alreadySeenWindowIds.add(adWindowId))
 						{
-							logger.debug("Skipping zoomInfo {} from {} because there is already one for destination '{}'", zoomInfo, zoomProvider, adWindowId);
-							continue;
+							logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", zoomInfo, adWindowId);
+							return false; // reject
 						}
 					}
-					//
-					// Filter out those ZoomInfos which have ZERO records (if requested)
+
+					return true; // accept
+				})
+				//
+				// Filter out those ZoomInfos which have ZERO records (if requested)
+				.filter(zoomInfo -> {
 					if (checkRecordsCount && zoomInfo.getRecordCount() <= 0)
 					{
 						logger.debug("No target records for destination {}", zoomInfo);
-						continue;
+						return false; // reject
 					}
-
-					logger.debug("Adding zoomInfo {} from {}", zoomInfo, zoomProvider);
-					result.add(zoomInfo);
-				}
-			}
-			catch (final Exception e)
-			{
-				logger.warn("Failed retrieving zoom infos from {} for {}. Skipped.", zoomProvider, source, e);
-			}
-		}
-
-		return result.build();
+					return true; // accept
+				});
 	}
 
 	/**
@@ -413,23 +440,12 @@ public class ZoomInfoFactory
 	{
 		Check.assume(targetWindowId > 0, "targetWindowId > 0");
 
-		final boolean checkRecordsCount = false;
-		final List<ZoomInfo> zoomInfos = retrieveZoomInfos(source, targetWindowId, checkRecordsCount);
-		if (zoomInfos.isEmpty())
-		{
-			throw new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId);
-		}
-		else if (zoomInfos.size() == 1)
-		{
-			return zoomInfos.get(0);
-		}
-		else
-		{
-			// Got more then one Zoominfo(s).
-			// we could check if they all have the same AD_Window_ID but does not matter..
-			// => returning the first one
-			return zoomInfos.get(0);
-		}
+		// NOTE: we need to check the records count because in case there are multiple ZoomInfos for the same targetWindowId,
+		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
+		final boolean checkRecordsCount = true;
+		return streamZoomInfos(source, targetWindowId, checkRecordsCount)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId));
 	}
 
 	private List<IZoomProvider> retrieveZoomProviders(final String tableName)
