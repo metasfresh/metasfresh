@@ -80,10 +80,6 @@ public final class JSONViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilter> filters;
 
-	@JsonProperty(value = "stickyFilters")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final List<JSONDocumentFilter> stickyFilters;
-
 	//
 	// Page informations (optional)
 	// NOTE: important to distinguish between "empty" and "null", i.e.
@@ -120,21 +116,25 @@ public final class JSONViewResult implements Serializable
 		// View informations
 		final ViewId viewId = viewResult.getViewId();
 		this.viewId = viewId.getViewId();
-		this.windowId = viewId.getWindowId();
+		windowId = viewId.getWindowId();
 		type = windowId;
 
 		final ViewId parentViewId = viewResult.getParentViewId();
-		this.parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
+		parentWindowId = parentViewId == null ? null : parentViewId.getWindowId();
 		this.parentViewId = parentViewId == null ? null : parentViewId.getViewId();
 
-		this.description = viewResult.getViewDescription(adLanguage);
+		description = viewResult.getViewDescription(adLanguage);
 
 		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
 
-		// NOTE: stickyFilters are not used by frontend but we are adding them to ease the troubleshooting
-		stickyFilters = JSONDocumentFilter.ofList(viewResult.getStickyFilters(), adLanguage);
-		filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
+		final List<JSONDocumentFilter> filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
+		final List<JSONDocumentFilter> stickyFilters = JSONDocumentFilter.ofList(viewResult.getStickyFilters(), adLanguage);
+		this.filters = ImmutableList.<JSONDocumentFilter> builder()
+				.addAll(filters)
+				.addAll(stickyFilters)
+				.build();
+
 		orderBy = JSONViewOrderBy.ofList(viewResult.getOrderBys());
 
 		//
@@ -170,7 +170,6 @@ public final class JSONViewResult implements Serializable
 			//
 			, @JsonProperty("size") final Long size //
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
-			, @JsonProperty(value = "stickyFilters") final List<JSONDocumentFilter> stickyFilters //
 			, @JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy //
 			//
 			, @JsonProperty("result") final List<JSONViewRow> result //
@@ -196,7 +195,6 @@ public final class JSONViewResult implements Serializable
 		//
 		this.size = size;
 		this.filters = filters == null ? ImmutableList.of() : filters;
-		this.stickyFilters = stickyFilters == null ? ImmutableList.of() : stickyFilters;
 		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
 
 		//

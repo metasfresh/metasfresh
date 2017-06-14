@@ -161,6 +161,7 @@ public final class JSONDocumentFilter implements Serializable
 	public static final JSONDocumentFilter of(final DocumentFilter filter, final String adLanguage)
 	{
 		final String filterId = filter.getFilterId();
+		final boolean stickyFilter = false;
 		final List<JSONDocumentFilterParam> jsonParameters = filter.getParameters()
 				.stream()
 				.map(filterParam -> JSONDocumentFilterParam.of(filterParam))
@@ -168,7 +169,27 @@ public final class JSONDocumentFilter implements Serializable
 				.map(Optional::get)
 				.collect(GuavaCollectors.toImmutableList());
 
-		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), jsonParameters);
+		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), stickyFilter, jsonParameters);
+	}
+
+	public static final List<JSONDocumentFilter> ofStickyFiltersList(final List<DocumentFilter> filters, final String adLanguage)
+	{
+		if (filters == null || filters.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return filters.stream()
+				.map(filter -> ofStickyFilter(filter, adLanguage))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
+	public static final JSONDocumentFilter ofStickyFilter(final DocumentFilter filter, final String adLanguage)
+	{
+		final String filterId = filter.getFilterId();
+		final boolean stickyFilter = true;
+		final List<JSONDocumentFilterParam> jsonParameters = ImmutableList.of(); // don't export the parameters
+		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), stickyFilter, jsonParameters);
 	}
 
 	@JsonProperty("filterId")
@@ -178,6 +199,9 @@ public final class JSONDocumentFilter implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String caption;
 
+	@JsonProperty("static")
+	private boolean stickyFilter;
+
 	@JsonProperty("parameters")
 	private final List<JSONDocumentFilterParam> parameters;
 
@@ -185,12 +209,14 @@ public final class JSONDocumentFilter implements Serializable
 	private JSONDocumentFilter(
 			@JsonProperty("filterId") final String filterId,
 			@JsonProperty("caption") final String caption,
+			@JsonProperty("static") final boolean stickyFilter,
 			@JsonProperty("parameters") final List<JSONDocumentFilterParam> parameters)
 	{
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
 		this.filterId = filterId;
 		this.caption = caption;
+		this.stickyFilter = stickyFilter;
 		this.parameters = parameters == null ? ImmutableList.of() : ImmutableList.copyOf(parameters);
 	}
 }
