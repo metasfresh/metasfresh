@@ -142,14 +142,12 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			{
 				inOutLine.setM_HU_PI_Item_Product(huPIItemProduct);
 			}
-			
 			// Make sure the inout line is saved
 			InterfaceWrapperHelper.save(inOutLine);
 		}
 
 		// Assign the HU to the inout line and mark it as shipped
 		{
-		
 			final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 			final I_M_HU huTopLevel = handlingUnitsBL.getTopLevelParent(hu);
@@ -220,7 +218,6 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
-		// TODO: THis column could be used also for customer returns. Rename it
 		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
 
 		// NOTE: we are not saving the inOut line
