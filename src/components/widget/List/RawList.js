@@ -124,7 +124,7 @@ class RawList extends Component {
         const { list, mandatory } = this.props;
         const { selected } = this.state;
 
-        if (selected === 0 || !selected){
+        if (selected === 0){
             return 0;
         }
 
