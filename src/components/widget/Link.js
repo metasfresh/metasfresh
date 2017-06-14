@@ -35,7 +35,7 @@ class Link extends Component {
                     onClick={() => this.handleClick(widgetData[0].value)}
                     className="btn btn-icon btn-meta-outline-secondary btn-inline pointer btn-distance-rev btn-sm"
                 >
-                    <i className="meta-icon-show" />
+                    <i className="meta-icon-link" />
                 </div>
             </div>
         );

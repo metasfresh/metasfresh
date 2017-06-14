@@ -221,3 +221,6 @@
 .meta-icon-hide:before {
   content: '\36';
 }
+.meta-icon-link:before {
+  content: '\37';
+}
