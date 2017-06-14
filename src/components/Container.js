@@ -21,31 +21,9 @@ class Container extends Component {
 
     getTranslates = () => {
         getMessages().then(response => {
-            console.log(response.data);
-
+            counterpart.registerTranslations('lang', response.data);
+            counterpart.setLocale('lang');
         })
-
-        //--------------------
-        const translates_tmp = {
-            en: {
-                'window_advancedEdit_caption':	'Advanced Edit',
-                'window_Print_caption':	'Print',
-                'window_Delete_caption':	'Delete',
-                'window_New_caption':	'New'
-            },
-            de: {
-                'window_advancedEdit_caption':	'Erweiterte Bearbeitung',
-                'window_Print_caption':	'Drucken',
-                'window_Delete_caption':	'Löschen',
-                'window_New_caption':	'Neu'
-            }
-        }
-
-        counterpart.registerTranslations('en', translates_tmp.en);
-        counterpart.registerTranslations('de', translates_tmp.de);
-
-        counterpart.setLocale('en');
-        //--------------------
     }
 
     render() {

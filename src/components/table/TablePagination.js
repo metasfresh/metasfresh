@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 import PaginationContextShortcuts from
     '../shortcuts/PaginationContextShortcuts';
 
@@ -75,7 +76,7 @@ class TablePagination extends Component {
     renderGoToPage = (pages, value) => {
         return (
             <div className="page-dots-open">
-                <span>Go to page</span>
+                <span>{counterpart.translate('view.goTo.caption')}</span>
                 <input
                     type="number"
                     min="1"

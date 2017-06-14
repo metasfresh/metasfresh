@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import defaultAvatar from '../../assets/images/default-avatar.png';
 import Tooltips from '../tooltips/Tooltips';
+import counterpart from 'counterpart';
 
 import onClickOutside from 'react-onclickoutside';
 
@@ -112,7 +113,9 @@ class UserDropdown extends Component {
                 }
                 {tooltipOpen === shortcut && !open && <Tooltips
                     name={shortcut}
-                    action={'User menu'}
+                    action= {
+                        counterpart.translate('mainScreen.userMenu.tooltip')
+                    }
                     type={''}
                 />}
             </div>
