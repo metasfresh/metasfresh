@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -260,14 +262,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		this.onlySelection_ID = AD_PInstance_ID;
 		return this;
 	}
-	
+
 	@Override
 	public TypedSqlQuery<T> setNotInSelection(final int AD_PInstance_ID)
 	{
 		this.notInSelection_ID = AD_PInstance_ID;
 		return this;
 	}
-
 
 	/**
 	 * Return a list of all po that match the query criteria.
@@ -616,12 +617,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return list.get(0);
 	}
 
-	public <AT> List<AT> aggregateList(String sqlExpression, final String sqlFunction, final Class<AT> returnType) throws DBException
+	public <AT> List<AT> aggregateList(String sqlExpression, @Nullable final String sqlFunction, final Class<AT> returnType) throws DBException
 	{
-		if (Check.isEmpty(sqlFunction, true))
-		{
-			throw new DBException("No Aggregate Function defined");
-		}
+		// NOTE: it's OK to have the sqlFunction null. Methods like first(columnName, valueClass) are relying on this.
+		// if (Check.isEmpty(sqlFunction, true)) throw new DBException("No Aggregate Function defined");
 
 		if (postQueryFilter != null)
 		{
@@ -651,7 +650,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		final List<AT> result = new ArrayList<>();
 
 		final StringBuilder sqlSelect = new StringBuilder("SELECT ");
-		if(sqlFunction == null)
+		if (sqlFunction == null)
 		{
 			sqlSelect.append(sqlExpression);
 		}
@@ -700,13 +699,13 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	{
 		return aggregateList(columnName, AGGREGATE_DISTINCT, valueType);
 	}
-	
+
 	@Override
 	public <AT> AT first(final String columnName, final Class<AT> valueType)
 	{
 		setLimit(1, 0);
 		final List<AT> result = aggregateList(columnName, null, valueType);
-		if(result == null || result.isEmpty())
+		if (result == null || result.isEmpty())
 		{
 			return null;
 		}
@@ -1101,7 +1100,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 			whereBuffer.append("AD_Client_ID=?");
 		}
-		
+
 		//
 		// IN selection
 		if (this.onlySelection_ID > 0)
@@ -1114,7 +1113,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			}
 			whereBuffer.append(" EXISTS (SELECT 1 FROM T_Selection s WHERE s.AD_PInstance_ID=? AND s.T_Selection_ID=" + getTableName() + "." + keyColumnName + ")");
 		}
-		
+
 		//
 		// NOT IN selection
 		if (this.notInSelection_ID > 0)
@@ -1156,7 +1155,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			parametersEffective.add(this.onlySelection_ID);
 			log.trace("Parameter Selection AD_PInstance_ID = {}", this.onlySelection_ID);
 		}
-		if(this.notInSelection_ID > 0)
+		if (this.notInSelection_ID > 0)
 		{
 			parametersEffective.add(this.notInSelection_ID);
 			log.trace("Parameter NotInSelection AD_PInstance_ID = {}", this.notInSelection_ID);

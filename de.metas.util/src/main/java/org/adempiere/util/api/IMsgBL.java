@@ -119,4 +119,6 @@ public interface IMsgBL extends ISingletonService
 	 * @return a map of "AD_Message" (might be with the prefix removed) to "translated message" pairs
 	 */
 	Map<String, String> getMsgMap(String adLanguage, String prefix, boolean removePrefix);
+
+	void cacheReset();
 }

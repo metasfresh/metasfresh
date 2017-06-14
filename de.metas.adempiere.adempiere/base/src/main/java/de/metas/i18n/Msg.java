@@ -192,6 +192,11 @@ public final class Msg
 		}
 		adLanguage2messages.clear();
 	}   // reset
+	
+	public static void cacheReset()
+	{
+		get().reset();
+	}
 
 	/**
 	 * Return an array of the installed Languages
