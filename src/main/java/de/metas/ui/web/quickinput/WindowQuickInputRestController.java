@@ -9,7 +9,6 @@ import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.controller.WindowRestController;
@@ -84,7 +84,7 @@ public class WindowQuickInputRestController
 	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
 	@Autowired
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private WebsocketSender websocketSender;
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
@@ -289,7 +289,7 @@ public class WindowQuickInputRestController
 			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
 
 			// Extract and send websocket events
-			JSONDocument.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketMessagingTemplate);
+			JSONDocument.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
 
 			return jsonDocumentEvents;
 		});

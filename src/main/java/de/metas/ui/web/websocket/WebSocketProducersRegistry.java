@@ -17,12 +17,12 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.MoreObjects;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -37,11 +37,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -65,7 +65,7 @@ public final class WebSocketProducersRegistry
 
 	private final ScheduledExecutorService scheduler;
 	@Autowired
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private WebsocketSender websocketSender;
 	@Autowired
 	private ApplicationContext context;
 
@@ -146,7 +146,7 @@ public final class WebSocketProducersRegistry
 
 		return _producersByTopicName.computeIfAbsent(topicName, k -> {
 			final WebSocketProducer producer = producerFactory.createProducer(topicName);
-			return new WebSocketProducerInstance(topicName, producer, scheduler, websocketMessagingTemplate);
+			return new WebSocketProducerInstance(topicName, producer, scheduler, websocketSender);
 		});
 	}
 
@@ -174,12 +174,12 @@ public final class WebSocketProducersRegistry
 
 	public void onTopicUnsubscribed(final String sessionId, final String topicName)
 	{
-		if(topicName == null)
+		if (topicName == null)
 		{
 			onSessionDisconnect(sessionId);
 			return;
 		}
-		
+
 		final WebSocketProducerInstance producer = getExistingWebSocketProducerInstanceOrNull(topicName);
 		if (producer == null)
 		{
@@ -201,27 +201,21 @@ public final class WebSocketProducersRegistry
 		private final String topicName;
 		private final WebSocketProducer producer;
 		private final ScheduledExecutorService scheduler;
-		private final SimpMessagingTemplate websocketMessagingTemplate;
+		private final WebsocketSender websocketSender;
 
 		private final Set<String> subscribedSessionIds = new HashSet<>();
 		private ScheduledFuture<?> scheduledFuture;
 
 		private WebSocketProducerInstance(
-				final String topicName //
-				, final WebSocketProducer producer //
-				, final ScheduledExecutorService scheduler //
-				, final SimpMessagingTemplate websocketMessagingTemplate //
-		)
+				@NonNull final String topicName,
+				@NonNull final WebSocketProducer producer,
+				@NonNull final ScheduledExecutorService scheduler,
+				@NonNull final WebsocketSender websocketSender)
 		{
-			Check.assumeNotEmpty(topicName, "topicName is not empty");
-			Check.assumeNotNull(producer, "Parameter producer is not null");
-			Check.assumeNotNull(scheduler, "Parameter scheduler is not null");
-			Check.assumeNotNull(websocketMessagingTemplate, "Parameter websocketMessagingTemplate is not null");
-
 			this.topicName = topicName;
 			this.producer = producer;
 			this.scheduler = scheduler;
-			this.websocketMessagingTemplate = websocketMessagingTemplate;
+			this.websocketSender = websocketSender;
 		}
 
 		@Override
@@ -294,7 +288,7 @@ public final class WebSocketProducersRegistry
 			try
 			{
 				final Object event = producer.produceEvent();
-				websocketMessagingTemplate.convertAndSend(topicName, event);
+				websocketSender.convertAndSend(topicName, event);
 
 				logger.trace("Event sent to {}: {}", topicName, event);
 			}

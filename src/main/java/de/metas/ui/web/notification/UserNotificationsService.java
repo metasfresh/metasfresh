@@ -7,7 +7,6 @@ import org.adempiere.util.Services;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import de.metas.event.Event;
@@ -15,6 +14,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
+import de.metas.ui.web.websocket.WebsocketSender;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ public class UserNotificationsService
 	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
 
 	@Autowired
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private WebsocketSender websocketSender;
 
 	private final ConcurrentHashMap<Integer, UserNotificationsQueue> adUserId2notifications = new ConcurrentHashMap<>();
 
@@ -77,7 +77,7 @@ public class UserNotificationsService
 		logger.trace("Enabling for sessionId={}, adUserId={}, adLanguage={}", sessionId, adUserId, adLanguage);
 
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId,
-				theSessionId -> new UserNotificationsQueue(adUserId, adLanguage, websocketMessagingTemplate));
+				theSessionId -> new UserNotificationsQueue(adUserId, adLanguage, websocketSender));
 		notificationsQueue.addActiveSessionId(sessionId);
 
 		subscribeToEventTopicsIfNeeded();

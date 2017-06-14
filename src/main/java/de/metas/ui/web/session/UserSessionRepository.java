@@ -12,7 +12,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
@@ -22,6 +21,7 @@ import de.metas.ui.web.WebRestApiApplication;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketSender;
 import lombok.AllArgsConstructor;
 
 /*
@@ -51,7 +51,7 @@ import lombok.AllArgsConstructor;
 public class UserSessionRepository
 {
 	@Autowired
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private WebsocketSender websocketSender;
 
 	private UserSessionRepository()
 	{
@@ -114,7 +114,7 @@ public class UserSessionRepository
 		if (!changesEvent.isEmpty())
 		{
 			final String websocketEndpoint = WebSocketConfig.buildUserSessionTopicName(userSession.getAD_User_ID());
-			websocketMessagingTemplate.convertAndSend(websocketEndpoint, changesEvent);
+			websocketSender.convertAndSend(websocketEndpoint, changesEvent);
 
 		}
 	}

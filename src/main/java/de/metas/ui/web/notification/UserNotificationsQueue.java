@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.slf4j.Logger;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
@@ -19,6 +18,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.notification.json.JSONNotification;
 import de.metas.ui.web.notification.json.JSONNotificationEvent;
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketSender;
 
 /*
  * #%L
@@ -48,7 +48,7 @@ public class UserNotificationsQueue
 
 	private final int adUserId;
 	private String adLanguage;
-	private final SimpMessagingTemplate websocketMessagingTemplate;
+	private final WebsocketSender websocketSender;
 	private final String websocketEndpoint;
 
 	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
@@ -57,12 +57,12 @@ public class UserNotificationsQueue
 	private final ConcurrentLinkedDeque<UserNotification> notifications = new ConcurrentLinkedDeque<>();
 	private final AtomicInteger unreadCount = new AtomicInteger(0);
 
-	/* package */ UserNotificationsQueue(final int adUserId, final String adLanguage, final SimpMessagingTemplate websocketMessagingTemplate)
+	/* package */ UserNotificationsQueue(final int adUserId, final String adLanguage, final WebsocketSender websocketSender)
 	{
 		super();
 		this.adUserId = adUserId;
 		this.adLanguage = adLanguage;
-		this.websocketMessagingTemplate = websocketMessagingTemplate;
+		this.websocketSender = websocketSender;
 		websocketEndpoint = WebSocketConfig.buildNotificationsTopicName(adUserId);
 		
 		logger.trace("Created notifications queue: {}", this); // keep it last
@@ -89,7 +89,7 @@ public class UserNotificationsQueue
 
 	private final void fireEventOnWebsocket(final JSONNotificationEvent event)
 	{
-		websocketMessagingTemplate.convertAndSend(websocketEndpoint, event);
+		websocketSender.convertAndSend(websocketEndpoint, event);
 		logger.trace("Fired notification to WS {}: {}", websocketEndpoint, event);
 	}
 

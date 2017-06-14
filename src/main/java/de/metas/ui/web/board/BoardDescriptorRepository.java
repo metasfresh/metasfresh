@@ -31,7 +31,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Joiner;
@@ -53,6 +52,7 @@ import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList.JSONBoardCha
 import de.metas.ui.web.board.json.events.JSONBoardLaneChangedEvent;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -103,7 +103,7 @@ public class BoardDescriptorRepository
 	private DocumentDescriptorFactory documentDescriptors;
 
 	@Autowired
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private WebsocketSender websocketSender;
 
 	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> newCache(I_WEBUI_Board.Table_Name + "#BoardDescriptor", 50, 0)
 			.addResetForTableName(I_WEBUI_Board_Lane.Table_Name)
@@ -117,7 +117,7 @@ public class BoardDescriptorRepository
 		}
 
 		final String websocketEndpoint = board.getWebsocketEndpoint();
-		websocketMessagingTemplate.convertAndSend(websocketEndpoint, events);
+		websocketSender.convertAndSend(websocketEndpoint, events);
 		logger.trace("Notified WS {}: {}", websocketEndpoint, events);
 	}
 

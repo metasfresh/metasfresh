@@ -13,7 +13,6 @@ import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.google.common.collect.ImmutableList;
 
@@ -21,6 +20,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -108,7 +108,7 @@ public class ViewChangesCollector implements AutoCloseable
 
 	@Autowired
 	@Lazy
-	private SimpMessagingTemplate websocketMessagingTemplate;
+	private WebsocketSender websocketSender;
 
 	private final boolean autoflush;
 
@@ -253,7 +253,7 @@ public class ViewChangesCollector implements AutoCloseable
 		final String endpoint = WebSocketConfig.buildViewNotificationsTopicName(jsonChangeEvent.getViewId());
 		try
 		{
-			websocketMessagingTemplate.convertAndSend(endpoint, jsonChangeEvent);
+			websocketSender.convertAndSend(endpoint, jsonChangeEvent);
 			logger.debug("Send to websocket {}: {}", endpoint, jsonChangeEvent);
 		}
 		catch (final Exception ex)

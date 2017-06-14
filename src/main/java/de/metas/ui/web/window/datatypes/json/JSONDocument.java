@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.time.SystemTime;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -22,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -230,7 +230,7 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonDocument;
 	}
 
-	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final SimpMessagingTemplate websocketMessagingTemplate)
+	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final WebsocketSender websocketSender)
 	{
 		if (jsonDocumentEvents == null || jsonDocumentEvents.isEmpty())
 		{
@@ -240,7 +240,7 @@ public final class JSONDocument extends JSONDocumentBase
 		jsonDocumentEvents.stream()
 				.map(JSONDocument::extractWebsocketEvent)
 				.filter(wsEvent -> wsEvent != null)
-				.forEach(wsEvent -> websocketMessagingTemplate.convertAndSend(wsEvent.getWebsocketEndpointEffective(), wsEvent));
+				.forEach(wsEvent -> websocketSender.convertAndSend(wsEvent.getWebsocketEndpointEffective(), wsEvent));
 	}
 
 	/** @return websocket event or null */
