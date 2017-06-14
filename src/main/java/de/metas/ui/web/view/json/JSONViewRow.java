@@ -43,7 +43,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class JSONViewRow extends JSONDocumentBase
+public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
 	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows)
 	{

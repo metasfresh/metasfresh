@@ -77,6 +77,11 @@ public interface IView
 
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
+	default ViewResult getPageWithRowIdsOnly(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys)
+	{
+		return getPage(firstRow, pageLength, orderBys);
+	}
+
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
 	default List<? extends IViewRow> getByIds(final DocumentIdsSelection rowIds)

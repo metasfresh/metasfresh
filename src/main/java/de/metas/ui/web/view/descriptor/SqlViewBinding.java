@@ -69,6 +69,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final IStringExpression sqlWhereClause;
 	private final IStringExpression sqlSelectByPage;
+	private final IStringExpression sqlSelectRowIdsByPage;
 	private final IStringExpression sqlSelectById;
 	private final IStringExpression sqlSelectLinesByRowIds;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
@@ -96,6 +97,19 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		sqlWhereClause = builder.getSqlWhereClause();
 		sqlSelectByPage = sqlSelect.toComposer()
+				.append("\n WHERE ")
+				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
+				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
+				.build();
+
+		sqlSelectRowIdsByPage = SqlViewSelectionQueryBuilder.buildSqlSelect(_tableName, _tableAlias,
+				_keyField.getColumnName(),
+				ImmutableList.of(), // displayFieldNames
+				ImmutableList.of(_keyField), // allFields
+				groupingBinding)
+				//
+				.toComposer()
 				.append("\n WHERE ")
 				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
 				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
@@ -205,6 +219,11 @@ public class SqlViewBinding implements SqlEntityBinding
 	public IStringExpression getSqlSelectByPage()
 	{
 		return sqlSelectByPage;
+	}
+
+	public IStringExpression getSqlSelectRowIdsByPage()
+	{
+		return sqlSelectRowIdsByPage;
 	}
 
 	public IStringExpression getSqlSelectById()
@@ -463,5 +482,4 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 	}
-
 }

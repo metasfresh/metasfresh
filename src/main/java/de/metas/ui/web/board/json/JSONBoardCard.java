@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.board.BoardCard;
+import de.metas.ui.web.view.json.JSONViewRowBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import lombok.Builder;
 import lombok.Singular;
@@ -36,7 +37,7 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Builder
 @Value
-public class JSONBoardCard
+public class JSONBoardCard implements JSONViewRowBase
 {
 	public static JSONBoardCard of(final BoardCard card, final String adLanguage)
 	{

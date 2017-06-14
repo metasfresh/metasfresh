@@ -170,6 +170,32 @@ public final class ViewRow implements IViewRow
 		return includedRows;
 	}
 
+	public static final DocumentId convertToRowId(@NonNull final Object jsonRowIdObj)
+	{
+		if (jsonRowIdObj instanceof DocumentId)
+		{
+			return (DocumentId)jsonRowIdObj;
+		}
+		else if (jsonRowIdObj instanceof Integer)
+		{
+			return DocumentId.of((Integer)jsonRowIdObj);
+		}
+		else if (jsonRowIdObj instanceof String)
+		{
+			return DocumentId.of(jsonRowIdObj.toString());
+		}
+		else if (jsonRowIdObj instanceof JSONLookupValue)
+		{
+			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
+			final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
+			return DocumentId.of(jsonLookupValue.getKey());
+		}
+		else
+		{
+			throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
+		}
+	}
+
 	//
 	//
 	//
@@ -203,7 +229,7 @@ public final class ViewRow implements IViewRow
 			return DocumentPath.rootDocumentPath(windowId, documentId);
 		}
 
-		public Builder setRowId(final DocumentId rowId)
+		private Builder setRowId(final DocumentId rowId)
 		{
 			this.rowId = rowId;
 			_rowIdEffective = null;
@@ -214,33 +240,6 @@ public final class ViewRow implements IViewRow
 		{
 			setRowId(convertToRowId(jsonRowIdObj));
 			return this;
-		}
-
-		private static final DocumentId convertToRowId(@NonNull final Object jsonRowIdObj)
-		{
-			if (jsonRowIdObj instanceof DocumentId)
-			{
-				return (DocumentId)jsonRowIdObj;
-			}
-			else if (jsonRowIdObj instanceof Integer)
-			{
-				return DocumentId.of((Integer)jsonRowIdObj);
-			}
-			else if (jsonRowIdObj instanceof String)
-			{
-				return DocumentId.of(jsonRowIdObj.toString());
-			}
-			else if (jsonRowIdObj instanceof JSONLookupValue)
-			{
-				// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-				final JSONLookupValue jsonLookupValue = (JSONLookupValue)jsonRowIdObj;
-				return DocumentId.of(jsonLookupValue.getKey());
-			}
-			else
-			{
-				throw new IllegalArgumentException("Cannot convert id '" + jsonRowIdObj + "' (" + jsonRowIdObj.getClass() + ") to integer");
-			}
-
 		}
 
 		/** @return view row ID; never null */

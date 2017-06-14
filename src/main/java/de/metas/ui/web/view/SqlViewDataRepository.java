@@ -15,6 +15,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
@@ -72,6 +73,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final String tableName;
 	private final IStringExpression sqlSelectById;
 	private final IStringExpression sqlSelectByPage;
+	private final IStringExpression sqlSelectRowIdsByPage;
 	private final IStringExpression sqlSelectLinesByRowIds;
 	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
@@ -85,6 +87,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		tableName = sqlBindings.getTableName();
 		sqlSelectById = sqlBindings.getSqlSelectById();
 		sqlSelectByPage = sqlBindings.getSqlSelectByPage();
+		sqlSelectRowIdsByPage = sqlBindings.getSqlSelectRowIdsByPage();
 		sqlSelectLinesByRowIds = sqlBindings.getSqlSelectLinesByRowIds();
 		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
 		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
@@ -308,6 +311,66 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			final List<IViewRow> page = loadViewRows(rs, viewEvalCtx, viewId, pageLength);
 			return page;
+		}
+		catch (final SQLException | DBException e)
+		{
+			throw DBException.wrapIfNeeded(e)
+					.setSqlIfAbsent(sql, sqlParams);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	@Override
+	public List<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx, final ViewRowIdsOrderedSelection orderedSelection, final int firstRow, final int pageLength)
+	{
+		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
+
+		Check.assume(firstRow >= 0, "firstRow >= 0 but it was {}", firstRow);
+		Check.assume(pageLength > 0, "pageLength > 0 but it was {}", pageLength);
+
+		SqlViewRowFieldLoader rowIdFieldLoader = rowFieldLoaders.get(keyFieldName);
+		if (rowIdFieldLoader == null)
+		{
+			throw new AdempiereException("No rowId loader found in " + this);
+		}
+
+		logger.debug("Using: {}", orderedSelection);
+		final ViewId viewId = orderedSelection.getViewId();
+		final String viewSelectionId = viewId.getViewId();
+
+		final int firstSeqNo = firstRow + 1; // NOTE: firstRow is 0-based while SeqNo are 1-based
+		final int lastSeqNo = firstRow + pageLength;
+
+		final String sql = sqlSelectRowIdsByPage.evaluate(viewEvalCtx.toEvaluatee(), OnVariableNotFound.Fail);
+		final Object[] sqlParams = new Object[] { viewSelectionId, firstSeqNo, lastSeqNo };
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt.setMaxRows(pageLength);
+			DB.setParameters(pstmt, sqlParams);
+
+			rs = pstmt.executeQuery();
+
+			final ImmutableList.Builder<DocumentId> rowIds = ImmutableList.builder();
+			final String adLanguage = null; // N/A, not important
+
+			while (rs.next())
+			{
+				final Object rowIdObj = rowIdFieldLoader.retrieveValueAsJson(rs, adLanguage);
+				if (rowIdObj == null)
+				{
+					continue;
+				}
+
+				final DocumentId rowId = ViewRow.convertToRowId(rowIdObj);
+				rowIds.add(rowId);
+			}
+			return rowIds.build();
 		}
 		catch (final SQLException | DBException e)
 		{

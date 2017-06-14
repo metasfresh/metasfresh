@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -49,8 +50,20 @@ public final class ViewResult
 			, final List<? extends IViewRow> page //
 	)
 	{
-		Check.assumeNotNull(page, "Parameter page is not null");
-		return new ViewResult(view, firstRow, pageLength, orderBys, page);
+		final List<DocumentId> rowIds = null;
+		return new ViewResult(view, firstRow, pageLength, orderBys, rowIds, page);
+	}
+
+	public static ViewResult ofViewAndRowIds(
+			final IView view //
+			, final int firstRow //
+			, final int pageLength //
+			, final List<DocumentQueryOrderBy> orderBys //
+			, final List<DocumentId> rowIds //
+	)
+	{
+		final List<? extends IViewRow> page = null; // N/A
+		return new ViewResult(view, firstRow, pageLength, orderBys, rowIds, page);
 	}
 
 	/**
@@ -69,7 +82,7 @@ public final class ViewResult
 	private final long size;
 	private final int queryLimit;
 	private final boolean queryLimitHit;
-	
+
 	private final List<DocumentFilter> stickyFilters;
 	private final List<DocumentFilter> filters;
 	private final List<DocumentQueryOrderBy> orderBys;
@@ -78,16 +91,21 @@ public final class ViewResult
 	// Page info
 	private final int firstRow;
 	private final int pageLength;
+	private final List<DocumentId> rowIds;
 	private final List<IViewRow> page;
 
-	/** View and loaded page constructor */
+	/**
+	 * View and loaded page constructor
+	 * 
+	 * @param rowIds
+	 */
 	private ViewResult(
-			final IView view //
-			, final int firstRow //
-			, final int pageLength //
-			, final List<DocumentQueryOrderBy> orderBys //
-			, final List<? extends IViewRow> page //
-	)
+			final IView view,
+			final int firstRow,
+			final int pageLength,
+			final List<DocumentQueryOrderBy> orderBys,
+			final List<DocumentId> rowIds,
+			final List<? extends IViewRow> page)
 	{
 		super();
 		this.viewId = view.getViewId();
@@ -96,14 +114,19 @@ public final class ViewResult
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
-		
+
 		stickyFilters = ImmutableList.copyOf(view.getStickyFilters());
 		filters = ImmutableList.copyOf(view.getFilters());
 		this.orderBys = ImmutableList.copyOf(orderBys);
 
 		//
 		// Page
-		this.page = ImmutableList.copyOf(page);
+		if (rowIds == null && page == null)
+		{
+			throw new IllegalArgumentException("rowIds or page shall not be null");
+		}
+		this.rowIds = rowIds != null ? ImmutableList.copyOf(rowIds) : null;
+		this.page = page != null ? ImmutableList.copyOf(page) : null;
 		this.firstRow = firstRow;
 		this.pageLength = pageLength;
 	}
@@ -118,13 +141,14 @@ public final class ViewResult
 		this.size = view.size();
 		this.queryLimit = view.getQueryLimit();
 		this.queryLimitHit = view.isQueryLimitHit();
-		
+
 		stickyFilters = ImmutableList.copyOf(view.getStickyFilters());
 		filters = ImmutableList.copyOf(view.getFilters());
 		orderBys = view.getDefaultOrderBys();
 
 		//
 		// Page
+		rowIds = null;
 		page = null;
 		firstRow = 0;
 		pageLength = 0;
@@ -153,22 +177,22 @@ public final class ViewResult
 	{
 		return viewId;
 	}
-	
+
 	public ViewId getParentViewId()
 	{
 		return parentViewId;
 	}
-	
+
 	public String getViewDescription(final String adLanguage)
 	{
-		if(viewDescription == null)
+		if (viewDescription == null)
 		{
 			return null;
 		}
 		final String viewDescriptionStr = viewDescription.translate(adLanguage);
 		return !Check.isEmpty(viewDescriptionStr, true) ? viewDescriptionStr : null;
 	}
-	
+
 	public long getSize()
 	{
 		return size;
@@ -183,7 +207,7 @@ public final class ViewResult
 	{
 		return pageLength;
 	}
-	
+
 	public List<DocumentFilter> getStickyFilters()
 	{
 		return stickyFilters;
@@ -202,6 +226,16 @@ public final class ViewResult
 	public boolean isPageLoaded()
 	{
 		return page != null;
+	}
+
+	public List<DocumentId> getRowIds()
+	{
+		if (rowIds != null)
+		{
+			return rowIds;
+		}
+
+		return getPage().stream().map(IViewRow::getId).collect(ImmutableList.toImmutableList());
 	}
 
 	/**

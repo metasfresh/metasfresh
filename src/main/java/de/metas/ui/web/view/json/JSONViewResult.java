@@ -10,6 +10,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -39,10 +40,26 @@ import de.metas.ui.web.window.datatypes.WindowId;
 @SuppressWarnings("serial")
 public final class JSONViewResult implements Serializable
 {
-	public static final JSONViewResult of(final ViewResult result, final String adLanguage)
+	public static final JSONViewResult of(final ViewResult viewResult, final String adLanguage)
 	{
-		return new JSONViewResult(result, adLanguage);
+		List<? extends JSONViewRowBase> jsonRows;
+		if (viewResult.isPageLoaded())
+		{
+			final List<IViewRow> rows = viewResult.getPage();
+			jsonRows = JSONViewRow.ofViewRows(rows);
+		}
+		else
+		{
+			jsonRows = null;
+		}
+		return new JSONViewResult(viewResult, jsonRows, adLanguage);
 	}
+	
+	public static final JSONViewResult of(final ViewResult viewResult, final List<? extends JSONViewRowBase> rows, final String adLanguage)
+	{
+		return new JSONViewResult(viewResult, rows, adLanguage);
+	}
+
 
 	//
 	// View informations
@@ -89,7 +106,7 @@ public final class JSONViewResult implements Serializable
 	//
 	@JsonProperty(value = "result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final List<JSONViewRow> result;
+	private final List<? extends JSONViewRowBase> result;
 
 	@JsonProperty(value = "firstRow")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -108,10 +125,8 @@ public final class JSONViewResult implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer queryLimit;
 
-	public JSONViewResult(final ViewResult viewResult, final String adLanguage)
+	private JSONViewResult(final ViewResult viewResult, final List<? extends JSONViewRowBase> rows, final String adLanguage)
 	{
-		super();
-
 		//
 		// View informations
 		final ViewId viewId = viewResult.getViewId();
@@ -139,9 +154,9 @@ public final class JSONViewResult implements Serializable
 
 		//
 		// Page informations
-		if (viewResult.isPageLoaded())
+		if (rows != null)
 		{
-			result = JSONViewRow.ofViewRows(viewResult.getPage());
+			result = rows;
 			firstRow = viewResult.getFirstRow();
 			pageLength = viewResult.getPageLength();
 		}
@@ -172,7 +187,7 @@ public final class JSONViewResult implements Serializable
 			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
 			, @JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy //
 			//
-			, @JsonProperty("result") final List<JSONViewRow> result //
+			, @JsonProperty("result") final List<JSONViewRowBase> result //
 			, @JsonProperty("firstRow") final Integer firstRow //
 			, @JsonProperty("pageLength") final Integer pageLength //
 			//

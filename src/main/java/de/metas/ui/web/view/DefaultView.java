@@ -267,6 +267,19 @@ public class DefaultView implements IView
 	}
 
 	@Override
+	public ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	{
+		assertNotClosed();
+
+		final ViewEvaluationCtx evalCtx = ViewEvaluationCtx.of(Env.getCtx());
+		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBys);
+
+		final List<DocumentId> rowIds = viewDataRepository.retrieveRowIdsByPage(evalCtx, orderedSelection, firstRow, pageLength);
+
+		return ViewResult.ofViewAndRowIds(this, firstRow, pageLength, orderedSelection.getOrderBys(), rowIds);
+	}
+
+	@Override
 	public IViewRow getById(final DocumentId rowId)
 	{
 		assertNotClosed();
