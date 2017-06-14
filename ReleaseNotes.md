@@ -108,6 +108,8 @@ Here come the actual release notes:
   * [#1735](https://github.com/metasfresh/metasfresh/issues/1735) istransferwhennull not working in webUI but in java client
   * [#1793](https://github.com/metasfresh/metasfresh/issues/1793) fix jasper document for vendor returns
   * [#1807](https://github.com/metasfresh/metasfresh/issues/1807) Fix "Create primary key" process
+  * [#1810](https://github.com/metasfresh/metasfresh/issues/1810) Responsible mandatory Field missing in Request
+    * Adds the Field back for Resposible Sales Representative to Request Window in WebUI.
 
 * metasfresh-webui-api
   * [#400](https://github.com/metasfresh/metasfresh-webui-api/issues/400) minimum password length error message not displayed
