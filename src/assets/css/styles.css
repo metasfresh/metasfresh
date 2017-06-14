@@ -530,6 +530,7 @@ body {
 
 .column-wrapper {
     column-count: 2;
+    column-fill: auto;
 }
 
 .font-weight-semibold {
