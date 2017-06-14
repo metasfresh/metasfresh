@@ -24,6 +24,7 @@ Here come the actual release notes:
   * [#1742](https://github.com/metasfresh/metasfresh/issues/1742) Translation for en_US in WebUI
   * [#1746](https://github.com/metasfresh/metasfresh/issues/1746) Layout Optimization of User Window in WebUI
     * Adding a few Layout Optimzations to User window. Now showing the Login Field in Grid View and deleting the combined Name Field. Additional sized adjustments.
+  * [#1748](https://github.com/metasfresh/metasfresh/issues/1748) Project Documentation: Screenshots
   * [#1753](https://github.com/metasfresh/metasfresh/issues/1753) New Window for Material Transactions in WebUI
     * New Window to Filter/ Search for Material Transaction in WebUI. Alowing the user to search for Products, Business Partners, Dates and Transaction Types.
   * [#1754](https://github.com/metasfresh/metasfresh/issues/1754) New Window for Transport Disposition in WebUI
@@ -48,17 +49,26 @@ Here come the actual release notes:
     * Adds a prototype Project Board to WebUI menu.
   * [#1801](https://github.com/metasfresh/metasfresh/issues/1801) Translation of My Profile Window to en_US
     * Translating the new Avatar Settings of my Profile Windw to en_US Language.
+  * [#1802](https://github.com/metasfresh/metasfresh/issues/1802) picking terminal is not opening
   * [#1805](https://github.com/metasfresh/metasfresh/issues/1805) Add the new Picking Window to WebUI Menu
     * Adding the prototype Picking window to WebUI menu.
 
 * metasfresh-webui-api
+  * [#433](https://github.com/metasfresh/metasfresh-webui-api/issues/433) Show Manufacturing Order number in window header
   * [#434](https://github.com/metasfresh/metasfresh-webui-api/issues/434) Provide endpoints for user avatar and user settings
     * New Implementation in Rest-API that provided endpoints for the new Avatar and User Settings Functionality.
+  * [#435](https://github.com/metasfresh/metasfresh-webui-api/issues/435) document: stale tab events shall be sent to document's websocket endpoint
+  * [#437](https://github.com/metasfresh/metasfresh-webui-api/issues/437) Load/ Reload of delivery Days window takes too long.
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
+  * [#444](https://github.com/metasfresh/metasfresh-webui-api/issues/444) Make Dashboard Translatable
+  * [#447](https://github.com/metasfresh/metasfresh-webui-api/issues/447) Truncate WEBUI_ViewSelection tables on startup
+  * [#451](https://github.com/metasfresh/metasfresh-webui-api/issues/451) Provide view sticky filters to be displayed by frontend
   * [#452](https://github.com/metasfresh/metasfresh-webui-api/issues/452) Introduce URL widget type
     * API Implementation of the new URL Widget in frontend.
-    
+  * [#453](https://github.com/metasfresh/metasfresh-webui-api/issues/453) Password process parameters shall allow showing the password
+  * [#456](https://github.com/metasfresh/metasfresh-webui-api/issues/456) Outbound Mail endpoint prototype
+
 * metasfresh-webui-frontend
   * [#802](https://github.com/metasfresh/metasfresh-webui-frontend/issues/802) User/ Session Settings w/ Avatar and Logout
     * New Settings Section that allows the user to change User dependant infomration and reset the password. Further on having possibility to upload a user avatar picure that is shown in the header bar of metasfresh.
@@ -70,6 +80,7 @@ Here come the actual release notes:
     * Nice Improvements to Combined Lookup fields adding a step-by-step workflow when recording data in those fields.
   * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
     * Navigation Improvements in Sitemap Screen. Now allowing easy switch between filtered menu treee and search field.
+  * [#847](https://github.com/metasfresh/metasfresh-webui-frontend/issues/847) Loading of empty delivery Days Window take long
   * [#854](https://github.com/metasfresh/metasfresh-webui-frontend/issues/854) After login to account, go to sitemap page, open developer tab and start using scroll.
     * Additional Improvement for the Usage of Firefox Browser with metasfresh WebUI.
   * [#855](https://github.com/metasfresh/metasfresh-webui-frontend/issues/855) Missing shadow under top menu
@@ -84,6 +95,7 @@ Here come the actual release notes:
     * New Layout for Section Headlines, allowing more and better visibility/ readability for the uiser.
   * [#872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/872) Breadcrumb: separate the document summary and last breadcrumb node with a slash
     * Additional Slash Character in Breadcrumb to seperate the window Name and Document Identifier.
+  * [#880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/880) Change Icon for URL Link
 
 * others
   * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
@@ -93,6 +105,23 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1441](https://github.com/metasfresh/metasfresh/issues/1441) move subproject de.metas.endcustomer.mf15.ait to metasfresh-dist repo
     * Cleanup; Thx [@homebeaver](https://github.com/homebeaver) for the pointer
+  * [#1735](https://github.com/metasfresh/metasfresh/issues/1735) istransferwhennull not working in webUI but in java client
+  * [#1793](https://github.com/metasfresh/metasfresh/issues/1793) fix jasper document for vendor returns
+  * [#1807](https://github.com/metasfresh/metasfresh/issues/1807) Fix "Create primary key" process
+
+* metasfresh-webui-api
+  * [#400](https://github.com/metasfresh/metasfresh-webui-api/issues/400) minimum password length error message not displayed
+  * [#436](https://github.com/metasfresh/metasfresh-webui-api/issues/436) Manufacturing Order Issue not possible after barcode filtering
+  * [#446](https://github.com/metasfresh/metasfresh-webui-api/issues/446) Cannot open the menu when logged in as System Administrator
+
+* metasfresh-webui-frontend
+  * [#795](https://github.com/metasfresh/metasfresh-webui-frontend/issues/795) On tab stale event, don't refresh tabs which are queryOnLoad but are not the active tab
+  * [#848](https://github.com/metasfresh/metasfresh-webui-frontend/issues/848) notifications don't update
+  * [#849](https://github.com/metasfresh/metasfresh-webui-frontend/issues/849) manufacturing order doesn't open
+  * [#878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/878) Error firework when logout
+  * [#879](https://github.com/metasfresh/metasfresh-webui-frontend/issues/879) Avatar Picture not deleted from Header when cleared in Profile Settings
+  * [#881](https://github.com/metasfresh/metasfresh-webui-frontend/issues/881) Error when pressing Action Menu in Collapsible Grid Window
+  * [#883](https://github.com/metasfresh/metasfresh-webui-frontend/issues/883) hu editor doesn't update
 
 # metasfresh 5.12 (2017-23)
 
@@ -218,7 +247,7 @@ Here come the actual release notes:
     * Now setting the Language Header in API-calls correctly.
   * [#820](https://github.com/metasfresh/metasfresh-webui-frontend/issues/820) Combobox's current value shall be selected by default in dropdown
     * Opening a dropdown combo on a fields with existing value now initially selects the value in the dropdown list too.
-  
+
 * other
   * [metasfresh-documentation#71](https://github.com/metasfresh/metasfresh-documentation/issues/71) Describe how to update database in local dev env
     * Thx [@daveyx](https://github.com/daveyx)
@@ -248,7 +277,7 @@ Here come the actual release notes:
     * Adding the AD_Language into eTags, allowing the language siwtiching to happen instantly without refreshing in other browser windows.
   * [#431](https://github.com/metasfresh/metasfresh-webui-api/issues/431) Create request from BPartner not working
     * Fixes a Bug in the "Create new Partner" action that can be called in Lookup fields.
-	
+
 * metasfresh-webui-frontend
   * [#714](https://github.com/metasfresh/metasfresh-webui-frontend/issues/714) Included tab shall preserve the retrieve order
     * When opening the window in WebUI, the fontend now respects the ordering sequence transmitted by the webui-api.
@@ -280,7 +309,7 @@ Here come the actual release notes:
     * Now it is possible to uses the clear-x-circle to empty recording before initial confirmation with [enter]
   * [#860](https://github.com/metasfresh/metasfresh-webui-frontend/issues/860) Change Placeholder name "Marcus Gronholm" to "Profile"
     * Adding another name as placeholder in Avatar dropdown, as long as name is not taken from Avarat API property.
-  
+
 # metasfresh 5.11 (2017-21)
 
 ## Features
