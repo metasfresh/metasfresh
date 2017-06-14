@@ -1,15 +1,51 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 import Header from './header/Header';
 import ErrorScreen from './app/ErrorScreen';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import DocumentList from './app/DocumentList';
 
+import {getMessages} from '../actions/AppActions';
+
 class Container extends Component {
     constructor(props){
         super(props);
+    }
+
+    componentDidMount(){
+        this.getTranslates();
+    }
+
+    getTranslates = () => {
+        getMessages().then(response => {
+            console.log(response.data);
+
+        })
+
+        //--------------------
+        const translates_tmp = {
+            en: {
+                'window_advancedEdit_caption':	'Advanced Edit',
+                'window_Print_caption':	'Print',
+                'window_Delete_caption':	'Delete',
+                'window_New_caption':	'New'
+            },
+            de: {
+                'window_advancedEdit_caption':	'Erweiterte Bearbeitung',
+                'window_Print_caption':	'Drucken',
+                'window_Delete_caption':	'Löschen',
+                'window_New_caption':	'Neu'
+            }
+        }
+
+        counterpart.registerTranslations('en', translates_tmp.en);
+        counterpart.registerTranslations('de', translates_tmp.de);
+
+        counterpart.setLocale('en');
+        //--------------------
     }
 
     render() {

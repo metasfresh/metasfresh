@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import Translate from 'react-translate-component';
-import counterpart from 'counterpart';
-
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
@@ -29,94 +26,13 @@ class NavigationTree extends Component {
             },
             query: '',
             queriedResults: [],
-            deepNode: null,
-            en: {
-                "window.dropZone.caption": "Drop files here",
-                "window.advancedEdit.caption":	"Advanced Edit",
-                "window.Print.caption":	"Print",
-                "window.Delete.caption":	"Delete",
-                "window.New.caption":	"New",
-                "window.settings.caption":	"Settings",
-                "window.logOut.caption":	"Log Out",
-                "window.zoomInto.caption":	"Zoom into",
-                "window.newTab.caption":	"Open in new tab",
-                "window.delete.caption":	"Delete",
-                "window.batchEntry.caption":	"Batch entry",
-                "window.batchEntryClose.caption":	"Close batch entry",
-                "window.addNew.caption":	"Add new",
-                "window.sideList.documentList.tooltip":	"Document list",
-                "window.sideList.referencedDocuments.tooltip":	"Referenced documents",
-                "window.sideList.attachments.tooltip":	"Attachments",
-                "window.sideList.attachments.empty":	"There is no attachment",
-                "window.sideList.referenced.empty":	"There is no referenced document",
-                "window.actionMenu.tooltip":	"Action menu",
-                "window.navigation.tooltip":	"Navigation",
-                "window.docStatus.tooltip":	"Doc status",
-                "window.inbox.tooltip":	"Inbox",
-                "window.userMenu.tooltip":	"User menu",
-                "window.sideList.tooltip":	"Side list",
-                "window.actions.caption":	"Actions",
-                "window.elementToDisplay.caption":	"Select element to display its attributes",
-                "window.errorLoadingData.caption":	"Error loading data...",
-                "window.noData.caption":	"No data",
-                "window.error.caption":	"Connection lost",
-                "window.error.description":	"There are some connection issues. Check connection and try to refresh the page.",
-                "window.connectionProblem.caption":	"Connection problem",
-                "window.filters.caption":	"Filters",
-                "window.activeFilter.caption":	"Active Filter",
-                "window.noMandatory.caption":	"Mandatory filters are not filled!",
-                "window.apply.caption":	"Apply",
-                "window.type.placeholder":	"Type phrase here",
-                "window.noResults.caption":	"There are no results",
-                "window.browseTree.caption":	"Browse whole tree",
-                "window.back.caption":	"Back",
-                "window.inbox.caption":	"Inbox",
-                "window.markAsRead.caption":	"Mark all as read",
-                "window.inbox.empty":	"Inbox is empty",
-                "window.allInbox.caption":	"Show all",
-                "window.notification.caption":	"Notification",
-                "window.goTo.caption":	"Go to page",
-                "window.totalItems.caption":	"Total items",
-                "window.selectAll.caption":	"Select all",
-                "window.selectAllOnPage.caption":	"Select all on this page",
-                "window.itemsSelected.caption":	"items selected",
-                "window.noItemSelected.caption":	"No item selected",
-                "window.login.caption":	"Login",
-                "window.password.caption":	"Password",
-                "window.selectRole.caption":	"Select role",
-                "window.send.caption":	"Send",
-                "window.browserError.description":	"Your browser might be not fully supported. Please try Chrome in case of any errors.",
-                "window.uploadPhoto.caption":	"Upload a photo",
-                "window.clearPhoto.caption":	"Clear",
-                "window.takeFromCamera.caption":	"Take from camera"
-            },
-            test: {
-                example: {
-                    greeting: 'Hello %(name)s! How are you today?'
-                }
-            },
-            de: {
-                example: {
-                    greeting: 'Hello %(name)s! Its a de translation!'
-                }
-            }
-
+            deepNode: null
         };
     }
 
     componentDidMount = () => {
         this.getData();
         document.getElementById('search-input').focus();
-
-
-        
-        counterpart.registerTranslations('en', this.state.test);
-        counterpart.registerTranslations('de', this.state.de);
-
-        counterpart.setLocale('de');
-        
-        
-        console.log(counterpart.translate('example.greeting',{ name: 'aaaa' }));
     }
 
     getData = (callback) => {
@@ -237,10 +153,8 @@ class NavigationTree extends Component {
     renderTree = () => {
         const {rootResults, queriedResults, query} = this.state;
 
-        const _t = Translate.translate;
         return(
             <div>
-                { _t('example.greeting') }
                 <div className="search-wrapper">
                     <div className="input-flex input-primary">
                         <i className="input-icon meta-icon-preview"/>
