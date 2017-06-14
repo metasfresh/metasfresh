@@ -101,13 +101,13 @@ class MultiVendorHUReturnsInOutProducer
 
 			//
 			// Find out the HU assignments to original vendor material receipt
-			List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, hu);
+			List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilterTUMandatory(ctxAware, inOutLineTableId, hu);
 			// if the given HU does not have any inout line HU assignments, it might be that it is an aggregated HU.
 			// fallback on the HU assignments of the top level HU
 			if (inOutLineHUAssignments.isEmpty())
 			{
 				final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, topLevelHU);
+				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilterTUMandatory(ctxAware, inOutLineTableId, topLevelHU);
 			}
 
 			// there were no HU Asignments for inoutlines.
@@ -162,7 +162,7 @@ class MultiVendorHUReturnsInOutProducer
 			hu.setIsActive(false);
 			InterfaceWrapperHelper.save(hu);
 		}
-
+		
 		// return the created vendor returns
 		return returnInOuts;
 	}
