@@ -174,6 +174,11 @@ import de.metas.ui.web.base.session.UserPreference;
 		return Env.getAD_User_ID(getCtx());
 	}
 
+	public int getAD_Role_ID()
+	{
+		return Env.getAD_Role_ID(getCtx());
+	}
+
 	public String getUserName()
 	{
 		return Env.getContext(getCtx(), Env.CTXNAME_AD_User_Name);

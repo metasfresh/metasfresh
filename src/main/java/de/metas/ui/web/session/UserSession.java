@@ -22,6 +22,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
+import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -206,6 +207,18 @@ public class UserSession
 			throw new NotLoggedInException();
 		}
 	}
+	
+	public void assertLoggedInAsSysAdmin()
+	{
+		assertLoggedIn();
+		
+		final int adRoleId = data.getAD_Role_ID();
+		if(adRoleId != IUserRolePermissions.SYSTEM_ROLE_ID)
+		{
+			throw new NotLoggedInAsSysAdminException();
+		}
+	}
+
 
 	public void assertNotLoggedIn()
 	{
