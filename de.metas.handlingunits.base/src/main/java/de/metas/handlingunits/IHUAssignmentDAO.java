@@ -211,7 +211,13 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 */
 	<T> List<T> retrieveModelsForHU(I_M_HU hu, Class<T> clazz, boolean topLevel);
 
-	<T> List<T> retrieveDerivedModelsForHU(Properties ctx, Class<T> clazz, I_M_HU topLevelHU, I_M_HU luHU, I_M_HU tuHU, String trxName);
-
+	/**
+	 * Retrieve the table hu assignments for the given HU even if they have LU and/or TU set. This is useful in the shipment hu assignments.
+	 * 
+	 * @param contextProvider
+	 * @param adTableId
+	 * @param hu
+	 * @return
+	 */
 	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(IContextAware contextProvider, int adTableId, I_M_HU hu);
 }

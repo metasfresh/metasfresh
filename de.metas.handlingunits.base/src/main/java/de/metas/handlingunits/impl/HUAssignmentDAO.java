@@ -38,8 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
-import org.compiere.model.MChat;
-import org.compiere.model.PO;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -376,10 +374,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	@Override
 	public boolean hasDerivedTradingUnitAssignmentsOnLUTU(final Properties ctx, final Object model, final I_M_HU topLevelHU, final I_M_HU luHU, final I_M_HU tuHU, final String trxName)
 	{
-		final PO po = InterfaceWrapperHelper.getPO(model);
-		final int tableId = po.get_Table_ID();
-
-		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, tableId, topLevelHU, luHU, tuHU, trxName)
+		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName)
 				.create()
 				.match();
 	}
@@ -387,62 +382,29 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	@Override
 	public boolean hasDerivedTradingUnitAssignments(final Properties ctx, final Object model, final I_M_HU topLevelHU, final I_M_HU luHU, final I_M_HU tuHU, final String trxName)
 	{
-		final PO po = InterfaceWrapperHelper.getPO(model);
-		final int tableId = po.get_Table_ID();
-
 		final int recordId = InterfaceWrapperHelper.getId(model);
-		model.getClass();
 
-		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, tableId, topLevelHU, luHU, tuHU, trxName)
+		return getDerivedTradingUnitAssignmentsQueryBuilder(ctx, model, topLevelHU, luHU, tuHU, trxName)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_Record_ID, recordId)
 				//
 				.create()
 				.match();
 	}
 
-	@Override
-	public <T> List<T> retrieveDerivedModelsForHU(final Properties ctx,
-			final Class<T> clazz,
-			final I_M_HU topLevelHU,
-			final I_M_HU luHU,
-			final I_M_HU tuHU,
-			final String trxName)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final int tableId = InterfaceWrapperHelper.getTableId(clazz);
-
-		final IQueryBuilder<I_M_HU_Assignment> derivedTradingUnitAssignmentsQueryBuilder = getDerivedTradingUnitAssignmentsQueryBuilder(ctx, tableId, topLevelHU, luHU, tuHU, trxName);
-		final IQuery<I_M_HU_Assignment> huAssigmentQuery = derivedTradingUnitAssignmentsQueryBuilder
-				.create();
-
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(clazz);
-
-		// @formatter:off
-		return queryBL.createQueryBuilder(clazz, tuHU)
-					.addOnlyContextClientOrSystem()
-					.addOnlyActiveRecordsFilter()
-					.addInSubQueryFilter(keyColumnName, I_M_HU_Assignment.COLUMNNAME_Record_ID, huAssigmentQuery)
-				.orderBy()
-					.addColumn(InterfaceWrapperHelper.getKeyColumnName(clazz))
-				.endOrderBy()
-				.create()
-				.list(clazz);
-		// @formatter:on
-	}
-
 	private final IQueryBuilder<I_M_HU_Assignment> getDerivedTradingUnitAssignmentsQueryBuilder(final Properties ctx,
-			final int tableId,
+			final Object model,
 			final I_M_HU topLevelHU,
 			final I_M_HU luHU,
 			final I_M_HU tuHU,
 			final String trxName)
 	{
+		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
+
 		final Integer luHUId = luHU == null ? null : luHU.getM_HU_ID();
 		final Integer tuHUId = tuHU == null ? null : tuHU.getM_HU_ID();
 
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Assignment.class, ctx, trxName)
-				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, tableId)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMN_AD_Table_ID, adTableId)
 				//
 				.addEqualsFilter(I_M_HU_Assignment.COLUMN_M_HU_ID, topLevelHU.getM_HU_ID())
 				//
