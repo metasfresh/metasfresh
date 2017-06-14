@@ -30,8 +30,12 @@ class Auth {
     }
 
     close = () => {
-        this.notificationClient && this.notificationClient.disconnect();
-        this.sessionClient && this.sessionClient.disconnect();
+        if(!this.notificationClient || !this.sessionClient){
+            return;
+        }
+
+        this.notificationClient.connected && this.notificationClient.disconnect();
+        this.sessionClient.connected && this.sessionClient.disconnect();
     }
 }
 
