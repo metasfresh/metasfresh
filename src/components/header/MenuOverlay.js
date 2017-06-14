@@ -157,7 +157,7 @@ class MenuOverlay extends Component {
                         </span>
                     </div>
                 }
-                <div className="column-static">
+                <div className="column-wrapper">
                     {node && node.children && node.children.map((item, index) =>
                         <MenuOverlayContainer
                             key={index}
@@ -222,14 +222,6 @@ class MenuOverlay extends Component {
             case 'ArrowDown':
                 if(document.activeElement === input) {
                     firstQueryItem.focus();
-                }
-                break;
-            case 'Tab':
-                e.preventDefault();
-                if(document.activeElement === input) {
-                    firstMenuItem.focus();
-                } else {
-                    input.focus();
                 }
                 break;
             case 'Enter':

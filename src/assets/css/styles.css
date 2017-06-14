@@ -532,14 +532,6 @@ body {
     column-count: 2;
 }
 
-.column-static{
-    max-width:440px;
-}
-
-.column-static .menu-overlay-node-container {
-    float: left;
-}
-
 .font-weight-semibold {
     font-weight: 500;
 }
