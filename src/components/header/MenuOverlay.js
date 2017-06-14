@@ -30,26 +30,14 @@ class MenuOverlay extends Component {
     }
 
     componentDidMount = () => {
-        const {nodeId} = this.props;
-        if(nodeId == '0'){
-            getRootBreadcrumb().then(response => {
-                this.setState({
-                    data: response
-                })
+        getRootBreadcrumb().then(response => {
+            this.setState({
+                data: response
             })
-        }
+        })
     }
 
-    browseWholeTree = () => {
-      const {dispatch} = this.props;
-      dispatch(push('/sitemap'));
-    }
-
-    handleClickOutside = (e) => {
-        const {onClickOutside} = this.props;
-        onClickOutside(e);
-
-    }
+    handleClickOutside = (e) => this.props.onClickOutside(e);
 
     handleQuery = (e) => {
         e.preventDefault();
@@ -89,51 +77,15 @@ class MenuOverlay extends Component {
         });
     }
 
-    handleDeeper = (e, nodeId) => {
-        e.preventDefault();
-        nodePathsRequest(nodeId, 8).then(response => {
-            this.setState({
-                deepNode: response.data
-            })
-
-            this.handlePath(nodeId);
-        })
-    }
-
-    handleSubDeeper = (nodeId) => {
-        nodePathsRequest(nodeId, 8).then(response => {
-            this.setState({
-                deepSubNode: response.data
-            })
-        })
-    }
-
-    handleClickBack = (e) => {
-        e.preventDefault();
-        this.setState({
-            deepNode: null
-        })
-    }
-
-    handleSubClickBack = (e) => {
-        e.preventDefault();
-        this.setState({
-            deepSubNode: null
-        })
-    }
-
-    handleRedirect = (elementId) => {
-        const {dispatch} = this.props;
+    handleRedirect = (elementId, isNew) => {
         this.handleClickOutside();
 
-        dispatch(push('/window/' + elementId));
+        this.props.dispatch(
+            push('/window/' + elementId + (isNew ? '/new' : ''))
+        );
     }
 
-    handleNewRedirect = (elementId) => {
-        const {dispatch} = this.props;
-        this.handleClickOutside();
-        dispatch(push('/window/' + elementId + '/new'));
-    }
+    handleNewRedirect = (elementId) => this.handleRedirect(elementId, true);
 
     handlePath = (nodeId) => {
         pathRequest(nodeId).then(response => {
@@ -157,28 +109,6 @@ class MenuOverlay extends Component {
         });
     }
 
-    handleSubPath = (nodeId) => {
-        pathRequest(nodeId).then(response => {
-            let pathArray = [];
-            let node = response.data;
-
-            do{
-                const children = node.children && node.children[0];
-                node.children = undefined;
-
-                pathArray.push(node);
-                node = children;
-            }while(node);
-
-            //remove first MENU element
-            pathArray.shift();
-
-            this.setState({
-                subPath: pathArray
-            })
-        });
-    }
-
     renderPath = (path) => {
         return (
             <span>
@@ -197,7 +127,7 @@ class MenuOverlay extends Component {
 
     renderNaviagtion = (node) => {
         const {path, deepNode} = this.state;
-        const {handleMenuOverlay, openModal, dispatch} = this.props;
+        const {handleMenuOverlay, openModal, dispatch, siteName} = this.props;
         return (
              <div
                 className="menu-overlay-container-column-wrapper js-menu-overlay"
@@ -205,32 +135,29 @@ class MenuOverlay extends Component {
                 onKeyDown={(e) => this.handleKeyDown(e)}
              >
                 <div className="menu-overlay-top-spacer" />
-                 {deepNode ?
-                     <div>
-                         <span
-                             className="menu-overlay-link"
-                             onClick={e => this.handleClickBack(e)}
-                         >&lt; Back</span>
-                     </div> :
-                     <div>
-                         <span
-                             className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
-                             onClick={() => dispatch(push('/'))}
-                             tabIndex={0}
-                             onKeyDown={(e) => this.handleKeyDown(e)}
-                         >
-                             Dashboard
-                         </span>
-                     </div>
-                 }
-                {node.nodeId != 0 &&
-                    <p
-                        className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced group-header"
+                <div>
+                    <span
+                        className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+                        onClick={() => dispatch(push('/'))}
+                        tabIndex={0}
+                        onKeyDown={(e) => this.handleKeyDown(e)}
                     >
-                        {this.renderPath(path)}
-                    </p>
+                        Dashboard
+                    </span>
+                </div>
+                {siteName !== 'Sitemap' &&
+                    <div>
+                        <span
+                            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+                            onClick={() => dispatch(push('/sitemap'))}
+                            tabIndex={0}
+                            onKeyDown={(e) => this.handleKeyDown(e)}
+                        >
+                            Browse whole tree
+                        </span>
+                    </div>
                 }
-                <div className="column-wrapper">
+                <div className="column-static">
                     {node && node.children && node.children.map((item, index) =>
                         <MenuOverlayContainer
                             key={index}
@@ -239,6 +166,7 @@ class MenuOverlay extends Component {
                             handleNewRedirect={this.handleNewRedirect}
                             handlePath={this.handlePath}
                             parent={node}
+                            printChildren={true}
                             transparentBookmarks={true}
                             back={e => this.handleClickBack(e)}
                             handleMenuOverlay={handleMenuOverlay}
@@ -280,33 +208,20 @@ class MenuOverlay extends Component {
         } else if (item.elementId && item.type == 'window'){
             this.handleRedirect(item.elementId)
             dispatch(getWindowBreadcrumb(item.elementId));
-        } else if (item.type == 'group'){
-            this.handleSubDeeper(item.nodeId);
-            this.handleSubPath(item.nodeId);
         }
     }
 
     handleKeyDown = (e) => {
         const {handleMenuOverlay} = this.props;
         const input = document.getElementById('search-input-query');
-        const firstMenuItem =
-            document.getElementsByClassName('js-menu-item')[0];
+        const firstQueryItem = 
+            document.getElementsByClassName('menu-overlay-query')[0]
+                .getElementsByClassName('js-menu-item')[0];
         const parentSibling = document.activeElement.parentElement.nextSibling;
         switch(e.key){
             case 'ArrowDown':
-                e.preventDefault();
-                if(
-                    document.activeElement.classList.contains('js-menu-overlay')
-                ) {
-                    firstMenuItem && firstMenuItem.focus();
-                }else if(
-                    document.activeElement.classList.contains('js-menu-header')
-                ){
-                    firstMenuItem && firstMenuItem.focus();
-                }else if(
-                    document.activeElement.classList.contains('input-field')
-                ) {
-                    parentSibling && parentSibling.focus();
+                if(document.activeElement === input) {
+                    firstQueryItem.focus();
                 }
                 break;
             case 'Tab':
@@ -342,109 +257,65 @@ class MenuOverlay extends Component {
         const {
             nodeId, node, siteName, handleMenuOverlay, openModal
         } = this.props;
-        const nodeData = nodeId == '0' ? data : node.children;
         return (
             <div
                 className="menu-overlay menu-overlay-primary"
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
-                    {nodeId == 0 ?
-                        //ROOT
-                        <div className="menu-overlay-root-body">
-                            {this.renderNaviagtion(
-                                deepNode ? deepNode : nodeData)
-                            }
-                            <div
-                                className="menu-overlay-query hidden-sm-down"
-                            >
-                                <div className="input-flex input-primary">
-                                    <i
-                                        className="input-icon meta-icon-preview"
-                                    />
-                                    <DebounceInput
-                                        debounceTimeout={250}
-                                        type="text"
-                                        id="search-input-query"
-                                        className="input-field"
-                                        placeholder="Type phrase here"
-                                        onChange={e => this.handleQuery(e)}
-                                        onKeyDown={(e) =>
-                                            this.handleKeyDown(e)}
-                                    />
-                                    {this.state.query && <i
-                                        className="input-icon meta-icon-close-alt pointer"
-                                        onClick={e => this.handleClear(e)}
-                                    />}
-                                </div>
-                                {queriedResults && queriedResults.map(
-                                    (result, index) =>
-                                        <MenuOverlayItem
-                                            transparentBookmarks={true}
-                                            key={index}
-                                            handleClickOnFolder={
-                                                this.handleDeeper
-                                            }
-                                            handleRedirect={
-                                                this.handleRedirect
-                                            }
-                                            handleNewRedirect={
-                                                this.handleNewRedirect
-                                            }
-                                            query={true}
-                                            handlePath={this.handlePath
-                                            }
-                                            handleMenuOverlay={
-                                                handleMenuOverlay
-                                            }
-                                            openModal={openModal}
-                                            {...result}
-                                        />
-                                )}
-                                {queriedResults.length === 0 &&
-                                    query != '' &&
-                                    <span>There are no results</span>
-                                }
+                    <div className="menu-overlay-root-body">
+                        {this.renderNaviagtion(data)}
+                        <div
+                            className="menu-overlay-query hidden-sm-down"
+                        >
+                            <div className="input-flex input-primary">
+                                <i
+                                    className="input-icon meta-icon-preview"
+                                />
+                                <DebounceInput
+                                    debounceTimeout={250}
+                                    type="text"
+                                    id="search-input-query"
+                                    className="input-field"
+                                    placeholder="Type phrase here"
+                                    onChange={e => this.handleQuery(e)}
+                                    onKeyDown={(e) =>
+                                        this.handleKeyDown(e)}
+                                />
+                                {query && <i
+                                    className="input-icon meta-icon-close-alt pointer"
+                                    onClick={e => this.handleClear(e)}
+                                />}
                             </div>
-                        </div> :
-                        //NOT ROOT
-                        <div className="menu-overlay-node-container">
-                            {deepSubNode ?
-                                [
-                                    <div key="back">
-                                        <span
-                                            className="menu-overlay-link"
-                                            onClick={e =>
-                                                this.handleSubClickBack(e)
-                                            }>
-                                                &lt; Back
-                                            </span>
-                                    </div>,
-                                    <p
-                                        key="path"
-                                        className="menu-overlay-header"
-                                    >
-                                        {this.renderPath(subPath)}
-                                    </p>
-                                ] :
-                                    <p className="menu-overlay-header">
-                                        {nodeData && nodeData.caption}
-                                    </p>
-                            }
-                            {this.renderSubnavigation(
-                                deepSubNode ? deepSubNode : nodeData
+                            {queriedResults && queriedResults.map(
+                                (result, index) =>
+                                    <MenuOverlayItem
+                                        transparentBookmarks={true}
+                                        key={index}
+                                        handleClickOnFolder={
+                                            this.handleDeeper
+                                        }
+                                        handleRedirect={
+                                            this.handleRedirect
+                                        }
+                                        handleNewRedirect={
+                                            this.handleNewRedirect
+                                        }
+                                        query={true}
+                                        handlePath={this.handlePath
+                                        }
+                                        handleMenuOverlay={
+                                            handleMenuOverlay
+                                        }
+                                        openModal={openModal}
+                                        {...result}
+                                    />
                             )}
+                            {queriedResults.length === 0 &&
+                                query != '' &&
+                                <span>There are no results</span>
+                            }
                         </div>
-                    }
-                    {nodeId == '0' && siteName !== 'Sitemap' &&
-                        <div className="text-xs-right">
-                            <span
-                                className="menu-overlay-link tree-link"
-                                onClick={this.browseWholeTree}
-                            >
-                                Browse whole tree &gt;&gt;
-                            </span>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
         )

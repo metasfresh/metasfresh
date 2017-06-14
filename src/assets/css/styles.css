@@ -532,10 +532,12 @@ body {
     column-count: 2;
 }
 
-@media (max-width: $breakpoint) {
-    .column-wrapper {
-        column-count: 1;
-    }
+.column-static{
+    max-width:440px;
+}
+
+.column-static .menu-overlay-node-container {
+    float: left;
 }
 
 .font-weight-semibold {

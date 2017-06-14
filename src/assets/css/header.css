@@ -352,8 +352,9 @@
 }
 
 .menu-overlay-node-container {
-    width: 100%;
-    display: inline-block;
+    page-break-inside: avoid;
+    width: 50%;
+    display: block;
 }
 
 .menu-overlay-header-deep {
@@ -367,6 +368,7 @@
 .menu-overlay-root-body .menu-overlay-node-container {
     width: 220px;
     display: block;
+    page-break-inside: avoid;
 }
 
 .menu-overlay-query {
@@ -438,7 +440,8 @@
     text-transform: uppercase;
 }
 .menu-overlay-header-spaced {
-    margin: 1rem 0;
+    margin: .25rem 0;
+    display: inline-block;
 }
 .menu-overlay-expanded-link {
     display: block;
