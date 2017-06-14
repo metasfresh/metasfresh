@@ -214,6 +214,8 @@ class MenuOverlay extends Component {
     handleKeyDown = (e) => {
         const {handleMenuOverlay} = this.props;
         const input = document.getElementById('search-input-query');
+        const firstMenuItem = 
+            document.getElementsByClassName('js-menu-item')[0];
         const firstQueryItem = 
             document.getElementsByClassName('menu-overlay-query')[0]
                 .getElementsByClassName('js-menu-item')[0];
