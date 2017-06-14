@@ -128,8 +128,8 @@ public final class JSONViewResult implements Serializable
 		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
 
+		final List<JSONDocumentFilter> stickyFilters = JSONDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage);
 		final List<JSONDocumentFilter> filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
-		final List<JSONDocumentFilter> stickyFilters = JSONDocumentFilter.ofList(viewResult.getStickyFilters(), adLanguage);
 		this.filters = ImmutableList.<JSONDocumentFilter> builder()
 				.addAll(filters)
 				.addAll(stickyFilters)
