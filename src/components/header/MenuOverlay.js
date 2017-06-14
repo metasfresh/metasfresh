@@ -157,7 +157,7 @@ class MenuOverlay extends Component {
                         </span>
                     </div>
                 }
-                <div className="column-wrapper">
+                <div>
                     {node && node.children && node.children.map((item, index) =>
                         <MenuOverlayContainer
                             key={index}
