@@ -108,7 +108,6 @@ class Table extends Component {
     }
 
     getIndentData = (selectFirst) => {
-        console.log('getIndentData');
         const {
             rowData, tabid, indentSupported, collapsible, expandedDepth,
             keyProperty

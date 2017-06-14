@@ -160,6 +160,7 @@ class Image extends Component{
     handleClear = () => {
         const {handlePatch, data} = this.props;
         handlePatch(data.field, null);
+        this.imageInput.value = '';
         this.setState({
             imageSrc: ''
         })
