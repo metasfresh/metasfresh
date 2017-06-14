@@ -52,6 +52,9 @@ class MasterWindow extends Component {
             JSON.stringify(prevProps.me.language) !==
             JSON.stringify(this.props.me.language)
         ){
+            if(!params.windowType && !params.docId){
+                return;
+            }
             dispatch(replace(''));
             dispatch(replace(
                 '/window/' + params.windowType + '/' + params.docId)

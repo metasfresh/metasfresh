@@ -190,7 +190,7 @@ class DocumentList extends Component {
     connectWS = (viewId) => {
         const {windowType} = this.props;
         connectWS.call(this, '/view/' + viewId, (msg) => {
-            const {fullyChanged, changedIds} = msg.body;
+            const {fullyChanged, changedIds} = msg;
             if(changedIds){
                 getDataByIds(
                     'documentView', windowType, viewId, changedIds.join()
