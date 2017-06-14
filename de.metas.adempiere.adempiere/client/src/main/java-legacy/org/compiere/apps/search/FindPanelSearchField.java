@@ -40,7 +40,7 @@ import de.metas.logging.LogManager;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-final class FindPanelSearchField implements IUserQueryField
+public final class FindPanelSearchField implements IUserQueryField
 {
 	public static final Map<String, FindPanelSearchField> createMapIndexedByColumnName(final GridField[] gridFields)
 	{
