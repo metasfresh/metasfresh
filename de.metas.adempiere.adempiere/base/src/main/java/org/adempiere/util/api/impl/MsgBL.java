@@ -112,6 +112,12 @@ public class MsgBL implements IMsgBL
 		return new ADMessageTranslatableString(adMessage, msgParameters);
 	}
 
+	@Override
+	public void cacheReset()
+	{
+		Msg.cacheReset();
+	}
+
 	private static final class ADMessageTranslatableString implements ITranslatableString
 	{
 		private final String adMessage;
