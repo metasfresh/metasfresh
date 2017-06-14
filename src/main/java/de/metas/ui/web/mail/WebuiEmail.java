@@ -1,9 +1,10 @@
 package de.metas.ui.web.mail;
 
-import java.util.List;
-
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.NonNull;
 import lombok.Value;
 
 /*
@@ -28,14 +29,19 @@ import lombok.Value;
  * #L%
  */
 
-@Builder
+@Builder(toBuilder = true)
 @Value
 public class WebuiEmail
 {
+	@NonNull
 	private final String emailId;
 	private final LookupValue from;
-	private final List<LookupValue> to;
+	@Default
+	private final LookupValuesList to = LookupValuesList.EMPTY;
 	private final String subject;
 	private final String message;
-	private final List<LookupValue> attachments;
+	@Default
+	private final LookupValuesList attachments = LookupValuesList.EMPTY;
+
+	private final boolean sent;
 }

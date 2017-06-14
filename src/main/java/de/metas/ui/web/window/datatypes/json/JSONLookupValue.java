@@ -60,11 +60,11 @@ public final class JSONLookupValue implements Serializable
 	public static final JSONLookupValue ofLookupValue(final LookupValue lookupValue)
 	{
 		final String id = lookupValue.getIdAsString();
-		
+
 		final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
 		final String adLanguage = Env.getAD_Language(Env.getCtx()); // FIXME add it as parameter!
 		final String displayName = displayNameTrl.translate(adLanguage);
-		
+
 		final JSONLookupValue json = new JSONLookupValue(id, displayName);
 		return json;
 	}
@@ -181,11 +181,11 @@ public final class JSONLookupValue implements Serializable
 	@JsonIgnore
 	public int getKeyAsInt()
 	{
-		if(_keyAsInt == null)
+		if (_keyAsInt == null)
 		{
 			_keyAsInt = Integer.parseInt(getKey());
 		}
-		
+
 		return _keyAsInt;
 	}
 

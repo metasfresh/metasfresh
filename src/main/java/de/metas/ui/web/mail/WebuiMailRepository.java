@@ -10,6 +10,7 @@ import org.compiere.util.Evaluatees;
 import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -60,11 +61,12 @@ public class WebuiMailRepository
 		emailToLookup = LookupDataSourceFactory.instance.getLookupDataSource(emailToLookupDescriptor);
 	}
 
-	public WebuiEmail createNewEmail()
+	public WebuiEmail createNewEmail(final LookupValue from)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
 		final WebuiEmail email = WebuiEmail.builder()
 				.emailId(emailId)
+				.from(from)
 				.build();
 
 		emailsById.put(emailId, email);
