@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
@@ -605,7 +606,7 @@ public class MRequisition extends X_M_Requisition implements DocAction
 	 */
 	public String getUserName()
 	{
-		return MUser.get(getCtx(), getAD_User_ID()).getName();
+		return Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getAD_User_ID()).getName();
 	}	//	getUserName
 
 	/**

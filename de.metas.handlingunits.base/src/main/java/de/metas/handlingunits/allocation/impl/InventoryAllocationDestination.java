@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.minventory.api.IInventoryBL;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -153,7 +154,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				if (inout.isSOTrx())
 				{
 					// in case the base inout line is from a shipment, it is not relevant for the material disposal ( for the time being)
-					continue;
+					throw new AdempiereException("Document type {0} is not suitable for material disposal" , new Object[]{inout.getC_DocType()});
+				
 				}
 
 				// create the inventory line based on the info from inoutline and request

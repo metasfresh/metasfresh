@@ -34,8 +34,8 @@ import javax.swing.JPopupMenu;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.MUser;
 import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
@@ -161,7 +161,7 @@ public class AEMailLetter implements ActionListener
 			}
 
 			@Override
-			public EMail sendEMail(final MUser from, final String toEmail, final String subject, final Map<String, Object> variables)
+			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final Map<String, Object> variables)
 			{
 				final Properties ctx = Env.getCtx();
 				final EMailDialog dialog = new EMailDialog(

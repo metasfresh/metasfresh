@@ -108,9 +108,9 @@ public class M_InOut
 		{
 			return;
 		}
-		
+
 		// make sure we are not dealing with a customer return
-		if(Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(shipment))
 		{
 			return;
 		}
@@ -150,6 +150,13 @@ public class M_InOut
 	{
 		// do nothing if completing the reversal document
 		if (inout.getReversal_ID() > 0)
+		{
+			return;
+		}
+
+		// task #1306: Do not genertate empties movements for customer returns
+
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
 		{
 			return;
 		}
@@ -267,15 +274,17 @@ public class M_InOut
 			return;
 		}
 
-		final List<org.compiere.model.I_M_InOutLine> lines = Services.get(IInOutDAO.class).retrieveLines(customerReturn);
+		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
 
-		for (final org.compiere.model.I_M_InOutLine line : lines)
+		if (!existingHandlingUnits.isEmpty())
 		{
-
-			final I_M_InOutLine customerReturnLine = InterfaceWrapperHelper.create(line, I_M_InOutLine.class);
-			// create HUs based on the lines inthe customer return inout
-			huInOutBL.createHUsForCustomerReturn(customerReturnLine);
+			// the handling units are already created
+			return;
 		}
+
+		// create HUs based on the lines in the customer return inout
+		huInOutBL.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
+
 	}
 
 }

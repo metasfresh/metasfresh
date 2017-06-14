@@ -44,6 +44,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
@@ -62,10 +63,14 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.logging.LogManager;
 import lombok.ToString;
 
 public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 {
+	private static final transient Logger logger = LogManager.getLogger(PPOrderProductAttributeBL.class);
+
 	@Override
 	public void updateHUAttributes(final Collection<I_M_HU> husToUpdate, final int fromPPOrderId)
 	{
@@ -77,14 +82,18 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		{
 			return;
 		}
+		
+		logger.trace("updateHUAttributes: fromPPOrderId={}, husToUpdate={}", fromPPOrderId, husToUpdate );
 
 		//
 		// Fetch PP_Order's attributes that shall be propagated to HUs
 		final AttributesMap attributesMap = getAttributesMap(fromPPOrder);
 		if (attributesMap.isEmpty())
 		{
+			logger.trace("Skip updating because there were no attributes");
 			return;
 		}
+		logger.trace("Using {}", attributesMap);
 
 		//
 		// Update the attributes of given HUs
@@ -235,8 +244,8 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 		for (final I_M_HU_Attribute huAttribute : existingHUAttributes)
 		{
 			final int attributeId = huAttribute.getM_Attribute_ID();
-			final AttributeWithValue attributeWithValues = from.getByAttributeId(attributeId);
-			if (attributeWithValues == null)
+			final AttributeWithValue attributeWithValue = from.getByAttributeId(attributeId);
+			if (attributeWithValue == null)
 			{
 				// the attribute was not used in PPOrder. Nothing to modify
 				continue;
@@ -244,15 +253,16 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 
 			// TODO: shall we skip it if attribute is null and isTransferIfNull=false
 
-			huAttribute.setValue(attributeWithValues.getValueString());
-			huAttribute.setValueNumber(attributeWithValues.getValueNumber());
+			huAttribute.setValue(attributeWithValue.getValueString());
+			huAttribute.setValueNumber(attributeWithValue.getValueNumber());
 			InterfaceWrapperHelper.save(huAttribute);
+			logger.trace("Updated {}/{} from {}", hu, huAttribute, attributeWithValue);
 		}
 	}
 
 	private static BigDecimal getValueNumberOrNull(final I_PP_Order_ProductAttribute ppOrderAttribute)
 	{
-		return InterfaceWrapperHelper.isNull(ppOrderAttribute, org.eevolution.model.I_PP_Order_ProductAttribute.COLUMNNAME_ValueNumber) ? null : ppOrderAttribute.getValueNumber();
+		return InterfaceWrapperHelper.isNull(ppOrderAttribute, I_PP_Order_ProductAttribute.COLUMNNAME_ValueNumber) ? null : ppOrderAttribute.getValueNumber();
 	}
 
 	@VisibleForTesting
@@ -510,4 +520,17 @@ public class PPOrderProductAttributeBL implements IPPOrderProductAttributeBL
 			ppOrderProductAttributeDAO.addPPOrderProductAttributes(costCollector, huAttributes);
 		}
 	}
+	
+	@Override
+	public void addPPOrderProductAttributesFromIssueCandidate(final I_PP_Order_Qty issueCandidate)
+	{
+		final I_M_HU topLevelHU = issueCandidate.getM_HU();
+
+		final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+		final IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
+		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(topLevelHU);
+
+		ppOrderProductAttributeDAO.addPPOrderProductAttributesFromIssueCandidate(issueCandidate, huAttributes);
+	}
+
 }

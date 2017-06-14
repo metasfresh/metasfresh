@@ -37,7 +37,10 @@ SELECT
 	ppa.m_attributesetinstance_ID,
 	bp_ip.M_HU_PI_Item_Product_ID as M_HU_PI_Item_Product_ID,
 	uom.X12DE355 as UOM_X12DE355,
-	hupip.Qty as QtyCUsPerTU
+	hupip.Qty as QtyCUsPerTU,
+	it.m_hu_pi_version_id AS m_hu_pi_version_id,
+	c.iso_code as currency,
+	c2.iso_code as currency2
 	
 FROM M_ProductPrice pp
 
@@ -103,8 +106,10 @@ LEFT OUTER JOIN LATERAL(
 				AND (ppa2.m_hu_pi_item_product_id = bp_ip.m_hu_pi_item_product_id OR ppa2.m_hu_pi_item_product_id IS NULL)
 ) pp2 ON true
 											
-
-			
+INNER JOIN M_Pricelist pl ON plv.M_Pricelist_ID = pl.M_PriceList_ID AND pl.isActive = 'Y'
+LEFT JOIN M_Pricelist pl2 ON plv2.M_PriceList_ID = pl2.M_Pricelist_ID AND pl2.isActive = 'Y'
+INNER JOIN C_Currency c ON pl.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+LEFT JOIN C_Currency c2 ON pl2.C_Currency_ID = c2.C_CUrrency_ID AND c2.isActive = 'Y'			
 
 WHERE pp.isActive = 'Y'
 

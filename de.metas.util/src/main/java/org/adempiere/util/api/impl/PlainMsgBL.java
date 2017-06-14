@@ -13,19 +13,22 @@ package org.adempiere.util.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.util.api.IMsgBL;
+
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -54,6 +57,12 @@ public class PlainMsgBL implements IMsgBL
 	public String getMsg(final Properties ctx, final String adMessage, final Object[] params)
 	{
 		return adMessage + "_" + Arrays.toString(params);
+	}
+
+	@Override
+	public Map<String, String> getMsgMap(final String adLanguage, final String prefix, final boolean removePrefix)
+	{
+		return ImmutableMap.of();
 	}
 
 	@Override

@@ -31,7 +31,6 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.MUser;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
@@ -196,7 +195,8 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 		}
 		else
 		{
-			setUser(new KeyNamePair(userId, MUser.getNameOfUser(userId)));
+			final String userFullname = Services.get(IUserDAO.class).retrieveUserFullname(userId);
+			setUser(new KeyNamePair(userId, userFullname));
 			final ITerminalKey key = usersPanel.getKeyLayout().findKeyByValue(userId);
 			usersPanel.onKeySelected(key);
 		}
@@ -249,7 +249,7 @@ public abstract class TerminalLoginDialog implements ITerminalLoginDialog
 		}
 
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
-		final I_AD_User user = userDAO.retrieveUser(getCtx(), userId);
+		final I_AD_User user = userDAO.retrieveUserOrNull(getCtx(), userId);
 		if (user == null)
 		{
 			throw new TerminalException("@NotFound@ @AD_User_ID@");

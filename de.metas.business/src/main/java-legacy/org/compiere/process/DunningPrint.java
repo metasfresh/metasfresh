@@ -19,6 +19,7 @@ package org.compiere.process;
 import java.io.File;
 
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MDunningLevel;
@@ -26,7 +27,6 @@ import org.compiere.model.MDunningRun;
 import org.compiere.model.MDunningRunEntry;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.model.PrintInfo;
 import org.compiere.print.MPrintFormat;
@@ -144,10 +144,10 @@ public class DunningPrint extends JavaProcess
 				continue;
 			}
 			//	To User
-			MUser to = new MUser (getCtx(), entry.getAD_User_ID(), get_TrxName());
+			I_AD_User to = entry.getAD_User();
 			if (p_EMailPDF)
 			{
-				if (to.get_ID() == 0)
+				if (to.getAD_User_ID() <= 0)
 				{
 					addLog (entry.get_ID(), null, null, "@NotFound@: @AD_User_ID@ - " + bp.getName());
 					errors++;

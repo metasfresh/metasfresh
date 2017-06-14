@@ -71,6 +71,11 @@ LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
 INNER JOIN C_UOM uom			ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
 LEFT OUTER JOIN C_UOM_Trl uomt			ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
 
+--hus
+-- todo: take the HUs from m_inutline after fix
+--LEFT OUTER JOIN M_HU_PI_Item_Product ip ON iol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
+--LEFT OUTER JOIN M_HU_PI_Item piit ON ip.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y' AND piit.M_HU_PI_Version_ID != 101
+
 LEFT OUTER JOIN LATERAL
 		(
 			SELECT 	String_Agg( DISTINCT pifb.name, E'\n' ORDER BY pifb.name ) AS name, SUM(lutuconf.qtytu) as HUQty
@@ -78,8 +83,9 @@ LEFT OUTER JOIN LATERAL
 				INNER JOIN M_HU lu ON asgn.M_HU_ID = lu.M_HU_ID --
 				INNER JOIN M_HU_LUTU_Configuration lutuconf ON lu.M_HU_LUTU_Configuration_ID = lutuconf.M_HU_LUTU_Configuration_ID
 				INNER JOIN M_HU_PI_Item_Product pifb ON lutuconf.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
+				LEFT JOIN M_HU_PI_Item piit ON pifb.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y' 
 			WHERE	asgn.AD_Table_ID = ((SELECT get_Table_ID( 'M_InOutLine' ) )) AND asgn.isActive = 'Y' AND asgn.Record_ID = iol.M_InOutLine_ID
-					AND pifb.name != 'VirtualPI'
+					AND piit.M_HU_PI_Version_ID != 101
 		) pi ON TRUE
 
 -- Attributes
@@ -117,7 +123,7 @@ LEFT JOIN LATERAL
 	LEFT OUTER JOIN C_InvoiceCandidate_InOutLine iciol ON original_iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
 	LEFT OUTER JOIN C_Invoice_Candidate ic ON ic.C_Invoice_Candidate_ID = iciol.C_Invoice_Candidate_ID AND ic.isActive = 'Y'
 	
-	WHERE iol.vendorreturn_origin_inoutline_id = original_iol.M_InOutLine_ID AND original_iol.isActive = 'Y'
+	WHERE iol.return_origin_inoutline_id = original_iol.M_InOutLine_ID AND original_iol.isActive = 'Y'
 )
 orig_iol ON TRUE
 

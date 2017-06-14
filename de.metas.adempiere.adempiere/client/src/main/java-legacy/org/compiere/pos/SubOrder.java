@@ -33,13 +33,13 @@ import javax.swing.KeyStroke;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerInfo;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MOrder;
 import org.compiere.model.MPriceList;
 import org.compiere.model.MPriceListVersion;
-import org.compiere.model.MUser;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CLabel;
@@ -484,9 +484,8 @@ public class SubOrder extends PosSubPanel
 		Vector<KeyNamePair> userVector = new Vector<KeyNamePair>();
 		if (m_bpartner != null)
 		{
-			MUser[] users = m_bpartner.getContacts(false);
-			for (int i = 0; i < users.length; i++)
-				userVector.add(new KeyNamePair(users[i].getAD_User_ID(), users[i].getName()));
+			for (final I_AD_User user : m_bpartner.getContacts(false))
+				userVector.add(new KeyNamePair(user.getAD_User_ID(), user.getName()));
 		}
 		DefaultComboBoxModel userModel = new DefaultComboBoxModel(userVector); 
 		f_user.setModel(userModel);

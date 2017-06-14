@@ -1,9 +1,7 @@
 drop function if exists report.fresh_PriceList_Details_Report(numeric, numeric, numeric, character varying);
 
--- DROP FUNCTION report.fresh_pricelist_details_report(numeric, numeric, numeric, character varying);
-
 CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report(IN p_c_bpartner_id numeric, IN p_m_pricelist_version_id numeric, IN p_alt_pricelist_version_id numeric, IN p_ad_language character varying)
-  RETURNS TABLE(bp_value text, bp_name text, productcategory text, m_product_id integer, value text, customerproductnumber text, productname text, isseasonfixedprice character, itemproductname character varying, qtycuspertu numeric, packingmaterialname text, pricestd numeric, altpricestd numeric, hasaltprice integer, uomsymbol text, uom_x12de355 text, attributes text, m_productprice_id integer, m_attributesetinstance_id integer, m_hu_pi_item_product_id integer) AS
+  RETURNS TABLE(bp_value text, bp_name text, productcategory text, m_product_id integer, value text, customerproductnumber text, productname text, isseasonfixedprice character, itemproductname character varying, qtycuspertu numeric, packingmaterialname text, pricestd numeric, altpricestd numeric, hasaltprice integer, uomsymbol text, uom_x12de355 text, attributes text, m_productprice_id integer, m_attributesetinstance_id integer, m_hu_pi_item_product_id integer, currency character(3), currency2 character(3)) AS
 $BODY$
 --
 	SELECT
@@ -15,7 +13,7 @@ $BODY$
 		bpp.ProductNo AS CustomerProductNumber,
 		COALESCE( pt.name, plc.ProductName ) AS ProductName,
 		plc.IsSeasonFixedPrice,
-		CASE WHEN plc.ItemProductName like 'VirtualPI%' THEN NULL ELSE plc.ItemProductName END AS ItemProductName,
+		CASE WHEN plc.m_hu_pi_version_id = 101 THEN NULL ELSE plc.ItemProductName END AS ItemProductName,
 		plc.QtyCUsPerTU,
 		plc.PackingMaterialName,
 		plc.PriceStd,
@@ -26,7 +24,9 @@ $BODY$
 		CASE WHEN $4 = 'fr_CH' THEN 	Replace( plc.Attributes, 'AdR', 'DLR') ELSE plc.Attributes END AS Attributes,
 		plc.M_ProductPrice_ID::integer,
 		plc.M_AttributeSetInstance_ID::integer,
-		plc.M_HU_PI_Item_Product_ID::integer
+		plc.M_HU_PI_Item_Product_ID::integer,
+		plc.currency as currency,
+		plc.currency2 as currency2
 	FROM
 		RV_fresh_PriceList_Comparison plc
 		LEFT OUTER JOIN M_Product_Trl pt ON plc.M_Product_ID = pt.M_Product_ID AND AD_Language = $4 AND pt.isActive = 'Y'

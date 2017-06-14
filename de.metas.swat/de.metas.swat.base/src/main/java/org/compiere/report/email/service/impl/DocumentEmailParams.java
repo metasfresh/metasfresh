@@ -25,7 +25,11 @@ package org.compiere.report.email.service.impl;
 
 import java.util.ArrayList;
 
-import org.adempiere.util.CustomColNames;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -34,7 +38,6 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MInOut;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
-import org.compiere.model.MUser;
 import org.compiere.report.email.service.IEmailParameters;
 import org.compiere.util.Env;
 
@@ -61,7 +64,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 	private final String subject;
 	private final String to;
 	private final String attachmentPrefix;
-	private final MUser from;
+	private final I_AD_User from;
 
 	private final static String EXPORT_FILE_PREFIX = null;
 
@@ -101,26 +104,30 @@ public final class DocumentEmailParams implements IEmailParameters {
 				userIds.add(billUserId);
 			}
 			final int billBPartnerId = order.getBill_BPartner_ID();
-			if (billBPartnerId != 0) {
-				for (MUser user : MUser.getOfBPartner(Env.getCtx(), billBPartnerId, null))
+			if (billBPartnerId != 0)
+			{
+				for (final I_AD_User user : Services.get(IBPartnerDAO.class).retrieveContacts(Env.getCtx(), billBPartnerId, ITrx.TRXNAME_None))
 				{
-					if (Boolean.TRUE.equals(user.get_Value(CustomColNames.AD_USER_ISDEFAULTCONTACT)))
+					if (user.isDefaultContact())
 					{
-						userIds.add(user.get_ID());
+						userIds.add(user.getAD_User_ID());
 					}
 				}
 			}
 			final int userId = order.getAD_User_ID();
-			if (userId != 0) {
+			if (userId > 0)
+			{
 				userIds.add(userId);
 			}
+			
 			final int bPartnerId = order.getC_BPartner_ID();
-			if (bPartnerId != 0) {
-				for (MUser user : MUser.getOfBPartner(Env.getCtx(), bPartnerId, null))
+			if (bPartnerId != 0)
+			{
+				for (final I_AD_User user : Services.get(IBPartnerDAO.class).retrieveContacts(Env.getCtx(), bPartnerId, ITrx.TRXNAME_None))
 				{
-					if (Boolean.TRUE.equals(user.get_Value(CustomColNames.AD_USER_ISDEFAULTCONTACT)))
+					if (user.isDefaultContact())
 					{
-						userIds.add(user.get_ID());
+						userIds.add(user.getAD_User_ID());
 					}
 				}
 			}
@@ -170,7 +177,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 			if (userId < 1) {
 				continue;
 			}
-			MUser contanct = MUser.get(Env.getCtx(), userId);
+			I_AD_User contanct = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), userId);
 			if (contanct.getEMail() != null && !"".equals(contanct.getEMail())) {
 				toFound = contanct.getEMail();
 				break;
@@ -185,7 +192,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 
 		}
 
-		from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 	}
 
 	@Override
@@ -197,7 +204,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 	}
 
 	@Override
-	public MUser getFrom() {
+	public I_AD_User getFrom() {
 		return from;
 	}
 

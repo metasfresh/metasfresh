@@ -30,13 +30,14 @@ import java.util.List;
 
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_TreeBar;
-import org.compiere.model.MUser;
 
 import de.metas.adempiere.model.I_AD_User;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * @author cg
@@ -74,7 +75,8 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 		
 		Check.assume(targetUser_ID > 0, "There is no record selected! ");
 
-		Check.assume(InterfaceWrapperHelper.create(MUser.get(getCtx(), targetUser_ID), I_AD_User.class).isSystemUser(), "Selected user is not system user! ");
+		final I_AD_User targetUser = Services.get(IUserDAO.class).retrieveUser(targetUser_ID);
+		Check.assume(targetUser.isSystemUser(), "Selected user is not system user! ");
 
 		final String whereClause = I_AD_TreeBar.COLUMNNAME_AD_User_ID + " = ? ";
 
@@ -87,11 +89,10 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 
 		for (final I_AD_TreeBar treeBar : treBars)
 		{
-			if (!existsAlready(targetUser_ID, treeBar.getNode_ID(), treeBar.getAD_Tree_ID()))
+			if (!existsAlready(targetUser_ID, treeBar.getNode_ID()))
 			{
 				final I_AD_TreeBar tb = InterfaceWrapperHelper.create(getCtx(), I_AD_TreeBar.class, get_TrxName());
 				tb.setAD_Org_ID(treeBar.getAD_Org_ID());
-				tb.setAD_Tree_ID(treeBar.getAD_Tree_ID());
 				tb.setNode_ID(treeBar.getNode_ID());
 				tb.setAD_User_ID(targetUser_ID);
 				InterfaceWrapperHelper.save(tb);
@@ -111,15 +112,14 @@ public class AD_User_CopyFavoritesPanel extends JavaProcess
 	 * @param AD_Tree_ID
 	 * @return
 	 */
-	private boolean existsAlready(final int AD_User_ID, final int Node_ID, final int AD_Tree_ID)
+	private boolean existsAlready(final int AD_User_ID, final int Node_ID)
 	{
 		final String whereClause = I_AD_TreeBar.COLUMNNAME_AD_User_ID + " = ? AND " 
-								 + I_AD_TreeBar.COLUMNNAME_Node_ID + " = ? AND " 
-								 + I_AD_TreeBar.COLUMNNAME_AD_Tree_ID + " = ?";
+								 + I_AD_TreeBar.COLUMNNAME_Node_ID + " = ?"; 
 		
 		return new TypedSqlQuery<I_AD_TreeBar>(getCtx(), I_AD_TreeBar.class, whereClause, get_TrxName())
 				.setOnlyActiveRecords(true)
-				.setParameters(AD_User_ID, Node_ID, AD_Tree_ID)
+				.setParameters(AD_User_ID, Node_ID)
 				.match();
 	}
 

@@ -83,6 +83,15 @@ public class BPartnerBL implements IBPartnerBL
 		final org.compiere.model.I_AD_User userPO = retrieveShipContact(ctx, bPartnerId, trxName);
 		return InterfaceWrapperHelper.create(userPO, I_AD_User.class);
 	}
+	
+	@Override
+	public I_AD_User createDraftContact(final org.compiere.model.I_C_BPartner bpartner)
+	{
+		I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
+		contact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		contact.setName(bpartner.getName());
+		return contact;
+	}
 
 	@Override
 	public I_AD_User retrieveBillContact(final Properties ctx, final int bPartnerId, final String trxName)

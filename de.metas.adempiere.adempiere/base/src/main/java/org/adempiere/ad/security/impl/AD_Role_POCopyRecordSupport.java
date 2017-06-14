@@ -5,9 +5,9 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 
 import org.adempiere.model.GeneralCopyRecordSupport;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
-import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
@@ -48,7 +48,7 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 
 		Timestamp ts = new Timestamp(System.currentTimeMillis());
 		String s = formatter.format(ts);
-		String name = MUser.getNameOfUser(Env.getAD_User_ID(getCtx()));
+		String name = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(getCtx()));
 
 		final String language = Env.getAD_Language(getCtx());
 		// Create the name using the text from the specific AD_Message.

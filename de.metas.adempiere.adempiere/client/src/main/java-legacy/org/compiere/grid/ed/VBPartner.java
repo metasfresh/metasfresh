@@ -29,17 +29,19 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 
 import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.bpartner.service.IBPartnerBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
 import org.compiere.model.MLocationLookup;
-import org.compiere.model.MUser;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
@@ -47,11 +49,9 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -103,7 +103,7 @@ public final class VBPartner extends CDialog implements ActionListener
 	/** The Location			*/
 	private MBPartnerLocation	m_pLocation = null;
 	/** The User				*/
-	private MUser			m_user = null;
+	private I_AD_User			m_user = null;
 	/** Read Only				*/
 	private boolean			m_readOnly = false;
 
@@ -329,8 +329,7 @@ public final class VBPartner extends CDialog implements ActionListener
 			fFax.setText(m_pLocation.getFax());
 		}
 		//	User - Load values
-		m_user = m_partner.getContact(
-			Env.getContextAsInt(Env.getCtx(), m_WindowNo, "AD_User_ID"));
+		m_user = m_partner.getContact(Env.getContextAsInt(Env.getCtx(), m_WindowNo, "AD_User_ID"));
 		if (m_user != null)
 		{
 			fGreetingC.setSelectedItem(getGreeting(m_user.getC_Greeting_ID()));
@@ -453,7 +452,7 @@ public final class VBPartner extends CDialog implements ActionListener
 		String contact = fContact.getText();
 		String email = fEMail.getText();
 		if (m_user == null && (contact.length() > 0 || email.length() > 0))
-			m_user = new MUser (m_partner);
+			m_user =Services.get(IBPartnerBL.class).createDraftContact(m_partner);
 		if (m_user != null)
 		{
 			if (contact.length() == 0)
@@ -470,10 +469,7 @@ public final class VBPartner extends CDialog implements ActionListener
 			m_user.setPhone(fPhone.getText());
 			m_user.setPhone2(fPhone2.getText());
 			m_user.setFax(fFax.getText());
-			if (m_user.save())
-				log.debug("AD_User_ID=" + m_user.getAD_User_ID());
-			else
-				ADialog.error(m_WindowNo, this, "BPartnerNotSaved", Msg.translate(Env.getCtx(), "AD_User_ID"));
+			InterfaceWrapperHelper.save(m_user);
 		}
 		return true;
 	}	//	actionSave

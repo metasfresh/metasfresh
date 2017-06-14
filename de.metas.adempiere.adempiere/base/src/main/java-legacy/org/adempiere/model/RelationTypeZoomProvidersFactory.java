@@ -46,11 +46,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -68,31 +68,31 @@ public final class RelationTypeZoomProvidersFactory
 	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
 	 */
 	private final static String SQL =                 //
-	"  SELECT " //
-			+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID //
-			+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name //
-			+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected //
-			+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
-			+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause //
-			+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause //
-			+ "  FROM" //
-			+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
-			+ "  WHERE " //
-			+ "    rt.IsActive='Y'" //
-			+ "    AND ref.IsActive='Y'" //
-			+ "    AND ref.ValidationType='T'" // must have table validation
-			+ "    AND (" // join the source AD_Reference
-			+ "      rt.AD_Reference_Source_ID=ref.AD_Reference_ID" //
-			+ "      OR (" // not directed? -> also join the target AD_Reference
-			+ "        rt.IsDirected='N' " //
-			+ "        AND rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
-			+ "      )" //
-			+ "    )" //
-			+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
-			+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
-			+ "    AND tab.AD_Table_ID=?" //
-			+ "    AND tab.AD_Key=?" //
-			+ "  ORDER BY rt.Name";
+			"  SELECT " //
+					+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID //
+					+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name //
+					+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected //
+					+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
+					+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause //
+					+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause //
+					+ "  FROM" //
+					+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
+					+ "  WHERE " //
+					+ "    rt.IsActive='Y'" //
+					+ "    AND ref.IsActive='Y'" //
+					+ "    AND ref.ValidationType='T'" // must have table validation
+					+ "    AND (" // join the source AD_Reference
+					+ "      rt.AD_Reference_Source_ID=ref.AD_Reference_ID" //
+					+ "      OR (" // not directed? -> also join the target AD_Reference
+					+ "        rt.IsDirected='N' " //
+					+ "        AND rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
+					+ "      )" //
+					+ "    )" //
+					+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
+					+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
+					+ "    AND tab.AD_Table_ID=?" //
+					+ "    AND tab.AD_Key=?" //
+					+ "  ORDER BY rt.Name";
 
 	private final CCache<String, List<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
@@ -157,7 +157,7 @@ public final class RelationTypeZoomProvidersFactory
 
 	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class); 
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 		final Properties ctx = Env.getCtx();
 
 		final List<RelationTypeZoomProvider> result = new ArrayList<>();
@@ -172,25 +172,38 @@ public final class RelationTypeZoomProvidersFactory
 			}
 
 			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(ctx, adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
-			
+
 			final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
 			final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
-			
+
 			final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
 			final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
-			result.add(RelationTypeZoomProvider.builder()
-					.setDirected(relationType.isDirected())
-					.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
-					.setInternalName(relationType.getInternalName())
-					//
-					.setSource_Reference_AD(relationType.getAD_Reference_Source_ID())
-					.setSourceRoleDisplayName(roleSourceDisplayName)
-					//
-					.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
-					.setTargetRoleDisplayName(roleTargetDisplayName)
-					//
-					.build());
+			try
+			{
+				final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvider.builder()
+						.setDirected(relationType.isDirected())
+						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
+						.setInternalName(relationType.getInternalName())
+						//
+						.setSource_Reference_AD(relationType.getAD_Reference_Source_ID())
+						.setSourceRoleDisplayName(roleSourceDisplayName)
+						//
+						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
+						.setTargetRoleDisplayName(roleTargetDisplayName)
+						//
+						.buildOrNull();
+				if(zoomProvider == null)
+				{
+					continue;
+				}
+				
+				result.add(zoomProvider);
+			}
+			catch (Exception ex)
+			{
+				logger.warn("Failed creating zoom provider for {}. Skipped.", relationType, ex);
+			}
 		}
 		return result;
 	}

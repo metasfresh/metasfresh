@@ -2,6 +2,17 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
+/**
+ * According to the documentation at https://docs.docker.com/engine/reference/commandline/tag/ :
+ * A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes. A tag name may not start with a period or a dash and may contain a maximum of 128 characters.
+ */
+ def String mkDockerTag(String input)
+ {
+ 	return input
+ 		.replaceFirst('^[#\\.]', '') // delete the first letter if it is a period or dash
+ 		.replaceAll('[^a-zA-Z0-9_#\\.]', '_'); // replace everything that's not allowed with an underscore
+ }
+
 def String getEffectiveDownStreamJobName(final String jobFolderName, final String upstreamBranch)
 {
 	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
@@ -336,7 +347,7 @@ node('agent && linux')
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
-        		sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
 
 				// update the versions of metas dependencies that are external to our reactor modules
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
@@ -367,8 +378,9 @@ node('agent && linux')
 				{
 					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
 					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
-					app.push "${MF_UPSTREAM_BRANCH}-latest";
-					app.push "${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}";
+
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
 				}
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage

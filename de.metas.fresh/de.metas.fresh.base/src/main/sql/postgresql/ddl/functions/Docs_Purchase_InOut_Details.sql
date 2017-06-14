@@ -108,7 +108,9 @@ FROM
 					AND asgn.Record_ID = iol.M_InOutLine_ID
 				INNER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID --
 				INNER JOIN M_HU_PI_Item_Product pifb ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
-			WHERE	pifb.name != 'VirtualPI' AND iol.isActive = 'Y'
+				INNER JOIN M_HU_PI_Item piit ON pifb.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y'
+				
+			WHERE	piit.M_HU_PI_Version_ID != 101 AND iol.isActive = 'Y'
 				AND  EXISTS (Select 1 from  M_InOutLine iol2 
 						INNER JOIN C_OrderLine ol ON iol2.C_OrderLine_ID = ol.C_OrderLine_ID AND ol.isActive = 'Y'
 					WHERE	ol.C_Order_ID = $1 and iol.M_InOut_ID = iol2.M_InOut_ID and iol2.isActive = 'Y')

@@ -30,11 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.MiscUtils;
+import org.adempiere.util.Services;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.model.GridTab;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_ContactInterest;
 import org.compiere.model.Lookup;
 import org.compiere.model.MColumn;
@@ -44,7 +47,6 @@ import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MSysConfig;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -470,7 +472,7 @@ public class CallCenterModel
 		final ArrayList<ContactPhoneNo> list = new ArrayList<ContactPhoneNo>();
 		if (prospect == null)
 			return list;
-		for (MUser contact : MUser.getOfBPartner(m_ctx, prospect.getC_BPartner_ID(), null))
+		for (final I_AD_User contact : Services.get(IBPartnerDAO.class).retrieveContacts(prospect.getC_BPartner()))
 		{
 			if (!Util.isEmpty(contact.getPhone(), true))
 				list.add(new ContactPhoneNo(contact.getPhone(), contact.getName(), contact.getAD_User_ID()));

@@ -24,15 +24,14 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -251,7 +250,7 @@ public class MInOutConfirm extends X_M_InOutConfirm implements DocAction
 		if (IsApproved && !isApproved())
 		{
 			int AD_User_ID = Env.getAD_User_ID(getCtx());
-			MUser user = MUser.get(getCtx(), AD_User_ID);
+			I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), AD_User_ID);
 			String info = user.getName() 
 				+ ": "
 				+ Msg.translate(getCtx(), "IsApproved")

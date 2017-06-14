@@ -24,8 +24,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,7 +41,6 @@ import org.compiere.model.MMovement;
 import org.compiere.model.MPeriod;
 import org.compiere.model.MProject;
 import org.compiere.model.MStorage;
-import org.compiere.model.MUser;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -53,6 +50,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.product.IProductBL;
 
@@ -325,10 +323,10 @@ public class MDDOrder extends X_DD_Order implements DocAction
 		}
 
 		// Set Contact
-		MUser[] contacts = bp.getContacts(false);
-		if (contacts != null && contacts.length == 1)
+		List<I_AD_User> contacts = bp.getContacts(false);
+		if (contacts != null && contacts.size() == 1)
 		{
-			setAD_User_ID(contacts[0].getAD_User_ID());
+			setAD_User_ID(contacts.get(0).getAD_User_ID());
 		}
 	}	// setBPartner
 

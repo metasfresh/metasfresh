@@ -51,7 +51,7 @@ public class FactAcctZoomProvider implements IZoomProvider
 	{
 		//
 		// Get the Fact_Acct AD_Window_ID
-		final int factAcctWindowId = RecordZoomWindowFinder.newInstance(I_Fact_Acct.Table_Name).findAD_Window_ID();
+		final int factAcctWindowId = RecordZoomWindowFinder.findAD_Window_ID(I_Fact_Acct.Table_Name);
 		if (factAcctWindowId <= 0)
 		{
 			return ImmutableList.of();

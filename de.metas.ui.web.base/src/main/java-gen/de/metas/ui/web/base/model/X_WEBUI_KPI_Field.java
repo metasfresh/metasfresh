@@ -14,7 +14,7 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -2054035884L;
+	private static final long serialVersionUID = 636163434L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI_Field (Properties ctx, int WEBUI_KPI_Field_ID, String trxName)
@@ -25,8 +25,7 @@ public class X_WEBUI_KPI_Field extends org.compiere.model.PO implements I_WEBUI_
 			setAD_Element_ID (0);
 			setAD_Reference_ID (0);
 			setES_FieldPath (null);
-			setIsGroupBy (false);
-// N
+			setIsGroupBy (false); // N
 			setName (null);
 			setWEBUI_KPI_Field_ID (0);
 			setWEBUI_KPI_ID (0);

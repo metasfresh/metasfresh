@@ -32,7 +32,7 @@ SELECT
 		ELSE Attributes
 	END AS Attributes,
 	ol.QtyEnteredTU			AS HUQty,
-	CASE WHEN ip.name = 'VirtualPI' OR ol.QtyEnteredTU IS NULL
+	CASE WHEN piit.M_HU_PI_Version_ID = 101 OR ol.QtyEnteredTU IS NULL 
 	THEN NULL ELSE ip.name END 		AS HUName,
 	ol.QtyEnteredInPriceUOM		AS QtyEnteredInPriceUOM,
 	ol.PriceEntered 			AS PriceEntered,
@@ -60,6 +60,7 @@ FROM
 	LEFT OUTER JOIN C_BPartner bp			ON ol.C_BPartner_ID =  bp.C_BPartner_ID AND bp.isActive = 'Y'
 	INNER JOIN C_BP_Group bpg 			ON bp.C_BP_Group_ID = bpg.C_BP_Group_ID AND bpg.isActive = 'Y'
 	LEFT OUTER JOIN M_HU_PI_Item_Product ip 		ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
+	LEFT OUTER JOIN M_HU_PI_Item piit ON ip.M_HU_PI_Item_ID = piit.M_HU_PI_Item_ID AND piit.isActive = 'Y'
 	-- Product and its translation
 	LEFT OUTER JOIN M_Product p 			ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Trl pt 		ON ol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'

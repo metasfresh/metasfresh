@@ -13,15 +13,14 @@ package de.metas.fresh.picking.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -72,8 +71,7 @@ public class FreshPackingMdTest
 		final List<IPackageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_12, date_2014_01_13),
 				createPackageable(2, date_2014_01_10, date_2014_01_15),
-				createPackageable(3, date_2014_01_11, date_2014_01_14)
-				);
+				createPackageable(3, date_2014_01_11, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
 		final Timestamp expectedDeliveryDate = date_2014_01_10;
 		final Timestamp expectedPreparationDate = date_2014_01_15;
@@ -87,8 +85,7 @@ public class FreshPackingMdTest
 		final List<IPackageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_12, date_2014_01_13),
 				createPackageable(2, date_2014_01_10, null),
-				createPackageable(3, date_2014_01_11, date_2014_01_14)
-				);
+				createPackageable(3, date_2014_01_11, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
 		final Timestamp expectedDeliveryDate = date_2014_01_10;
 		final Timestamp expectedPreparationDate = null;
@@ -102,8 +99,7 @@ public class FreshPackingMdTest
 		final List<IPackageable> packageables = Arrays.asList(
 				createPackageable(1, date_2014_01_10, date_2014_01_15),
 				createPackageable(2, date_2014_01_11, null),
-				createPackageable(3, date_2014_01_10, date_2014_01_14)
-				);
+				createPackageable(3, date_2014_01_10, date_2014_01_14));
 		final int expectedQtyToDeliver = 1 + 2 + 3;
 		final Timestamp expectedDeliveryDate = date_2014_01_10;
 		final Timestamp expectedPreparationDate = date_2014_01_14;
@@ -157,12 +153,11 @@ public class FreshPackingMdTest
 
 	private IPackageable createPackageable(int qtyToDeliver, Timestamp deliveryDate, Timestamp preparationDate)
 	{
-		final Packageable packageable = packagingDAO.createPackageable();
-		packageable.setQtyToDeliver(BigDecimal.valueOf(qtyToDeliver));
-		packageable.setDeliveryDate(deliveryDate);
-		packageable.setPreparationTime(preparationDate);
-		packageable.setDisplayed(true);
-
-		return packageable;
+		return Packageable.builder()
+				.qtyToDeliver(BigDecimal.valueOf(qtyToDeliver))
+				.deliveryDate(deliveryDate)
+				.preparationDate(preparationDate)
+				.displayed(true)
+				.build();
 	}
 }

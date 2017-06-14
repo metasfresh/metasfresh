@@ -13,15 +13,14 @@ package de.metas.handlingunits.inout.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -29,6 +28,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 
+import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.InOutLineHUPackingAware;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -63,17 +63,17 @@ public class M_InOutLine
 		{
 			return;
 		}
-		
+
 		// Make sure we are not dealing with customer returns
 		final I_M_InOut inout = shipmentLine.getM_InOut();
-		if(huInOutBL.isCustomerReturn(inout))
+		if (huInOutBL.isCustomerReturn(inout))
 		{
 			return;
 		}
 
 		//
 		// Make sure our effective values are up2date
-			huInOutBL.updateEffectiveValues(shipmentLine);
+		huInOutBL.updateEffectiveValues(shipmentLine);
 
 		// Update QtyCU, but only if we deal with Manual Packing Materials,
 		// else don't touch it!
@@ -118,5 +118,56 @@ public class M_InOutLine
 		}
 
 		return true;
+	}
+
+	/**
+	 * Task #1306: only updating on QtyEntered, but not on M_HU_PI_Item_Product_ID, because when the HU_PI_Item_Product changes, we want QtyEnteredTU to stay the same.
+	 * Applied only to customer return inout lines.
+	 * 
+	 * @param orderLine
+	 * @param field
+	 */
+	@CalloutMethod(columnNames = { I_M_InOutLine.COLUMNNAME_QtyEntered })
+	public void updateQtyTU(final I_M_InOutLine inOutLine, final ICalloutField field)
+	{
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+
+		final I_M_InOut inOut = inOutLine.getM_InOut();
+
+		// Applied only to customer return inout lines.
+		if (!huInOutBL.isCustomerReturn(inOut))
+		{
+			return;
+		}
+
+		final IHUPackingAware packingAware = new InOutLineHUPackingAware(inOutLine);
+		Services.get(IHUPackingAwareBL.class).setQtyPacks(packingAware);
+		packingAware.setQty(packingAware.getQty());
+	}
+
+	/**
+	 * Task #1306: If QtyEnteredTU or M_HU_PI_Item_Product_ID change, then update QtyEntered (i.e. the CU qty).
+	 * Applied only to customer return inout lines.
+	 *
+	 * @param inOutLine
+	 * @param field
+	 */
+	@CalloutMethod(columnNames = { I_M_InOutLine.COLUMNNAME_QtyEnteredTU, I_M_InOutLine.COLUMNNAME_M_HU_PI_Item_Product_ID })
+	public void updateQtyCU(final I_M_InOutLine inOutLine, final ICalloutField field)
+	{
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+
+		final I_M_InOut inOut = inOutLine.getM_InOut();
+
+		// Applied only to customer return inout lines.
+		if (!huInOutBL.isCustomerReturn(inOut))
+		{
+			return;
+		}
+
+		final IHUPackingAware packingAware = new InOutLineHUPackingAware(inOutLine);
+		final Integer qtyPacks = packingAware.getQtyPacks().intValue();
+		Services.get(IHUPackingAwareBL.class).setQty(packingAware, qtyPacks);
+
 	}
 }

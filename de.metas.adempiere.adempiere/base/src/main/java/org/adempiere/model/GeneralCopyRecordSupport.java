@@ -42,6 +42,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.TableAccessLevel;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridField;
@@ -49,7 +50,6 @@ import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
 import org.compiere.model.MTab;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
@@ -142,16 +142,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	/**
-	 * Called after the record was copied, right before saving it. This default implementation makes sure that <b>if</b> both <code>to</code> and <code>from</code> have an ASI, then the ASI is cloned (see {@task http://dewiki908/mediawiki/index.php/08789_CopyWithDetails:_clone_ASI_instead_of_just_coyping_its_ID_%28100318477643%29}).
-	 *
-	 * Can be overridden by extending classes, but generally, please call this super-method.
+	 * Called after the record was copied, right before saving it.
 	 *
 	 * @param to the copy
 	 * @param from the source
-	 * @see IAttributeSetInstanceBL#cloneASI(Object, Object)
 	 */
-	@OverridingMethodsMustInvokeSuper
-	protected void onRecordCopied(final PO to, final PO from)
+	protected final void onRecordCopied(final PO to, final PO from)
 	{
 		for(final IOnRecordCopiedListener listener: onRecordCopiedListeners)
 		{
@@ -200,7 +196,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 		Timestamp ts = new Timestamp(System.currentTimeMillis());
 		String s = formatter.format(ts);
-		String name = MUser.getNameOfUser(Env.getAD_User_ID(getCtx()));
+		String name = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(getCtx()));
 
 		final String language = Env.getAD_Language(getCtx());
 		String msg = "(" + msgBL.getMsg(language, "CopiedOn", new String[] { s }) + " " + name + ")";
@@ -312,7 +308,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return new ArrayList<TableInfoVO>(set);
 	}
 
-	protected final List<MTable> getTablesForColumn(String column)
+	private final List<MTable> getTablesForColumn(String column)
 	{
 		final String whereClause = " EXISTS (SELECT 1 FROM AD_Column c WHERE c.columnname = ? "
 				+ " AND c.ad_table_id = ad_table.ad_table_id "
@@ -343,7 +339,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param tableName
 	 * @return true if the table can be copied
 	 */
-	boolean isCopyTable(String tableName)
+	private static final boolean isCopyTable(String tableName)
 	{
 		String upperTableName = tableName.toUpperCase();
 		boolean isCopyTable = !upperTableName.endsWith("_ACCT") // acct table
@@ -734,7 +730,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param listener
 	 */
 	@Override
-	public void addOnRecordCopiedListener(IOnRecordCopiedListener listener)
+	public final void addOnRecordCopiedListener(IOnRecordCopiedListener listener)
 	{
 		onRecordCopiedListeners.add(listener);
 	}

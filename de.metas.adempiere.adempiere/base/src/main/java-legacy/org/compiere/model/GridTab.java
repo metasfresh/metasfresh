@@ -4424,6 +4424,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 		
 		@Override
+		public int getSingleSelectedRecordId()
+		{
+			return gridTab.getRecord_ID();
+		}
+		
+		@Override
 		public int getSelectionSize()
 		{
 			// backward compatibility
