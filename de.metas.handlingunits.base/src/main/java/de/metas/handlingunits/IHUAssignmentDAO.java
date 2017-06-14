@@ -30,7 +30,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
-import org.apache.poi.ss.formula.functions.T;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -213,4 +212,6 @@ public interface IHUAssignmentDAO extends ISingletonService
 	<T> List<T> retrieveModelsForHU(I_M_HU hu, Class<T> clazz, boolean topLevel);
 
 	<T> List<T> retrieveDerivedModelsForHU(Properties ctx, Class<T> clazz, I_M_HU topLevelHU, I_M_HU luHU, I_M_HU tuHU, String trxName);
+
+	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(IContextAware contextProvider, int adTableId, I_M_HU hu);
 }
