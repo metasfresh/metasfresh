@@ -108,6 +108,7 @@ class Table extends Component {
     }
 
     getIndentData = (selectFirst) => {
+        console.log('getIndentData');
         const {
             rowData, tabid, indentSupported, collapsible, expandedDepth,
             keyProperty
@@ -122,7 +123,9 @@ class Table extends Component {
 
             this.setState({
                 rows: rowsData,
-                pendingInit: !rowsData
+                pendingInit: !rowsData,
+                collapsedParentsRows: [],
+                collapsedRows: []
             }, () => {
                 const {rows} = this.state;
 
