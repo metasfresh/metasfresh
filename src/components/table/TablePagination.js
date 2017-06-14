@@ -191,7 +191,7 @@ class TablePagination extends Component {
         return (
             <div className="hidden-sm-down">
                 <div>
-                    Total items {size}
+                    {counterpart.translate('view.totalItems.caption')} {size}
                     {queryLimitHit &&
                         <span className="text-danger"> (limited)
                         </span>
@@ -211,7 +211,7 @@ class TablePagination extends Component {
                 <div>{selected.length > 0 ?
                         (selected[0] === 'all' ? size : selected.length) +
                         ' items selected'
-                        : 'No items selected'
+                        : counterpart.translate('view.noItemSelected.caption')
                      }
                  </div>
                 <div
@@ -222,8 +222,10 @@ class TablePagination extends Component {
                     }}
                 >
                     {selectedWholePage ?
-                        'Select all ' + size + ' items' :
-                        'Select all on this page'
+                        counterpart.translate(
+                            'view.selectAll.caption'
+                        ) + size + ' items' :
+                        counterpart.translate('view.selectAllOnPage.caption')
                     }
                 </div>
             </div>

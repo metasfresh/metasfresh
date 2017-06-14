@@ -99,7 +99,8 @@ class UserDropdown extends Component {
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
-                            <i className="meta-icon-settings" /> Settings
+                            <i className="meta-icon-settings" />
+                            {counterpart.translate('window.settings.caption')}
                         </div>
                         <div
                             className="user-dropdown-item"
@@ -107,7 +108,8 @@ class UserDropdown extends Component {
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
-                            <i className="meta-icon-logout" /> Log out
+                            <i className="meta-icon-logout" />
+                            {counterpart.translate('window.logOut.caption')}
                         </div>
                     </div>
                 }
