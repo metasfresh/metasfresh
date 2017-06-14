@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,7 +63,7 @@ public abstract class AbstractPackingItem implements IPackingItem
 {
 	private static final int GROUPINGKEY_ToBeGenerated = Integer.MIN_VALUE;
 
-	private final List<I_M_ShipmentSchedule> sched;
+	private final ArrayList<I_M_ShipmentSchedule> sched;
 	private final IdentityHashMap<I_M_ShipmentSchedule, BigDecimal> sched2qty;
 
 	private final int groupingKey;
@@ -93,7 +92,12 @@ public abstract class AbstractPackingItem implements IPackingItem
 	{
 		Check.assumeNotEmpty(scheds2Qtys, "scheds2Qtys not empty");
 		sched2qty = new IdentityHashMap<I_M_ShipmentSchedule, BigDecimal>(scheds2Qtys);
-		sched = scheds2Qtys.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
+
+		sched = new ArrayList<>();
+		for (final I_M_ShipmentSchedule schedule : scheds2Qtys.keySet())
+		{
+			sched.add(schedule);
+		}
 
 		final I_M_ShipmentSchedule sched = scheds2Qtys.keySet().iterator().next();
 		if (groupingKey == GROUPINGKEY_ToBeGenerated)
@@ -440,8 +444,16 @@ public abstract class AbstractPackingItem implements IPackingItem
 			sched2qty.clear();
 			sched2qty.putAll(sched2qtyCopy);
 
-			sched.clear();
-			sched.addAll(sched2qty.keySet());
+			// make sure that the ordering of the remaining schedules is not changed.
+			final Iterator<I_M_ShipmentSchedule> iterator = sched.iterator();
+			while (iterator.hasNext())
+			{
+				final I_M_ShipmentSchedule currentSched = iterator.next();
+				if (!sched2qty.containsKey(currentSched))
+				{
+					iterator.remove();
+				}
+			}
 		}
 
 		//

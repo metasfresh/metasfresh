@@ -84,7 +84,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ ", AD_Menu.IsSummary"
 					+ ", AD_Menu.Action"
 					+ ", NULL AS " + COLUMNNAME_PrintColor
+					//
 					+ ", AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID"
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_Board_ID
+					//
 					+ ", AD_Menu.InternalName "
 					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
@@ -102,7 +105,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 					+ ", AD_Menu.IsSummary"
 					+ ", AD_Menu.Action"
 					+ ", NULL AS " + COLUMNNAME_PrintColor
+					//
 					+ ", AD_Menu.AD_Window_ID, AD_Menu.AD_Process_ID, AD_Menu.AD_Form_ID, AD_Menu.AD_Workflow_ID, AD_Menu.AD_Task_ID, AD_Menu.AD_Workbench_ID"
+					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_Board_ID
+					//
 					+ ", AD_Menu.InternalName "
 					+ ", AD_Menu." + I_AD_Menu.COLUMNNAME_IsCreateNew
 					+ ", COALESCE(t." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ", AD_Menu." + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse + ") AS " + I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse
@@ -199,6 +205,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		final int AD_Form_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Form_ID);
 		final int AD_Workflow_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Workflow_ID);
 		final int AD_Task_ID = rs.getInt(I_AD_Menu.COLUMNNAME_AD_Task_ID);
+		final int WEBUI_Board_ID = rs.getInt(I_AD_Menu.COLUMNNAME_WEBUI_Board_ID);
 		final boolean isCreateNewRecord = DisplayType.toBoolean(rs.getString(I_AD_Menu.COLUMNNAME_IsCreateNew));
 		final String webuiNameBrowse = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameBrowse);
 		final String webuiNameNew = rs.getString(I_AD_Menu.COLUMNNAME_WEBUI_NameNew);
@@ -210,6 +217,7 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		info.setAD_Form_ID(AD_Form_ID);
 		info.setAD_Workflow_ID(AD_Workflow_ID);
 		info.setAD_Task_ID(AD_Task_ID);
+		info.setWEBUI_Board_ID(WEBUI_Board_ID);
 		info.setIsCreateNewRecord(isCreateNewRecord);
 		info.setWEBUI_NameBrowse(webuiNameBrowse);
 		info.setWEBUI_NameNew(webuiNameNew);
@@ -288,6 +296,10 @@ public class MenuTreeSupport extends DefaultPOTreeSupport
 		else if (X_AD_Menu.ACTION_Task.equals(action))
 		{
 			access = role.checkTaskAccess(AD_Task_ID);
+		}
+		else if (X_AD_Menu.ACTION_Board.equals(action))
+		{
+			access = true;
 		}
 		//
 		if (access == null // rw or ro for Role

@@ -30,6 +30,7 @@ import org.eevolution.model.I_PP_Cost_Collector;
 
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 
 
 public interface IPPOrderProductAttributeDAO extends ISingletonService
@@ -42,6 +43,8 @@ public interface IPPOrderProductAttributeDAO extends ISingletonService
 	 * @param attributes
 	 */
 	void addPPOrderProductAttributes(I_PP_Cost_Collector costCollector, List<I_M_HU_Attribute> huAttributes);
+
+	void addPPOrderProductAttributesFromIssueCandidate(I_PP_Order_Qty issueCandidate, List<I_M_HU_Attribute> huAttributes);
 
 	/**
 	 * @param ppOrderId
@@ -56,4 +59,5 @@ public interface IPPOrderProductAttributeDAO extends ISingletonService
 	 */
 	void deactivateForCostCollector(int costCollectorId);
 
+	void deleteForHU(int ppOrderId, int huId);
 }

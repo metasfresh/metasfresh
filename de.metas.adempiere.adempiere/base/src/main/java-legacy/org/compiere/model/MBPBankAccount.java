@@ -19,6 +19,8 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+
 /**
  *  BP Bank Account Model
  *
@@ -89,9 +91,9 @@ public class MBPBankAccount extends X_C_BP_BankAccount
 	 *	@param bpc BP Contact
 	 * 	@param location Location
 	 */
-	public MBPBankAccount (Properties ctx, MBPartner bp, MUser bpc, MLocation location)
+	public MBPBankAccount (Properties ctx, I_C_BPartner bp, I_AD_User bpc, MLocation location)
 	{
-		this(ctx, 0, bp.get_TrxName());
+		this(ctx, 0, InterfaceWrapperHelper.getTrxName(bp));
 		setIsACH (false);
 		//
 		setC_BPartner_ID(bp.getC_BPartner_ID());

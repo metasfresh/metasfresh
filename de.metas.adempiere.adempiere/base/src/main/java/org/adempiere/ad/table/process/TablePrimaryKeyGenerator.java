@@ -18,6 +18,7 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.M_Element;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Column;
 import org.compiere.process.TabCreateFields;
 import org.compiere.util.CacheMgt;
@@ -41,11 +42,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -74,19 +75,24 @@ class TablePrimaryKeyGenerator
 			return;
 		}
 
-		if(hasColumnPK(adTable))
+		if (hasColumnPK(adTable))
 		{
 			addLog("Skip {} because it already has PK", adTable.getTableName());
 			return;
 		}
+
+		// Create the primary key
 		final I_AD_Column columnPK = createColumnPK(adTable);
 		createColumnPK_DDL(columnPK);
 
+		// Add the primary key column to all tabs
 		addToTabs(columnPK);
 
-		CacheMgt.get().reset(I_AD_Table.Table_Name);
-		CacheMgt.get().reset(I_AD_Column.Table_Name);
-		CacheMgt.get().reset("POInfo");
+		// Cache reset
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.reset(I_AD_Table.Table_Name);
+		cacheMgt.reset(I_AD_Column.Table_Name);
+		cacheMgt.reset(POInfo.CACHE_PREFIX);
 
 		resultTableNames.add(adTable.getTableName());
 	}
@@ -120,7 +126,7 @@ class TablePrimaryKeyGenerator
 		return "Generated primary keys for " + resultTableNames.size() + " table(s): " + resultTableNames;
 	}
 
-	public Properties getCtx()
+	private Properties getCtx()
 	{
 		return ctx;
 	}
@@ -136,8 +142,7 @@ class TablePrimaryKeyGenerator
 				.createQueryBuilder(I_AD_Column.class, getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.addEqualsFilter(I_AD_Column.COLUMN_AD_Table_ID, table.getAD_Table_ID())
 				.addEqualsFilter(I_AD_Column.COLUMN_IsKey, true)
-				.create()
-				.match();
+				.create().match();
 	}
 
 	private final I_AD_Column createColumnPK(final I_AD_Table table)
@@ -213,18 +218,22 @@ class TablePrimaryKeyGenerator
 
 	private void createColumnPK_DDL(final I_AD_Column columnPK)
 	{
+		// Create/update the DB sequence
 		final String tableName = columnPK.getAD_Table().getTableName();
+		DB.createTableSequence(tableName);
+
+		// Create the DB column
 		final String pkColumnName = columnPK.getColumnName();
-		final String pkName = (tableName + "_pkey").toLowerCase();
-		final String pkNameAlt = (tableName + "_key").toLowerCase(); // some tables also have this PK name
-
 		final String sqlDefaultValue = DB.TO_TABLESEQUENCE_NEXTVAL(tableName);
-
 		executeDDL("ALTER TABLE " + tableName + " ADD COLUMN " + pkColumnName + " numeric(10,0) NOT NULL DEFAULT " + sqlDefaultValue);
 
+		// Delete the previous PK, if any
+		final String pkName = (tableName + "_pkey").toLowerCase();
+		final String pkNameAlt = (tableName + "_key").toLowerCase(); // some tables also have this PK name
 		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkName);
 		executeDDL("ALTER TABLE " + tableName + " DROP CONSTRAINT IF EXISTS " + pkNameAlt);
 
+		// Create the new PK
 		executeDDL("ALTER TABLE " + tableName + " ADD CONSTRAINT " + pkName + " PRIMARY KEY (" + pkColumnName + ")");
 	}
 
@@ -238,8 +247,7 @@ class TablePrimaryKeyGenerator
 	{
 		final int adTableId = column.getAD_Table_ID();
 
-		queryBL
-				.createQueryBuilder(I_AD_Tab.class, column)
+		queryBL.createQueryBuilder(I_AD_Tab.class, column)
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Table_ID, adTableId)
 				.create()
 				.stream(I_AD_Tab.class)

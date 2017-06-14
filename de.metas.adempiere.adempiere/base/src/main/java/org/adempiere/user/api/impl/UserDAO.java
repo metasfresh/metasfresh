@@ -24,6 +24,7 @@ package org.adempiere.user.api.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +33,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
@@ -47,6 +49,8 @@ import de.metas.logging.LogManager;
 public class UserDAO implements IUserDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
+
+	private static final String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
 
 	@Override
 	public I_AD_User retrieveLoginUserByUserId(final String userId)
@@ -74,6 +78,18 @@ public class UserDAO implements IUserDAO
 
 		return users.get(0);
 	}
+
+	@Override
+	public I_AD_User retrieveLoginUserByUserIdAndPassword(String userId, final String password)
+	{
+		final I_AD_User user = retrieveLoginUserByUserId(userId);
+		if(!Objects.equals(password, user.getPassword()))
+		{
+			throw new AdempiereException("@UserOrPasswordInvalid@");
+		}
+		return user;
+	}
+
 
 	@Override
 	public I_AD_User retrieveUserByPasswordResetCode(final Properties ctx, final String passwordResetCode)
@@ -156,5 +172,15 @@ public class UserDAO implements IUserDAO
 		return user;
 	}
 
+	@Override
+	public String retrieveUserFullname(final int adUserId)
+	{
+		final String fullname = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
+				.create()
+				.first(I_AD_User.COLUMNNAME_Name, String.class);
+		return !Check.isEmpty(fullname) ? fullname : "?";
+	}
 
 }

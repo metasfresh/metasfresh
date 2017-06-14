@@ -35,15 +35,14 @@ import javax.mail.Part;
 import javax.mail.Session;
 import javax.mail.Store;
 
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MRequest;
-import org.compiere.model.MUser;
 import org.compiere.util.DB;
 
 import de.metas.email.MailAuthenticator;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
-import de.metas.logging.LogManager;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Request Email Processor
@@ -460,7 +459,7 @@ public class RequestEMailProcessor extends JavaProcess
 		}
 		// Look BP
 		if (req.getAD_User_ID() > 0) {
-			MUser us = new MUser(getCtx(), req.getAD_User_ID(), get_TrxName());
+			I_AD_User us = req.getAD_User();
 			if (us.getC_BPartner_ID() > 0)
 				req.setC_BPartner_ID(us.getC_BPartner_ID());
 		}

@@ -10,34 +10,42 @@ package org.adempiere.user.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+
+import org.adempiere.ad.security.IUserRolePermissions;
+import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MClient;
 import org.compiere.model.X_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -61,16 +69,26 @@ public class UserBL implements IUserBL
 	 */
 	private static final String CUSTOMTYPE_OrgCompiereUtilLogin = "L";
 
+	private static final String MSG_INCORRECT_PASSWORD = "org.compiere.util.Login.IncorrectPassword";
+	private static final String SYS_MIN_PASSWORD_LENGTH = "org.compiere.util.Login.MinPasswordLength";
+
 	public UserBL()
 	{
 		super();
 	}
 
-	@Override
-	public String generatePassword()
+	private final String generatePassword()
 	{
 		final Random rand = new Random(System.currentTimeMillis());
-		final StringBuffer sb = new StringBuffer();
+		
+		int passwordLength = this.passwordLength;
+		final int minPasswordLength = getMinPasswordLength();
+		if(minPasswordLength > 0 && passwordLength < minPasswordLength)
+		{
+			passwordLength = minPasswordLength;
+		}
+		
+		final StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < passwordLength; i++)
 		{
 			final int pos = rand.nextInt(passwordCharset.length());
@@ -78,12 +96,21 @@ public class UserBL implements IUserBL
 		}
 		return sb.toString();
 	}
+	
+	@Override
+	public String generatedAndSetPassword(final I_AD_User user)
+	{
+		final String newPassword = generatePassword();
+		user.setPassword(newPassword);
+		InterfaceWrapperHelper.save(user);
+		return newPassword;
+	}
 
 	@Override
 	public void createResetPasswordByEMailRequest(final String userId)
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveLoginUserByUserId(userId);
-		if(user.getAD_Client_ID() == Env.CTXVALUE_AD_Client_ID_System)
+		if (user.getAD_Client_ID() == Env.CTXVALUE_AD_Client_ID_System)
 		{
 			throw new AdempiereException("Reseting password for system users is not allowed");
 		}
@@ -102,8 +129,7 @@ public class UserBL implements IUserBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(user);
 
 		final I_AD_Client client = InterfaceWrapperHelper.create(
-				Services.get(IClientDAO.class).retriveClient(ctx, user.getAD_Client_ID())
-				, I_AD_Client.class);
+				Services.get(IClientDAO.class).retriveClient(ctx, user.getAD_Client_ID()), I_AD_Client.class);
 		if (client.getPasswordReset_MailText_ID() <= 0)
 		{
 			logger.error("@NotFound@ @AD_Client_ID@/@PasswordReset_MailText_ID@ (@AD_User_ID@:" + user + ")");
@@ -114,14 +140,12 @@ public class UserBL implements IUserBL
 		final IMailTextBuilder mailTextBuilder = mailService.newMailTextBuilder(client.getPasswordReset_MailText());
 		final String subject = mailTextBuilder.getMailHeader();
 
-		final EMail email = mailService.createEMail(client
-				, CUSTOMTYPE_OrgCompiereUtilLogin // mailCustomType
+		final EMail email = mailService.createEMail(client, CUSTOMTYPE_OrgCompiereUtilLogin // mailCustomType
 				, null // from email
 				, emailTo // to
-				, subject
-				, null // message=null, we will set it later
+				, subject, null // message=null, we will set it later
 				, true // html
-				);
+		);
 
 		// NOTE: don't validate at this level. If we validate it here, no error messages will be available
 		// if (!email.isValid())
@@ -172,7 +196,7 @@ public class UserBL implements IUserBL
 
 	/**
 	 * Generates and set {@link I_AD_User#COLUMNNAME_PasswordResetCode}.
-	 * 
+	 *
 	 * @param user
 	 * @return generated password reset code
 	 */
@@ -239,6 +263,95 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public void changePassword(final Properties ctx, final int adUserId, final String oldPassword, final String newPassword, final String newPasswordRetype)
+	{
+		//
+		// Make sure the new password and new password retype are matching
+		if (!Objects.equals(newPassword, newPasswordRetype))
+		{
+			throw new AdempiereException("@NewPasswordNoMatch@");
+		}
+
+		//
+		// Load the user
+		final I_AD_User user = InterfaceWrapperHelper.load(adUserId, I_AD_User.class);
+
+		//
+		// Make sure the old password is matching (if required)
+		if(isOldPasswordRequired(ctx, adUserId))
+		{
+			final String userPassword = user.getPassword();
+			if(Check.isEmpty(userPassword) && !Check.isEmpty(oldPassword))
+			{
+				throw new AdempiereException("@OldPasswordNoMatch@")
+						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
+			}
+			
+			if(Check.isEmpty(oldPassword))
+			{
+				throw new AdempiereException("@OldPasswordMandatory@");
+			}
+			
+			if (!Objects.equals(oldPassword, userPassword))
+			{
+				throw new AdempiereException("@OldPasswordNoMatch@");
+			}
+		}
+
+		assertValidPassword(newPassword);
+
+		user.setPassword(newPassword);
+		InterfaceWrapperHelper.save(user);
+	}
+	
+	private boolean isOldPasswordRequired(final Properties ctx, final int adUserId)
+	{
+		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.of(ctx));
+		
+		// Changing your own password always requires entering the old password
+		if(loggedInPermissions.getAD_User_ID() == adUserId)
+		{
+			return true;
+		}
+
+		// If logged in as Administrator, there is no need to enter the old password
+		if(userRolePermissionsDAO.isAdministrator(ctx, adUserId))
+		{
+			return false;
+		}
+
+		return true; // old password is required
+	}
+
+	@Override
+	public void assertValidPassword(final String password)
+	{
+		final int minPasswordLength = getMinPasswordLength();
+		if (Check.isEmpty(password))
+		{
+			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength })
+					.setParameter("reason", "empty/null password");
+		}
+
+		if (password.contains(" "))
+		{
+			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength })
+					.setParameter("reason", "spaces are not allowed");
+		}
+
+		if (password.length() < minPasswordLength)
+		{
+			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength });
+		}
+	}
+
+	private int getMinPasswordLength()
+	{
+		return Services.get(ISysConfigBL.class).getIntValue(SYS_MIN_PASSWORD_LENGTH, 8);
+	}
+
+	@Override
 	public boolean isEmployee(final org.compiere.model.I_AD_User user)
 	{
 		if (user == null)
@@ -264,7 +377,7 @@ public class UserBL implements IUserBL
 		{
 			contactName.append(lastName.trim());
 		}
-		
+
 		if (!Check.isEmpty(firstName, true))
 		{
 			if (contactName.length() > 0)
@@ -285,7 +398,6 @@ public class UserBL implements IUserBL
 				|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(s);
 	}
 
-
 	@Override
 	public boolean isNotificationNote(final I_AD_User user)
 	{
@@ -295,8 +407,72 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public boolean isNotifyUserIncharge(I_AD_User user)
+	public boolean isNotifyUserIncharge(final I_AD_User user)
 	{
 		return de.metas.adempiere.model.I_AD_User.NOTIFICATIONTYPE_NotifyUserInCharge.equals(user.getNotificationType());
 	}
+
+	@Override
+	public boolean isEMailValid(final I_AD_User user)
+	{
+		return validateEmail(getInternetAddress(user)) != null;
+	}	//	isEMailValid
+	
+	/**
+	 * 	Validate Email (does not work).
+	 * 	Check DNS MX record
+	 * 	@param ia email
+	 *	@return error message or ""
+	 */
+	private String validateEmail (InternetAddress ia)
+	{
+		if (ia == null)
+			return "NoEmail";
+        else
+        	return ia.getAddress();
+	}	//	validateEmail
+
+	
+	/**
+	 * 	Convert EMail
+	 *	@return Valid Internet Address
+	 */
+	private InternetAddress getInternetAddress (final I_AD_User user)
+	{
+		String email = user.getEMail();
+		if (email == null || email.length() == 0)
+			return null;
+		try
+		{
+			InternetAddress ia = new InternetAddress (email, true);
+			if (ia != null)
+				ia.validate();	//	throws AddressException
+			return ia;
+		}
+		catch (AddressException ex)
+		{
+			logger.warn("Invalid email address: {}", email, ex);
+		}
+		return null;
+	}	//	getInternetAddress
+
+	@Override
+	public boolean isCanSendEMail(final I_AD_User user)
+	{
+		final String emailUser = user.getEMailUser();
+		if(Check.isEmpty(emailUser, true))
+		{
+			return false;
+		}
+		
+		// If SMTP authorization is not required, then don't check password - teo_sarca [ 1723309 ]
+		if (!MClient.get(Env.getCtx()).isSmtpAuthorization())
+		{
+			return true;
+		}
+		final String emailPassword = user.getEMailUserPW();
+		return !Check.isEmpty(emailPassword, false);
+	}	//	isCanSendEMail
+
+
 }

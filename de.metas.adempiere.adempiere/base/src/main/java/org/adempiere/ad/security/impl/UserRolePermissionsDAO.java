@@ -231,6 +231,12 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	}
 
 	@Override
+	public boolean isAdministrator(final Properties ctx, final int adUserId)
+	{
+		return matchUserRolesPermissionsForUser(ctx, adUserId, IUserRolePermissions::isSystemAdministrator);
+	}
+
+	@Override
 	public boolean matchUserRolesPermissionsForUser(final Properties ctx, final int adUserId, final Predicate<IUserRolePermissions> matcher)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);
