@@ -224,6 +224,14 @@ class MenuOverlay extends Component {
                     firstQueryItem.focus();
                 }
                 break;
+            case 'Tab':
+                 e.preventDefault();
+                 if(document.activeElement === input) {
+                     firstMenuItem.focus();
+                 } else {
+                     input.focus();
+                 }
+                 break;
             case 'Enter':
                 e.preventDefault();
                 document.activeElement.click();
