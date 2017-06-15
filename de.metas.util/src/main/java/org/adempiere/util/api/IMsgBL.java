@@ -1,5 +1,7 @@
 package org.adempiere.util.api;
 
+import java.util.Map;
+
 /*
  * #%L
  * de.metas.util
@@ -13,11 +15,11 @@ package org.adempiere.util.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -108,4 +110,15 @@ public interface IMsgBL extends ISingletonService
 	 */
 	ITranslatableString getTranslatableMsgText(String adMessage, Object... msgParameters);
 
+	/**
+	 * Gets AD_Language/message map
+	 * 
+	 * @param adLanguage
+	 * @param prefix prefix used to match the AD_Messages (keys)
+	 * @param removePrefix if true, the prefix will be cut out from the AD_Message keys that will be returned
+	 * @return a map of "AD_Message" (might be with the prefix removed) to "translated message" pairs
+	 */
+	Map<String, String> getMsgMap(String adLanguage, String prefix, boolean removePrefix);
+
+	void cacheReset();
 }

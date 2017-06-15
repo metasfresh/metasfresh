@@ -14,7 +14,7 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 62157767L;
+	private static final long serialVersionUID = 723863047L;
 
     /** Standard Constructor */
     public X_WEBUI_DashboardItem (Properties ctx, int WEBUI_DashboardItem_ID, String trxName)
@@ -23,12 +23,10 @@ public class X_WEBUI_DashboardItem extends org.compiere.model.PO implements I_WE
       /** if (WEBUI_DashboardItem_ID == 0)
         {
 			setName (null);
-			setSeqNo (0);
-// @SQL=SELECT COALEACE(MAX(SeqNo), 0) + 10 FROM WEBUI_DashboardItem WHERE WEBUI_Dashboard_ID=@WEBUI_Dashboard_ID@
+			setSeqNo (0); // @SQL=SELECT COALEACE(MAX(SeqNo), 0) + 10 FROM WEBUI_DashboardItem WHERE WEBUI_Dashboard_ID=@WEBUI_Dashboard_ID@
 			setWEBUI_Dashboard_ID (0);
 			setWEBUI_DashboardItem_ID (0);
-			setWEBUI_DashboardWidgetType (null);
-// K
+			setWEBUI_DashboardWidgetType (null); // K
         } */
     }
 

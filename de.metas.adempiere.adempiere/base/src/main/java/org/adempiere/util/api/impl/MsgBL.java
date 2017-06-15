@@ -1,6 +1,7 @@
 package org.adempiere.util.api.impl;
 
 import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -71,6 +72,13 @@ public class MsgBL implements IMsgBL
 	}
 
 	@Override
+	public Map<String, String> getMsgMap(final String adLanguage, final String prefix, final boolean removePrefix)
+	{
+		return Msg.getMsgMap(adLanguage, prefix, removePrefix);
+	}
+
+
+	@Override
 	public String translate(final Properties ctx, final String text)
 	{
 		return Msg.translate(ctx, text);
@@ -102,6 +110,12 @@ public class MsgBL implements IMsgBL
 	public ITranslatableString getTranslatableMsgText(final String adMessage, final Object... msgParameters)
 	{
 		return new ADMessageTranslatableString(adMessage, msgParameters);
+	}
+
+	@Override
+	public void cacheReset()
+	{
+		Msg.cacheReset();
 	}
 
 	private static final class ADMessageTranslatableString implements ITranslatableString

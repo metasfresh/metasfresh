@@ -13,15 +13,14 @@ package org.adempiere.user.process;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,17 +29,24 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.user.spi.impl.PasswordResetWorkpackageProcessor;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Query;
-import org.compiere.util.Util;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.process.JavaProcess;
 
+/**
+ * (async) Sends password reset emails to all users in selection.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class AD_User_ResetPassword_EnqueueForSelection extends JavaProcess
 {
 	private IWorkPackageQueue queue;
@@ -65,7 +71,7 @@ public class AD_User_ResetPassword_EnqueueForSelection extends JavaProcess
 			enqueUser(user);
 			countEnqueued++;
 		}
-		
+
 		if (countEnqueued == 0)
 		{
 			throw new AdempiereException("@NotFound@ @AD_User_ID@");
@@ -80,7 +86,7 @@ public class AD_User_ResetPassword_EnqueueForSelection extends JavaProcess
 			queueBlock = queue.enqueueBlock(getCtx());
 		}
 
-		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, null); // priority=null=Auto/Default
+		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, NullWorkpackagePrio.INSTANCE); // priority=null=Auto/Default
 		queue.enqueueElement(queueWorkpackage, user);
 		queue.markReadyForProcessing(queueWorkpackage);
 	}
@@ -91,7 +97,7 @@ public class AD_User_ResetPassword_EnqueueForSelection extends JavaProcess
 		final List<Object> params = new ArrayList<Object>();
 
 		final String gtWhereClause = getProcessInfo().getWhereClause();
-		if (!Util.isEmpty(gtWhereClause))
+		if (!Check.isEmpty(gtWhereClause))
 		{
 			whereClause.append(" AND ").append("(").append(gtWhereClause).append(")");
 		}

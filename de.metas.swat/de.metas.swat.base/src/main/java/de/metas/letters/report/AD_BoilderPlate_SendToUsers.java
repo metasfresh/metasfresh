@@ -35,12 +35,14 @@ import java.util.StringTokenizer;
 import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Message;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
-import org.compiere.model.MUser;
 import org.compiere.model.Query;
 
 import de.metas.email.EMail;
@@ -49,8 +51,8 @@ import de.metas.email.impl.EMailSendException;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Send BoilerPlate to selected contacts
@@ -67,7 +69,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 	private String p_WhereClause = null;
 	private int p_SMTPRetriesNo = 3;
 
-	private MUser m_from = null;
+	private I_AD_User m_from = null;
 	
 	private int m_count_notes = 0;
 
@@ -101,7 +103,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		m_from = MUser.get(getCtx(), p_AD_User_ID);
+		m_from = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), p_AD_User_ID);
 		if (m_from == null)
 			throw new FillMandatoryException("AD_User_ID");
 		//
@@ -118,7 +120,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		}
 		int count_ok = 0;
 		int count_all = 0;
-		for (MUser user : getUsers())
+		for (I_AD_User user : getUsers())
 		{
 			if (notify(text, user))
 			{
@@ -131,16 +133,16 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		;
 	}
 	
-	private List<MUser> getUsers()
+	private List<I_AD_User> getUsers()
 	{
-		return new Query(getCtx(), MUser.Table_Name, p_WhereClause, get_TrxName())
+		return new Query(getCtx(), I_AD_User.Table_Name, p_WhereClause, get_TrxName())
 		.setClient_ID()
 		.setOnlyActiveRecords(true)
-		.list();
+		.list(I_AD_User.class);
 	}
 
 	
-	private boolean notify(final MADBoilerPlate text, final MUser user)
+	private boolean notify(final MADBoilerPlate text, final I_AD_User user)
 	{
 		boolean ok = true;
 		try
@@ -157,7 +159,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		return ok;
 	}
 
-	private void notifyEMail(final MADBoilerPlate text, final MUser user)
+	private void notifyEMail(final MADBoilerPlate text, final I_AD_User user)
 	{
 		MADBoilerPlate.sendEMail(new IEMailEditor() {
 			@Override
@@ -168,15 +170,15 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 			@Override
 			public int getAD_Table_ID()
 			{
-				return user.get_Table_ID();
+				return InterfaceWrapperHelper.getModelTableId(user);
 			}
 			@Override
 			public int getRecord_ID()
 			{
-				return user.get_ID();
+				return user.getAD_User_ID();
 			}
 			@Override
-			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
 			{
 				String message = text.getTextSnippetParsed(variables);
 				//
@@ -222,7 +224,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		while(true);
 	}
 	
-	private void createNote(MADBoilerPlate text, MUser user, Exception e)
+	private void createNote(MADBoilerPlate text, I_AD_User user, Exception e)
 	{
 		final I_AD_Message msg = Services.get(IADMessageDAO.class).retrieveByValue(getCtx(), AD_Message_UserNotifyError);
 		if (msg == null)
@@ -236,7 +238,7 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 		final MNote note = new MNote(getCtx(),
 				msg.getAD_Message_ID(),
 				p_AD_User_ID,
-				user.get_Table_ID(), user.getAD_User_ID(),
+				InterfaceWrapperHelper.getModelTableId(user), user.getAD_User_ID(),
 				reference,
 				e.getLocalizedMessage(),
 				get_TrxName());

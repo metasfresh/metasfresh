@@ -39,7 +39,7 @@ import de.metas.handlingunits.pporder.api.impl.CostCollectorCandidateFinishedGoo
 /**
  * Generates manufacturing receipt candidates ({@link I_PP_Order_Qty}) together with the planning HUs.
  *
- * Also generates {@link I_PP_Order_Qty} to link those planning HUs.
+ * The generated receipt candidates are not processed.
  *
  * @author metas-dev <dev@metasfresh.com>
  *

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.bpartner.service.IBPartnerStats;
 import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.exceptions.BPartnerNoAddressException;
@@ -28,6 +29,7 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
 
 /**
@@ -168,17 +170,16 @@ public class MDunningRunEntry extends X_C_DunningRunEntry
 			throw new BPartnerNoAddressException(bp);
 		}
 		// User with location
-		MUser[] users = MUser.getOfBPartner(getCtx(), bp.getC_BPartner_ID(), get_TrxName());
-		if (users.length == 1)
-			setAD_User_ID(users[0].getAD_User_ID());
+		final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(bp);
+		if (users.size() == 1)
+			setAD_User_ID(users.get(0).getAD_User_ID());
 		else
 		{
-			for (int i = 0; i < users.length; i++)
+			for (final I_AD_User user : users)
 			{
-				MUser user = users[i];
 				if (user.getC_BPartner_Location_ID() == getC_BPartner_Location_ID())
 				{
-					setAD_User_ID(users[i].getAD_User_ID());
+					setAD_User_ID(user.getAD_User_ID());
 					break;
 				}
 			}

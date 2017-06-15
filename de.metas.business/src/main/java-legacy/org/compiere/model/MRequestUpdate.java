@@ -19,6 +19,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
+
 /**
  * 	Request Update Model
  *  @author Jorg Janke
@@ -96,7 +99,7 @@ public class MRequestUpdate extends X_R_RequestUpdate
 	 */
 	public String getCreatedByName()
 	{
-		MUser user = MUser.get(getCtx(), getCreatedBy());
+		I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getCreatedBy());
 		return user.getName();
 	}	//	getCreatedByName
 
@@ -114,6 +117,7 @@ public class MRequestUpdate extends X_R_RequestUpdate
 	 *	@param newRecord new
 	 *	@return true
 	 */
+	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
 		if (getConfidentialTypeEntry() == null)

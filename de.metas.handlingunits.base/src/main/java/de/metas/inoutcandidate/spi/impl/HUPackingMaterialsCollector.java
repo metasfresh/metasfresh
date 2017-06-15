@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal;
@@ -60,10 +61,13 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Class used to collect the packing material products from HUs
@@ -96,9 +100,22 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = new HashMap<>();
 	private int countTUs = 0;
 
+	private final Map<HUpipToInOutLine, Integer> huPIPToInOutLine = new TreeMap<>(Comparator.comparing(HUpipToInOutLine::getM_HU_PI_Item_Product_ID)
+			.thenComparing(HUpipToInOutLine::getOriginalInOutLineID));
+
+	public Map<HUpipToInOutLine, Integer> getHuPIPToInOutLine()
+	{
+		return huPIPToInOutLine;
+	}
+
 	private final IHUContext huContext;
 	private HUPackingMaterialsCollector parent;
 	private boolean collectIfOwnPackingMaterialsOnly = false;
+
+	/**
+	 * memorize how many TUs were set per source, in case this number is needed later in the code
+	 */
+	private boolean isCollectTUNumberPerOrigin = false;
 
 	private Comparator<HUPackingMaterialDocumentLineCandidate> candidatesSortComparator = null;
 
@@ -244,6 +261,25 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			{
 				candidate.addSourceIfNotNull(source);
 				candidate.addQty(qty);
+
+				if (isCollectTUNumberPerOrigin)
+				{
+
+					I_M_HU_PI_Item_Product materialItemProduct = hu.getM_HU_PI_Item_Product();
+
+					if (materialItemProduct != null && (materialItemProduct.getM_Product_ID() == source.getM_Product_ID()) && (!handlingUnitsBL.isLoadingUnit(hu)))
+					{
+						final HUpipToInOutLine currentHUPipToOrigin = new HUpipToInOutLine(materialItemProduct, source.getM_InOutLine_ID());
+						Integer qtyTU = huPIPToInOutLine.get(currentHUPipToOrigin);
+						if (qtyTU == null)
+						{
+							qtyTU = 0;
+						}
+						huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + qty);
+
+					}
+				}
+
 			}
 		}
 
@@ -252,7 +288,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		final String huUnitTypeToUse = huUnitTypeOverride == null ? handlingUnitsBL.getHU_UnitType(hu) : huUnitTypeOverride;
 		final boolean aggregateHU = handlingUnitsBL.isAggregateHU(hu);
 		final int countTUsAbs;
-		if(aggregateHU)
+		if (aggregateHU)
 		{
 			// gh #640: 'hu' is a "bag" of homogeneous HUs. Take into account the number of TUs it represents.
 			countTUsAbs = handlingUnitsDAO.retrieveParentItem(hu).getQty().intValueExact();
@@ -265,7 +301,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			countTUsAbs = 0;
 		}
-		
+
 		//
 		// Update the TUs counter
 		if (remove)
@@ -276,7 +312,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			countTUs += countTUsAbs;
 		}
-
 
 		return true;
 	}
@@ -514,7 +549,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			return;
 		}
-//handlingUnitsBL.isAggregateHU(hu);
+		// handlingUnitsBL.isAggregateHU(hu);
 		final int huId = hu.getM_HU_ID();
 		if (huId <= 0)
 		{
@@ -587,6 +622,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 	}
 
+	public Map<Object, HUPackingMaterialDocumentLineCandidate> getKey2candidates()
+	{
+		return key2candidates;
+	}
+
 	@Override
 	public void setSeenM_HU_IDs_ToAdd(final Set<Integer> seenM_HU_IDs_ToAdd)
 	{
@@ -601,6 +641,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	public void setCollectIfOwnPackingMaterialsOnly(final boolean collectIfOwnPackingMaterialsOnly)
 	{
 		this.collectIfOwnPackingMaterialsOnly = collectIfOwnPackingMaterialsOnly;
+	}
+
+	public void setisCollectTUNumberPerOrigin(final boolean isCollectTUNumberPerOrigin)
+	{
+		this.isCollectTUNumberPerOrigin = isCollectTUNumberPerOrigin;
 	}
 
 	/**
@@ -688,5 +733,17 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		// Add seen added/removed M_HU_IDs
 		collectorTo.seenM_HU_IDs_ToAdd.addAll(collectorFrom.seenM_HU_IDs_ToAdd);
 		collectorTo.seenM_HU_IDs_ToRemove.addAll(collectorFrom.seenM_HU_IDs_ToRemove);
+	}
+
+	@Value
+	public static final class HUpipToInOutLine
+	{
+		private @NonNull final I_M_HU_PI_Item_Product hupip;
+		private final int originalInOutLineID;
+
+		public int getM_HU_PI_Item_Product_ID()
+		{
+			return hupip.getM_HU_PI_Item_Product_ID();
+		}
 	}
 }

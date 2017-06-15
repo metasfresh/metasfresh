@@ -21,7 +21,6 @@ import java.io.PrintWriter;
 import java.net.URL;
 
 import org.apache.ecs.AlignType;
-import org.apache.ecs.Element;
 import org.apache.ecs.xhtml.a;
 import org.apache.ecs.xhtml.body;
 import org.apache.ecs.xhtml.h1;
@@ -30,7 +29,6 @@ import org.apache.ecs.xhtml.html;
 import org.apache.ecs.xhtml.img;
 import org.apache.ecs.xhtml.link;
 import org.apache.ecs.xhtml.meta;
-import org.apache.ecs.xhtml.script;
 import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.title;
@@ -48,7 +46,7 @@ public class WebDoc
 {
 	/**
 	 *  Create styled Document with Title
-	 *  @param plain if true adds standard.css and standard.js
+	 *  @param plain if true DO NOT add standard.css
 	 *  @param title optional header title and h1 
 	 *  @param swingClient true if Java Swing Client - browser otherwise
 	 *  @return Document
@@ -94,7 +92,7 @@ public class WebDoc
 
 	/**
 	 *  Set up Document
-	 *  @param plain if true then DO NOT add stylesheet and standard js
+	 *  @param plain if true then DO NOT add stylesheet
 	 *  @param swingClient true if Java Client - browser otherwise
 	 *  @param title header title and h1
 	 */
@@ -117,7 +115,6 @@ public class WebDoc
 		else
 		{
 			m_head.addElement(new link(WebEnv.getStylesheetURL(), link.REL_STYLESHEET, link.TYPE_CSS));
-			m_head.addElement(new script((Element)null, WebEnv.getBaseDirectory("js/standard.js")));
 		}
 		m_head.addElement(new meta().setHttpEquiv("Content-Type", "text/html; charset=UTF-8"));
 		m_head.addElement(new meta().setName("description", Adempiere.getName() + " HTML UI"));

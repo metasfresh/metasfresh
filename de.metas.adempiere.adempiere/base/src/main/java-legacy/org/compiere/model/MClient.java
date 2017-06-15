@@ -31,6 +31,7 @@ import javax.mail.internet.InternetAddress;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
@@ -524,7 +525,7 @@ public class MClient extends X_AD_Client
 	@Deprecated
 	private boolean sendEMailAttachments (int AD_User_ID, String subject, String message, Collection<File> attachments, boolean html)
 	{
-		MUser to = MUser.get(getCtx(), AD_User_ID);
+		final I_AD_User to = Services.get(IUserDAO.class).retrieveUser(AD_User_ID);
 		String toEMail = to.getEMail();
 		if (toEMail == null || toEMail.length() == 0)
 		{
@@ -616,7 +617,7 @@ public class MClient extends X_AD_Client
 	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (MUser from, MUser to, String subject, String message, File attachment)
+	public boolean sendEMail (I_AD_User from, I_AD_User to, String subject, String message, File attachment)
 	{
 		return sendEMail(from, to, subject, message, attachment, false);
 	}
@@ -634,7 +635,7 @@ public class MClient extends X_AD_Client
 	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEMail (MUser from, MUser to, String subject, String message, File attachment, boolean isHtml)
+	public boolean sendEMail (I_AD_User from, I_AD_User to, String subject, String message, File attachment, boolean isHtml)
 	{
 		EMail email = createEMail(from, to, subject, message, isHtml);
 		if (email == null)
@@ -665,7 +666,7 @@ public class MClient extends X_AD_Client
 	 * @deprecated please use {@link de.metas.email.IMailBL} instead, and extend it as required.
 	 */
 	@Deprecated
-	public boolean sendEmailNow(MUser from, MUser to, EMail email)
+	public boolean sendEmailNow(I_AD_User from, I_AD_User to, EMail email)
 	{
 		final EMailSentStatus emailSentStatus = email.send();
 		//

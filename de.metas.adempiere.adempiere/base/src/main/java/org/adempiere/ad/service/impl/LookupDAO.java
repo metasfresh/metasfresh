@@ -579,7 +579,7 @@ public class LookupDAO implements ILookupDAO
 		final ITableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
 		if (tableRefInfo == null)
 		{
-			logger.error("no table ref={}", AD_Reference_ID);
+			logger.error("Cannot retrieve tableRefInfo for AD_Reference_ID={}. Returning null.", AD_Reference_ID);
 			return null;
 		}
 

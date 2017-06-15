@@ -187,6 +187,8 @@ public class AdempiereException extends RuntimeException
 	public AdempiereException(final String language, final String adMessage, final Object[] params)
 	{
 		super(Services.get(IMsgBL.class).getMsg(language, adMessage, params));
+		setParameter("AD_Language", language);
+		setParameter("AD_Message", adMessage);
 	}
 
 	public AdempiereException(final Properties ctx, final String adMessage, final Object[] params)

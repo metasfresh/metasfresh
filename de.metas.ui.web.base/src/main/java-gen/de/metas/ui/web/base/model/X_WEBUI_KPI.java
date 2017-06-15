@@ -14,7 +14,7 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1745282175L;
+	private static final long serialVersionUID = 355217345L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (Properties ctx, int WEBUI_KPI_ID, String trxName)
@@ -25,11 +25,9 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 			setChartType (null);
 			setES_Index (null);
 			setES_Type (null);
-			setIsGenerateComparation (false);
-// N
+			setIsGenerateComparation (false); // N
 			setName (null);
-			setPollIntervalSec (0);
-// 10
+			setPollIntervalSec (0); // 10
 			setWEBUI_KPI_ID (0);
         } */
     }

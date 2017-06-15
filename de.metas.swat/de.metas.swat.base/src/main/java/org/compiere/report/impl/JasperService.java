@@ -34,10 +34,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.MUser;
 import org.compiere.model.PrintInfo;
 import org.compiere.report.AbstractJasperService;
 import org.compiere.util.DB;
@@ -204,7 +204,7 @@ public final class JasperService extends AbstractJasperService
 
 			Services.get(IArchiveEventManager.class).firePrintOut(
 					InterfaceWrapperHelper.create(Env.getCtx(), archiveId, I_AD_Archive.class, ITrx.TRXNAME_None),
-					MUser.get(Env.getCtx(), userId),
+					Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), userId),
 					printServiceName,
 					numberOfPrintouts,
 					printed && printInfo != null ? IArchiveEventManager.STATUS_Success : IArchiveEventManager.STATUS_Failure);
