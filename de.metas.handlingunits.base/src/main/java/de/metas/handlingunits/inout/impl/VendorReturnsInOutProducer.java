@@ -106,7 +106,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	private final Map<HUpipToInOutLine, Integer> huPIPToInOutLines = new TreeMap<>(Comparator.comparing(HUpipToInOutLine::getM_HU_PI_Item_Product_ID)
 			.thenComparing(HUpipToInOutLine::getOriginalInOutLineID));
 
-	Map<ArrayKey, HUPackingMaterialDocumentLineCandidate> pmCandidates = new HashMap<>();
+	private Map<ArrayKey, HUPackingMaterialDocumentLineCandidate> pmCandidates = new HashMap<>();
 
 	public Map<HUpipToInOutLine, Integer> getHuPIPToInOutLines()
 	{
