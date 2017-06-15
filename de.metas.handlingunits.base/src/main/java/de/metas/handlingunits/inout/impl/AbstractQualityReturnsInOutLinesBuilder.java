@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -171,6 +172,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		// services
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_InOut inout = _inoutRef.getValue();
 
@@ -210,6 +212,9 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
 		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
+
+		// make sure the attributes in the return line is the same as in the origin line
+		asiBL.cloneASI(newInOutLine, originInOutLine);
 
 		// NOTE: we are not saving the inOut line
 
