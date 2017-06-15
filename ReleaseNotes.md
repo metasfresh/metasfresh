@@ -61,6 +61,8 @@ Here come the actual release notes:
   * [#1802](https://github.com/metasfresh/metasfresh/issues/1802) picking terminal is not opening
   * [#1805](https://github.com/metasfresh/metasfresh/issues/1805) Add the new Picking Window to WebUI Menu
     * Adding the prototype Picking window to WebUI menu.
+  * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
+    * Adding the Procurement Windows to WebUI.
 
 * metasfresh-webui-api
   * [#433](https://github.com/metasfresh/metasfresh-webui-api/issues/433) Show Manufacturing Order number in window header
