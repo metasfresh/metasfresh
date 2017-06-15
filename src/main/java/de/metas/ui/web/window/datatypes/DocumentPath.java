@@ -283,12 +283,11 @@ public final class DocumentPath
 		Check.assume(documentType == DocumentType.Window, "Expect documentType={} for {}", DocumentType.Window, this);
 		return WindowId.of(documentTypeId);
 	}
-	
+
 	public WindowId getWindowIdOrNull()
 	{
 		return documentType == DocumentType.Window ? WindowId.of(documentTypeId) : null;
 	}
-
 
 	public int getAD_Window_ID(final int returnIfNotAvailable)
 	{
@@ -528,8 +527,14 @@ public final class DocumentPath
 
 		public Builder setDocumentType(@NonNull final WindowId windowId)
 		{
-			documentType = DocumentType.Window;
-			documentTypeId = windowId.toDocumentId();
+			setDocumentType(DocumentType.Window, windowId.toDocumentId());
+			return this;
+		}
+
+		public Builder setDocumentType(@NonNull final DocumentType documentType, @NonNull final DocumentId documentTypeId)
+		{
+			this.documentType = documentType;
+			this.documentTypeId = documentTypeId;
 			return this;
 		}
 

@@ -3,6 +3,8 @@ package de.metas.ui.web.window.datatypes.json;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -18,6 +20,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -43,6 +46,7 @@ import lombok.NonNull;
 
 @SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
 public class JSONDocumentPath implements Serializable
 {
 	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath)
@@ -50,14 +54,14 @@ public class JSONDocumentPath implements Serializable
 		final String fieldName = null;
 		return ofWindowDocumentPath(documentPath, fieldName);
 	}
-	
+
 	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath, final String fieldName)
 	{
 		final JSONDocumentPathBuilder builder = builder()
 				.fieldName(fieldName) // optional
 				.windowId(documentPath.getWindowId())
 				.documentId(documentPath.getDocumentId());
-		
+
 		if (documentPath.isRootDocument())
 		{
 			return builder.build();
@@ -73,6 +77,37 @@ public class JSONDocumentPath implements Serializable
 		{
 			throw new IllegalArgumentException("Cannot convert " + documentPath + " to JSON");
 		}
+	}
+
+	public static final DocumentPath toDocumentPathOrNull(final JSONDocumentPath jsonDocumentPath)
+	{
+		if(jsonDocumentPath == null)
+		{
+			return null;
+		}
+
+		final DocumentPath.Builder builder = DocumentPath.builder();
+
+		// Window
+		if (jsonDocumentPath.getWindowId() != null)
+		{
+			builder.setDocumentType(jsonDocumentPath.getWindowId());
+		}
+		// Process
+		else if (jsonDocumentPath.getProcessId() != null)
+		{
+			builder.setDocumentType(DocumentType.Process, jsonDocumentPath.getProcessId().toDocumentId());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot identify the document type because it's not window nor process")
+					.setParameter("documentPath", jsonDocumentPath);
+		}
+		return builder
+				.setDocumentId(jsonDocumentPath.getDocumentId())
+				.setDetailId(jsonDocumentPath.getTabId())
+				.setRowId(jsonDocumentPath.getRowId())
+				.build();
 	}
 
 	@JsonProperty("windowId")
@@ -132,24 +167,24 @@ public class JSONDocumentPath implements Serializable
 		}
 
 		this.documentId = documentId;
-		
+
 		this.tabId = extractTabId(tabId, legacyTabId);
 		this.legacyTabId = this.tabId;
 		this.rowId = rowId;
 		this.fieldName = fieldName;
 	}
-	
+
 	private static final DetailId extractTabId(final DetailId tabId, final DetailId legacyTabId)
 	{
-		if(tabId == legacyTabId)
+		if (tabId == legacyTabId)
 		{
 			return tabId;
 		}
-		else if(tabId != null && legacyTabId == null)
+		else if (tabId != null && legacyTabId == null)
 		{
 			return tabId;
 		}
-		else if(tabId == null && legacyTabId != null)
+		else if (tabId == null && legacyTabId != null)
 		{
 			return legacyTabId;
 		}
