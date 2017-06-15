@@ -10,6 +10,15 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.14 (2017-25)
+
+**upcoming release for week 2017-25**
+
+## Features
+* metasfresh-backend
+  * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
+    * Enhancement of the functionality to transmit Products to Procurement User Interface. Now allowing the user to switch of selected Transmissions also when contrcts exist and are valid.
+
 # metasfresh 5.13 (2017-24)
 
 **upcoming release for week 2017-24**
