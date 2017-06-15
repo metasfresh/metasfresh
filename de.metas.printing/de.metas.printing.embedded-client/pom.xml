@@ -17,8 +17,8 @@
 	<dependencies>
 		<!-- Printing -->
 		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.client</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.client</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 

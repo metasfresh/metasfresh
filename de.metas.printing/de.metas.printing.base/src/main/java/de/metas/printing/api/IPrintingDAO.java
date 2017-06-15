@@ -45,10 +45,13 @@ import de.metas.printing.model.I_AD_PrinterTray_Matching;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
+import de.metas.printing.model.I_C_PrintPackageData;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 
@@ -266,4 +269,21 @@ public interface IPrintingDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_Printing_Queue retrievePrintingQueue(I_AD_Archive archive);
+	
+	/**
+	 * gets a list of printing package infos
+	 * 
+	 * @param printPackage
+	 * @return
+	 */
+	List<I_C_Print_PackageInfo> retrievePrintPackageInfos(I_C_Print_Package printPackage);
+
+	/**
+	 * retrieve package data
+	 * 
+	 * @param printPackage
+	 * @return
+	 */
+	I_C_PrintPackageData retrievePrintPackageData(I_C_Print_Package printPackage);
+
 }

@@ -8,10 +8,8 @@
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
-	<groupId>de.metas.printing.esb</groupId>
-	<artifactId>de.metas.printing.esb.client</artifactId>
-
-	<description>Printing client that queries the ESB for print jobs and performs them using the local printer hardware</description>
+	<groupId>de.metas.printing</groupId>
+	<artifactId>de.metas.printing.client</artifactId>
 
 	<properties>
 		<!-- note that the scripts are not part of the rollout-package.

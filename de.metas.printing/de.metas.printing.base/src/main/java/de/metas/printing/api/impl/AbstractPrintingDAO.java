@@ -52,10 +52,13 @@ import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_AD_PrinterTray_Matching;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_PrintPackageData;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 import lombok.NonNull;
@@ -355,4 +358,30 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.first();
 	}
+
+	@Override
+	public List<I_C_Print_PackageInfo> retrievePrintPackageInfos(@NonNull final I_C_Print_Package printPackage)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_PackageInfo.class, printPackage)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Print_PackageInfo.COLUMN_C_Print_Package_ID, printPackage.getC_Print_Package_ID())
+				.orderBy().addColumn(I_C_Print_PackageInfo.COLUMNNAME_AD_PrinterHW_ID).endOrderBy()
+				.create()
+				.list();
+	}
+
+	@Override
+	public I_C_PrintPackageData retrievePrintPackageData(@NonNull final I_C_Print_Package printPackage)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PrintPackageData.class, printPackage)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PrintPackageData.COLUMN_C_Print_Package_ID, printPackage.getC_Print_Package_ID())
+				.orderBy()
+				.addColumn(I_C_PrintPackageData.COLUMNNAME_Created)
+				.addColumn(I_C_PrintPackageData.COLUMNNAME_C_PrintPackageData_ID)
+				.endOrderBy()
+				.create()
+				.first(); // note: right now IDK why it's first an not firstOnly
+	}
+
 }
