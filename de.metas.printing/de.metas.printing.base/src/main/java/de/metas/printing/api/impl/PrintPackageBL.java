@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
 
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -164,14 +165,14 @@ public class PrintPackageBL implements IPrintPackageBL
 	{
 		final PrintPackageCtx printCtx = new PrintPackageCtx();
 
-		final MFSession session = Services.get(IPrintingDAO.class).retrieveCurrentSession(ctx);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session == null)
 		{
 			throw new AdempiereException("@NotFound@ @AD_Session_ID@");
 		}
 		logger.debug("Session: {}", session);
 
-		final String hostKey = session.getHostKey();
+		final String hostKey = session.getHostKey(ctx);
 		Check.assumeNotEmpty(hostKey, "{} has a hostKey", session);
 
 		printCtx.setHostKey(hostKey);
@@ -184,10 +185,10 @@ public class PrintPackageBL implements IPrintPackageBL
 	public String getHostKeyOrNull(final Properties ctx)
 	{
 		// Check session
-		final MFSession session = Services.get(IPrintingDAO.class).retrieveCurrentSession(ctx);
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
 		if (session != null)
 		{
-			return session.getHostKey();
+			return session.getHostKey(ctx);
 		}
 
 		return null;

@@ -27,8 +27,10 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.UUID;
 
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -80,7 +82,7 @@ public class TestFromPrintingQueueToClient extends de.metas.esb.printing.test.Ab
 
 	public void setupPrintingClient()
 	{
-		final MFSession session = printingCoreHelper.getDAO().retrieveCurrentSession(adempiere.getCtx());
+		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(adempiere.getCtx());
 
 		final Context ctx = Context.getContext();
 		ctx.setProperty(Context.CTX_SessionId, Integer.toString(session.getAD_Session_ID()));

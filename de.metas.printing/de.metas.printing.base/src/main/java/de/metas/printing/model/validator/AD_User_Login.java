@@ -170,7 +170,7 @@ public class AD_User_Login
 		// Update newly create AD_Session
 		final MFSession session = Services.get(ISessionBL.class).getSessionById(ctx, adSessionId);
 		Check.assumeNotNull(session, "session not null");
-		session.setHostKey(hostKey);
+		session.setHostKey(hostKey, loginCtx);
 		session.updateContext(loginCtx);
 
 		//

@@ -193,13 +193,32 @@ public class MFSession
 		InterfaceWrapperHelper.save(sessionPO);
 	}
 
-	public void setHostKey(final String hostKey)
+	/**
+	 * Stores the given {@code hostKey} in the {@link I_AD_Session} this instance encapsulates and also updates the given {@code ctxToUpdate} (unless the given context is {@code null}!).
+	 * 
+	 * @param hostKey the key to store
+	 * @param ctxToUpdate may be {@code null}; the context to update.
+	 */
+	public void setHostKey(final String hostKey, final Properties ctxToUpdate)
 	{
 		sessionPO.setHostKey(hostKey);
 		InterfaceWrapperHelper.save(sessionPO);
+
+		if (ctxToUpdate != null)
+		{
+			Env.setContext(ctxToUpdate, CTX_Prefix + I_AD_Session.COLUMNNAME_HostKey, hostKey); // now this should also solve gh #1314
+		}
 	}
 
-	public String getHostKey()
+	/**
+	 * Gets or creates a hostkey for this session. If the hostkey was already determined it is just returned.<br>
+	 * If the hostkey is created (via {@link IHostKeyBL}), it is not only returned, but also {@link #setHostKey(String, Properties)} is called.
+	 * 
+	 * @param ctxToUpdate; maybe be {@code null}; will be passed to {@link #setHostKey(String, Properties)} in case that method is called.
+	 * 
+	 * @return the hostkey which is currently mostly used for printing.
+	 */
+	public String getHostKey(final Properties ctxToUpdate)
 	{
 		final String hostKey = sessionPO.getHostKey();
 
@@ -213,8 +232,7 @@ public class MFSession
 		final String newHostKey = hostKeyBL.getCreateHostKey();
 		log.info("Setting AD_Session.HostKey={} for sessionPO={}", hostKey, sessionPO);
 
-		sessionPO.setHostKey(newHostKey);
-		InterfaceWrapperHelper.save(sessionPO);
+		setHostKey(newHostKey, ctxToUpdate);
 		return newHostKey;
 	}
 
