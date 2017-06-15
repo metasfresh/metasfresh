@@ -35,30 +35,15 @@ public class MAttributeUse extends X_M_AttributeUse
 	 */
 	private static final long serialVersionUID = 3727204159034073907L;
 
-
-	/**
-	 * 	Persistency Constructor
-	 *	@param ctx context
-	 *	@param ignored ignored
-	 *	@param trxName transaction
-	 */
-	public MAttributeUse (Properties ctx, int ignored, String trxName)
+	public MAttributeUse(final Properties ctx, final int M_AttributeUse_ID, final String trxName)
 	{
-		super (ctx, ignored, trxName);
-		if (ignored != 0)
-			throw new IllegalArgumentException("Multi-Key");
-	}	//	MAttributeUse
+		super(ctx, M_AttributeUse_ID, trxName);
+	}
 
-	/**
-	 * 	Load Cosntructor
-	 *	@param ctx context
-	 *	@param rs result set
-	 *	@param trxName transaction
-	 */
-	public MAttributeUse (Properties ctx, ResultSet rs, String trxName)
+	public MAttributeUse(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	//	MAttributeUse
+	}
 
 	
 	/**
