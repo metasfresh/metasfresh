@@ -63,6 +63,8 @@ Here come the actual release notes:
     * Adding the prototype Picking window to WebUI menu.
   * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
     * Adding the Procurement Windows to WebUI.
+  * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
+    * New Window to allow the recording of Request for Quotations in WebUI.
 
 * metasfresh-webui-api
   * [#433](https://github.com/metasfresh/metasfresh-webui-api/issues/433) Show Manufacturing Order number in window header
