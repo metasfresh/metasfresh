@@ -21,13 +21,6 @@
 			<artifactId>de.metas.printing.esb.client</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-		<!-- if we add printing dep, then we introduce dep cycles
-		<dependency>
-			<groupId>de.metas.printing</groupId>
-			<artifactId>de.metas.printing</artifactId>
-			<version>1.0.0</version>
-		</dependency>
-		-->
 
 		<dependency>
 			<groupId>de.metas.printing</groupId>

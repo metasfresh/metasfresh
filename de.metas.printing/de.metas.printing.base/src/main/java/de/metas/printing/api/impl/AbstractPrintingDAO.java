@@ -39,6 +39,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Archive;
 
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_Print_Clients;
@@ -57,6 +58,7 @@ import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import lombok.NonNull;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
@@ -336,5 +338,21 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				mediaSizeName,
 				hwPrinter.getName());
 		return result;
+	}
+
+	@Override
+	public I_C_Printing_Queue retrievePrintingQueue(@NonNull final I_AD_Archive archive)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_C_Printing_Queue.class, archive)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Printing_Queue.COLUMN_AD_Archive_ID, archive.getAD_Archive_ID())
+				.orderBy()
+				.addColumn(I_C_Printing_Queue.COLUMNNAME_Created, false)
+				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID, false) // also order by ID in case created is not unique
+				.endOrderBy()
+				.create()
+				.first();
 	}
 }

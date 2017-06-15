@@ -291,8 +291,7 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
-		
-		
+
 		<!--
 			Lombok
 			See https://github.com/metasfresh/metasfresh/issues/1125
@@ -304,7 +303,6 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
 
 	</dependencies>
 

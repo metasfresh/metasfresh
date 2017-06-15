@@ -3,6 +3,7 @@ package org.adempiere.service;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Preference;
 
 /*
  * #%L
@@ -36,6 +37,17 @@ public interface IValuePreferenceDAO extends ISingletonService
 {
 	boolean remove(Properties ctx, String attribute, int adClientId, int adOrgId, int adUserId, int adWindowId);
 
+	/**
+	 * Store the given {@code value} as {@link I_AD_Preference} and also invoke {@link org.compiere.util.Env#setPreference(Properties, org.adempiere.service.IValuePreferenceBL.IUserValuePreference)}.
+	 * 
+	 * @param ctx
+	 * @param attribute
+	 * @param value
+	 * @param adClientId
+	 * @param adOrgId
+	 * @param adUserId
+	 * @param adWindowId
+	 */
 	void save(Properties ctx, String attribute, Object value, int adClientId, int adOrgId, int adUserId, int adWindowId);
 
 }
