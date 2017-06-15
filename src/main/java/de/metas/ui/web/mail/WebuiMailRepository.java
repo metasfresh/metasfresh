@@ -10,6 +10,7 @@ import org.compiere.util.Evaluatees;
 import org.springframework.stereotype.Component;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -61,12 +62,13 @@ public class WebuiMailRepository
 		emailToLookup = LookupDataSourceFactory.instance.getLookupDataSource(emailToLookupDescriptor);
 	}
 
-	public WebuiEmail createNewEmail(final LookupValue from)
+	public WebuiEmail createNewEmail(final LookupValue from, final DocumentPath contextDocumentPath)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
 		final WebuiEmail email = WebuiEmail.builder()
 				.emailId(emailId)
 				.from(from)
+				.contextDocumentPath(contextDocumentPath)
 				.build();
 
 		emailsById.put(emailId, email);
@@ -78,19 +80,27 @@ public class WebuiMailRepository
 		final WebuiEmail email = emailsById.get(emailId);
 		if (email == null)
 		{
-			throw new EntityNotFoundException("Email not found");
+			throw new EntityNotFoundException("Email not found")
+					.setParameter("emailId", emailId);
 		}
 		return email;
 	}
 
 	public WebuiEmail changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
 	{
-		return emailsById.compute(emailId, (id, emailOld) -> emailModifier.apply(emailOld));
+		return emailsById.compute(emailId, (id, emailOld) -> {
+			if (emailOld == null)
+			{
+				throw new EntityNotFoundException("Email not found")
+						.setParameter("emailId", emailId);
+			}
+			return emailModifier.apply(emailOld);
+		});
 	}
 
 	public WebuiEmail changeEmailAndRemove(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
 	{
-		final WebuiEmail email = emailsById.compute(emailId, (id, emailOld) -> emailModifier.apply(emailOld));
+		final WebuiEmail email = changeEmail(emailId, emailModifier);
 		emailsById.remove(emailId);
 		return email;
 	}
@@ -98,6 +108,9 @@ public class WebuiMailRepository
 	public LookupValuesList getToTypeahead(String emailId_NOTUSED, String query)
 	{
 		final Evaluatee ctx = Evaluatees.empty(); // TODO
+
+		// TODO: filter only those which have a valid email address
+
 		return emailToLookup.findEntities(ctx, query);
 	}
 
