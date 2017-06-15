@@ -86,8 +86,6 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	void runWithTrxName(String trxName, Runnable runnable);
 
-	MFSession retrieveCurrentSession(final Properties ctx);
-
 	/**
 	 * 
 	 * @param job
