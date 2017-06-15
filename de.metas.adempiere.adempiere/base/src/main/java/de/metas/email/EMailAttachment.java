@@ -4,20 +4,22 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.util.Objects;
 
 import javax.activation.DataSource;
 import javax.activation.URLDataSource;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Check;
-import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.util.Util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,24 +49,38 @@ import com.google.common.base.MoreObjects;
  * @author metas-dev <dev@metasfresh.com>
  * @see EMail#getAttachments()
  */
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @SuppressWarnings("serial")
+@EqualsAndHashCode
 public final class EMailAttachment implements Serializable
 {
-	/* package */static EMailAttachment of(final File file)
+	public static EMailAttachment of(@NonNull final File file)
 	{
 		final String filename = file.getName();
 		final byte[] content = Util.readBytes(file);
-		return new EMailAttachment(filename, content);
+		final URI uri = null;
+		return new EMailAttachment(filename, content, uri);
+	}
+	
+	public static EMailAttachment of(@NonNull final String filename, @NonNull final File file)
+	{
+		final byte[] content = Util.readBytes(file);
+		final URI uri = null;
+		return new EMailAttachment(filename, content, uri);
 	}
 
-	/* package */static EMailAttachment of(final String filename, final byte[] content)
+
+	public static EMailAttachment of(@NonNull final String filename, final byte[] content)
 	{
-		return new EMailAttachment(filename, content);
+		final URI uri = null;
+		return new EMailAttachment(filename, content, uri);
 	}
 
-	/* package */static EMailAttachment of(final URI uri)
+	public static EMailAttachment of(@NonNull final URI uri)
 	{
-		return new EMailAttachment(uri);
+		final String filename = null;
+		final byte[] content = null;
+		return new EMailAttachment(filename, content, uri);
 	}
 
 	@JsonProperty("filename")
@@ -74,36 +90,12 @@ public final class EMailAttachment implements Serializable
 	@JsonProperty("uri")
 	private final URI uri;
 
-	@JsonIgnore
-	private transient Integer _hashcode;
-
-	private EMailAttachment(final String filename, final byte[] content)
-	{
-		super();
-		Check.assumeNotEmpty(filename, "filename not empty");
-		this.filename = filename;
-		this.content = content;
-		uri = null;
-	}
-
-	private EMailAttachment(final URI uri)
-	{
-		super();
-		filename = null;
-		content = null;
-
-		Check.assumeNotNull(uri, "uri not null");
-		this.uri = uri;
-	}
-
 	@JsonCreator
 	private EMailAttachment(
-			@JsonProperty("filename") final String filename//
-			, @JsonProperty("content") final byte[] content //
-			, @JsonProperty("uri") final URI uri //
-	)
+			@JsonProperty("filename") final String filename,
+			@JsonProperty("content") final byte[] content,
+			@JsonProperty("uri") final URI uri)
 	{
-		super();
 		this.filename = filename;
 		this.content = content;
 		this.uri = uri;
@@ -118,37 +110,6 @@ public final class EMailAttachment implements Serializable
 				.add("uri", uri)
 				.add("content.size", content != null ? content.length : null)
 				.toString();
-	}
-
-	@Override
-	public int hashCode()
-	{
-		if (_hashcode == null)
-		{
-			_hashcode = Objects.hash(filename, content, uri);
-		}
-		return _hashcode;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final EMailAttachment other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(filename, other.filename)
-				.append(uri, other.uri)
-				.append(content, other.content)
-				.isEqual();
 	}
 
 	@JsonIgnore
@@ -170,5 +131,4 @@ public final class EMailAttachment implements Serializable
 			return ByteArrayBackedDataSource.of(filename, content);
 		}
 	}
-
 }
