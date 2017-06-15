@@ -1,5 +1,6 @@
 package de.metas.ui.web.mail;
 
+import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
@@ -42,6 +43,8 @@ public class WebuiEmail
 	private final String message;
 	@Default
 	private final LookupValuesList attachments = LookupValuesList.EMPTY;
-
+	
 	private final boolean sent;
+	
+	private final DocumentPath contextDocumentPath;
 }
