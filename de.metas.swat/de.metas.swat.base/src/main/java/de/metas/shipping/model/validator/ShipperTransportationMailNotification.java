@@ -190,7 +190,7 @@ public class ShipperTransportationMailNotification implements ModelValidator
 			@Override
 			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
 			{
-				variables.put(MADBoilerPlate.VAR_UserPO, io);
+				variables.put(MADBoilerPlate.VAR_SourceDocument, io);
 				//
 				String message = text.getTextSnippetParsed(variables);
 				//

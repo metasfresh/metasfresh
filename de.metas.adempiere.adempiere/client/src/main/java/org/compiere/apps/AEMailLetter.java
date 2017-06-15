@@ -42,6 +42,7 @@ import org.compiere.util.Env;
 import de.metas.email.EMail;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 
 public class AEMailLetter implements ActionListener
 {
@@ -184,7 +185,7 @@ public class AEMailLetter implements ActionListener
 
 	private void actionLetter()
 	{
-		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(parent.getCurrentTab());
+		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(parent.getCurrentTab()));
 		final LetterDialog dialog = new LetterDialog(
 				Env.getWindow(parent.getWindowNo()),
 				Services.get(IMsgBL.class).getMsg(Env.getCtx(), "de.metas.letters.Letter"),

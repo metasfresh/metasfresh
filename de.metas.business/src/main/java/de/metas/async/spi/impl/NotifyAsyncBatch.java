@@ -121,7 +121,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 				{
 					final MClient client = MClient.get(ctx, Env.getAD_Client_ID(ctx));
 
-					variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
+					variables.put(MADBoilerPlate.VAR_SourceDocument, asyncBatch);
 
 					// try to set language; take first from partner; if does not exists, take it from client
 					final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);

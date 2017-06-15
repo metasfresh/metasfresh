@@ -58,11 +58,13 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import de.metas.i18n.Msg;
 import de.metas.letters.model.I_AD_Column;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.letters.model.MADBoilerPlateVar;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -134,7 +136,7 @@ public class BoilerPlateMenu
 		BoilerPlateMenu bpm = new BoilerPlateMenu() {
 			@Override
 			public Map<String, Object> getAttributes() {
-				return MADBoilerPlate.createEditorContext(gridTab);
+				return MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(gridTab));
 			}
 
 			@Override

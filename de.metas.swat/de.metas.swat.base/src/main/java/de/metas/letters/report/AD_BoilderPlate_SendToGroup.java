@@ -47,6 +47,7 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -201,7 +202,7 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 	
 	private void notifyLetter(MADBoilerPlate text, MRGroupProspect prospect)
 	{
-		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(prospect);
+		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(prospect));
 		final String html = text.getTextSnippetParsed(variables);
 		final ReportEngine re = MADBoilerPlate.getReportEngine(html, variables);
 		re.print();
