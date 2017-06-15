@@ -557,7 +557,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		// TODO: handle the case of composed primary key!
 		if (po.getPOInfo().getKeyColumnName() == null)
 		{
-			throw new UnsupportedOperationException("Composed primary key is not supported");
+			throw new UnsupportedOperationException("Composed primary key is not supported for " + sqlTableName);
 		}
 
 		//
