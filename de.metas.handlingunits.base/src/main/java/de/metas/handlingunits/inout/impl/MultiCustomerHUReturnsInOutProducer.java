@@ -15,6 +15,7 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
@@ -141,11 +142,12 @@ public class MultiCustomerHUReturnsInOutProducer
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
 				final int bpartnerId = inout.getC_BPartner_ID();
 
+				final I_C_Order order = inout.getC_Order();
 				// Add the HU to the right producer
 				// NOTE: There will be one return inout for each partner and warehouse
 				// The return inout lines will be created based on the origin inoutlines (from receipts)
 				final ArrayKey customerReturnProducerKey = ArrayKey.of(warehouseId, bpartnerId);
-				customerReturnProducers.computeIfAbsent(customerReturnProducerKey, k -> createCustomerReturnInOutProducer(bpartnerId, warehouseId))
+				customerReturnProducers.computeIfAbsent(customerReturnProducerKey, k -> createCustomerReturnInOutProducer(bpartnerId, warehouseId, order))
 						.addHUToReturn(hu, originalShipmentInOutLineId);
 			}
 		}
@@ -161,7 +163,7 @@ public class MultiCustomerHUReturnsInOutProducer
 		// Send notifications
 		if (!returnInOuts.isEmpty())
 		{
-			if (_manualCustomerReturn != null)
+			if (_manualCustomerReturn == null)
 			{
 				ReturnInOutProcessedEventBus.newInstance()
 						.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
@@ -190,7 +192,7 @@ public class MultiCustomerHUReturnsInOutProducer
 	 * @param hus
 	 * @return
 	 */
-	private CustomerReturnsInOutProducer createCustomerReturnInOutProducer(final int partnerId, final int warehouseId)
+	private CustomerReturnsInOutProducer createCustomerReturnInOutProducer(final int partnerId, final int warehouseId, final I_C_Order originOrder)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final Properties ctx = Env.getCtx();
@@ -206,6 +208,8 @@ public class MultiCustomerHUReturnsInOutProducer
 		producer.setM_Warehouse(warehouse);
 
 		producer.setMovementDate(getMovementDate());
+		
+		producer.setC_Order(originOrder);
 
 		if (_manualCustomerReturn != null)
 		{
