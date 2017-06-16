@@ -36,7 +36,6 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -56,6 +55,7 @@ import org.compiere.util.Env;
 
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 
 public class LetterDialog
 		extends CDialog
@@ -68,14 +68,14 @@ public class LetterDialog
 
 	// private static final transient Logger log = CLogMgt.getLogger(LetterDialog.class);
 
-	public LetterDialog(final Frame owner, final String title, final Map<String, Object> attributes)
+	public LetterDialog(final Frame owner, final String title, final BoilerPlateContext context)
 	{
 		super(owner, title, true);
 		this.attributes = attributes;
 		init(owner);
 	}
 
-	public LetterDialog(final Dialog owner, final String title, final Map<String, Object> attributes)
+	public LetterDialog(final Dialog owner, final String title, final BoilerPlateContext context)
 	{
 		super(owner, title, true);
 		this.attributes = attributes;
@@ -230,7 +230,7 @@ public class LetterDialog
 	}
 
 	private int m_headerLine = 0;
-	private Map<String, Object> attributes;
+	private BoilerPlateContext attributes = BoilerPlateContext.EMPTY;
 	private boolean m_isPrinted = false;
 	private boolean m_isPressedOK = false;
 	private boolean m_isPrintOnOK = false;
@@ -254,13 +254,13 @@ public class LetterDialog
 		return m_message;
 	}   // getMessage
 
-	public void setAttributes(final Map<String, Object> attributes)
+	public void setAttributes(final BoilerPlateContext attributes)
 	{
 		this.attributes = attributes;
 		fMessage.setAttributes(attributes);
 	}
 
-	public Map<String, Object> getAttributes()
+	public BoilerPlateContext getAttributes()
 	{
 		return attributes;
 	}

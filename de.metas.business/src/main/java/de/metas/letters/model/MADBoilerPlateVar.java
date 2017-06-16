@@ -41,6 +41,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 
 /**
@@ -123,16 +124,16 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 	 * @param attributes context attributes
 	 * @return String value of evaluated variable
 	 */
-	public String evaluate(Map<String, Object> attributes)
+	public String evaluate(final BoilerPlateContext context)
 	{
 		final String type = getType();
 		if (TYPE_SQL.equals(type))
 		{
-			return evaluateSQL(attributes);
+			return evaluateSQL(context);
 		}
 		else if (TYPE_RuleEngine.equals(type))
 		{
-			return evaluateRuleEngine(attributes);
+			return evaluateRuleEngine(context);
 		}
 		else
 		{
@@ -140,15 +141,15 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 		}
 	}
 	
-	private String evaluateSQL(final Map<String, Object> attributes)
+	private String evaluateSQL(final BoilerPlateContext context)
 	{
 		final Properties ctx = Env.getCtx();
 		final String code = getCode();
 		if (Check.isEmpty(code, true))
 			return "";
 
-		final int windowNo = MADBoilerPlate.getWindowNo(attributes);
-		final SourceDocument sourceDocument = MADBoilerPlate.SourceDocument.toSourceDocumentOrNull(attributes.get(MADBoilerPlate.VAR_SourceDocument));
+		final int windowNo = context.getWindowNo();
+		final SourceDocument sourceDocument = context.getSourceDocumentOrNull();
 		final List<Object> params = new ArrayList<Object>();
 		final StringBuffer sql = new StringBuffer();
 
@@ -180,7 +181,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 			}
 			if (tokenValue == null || tokenValue.toString().length() == 0)
 			{
-				tokenValue = attributes.get(token);
+				tokenValue = context.get(token);
 			}
 			if (tokenValue == null || tokenValue.toString().length() == 0)
 			{
@@ -224,7 +225,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 		return DB.getSQLValueStringEx(get_TrxName(), sql.toString(), params);
 	}
 	
-	private String evaluateRuleEngine(Map<String, Object> attributes)
+	private String evaluateRuleEngine(final BoilerPlateContext context)
 	{
 		throw new IllegalStateException("Method not implemented"); // TODO
 	}

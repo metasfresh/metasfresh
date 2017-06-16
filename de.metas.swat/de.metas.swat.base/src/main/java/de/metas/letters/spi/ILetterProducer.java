@@ -22,11 +22,9 @@ package de.metas.letters.spi;
  * #L%
  */
 
-
-import java.util.Map;
-
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_C_Letter;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 
 /**
  * Implementations of this producer interface will be responsible of generating letters for various sources.
@@ -62,5 +60,5 @@ public interface ILetterProducer<T>
 	 * @param item
 	 * @return text template attributes
 	 */
-	Map<String, Object> createAttributes(T item);
+	BoilerPlateContext createAttributes(T item);
 }

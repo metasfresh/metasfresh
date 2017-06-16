@@ -32,8 +32,6 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
@@ -44,6 +42,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 
 /**
  * @author teo_sarca
@@ -55,7 +54,7 @@ public class VLetterAttachment extends CPanel {
 	private CButton bEdit = new CButton();
 	private CButton bCancel = new CButton();
 
-	private Map<String, Object> variables = new HashMap<String, Object>();
+	private BoilerPlateContext variables = BoilerPlateContext.EMPTY;
 	private String letterHtml = "";
 	private File letterPdfFile = null;
 
@@ -111,7 +110,7 @@ public class VLetterAttachment extends CPanel {
 		bCancel.setEnabled(!Util.isEmpty(letterHtml, false));
 	}
 
-	public void setVariables(Map<String, Object> variables) {
+	public void setVariables(final BoilerPlateContext variables) {
 		this.variables = variables;
 	}
 
