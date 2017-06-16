@@ -78,7 +78,7 @@ Here come the actual release notes:
   * [#435](https://github.com/metasfresh/metasfresh-webui-api/issues/435) document: stale tab events shall be sent to document's websocket endpoint
     * Imporovement of the WebUI Rest-API communication for nmessages because of Stale Tabs.
   * [#437](https://github.com/metasfresh/metasfresh-webui-api/issues/437) Load/ Reload of delivery Days window takes too long.
-    * Improving the User Experience opening windows with a large amount of data.
+    * API Improvement for opening windows with a large amount of data.
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
   * [#444](https://github.com/metasfresh/metasfresh-webui-api/issues/444) Make Dashboard Translatable
@@ -106,6 +106,7 @@ Here come the actual release notes:
   * [#840](https://github.com/metasfresh/metasfresh-webui-frontend/issues/840) Open Sitemap shall focus on Search Field initially and more
     * Navigation Improvements in Sitemap Screen. Now allowing easy switch between filtered menu treee and search field.
   * [#847](https://github.com/metasfresh/metasfresh-webui-frontend/issues/847) Loading of empty delivery Days Window take long
+    * Frontend Improvement for opening windows with a large amount of data.
   * [#854](https://github.com/metasfresh/metasfresh-webui-frontend/issues/854) After login to account, go to sitemap page, open developer tab and start using scroll.
     * Additional Improvement for the Usage of Firefox Browser with metasfresh WebUI.
   * [#855](https://github.com/metasfresh/metasfresh-webui-frontend/issues/855) Missing shadow under top menu
@@ -124,24 +125,32 @@ Here come the actual release notes:
 
 * others
   * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
+    * Build System imporvement now allowing to issue the git branch name as docker tag.
   * [metasfresh/metasfresh-scripts#8](https://github.com/metasfresh/metasfresh-scripts/issues/8) implement crude pagination for `cherry-pick-issue-script`
+    * Adding support for github issues with more than 30 events.
 
 ## Fixes
 * metasfresh-backend
   * [#1441](https://github.com/metasfresh/metasfresh/issues/1441) move subproject de.metas.endcustomer.mf15.ait to metasfresh-dist repo
     * Cleanup; Thx [@homebeaver](https://github.com/homebeaver) for the pointer
   * [#1735](https://github.com/metasfresh/metasfresh/issues/1735) istransferwhennull not working in webUI but in java client
+    * This Fixes the transmission of Attributes from issued material to received product in the manufacturing workflow.
   * [#1793](https://github.com/metasfresh/metasfresh/issues/1793) fix jasper document for vendor returns
+    * Minor Bugfix for the Vendor Returns document.
   * [#1802](https://github.com/metasfresh/metasfresh/issues/1802) picking terminal is not opening
     * Fixes a Bug that prevented the starting/ opening of the Picking Terminal Window.
   * [#1807](https://github.com/metasfresh/metasfresh/issues/1807) Fix "Create primary key" process
+    * Fixing the "create primary key" process in Table/ Columns in Application Dictionary.
   * [#1810](https://github.com/metasfresh/metasfresh/issues/1810) Responsible mandatory Field missing in Request
     * Adds the Field back for Resposible Sales Representative to Request Window in WebUI.
 
 * metasfresh-webui-api
   * [#400](https://github.com/metasfresh/metasfresh-webui-api/issues/400) minimum password length error message not displayed
+    * Now adding an error message to the user when the changed password does not have a length of at least 8 characters.
   * [#436](https://github.com/metasfresh/metasfresh-webui-api/issues/436) Manufacturing Order Issue not possible after barcode filtering
+    * Fixes a minor Bug that occured when using the barcode filtering.
   * [#446](https://github.com/metasfresh/metasfresh-webui-api/issues/446) Cannot open the menu when logged in as System Administrator
+    * Now allows also the System Administrator to see the menu in WebUI.
 
 * metasfresh-webui-frontend
   * [#795](https://github.com/metasfresh/metasfresh-webui-frontend/issues/795) On tab stale event, don't refresh tabs which are queryOnLoad but are not the active tab
