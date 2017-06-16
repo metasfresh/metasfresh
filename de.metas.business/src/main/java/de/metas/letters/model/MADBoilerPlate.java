@@ -1168,6 +1168,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				setAttribute(VAR_EMail, email);
 				return this;
 			}
+
+			public Builder setCustomAttribute(final String attributeName, final String value)
+			{
+				setAttribute(attributeName, value);
+				return this;
+			}
 		}
 	}
 
