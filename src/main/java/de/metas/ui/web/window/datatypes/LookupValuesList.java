@@ -75,6 +75,18 @@ public final class LookupValuesList
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
+	public static final LookupValuesList fromNullable(final LookupValue lookupValue)
+	{
+		if(lookupValue == null)
+		{
+			return EMPTY;
+		}
+		
+		final ImmutableMap<Object, LookupValue> valuesById = ImmutableMap.of(lookupValue.getId(), lookupValue);
+		final Map<String, String> debugProperties = ImmutableMap.of();
+		return new LookupValuesList(valuesById, debugProperties);
+	}
+
 	private static final LookupValuesList build(final ImmutableMap.Builder<Object, LookupValue> valuesByIdBuilder, final Map<String, String> debugProperties)
 	{
 		final ImmutableMap<Object, LookupValue> valuesById = valuesByIdBuilder.build();
@@ -261,7 +273,7 @@ public final class LookupValuesList
 				.collect(collect(debugProperties));
 	}
 
-	public LookupValuesList addIfAbsent(@NonNull LookupValue lookupValue)
+	public LookupValuesList addIfAbsent(@NonNull final LookupValue lookupValue)
 	{
 		if (valuesById.containsKey(lookupValue.getId()))
 		{
@@ -288,25 +300,25 @@ public final class LookupValuesList
 		{
 			return this;
 		}
-		
+
 		// If this list is empty, we can return it
-		if(valuesById.isEmpty())
+		if (valuesById.isEmpty())
 		{
 			return this;
 		}
 
 		// Create a new values map which does not contain the the values to be removed
-		final ImmutableMap<Object, LookupValue> valuesByIdNew = this.valuesById.entrySet().stream()
+		final ImmutableMap<Object, LookupValue> valuesByIdNew = valuesById.entrySet().stream()
 				.filter(entry -> !valuesToRemove.containsId(entry.getKey()))
 				.collect(GuavaCollectors.toImmutableMap());
 
 		// If nothing was filtered out, we can return this
-		if (this.valuesById.size() == valuesByIdNew.size())
+		if (valuesById.size() == valuesByIdNew.size())
 		{
 			return this;
 		}
 
 		//
-		return new LookupValuesList(valuesByIdNew, this.debugProperties);
+		return new LookupValuesList(valuesByIdNew, debugProperties);
 	}
 }
