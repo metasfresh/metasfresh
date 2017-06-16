@@ -1,7 +1,8 @@
 package de.metas.handlingunits.inout;
 
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.inout.model.I_M_InOutLine;
+
 
 /*
  * #%L
