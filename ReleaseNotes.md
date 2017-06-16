@@ -22,6 +22,20 @@ Here come the actual release notes:
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
     * New Window to allow the recording of Request for Quotations in WebUI.
+	
+* metasfresh-webui-frontend
+  * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
+    * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
+  * [#885](https://github.com/metasfresh/metasfresh-webui-frontend/issues/885) Change the Bookmark Subtab Group Functionality
+    * Changes the Bookmark Grouping Functionality and now shows a flat and compressed representation of the sitemap in shortcut/ bookmark menu.
+  * [#886](https://github.com/metasfresh/metasfresh-webui-frontend/issues/886) Optimize Browse-whole-tree Navigation Link
+    * Moves the 'Browse whole tree' to more prominent place above the Bookmark menu. This allows teh user to quickly open the sitemap if needed.
+
+## Fixes
+
+* metasfresh-webui-frontend
+  * [#877](https://github.com/metasfresh/metasfresh-webui-frontend/issues/877) n instead of none in dropdowns
+    * Fixes a minor Bug with the description of the emptyvalues in fields.
 
 # metasfresh 5.13 (2017-24)
 
