@@ -36,6 +36,8 @@ public class WebuiEmail
 {
 	@NonNull
 	private final String emailId;
+	private final int ownerUserId;
+	
 	private final LookupValue from;
 	@Default
 	private final LookupValuesList to = LookupValuesList.EMPTY;

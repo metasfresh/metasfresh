@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -77,12 +78,15 @@ public class WebuiMailRepository
 		emailToLookup = LookupDataSourceFactory.instance.getLookupDataSource(emailToLookupDescriptor);
 	}
 
-	public WebuiEmail createNewEmail(final LookupValue from, final LookupValue to, final DocumentPath contextDocumentPath)
+	public WebuiEmail createNewEmail(final int ownerUserId, final LookupValue from, final LookupValue to, final DocumentPath contextDocumentPath)
 	{
+		Preconditions.checkArgument(ownerUserId >= 0, "ownerUserId >= 0");
+
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
 		final LookupValuesList toList = LookupValuesList.fromNullable(to);
 		final WebuiEmail email = WebuiEmail.builder()
 				.emailId(emailId)
+				.ownerUserId(ownerUserId)
 				.from(from)
 				.to(toList)
 				.contextDocumentPath(contextDocumentPath)

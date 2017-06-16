@@ -116,6 +116,32 @@ public class MailRestController
 	private static final String PATCH_FIELD_TemplateId = "templateId";
 	private static final Set<String> PATCH_FIELD_ALL = ImmutableSet.of(PATCH_FIELD_To, PATCH_FIELD_Subject, PATCH_FIELD_Message, PATCH_FIELD_Attachments, PATCH_FIELD_TemplateId);
 
+	private final void assertReadable(final WebuiEmail email)
+	{
+		// Make sure current logged in user is the owner
+		final int loggedUserId = userSession.getAD_User_ID();
+		if (email.getOwnerUserId() != loggedUserId)
+		{
+			throw new AdempiereException("No credentials to change the email")
+					.setParameter("emailId", email.getEmailId())
+					.setParameter("ownerUserId", email.getOwnerUserId())
+					.setParameter("loggedUserId", loggedUserId);
+		}
+
+	}
+
+	private final void assertWritable(final WebuiEmail email)
+	{
+		assertReadable(email);
+
+		// Make sure the email was not already sent
+		if (email.isSent())
+		{
+			throw new AdempiereException("Cannot change an email which was already sent")
+					.setParameter("emailId", email.getEmailId());
+		}
+	}
+	
 	@PostMapping()
 	@ApiOperation("Creates a new email")
 	public JSONEmail createNewEmail(@RequestBody final JSONEmailRequest request)
@@ -132,7 +158,7 @@ public class MailRestController
 		final Integer toUserId = attributes.getAD_User_ID();
 		final LookupValue to = mailRepo.getToByUserId(toUserId);
 
-		final String emailId = mailRepo.createNewEmail(from, to, contextDocumentPath).getEmailId();
+		final String emailId = mailRepo.createNewEmail(adUserId, from, to, contextDocumentPath).getEmailId();
 
 		if (contextDocumentPath != null)
 		{
@@ -155,7 +181,9 @@ public class MailRestController
 	public JSONEmail getEmail(@PathVariable("emailId") final String emailId)
 	{
 		userSession.assertLoggedIn();
-		return JSONEmail.of(mailRepo.getEmail(emailId));
+		final WebuiEmail email = mailRepo.getEmail(emailId);
+		assertReadable(email);
+		return JSONEmail.of(email);
 	}
 
 	@PostMapping("/{emailId}/send")
@@ -250,7 +278,10 @@ public class MailRestController
 
 	private WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
 	{
-		final WebuiEmailChangeResult result = mailRepo.changeEmail(emailId, emailModifier);
+		final WebuiEmailChangeResult result = mailRepo.changeEmail(emailId, emailOld -> {
+			assertWritable(emailOld);
+			return emailModifier.apply(emailOld);
+		});
 
 		// Delete the attachments which were removed from email
 		final LookupValuesList attachmentsOld = result.getOriginalEmail().getAttachments();
