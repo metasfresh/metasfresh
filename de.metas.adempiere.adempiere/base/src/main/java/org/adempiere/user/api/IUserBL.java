@@ -24,8 +24,13 @@ package org.adempiere.user.api;
 
 import java.util.Properties;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
+
+import de.metas.i18n.ITranslatableString;
 
 public interface IUserBL extends ISingletonService
 {
@@ -99,7 +104,19 @@ public interface IUserBL extends ISingletonService
 	/**
 	 * Could we send an email from this user
 	 * 
-	 * @return true if EMail Uwer/PW exists
+	 * @return <code>null</code> if OK, error message if not ok
 	 */
-	boolean isCanSendEMail(I_AD_User user);
+	ITranslatableString checkCanSendEMail(I_AD_User user);
+	
+	ITranslatableString checkCanSendEMail(int adUserId);
+	
+	default void assertCanSendEMail(final int adUserId)
+	{
+		final ITranslatableString errmsg = Services.get(IUserBL.class).checkCanSendEMail(adUserId);
+		if(errmsg != null)
+		{
+			throw new AdempiereException("User cannot send emails: "+errmsg.translate(Env.getAD_Language(Env.getCtx())));
+		}
+	}
+
 }

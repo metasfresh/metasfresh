@@ -35,6 +35,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
@@ -62,7 +63,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_HR_Process;
@@ -261,11 +261,11 @@ public class LettersValidator implements ModelValidator
 	private static void parseField(PO po, String columnName, Collection<MADBoilerPlateVar> vars)
 	{
 		final String text = po.get_ValueAsString(columnName);
-		if (Util.isEmpty(text, true))
+		if (Check.isEmpty(text, true))
 			return;
 		//
 		final Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put(MADBoilerPlate.VAR_UserPO, po);
+		attributes.put(MADBoilerPlate.VAR_SourceDocument, po);
 		//
 		final Matcher m = MADBoilerPlate.NameTagPattern.matcher(text);
 		final StringBuffer sb = new StringBuffer();
@@ -320,7 +320,7 @@ public class LettersValidator implements ModelValidator
 		final boolean isEmbeded = true;
 
 		final Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put(MADBoilerPlate.VAR_UserPO, InterfaceWrapperHelper.getPO(dre));
+		attrs.put(MADBoilerPlate.VAR_SourceDocument, InterfaceWrapperHelper.getPO(dre));
 
 		final String textParsed = MADBoilerPlate.parseText(ctx, text, isEmbeded, attrs, trxName);
 
