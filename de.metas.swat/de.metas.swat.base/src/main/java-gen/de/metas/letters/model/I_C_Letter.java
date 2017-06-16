@@ -78,6 +78,23 @@ public interface I_C_Letter
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
+    /** Column name AD_Table_ID */
+    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/** Set DB-Tabelle.
+	  * Database Table information
+	  */
+	public void setAD_Table_ID (int AD_Table_ID);
+
+	/** Get DB-Tabelle.
+	  * Database Table information
+	  */
+	public int getAD_Table_ID();
+
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException;
+
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table);
+	
     /** Column name BPartnerAddress */
     public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
@@ -208,6 +225,19 @@ public interface I_C_Letter
 	/** Get Subject	  */
 	public java.lang.String getLetterSubject();
 
+    /** Column name Record_ID */
+    public static final String COLUMNNAME_Record_ID = "Record_ID";
+
+	/** Set Datensatz-ID.
+	  * Direct internal record ID
+	  */
+	public void setRecord_ID (int Record_ID);
+
+	/** Get Datensatz-ID.
+	  * Direct internal record ID
+	  */
+	public int getRecord_ID();
+	
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 

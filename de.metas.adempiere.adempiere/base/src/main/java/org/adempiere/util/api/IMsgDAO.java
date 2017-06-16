@@ -24,12 +24,15 @@ package org.adempiere.util.api;
 
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Message;
 
 public interface IMsgDAO extends ISingletonService
 {
 
 	int retrieveMessageId(String adMessage);
 
+	I_AD_Message retrieveMessage(String adMessage);
+	
 	boolean isMessageExists(String adMessage);
 
 }
