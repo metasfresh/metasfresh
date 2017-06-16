@@ -26,6 +26,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
     * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
+  * [#885](https://github.com/metasfresh/metasfresh-webui-frontend/issues/885) Change the Bookmark Subtab Group Functionality
+    * Changes the Bookmark Grouping Functionality and now shows a flat and compressed representation of the sitemap in shortcut/ bookmark menu.
 
 # metasfresh 5.13 (2017-24)
 
