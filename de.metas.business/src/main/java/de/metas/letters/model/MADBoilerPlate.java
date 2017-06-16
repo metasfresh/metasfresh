@@ -949,12 +949,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 */
 	public static void createSpoolRecord(Properties ctx, int AD_Client_ID, int AD_PInstance_ID, String text, String trxName)
 	{
-		final String sql = "INSERT INTO " + X_T_BoilerPlate_Spool.Table_Name + "("
-				+ " " + X_T_BoilerPlate_Spool.COLUMNNAME_AD_Client_ID
-				+ "," + X_T_BoilerPlate_Spool.COLUMNNAME_AD_Org_ID
-				+ "," + X_T_BoilerPlate_Spool.COLUMNNAME_AD_PInstance_ID
-				+ "," + X_T_BoilerPlate_Spool.COLUMNNAME_SeqNo
-				+ "," + X_T_BoilerPlate_Spool.COLUMNNAME_MsgText
+		final String sql = "INSERT INTO " + I_T_BoilerPlate_Spool.Table_Name + "("
+				+ " " + I_T_BoilerPlate_Spool.COLUMNNAME_AD_Client_ID
+				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_AD_Org_ID
+				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_AD_PInstance_ID
+				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_SeqNo
+				+ "," + I_T_BoilerPlate_Spool.COLUMNNAME_MsgText
 				+ ") VALUES (?,?,?,?,?)";
 		DB.executeUpdateEx(sql,
 				new Object[] { AD_Client_ID, 0, AD_PInstance_ID, 10, text },
