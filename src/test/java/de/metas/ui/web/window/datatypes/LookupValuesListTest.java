@@ -26,11 +26,11 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -180,11 +180,44 @@ public class LookupValuesListTest
 	public void test_filter()
 	{
 		final LookupValuesList list = generateIntegerLookupValuesList(1, 10);
-		
+
 		final Predicate<LookupValue> filter = item -> item.getIdAsInt() % 2 == 0;
 		final LookupValuesList expected = generateIntegerLookupValuesListForIds(2, 4);
 		Assert.assertEquals(expected, list.filter(filter, 0, 2));
 	}
+
+	@Test
+	public void test_removeAll_StandardCase()
+	{
+		final LookupValuesList list = generateIntegerLookupValuesList(1, 10);
+		final LookupValuesList listToRemove = generateIntegerLookupValuesListForIds(2, 3, 5, 7, 11, 12);
+
+		final LookupValuesList resultActual = list.removeAll(listToRemove);
+		final LookupValuesList resultExpected = generateIntegerLookupValuesListForIds(1, 4, 6, 8, 9, 10);
+
+		Assert.assertEquals(resultExpected, resultActual);
+	}
+	
+	@Test
+	public void test_removeAll_RemoveEmptyList()
+	{
+		final LookupValuesList list = generateIntegerLookupValuesList(1, 10);
+		final LookupValuesList resultActual = list.removeAll(LookupValuesList.EMPTY);
+		Assert.assertEquals(list, resultActual);
+		Assert.assertSame(list, resultActual);
+	}
+	
+	@Test
+	public void test_removeAll_RemoveFromEmpty()
+	{
+		final LookupValuesList list = LookupValuesList.EMPTY;
+		final LookupValuesList listToRemove = generateIntegerLookupValuesList(1, 10);
+		final LookupValuesList resultActual = list.removeAll(listToRemove);
+		Assert.assertEquals(list, resultActual);
+		Assert.assertSame(list, resultActual);
+	}
+
+
 
 	//
 	//

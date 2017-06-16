@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.adempiere.util.GuavaCollectors;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
@@ -163,7 +165,7 @@ public final class LookupValuesList
 	{
 		return valuesById.values();
 	}
-	
+
 	public Stream<LookupValue> stream()
 	{
 		return getValues().stream();
@@ -273,5 +275,38 @@ public final class LookupValuesList
 					.build();
 			return new LookupValuesList(valuesByIdNew, debugProperties);
 		}
+	}
+
+	/**
+	 * Creates and returns a new {@link LookupValuesList} which contains the lookup values from this list but without the lookup values from <code>valuesToRemove</code>.
+	 * The values will be matched by ID only. The display name will be ignored.
+	 */
+	public LookupValuesList removeAll(final LookupValuesList valuesToRemove)
+	{
+		// If nothing to remove, we can return this
+		if (valuesToRemove.isEmpty())
+		{
+			return this;
+		}
+		
+		// If this list is empty, we can return it
+		if(valuesById.isEmpty())
+		{
+			return this;
+		}
+
+		// Create a new values map which does not contain the the values to be removed
+		final ImmutableMap<Object, LookupValue> valuesByIdNew = this.valuesById.entrySet().stream()
+				.filter(entry -> !valuesToRemove.containsId(entry.getKey()))
+				.collect(GuavaCollectors.toImmutableMap());
+
+		// If nothing was filtered out, we can return this
+		if (this.valuesById.size() == valuesByIdNew.size())
+		{
+			return this;
+		}
+
+		//
+		return new LookupValuesList(valuesByIdNew, this.debugProperties);
 	}
 }
