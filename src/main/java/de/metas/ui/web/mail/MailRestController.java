@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -16,7 +17,9 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_User;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +30,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.email.EMail;
@@ -36,10 +39,13 @@ import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
+import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.mail.WebuiEmail.WebuiEmailBuilder;
+import de.metas.ui.web.mail.WebuiMailRepository.WebuiEmailRemovedEvent;
 import de.metas.ui.web.mail.json.JSONEmail;
 import de.metas.ui.web.mail.json.JSONEmailRequest;
 import de.metas.ui.web.session.UserSession;
@@ -53,6 +59,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
@@ -86,7 +93,7 @@ import lombok.NonNull;
 @ApiModel("Outbound email endpoint")
 public class MailRestController
 {
-	// private static final Logger logger = LogManager.getLogger(MailRestController.class);
+	private static final Logger logger = LogManager.getLogger(MailRestController.class);
 
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/mail";
 
@@ -114,14 +121,33 @@ public class MailRestController
 	public JSONEmail createNewEmail(@RequestBody final JSONEmailRequest request)
 	{
 		userSession.assertLoggedIn();
-		
+
 		final int adUserId = userSession.getAD_User_ID();
 		Services.get(IUserBL.class).assertCanSendEMail(adUserId);
-		
+
 		final IntegerLookupValue from = IntegerLookupValue.of(adUserId, userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
-		final WebuiEmail email = mailRepo.createNewEmail(from, contextDocumentPath);
-		return JSONEmail.of(email);
+
+		final BoilerPlateContext attributes = extractBoilerPlateAttributes(contextDocumentPath);
+		final Integer toUserId = attributes.getAD_User_ID();
+		final LookupValue to = mailRepo.getToByUserId(toUserId);
+
+		final String emailId = mailRepo.createNewEmail(from, to, contextDocumentPath).getEmailId();
+
+		if (contextDocumentPath != null)
+		{
+			try
+			{
+				final DocumentPrint contextDocumentPrint = documentCollection.createDocumentPrint(contextDocumentPath);
+				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, contextDocumentPrint.getFilename(), contextDocumentPrint.getReportData()));
+			}
+			catch (Exception ex)
+			{
+				logger.debug("Failed creating attachment from document print of {}", contextDocumentPath, ex);
+			}
+		}
+
+		return JSONEmail.of(mailRepo.getEmail(emailId));
 	}
 
 	@GetMapping("/{emailId}")
@@ -138,11 +164,14 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
-		mailRepo.changeEmailAndRemove(emailId, emailOld -> sendEmail(emailOld));
+		changeEmail(emailId, emailOld -> sendEmail(emailOld));
+		mailRepo.removeEmailById(emailId);
 	}
 
 	private WebuiEmail sendEmail(final WebuiEmail webuiEmail)
 	{
+		final String emailId = webuiEmail.getEmailId();
+
 		//
 		// Create the email object
 		final I_AD_Client adClient = Services.get(IClientDAO.class).retriveClient(userSession.getCtx(), userSession.getAD_Client_ID());
@@ -163,7 +192,7 @@ public class MailRestController
 		webuiEmail.getAttachments()
 				.stream()
 				.map(webuiAttachment -> {
-					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(webuiAttachment);
+					final byte[] content = mailAttachmentsRepo.getAttachmentAsByteArray(emailId, webuiAttachment);
 					return EMailAttachment.of(webuiAttachment.getDisplayName(), content);
 				})
 				.forEach(email::addAttachment);
@@ -178,7 +207,7 @@ public class MailRestController
 
 		//
 		// Delete temporary attachments
-		mailAttachmentsRepo.deleteAttachments(webuiEmail.getAttachments());
+		mailAttachmentsRepo.deleteAttachments(emailId, webuiEmail.getAttachments());
 
 		// Mark the webui email as sent
 		return webuiEmail.toBuilder().sent(true).build();
@@ -215,8 +244,21 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
-		final WebuiEmail email = mailRepo.changeEmail(emailId, emailOld -> changeEmail(emailOld, events));
-		return JSONEmail.of(email);
+		final WebuiEmailChangeResult result = changeEmail(emailId, emailOld -> changeEmail(emailOld, events));
+		return JSONEmail.of(result.getEmail());
+	}
+
+	private WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
+	{
+		final WebuiEmailChangeResult result = mailRepo.changeEmail(emailId, emailModifier);
+
+		// Delete the attachments which were removed from email
+		final LookupValuesList attachmentsOld = result.getOriginalEmail().getAttachments();
+		final LookupValuesList attachmentsNew = result.getEmail().getAttachments();
+		final LookupValuesList attachmentsToRemove = attachmentsOld.removeAll(attachmentsNew);
+		mailAttachmentsRepo.deleteAttachments(emailId, attachmentsToRemove);
+
+		return result;
 	}
 
 	private WebuiEmail changeEmail(final WebuiEmail email, final List<JSONDocumentChangedEvent> events)
@@ -286,6 +328,14 @@ public class MailRestController
 		}
 	}
 
+	@EventListener
+	public void onWebuiMailRemovedFromRepository(final WebuiEmailRemovedEvent event)
+	{
+		logger.debug("Got event: {}", event);
+		final WebuiEmail email = event.getEmail();
+		mailAttachmentsRepo.deleteAttachments(email.getEmailId(), email.getAttachments());
+	}
+
 	@GetMapping("/{emailId}/field/to/typeahead")
 	@ApiOperation("Typeahead endpoint for any To field")
 	public JSONLookupValuesList getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
@@ -300,23 +350,33 @@ public class MailRestController
 	{
 		userSession.assertLoggedIn();
 
-		final LookupValue attachment = mailAttachmentsRepo.createAttachment(emailId, file);
+		final WebuiEmail email = attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, file));
+		return JSONEmail.of(email);
+	}
+
+	private WebuiEmail attachFile(final String emailId, final Supplier<LookupValue> attachmentProducer)
+	{
+		// Ask the producer to create the attachment
+		@NonNull
+		final LookupValue attachment = attachmentProducer.get();
+
 		try
 		{
-			final WebuiEmail email = mailRepo.changeEmail(emailId, emailOld -> {
+			final WebuiEmailChangeResult result = changeEmail(emailId, emailOld -> {
 				final LookupValuesList attachmentsOld = emailOld.getAttachments();
 				final LookupValuesList attachmentsNew = attachmentsOld.addIfAbsent(attachment);
 
 				return emailOld.toBuilder().attachments(attachmentsNew).build();
 			});
 
-			return JSONEmail.of(email);
+			return result.getEmail();
 		}
 		catch (final Throwable ex)
 		{
-			mailAttachmentsRepo.deleteAttachment(attachment);
+			mailAttachmentsRepo.deleteAttachment(emailId, attachment);
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
+
 	}
 
 	@GetMapping("/templates")
@@ -336,18 +396,7 @@ public class MailRestController
 
 		//
 		// Attributes
-		final Map<String, Object> attributes;
-		if (email.getContextDocumentPath() != null)
-		{
-			attributes = documentCollection.forDocumentReadonly(email.getContextDocumentPath(), NullDocumentChangesCollector.instance, document -> {
-				final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
-				return MADBoilerPlate.createEditorContext(sourceDocument);
-			});
-		}
-		else
-		{
-			attributes = ImmutableMap.of();
-		}
+		final BoilerPlateContext attributes = extractBoilerPlateAttributes(email.getContextDocumentPath());
 
 		//
 		// Subject
@@ -356,6 +405,19 @@ public class MailRestController
 
 		// Message
 		newEmailBuilder.message(boilerPlate.getTextSnippetParsed(attributes));
+	}
+
+	private BoilerPlateContext extractBoilerPlateAttributes(final DocumentPath documentPath)
+	{
+		if (documentPath == null)
+		{
+			return BoilerPlateContext.EMPTY;
+		}
+
+		return documentCollection.forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
+			final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
+			return MADBoilerPlate.createEditorContext(sourceDocument);
+		});
 	}
 
 	@AllArgsConstructor

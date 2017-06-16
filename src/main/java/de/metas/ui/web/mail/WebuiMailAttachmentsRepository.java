@@ -88,19 +88,21 @@ public class WebuiMailAttachmentsRepository implements InitializingBean
 		return attachmentsDir;
 	}
 
-	private File getAttachmentFile(final String attachmentId)
+	private File getAttachmentFile(@NonNull final String emailId, @NonNull final String attachmentId)
 	{
+		if (emailId.contains("/") || emailId.contains("\\"))
+		{
+			throw new IllegalArgumentException("Invalid emailId: " + emailId);
+		}
 		if (attachmentId.contains("/") || attachmentId.contains("\\"))
 		{
 			throw new IllegalArgumentException("Invalid attachmentId: " + attachmentId);
 		}
-		return new File(getAttachmentsDir(), attachmentId);
+		return new File(getAttachmentsDir(), emailId + "_" + attachmentId);
 	}
 
-	public LookupValue createAttachment(final String emailId, final MultipartFile file)
+	public LookupValue createAttachment(@NonNull final String emailId, @NonNull final MultipartFile file)
 	{
-		final String attachmentId = UUID.randomUUID().toString();
-
 		//
 		// Extract the original filename
 		String originalFilename = file.getOriginalFilename();
@@ -113,40 +115,58 @@ public class WebuiMailAttachmentsRepository implements InitializingBean
 			throw new AdempiereException("Filename not provided");
 		}
 
-		//
-		// Store it to internal attachments storage
-		final File attachmentFile = getAttachmentFile(attachmentId);
+		byte[] fileContent;
 		try
 		{
-			FileCopyUtils.copy(file.getBytes(), attachmentFile);
+			fileContent = file.getBytes();
+		}
+		catch (IOException e)
+		{
+			throw new AdempiereException("Failed fetching attachment content")
+					.setParameter("filename", originalFilename);
+		}
+
+		return createAttachment(emailId, originalFilename, fileContent);
+	}
+
+	public LookupValue createAttachment(@NonNull final String emailId, @NonNull final String filename, @NonNull byte[] fileContent)
+	{
+		final String attachmentId = UUID.randomUUID().toString();
+
+		//
+		// Store it to internal attachments storage
+		final File attachmentFile = getAttachmentFile(emailId, attachmentId);
+		try
+		{
+			FileCopyUtils.copy(fileContent, attachmentFile);
 		}
 		catch (final IOException e)
 		{
-			throw new AdempiereException("Failed storing " + originalFilename)
-					.setParameter("originalFilename", originalFilename)
+			throw new AdempiereException("Failed storing " + filename)
+					.setParameter("filename", fileContent)
 					.setParameter("attachmentFile", attachmentFile);
 		}
 
 		//
-		return StringLookupValue.of(attachmentId, originalFilename);
+		return StringLookupValue.of(attachmentId, filename);
 	}
 
-	public byte[] getAttachmentAsByteArray(@NonNull final LookupValue attachment)
+	public byte[] getAttachmentAsByteArray(@NonNull final String emailId, @NonNull final LookupValue attachment)
 	{
-		final File attachmentFile = getAttachmentFile(attachment.getIdAsString());
+		final File attachmentFile = getAttachmentFile(emailId, attachment.getIdAsString());
 		return Util.readBytes(attachmentFile);
 	}
 
-	public void deleteAttachments(@NonNull final LookupValuesList attachmentsList)
+	public void deleteAttachments(@NonNull final String emailId, @NonNull final LookupValuesList attachmentsList)
 	{
-		attachmentsList.stream().forEach(this::deleteAttachment);
+		attachmentsList.stream().forEach(attachment -> deleteAttachment(emailId, attachment));
 	}
 
-	public void deleteAttachment(@NonNull final LookupValue attachment)
+	public void deleteAttachment(@NonNull final String emailId, @NonNull final LookupValue attachment)
 	{
 		final String attachmentId = attachment.getIdAsString();
 
-		final File attachmentFile = getAttachmentFile(attachmentId);
+		final File attachmentFile = getAttachmentFile(emailId, attachmentId);
 		if (!attachmentFile.exists())
 		{
 			logger.debug("Attachment file {} is missing. Nothing to delete", attachmentFile);

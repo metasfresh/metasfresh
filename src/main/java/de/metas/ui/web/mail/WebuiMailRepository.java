@@ -1,13 +1,18 @@
 package de.metas.ui.web.mail;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.UnaryOperator;
 
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -19,6 +24,10 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 
 /*
  * #%L
@@ -45,8 +54,14 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 @Component
 public class WebuiMailRepository
 {
+	@Autowired
+	private ApplicationEventPublisher eventPublisher;
+
 	private final AtomicInteger nextEmailId = new AtomicInteger(1);
-	private final ConcurrentHashMap<String, WebuiEmail> emailsById = new ConcurrentHashMap<>();
+	private final Cache<String, WebuiEmailEntry> emailsById = CacheBuilder.newBuilder()
+			.expireAfterAccess(2, TimeUnit.HOURS)
+			.removalListener(notification -> onEmailRemoved(((WebuiEmailEntry)notification.getValue()).getEmail()))
+			.build();
 
 	private final LookupDataSource emailToLookup;
 
@@ -62,50 +77,58 @@ public class WebuiMailRepository
 		emailToLookup = LookupDataSourceFactory.instance.getLookupDataSource(emailToLookupDescriptor);
 	}
 
-	public WebuiEmail createNewEmail(final LookupValue from, final DocumentPath contextDocumentPath)
+	public WebuiEmail createNewEmail(final LookupValue from, final LookupValue to, final DocumentPath contextDocumentPath)
 	{
 		final String emailId = String.valueOf(nextEmailId.getAndIncrement());
+		final LookupValuesList toList = LookupValuesList.fromNullable(to);
 		final WebuiEmail email = WebuiEmail.builder()
 				.emailId(emailId)
 				.from(from)
+				.to(toList)
 				.contextDocumentPath(contextDocumentPath)
 				.build();
 
-		emailsById.put(emailId, email);
+		emailsById.put(emailId, new WebuiEmailEntry(email));
 		return email;
 	}
 
-	public WebuiEmail getEmail(final String emailId)
+	private WebuiEmailEntry getEmailEntry(final String emailId)
 	{
-		final WebuiEmail email = emailsById.get(emailId);
-		if (email == null)
+		final WebuiEmailEntry emailEntry = emailsById.getIfPresent(emailId);
+		if (emailEntry == null)
 		{
 			throw new EntityNotFoundException("Email not found")
 					.setParameter("emailId", emailId);
 		}
-		return email;
+		return emailEntry;
 	}
 
-	public WebuiEmail changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
+	public WebuiEmail getEmail(final String emailId)
 	{
-		return emailsById.compute(emailId, (id, emailOld) -> {
-			if (emailOld == null)
-			{
-				throw new EntityNotFoundException("Email not found")
-						.setParameter("emailId", emailId);
-			}
-			return emailModifier.apply(emailOld);
-		});
+		return getEmailEntry(emailId).getEmail();
 	}
 
-	public WebuiEmail changeEmailAndRemove(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
+	public WebuiEmailChangeResult changeEmail(final String emailId, final UnaryOperator<WebuiEmail> emailModifier)
 	{
-		final WebuiEmail email = changeEmail(emailId, emailModifier);
-		emailsById.remove(emailId);
-		return email;
+		return getEmailEntry(emailId).compute(emailModifier);
 	}
 
-	public LookupValuesList getToTypeahead(String emailId_NOTUSED, String query)
+	public void removeEmailById(final String emailId)
+	{
+		emailsById.invalidate(emailId);
+	}
+
+	/**
+	 * Called when the email was removed from our internal cache.
+	 *
+	 * @param email
+	 */
+	private void onEmailRemoved(final WebuiEmail email)
+	{
+		eventPublisher.publishEvent(new WebuiEmailRemovedEvent(email));
+	}
+
+	public LookupValuesList getToTypeahead(final String emailId_NOTUSED, final String query)
 	{
 		final Evaluatee ctx = Evaluatees.empty(); // TODO
 
@@ -114,4 +137,45 @@ public class WebuiMailRepository
 		return emailToLookup.findEntities(ctx, query);
 	}
 
+	public LookupValue getToByUserId(final Integer adUserId)
+	{
+		return emailToLookup.findById(adUserId);
+	}
+
+	@ToString
+	private static final class WebuiEmailEntry
+	{
+		private WebuiEmail email;
+
+		public WebuiEmailEntry(@NonNull final WebuiEmail email)
+		{
+			this.email = email;
+		}
+
+		public synchronized WebuiEmail getEmail()
+		{
+			return email;
+		}
+
+		public synchronized WebuiEmailChangeResult compute(final UnaryOperator<WebuiEmail> modifier)
+		{
+			final WebuiEmail emailOld = email;
+			final WebuiEmail emailNew = modifier.apply(emailOld);
+			if (emailNew == null)
+			{
+				throw new NullPointerException("email");
+			}
+
+			email = emailNew;
+			return WebuiEmailChangeResult.builder().email(emailNew).originalEmail(emailOld).build();
+		}
+	}
+
+	@Value
+	@AllArgsConstructor
+	public static final class WebuiEmailRemovedEvent
+	{
+		@NonNull
+		private final WebuiEmail email;
+	}
 }
