@@ -22,6 +22,10 @@ Here come the actual release notes:
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
     * New Window to allow the recording of Request for Quotations in WebUI.
+	
+* metasfresh-webui-frontend
+  * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
+    * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
 
 # metasfresh 5.13 (2017-24)
 
