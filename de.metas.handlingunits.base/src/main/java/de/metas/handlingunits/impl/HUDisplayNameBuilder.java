@@ -100,9 +100,15 @@ public class HUDisplayNameBuilder implements IHUDisplayNameBuilder
 		}
 		displayNameBuilder.append("(").append(piName).append(")");
 
+		if(handlingUnitsBL.isShipped(getM_HU()))
+		{
+			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Shipped);
+			displayNameBuilder.append(STR_NewLine).append("(").append(escape(destroyedStr)).append(")");
+		}
 		//
 		// Display "Destroyed" if HU was destroyed
-		if (showIfDestroyed && handlingUnitsBL.isDestroyed(getM_HU()))
+		else if (showIfDestroyed && handlingUnitsBL.isDestroyed(getM_HU()))
 		{
 			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 			final String destroyedStr = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Destroyed);
