@@ -26,8 +26,6 @@ package de.metas.letters.model;
  */
 
 
-import java.util.Map;
-
 import org.compiere.model.I_AD_User;
 
 import de.metas.email.EMail;
