@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
@@ -21,9 +22,9 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.model.I_M_InOutLine;
 import de.metas.product.IProductBL;
 
 /*
@@ -76,7 +77,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	}
 
 	@Override
-	public AbstractQualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage, I_M_InOutLine originInOutLine)
+	public AbstractQualityReturnsInOutLinesBuilder addHUProductStorage(final IHUProductStorage productStorage, final I_M_InOutLine originInOutLine)
 	{
 		final I_M_InOut inout = getM_InOut();
 		InterfaceWrapperHelper.save(inout); // make sure inout header is saved
@@ -108,10 +109,17 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		final I_M_Product product = productStorage.getM_Product();
 
-		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine);
+		if (originInOutLine.getM_Product_ID() != product.getM_Product_ID())
+		{
+			return;
+		}
+
+		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine, product);
 
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
+
+		final I_M_HU hu = productStorage.getM_HU();
 
 		if (originInOutLine.getM_InOut_ID() != _inoutRef.getValue().getM_InOut_ID())
 		{
@@ -131,7 +139,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		// Assign the HU to the inout line and mark it as shipped
 		{
-			final I_M_HU hu = productStorage.getM_HU();
+
 			final String trxName = ITrx.TRXNAME_ThreadInherited;
 
 			final I_M_HU huTopLevel = handlingUnitsBL.getTopLevelParent(hu);
@@ -159,11 +167,12 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	 * @param product
 	 * @return
 	 */
-	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine)
+	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
 
 		// services
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final I_M_InOut inout = _inoutRef.getValue();
 
@@ -175,7 +184,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		//
 		// Check if we already have a movement line for our key
-		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine);
+		final ArrayKey inOutLineKey = mkInOutLineKey(originInOutLine, product);
 		final I_M_InOutLine existingInOutLine = _inOutLines.get(inOutLineKey);
 
 		// return the existing inout line if found
@@ -202,8 +211,10 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		newInOutLine.setC_UOM(originInOutLine.getC_UOM());
 
-		// TODO: THis column could be used also for customer returns. Rename it
 		newInOutLine.setReturn_Origin_InOutLine(originInOutLine);
+
+		// make sure the attributes in the return line is the same as in the origin line
+		asiBL.cloneASI(newInOutLine, originInOutLine);
 
 		// NOTE: we are not saving the inOut line
 
@@ -214,15 +225,20 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		return newInOutLine;
 	}
 
+	public Map<ArrayKey, I_M_InOutLine> get_inOutLines()
+	{
+		return _inOutLines;
+	}
+
 	/**
 	 * Make a unique key for the given product. This will serve in mapping the inout lines to their products.
 	 * 
 	 * @param product
 	 * @return
 	 */
-	private ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine)
+	private ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
-		return Util.mkKey(originInOutLine.getM_InOutLine_ID());
+		return Util.mkKey(originInOutLine.getM_InOutLine_ID(), product.getM_Product_ID());
 	}
 
 	@Override

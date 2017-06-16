@@ -461,4 +461,15 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.list(clazz);
 		// @formatter:on
 	}
+
+	@Override
+	public List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilterTUMandatory(IContextAware contextProvider, int adTableId, I_M_HU hu)
+	{
+		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQueryNoTopLevel(contextProvider, adTableId, hu);
+		return queryBuilder
+				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null)
+				.create()
+
+				.list(I_M_HU_Assignment.class);
+	}
 }

@@ -220,4 +220,16 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilter(IContextAware contextProvider, int adTableId, I_M_HU hu);
+
+	/**
+	 * Retrieve the hu assignments for the given table and HU.
+	 * Do not force to be top level
+	 * Make sure the tu is set
+	 * 
+	 * @param contextProvider
+	 * @param adTableId
+	 * @param hu
+	 * @return
+	 */
+	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilterTUMandatory(IContextAware contextProvider, int adTableId, I_M_HU hu);
 }
