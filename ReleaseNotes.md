@@ -30,14 +30,19 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#1513](https://github.com/metasfresh/metasfresh/issues/1513) Translating Shipment Candidates and other fields to en_US
+    * Improving the Translation of metasfresh for the en_US language. Here adding the Translation of the Shipment Candidates window.
   * [#1590](https://github.com/metasfresh/metasfresh/issues/1590) Translate User Window to en_US
+    * Improving the Translation of metasfresh for the en_US language. Here adding the Translation of the User window.
   * [#1655](https://github.com/metasfresh/metasfresh/issues/1655) Add CountExpected in Async Batch and improvements
+    * Nice new feature to see the expected counts for AsynchBatch processing queue.
   * [#1741](https://github.com/metasfresh/metasfresh/issues/1741) New Window for Order Control in WebUI
     * New Window for Order Control Report maintenance in WebUI
   * [#1742](https://github.com/metasfresh/metasfresh/issues/1742) Translation for en_US in WebUI
+    * Improving the Translation of metasfresh for the en_US language. This is the overall main issue.
   * [#1746](https://github.com/metasfresh/metasfresh/issues/1746) Layout Optimization of User Window in WebUI
     * Adding a few Layout Optimzations to User window. Now showing the Login Field in Grid View and deleting the combined Name Field. Additional sized adjustments.
   * [#1748](https://github.com/metasfresh/metasfresh/issues/1748) Project Documentation: Screenshots
+    * Adds WebUI Screenshots to our project and adding to our readme page.
   * [#1753](https://github.com/metasfresh/metasfresh/issues/1753) New Window for Material Transactions in WebUI
     * New Window to Filter/ Search for Material Transaction in WebUI. Alowing the user to search for Products, Business Partners, Dates and Transaction Types.
   * [#1754](https://github.com/metasfresh/metasfresh/issues/1754) New Window for Transport Disposition in WebUI
@@ -62,7 +67,6 @@ Here come the actual release notes:
     * Adds a prototype Project Board to WebUI menu.
   * [#1801](https://github.com/metasfresh/metasfresh/issues/1801) Translation of My Profile Window to en_US
     * Translating the new Avatar Settings of my Profile Windw to en_US Language.
-  * [#1802](https://github.com/metasfresh/metasfresh/issues/1802) picking terminal is not opening
   * [#1805](https://github.com/metasfresh/metasfresh/issues/1805) Add the new Picking Window to WebUI Menu
     * Adding the prototype Picking window to WebUI menu.
 
@@ -120,6 +124,8 @@ Here come the actual release notes:
     * Cleanup; Thx [@homebeaver](https://github.com/homebeaver) for the pointer
   * [#1735](https://github.com/metasfresh/metasfresh/issues/1735) istransferwhennull not working in webUI but in java client
   * [#1793](https://github.com/metasfresh/metasfresh/issues/1793) fix jasper document for vendor returns
+  * [#1802](https://github.com/metasfresh/metasfresh/issues/1802) picking terminal is not opening
+    * Fixes a Bug that prevented the starting/ opening of the Picking Terminal Window.
   * [#1807](https://github.com/metasfresh/metasfresh/issues/1807) Fix "Create primary key" process
   * [#1810](https://github.com/metasfresh/metasfresh/issues/1810) Responsible mandatory Field missing in Request
     * Adds the Field back for Resposible Sales Representative to Request Window in WebUI.
