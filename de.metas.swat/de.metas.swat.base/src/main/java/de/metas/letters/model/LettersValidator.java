@@ -16,15 +16,14 @@ package de.metas.letters.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
@@ -62,7 +62,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_HR_Process;
@@ -72,6 +71,7 @@ import org.eevolution.model.I_PP_Order;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.api.impl.TextTemplateBL;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 
 /**
  * @author teo_sarca
@@ -245,7 +245,7 @@ public class LettersValidator implements ModelValidator
 		if (index != -1)
 		{
 			Integer ii = (Integer)po.get_Value(index);
-			//	DocType does not exist - get DocTypeTarget
+			// DocType does not exist - get DocTypeTarget
 			if (ii != null && ii.intValue() == 0)
 			{
 				index = po.get_ColumnIndex("C_DocTypeTarget_ID");
@@ -261,15 +261,16 @@ public class LettersValidator implements ModelValidator
 	private static void parseField(PO po, String columnName, Collection<MADBoilerPlateVar> vars)
 	{
 		final String text = po.get_ValueAsString(columnName);
-		if (Util.isEmpty(text, true))
+		if (Check.isEmpty(text, true))
 			return;
 		//
-		final Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put(MADBoilerPlate.VAR_UserPO, po);
+		final BoilerPlateContext attributes = BoilerPlateContext.builder()
+				.setSourceDocumentFromObject(po)
+				.build();
 		//
 		final Matcher m = MADBoilerPlate.NameTagPattern.matcher(text);
 		final StringBuffer sb = new StringBuffer();
-		while(m.find())
+		while (m.find())
 		{
 			final String refName = MADBoilerPlate.getTagName(m);
 			//
@@ -319,10 +320,11 @@ public class LettersValidator implements ModelValidator
 		}
 		final boolean isEmbeded = true;
 
-		final Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put(MADBoilerPlate.VAR_UserPO, InterfaceWrapperHelper.getPO(dre));
+		final BoilerPlateContext attributes = BoilerPlateContext.builder()
+				.setSourceDocumentFromObject(dre)
+				.build();
 
-		final String textParsed = MADBoilerPlate.parseText(ctx, text, isEmbeded, attrs, trxName);
+		final String textParsed = MADBoilerPlate.parseText(ctx, text, isEmbeded, attributes, trxName);
 
 		dre.setNote(textParsed);
 	}

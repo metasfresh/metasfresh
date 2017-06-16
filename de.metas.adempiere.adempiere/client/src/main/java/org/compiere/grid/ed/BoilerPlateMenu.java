@@ -35,9 +35,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -58,11 +56,14 @@ import org.compiere.model.MColumn;
 import org.compiere.model.MTable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import de.metas.i18n.Msg;
 import de.metas.letters.model.I_AD_Column;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.letters.model.MADBoilerPlateVar;
+import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 
 /**
@@ -133,12 +134,12 @@ public class BoilerPlateMenu
 		
 		BoilerPlateMenu bpm = new BoilerPlateMenu() {
 			@Override
-			public Map<String, Object> getAttributes() {
-				return MADBoilerPlate.createEditorContext(gridTab);
+			public BoilerPlateContext getAttributes() {
+				return MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(gridTab));
 			}
 
 			@Override
-			public void setAttributes(Map<String, Object> attributes)
+			public void setAttributes(final BoilerPlateContext attributes)
 			{
 				throw new IllegalStateException("Method not supported");
 			}
@@ -164,7 +165,7 @@ public class BoilerPlateMenu
 	}
 
 	/** Context Attributes */
-	private Map<String, Object> attributes = new HashMap<String, Object>();
+	private BoilerPlateContext attributes = BoilerPlateContext.EMPTY;
 	/** Resolve/Parse variables */
 	private boolean resolveVariables = false;
 	/** Resolve/Parse text templates(boilerplate) */
@@ -172,12 +173,12 @@ public class BoilerPlateMenu
 	/** Use HTML Text? */
 	private boolean isHTML = true;
 
-	public Map<String, Object> getAttributes()
+	public BoilerPlateContext getAttributes()
 	{
 		return attributes;
 	}
 
-	public void setAttributes(Map<String, Object> attributes)
+	public void setAttributes(final BoilerPlateContext attributes)
 	{
 		this.attributes = attributes;
 	}

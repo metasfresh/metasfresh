@@ -22,7 +22,6 @@
 
 package de.metas.async.spi.impl;
 
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -44,6 +43,7 @@ import de.metas.email.EMail;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.INotifyAsyncBatch;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
@@ -51,17 +51,17 @@ import de.metas.notification.INotificationBL;
 public class NotifyAsyncBatch implements INotifyAsyncBatch
 {
 	protected final Logger logger = LogManager.getLogger(getClass());
-	
+
 	private final IAsyncBatchListeners asyncBatchListener = Services.get(IAsyncBatchListeners.class);
 	final INotificationBL notificationBL = Services.get(INotificationBL.class);
-	
+
 	@Override
 	public void sendNotifications(I_C_Async_Batch asyncBatch)
 	{
 		sendEMail(asyncBatch);
 		sendNote(asyncBatch);
 	}
-	
+
 	/***
 	 * Send mail to the user who created the async batch with the result based the on boiler plate the ID of which is defined by {@value #AD_SYSCONFIG_ASYNC_BOILERPLATE_ID}. If there is no such
 	 * AS_SysConfig or no <code>AD_BoilerPlate</code> record, then the method does nothing.
@@ -117,38 +117,43 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 				}
 
 				@Override
-				public EMail sendEMail(org.compiere.model.I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
+				public EMail sendEMail(org.compiere.model.I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributesOld)
 				{
 					final MClient client = MClient.get(ctx, Env.getAD_Client_ID(ctx));
 
-					variables.put(MADBoilerPlate.VAR_UserPO, asyncBatch);
+					final BoilerPlateContext attributesEffective;
+					{
+						final BoilerPlateContext.Builder attributesBuilder = attributesOld.toBuilder();
+						attributesBuilder.setSourceDocumentFromObject(asyncBatch);
 
-					// try to set language; take first from partner; if does not exists, take it from client
-					final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
-					final I_C_BPartner partner = user.getC_BPartner();
-					String language = "";
-					if (partner != null && partner.getC_BPartner_ID() > 0)
-					{
-						language = partner.getAD_Language();
+						// try to set language; take first from partner; if does not exists, take it from client
+						final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
+						final I_C_BPartner partner = user.getC_BPartner();
+						String adLanguage = "";
+						if (partner != null && partner.getC_BPartner_ID() > 0)
+						{
+							adLanguage = partner.getAD_Language();
+						}
+						if (Check.isEmpty(adLanguage, true))
+						{
+							adLanguage = client.getAD_Language();
+						}
+						attributesBuilder.setAD_Language(adLanguage);
+						
+						attributesEffective = attributesBuilder.build();
 					}
-					if (Check.isEmpty(language, true))
-					{
-						language = client.getAD_Language();
-					}
-					variables.put(MADBoilerPlate.VAR_AD_Language, language);
 					//
-					final String message = text.getTextSnippetParsed(variables);
+					final String message = text.getTextSnippetParsed(attributesEffective);
 					//
 					if (Check.isEmpty(message, true))
 						return null;
 					//
 
-
 					Check.assume(asyncBatch.getCreatedBy() > 0, "CreatedBy is not null!!!");
-					final I_AD_User	to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
-					
+					final I_AD_User to = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, trxName);
+
 					notificationBL.notifyUser(to, text.getSubject(), message, TableRecordReference.of(asyncBatch));
-					
+
 					return null;
 				}
 			}, false);
@@ -170,7 +175,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 			}
 			else
 			{
-				logger.warn("Async batch {} was not notified by email {} " , asyncBatch_id, toEmail);
+				logger.warn("Async batch {} was not notified by email {} ", asyncBatch_id, toEmail);
 			}
 		}
 	}

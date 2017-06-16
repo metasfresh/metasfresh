@@ -68,7 +68,11 @@ public interface ITranslatableString
 
 		return new CompositeTranslatableString(trls, joiningString);
 	}
-
+	
+	public static ITranslatableString constant(final String value)
+	{
+		return ImmutableTranslatableString.constant(value);
+	}
 
 
 	public String translate(final String adLanguage);

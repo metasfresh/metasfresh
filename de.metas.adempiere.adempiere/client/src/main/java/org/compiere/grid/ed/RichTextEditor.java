@@ -34,7 +34,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.StringWriter;
-import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -44,9 +43,6 @@ import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 
-import net.sf.memoranda.ui.htmleditor.AltHTMLWriter;
-import net.sf.memoranda.ui.htmleditor.HTMLEditor;
-
 import org.adempiere.images.Images;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.print.ReportEngine;
@@ -55,6 +51,9 @@ import org.compiere.util.Env;
 
 import de.metas.i18n.Msg;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import net.sf.memoranda.ui.htmleditor.AltHTMLWriter;
+import net.sf.memoranda.ui.htmleditor.HTMLEditor;
 
 /**
  * @author teo_sarca
@@ -87,7 +86,7 @@ public class RichTextEditor extends CPanel
 		init();
 	}
 
-	public RichTextEditor(Map<String, Object> attributes)
+	public RichTextEditor(final BoilerPlateContext attributes)
 	{
 		setAttributes(attributes);
 		init();
@@ -298,12 +297,12 @@ public class RichTextEditor extends CPanel
 		this.editor.setCaretPosition(position);
 	}
 
-	public Map<String, Object> getAttributes()
+	public BoilerPlateContext getAttributes()
 	{
 		return boilerPlateMenu.getAttributes();
 	}
 
-	public void setAttributes(Map<String, Object> attributes)
+	public void setAttributes(final BoilerPlateContext attributes)
 	{
 		boilerPlateMenu.setAttributes(attributes);
 	}

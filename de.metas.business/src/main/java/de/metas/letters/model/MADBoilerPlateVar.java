@@ -33,16 +33,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.PO;
+import org.adempiere.util.Check;
 import org.compiere.model.Query;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
+
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 
 /**
  * Boiler Plate Variable
@@ -124,16 +124,16 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 	 * @param attributes context attributes
 	 * @return String value of evaluated variable
 	 */
-	public String evaluate(Map<String, Object> attributes)
+	public String evaluate(final BoilerPlateContext context)
 	{
 		final String type = getType();
 		if (TYPE_SQL.equals(type))
 		{
-			return evaluateSQL(attributes);
+			return evaluateSQL(context);
 		}
 		else if (TYPE_RuleEngine.equals(type))
 		{
-			return evaluateRuleEngine(attributes);
+			return evaluateRuleEngine(context);
 		}
 		else
 		{
@@ -141,15 +141,15 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 		}
 	}
 	
-	private String evaluateSQL(final Map<String, Object> attributes)
+	private String evaluateSQL(final BoilerPlateContext context)
 	{
 		final Properties ctx = Env.getCtx();
 		final String code = getCode();
-		if (Util.isEmpty(code, true))
+		if (Check.isEmpty(code, true))
 			return "";
 
-		final int windowNo = MADBoilerPlate.getWindowNo(attributes);
-		final PO po = (PO)attributes.get(MADBoilerPlate.VAR_UserPO);
+		final int windowNo = context.getWindowNo();
+		final SourceDocument sourceDocument = context.getSourceDocumentOrNull();
 		final List<Object> params = new ArrayList<Object>();
 		final StringBuffer sql = new StringBuffer();
 
@@ -170,19 +170,18 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 			String token = inStr.substring(0, j);
 
 			Object tokenValue = null;
-			if (po != null)
+			if (sourceDocument != null)
 			{
-				int ii = po.get_ColumnIndex(token);
-				if (ii != -1)
+				if (sourceDocument.hasFieldValue(token))
 				{
-					tokenValue = po.get_Value(ii);
+					tokenValue = sourceDocument.getFieldValue(token);
 					if (tokenValue == null)
 						tokenValue = "";
 				}
 			}
 			if (tokenValue == null || tokenValue.toString().length() == 0)
 			{
-				tokenValue = attributes.get(token);
+				tokenValue = context.get(token);
 			}
 			if (tokenValue == null || tokenValue.toString().length() == 0)
 			{
@@ -226,7 +225,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 		return DB.getSQLValueStringEx(get_TrxName(), sql.toString(), params);
 	}
 	
-	private String evaluateRuleEngine(Map<String, Object> attributes)
+	private String evaluateRuleEngine(final BoilerPlateContext context)
 	{
 		throw new IllegalStateException("Method not implemented"); // TODO
 	}
@@ -240,7 +239,7 @@ public class MADBoilerPlateVar extends X_AD_BoilerPlate_Var
 	public String getTagString()
 	{
 		String value = getValue();
-		if (Util.isEmpty(value, true))
+		if (Check.isEmpty(value, true))
 			return "";
 		return MADBoilerPlate.TagBegin+value.trim()+MADBoilerPlate.TagEnd;
 	}

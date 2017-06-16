@@ -46,7 +46,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MClient;
 import org.compiere.model.X_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -56,6 +55,7 @@ import de.metas.adempiere.model.I_AD_Client;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 
 public class UserBL implements IUserBL
@@ -429,64 +429,73 @@ public class UserBL implements IUserBL
 	@Override
 	public boolean isEMailValid(final I_AD_User user)
 	{
-		return validateEmail(getInternetAddress(user)) != null;
+		final ITranslatableString errmsg = checkEMailValid(user.getEMail());
+		return errmsg == null;
 	}	//	isEMailValid
 
-	/**
-	 * 	Validate Email (does not work).
-	 * 	Check DNS MX record
-	 * 	@param ia email
-	 *	@return error message or ""
-	 */
-	private String validateEmail (InternetAddress ia)
+	private static ITranslatableString checkEMailValid(final String email)
 	{
-		if (ia == null)
-			return "NoEmail";
-        else
-        	return ia.getAddress();
-	}	//	validateEmail
-
-
-	/**
-	 * 	Convert EMail
-	 *	@return Valid Internet Address
-	 */
-	private InternetAddress getInternetAddress (final I_AD_User user)
+		if (Check.isEmpty(email, true))
 	{
-		String email = user.getEMail();
-		if (email == null || email.length() == 0)
-			return null;
+			return ITranslatableString.constant("no email");
+		}
 		try
 		{
-			InternetAddress ia = new InternetAddress (email, true);
-			if (ia != null)
+			final InternetAddress ia = new InternetAddress(email, true);
 				ia.validate();	//	throws AddressException
-			return ia;
+
+			if (ia.getAddress() == null)
+			{
+				return ITranslatableString.constant("invalid email");
+		}
+
+			return null; // OK
 		}
 		catch (AddressException ex)
 		{
 			logger.warn("Invalid email address: {}", email, ex);
+			return ITranslatableString.constant(ex.getLocalizedMessage());
 		}
-		return null;
-	}	//	getInternetAddress
+	}
 
 	@Override
-	public boolean isCanSendEMail(final I_AD_User user)
+	public ITranslatableString checkCanSendEMail(final I_AD_User user)
 	{
+		// Email
+		{
+			final ITranslatableString errmsg = checkEMailValid(user.getEMail());
+			if (errmsg != null)
+			{
+				return errmsg;
+			}
+		}
+
+
+		// STMP user/password (if SMTP authorization is required)
+		if (Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())
+		{
+			// SMTP user
 		final String emailUser = user.getEMailUser();
 		if(Check.isEmpty(emailUser, true))
 		{
-			return false;
+				return ITranslatableString.constant("no STMP user configured");
 		}
-
-		// If SMTP authorization is not required, then don't check password - teo_sarca [ 1723309 ]
-		if (!MClient.get(Env.getCtx()).isSmtpAuthorization())
+			
+			// SMTP password
+			final String emailPassword = user.getEMailUserPW();
+			if (Check.isEmpty(emailPassword, false))
 		{
-			return true;
+				return ITranslatableString.constant("STMP authorization is required but no STMP password configured");
 		}
-		final String emailPassword = user.getEMailUserPW();
-		return !Check.isEmpty(emailPassword, false);
-	}	//	isCanSendEMail
+		}
 
+		return null; // OK
+	}
 
+	@Override
+	public ITranslatableString checkCanSendEMail(final int adUserId)
+	{
+		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
+		return checkCanSendEMail(user);
+}
 }

@@ -1,36 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for M_AttributeUse
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persistent 
+ */
+@SuppressWarnings("javadoc")
+public class X_M_AttributeUse extends org.compiere.model.PO implements I_M_AttributeUse, org.compiere.model.I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 570669462L;
 
     /** Standard Constructor */
     public X_M_AttributeUse (Properties ctx, int M_AttributeUse_ID, String trxName)
@@ -40,8 +24,8 @@ public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persiste
         {
 			setM_Attribute_ID (0);
 			setM_AttributeSet_ID (0);
-			setSeqNo (0);
-// @SQL=SELECT NVL(MAX(SeqNo),0)+10 AS DefaultValue FROM M_AttributeUse WHERE M_AttributeSet_ID=@M_AttributeSet_ID@
+			setM_AttributeUse_ID (0);
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 AS DefaultValue FROM M_AttributeUse WHERE M_AttributeSet_ID=@M_AttributeSet_ID@
         } */
     }
 
@@ -51,37 +35,32 @@ public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persiste
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
     /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
     {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_M_AttributeUse[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
+	@Override
+	public org.compiere.model.I_M_Attribute getM_Attribute() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+	}
 
-	public I_M_Attribute getM_Attribute() throws RuntimeException
-    {
-		return (I_M_Attribute)MTable.get(getCtx(), I_M_Attribute.Table_Name)
-			.getPO(getM_Attribute_ID(), get_TrxName());	}
+	@Override
+	public void setM_Attribute(org.compiere.model.I_M_Attribute M_Attribute)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Attribute_ID, org.compiere.model.I_M_Attribute.class, M_Attribute);
+	}
 
-	/** Set Attribute.
+	/** Set Merkmal.
 		@param M_Attribute_ID 
 		Product Attribute
 	  */
+	@Override
 	public void setM_Attribute_ID (int M_Attribute_ID)
 	{
 		if (M_Attribute_ID < 1) 
@@ -90,9 +69,10 @@ public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persiste
 			set_ValueNoCheck (COLUMNNAME_M_Attribute_ID, Integer.valueOf(M_Attribute_ID));
 	}
 
-	/** Get Attribute.
+	/** Get Merkmal.
 		@return Product Attribute
 	  */
+	@Override
 	public int getM_Attribute_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_Attribute_ID);
@@ -101,15 +81,23 @@ public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persiste
 		return ii.intValue();
 	}
 
-	public I_M_AttributeSet getM_AttributeSet() throws RuntimeException
-    {
-		return (I_M_AttributeSet)MTable.get(getCtx(), I_M_AttributeSet.Table_Name)
-			.getPO(getM_AttributeSet_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_AttributeSet getM_AttributeSet() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
+	}
 
-	/** Set Attribute Set.
+	@Override
+	public void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class, M_AttributeSet);
+	}
+
+	/** Set Merkmals-Satz.
 		@param M_AttributeSet_ID 
 		Product Attribute Set
 	  */
+	@Override
 	public void setM_AttributeSet_ID (int M_AttributeSet_ID)
 	{
 		if (M_AttributeSet_ID < 0) 
@@ -118,9 +106,10 @@ public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persiste
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSet_ID, Integer.valueOf(M_AttributeSet_ID));
 	}
 
-	/** Get Attribute Set.
+	/** Get Merkmals-Satz.
 		@return Product Attribute Set
 	  */
+	@Override
 	public int getM_AttributeSet_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSet_ID);
@@ -129,26 +118,42 @@ public class X_M_AttributeUse extends PO implements I_M_AttributeUse, I_Persiste
 		return ii.intValue();
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), String.valueOf(getM_AttributeSet_ID()));
-    }
+	/** Set M_AttributeUse.
+		@param M_AttributeUse_ID M_AttributeUse	  */
+	@Override
+	public void setM_AttributeUse_ID (int M_AttributeUse_ID)
+	{
+		if (M_AttributeUse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_AttributeUse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_AttributeUse_ID, Integer.valueOf(M_AttributeUse_ID));
+	}
 
-	/** Set Sequence.
+	/** Get M_AttributeUse.
+		@return M_AttributeUse	  */
+	@Override
+	public int getM_AttributeUse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeUse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Reihenfolge.
 		@param SeqNo 
 		Method of ordering records; lowest number comes first
 	  */
+	@Override
 	public void setSeqNo (int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
 	}
 
-	/** Get Sequence.
+	/** Get Reihenfolge.
 		@return Method of ordering records; lowest number comes first
 	  */
+	@Override
 	public int getSeqNo () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);

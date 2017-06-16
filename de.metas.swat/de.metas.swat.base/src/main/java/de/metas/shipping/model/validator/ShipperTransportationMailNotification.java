@@ -26,7 +26,6 @@ package de.metas.shipping.model.validator;
  */
 
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -52,6 +51,7 @@ import de.metas.email.impl.EMailSendException;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.shipping.model.MMShipperTransportation;
 import de.metas.shipping.model.MMShippingPackage;
@@ -188,11 +188,13 @@ public class ShipperTransportationMailNotification implements ModelValidator
 			}
 
 			@Override
-			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
-				variables.put(MADBoilerPlate.VAR_UserPO, io);
+				final BoilerPlateContext attributesEffective = attributes.toBuilder()
+						.setSourceDocumentFromObject(io)
+						.build();
 				//
-				String message = text.getTextSnippetParsed(variables);
+				String message = text.getTextSnippetParsed(attributesEffective);
 				//
 				if (Check.isEmpty(message, true))
 					return null;
