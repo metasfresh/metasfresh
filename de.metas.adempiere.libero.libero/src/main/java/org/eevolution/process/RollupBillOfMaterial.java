@@ -104,7 +104,7 @@ public class RollupBillOfMaterial extends JavaProcess
 
 			if (para.getParameter() == null)
 				;
-			else if (name.equals(MCostElement.COLUMNNAME_AD_Org_ID))
+			else if (name.equals(I_M_CostElement.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(MAcctSchema.COLUMNNAME_C_AcctSchema_ID))
 				p_C_AcctSchema_ID = para.getParameterAsInt();

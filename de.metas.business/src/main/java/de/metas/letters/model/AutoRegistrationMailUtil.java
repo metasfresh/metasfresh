@@ -1,6 +1,5 @@
 package de.metas.letters.model;
 
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -18,6 +17,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -86,12 +86,11 @@ public class AutoRegistrationMailUtil
 
 			/**
 			 * @param from
-			 * @param toEmail comma or colol separated list of recipients; the first address is ignored and instead the mail address of {@code user} is used.
+			 * @param toEmail comma or colon separated list of recipients; the first address is ignored and instead the mail address of {@code user} is used.
 			 */
 			@Override
-			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final BoilerPlateContext attributes)
 			{
-
 				final I_C_BPartner partner = user.getC_BPartner();
 				String language = "";
 				if (partner != null && partner.getC_BPartner_ID() > 0)
@@ -102,9 +101,11 @@ public class AutoRegistrationMailUtil
 				{
 					language = client.getAD_Language();
 				}
-				variables.put(MADBoilerPlate.VAR_AD_Language, language);
-				//
-				final String message = text.getTextSnippetParsed(variables);
+				final BoilerPlateContext attributesToUse = attributes.toBuilder()
+						.setAD_Language(language)
+						.build();
+
+				final String message = text.getTextSnippetParsed(attributesToUse);
 				//
 				if (Check.isEmpty(message, true))
 					return null;
@@ -137,6 +138,5 @@ public class AutoRegistrationMailUtil
 				return email;
 			}
 		}, false);
-
 	}
 }

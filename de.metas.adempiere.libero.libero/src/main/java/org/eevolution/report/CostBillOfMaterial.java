@@ -47,6 +47,7 @@ import java.util.List;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
@@ -59,8 +60,8 @@ import org.eevolution.model.MPPProductBOM;
 import org.eevolution.model.MPPProductBOMLine;
 import org.eevolution.model.X_T_BOMLine;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Cost Multi-Level BOM & Formula Review
@@ -92,7 +93,7 @@ public class CostBillOfMaterial extends JavaProcess
 			String name = para.getParameterName();
 			if (para.getParameter() == null)
 				;
-			else if (name.equals(MCost.COLUMNNAME_AD_Org_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(MCost.COLUMNNAME_C_AcctSchema_ID))
 			{

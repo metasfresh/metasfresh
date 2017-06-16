@@ -34,7 +34,7 @@ public interface IClientOrgAware
 	int getAD_Client_ID();
 	I_AD_Client getAD_Client();
 
-	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID"; 
 	int getAD_Org_ID();
 	void setAD_Org_ID(int AD_Org_ID);
 	I_AD_Org getAD_Org();

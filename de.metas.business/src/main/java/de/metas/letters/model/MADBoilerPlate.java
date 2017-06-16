@@ -1130,9 +1130,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return this;
 			}
 
-			public void setAD_Language(final String adLanguage)
+			public Builder setAD_Language(final String adLanguage)
 			{
 				setAttribute(VAR_AD_Language, adLanguage);
+				return this;
 			}
 
 			public Builder setSourceDocumentFromObject(final Object sourceDocumentObj)
