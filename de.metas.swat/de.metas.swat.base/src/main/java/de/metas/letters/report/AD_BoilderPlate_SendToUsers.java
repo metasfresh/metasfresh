@@ -29,7 +29,6 @@ package de.metas.letters.report;
 
 
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.adempiere.ad.service.IADMessageDAO;
@@ -50,6 +49,7 @@ import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -178,9 +178,9 @@ public class AD_BoilderPlate_SendToUsers extends JavaProcess
 				return user.getAD_User_ID();
 			}
 			@Override
-			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
-				String message = text.getTextSnippetParsed(variables);
+				String message = text.getTextSnippetParsed(attributes);
 				//
 				StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
 				String to = st.nextToken();

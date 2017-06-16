@@ -25,13 +25,13 @@ package de.metas.letters.api;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
 
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 
 public interface ITextTemplateBL extends ISingletonService
@@ -43,9 +43,9 @@ public interface ITextTemplateBL extends ISingletonService
 	 */
 	List<I_AD_BoilerPlate> getAvailableLetterTemplates();
 
-	String parseText(Properties ctx, String text, boolean isEmbeded, Map<String, Object> attrs, String trxName);
+	String parseText(Properties ctx, String text, boolean isEmbeded, BoilerPlateContext attributes, String trxName);
 
-	void setLetterBodyParsed(I_C_Letter letter, Map<String, Object> attributes);
+	void setLetterBodyParsed(I_C_Letter letter, BoilerPlateContext attributes);
 
 	void setLocationContactAndOrg(I_C_Letter letter);
 

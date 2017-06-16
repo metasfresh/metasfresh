@@ -42,6 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.activation.DataSource;
+import javax.annotation.Nullable;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLEditorKit;
 
@@ -89,6 +90,7 @@ import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
@@ -97,6 +99,7 @@ import de.metas.logging.LogManager;
 import de.metas.process.ProcessInfo;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.ToString;
 
 public final class MADBoilerPlate extends X_AD_BoilerPlate
 {
@@ -110,17 +113,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public static final String TagBegin = "@";
 	public static final String TagEnd = "@";
 	public static final Pattern NameTagPattern = Pattern.compile(TagBegin + "([ ]*" + NamePatternWithFunctions + "[ ]*)" + TagEnd, Pattern.CASE_INSENSITIVE);
-
-	public static final String VAR_WindowNo = "WindowNo";
-	public static final String VAR_SalesRep = "SalesRep";
-	public static final String VAR_SalesRep_ID = "SalesRep_ID";
-	public static final String VAR_EMail = "EMail";
-	public static final String VAR_AD_User_ID = "AD_User_ID";
-	public static final String VAR_AD_User = "AD_User";
-	public static final String VAR_C_BPartner_ID = "C_BPartner_ID";
-	public static final String VAR_AD_Language = "AD_Language";
-	/** Source document. Usually it's of type {@link SourceDocument} */
-	public static final String VAR_SourceDocument = SourceDocument.NAME;
 
 	public static final String FUNCTION_stripWhitespaces = "stripWhitespaces";
 	public static final String FUNCTION_trim = "trim";
@@ -153,10 +145,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return bp;
 	}
 
-	public static ReportEngine getReportEngine(final String html, final Map<String, Object> attrs)
+	public static ReportEngine getReportEngine(final String html, final BoilerPlateContext context)
 	{
 		final Properties ctx = Env.getCtx();
-		String text = parseText(ctx, html, false, attrs, ITrx.TRXNAME_None);
+		String text = parseText(ctx, html, false, context, ITrx.TRXNAME_None);
 		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
 
 		final ProcessInfo pi = ProcessInfo.builder()
@@ -172,7 +164,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return re;
 	}
 
-	public static File getPDF(final String fileNamePrefix, final String html, final Map<String, Object> attrs)
+	public static File getPDF(final String fileNamePrefix, final String html, final BoilerPlateContext context)
 	{
 		File file = null;
 		if (!Check.isEmpty(fileNamePrefix))
@@ -188,7 +180,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			}
 		}
 		//
-		final ReportEngine re = getReportEngine(html, attrs);
+		final ReportEngine re = getReportEngine(html, context);
 		return re.getPDF(file);
 	}
 
@@ -200,9 +192,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	public static void sendEMail(final IEMailEditor editor, final boolean withRequest)
 	{
 		final SourceDocument baseObject = SourceDocument.toSourceDocumentOrNull(editor.getBaseObject());
-		final Map<String, Object> variables = createEditorContext(baseObject);
-		final I_AD_User from = InterfaceWrapperHelper.create(variables.get(MADBoilerPlate.VAR_SalesRep), I_AD_User.class);
-		final String toEmail = (String)variables.get(MADBoilerPlate.VAR_EMail);
+		final BoilerPlateContext context = createEditorContext(baseObject);
+		final I_AD_User from = context.getSalesRepUser();
+		final String toEmail = context.getEMail();
 		if (Check.isEmpty(toEmail, true))
 		{
 			throw new AdempiereException("@NotFound@ @EMail@");
@@ -210,16 +202,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		final int AD_Table_ID = editor.getAD_Table_ID();
 		final int Record_ID = editor.getRecord_ID();
 		//
-		final EMail email = editor.sendEMail(from, toEmail, "", variables);
+		final EMail email = editor.sendEMail(from, toEmail, "", context);
 		if (withRequest)
 		{
-			createRequest(email, AD_Table_ID, Record_ID, variables);
+			createRequest(email, AD_Table_ID, Record_ID, context);
 		}
 	}
 
 	private static void createRequest(final EMail email,
 			final int parent_table_id, final int parent_record_id,
-			final Map<String, Object> variables)
+			final BoilerPlateContext context)
 	{
 		if (email == null)
 		{
@@ -233,7 +225,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
-		final Integer SalesRep_ID = (Integer)variables.get(MADBoilerPlate.VAR_SalesRep_ID);
+		final Integer SalesRep_ID = context.getSalesRep_ID();
 		final MRequest request = new MRequest(Env.getCtx(),
 				SalesRep_ID == null ? 0 : SalesRep_ID.intValue(),
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForEMail),
@@ -247,7 +239,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			message = email.getMessageCRLF();
 		}
 		request.setResult(message);
-		updateRequestDetails(request, parent_table_id, parent_record_id, variables);
+		updateRequestDetails(request, parent_table_id, parent_record_id, context);
 		request.saveEx();
 
 		//
@@ -272,10 +264,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	public static void createRequest(final File pdf,
 			final int parent_table_id, final int parent_record_id,
-			final Map<String, Object> variables)
+			final BoilerPlateContext context)
 	{
 		final MRequestTypeService rtService = new MRequestTypeService(Env.getCtx());
-		final Integer SalesRep_ID = (Integer)variables.get(MADBoilerPlate.VAR_SalesRep_ID);
+		final Integer SalesRep_ID = context.getSalesRep_ID();
 		final MRequest request = new MRequest(Env.getCtx(),
 				SalesRep_ID == null ? 0 : SalesRep_ID.intValue(),
 				rtService.getDefault(I_R_RequestType.COLUMNNAME_IsDefaultForLetter),
@@ -283,8 +275,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				false, // isSelfService,
 				null // trxName
 		);
-		MADBoilerPlate.updateRequestDetails(request, parent_table_id, parent_record_id, variables);
-		request.saveEx();
+		updateRequestDetails(request, parent_table_id, parent_record_id, context);
+		InterfaceWrapperHelper.save(request);
 
 		//
 		// Attach printed letter
@@ -295,14 +287,14 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 	private static void updateRequestDetails(final I_R_Request rq,
 			final int parent_table_id, final int parent_record_id,
-			final Map<String, Object> attributes)
+			final BoilerPlateContext context)
 	{
-		final Integer C_BPartner_ID = (Integer)attributes.get(MADBoilerPlate.VAR_C_BPartner_ID);
+		final Integer C_BPartner_ID = context.getC_BPartner_ID();
 		if (C_BPartner_ID != null && C_BPartner_ID > 0)
 		{
 			rq.setC_BPartner_ID(C_BPartner_ID);
 		}
-		final Integer AD_User_ID = (Integer)attributes.get(MADBoilerPlate.VAR_AD_User_ID);
+		final Integer AD_User_ID = context.getAD_User_ID();
 		if (AD_User_ID != null && AD_User_ID > 0)
 		{
 			rq.setAD_User_ID(AD_User_ID);
@@ -565,7 +557,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 */
 	public static String parseText(final Properties ctx, final String text,
 			final boolean isEmbeded,
-			final Map<String, Object> attrs,
+			final BoilerPlateContext context,
 			final String trxName)
 	{
 		if (text == null)
@@ -595,16 +587,16 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			final MADBoilerPlateVar var = MADBoilerPlateVar.get(ctx, refName);
 
 			String replacement;
-			if (attrs != null && attrs.containsKey(refName))
+			if (context != null && context.containsKey(refName))
 			{
-				final Object attrValue = attrs.get(refName);
+				final Object attrValue = context.get(refName);
 				replacement = attrValue == null ? "" : attrValue.toString();
 			}
 			else if (var != null)
 			{
 				try
 				{
-					replacement = var.evaluate(attrs);
+					replacement = var.evaluate(context);
 				}
 				catch (final Exception e)
 				{
@@ -619,7 +611,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				{
 					throw new AdempiereException("@NotFound@ @AD_BoilerPlate_ID@ (@Name@:" + refName + ")");
 				}
-				replacement = ref.getTextSnippetParsed(true, attrs);
+				replacement = ref.getTextSnippetParsed(true, context);
 			}
 			if (replacement == null)
 			{
@@ -693,9 +685,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * @return
 	 * @see #getTextSnippetParsed(String, boolean, Map) and consider isEmbeded = true
 	 */
-	public String getTextSnippetParsed(final Map<String, Object> attrs)
+	public String getTextSnippetParsed(final BoilerPlateContext context)
 	{
-		return getTextSnippetParsed(false, attrs);
+		return getTextSnippetParsed(false, context);
 	}
 
 	/**
@@ -706,11 +698,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * @param isEmbeded will this text be embeded (i.e. shoud we strip html, head, body tags?
 	 * @return parsed text
 	 */
-	public String getTextSnippetParsed(final boolean isEmbeded, final Map<String, Object> attrs)
+	public String getTextSnippetParsed(final boolean isEmbeded, final BoilerPlateContext context)
 	{
-		final String AD_Language = getAD_Language(Env.getCtx(), attrs);
+		final String AD_Language = getAD_Language(Env.getCtx(), context);
 		final String text = getTextSnippext(AD_Language);
-		return parseText(getCtx(), text, isEmbeded, attrs, get_TrxName());
+		return parseText(getCtx(), text, isEmbeded, context, get_TrxName());
 	}
 
 	public String getTagString()
@@ -816,19 +808,17 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	/**
 	 * Create Context
 	 */
-	public static Map<String, Object> createEditorContext(final SourceDocument sourceDocument)
+	public static BoilerPlateContext createEditorContext(final SourceDocument sourceDocument)
 	{
 		final Properties ctx = Env.getCtx();
-		final Map<String, Object> attrs = new HashMap<>();
 
-		final int windowNo = sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN;
-		attrs.put(VAR_WindowNo, windowNo);
+		final BoilerPlateContext.Builder attributesBuilder = BoilerPlateContext.builder();
+		attributesBuilder.setWindowNo(sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN);
 
 		final I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
 		{
-			attrs.put(VAR_SalesRep, salesRep);
-			attrs.put(VAR_SalesRep_ID, salesRep.getAD_User_ID());
+			attributesBuilder.setSalesRep(salesRep);
 		}
 
 		int C_BPartner_ID = -1;
@@ -839,12 +829,11 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		if (AD_User_ID > 0)
 		{
 			user = Services.get(IUserDAO.class).retrieveUserOrNull(ctx, AD_User_ID);
-			attrs.put(VAR_AD_User_ID, user.getAD_User_ID());
-			attrs.put(VAR_AD_User, user);
+			attributesBuilder.setUser(user);
 			if (Services.get(IUserBL.class).isEMailValid(user))
 			{
 				email = user.getEMail();
-				attrs.put(VAR_EMail, email);
+				attributesBuilder.setEmail(email);
 			}
 			C_BPartner_ID = user.getC_BPartner_ID();
 		}
@@ -854,19 +843,19 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		}
 		if (C_BPartner_ID > 0)
 		{
-			attrs.put(VAR_C_BPartner_ID, C_BPartner_ID);
+			attributesBuilder.setC_BPartner_ID(C_BPartner_ID);
+			
 			final MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
 			if (email == null)
 			{
 				final I_AD_User contact = getDefaultContactOrFirstWithValidEMail(bp);
 				if (contact != null)
 				{
-					attrs.put(VAR_AD_User_ID, contact.getAD_User_ID());
-					attrs.put(VAR_AD_User, contact);
+					attributesBuilder.setUser(contact);
 					if (Services.get(IUserBL.class).isEMailValid(contact))
 					{
 						email = contact.getEMail();
-						attrs.put(VAR_EMail, email);
+						attributesBuilder.setEmail(email);
 					}
 				}
 			}
@@ -883,33 +872,33 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				AD_Language = bp.getAD_Language();
 			}
 		}
-		attrs.put(VAR_AD_Language, AD_Language);
+		attributesBuilder.setAD_Language(AD_Language);
 
 		//
 		//
-		// attrs.put(VAR_Phone, null);
-		// attrs.put(VAR_Phone2, null);
-		// attrs.put(VAR_Fax, null);
+		// attrs.put(BoilerPlateContext.VAR_Phone, null);
+		// attrs.put(BoilerPlateContext.VAR_Phone2, null);
+		// attrs.put(BoilerPlateContext.VAR_Fax, null);
 		// if (user != null)
 		// {
-		// attrs.put(VAR_Phone, user.getPhone());
-		// attrs.put(VAR_Phone2, user.getPhone2());
-		// attrs.put(VAR_Fax, user.getFax());
+		// attrs.put(BoilerPlateContext.VAR_Phone, user.getPhone());
+		// attrs.put(BoilerPlateContext.VAR_Phone2, user.getPhone2());
+		// attrs.put(BoilerPlateContext.VAR_Fax, user.getFax());
 		// }
 		// //
-		// attrs.put(MADBoilerPlate.VAR_BPValue, null);
-		// attrs.put(MADBoilerPlate.VAR_BPName, null);
+		// attrs.put(BoilerPlateContext.VAR_BPValue, null);
+		// attrs.put(BoilerPlateContext.VAR_BPName, null);
 		// if (C_BPartner_ID > 0)
 		// {
 		// MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
 		// if (bp != null)
 		// {
-		// attrs.put(MADBoilerPlate.VAR_BPValue, bp.getValue());
-		// attrs.put(MADBoilerPlate.VAR_BPName, bp.get_Translation(MBPartner.COLUMNNAME_Name, AD_Language));
+		// attrs.put(BoilerPlateContext.VAR_BPValue, bp.getValue());
+		// attrs.put(BoilerPlateContext.VAR_BPName, bp.get_Translation(MBPartner.COLUMNNAME_Name, AD_Language));
 		// }
 		// }
 		//
-		return attrs;
+		return attributesBuilder.build();
 	}
 
 	private static I_AD_User getDefaultContactOrFirstWithValidEMail(final MBPartner bpartner)
@@ -953,33 +942,23 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 	 * @param attributes
 	 * @return
 	 */
-	public static String getAD_Language(final Properties ctx, final Map<String, Object> attributes)
+	public static String getAD_Language(final Properties ctx, final BoilerPlateContext context)
 	{
-		if (attributes != null)
+		if (context != null)
 		{
-			final Object o = attributes.get(VAR_AD_Language);
-			if (o != null)
+			final String adLanguage = context.getAD_Language();
+			if (adLanguage != null)
 			{
-				return o.toString();
+				return adLanguage;
 			}
 		}
 		return Env.getAD_Language(ctx);
 	}
 
-	public static int getWindowNo(final Map<String, Object> attributes)
-	{
-		final Object o = attributes.get(MADBoilerPlate.VAR_WindowNo);
-		if (o instanceof Number)
-		{
-			return ((Number)o).intValue();
-		}
-		return 0;
-	}
-
 	@Override
 	public String toString()
 	{
-		final StringBuffer result = new StringBuffer();
+		final StringBuilder result = new StringBuilder();
 		result.append(super.toString());
 		result.append(' ');
 		result.append(getName());
@@ -1010,6 +989,185 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		DB.executeUpdateEx(sql,
 				new Object[] { AD_Client_ID, 0, AD_PInstance_ID, 10, text },
 				trxName);
+	}
+
+	@ToString
+	public static final class BoilerPlateContext
+	{
+		public static final Builder builder()
+		{
+			return new Builder(ImmutableMap.of());
+		}
+
+		public static final BoilerPlateContext EMPTY = new BoilerPlateContext(ImmutableMap.of());
+
+		private static final String VAR_WindowNo = "WindowNo";
+		private static final String VAR_SalesRep = "SalesRep";
+		private static final String VAR_SalesRep_ID = "SalesRep_ID";
+		private static final String VAR_EMail = "EMail";
+		private static final String VAR_AD_User_ID = "AD_User_ID";
+		private static final String VAR_AD_User = "AD_User";
+		private static final String VAR_C_BPartner_ID = "C_BPartner_ID";
+		private static final String VAR_AD_Language = "AD_Language";
+		/** Source document. Usually it's of type {@link SourceDocument} */
+		private static final String VAR_SourceDocument = SourceDocument.NAME;
+
+		private final Map<String, Object> attributes;
+
+		private BoilerPlateContext(@NonNull final Map<String, Object> attributes)
+		{
+			this.attributes = attributes;
+		}
+
+		public Builder toBuilder()
+		{
+			return new Builder(attributes);
+		}
+
+		public boolean containsKey(final String attributeName)
+		{
+			return attributes.containsKey(attributeName);
+		}
+
+		public Object get(final String attributeName)
+		{
+			return attributes.get(attributeName);
+		}
+
+		@Nullable
+		public Integer getSalesRep_ID()
+		{
+			return (Integer)get(VAR_SalesRep_ID);
+		}
+
+		public I_AD_User getSalesRepUser()
+		{
+			return InterfaceWrapperHelper.create(get(VAR_SalesRep), I_AD_User.class);
+		}
+
+		public String getEMail()
+		{
+			return (String)get(VAR_EMail);
+		}
+
+		@Nullable
+		public Integer getC_BPartner_ID()
+		{
+			return (Integer)get(VAR_C_BPartner_ID);
+		}
+
+		@Nullable
+		public Integer getAD_User_ID()
+		{
+			return (Integer)get(VAR_AD_User_ID);
+		}
+
+		@Nullable
+		public String getAD_Language()
+		{
+			final Object adLanguageObj = get(VAR_AD_Language);
+			return adLanguageObj != null ? adLanguageObj.toString() : null;
+		}
+
+		public int getWindowNo()
+		{
+			final Object windowNoObj = get(VAR_WindowNo);
+			if (windowNoObj instanceof Number)
+			{
+				return ((Number)windowNoObj).intValue();
+			}
+			else
+			{
+				return Env.WINDOW_MAIN;
+			}
+		}
+
+		public SourceDocument getSourceDocumentOrNull()
+		{
+			return SourceDocument.toSourceDocumentOrNull(get(VAR_SourceDocument));
+		}
+
+		public static class Builder
+		{
+			private final Map<String, Object> attributes;
+
+			private Builder(final Map<String, Object> attributes)
+			{
+				this.attributes = attributes != null && !attributes.isEmpty() ? new HashMap<>(attributes) : new HashMap<>();
+			}
+
+			public BoilerPlateContext build()
+			{
+				if(attributes.isEmpty())
+				{
+					return EMPTY;
+				}
+				
+				return new BoilerPlateContext(ImmutableMap.copyOf(attributes));
+			}
+
+			private void setAttribute(final String attributeName, final Object value)
+			{
+				if (value == null)
+				{
+					attributes.remove(attributeName);
+				}
+				else
+				{
+					attributes.put(attributeName, value);
+				}
+			}
+
+			public Builder setWindowNo(final int windowNo)
+			{
+				setAttribute(VAR_WindowNo, windowNo);
+				return this;
+			}
+
+			public Builder setSourceDocument(final SourceDocument sourceDocument)
+			{
+				setAttribute(VAR_SourceDocument, sourceDocument);
+				return this;
+			}
+
+			public void setAD_Language(final String adLanguage)
+			{
+				setAttribute(VAR_AD_Language, adLanguage);
+			}
+
+			public Builder setSourceDocumentFromObject(final Object sourceDocumentObj)
+			{
+				final SourceDocument sourceDocument = SourceDocument.toSourceDocumentOrNull(sourceDocumentObj);
+				setSourceDocument(sourceDocument);
+				return this;
+			}
+
+			public Builder setSalesRep(final I_AD_User salesRepUser)
+			{
+				setAttribute(VAR_SalesRep, salesRepUser);
+				setAttribute(VAR_SalesRep_ID, salesRepUser != null ? salesRepUser.getAD_User_ID() : null);
+				return this;
+			}
+
+			public Builder setC_BPartner_ID(final int bpartnerId)
+			{
+				setAttribute(VAR_C_BPartner_ID, bpartnerId);
+				return this;
+			}
+
+			public Builder setUser(final I_AD_User user)
+			{
+				setAttribute(VAR_AD_User, user);
+				setAttribute(VAR_AD_User_ID, user != null ? user.getAD_User_ID() : null);
+				return this;
+			}
+
+			public Builder setEmail(final String email)
+			{
+				setAttribute(VAR_EMail, email);
+				return this;
+			}
+		}
 	}
 
 	public static interface SourceDocument

@@ -25,7 +25,6 @@ package de.metas.letters.api.impl;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,6 +53,7 @@ import de.metas.letters.model.I_C_Letter;
 import de.metas.letters.model.I_T_Letter_Spool;
 import de.metas.letters.model.LetterDocumentLocationAdapter;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.spi.ILetterProducer;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
@@ -101,19 +101,19 @@ public final class TextTemplateBL implements ITextTemplateBL
 	@Override
 	public String parseText(Properties ctx, String text,
 			boolean isEmbeded,
-			Map<String, Object> attrs,
+			final BoilerPlateContext attributes,
 			String trxName)
 	{
 		final String textParsed = MADBoilerPlate.parseText(ctx,
 				text,
 				true, // isEmbeded
-				attrs,
+				attributes,
 				ITrx.TRXNAME_None); // trxName
 		return textParsed;
 	}
 
 	@Override
-	public void setLetterBodyParsed(I_C_Letter letter, Map<String, Object> attributes)
+	public void setLetterBodyParsed(I_C_Letter letter, BoilerPlateContext attributes)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
 		final String trxName = InterfaceWrapperHelper.getTrxName(letter);
@@ -334,7 +334,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 			setAD_BoilerPlate(letter, textTemplate);
 
-			final Map<String, Object> attributes = producer.createAttributes(item);
+			final BoilerPlateContext attributes = producer.createAttributes(item);
 			setLetterBodyParsed(letter, attributes);
 
 			// 04238 : We need to flag the letter for enqueue.

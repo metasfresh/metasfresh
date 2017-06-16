@@ -31,7 +31,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -73,6 +72,7 @@ import de.metas.email.EMailSentStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 
 /**
@@ -683,7 +683,7 @@ public class EMailDialog
 	}	// vetoableChange
 
 	// metas ------------------------------------------------------------------------------------------
-	private Map<String, Object> attributes = null;
+	private BoilerPlateContext attributes = null;
 
 	private final CLabel lLetter = new CLabel();
 	private final VLetterAttachment fLetter = new VLetterAttachment(this);
@@ -692,7 +692,7 @@ public class EMailDialog
 			final String to, final String subject, final String message,
 			final File attachment,
 			final MADBoilerPlate textPreset, final I_AD_Archive archive,
-			final Map<String, Object> attributes,
+			final BoilerPlateContext attributes,
 			final int AD_Table_ID, final int Record_ID)
 	{
 		super(owner, title, true);
