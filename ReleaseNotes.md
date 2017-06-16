@@ -18,6 +18,10 @@ Here come the actual release notes:
 * metasfresh-backend
   * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
     * Enhancement of the functionality to transmit Products to Procurement User Interface. Now allowing the user to switch of selected Transmissions also when contrcts exist and are valid.
+  * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
+    * Adding the Procurement Windows to WebUI.
+  * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
+    * New Window to allow the recording of Request for Quotations in WebUI.
 
 # metasfresh 5.13 (2017-24)
 
@@ -61,10 +65,6 @@ Here come the actual release notes:
   * [#1802](https://github.com/metasfresh/metasfresh/issues/1802) picking terminal is not opening
   * [#1805](https://github.com/metasfresh/metasfresh/issues/1805) Add the new Picking Window to WebUI Menu
     * Adding the prototype Picking window to WebUI menu.
-  * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
-    * Adding the Procurement Windows to WebUI.
-  * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
-    * New Window to allow the recording of Request for Quotations in WebUI.
 
 * metasfresh-webui-api
   * [#433](https://github.com/metasfresh/metasfresh-webui-api/issues/433) Show Manufacturing Order number in window header
