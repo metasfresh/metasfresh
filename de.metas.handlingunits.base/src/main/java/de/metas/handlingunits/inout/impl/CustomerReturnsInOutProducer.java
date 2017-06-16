@@ -100,7 +100,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			.thenComparing(HUpipToInOutLine::getOriginalInOutLineID));
 	
 	
-	Map<ArrayKey, HUPackingMaterialDocumentLineCandidate> pmCandidates = new HashMap<>();
+	Map<Object, HUPackingMaterialDocumentLineCandidate> pmCandidates = new HashMap<>();
 	
 	public CustomerReturnsInOutProducer()
 	{
@@ -140,16 +140,17 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			final Map<HUpipToInOutLine, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
-			for (final Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
-			{
-				final Object entryKey = entry.getKey();
-
-				final ArrayKey huArrayKey = Util.mkKey(
-						entryKey,
-						hu.getM_HU_ID());
-
-				pmCandidates.put(huArrayKey, entry.getValue());
-			}
+			pmCandidates.putAll(key2candidates);
+//			for (final Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
+//			{
+//				final Object entryKey = entry.getKey();
+//
+//				final ArrayKey huArrayKey = Util.mkKey(
+//						entryKey,
+//						hu.getM_HU_ID());
+//
+//				pmCandidates.put(huArrayKey, entry.getValue());
+//			}
 
 			huPIPToInOutLines.putAll(huPIPToOriginInOutLinesMap);
 		}
@@ -186,7 +187,9 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 					{
 						continue;
 					}
-					newInOutLine.setQtyEnteredTU(new BigDecimal(qtyTU));
+					
+					final BigDecimal qtyEnteredTU = newInOutLine.getQtyEnteredTU()== null? BigDecimal.ZERO : newInOutLine.getQtyEnteredTU();
+					newInOutLine.setQtyEnteredTU(new BigDecimal(qtyTU).add(qtyEnteredTU));
 					newInOutLine.setM_HU_PI_Item_Product(huPipToInOutLine.getHupip());
 				}
 			}
