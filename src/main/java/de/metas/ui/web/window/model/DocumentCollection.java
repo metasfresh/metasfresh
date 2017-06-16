@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -29,7 +30,10 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessInfo;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -44,8 +48,9 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import groovy.transform.Immutable;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -478,6 +483,50 @@ public class DocumentCollection
 			//
 			return DocumentPath.includedDocumentPath(zoomIntoWindowIdEffective, rootDocumentId, childEntityDescriptor.getDetailId(), rowId);
 		}
+	}
+	
+	public DocumentPrint createDocumentPrint(final DocumentPath documentPath)
+	{
+		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
+		final Document document = forDocumentReadonly(documentPath, changesCollector, Function.identity());
+		final int windowNo = document.getWindowNo();
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+
+		final int printProcessId = entityDescriptor.getPrintProcessId();
+		final TableRecordReference recordRef = getTableRecordReference(documentPath);
+
+		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
+				.setCtx(userSession.getCtx())
+				.setAD_Process_ID(printProcessId)
+				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
+				.setRecord(recordRef)
+				.setPrintPreview(true)
+				.setJRDesiredOutputType(OutputType.PDF)
+				//
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				.switchContextWhenRunning()
+				.executeSync()
+				.getResult();
+		
+		return DocumentPrint.builder()
+				.filename(processExecutionResult.getReportFilename())
+				.reportContentType(processExecutionResult.getReportContentType())
+				.reportData(processExecutionResult.getReportData())
+				.build();
+	}
+
+	@Immutable
+	@Value
+	@Builder
+	public static final class DocumentPrint
+	{
+		@NonNull
+		private final String filename;
+		@NonNull
+		private final String reportContentType;
+		@NonNull
+		private final byte[] reportData;
 	}
 
 	@Immutable

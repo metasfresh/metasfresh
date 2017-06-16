@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.controller;
 
 import java.util.List;
-import java.util.function.Function;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
@@ -27,9 +26,6 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.report.jasper.OutputType;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfo;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -56,12 +52,12 @@ import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentCollection.DocumentPrint;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentReference;
 import de.metas.ui.web.window.model.DocumentReferencesService;
@@ -649,31 +645,10 @@ public class WindowRestController
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-
-		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final Document document = documentCollection.forDocumentReadonly(documentPath, changesCollector, Function.identity());
-		final int windowNo = document.getWindowNo();
-		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-
-		final int printProcessId = entityDescriptor.getPrintProcessId();
-		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
-
-		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
-				.setCtx(userSession.getCtx())
-				.setAD_Process_ID(printProcessId)
-				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
-				.setRecord(recordRef)
-				.setPrintPreview(true)
-				.setJRDesiredOutputType(OutputType.PDF)
-				//
-				.buildAndPrepareExecution()
-				.onErrorThrowException()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult();
-
-		final byte[] reportData = processExecutionResult.getReportData();
-		final String reportContentType = processExecutionResult.getReportContentType();
+		
+		final DocumentPrint documentPrint = documentCollection.createDocumentPrint(documentPath);
+		final byte[] reportData = documentPrint.getReportData();
+		final String reportContentType = documentPrint.getReportContentType();
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(reportContentType));
