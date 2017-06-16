@@ -31,6 +31,12 @@ Here come the actual release notes:
   * [#886](https://github.com/metasfresh/metasfresh-webui-frontend/issues/886) Optimize Browse-whole-tree Navigation Link
     * Moves the 'Browse whole tree' to more prominent place above the Bookmark menu. This allows teh user to quickly open the sitemap if needed.
 
+## Fixes
+
+* metasfresh-webui-frontend
+  * [#877](https://github.com/metasfresh/metasfresh-webui-frontend/issues/877) n instead of none in dropdowns
+    * Fixes a minor Bug with the description of the emptyvalues in fields.
+
 # metasfresh 5.13 (2017-24)
 
 **upcoming release for week 2017-24**
