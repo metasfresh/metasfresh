@@ -11,6 +11,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
@@ -108,18 +109,19 @@ public class MultiCustomerHUReturnsInOutProducer
 
 			//
 			// Find out the HU assignments to original vendor material receipt
-			List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, hu);
+			List<I_M_HU_Assignment> inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, hu);
 			// if the given HU does not have any inout line HU assignments, it might be that it is an aggregated HU.
 			// fallback on the HU assignments of the top level HU
 			if (inOutLineHUAssignments.isEmpty())
 			{
 				final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignments(ctxAware, inOutLineTableId, topLevelHU);
+				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, topLevelHU);
 			}
 
+			// there were no HU Asignments for inoutlines.
 			if (inOutLineHUAssignments.isEmpty())
 			{
-				inOutLineHUAssignments = huAssignmentDAO.retrieveTableHUAssignmentsNoTopFilter(ctxAware, inOutLineTableId, hu);
+				throw new AdempiereException("No InOutLine HUAssignments for selected HU");
 			}
 
 			//
@@ -169,7 +171,7 @@ public class MultiCustomerHUReturnsInOutProducer
 						.queueEventsUntilTrxCommit(ITrx.TRXNAME_ThreadInherited)
 						.notify(returnInOuts);
 			}
-			
+
 			else
 			{
 				InterfaceWrapperHelper.refresh(_manualCustomerReturn);
@@ -208,7 +210,7 @@ public class MultiCustomerHUReturnsInOutProducer
 		producer.setM_Warehouse(warehouse);
 
 		producer.setMovementDate(getMovementDate());
-		
+
 		producer.setC_Order(originOrder);
 
 		if (_manualCustomerReturn != null)
