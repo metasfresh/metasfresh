@@ -72,19 +72,27 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#433](https://github.com/metasfresh/metasfresh-webui-api/issues/433) Show Manufacturing Order number in window header
+    * Enhancement of the WebUI User Interface for moadl overlays. Implemented the endpoint to show detailed infomration to teh user when opening the Manufacturing Issue/ Receipt window.
   * [#434](https://github.com/metasfresh/metasfresh-webui-api/issues/434) Provide endpoints for user avatar and user settings
     * New Implementation in Rest-API that provided endpoints for the new Avatar and User Settings Functionality.
   * [#435](https://github.com/metasfresh/metasfresh-webui-api/issues/435) document: stale tab events shall be sent to document's websocket endpoint
+    * Imporovement of the WebUI Rest-API communication for nmessages because of Stale Tabs.
   * [#437](https://github.com/metasfresh/metasfresh-webui-api/issues/437) Load/ Reload of delivery Days window takes too long.
+    * Improving the User Experience opening windows with a large amount of data.
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
   * [#444](https://github.com/metasfresh/metasfresh-webui-api/issues/444) Make Dashboard Translatable
+    * Imporovement of the Rest-API now allowing to Translate fixed elements via metasfresh ad_messages and their translation.
   * [#447](https://github.com/metasfresh/metasfresh-webui-api/issues/447) Truncate WEBUI_ViewSelection tables on startup
+    * Housekeeping Task to cleanup the WebUI View Selection Tables on server startup, which were growing fast.
   * [#451](https://github.com/metasfresh/metasfresh-webui-api/issues/451) Provide view sticky filters to be displayed by frontend
+    * New functionality for better User transparence. Now adding "sticky filters" API to mark windows that were opened and filtered via zoom-to. This endpoint will be used by the frontend in the next milestones.
   * [#452](https://github.com/metasfresh/metasfresh-webui-api/issues/452) Introduce URL widget type
     * API Implementation of the new URL Widget in frontend.
   * [#453](https://github.com/metasfresh/metasfresh-webui-api/issues/453) Password process parameters shall allow showing the password
+    * Endpoint that allows to make the passwords visible in the change password process.
   * [#456](https://github.com/metasfresh/metasfresh-webui-api/issues/456) Outbound Mail endpoint prototype
+    * Implementation of the eMail ourbound endpoint, which will be used by frontend in the new eMail editor.
 
 * metasfresh-webui-frontend
   * [#802](https://github.com/metasfresh/metasfresh-webui-frontend/issues/802) User/ Session Settings w/ Avatar and Logout
