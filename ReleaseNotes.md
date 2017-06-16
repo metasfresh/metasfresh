@@ -154,12 +154,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#795](https://github.com/metasfresh/metasfresh-webui-frontend/issues/795) On tab stale event, don't refresh tabs which are queryOnLoad but are not the active tab
+    * Refreshing/ Reloading improvement fix for stale tabs which are not active and shall only be queried when opened.
   * [#848](https://github.com/metasfresh/metasfresh-webui-frontend/issues/848) notifications don't update
+    * Minor fix. Noe updating the the user notifications again.
   * [#849](https://github.com/metasfresh/metasfresh-webui-frontend/issues/849) manufacturing order doesn't open
+    * Fixes a Bug that prevented the Manufacturing Order window to be opened in WebUI.
   * [#878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/878) Error firework when logout
+    * Fixes various issues that occured when logging out of metasfresh.
   * [#879](https://github.com/metasfresh/metasfresh-webui-frontend/issues/879) Avatar Picture not deleted from Header when cleared in Profile Settings
+    * Minor fix for not undisplaying the Avatar image from header when deleting the Image from User Profile.
   * [#881](https://github.com/metasfresh/metasfresh-webui-frontend/issues/881) Error when pressing Action Menu in Collapsible Grid Window
+    * Fixes an issue with the Action Menu in windows with the new collapsible Grid View.
   * [#883](https://github.com/metasfresh/metasfresh-webui-frontend/issues/883) hu editor doesn't update
+    * Bugfix for the HU Editor that did not update in some cases.
 
 # metasfresh 5.12 (2017-23)
 
