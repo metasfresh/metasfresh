@@ -76,13 +76,13 @@ Here come the actual release notes:
   * [#434](https://github.com/metasfresh/metasfresh-webui-api/issues/434) Provide endpoints for user avatar and user settings
     * New Implementation in Rest-API that provided endpoints for the new Avatar and User Settings Functionality.
   * [#435](https://github.com/metasfresh/metasfresh-webui-api/issues/435) document: stale tab events shall be sent to document's websocket endpoint
-    * Imporovement of the WebUI Rest-API communication for nmessages because of Stale Tabs.
+    * Improvement of the WebUI Rest-API communication for messages because of Stale Tabs.
   * [#437](https://github.com/metasfresh/metasfresh-webui-api/issues/437) Load/ Reload of delivery Days window takes too long.
     * API Improvement for opening windows with a large amount of data.
   * [#441](https://github.com/metasfresh/metasfresh-webui-api/issues/441) Implement Board API
     * Implementing the metasfresh API for the generic Board configuration functionality.
   * [#444](https://github.com/metasfresh/metasfresh-webui-api/issues/444) Make Dashboard Translatable
-    * Imporovement of the Rest-API now allowing to Translate fixed elements via metasfresh ad_messages and their translation.
+    * Improvement of the Rest-API now allowing to Translate fixed elements via metasfresh ad_messages and their translation.
   * [#447](https://github.com/metasfresh/metasfresh-webui-api/issues/447) Truncate WEBUI_ViewSelection tables on startup
     * Housekeeping Task to cleanup the WebUI View Selection Tables on server startup, which were growing fast.
   * [#451](https://github.com/metasfresh/metasfresh-webui-api/issues/451) Provide view sticky filters to be displayed by frontend
@@ -118,10 +118,11 @@ Here come the actual release notes:
   * [#865](https://github.com/metasfresh/metasfresh-webui-frontend/issues/865) Clickable URL in Fields
     * New Widget Type for URL Fields that allow the user to open a new browser Tab with the recorded link.
   * [#867](https://github.com/metasfresh/metasfresh-webui-frontend/issues/867) Layout Adjustment for UI Section Headlines
-    * New Layout for Section Headlines, allowing more and better visibility/ readability for the uiser.
+    * New Layout for Section Headlines, allowing more and better visibility/ readability for the user.
   * [#872](https://github.com/metasfresh/metasfresh-webui-frontend/issues/872) Breadcrumb: separate the document summary and last breadcrumb node with a slash
     * Additional Slash Character in Breadcrumb to seperate the window Name and Document Identifier.
   * [#880](https://github.com/metasfresh/metasfresh-webui-frontend/issues/880) Change Icon for URL Link
+    * Adjusting the Icon of the new URL widget with a 'link' image.
 
 * others
   * [metasfresh/metasfresh-docker#23](https://github.com/metasfresh/metasfresh-docker/issues/23) Jenkinsfile make docker tag from MF_UPSTREAM_BRANCH
@@ -156,7 +157,7 @@ Here come the actual release notes:
   * [#795](https://github.com/metasfresh/metasfresh-webui-frontend/issues/795) On tab stale event, don't refresh tabs which are queryOnLoad but are not the active tab
     * Refreshing/ Reloading improvement fix for stale tabs which are not active and shall only be queried when opened.
   * [#848](https://github.com/metasfresh/metasfresh-webui-frontend/issues/848) notifications don't update
-    * Minor fix. Noe updating the the user notifications again.
+    * Minor fix. Now updating the the user notifications again.
   * [#849](https://github.com/metasfresh/metasfresh-webui-frontend/issues/849) manufacturing order doesn't open
     * Fixes a Bug that prevented the Manufacturing Order window to be opened in WebUI.
   * [#878](https://github.com/metasfresh/metasfresh-webui-frontend/issues/878) Error firework when logout
