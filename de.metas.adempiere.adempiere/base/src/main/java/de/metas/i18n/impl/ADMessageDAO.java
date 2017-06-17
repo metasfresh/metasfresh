@@ -35,6 +35,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.X_AD_Message;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.i18n.IADMessageDAO;
@@ -76,6 +77,13 @@ public class ADMessageDAO implements IADMessageDAO
 		}
 
 		return InterfaceWrapperHelper.create(ctx, adMessageId, I_AD_Message.class, ITrx.TRXNAME_None);
+	}
+	
+	@Override
+	public boolean isMessageExists(final String adMessage)
+	{
+		final int adMessageId = retrieveIdByValue(Env.getCtx(), adMessage);
+		return adMessageId > 0;
 	}
 
 	@Override

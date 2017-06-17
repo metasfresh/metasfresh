@@ -50,6 +50,8 @@ public interface IADMessageDAO extends ISingletonService
 	 * @return AD_Message_ID
 	 */
 	int retrieveIdByValue(Properties ctx, String value);
+	
+	boolean isMessageExists(String adMessage);
 
 	void createUpdateMessage(String adMessage, Consumer<I_AD_Message> adMessageUpdater);
 }
