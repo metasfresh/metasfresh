@@ -307,7 +307,7 @@ public final class POInfoColumn implements Serializable
 		return this.ColumnDescription;
 	}
 
-	public boolean isTranslated()
+	boolean isTranslated()
 	{
 		return this.IsTranslated;
 	}
