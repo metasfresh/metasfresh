@@ -2,11 +2,12 @@ package org.compiere.grid.tree;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CTextField;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

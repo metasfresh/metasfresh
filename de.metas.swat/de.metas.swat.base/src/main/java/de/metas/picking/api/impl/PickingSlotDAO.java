@@ -36,13 +36,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.IMsgBL;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;

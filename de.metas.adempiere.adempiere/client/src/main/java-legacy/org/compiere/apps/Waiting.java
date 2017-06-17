@@ -35,7 +35,6 @@ import javax.swing.WindowConstants;
 
 import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CDialog;
@@ -45,6 +44,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

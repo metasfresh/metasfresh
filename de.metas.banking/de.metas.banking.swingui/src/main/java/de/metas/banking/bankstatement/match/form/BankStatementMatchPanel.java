@@ -21,7 +21,6 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.ConfirmPanelListener;
@@ -45,6 +44,7 @@ import de.metas.banking.bankstatement.match.model.IPayment;
 import de.metas.banking.bankstatement.match.service.BankStatementMatchQuery;
 import de.metas.banking.bankstatement.match.service.IBankStatementMatchDAO;
 import de.metas.banking.bankstatement.match.service.impl.BankStatementPaymentMatchingProcessor;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

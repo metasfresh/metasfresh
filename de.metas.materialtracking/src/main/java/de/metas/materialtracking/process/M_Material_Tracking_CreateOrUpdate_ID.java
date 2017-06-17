@@ -28,12 +28,12 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;

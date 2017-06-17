@@ -65,7 +65,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.service.IRolePermLoggingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.AccessSqlParser;
 import org.compiere.model.I_AD_PInstance_Log;
 import org.compiere.model.I_AD_Private_Access;
@@ -84,6 +83,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 

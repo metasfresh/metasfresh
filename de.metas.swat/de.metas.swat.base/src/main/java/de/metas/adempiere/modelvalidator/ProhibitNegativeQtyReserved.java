@@ -26,7 +26,6 @@ package de.metas.adempiere.modelvalidator;
 import java.math.BigDecimal;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_Storage;
 import org.compiere.model.MClient;
 import org.compiere.model.MStorage;
@@ -35,6 +34,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.modelvalidator.SwatValidator;

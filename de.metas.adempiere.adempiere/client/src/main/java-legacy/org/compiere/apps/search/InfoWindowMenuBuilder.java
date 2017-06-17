@@ -15,7 +15,6 @@ import org.adempiere.ad.service.IADInfoWindowDAO;
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
 import org.compiere.apps.AMenuStartItem;
@@ -28,6 +27,7 @@ import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Helper class used to create, add and handle the Info windows menu items.

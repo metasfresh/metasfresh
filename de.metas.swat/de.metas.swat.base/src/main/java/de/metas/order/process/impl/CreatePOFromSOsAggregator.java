@@ -11,7 +11,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.MapReduceAggregator;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_AD_Org;
@@ -22,6 +21,7 @@ import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.service.IOrderBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 
 /*

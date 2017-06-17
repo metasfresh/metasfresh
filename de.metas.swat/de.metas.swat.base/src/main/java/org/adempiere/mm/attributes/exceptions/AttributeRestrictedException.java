@@ -28,9 +28,10 @@ import java.util.Properties;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeConstants;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 public class AttributeRestrictedException extends AdempiereException
 {

@@ -39,7 +39,6 @@ import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.ConfirmPanelListener;
 import org.compiere.apps.form.FormFrame;
@@ -56,6 +55,7 @@ import org.compiere.util.ITableAwareCacheInterface;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Form panel used to check and test UOM conversions.

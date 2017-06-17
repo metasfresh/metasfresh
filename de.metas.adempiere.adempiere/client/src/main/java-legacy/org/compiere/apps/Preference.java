@@ -55,7 +55,6 @@ import org.adempiere.plaf.UIDefaultsEditorDialog;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.grid.ed.VDate;
@@ -76,6 +75,7 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

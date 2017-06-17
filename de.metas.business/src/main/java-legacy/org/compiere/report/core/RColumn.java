@@ -21,11 +21,12 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  *  Report Column

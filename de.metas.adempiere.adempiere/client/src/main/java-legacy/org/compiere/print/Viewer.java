@@ -72,7 +72,6 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.images.Images;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AMenu;
@@ -106,6 +105,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import net.miginfocom.layout.AC;

@@ -39,7 +39,6 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.VTable;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.I_AD_ChangeLog;
@@ -59,6 +58,7 @@ import org.compiere.util.NamePair;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

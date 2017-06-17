@@ -41,10 +41,10 @@ import org.adempiere.server.rpl.trx.spi.IReplicationIssueSolver;
 import org.adempiere.server.rpl.trx.spi.NoOpIssueSolver;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;

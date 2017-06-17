@@ -41,6 +41,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 
@@ -63,7 +64,6 @@ import org.adempiere.plaf.CalendarUI;
 import org.adempiere.plaf.VEditorUI;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;

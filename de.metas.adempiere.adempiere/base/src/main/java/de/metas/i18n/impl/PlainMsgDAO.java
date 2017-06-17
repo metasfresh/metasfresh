@@ -1,4 +1,4 @@
-package org.adempiere.util.api.impl;
+package de.metas.i18n.impl;
 
 /*
  * #%L
@@ -26,7 +26,7 @@ package org.adempiere.util.api.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.adempiere.util.api.IMsgDAO;
+import de.metas.i18n.IMsgDAO;
 
 public class PlainMsgDAO implements IMsgDAO
 {

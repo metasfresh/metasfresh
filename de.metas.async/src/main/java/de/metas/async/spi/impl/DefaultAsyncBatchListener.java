@@ -9,7 +9,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MNote;
 
@@ -18,6 +17,7 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.spi.IAsyncBatchListener;
+import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 
 /**

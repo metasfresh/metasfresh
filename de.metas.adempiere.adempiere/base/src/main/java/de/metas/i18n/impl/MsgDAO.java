@@ -1,4 +1,4 @@
-package org.adempiere.util.api.impl;
+package de.metas.i18n.impl;
 
 /*
  * #%L
@@ -24,9 +24,10 @@ package org.adempiere.util.api.impl;
 
 
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgDAO;
 import de.metas.logging.LogManager;
 
-import org.adempiere.util.api.IMsgDAO;
 import org.compiere.util.DB;
 
 public class MsgDAO implements IMsgDAO

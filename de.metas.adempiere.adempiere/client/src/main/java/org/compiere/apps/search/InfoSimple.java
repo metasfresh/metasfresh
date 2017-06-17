@@ -54,7 +54,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.search.history.IInvoiceHistoryTabHandler;
 import org.compiere.apps.search.history.impl.InvoiceHistory;
 import org.compiere.apps.search.history.impl.InvoiceHistoryContext;
@@ -80,6 +79,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Util;
 
+import de.metas.i18n.IMsgBL;
 import net.miginfocom.swing.MigLayout;
 
 /**

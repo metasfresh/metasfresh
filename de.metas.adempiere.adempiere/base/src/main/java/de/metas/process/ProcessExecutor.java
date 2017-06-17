@@ -17,7 +17,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Rule;
@@ -33,6 +32,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
 
+import de.metas.i18n.IMsgBL;
 //import de.metas.adempiere.form.IClientUI;
 import de.metas.logging.LogManager;
 import de.metas.script.IADRuleDAO;

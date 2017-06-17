@@ -1,4 +1,4 @@
-package org.adempiere.ad.service.impl;
+package de.metas.i18n.impl;
 
 /*
  * #%L
@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,6 +37,7 @@ import org.compiere.model.I_AD_Message;
 import org.compiere.model.X_AD_Message;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.i18n.IADMessageDAO;
 
 public class ADMessageDAO implements IADMessageDAO
 {

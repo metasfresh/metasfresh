@@ -35,10 +35,11 @@ import net.miginfocom.swing.MigLayout;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.swing.CTabbedPane;
 import org.jdesktop.swingx.JXTaskPane;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * NOTE: consider moving this to either de.metas.handlingunits or org.adempiere.libero if and when one starts to depend on the other.

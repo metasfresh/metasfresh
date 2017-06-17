@@ -40,7 +40,6 @@ import net.miginfocom.swing.MigLayout;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.search.IInfoSimple;
 import org.compiere.swing.CScrollPane;
 import org.compiere.swing.CTabbedPane;
@@ -48,6 +47,8 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.jdesktop.swingx.JXTaskPane;
+
+import de.metas.i18n.IMsgBL;
 
 public class InfoProductDetails
 {

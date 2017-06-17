@@ -1,4 +1,4 @@
-package org.adempiere.util.api;
+package de.metas.i18n;
 
 /*
  * #%L
@@ -23,13 +23,33 @@ package org.adempiere.util.api;
  */
 
 
-import org.adempiere.util.ISingletonService;
+import java.util.Properties;
+import java.util.function.Consumer;
 
-public interface IMsgDAO extends ISingletonService
+import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_AD_Message;
+
+public interface IADMessageDAO extends ISingletonService
 {
 
-	int retrieveMessageId(String adMessage);
+	/**
+	 * 
+	 * @param ctx
+	 * @param value
+	 * @return {@link I_AD_Message} or <code>null</code> if not found
+	 */
+	I_AD_Message retrieveByValue(Properties ctx, String value);
 
-	boolean isMessageExists(String adMessage);
+	I_AD_Message retrieveById(Properties ctx, int adMessageId);
 
+	/**
+	 * Gets AD_Message_ID
+	 * 
+	 * @param ctx
+	 * @param value AD_Message.Value
+	 * @return AD_Message_ID
+	 */
+	int retrieveIdByValue(Properties ctx, String value);
+
+	void createUpdateMessage(String adMessage, Consumer<I_AD_Message> adMessageUpdater);
 }
