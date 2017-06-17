@@ -723,3 +723,153 @@ UPDATE AD_Element_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-06-17 10:22:0
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(52023,'en_US') 
 ;
 
+-- 2017-06-17T10:42:30.080
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Suchschlüssel',Updated=TO_TIMESTAMP('2017-06-17 10:42:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=57987
+;
+
+-- 2017-06-17T10:42:30.083
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=57987
+;
+
+-- 2017-06-17T10:42:37.146
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-06-17 10:42:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=57987 AND AD_Language='en_US'
+;
+
+-- 2017-06-17T10:43:14.230
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Bemerkungen',Updated=TO_TIMESTAMP('2017-06-17 10:43:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=57989
+;
+
+-- 2017-06-17T10:43:14.233
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=57989
+;
+
+-- 2017-06-17T10:43:18.570
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-06-17 10:43:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=57989 AND AD_Language='en_US'
+;
+
+-- 2017-06-17T10:44:38.792
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Benachrichtigungs Art',Updated=TO_TIMESTAMP('2017-06-17 10:44:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58001
+;
+
+-- 2017-06-17T10:44:38.792
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58001
+;
+
+-- 2017-06-17T10:45:03.681
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Vollzugriff Geschäftspartner',Updated=TO_TIMESTAMP('2017-06-17 10:45:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58003
+;
+
+-- 2017-06-17T10:45:03.681
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58003
+;
+
+-- 2017-06-17T10:45:56.207
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='EMail Nutzer-ID',Updated=TO_TIMESTAMP('2017-06-17 10:45:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58004
+;
+
+-- 2017-06-17T10:45:56.208
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58004
+;
+
+-- 2017-06-17T10:46:03.868
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Vorgesetzter',Updated=TO_TIMESTAMP('2017-06-17 10:46:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58006
+;
+
+-- 2017-06-17T10:46:03.873
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58006
+;
+
+-- 2017-06-17T10:46:31.088
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Trx Sektion',Updated=TO_TIMESTAMP('2017-06-17 10:46:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58008
+;
+
+-- 2017-06-17T10:46:31.089
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58008
+;
+
+-- 2017-06-17T10:46:47.628
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verbndungsart',Updated=TO_TIMESTAMP('2017-06-17 10:46:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58009
+;
+
+-- 2017-06-17T10:46:47.634
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58009
+;
+
+-- 2017-06-17T10:47:03.746
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='EMail überprüft',Updated=TO_TIMESTAMP('2017-06-17 10:47:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58011
+;
+
+-- 2017-06-17T10:47:03.747
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58011
+;
+
+-- 2017-06-17T10:47:27.819
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Überprüfung EMail',Updated=TO_TIMESTAMP('2017-06-17 10:47:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58013
+;
+
+-- 2017-06-17T10:47:27.820
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58013
+;
+
+-- 2017-06-17T10:47:36.004
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verarbieten',Updated=TO_TIMESTAMP('2017-06-17 10:47:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=57983
+;
+
+-- 2017-06-17T10:47:36.005
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=57983
+;
+
+-- 2017-06-17T10:47:41.165
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='eMail Nutzer-ID',Updated=TO_TIMESTAMP('2017-06-17 10:47:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58004
+;
+
+-- 2017-06-17T10:47:41.168
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58004
+;
+
+-- 2017-06-17T10:47:43.648
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='eMail überprüft',Updated=TO_TIMESTAMP('2017-06-17 10:47:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58011
+;
+
+-- 2017-06-17T10:47:43.651
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58011
+;
+
+-- 2017-06-17T10:47:50.698
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Überprüfung eMail',Updated=TO_TIMESTAMP('2017-06-17 10:47:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=58013
+;
+
+-- 2017-06-17T10:47:50.702
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET IsTranslated='N' WHERE AD_Field_ID=58013
+;
+
