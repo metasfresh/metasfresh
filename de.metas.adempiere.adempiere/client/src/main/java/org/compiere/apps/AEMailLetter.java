@@ -31,7 +31,6 @@ import java.util.Properties;
 import javax.swing.JPopupMenu;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
@@ -39,6 +38,7 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
 import de.metas.email.EMail;
+import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;

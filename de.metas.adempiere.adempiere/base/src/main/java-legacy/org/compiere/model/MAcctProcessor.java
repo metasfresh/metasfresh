@@ -24,8 +24,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.DB;
+
+import de.metas.i18n.IMsgBL;
 
 
 /**

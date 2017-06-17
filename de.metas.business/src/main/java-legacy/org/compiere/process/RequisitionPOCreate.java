@@ -24,7 +24,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.NoVendorForProductException;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MBPartner;
@@ -40,6 +39,7 @@ import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.purchasing.api.IBPartnerProductDAO;

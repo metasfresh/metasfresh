@@ -56,7 +56,6 @@ import org.adempiere.process.event.IProcessEventListener;
 import org.adempiere.process.event.ProcessEvent;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MTree;
 import org.compiere.model.MTreeNode;
 import org.compiere.model.PO;
@@ -67,6 +66,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 import net.miginfocom.swing.MigLayout;

@@ -36,7 +36,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.Callout;
@@ -65,6 +64,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocumentPA;
+import de.metas.i18n.IADMessageDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 

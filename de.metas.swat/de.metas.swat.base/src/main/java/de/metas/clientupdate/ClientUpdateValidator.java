@@ -35,7 +35,6 @@ import org.adempiere.ad.session.MFSession;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.MSystem;
 import org.compiere.util.DB;
@@ -43,6 +42,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

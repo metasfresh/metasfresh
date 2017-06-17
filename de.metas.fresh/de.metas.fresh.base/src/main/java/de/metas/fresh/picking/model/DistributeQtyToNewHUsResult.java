@@ -31,7 +31,6 @@ import java.util.List;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.TokenizedStringBuilder;
 import org.compiere.util.DisplayType;
@@ -42,6 +41,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Immutable distribution result.

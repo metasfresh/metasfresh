@@ -9,16 +9,17 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.api.IMsgDAO;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
 
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
 import de.metas.email.Mailbox;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.notification.spi.impl.CompositePrintingNotificationCtxProvider;
@@ -113,9 +114,9 @@ public class NotificationBL implements INotificationBL
 			final String messageText,
 			final ITableRecordReference referencedRecord)
 	{
-		final IMsgDAO msgDAO = Services.get(IMsgDAO.class);
+		final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 
-		final int adMessageID = msgDAO.retrieveMessageId(adMessage);
+		final int adMessageID = msgDAO.retrieveIdByValue(Env.getCtx(), adMessage);
 
 		final I_AD_Note note = InterfaceWrapperHelper.newInstance(I_AD_Note.class, recipient);
 		note.setAD_User(recipient);

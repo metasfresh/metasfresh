@@ -48,7 +48,6 @@ import org.adempiere.plaf.MetasFreshTheme;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.db.CConnection;
 import org.compiere.db.CConnectionEditor;
@@ -76,6 +75,7 @@ import com.google.common.base.Throwables;
 
 import de.metas.i18n.ADLanguageList;
 import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 

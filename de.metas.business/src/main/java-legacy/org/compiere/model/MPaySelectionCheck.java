@@ -31,7 +31,6 @@ import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.DocAction;
 import org.compiere.process.PaySelectionCreateCheck;
 import org.compiere.util.AdempiereUserError;
@@ -43,6 +42,7 @@ import org.compiere.util.Env;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Payment Print/Export model.

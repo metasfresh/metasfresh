@@ -26,10 +26,11 @@ package de.metas.banking.payment.paymentallocation.service;
 import java.util.Collection;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when some payment documents could not be allocated.

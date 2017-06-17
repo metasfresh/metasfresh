@@ -43,13 +43,14 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.search.PAttributeInstance;
 import org.compiere.model.MAttributeSetInstance;
 import org.compiere.model.MProduct;
 import org.compiere.util.Env;
 import org.eevolution.form.action.ProcessPopupAction;
 import org.eevolution.model.wrapper.BOMLineWrapper;
+
+import de.metas.i18n.IMsgBL;
 
 
 /**

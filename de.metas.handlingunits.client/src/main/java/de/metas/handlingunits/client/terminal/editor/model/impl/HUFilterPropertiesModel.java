@@ -35,7 +35,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.IQuery;
 import org.compiere.util.KeyNamePair;
@@ -51,6 +50,7 @@ import de.metas.handlingunits.client.terminal.editor.model.filter.IHUKeyFilter;
 import de.metas.handlingunits.model.I_C_POS_HUEditor_Filter;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pos.IPOSHUEditorFilterDAO;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to filter available HUs.

@@ -30,9 +30,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.apache.commons.collections4.IteratorUtils;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;

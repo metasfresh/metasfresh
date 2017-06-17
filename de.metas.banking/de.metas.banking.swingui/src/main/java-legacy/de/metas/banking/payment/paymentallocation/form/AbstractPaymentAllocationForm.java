@@ -22,7 +22,6 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.IProcessor;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.TimeUtil;
 
 import com.google.common.base.Supplier;
@@ -43,6 +42,7 @@ import de.metas.banking.payment.paymentallocation.model.PaymentRow;
 import de.metas.banking.payment.paymentallocation.model.PaymentsTableModel;
 import de.metas.banking.payment.paymentallocation.service.DifferenceRowBalancer;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
+import de.metas.i18n.IMsgBL;
 
 /* package */abstract class AbstractPaymentAllocationForm extends AbstractPaymentForm
 {

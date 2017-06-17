@@ -74,7 +74,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
@@ -108,6 +107,7 @@ import org.compiere.util.MSort;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

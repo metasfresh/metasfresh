@@ -8,11 +8,12 @@ import javax.swing.table.TableModel;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.impexp.CellErrorMessage;
 import org.compiere.impexp.ImpDataLine;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 public class FileImportPreviewTableModel extends AbstractTableModel
 {

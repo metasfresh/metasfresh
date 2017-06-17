@@ -34,13 +34,13 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.RunOutOfTrx;

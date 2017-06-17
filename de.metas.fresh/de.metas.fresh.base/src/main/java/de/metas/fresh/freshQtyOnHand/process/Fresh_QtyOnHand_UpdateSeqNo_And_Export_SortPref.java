@@ -37,7 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.user.api.IUserSortPrefDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_InfoColumn;
@@ -50,6 +49,7 @@ import org.compiere.model.X_AD_User_SortPref_Hdr;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
+import de.metas.i18n.IMsgBL;
 
 /**
  * @task http://dewiki908/mediawiki/index.php/08924_Sortierung_Zählliste-Sortierbegriffe_(101643853730)

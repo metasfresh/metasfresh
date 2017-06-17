@@ -51,7 +51,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.I_C_Country;
@@ -74,6 +73,7 @@ import com.akunagroup.uk.postcode.AddressInterface;
 import com.akunagroup.uk.postcode.AddressLookupInterface;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Dialog to enter Location Info (Address)

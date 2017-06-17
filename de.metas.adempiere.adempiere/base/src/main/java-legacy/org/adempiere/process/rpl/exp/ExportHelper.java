@@ -58,7 +58,6 @@ import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ReplicationStrategy;
@@ -84,6 +83,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import de.metas.adempiere.service.IAppDictionaryBL;
+import de.metas.i18n.IMsgBL;
 
 /**
  * @author Trifon N. Trifonov

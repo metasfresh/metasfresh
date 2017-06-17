@@ -34,7 +34,6 @@ import org.adempiere.pricing.api.IPriceListDAO;
 import org.adempiere.pricing.api.ProductPriceQuery;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_Invoice;
@@ -54,6 +53,7 @@ import de.metas.commission.interfaces.I_M_ProductScalePrice;
 import de.metas.commission.model.I_C_Sponsor;
 import de.metas.commission.model.I_C_Sponsor_SalesRep;
 import de.metas.commission.model.I_M_DiscountSchema;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductPA;
 

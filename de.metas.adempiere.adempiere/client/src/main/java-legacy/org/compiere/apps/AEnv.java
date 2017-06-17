@@ -55,7 +55,6 @@ import org.adempiere.images.Images;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.db.CConnection;
 import org.compiere.grid.ed.Calculator;
@@ -75,6 +74,7 @@ import org.compiere.util.Splash;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUIInvoker.OnFail;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.session.jaxrs.IServerService;
 

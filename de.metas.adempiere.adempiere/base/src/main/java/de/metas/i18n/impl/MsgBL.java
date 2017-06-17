@@ -1,4 +1,4 @@
-package org.adempiere.util.api.impl;
+package de.metas.i18n.impl;
 
 import java.util.List;
 import java.util.Map;
@@ -30,11 +30,11 @@ import java.util.Set;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.Msg;

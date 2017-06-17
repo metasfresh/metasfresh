@@ -23,7 +23,6 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Language;
 import org.compiere.util.DB;

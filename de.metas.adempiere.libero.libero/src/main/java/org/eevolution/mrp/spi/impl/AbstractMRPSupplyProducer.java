@@ -39,7 +39,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -62,6 +61,7 @@ import org.slf4j.Logger;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IMRPSegment;
 import de.metas.material.planning.IMaterialPlanningContext;

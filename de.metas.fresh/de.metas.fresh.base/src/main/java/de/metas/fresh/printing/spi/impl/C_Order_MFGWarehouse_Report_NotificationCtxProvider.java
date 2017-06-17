@@ -6,7 +6,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Order;
@@ -17,6 +16,7 @@ import com.google.common.base.Optional;
 
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.printing.model.I_C_Print_Job_Instructions_v;
+import de.metas.i18n.IMsgBL;
 import de.metas.notification.spi.INotificationCtxProvider;
 import de.metas.printing.api.IPrintJobDAO;
 import de.metas.printing.model.I_C_Print_Job_Instructions;

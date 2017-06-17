@@ -35,7 +35,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.util.TrxRunnableAdapter;
@@ -43,6 +42,7 @@ import org.compiere.util.TrxRunnableAdapter;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 
 /**

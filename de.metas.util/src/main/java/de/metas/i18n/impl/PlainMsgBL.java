@@ -1,4 +1,4 @@
-package org.adempiere.util.api.impl;
+package de.metas.i18n.impl;
 
 /*
  * #%L
@@ -26,10 +26,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
-import org.adempiere.util.api.IMsgBL;
-
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 
