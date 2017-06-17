@@ -32,7 +32,8 @@ import java.util.Properties;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * Collects and aggregates problems

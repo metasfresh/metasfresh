@@ -7,7 +7,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
@@ -24,6 +23,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 
 public final class InvoiceBL extends AbstractInvoiceBL
 {

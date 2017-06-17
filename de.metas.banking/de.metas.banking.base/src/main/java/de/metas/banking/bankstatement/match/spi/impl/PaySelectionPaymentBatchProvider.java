@@ -3,7 +3,6 @@ package de.metas.banking.bankstatement.match.spi.impl;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
@@ -16,6 +15,7 @@ import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.model.I_C_PaySelectionLine;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

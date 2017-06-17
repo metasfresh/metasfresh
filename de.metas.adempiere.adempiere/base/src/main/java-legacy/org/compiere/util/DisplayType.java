@@ -763,7 +763,7 @@ public final class DisplayType
 	 */
 	public static final boolean toBoolean(final Object value)
 	{
-		final boolean defaultValue = false;
+		final Boolean defaultValue = Boolean.FALSE;
 		return toBoolean(value, defaultValue);
 	}
 

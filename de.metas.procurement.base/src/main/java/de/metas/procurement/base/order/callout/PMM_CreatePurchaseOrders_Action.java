@@ -8,12 +8,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ui.sideactions.model.ExecutableSideAction;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;

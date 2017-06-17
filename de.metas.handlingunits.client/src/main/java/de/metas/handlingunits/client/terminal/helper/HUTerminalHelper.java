@@ -28,10 +28,10 @@ import java.math.BigDecimal;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.KeyLayout;
+import de.metas.i18n.IMsgBL;
 
 public final class HUTerminalHelper
 {

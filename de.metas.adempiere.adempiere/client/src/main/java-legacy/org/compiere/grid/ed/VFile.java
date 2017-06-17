@@ -36,11 +36,12 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.NullCopyPasteSupportEditor;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
 import org.compiere.swing.CTextField;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 import de.metas.logging.LogManager;

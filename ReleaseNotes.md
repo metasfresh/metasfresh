@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
   * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
@@ -24,6 +25,8 @@ Here come the actual release notes:
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
     * New Window to allow the recording of Request for Quotations in WebUI.
+  * [#1829](https://github.com/metasfresh/metasfresh/issues/1829) Different RFQ Windows in WebUI
+    * New Indows in WebUI that allow REF recording and Response maintenance.
 	
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay

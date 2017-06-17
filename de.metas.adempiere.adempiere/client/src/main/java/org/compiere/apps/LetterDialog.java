@@ -40,7 +40,6 @@ import java.util.Properties;
 
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.I_C_BPartner;
@@ -53,6 +52,7 @@ import org.compiere.swing.CPanel;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;

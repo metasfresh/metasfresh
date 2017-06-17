@@ -31,7 +31,6 @@ import java.awt.event.ActionListener;
 import javax.swing.AbstractButton;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.swing.CButton;
 import org.compiere.util.Env;
 
@@ -42,6 +41,7 @@ import de.metas.adempiere.form.terminal.ITerminalButton;
 import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.i18n.IMsgBL;
 import net.miginfocom.swing.MigLayout;
 
 public class SwingConfirmPanel extends ConfirmPanel

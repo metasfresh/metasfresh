@@ -33,9 +33,10 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Note;
 import org.eevolution.mrp.api.IMutableMRPResult;
+
+import de.metas.i18n.IMsgBL;
 
 /* package */class MRPResult implements IMutableMRPResult
 {

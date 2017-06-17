@@ -55,7 +55,6 @@ import org.adempiere.model.virtualColumn.IVirtualColumnProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.GridRowCtx;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.util.CacheMgt;
 import org.compiere.util.DB;
@@ -71,6 +70,7 @@ import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.translation.api.IElementTranslationBL;

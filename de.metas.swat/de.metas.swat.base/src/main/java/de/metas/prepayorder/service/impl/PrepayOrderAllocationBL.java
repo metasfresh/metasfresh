@@ -35,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
@@ -58,6 +57,7 @@ import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.prepayorder.interfaces.I_C_PaymentAllocate;
 import de.metas.prepayorder.service.IPrepayOrderAllocationBL;

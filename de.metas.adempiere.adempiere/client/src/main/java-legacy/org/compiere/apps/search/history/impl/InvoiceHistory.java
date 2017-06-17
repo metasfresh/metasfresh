@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Vector;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 import de.metas.logging.LogManager;
@@ -52,7 +54,6 @@ import javax.swing.table.DefaultTableModel;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AppsAction;
 import org.compiere.apps.ConfirmPanel;

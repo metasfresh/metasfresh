@@ -36,7 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_User;
 
 import de.metas.async.api.IWorkPackageQueue;
@@ -47,6 +46,7 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfo;

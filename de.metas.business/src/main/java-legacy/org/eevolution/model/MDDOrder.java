@@ -31,7 +31,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
@@ -52,6 +51,7 @@ import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 
 /**

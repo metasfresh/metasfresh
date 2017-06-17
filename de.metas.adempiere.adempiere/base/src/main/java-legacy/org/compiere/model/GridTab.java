@@ -68,7 +68,6 @@ import org.adempiere.ui.sideactions.model.SideActionsGroupsListModel;
 import org.adempiere.ui.spi.IGridTabSummaryInfoProvider;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -93,6 +92,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.process.IProcessPreconditionsContext;

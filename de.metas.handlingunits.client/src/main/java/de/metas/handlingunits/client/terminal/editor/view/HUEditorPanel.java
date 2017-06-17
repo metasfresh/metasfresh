@@ -37,7 +37,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DisplayType;
@@ -76,6 +75,7 @@ import de.metas.handlingunits.client.terminal.report.model.HUReportModel;
 import de.metas.handlingunits.client.terminal.report.view.HUReportPanel;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.IMsgBL;
 
 public class HUEditorPanel
 		extends TerminalDialogListenerAdapter

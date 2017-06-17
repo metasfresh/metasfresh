@@ -34,10 +34,10 @@ import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.spi.ICandidateProcessor;

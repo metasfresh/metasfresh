@@ -33,7 +33,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.Query;
 import org.slf4j.Logger;
@@ -42,6 +41,7 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IInOutCandHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;

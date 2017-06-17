@@ -24,7 +24,8 @@ package org.adempiere.exceptions;
 
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * Exception thrown on database foreign key violation.

@@ -61,7 +61,6 @@ import org.adempiere.process.rpl.RPL_Constants;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_EXP_Format;
@@ -80,6 +79,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

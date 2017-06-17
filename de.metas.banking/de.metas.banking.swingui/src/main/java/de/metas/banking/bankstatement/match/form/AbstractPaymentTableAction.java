@@ -3,12 +3,12 @@ package de.metas.banking.bankstatement.match.form;
 import javax.swing.JTable;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.swing.table.AnnotatedTableAction;
 import org.compiere.swing.table.AnnotatedTableModel;
 import org.compiere.util.Env;
 
 import de.metas.banking.bankstatement.match.model.IPayment;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

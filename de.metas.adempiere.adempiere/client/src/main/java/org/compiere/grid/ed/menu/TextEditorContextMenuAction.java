@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ScriptEditor;
 import org.compiere.grid.ed.Editor;
 import org.compiere.grid.ed.HTMLEditor;
@@ -37,6 +36,8 @@ import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 public class TextEditorContextMenuAction extends AbstractContextMenuAction
 {

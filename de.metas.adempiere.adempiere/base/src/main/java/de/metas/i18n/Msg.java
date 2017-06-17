@@ -16,7 +16,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Message;
@@ -199,37 +198,6 @@ public final class Msg
 	}
 
 	/**
-	 * Return an array of the installed Languages
-	 * 
-	 * @return Array of loaded Languages or null
-	 */
-	public String[] getLanguages()
-	{
-		if (adLanguage2messages == null)
-		{
-			return null;
-		}
-		final String[] retValue = new String[adLanguage2messages.size()];
-		adLanguage2messages.keySet().toArray(retValue);
-		return retValue;
-	}   // getLanguages
-
-	/**
-	 * Check if Language is loaded
-	 * 
-	 * @param language Language code
-	 * @return true, if language is loaded
-	 */
-	public boolean isLoaded(final String language)
-	{
-		if (adLanguage2messages == null)
-		{
-			return false;
-		}
-		return adLanguage2messages.containsKey(language);
-	}   // isLoaded
-
-	/**
 	 * Lookup term
 	 *
 	 * @param adLanguage language
@@ -310,7 +278,7 @@ public final class Msg
 	 * @param adMessage - Message Key
 	 * @return translated text
 	 */
-	public static String getMsg(final String adLanguage, final String adMessage)
+	private static String getMsg(final String adLanguage, final String adMessage)
 	{
 		return getMessage(adLanguage, adMessage).getMsgTextAndTip();
 	}
@@ -376,7 +344,7 @@ public final class Msg
 	 * @param getText if true only return Text, if false only return Tip
 	 * @return translated text
 	 */
-	public static String getMsg(final String adLanguage, final String adMessage, final boolean getText)
+	private static String getMsg(final String adLanguage, final String adMessage, final boolean getText)
 	{
 		final Message message = getMessage(adLanguage, adMessage);
 		return getText ? message.getMsgText() : message.getMsgTip();
@@ -393,19 +361,6 @@ public final class Msg
 	public static String getMsg(final Properties ctx, final String adMessage, final boolean getText)
 	{
 		return getMsg(Env.getAD_Language(ctx), adMessage, getText);
-	}   // getMsg
-
-	/**
-	 * Get translated text message for AD_Message
-	 * 
-	 * @param language Language
-	 * @param AD_Message Message Key
-	 * @param getText if true only return Text, if false only return Tip
-	 * @return translated text
-	 */
-	public static String getMsg(final Language language, final String AD_Message, final boolean getText)
-	{
-		return getMsg(language.getAD_Language(), AD_Message, getText);
 	}   // getMsg
 
 	/**

@@ -27,12 +27,13 @@ import java.awt.Component;
 import java.awt.Frame;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.menu.TextEditorContextMenuAction;
 import org.compiere.model.GridField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 public class MetasTextEditorContextMenuAction extends TextEditorContextMenuAction
 {

@@ -30,8 +30,9 @@ import java.awt.event.FocusEvent;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.swing.CDialog;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * Payment Document Reader Dialog

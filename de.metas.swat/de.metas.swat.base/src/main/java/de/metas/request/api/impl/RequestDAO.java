@@ -6,13 +6,13 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_R_Request;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.I_M_QualityNote;
