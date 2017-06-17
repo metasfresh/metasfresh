@@ -6,8 +6,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;

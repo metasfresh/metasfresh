@@ -4,13 +4,13 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;

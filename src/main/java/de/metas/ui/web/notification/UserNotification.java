@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 
@@ -18,6 +17,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.event.Event;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

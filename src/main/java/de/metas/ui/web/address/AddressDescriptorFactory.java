@@ -5,13 +5,13 @@ import java.util.function.Function;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.CCache;
 import org.springframework.stereotype.Component;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;

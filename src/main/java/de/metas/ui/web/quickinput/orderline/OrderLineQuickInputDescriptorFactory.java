@@ -5,7 +5,6 @@ import java.util.Set;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
@@ -15,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
