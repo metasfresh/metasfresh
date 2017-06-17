@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
   * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
