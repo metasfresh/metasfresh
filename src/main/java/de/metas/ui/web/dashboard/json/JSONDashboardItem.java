@@ -37,7 +37,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONDashboardItem implements Serializable
 {
-	/* package */static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
+	public static final JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONOptions jsonOpts)
 	{
 		return new JSONDashboardItem(dashboardItem, jsonOpts);
 	}

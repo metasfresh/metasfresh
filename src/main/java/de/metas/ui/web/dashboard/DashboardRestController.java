@@ -1,20 +1,33 @@
 package de.metas.ui.web.dashboard;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+
 import org.elasticsearch.client.Client;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardPatchPath;
+import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.dashboard.json.JSONDashboard;
-import de.metas.ui.web.dashboard.json.JSONDashboardChanges;
+import de.metas.ui.web.dashboard.json.JSONDashboardItem;
+import de.metas.ui.web.dashboard.json.JsonKPI;
+import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -57,21 +70,62 @@ public class DashboardRestController
 		return JSONOptions.of(userSession);
 	}
 
+	private UserDashboard getUserDashboardForReading()
+	{
+		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getAD_Client_ID()));
+		// TODO: assert readable by current user
+		return dashboard;
+	}
+
+	private UserDashboard getUserDashboardForWriting()
+	{
+		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getAD_Client_ID()));
+		// TODO: assert writable by current user
+		return dashboard;
+	}
+
 	@GetMapping("/kpis")
 	public JSONDashboard getKPIsDashboard()
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
-		return JSONDashboard.of(userDashboard.getKPIItems(), newJSONOpts());
+		final UserDashboard userDashboard = getUserDashboardForReading();
+		return JSONDashboard.of(userDashboard.getItems(DashboardWidgetType.KPI), newJSONOpts());
 	}
 
-	@PatchMapping("/kpis")
-	public void changeKPIsDashboard(@RequestBody final JSONDashboardChanges jsonDashboardChanges)
+	@GetMapping("/kpis/available")
+	public List<JsonKPI> getKPIsAvailableToAdd()
 	{
 		userSession.assertLoggedIn();
 
-		userDashboardRepo.changeUserDashboardKPIs(jsonDashboardChanges);
+		final Collection<KPI> kpis = userDashboardRepo.getKPIsAvailableToAdd();
+
+		final JSONOptions jsonOpts = newJSONOpts();
+		return kpis.stream()
+				.map(kpi -> JsonKPI.of(kpi, jsonOpts))
+				.sorted(Comparator.comparing(JsonKPI::getCaption))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@PostMapping("/kpis/new")
+	public JSONDashboardItem addKPIItem(@RequestBody final JsonUserDashboardItemAddRequest request)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard userDashboard = getUserDashboardForWriting();
+		final int itemId = userDashboardRepo.addUserDashboardItem(userDashboard, DashboardWidgetType.KPI, request);
+
+		final UserDashboardItem kpiItem = userDashboard.getItemById(DashboardWidgetType.KPI, itemId);
+		return JSONDashboardItem.of(kpiItem, newJSONOpts());
+	}
+
+	@PatchMapping("/kpis")
+	public void changeKPIsDashboard(@RequestBody final List<JSONPatchEvent<DashboardPatchPath>> events)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard dashboard = getUserDashboardForWriting();
+		userDashboardRepo.changeDashboardItems(dashboard, DashboardWidgetType.KPI, events);
 	}
 
 	private final KPIDataResult getKPIData(final UserDashboardItem dashboardItem, final long fromMillis, final long toMillis, final boolean prettyValues)
@@ -84,7 +138,6 @@ public class DashboardRestController
 				.setFormatValues(prettyValues)
 				.retrieveData()
 				.setItemId(dashboardItem.getId());
-
 	}
 
 	@GetMapping("/kpis/{itemId}/data")
@@ -97,10 +150,54 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboardItem dashboardItem = userDashboardRepo.getUserDashboard()
-				.getKPIItemById(itemId);
+		final UserDashboardItem dashboardItem = getUserDashboardForReading()
+				.getItemById(DashboardWidgetType.KPI, itemId);
 
 		return getKPIData(dashboardItem, fromMillis, toMillis, prettyValues);
+	}
+
+	@DeleteMapping("/kpis/{itemId}")
+	public void deleteKPIItem(@PathVariable("itemId") final int itemId)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard dashboard = getUserDashboardForWriting();
+		userDashboardRepo.deleteUserDashboardItem(dashboard, DashboardWidgetType.KPI, itemId);
+	}
+
+	@PostMapping("/targetIndicators/new")
+	public JSONDashboardItem addTargetIndicatorItem(@RequestBody final JsonUserDashboardItemAddRequest request)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard dashboard = getUserDashboardForWriting();
+		final int itemId = userDashboardRepo.addUserDashboardItem(dashboard, DashboardWidgetType.TargetIndicator, request);
+
+		final UserDashboardItem targetIndicatorItem = dashboard.getItemById(DashboardWidgetType.TargetIndicator, itemId);
+		return JSONDashboardItem.of(targetIndicatorItem, newJSONOpts());
+	}
+
+	@PatchMapping("/targetIndicators")
+	public void changeTargetIndicatorsDashboard(@RequestBody final List<JSONPatchEvent<DashboardPatchPath>> events)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard dashboard = getUserDashboardForWriting();
+		userDashboardRepo.changeDashboardItems(dashboard, DashboardWidgetType.TargetIndicator, events);
+	}
+
+	@GetMapping("/targetIndicators/available")
+	public List<JsonKPI> getTargetIndicatorsAvailableToAdd()
+	{
+		userSession.assertLoggedIn();
+
+		final Collection<KPI> kpis = userDashboardRepo.getTargetIndicatorsAvailableToAdd();
+
+		final JSONOptions jsonOpts = newJSONOpts();
+		return kpis.stream()
+				.map(kpi -> JsonKPI.of(kpi, jsonOpts))
+				.sorted(Comparator.comparing(JsonKPI::getCaption))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@GetMapping("/targetIndicators")
@@ -108,8 +205,17 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboard userDashboard = userDashboardRepo.getUserDashboard();
-		return JSONDashboard.of(userDashboard.getTargetIndicatorItems(), newJSONOpts());
+		final UserDashboard userDashboard = getUserDashboardForReading();
+		return JSONDashboard.of(userDashboard.getItems(DashboardWidgetType.TargetIndicator), newJSONOpts());
+	}
+
+	@DeleteMapping("/targetIndicators/{itemId}")
+	public void deleteTargetIndicatorItem(@PathVariable("itemId") final int itemId)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboard dashboard = getUserDashboardForWriting();
+		userDashboardRepo.deleteUserDashboardItem(dashboard, DashboardWidgetType.TargetIndicator, itemId);
 	}
 
 	@GetMapping("/targetIndicators/{itemId}/data")
@@ -122,8 +228,8 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboardItem dashboardItem = userDashboardRepo.getUserDashboard()
-				.getTargetIndicatorItemById(itemId);
+		final UserDashboardItem dashboardItem = getUserDashboardForReading()
+				.getItemById(DashboardWidgetType.TargetIndicator, itemId);
 
 		return getKPIData(dashboardItem, fromMillis, toMillis, prettyValues);
 	}

@@ -1,5 +1,6 @@
 package de.metas.ui.web.dashboard;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.ui.web.base.model.X_WEBUI_KPI;
@@ -44,7 +45,8 @@ public enum KPIChartType
 	{
 		return code;
 	}
-	
+
+	@JsonValue
 	public String toJson()
 	{
 		return name();

@@ -7,7 +7,6 @@ import org.compiere.util.DisplayType;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 
@@ -19,7 +18,7 @@ import lombok.Value;
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,22 +36,10 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel("document-change-event")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JSONDocumentChangedEvent
+public class JSONPatchEvent<PathType>
 {
-	@JsonCreator
-	public static final JSONDocumentChangedEvent of(@JsonProperty("op") final JSONOperation operation, @JsonProperty("path") final String path, @JsonProperty("value") final Object value)
-	{
-		return new JSONDocumentChangedEvent(operation, path, value);
-	}
-
-	public static final JSONDocumentChangedEvent replace(final String fieldName, final Object valueJson)
-	{
-		return new JSONDocumentChangedEvent(JSONOperation.replace, fieldName, valueJson);
-	}
-
 	@ApiModel("operation")
 	public static enum JSONOperation
 	{
@@ -60,15 +47,25 @@ public class JSONDocumentChangedEvent
 	}
 
 	@JsonProperty("op")
-	private final JSONOperation operation;
+	private final JSONOperation op;
 	@JsonProperty("path")
-	private final String path;
+	private final PathType path;
 	@JsonProperty("value")
 	private final Object value;
 
+	private JSONPatchEvent(
+			@JsonProperty("op") final JSONOperation op,
+			@JsonProperty("path") final PathType path,
+			@JsonProperty("value") final Object value)
+	{
+		this.op = op;
+		this.path = path;
+		this.value = value;
+	}
+
 	public boolean isReplace()
 	{
-		return operation == JSONOperation.replace;
+		return op == JSONOperation.replace;
 	}
 
 	public Boolean getValueAsBoolean(final Boolean defaultValue)
@@ -82,7 +79,14 @@ public class JSONDocumentChangedEvent
 		{
 			return defaultValueIfNull;
 		}
-		return Integer.parseInt(value.toString());
+		else if (value instanceof Number)
+		{
+			return ((Number)value).intValue();
+		}
+		else
+		{
+			return Integer.parseInt(value.toString());
+		}
 	}
 
 	public List<Integer> getValueAsIntegersList()
@@ -107,5 +111,4 @@ public class JSONDocumentChangedEvent
 			throw new AdempiereException("Cannot convert value to int list").setParameter("event", this);
 		}
 	}
-
 }
