@@ -1,23 +1,26 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.util;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -25,6 +28,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -36,6 +40,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.CacheStats;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.util.concurrent.ExecutionError;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 
@@ -70,14 +76,13 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 				, CacheMapType.LRU //
 		);
 	}
-	
+
 	public static final <K, V> CCache<K, V> newCache(final String cacheName, final int initialCapacity, final int expireAfterMinutes)
 	{
 		final String tableName = extractTableNameForCacheName(cacheName);
 		return new CCache<>(cacheName //
 				, tableName //
-				, initialCapacity
-				, expireAfterMinutes //
+				, initialCapacity, expireAfterMinutes //
 				, CacheMapType.HashMap //
 		);
 	}
@@ -212,7 +217,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	private static final AtomicLong NEXT_CACHE_ID = new AtomicLong(1);
 	/** unique cache ID, mainly used for tracking, logging and debugging */
 	private final long cacheId;
-	
+
 	/** Name */
 	private final String m_name;
 	private final String m_tableName;
@@ -320,7 +325,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	{
 		final int no = (int)cache.size();
 		clear();
-		if(no > 0)
+		if (no > 0)
 		{
 			logger.trace("Reset {} entries from {}", no, this);
 		}
@@ -334,7 +339,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 		{
 			return reset();
 		}
-		
+
 		//
 		// Try matching by cache's TableName (if any)
 		final String cacheTableName = getTableName();
@@ -432,7 +437,8 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			return cache.getIfPresent(key);
 		}
 
-		return get(key, new Callable<V>(){
+		return get(key, new Callable<V>()
+		{
 			@Override
 			public String toString()
 			{
@@ -443,15 +449,16 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			public V call() throws Exception
 			{
 				return valueInitializer.get();
-			}});
+			}
+		});
 	}
-	
+
 	/**
 	 * Gets cached value by <code>key</code>.
 	 * 
 	 * If value is not present in case it will try to initialize it by using <code>valueInitializer</code>.
 	 * 
-	 * If the <code>valueInitializer</code> returns null then this method will return <code>null</code> and the value will NOT be cached. 
+	 * If the <code>valueInitializer</code> returns null then this method will return <code>null</code> and the value will NOT be cached.
 	 * 
 	 * @param key
 	 * @param valueInitializer optional cache initializer.
@@ -504,8 +511,57 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	}
 
 	/**
-     * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
-     * 
+	 * Gets all values which are identified by given keys.
+	 * 
+	 * For those keys which were not found in cache, the <code>valuesLoader</code> will be called with all missing keys.
+	 * The expected return of <code>valuesLoader</code> is a key/value map of all those values loaded.
+	 * 
+	 * The values which were just loaded will be also added to cache.
+	 * 
+	 * @param keys
+	 * @param valuesLoader
+	 * @return values (IMPORTANT: order is not guaranteed)
+	 */
+	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Collection<K>, Map<K, V>> valuesLoader)
+	{
+		if (keys.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		//
+		// Fetch from cache what's available
+		final List<V> values = new ArrayList<>(keys.size());
+		final Set<K> keysToLoad = new HashSet<>();
+		for (final K key : ImmutableSet.copyOf(keys))
+		{
+			final V value = cache.getIfPresent(key);
+			if (value == null)
+			{
+				keysToLoad.add(key);
+			}
+			else
+			{
+				values.add(value);
+			}
+		}
+
+		//
+		// Load the missing keys if any
+		if (!keysToLoad.isEmpty())
+		{
+			final Map<K, V> valuesLoaded = valuesLoader.apply(keysToLoad);
+			valuesLoaded.forEach(cache::put); // add loaded values to cache
+			values.addAll(valuesLoaded.values()); // add loaded values to the list we will return
+		}
+
+		//
+		return values;
+	}
+
+	/**
+	 * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
+	 * 
 	 * @param key
 	 * @param exceptionSupplier
 	 * @return value; not null
@@ -514,7 +570,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	public <E extends Throwable> V getOrElseThrow(final K key, Supplier<E> exceptionSupplier) throws E
 	{
 		final V value = get(key);
-		if(value == null)
+		if (value == null)
 		{
 			throw exceptionSupplier.get();
 		}
@@ -540,17 +596,17 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			cache.put(key, value);
 		}
 	}	// put
-	
+
 	/**
 	 * Add all key/value pairs to this cache.
 	 * 
 	 * @param map key/value pairs
 	 */
-	public void putAll(Map<? extends K,? extends V> map)
+	public void putAll(Map<? extends K, ? extends V> map)
 	{
 		cache.putAll(map);
 	}
-	
+
 	/**
 	 * @see java.util.Map#isEmpty()
 	 */
@@ -594,7 +650,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			cache.invalidateAll();
 		}
 	}
-	
+
 	/**
 	 * Adds an additional table which when the cache is reset for that one, it also shall reset this cache.
 	 * 
@@ -613,20 +669,20 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 				{
 					return 0;
 				}
-				
+
 				return CCache.this.reset();
 			}
-			
+
 			@Override
 			public String toString()
 			{
 				return "->" + CCache.this.toString();
 			}
 		});
-		
+
 		return this;
 	}
-	
+
 	/**
 	 * @return cache statistics
 	 */
@@ -634,13 +690,12 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 	{
 		return new CCacheStats(cacheId, m_name, cache.size(), cache.stats());
 	}
-	
-	
+
 	@SuppressWarnings("serial")
 	public static final class CCacheStats implements Serializable
 	{
 		// NOTE: must be Json serializable!!!
-		
+
 		private final long cacheId;
 		private final String name;
 		private final long size;
@@ -654,7 +709,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			this.size = size;
 			this.guavaStats = guavaStats;
 		}
-		
+
 		@Override
 		public String toString()
 		{
@@ -665,13 +720,13 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 					.add("cacheId", cacheId)
 					.toString();
 		}
-		
+
 		@Override
 		public int hashCode()
 		{
 			return Objects.hash(cacheId, name, size, guavaStats);
 		}
-		
+
 		@Override
 		public boolean equals(final Object obj)
 		{
@@ -685,22 +740,22 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 			}
 			return false;
 		}
-		
+
 		public long getCacheId()
 		{
 			return cacheId;
 		}
-		
+
 		public String getName()
 		{
 			return name;
 		}
-		
+
 		public long getSize()
 		{
 			return size;
 		}
-		
+
 		public CacheStats getGuavaStats()
 		{
 			return guavaStats;
