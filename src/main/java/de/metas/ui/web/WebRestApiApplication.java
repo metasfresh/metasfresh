@@ -121,10 +121,9 @@ public class WebRestApiApplication
 
 		InterfaceWrapperHelper.registerHelper(new DocumentInterfaceWrapperHelper());
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance();
-		adempiere.setApplicationContext(applicationContext);
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.WEBUI);
-
+		
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
 		return adempiere;
