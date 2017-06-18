@@ -19,6 +19,8 @@ Here come the actual release notes:
   * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
+  * [#1816](https://github.com/metasfresh/metasfresh/issues/1816) Fix the webui layout for Vendor returns (Lieferanten Rücklieferung) window
+    * New Window Layout for vendor Returns window, Main View and Subtab Lines.
   * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
     * Enhancement of the functionality to transmit Products to Procurement User Interface. Now allowing the user to switch of selected Transmissions also when contrcts exist and are valid.
   * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
