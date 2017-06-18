@@ -348,7 +348,7 @@ public class WEBUI_M_HU_Transform
 				.cuToExistingTU(cuRow.getM_HU(), qtyCU, tuHU);
 
 		// Notify
-		getView().addHUAndInvalidate(tuHU);
+		getView().invalidateAll();
 	}
 
 	/**
@@ -399,7 +399,7 @@ public class WEBUI_M_HU_Transform
 				.tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
-		getView().addHUAndInvalidate(luHU);
+		getView().invalidateAll();
 	}
 
 	/**
