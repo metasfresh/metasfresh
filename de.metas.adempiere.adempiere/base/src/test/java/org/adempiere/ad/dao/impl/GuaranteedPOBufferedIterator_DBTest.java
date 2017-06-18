@@ -80,7 +80,7 @@ public class GuaranteedPOBufferedIterator_DBTest
 			System.setProperty("PropertyFile", propertyFile);
 		}
 
-		Env.getSingleAdempiereInstance().startup(RunMode.SWING_CLIENT);
+		Env.getSingleAdempiereInstance(null).startup(RunMode.SWING_CLIENT);
 	}
 
 	/**
