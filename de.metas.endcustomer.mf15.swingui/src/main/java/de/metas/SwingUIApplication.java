@@ -71,7 +71,7 @@ public class SwingUIApplication
 	public Adempiere adempiere()
 	{
 		Adempiere.main(applicationContext);
-		final Adempiere adempiere = Env.getSingleAdempiereInstance();
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		return adempiere;
 	}
 }
