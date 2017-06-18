@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Additional Default Filters for the new Handling Unit Editor.
   * [#1836](https://github.com/metasfresh/metasfresh/issues/1836) Adjustments for Empties Receive Window WebUI
     * Further Layout adjustments for the Empties Receive Window in WebUI.
+  * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
+    * Layout Adjustments to Customer Return Window in WebUI.
 	
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
