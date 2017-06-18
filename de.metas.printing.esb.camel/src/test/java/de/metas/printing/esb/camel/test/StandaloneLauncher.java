@@ -108,7 +108,7 @@ public class StandaloneLauncher
 
 		//
 		// Start ADempiere
-		Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
+		Env.getSingleAdempiereInstance(null).startup(RunMode.BACKEND);
 
 		//
 		// Start Import Processors
