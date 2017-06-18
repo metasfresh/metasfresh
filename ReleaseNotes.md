@@ -23,6 +23,8 @@ Here come the actual release notes:
     * New Window Layout for vendor Returns window, Main View and Subtab Lines.
   * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
     * Enhancement of the functionality to transmit Products to Procurement User Interface. Now allowing the user to switch of selected Transmissions also when contrcts exist and are valid.
+  * [#1819](https://github.com/metasfresh/metasfresh/issues/1819) make new pricelist a sales pricelist by default
+    * New Default behavior when creating new Price Lists. The List is set to "Sales Price List2 intially.
   * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
