@@ -31,6 +31,8 @@ Here come the actual release notes:
     * New Window to allow the recording of Request for Quotations in WebUI.
   * [#1829](https://github.com/metasfresh/metasfresh/issues/1829) Different RFQ Windows in WebUI
     * New Indows in WebUI that allow REF recording and Response maintenance.
+  * [#1830](https://github.com/metasfresh/metasfresh/issues/1830) Add filter for HU status in handling unit editor
+    * Additional Default Filters for the new Handling Unit Editor.
 	
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
