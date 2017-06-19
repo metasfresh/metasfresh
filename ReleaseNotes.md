@@ -51,6 +51,8 @@ Here come the actual release notes:
   * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
     * Application dictionary cleanup on metasfresh instalations where it's needed
   * [#1852](https://github.com/metasfresh/metasfresh/issues/1852) intern: discover interceptors which were annotated with @Component
+  * [#1857](https://github.com/metasfresh/metasfresh/issues/1857) Translation de_DE for static UI components in WebUI
+    * New base language Translation for the static elements in ad_messages in WebUI.
 
 * metasfresh-webui-api
   * [#458](https://github.com/metasfresh/metasfresh-webui-api/issues/458) Debug endpoint to track websocket outbound events
