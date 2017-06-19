@@ -26,13 +26,11 @@ package org.compiere.apps;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.swing.JPopupMenu;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_R_Request;
@@ -40,8 +38,11 @@ import org.compiere.swing.CMenuItem;
 import org.compiere.util.Env;
 
 import de.metas.email.EMail;
+import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 
 public class AEMailLetter implements ActionListener
 {
@@ -161,7 +162,7 @@ public class AEMailLetter implements ActionListener
 			}
 
 			@Override
-			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final Map<String, Object> variables)
+			public EMail sendEMail(final I_AD_User from, final String toEmail, final String subject, final BoilerPlateContext attributes)
 			{
 				final Properties ctx = Env.getCtx();
 				final EMailDialog dialog = new EMailDialog(
@@ -174,7 +175,7 @@ public class AEMailLetter implements ActionListener
 						null,		// attachments
 						null,		// textPreset
 						null,		// I_AD_Archive
-						variables,	// attributes
+						attributes,	// attributes
 						getAD_Table_ID(), getRecord_ID() // Document Info
 				);
 				return dialog.getEMail();
@@ -184,11 +185,11 @@ public class AEMailLetter implements ActionListener
 
 	private void actionLetter()
 	{
-		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(parent.getCurrentTab());
+		final BoilerPlateContext context = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(parent.getCurrentTab()));
 		final LetterDialog dialog = new LetterDialog(
 				Env.getWindow(parent.getWindowNo()),
 				Services.get(IMsgBL.class).getMsg(Env.getCtx(), "de.metas.letters.Letter"),
-				variables
+				context
 				);
 		dialog.setPrintOnOK(true);
 		dialog.getRichTextEditor().setEnablePrint(false);
@@ -198,7 +199,7 @@ public class AEMailLetter implements ActionListener
 			final File pdf = dialog.getPDF();
 			MADBoilerPlate.createRequest(pdf,
 					parent.getCurrentTab().getAD_Table_ID(), parent.getCurrentTab().getRecord_ID(),
-					variables);
+					context);
 		}
 	}
 }

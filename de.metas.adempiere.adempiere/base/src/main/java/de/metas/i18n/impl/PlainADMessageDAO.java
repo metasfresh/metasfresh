@@ -1,10 +1,14 @@
-package org.adempiere.util.api.impl;
+package de.metas.i18n.impl;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,52 +26,23 @@ package org.adempiere.util.api.impl;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.adempiere.util.api.IMsgDAO;
-
-public class PlainMsgDAO implements IMsgDAO
+public class PlainADMessageDAO extends ADMessageDAO
 {
-
-	private Map<String, Boolean> adMessage2MsgExists = new HashMap<String, Boolean>();
-
-	private Map<String, Integer> adMessage2MsgID = new HashMap<String, Integer>();
-
+	private Map<String, Boolean> adMessage2MsgExists = new HashMap<>();
+	private Map<String, Integer> adMessage2MsgID = new HashMap<>();
+	
 	@Override
-	public int retrieveMessageId(String adMessage)
+	public int retrieveIdByValue(Properties ctx, String adMessage)
 	{
 		final Integer messageId = adMessage2MsgID.get(adMessage);
 		return messageId != null ? messageId : 240; // 240 is currently what the real implementation returns on missing msg.
 	}
-
+	
 	@Override
-	public boolean isMessageExists(String adMessage)
+	public boolean isMessageExists(final String adMessage)
 	{
 		final Boolean messageExists = adMessage2MsgExists.get(adMessage);
 		return messageExists != null ? messageExists : false;
 	}
 
-	/**
-	 * Method can be used to set up the desired behavior for tests.
-	 * 
-	 * @param adMessage
-	 * @param messageId
-	 */
-	public void putMessageId(final String adMessage, final int messageId)
-	{
-		adMessage2MsgID.put(adMessage, messageId);
-	}
-
-	/**
-	 * Method can be used to set up the desired behavior for tests.
-	 * 
-	 * @param adMessage
-	 * @param messageExists
-	 */
-	public void putMessageExists(final String adMessage, final boolean messageExists)
-	{
-		adMessage2MsgExists.put(adMessage, messageExists);
-	}
 }

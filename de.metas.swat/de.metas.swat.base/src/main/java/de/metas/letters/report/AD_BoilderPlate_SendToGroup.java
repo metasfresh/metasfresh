@@ -28,7 +28,6 @@ package de.metas.letters.report;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -47,6 +46,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -154,9 +155,9 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 				return prospect.getR_Group_ID();
 			}
 			@Override
-			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
-				String message = text.getTextSnippetParsed(variables);
+				String message = text.getTextSnippetParsed(attributes);
 				//
 				StringTokenizer st = new StringTokenizer(toEmail, " ,;", false);
 				String to = st.nextToken();
@@ -201,15 +202,15 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 	
 	private void notifyLetter(MADBoilerPlate text, MRGroupProspect prospect)
 	{
-		final Map<String, Object> variables = MADBoilerPlate.createEditorContext(prospect);
-		final String html = text.getTextSnippetParsed(variables);
-		final ReportEngine re = MADBoilerPlate.getReportEngine(html, variables);
+		final BoilerPlateContext attributes = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(prospect));
+		final String html = text.getTextSnippetParsed(attributes);
+		final ReportEngine re = MADBoilerPlate.getReportEngine(html, attributes);
 		re.print();
 		File pdf = re.getPDF();
 		MADBoilerPlate.createRequest(pdf,
 				X_R_Group.Table_ID,
 				prospect.getR_Group_ID(),
-				variables);
+				attributes);
 	}
 
 	private List<MRGroupProspect> getProspects(int R_Group_ID)

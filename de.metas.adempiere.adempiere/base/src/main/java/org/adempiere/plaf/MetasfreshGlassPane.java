@@ -20,12 +20,12 @@ import javax.swing.UIManager;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /*

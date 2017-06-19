@@ -1,19 +1,19 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- * Contributor(s):                                                            *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
+ * Contributor(s): *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -31,7 +31,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.File;
-import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -44,7 +43,6 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLetterAttachment;
@@ -70,8 +68,11 @@ import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.logging.LogManager;
 
 /**
@@ -339,38 +340,24 @@ public class EMailDialog
 		getContentPane().add(mainPanel);
 		mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-		headerPanel.add(lFrom, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
-		headerPanel.add(fFrom, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 10), 0, 0));
+		headerPanel.add(lFrom, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
+		headerPanel.add(fFrom, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 5, 10), 0, 0));
 
-		headerPanel.add(lTo, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
-		headerPanel.add(fUser, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
-		headerPanel.add(fTo, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
-		headerPanel.add(lCc, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
-		headerPanel.add(fCcUser, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
-		headerPanel.add(fCc, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+		headerPanel.add(lTo, new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
+		headerPanel.add(fUser, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+		headerPanel.add(fTo, new GridBagConstraints(1, 2, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+		headerPanel.add(lCc, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
+		headerPanel.add(fCcUser, new GridBagConstraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+		headerPanel.add(fCc, new GridBagConstraints(1, 4, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
 		// metas: new field Bcc
-		headerPanel.add(lBcc, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
-		headerPanel.add(fBcc, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
+		headerPanel.add(lBcc, new GridBagConstraints(0, 5, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 10, 0, 5), 0, 0));
+		headerPanel.add(fBcc, new GridBagConstraints(1, 5, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 10), 0, 0));
 		// metas end
-		headerPanel.add(lSubject, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 10, 0, 5), 0, 0));
-		headerPanel.add(fSubject, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 0, 10), 1, 0));
+		headerPanel.add(lSubject, new GridBagConstraints(0, 6, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 10, 0, 5), 0, 0));
+		headerPanel.add(fSubject, new GridBagConstraints(1, 6, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 0, 10), 1, 0));
 
-		headerPanel.add(lAttachment, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0
-				, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 10, 0, 5), 0, 0));
-		headerPanel.add(fAttachment, new GridBagConstraints(1, 7, 1, 1, 0.0, 0.0
-				, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 0, 10), 1, 0));
+		headerPanel.add(lAttachment, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 10, 0, 5), 0, 0));
+		headerPanel.add(fAttachment, new GridBagConstraints(1, 7, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 0, 0, 10), 1, 0));
 		// metas: new list box for text snippets
 		headerPanel.add(lBoilerPlate, new GridBagConstraints(0, 8, 1, 1, 0.0,
 				0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(5, 10, 0, 5), 0, 0));
@@ -451,15 +438,20 @@ public class EMailDialog
 	public void setFrom(final I_AD_User newFrom)
 	{
 		m_from = newFrom;
-		
+
 		final IUserBL userBL = Services.get(IUserBL.class);
-		
-		if (newFrom == null
-				|| !userBL.isEMailValid(newFrom)
-				|| !userBL.isCanSendEMail(newFrom))
+
+		if (newFrom == null)
 		{
 			confirmPanel.getOKButton().setEnabled(false);
-			fFrom.setText("**Invalid**");
+			fFrom.setText("**No user**");
+		}
+
+		final ITranslatableString errmsg = userBL.checkCanSendEMail(newFrom);
+		if (errmsg != null)
+		{
+			confirmPanel.getOKButton().setEnabled(false);
+			fFrom.setText("** " + errmsg.translate(Env.getAD_Language(Env.getCtx())) + " **");
 		}
 		else
 		{
@@ -619,7 +611,7 @@ public class EMailDialog
 				email.addAttachment(pdf);
 			}
 			// metas: end
-			
+
 			final EMailSentStatus emailSentStatus = email.send();
 			//
 			if (m_user != null)
@@ -691,7 +683,7 @@ public class EMailDialog
 	}	// vetoableChange
 
 	// metas ------------------------------------------------------------------------------------------
-	private Map<String, Object> attributes = null;
+	private BoilerPlateContext attributes = null;
 
 	private final CLabel lLetter = new CLabel();
 	private final VLetterAttachment fLetter = new VLetterAttachment(this);
@@ -700,7 +692,7 @@ public class EMailDialog
 			final String to, final String subject, final String message,
 			final File attachment,
 			final MADBoilerPlate textPreset, final I_AD_Archive archive,
-			final Map<String, Object> attributes,
+			final BoilerPlateContext attributes,
 			final int AD_Table_ID, final int Record_ID)
 	{
 		super(owner, title, true);

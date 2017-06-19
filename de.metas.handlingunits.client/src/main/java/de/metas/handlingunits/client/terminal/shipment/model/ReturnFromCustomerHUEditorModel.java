@@ -61,7 +61,7 @@ public class ReturnFromCustomerHUEditorModel extends HUEditorModel
 	{
 		Check.assumeNotNull(shipment, "shipment not null");
 
-		final List<I_M_HU> shipmentHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(shipment);
+		final List<I_M_HU> shipmentHandlingUnits = Services.get(IHUInOutDAO.class).retrieveShippedHandlingUnits(shipment);
 
 		//
 		// Retrieve and create HU Keys
@@ -93,8 +93,14 @@ public class ReturnFromCustomerHUEditorModel extends HUEditorModel
 
 	public void createCustomerReturn()
 	{
-		Services.get(IHUInOutBL.class).createCustomerReturnInOutForHUs(getSelectedHUs());
-
+		final List<I_M_InOut> customerReturnInOutForHUs = Services.get(IHUInOutBL.class).createCustomerReturnInOutForHUs(getSelectedHUs());
+		
+		//
+		// Refresh the HUKeys if something changed (i.e. at least one vendor return was created)
+		if (!customerReturnInOutForHUs.isEmpty())
+		{
+			refreshSelectedHUKeys();
+		}
 	}
 
 }

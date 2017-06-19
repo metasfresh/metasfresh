@@ -47,7 +47,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.impexp.spi.IAsyncImportProcessBuilder;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.fileimport.FileImportPreviewColumnFactory;
@@ -70,6 +69,7 @@ import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

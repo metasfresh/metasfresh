@@ -76,7 +76,7 @@ public final class AdempiereToolsHelper
 
 		//
 		// Start Adempiere system
-		Env.getSingleAdempiereInstance().startup(runMode);
+		Env.getSingleAdempiereInstance(null).startup(runMode);
 		System.out.println("ADempiere system started in tools minimal mode.");
 	}
 	

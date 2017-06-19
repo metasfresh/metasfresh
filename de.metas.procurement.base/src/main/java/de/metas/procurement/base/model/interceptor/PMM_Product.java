@@ -27,11 +27,11 @@ import de.metas.procurement.base.model.I_PMM_Product;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -47,13 +47,11 @@ public class PMM_Product
 	{
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_PMM_Product.COLUMNNAME_M_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID
-					})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
+			I_PMM_Product.COLUMNNAME_M_Product_ID,
+			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID,
+			I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID
+	})
 	public void preventChangesIfContractActive(final I_PMM_Product pmmProduct)
 	{
 		if (Services.get(IPMMContractsDAO.class).hasRunningContracts(pmmProduct))
@@ -62,31 +60,26 @@ public class PMM_Product
 		}
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_PMM_Product.COLUMNNAME_IsActive
-					})
-	public void preventDeactivateIfContractActive(final I_PMM_Product pmmProduct)
-	{
-		if (!pmmProduct.isActive() && Services.get(IPMMContractsDAO.class).hasRunningContracts(pmmProduct))
-		{
-			throw new AdempiereException("@" + MSG_ProductChangeNotAllowedForRunningContracts + "@");
-		}
-	}
+	// NOTE: Always allow deactivating an PMM_Product even if it has a running contract.
+	// See: https://github.com/metasfresh/metasfresh/issues/1817
+	// @ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_PMM_Product.COLUMNNAME_IsActive })
+	// public void preventDeactivateIfContractActive(final I_PMM_Product pmmProduct)
+	// {
+	// if (!pmmProduct.isActive() && Services.get(IPMMContractsDAO.class).hasRunningContracts(pmmProduct))
+	// {
+	// throw new AdempiereException("@" + MSG_ProductChangeNotAllowedForRunningContracts + "@");
+	// }
+	// }
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
-			ifColumnsChanged = {
-					I_PMM_Product.COLUMNNAME_M_Product_ID,
-					I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
-					I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID
-			})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = {
+			I_PMM_Product.COLUMNNAME_M_Product_ID,
+			I_PMM_Product.COLUMNNAME_M_AttributeSetInstance_ID,
+			I_PMM_Product.COLUMNNAME_M_HU_PI_Item_Product_ID
+	})
 	public void updateReadOnlyFields(final I_PMM_Product pmmProduct)
 	{
 		Services.get(IPMMProductBL.class).update(pmmProduct);
 	}
-
 
 	@CalloutMethod(columnNames = {
 			I_PMM_Product.COLUMNNAME_M_Product_ID,
@@ -98,8 +91,7 @@ public class PMM_Product
 		Services.get(IPMMProductBL.class).update(pmmProduct);
 	}
 
-	@ModelChange(
-			timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, //
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, //
 			ifColumnsChanged = {
 					I_PMM_Product.COLUMNNAME_IsActive,
 					I_PMM_Product.COLUMNNAME_M_Product_ID,

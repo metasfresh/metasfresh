@@ -37,11 +37,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AMenuStartItem;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 import org.compiere.util.Util;

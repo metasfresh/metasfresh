@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.MInOutLineConfirm;
 import org.compiere.model.MPackage;
@@ -58,6 +57,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.shipping.api.IShipperTransportationBL;
 
 /**

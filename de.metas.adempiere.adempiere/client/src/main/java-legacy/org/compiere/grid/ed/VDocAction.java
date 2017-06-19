@@ -35,7 +35,6 @@ import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -56,6 +55,7 @@ import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.DefaultDocActionOptionsContext;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

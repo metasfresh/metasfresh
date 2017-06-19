@@ -30,7 +30,6 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -38,6 +37,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 
 import de.metas.adempiere.service.IOrderDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingQuery;
 import de.metas.materialtracking.IMaterialTrackingQuery.OnMoreThanOneFound;

@@ -27,6 +27,8 @@ import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 import javax.swing.JComponent;
@@ -37,7 +39,6 @@ import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.apps.search.InfoSchedule;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;

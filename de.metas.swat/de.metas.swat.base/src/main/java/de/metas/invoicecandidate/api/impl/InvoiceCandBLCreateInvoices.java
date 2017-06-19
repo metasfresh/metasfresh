@@ -43,8 +43,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.api.IMsgDAO;
 import org.adempiere.util.collections.IdentityHashSet;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -66,6 +64,8 @@ import org.slf4j.Logger;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoicecandidate.api.IAggregationEngine;
@@ -98,7 +98,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
-	private final transient IMsgDAO msgDAO = Services.get(IMsgDAO.class);
+	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 
@@ -950,7 +950,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (userId != USERINCHARGE_NA)
 				{
 					note = InterfaceWrapperHelper.create(ctx, I_AD_Note.class, trxName);
-					note.setAD_Message_ID(msgDAO.retrieveMessageId(MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
+					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P));
 
 					note.setAD_User_ID(userId);
 

@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_Fact_Acct;
@@ -55,6 +54,7 @@ import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 

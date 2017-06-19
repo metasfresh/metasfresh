@@ -46,7 +46,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
 import org.compiere.model.I_M_Inventory;
@@ -88,6 +87,7 @@ import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 public class HUEditorModel implements IDisposable

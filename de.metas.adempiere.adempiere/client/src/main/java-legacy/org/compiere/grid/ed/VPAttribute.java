@@ -40,7 +40,6 @@ import org.adempiere.mm.attributes.util.ASIEditingInfo;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.VEditorDialogButtonAlign;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.grid.ed.menu.EditorContextPopupMenu;
 import org.compiere.model.GridField;
@@ -51,6 +50,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

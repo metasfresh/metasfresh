@@ -32,7 +32,6 @@ import javax.swing.SwingConstants;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.MImage;
@@ -44,6 +43,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Image Dialog

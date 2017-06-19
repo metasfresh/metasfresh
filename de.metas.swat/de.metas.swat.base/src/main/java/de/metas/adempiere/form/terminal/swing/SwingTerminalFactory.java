@@ -43,7 +43,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.jmx.JMXRegistry;
 import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.proxy.WeakWrapper;
@@ -92,6 +91,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.swing.jmx.JMXSwingTerminalFactory;
 import de.metas.adempiere.form.terminal.table.ITerminalTable2;
 import de.metas.adempiere.form.terminal.table.swing.SwingTerminalTable2;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

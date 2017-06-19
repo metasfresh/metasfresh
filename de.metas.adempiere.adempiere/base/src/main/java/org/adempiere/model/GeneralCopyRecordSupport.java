@@ -44,7 +44,6 @@ import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.TableAccessLevel;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindow;
@@ -61,6 +60,7 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.Evaluator;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

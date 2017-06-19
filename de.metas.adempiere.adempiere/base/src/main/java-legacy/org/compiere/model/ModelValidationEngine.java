@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.model;
 
@@ -56,12 +56,14 @@ import org.adempiere.service.IClientDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.google.common.collect.ImmutableList;
 
@@ -82,7 +84,7 @@ import de.metas.script.ScriptEngineFactory;
  *         <li>FR [ 1724662 ] Support Email should contain model validators info
  *         <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
  *         <li>BF [ 2804135 ] Global FactsValidator are not invoked https://sourceforge.net/tracker/?func=detail&aid=2804135&group_id=176962&atid=879332
- *         <li>BF [ 2819617 ] NPE if script validator rule  returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
+ *         <li>BF [ 2819617 ] NPE if script validator rule returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
  *         </ul>
  * @author Tobias Schoeneberg, t.schoeneberg@metas.de
  *         <li>FR [ADEMPIERE-28] ModelValidatorException https://adempiere.atlassian.net/browse/ADEMPIERE-28
@@ -118,7 +120,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 *
 	 * You can provide a custom list of entity types, or you can use a predefined one:
 	 * <ul>
-	 * <li> {@link #INITENTITYTYPE_Minimal} - only the core entity types. It is used when we need to start adempiere from other tools and we don't want to start the servers, processors and stuff.
+	 * <li>{@link #INITENTITYTYPE_Minimal} - only the core entity types. It is used when we need to start adempiere from other tools and we don't want to start the servers, processors and stuff.
 	 * </ul>
 	 *
 	 * @param initEntityTypes
@@ -178,6 +180,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 		String className = null; // className of current model interceptor which is about to be initialized
 		try
 		{
+			//
+			// Load from AD_ModelValidator(s)
 			final List<I_AD_ModelValidator> modelValidators = retrieveModelValidators(ctx);
 			for (final I_AD_ModelValidator modelValidator : modelValidators)
 			{
@@ -186,7 +190,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 				{
 					continue;
 				}
-
 
 				//
 				// Skip loading the model interceptor if entity type is not active
@@ -205,6 +208,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 				}
 
 				loadModuleActivatorClass(adClient, className);
+			}
+
+			//
+			// Load from Spring context
+			final ApplicationContext context = Adempiere.getSpringApplicationContext();
+			// NOTE: atm it returns null only when started from our tools (like the "model generator")
+			// but it's not preventing the tool execution becuse this is the last thing we do here and also because usually it's configured to not fail on init error.
+			// so we can leave with the NPE here
+			for (final Object modelInterceptor : context.getBeansWithAnnotation(org.adempiere.ad.modelvalidator.annotations.Interceptor.class).values())
+			{
+				addModelValidator(modelInterceptor, null);
 			}
 		}
 		catch (Exception e)
@@ -287,16 +301,16 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private final boolean isFailOnMissingModelInteceptors()
 	{
 		final Boolean failOnMissingModelInteceptorsOverride = _failOnMissingModelInteceptors;
-		if(failOnMissingModelInteceptorsOverride != null)
+		if (failOnMissingModelInteceptorsOverride != null)
 		{
 			return failOnMissingModelInteceptorsOverride;
 		}
-		
+
 		final I_AD_System system = MSystem.get(Env.getCtx());
 		final boolean isFail = system.isFailOnMissingModelValidator();
 		return isFail;
 	}
-	
+
 	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
 	{
 		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
@@ -368,7 +382,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			}
 			//
 			// Load zkwebui module activation (if any)
-			else if(runMode == RunMode.WEBUI)
+			else if (runMode == RunMode.WEBUI)
 			{
 				final Class<?> zkwebuiModuleActivatorClass = getModuleActivatorClassOrNull(className + "_ZkwebUI");
 				if (zkwebuiModuleActivatorClass != null)
@@ -831,8 +845,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			final I_AD_Rule rule = Services.get(IADRuleDAO.class).retrieveById(po.getCtx(), scriptValidator.getAD_Rule_ID());
 			if (rule != null
 					&& rule.isActive()
-					&& rule.getEventType().equals(ruleEventType)
-			)
+					&& rule.getEventType().equals(ruleEventType))
 			{
 				try
 				{

@@ -39,7 +39,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.collections.IteratorChain;
 import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.collections.PeekIterator;
@@ -48,6 +47,7 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintPackageBL;

@@ -25,7 +25,8 @@ package org.compiere.server.exception;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * This exception is used if an error occurs during execution of an ADempiere server process.

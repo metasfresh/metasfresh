@@ -36,11 +36,12 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Element;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.X_C_AcctSchema_Element;
+
+import de.metas.i18n.IMsgBL;
 
 /* package */class AccountDimensionValidator implements IAccountDimensionValidator
 {

@@ -39,7 +39,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.compiere.model.I_AD_Org;
@@ -48,6 +47,7 @@ import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.sepa.api.ISEPABankAccountBL;
 import de.metas.payment.sepa.api.ISEPADocument;

@@ -18,7 +18,6 @@ import javax.swing.JSplitPane;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.user.api.IUserMenuFavoritesDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MTreeNode;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CScrollPane;
@@ -28,6 +27,7 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

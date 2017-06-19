@@ -1,4 +1,4 @@
-package org.adempiere.ad.service.impl;
+package de.metas.i18n.impl;
 
 /*
  * #%L
@@ -13,29 +13,32 @@ package org.adempiere.ad.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Message;
+import org.compiere.model.X_AD_Message;
+import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
+import de.metas.i18n.IADMessageDAO;
 
 public class ADMessageDAO implements IADMessageDAO
 {
@@ -63,7 +66,7 @@ public class ADMessageDAO implements IADMessageDAO
 		return msg.getAD_Message_ID();
 
 	}
-	
+
 	@Override
 	@Cached(cacheName = I_AD_Message.Table_Name + "#by#" + I_AD_Message.COLUMNNAME_AD_Message_ID)
 	public I_AD_Message retrieveById(@CacheCtx final Properties ctx, final int adMessageId)
@@ -72,7 +75,44 @@ public class ADMessageDAO implements IADMessageDAO
 		{
 			return null;
 		}
-		
+
 		return InterfaceWrapperHelper.create(ctx, adMessageId, I_AD_Message.class, ITrx.TRXNAME_None);
+	}
+	
+	@Override
+	public boolean isMessageExists(final String adMessage)
+	{
+		final int adMessageId = retrieveIdByValue(Env.getCtx(), adMessage);
+		return adMessageId > 0;
+	}
+
+	@Override
+	public void createUpdateMessage(final String adMessageKey, final Consumer<I_AD_Message> adMessageUpdater)
+	{
+		try
+		{
+			I_AD_Message adMessage = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_AD_Message.class)
+					.addEqualsFilter(I_AD_Message.COLUMNNAME_Value, adMessageKey)
+					.create()
+					.firstOnly(I_AD_Message.class);
+
+			if (adMessage == null)
+			{
+				adMessage = InterfaceWrapperHelper.newInstance(I_AD_Message.class);
+				adMessage.setValue(adMessageKey);
+				adMessage.setMsgType(X_AD_Message.MSGTYPE_Information);
+				adMessage.setEntityType("U"); // User maintained
+			}
+
+			adMessageUpdater.accept(adMessage);
+
+			InterfaceWrapperHelper.save(adMessage);
+		}
+		catch (final Exception ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex)
+					.setParameter("AD_Message", adMessageKey);
+		}
 	}
 }

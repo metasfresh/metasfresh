@@ -5,9 +5,9 @@ import java.math.RoundingMode;
 
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

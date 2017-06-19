@@ -57,7 +57,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.LoggerLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.StatusBar;
@@ -88,6 +87,7 @@ import de.metas.banking.payment.paymentallocation.model.InvoiceCandidatesTableMo
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationContext;
 import de.metas.banking.payment.paymentallocation.model.PaymentAllocationTotals;
 import de.metas.banking.payment.paymentallocation.service.IPaymentAllocationFormDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

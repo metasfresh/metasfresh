@@ -85,7 +85,6 @@ import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -149,6 +148,7 @@ import org.eevolution.mrp.api.IMRPNoteBL;
 import org.eevolution.mrp.api.IMRPQueryBuilder;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;

@@ -36,7 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -44,6 +43,7 @@ import org.slf4j.Logger;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

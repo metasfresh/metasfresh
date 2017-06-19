@@ -42,7 +42,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -66,6 +65,7 @@ import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
 
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Display (and process) Payment Options.

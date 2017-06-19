@@ -59,7 +59,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.images.Images;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.model.GridTabVO;
@@ -75,6 +74,7 @@ import org.compiere.util.NamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

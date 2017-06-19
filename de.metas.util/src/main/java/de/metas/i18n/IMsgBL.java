@@ -1,4 +1,4 @@
-package org.adempiere.util.api;
+package de.metas.i18n;
 
 import java.util.Map;
 
@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-
-import de.metas.i18n.ITranslatableString;
 
 public interface IMsgBL extends ISingletonService
 {

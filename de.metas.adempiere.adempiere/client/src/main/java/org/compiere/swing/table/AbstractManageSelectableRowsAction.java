@@ -29,9 +29,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.ListSelectionModel;
 
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * Base class for implementing actions which:

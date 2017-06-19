@@ -1,0 +1,9 @@
+-- 2017-06-16T06:42:55.640
+-- URL zum Konzept
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2017-06-16 06:42:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=550218
+;
+
+-- 2017-06-16T06:48:52.749
+-- URL zum Konzept
+UPDATE AD_Column SET IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2017-06-16 06:48:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=549320
+;

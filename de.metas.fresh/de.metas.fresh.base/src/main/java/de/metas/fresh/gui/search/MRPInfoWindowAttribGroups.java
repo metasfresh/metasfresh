@@ -36,7 +36,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
@@ -49,6 +48,7 @@ import org.slf4j.Logger;
 
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.fresh.model.I_X_MRP_ProductInfo_V;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

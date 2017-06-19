@@ -61,7 +61,6 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.IRefreshableEditor;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.APanel;
 import org.compiere.apps.search.FindHelper;
 import org.compiere.apps.search.Info;
@@ -92,6 +91,7 @@ import org.compiere.util.ValueNamePair;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

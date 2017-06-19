@@ -27,13 +27,14 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 import javax.swing.Box;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
 import org.compiere.apps.ALayoutConstraint;

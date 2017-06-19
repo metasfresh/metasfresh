@@ -16,7 +16,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Joiner;
 
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.model.I_PMM_Product;

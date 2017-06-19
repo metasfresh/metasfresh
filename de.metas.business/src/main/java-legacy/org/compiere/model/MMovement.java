@@ -29,7 +29,6 @@ import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -37,6 +36,7 @@ import org.compiere.util.Env;
 import de.metas.document.documentNo.IDocumentNoBuilder;
 import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 
 /**

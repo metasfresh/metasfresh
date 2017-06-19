@@ -54,7 +54,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.apps.AEnv;
@@ -93,6 +92,7 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
 import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

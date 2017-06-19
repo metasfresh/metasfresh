@@ -77,8 +77,7 @@ public class Application
 		// therefore we don't e.g. have to deal with the async-processor. It just won't be started.
 		ModelValidationEngine.setInitEntityTypes(Collections.emptyList());
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance();
-		adempiere.setApplicationContext(applicationContext);
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 
 		eventService.registerListener(mdEventListener);

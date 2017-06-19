@@ -17,7 +17,6 @@ import javax.swing.JLabel;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.StatusBar;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.form.FormPanel;
