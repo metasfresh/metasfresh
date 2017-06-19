@@ -59,7 +59,7 @@ public final class MimeType
 	 * Gets file extension by mime type. Note, file extension contains the "." prefix. If extension was not found, empty string is returned.
 	 *
 	 * @param mimeType
-	 * @return
+	 * @return 
 	 */
 	public static String getExtensionByType(final String mimeType)
 	{
@@ -76,10 +76,23 @@ public final class MimeType
 		return "";
 	}
 
+	public static String getExtensionByTypeWithoutDot(final String mimeType)
+	{
+		String extension = getExtensionByType(mimeType);
+		if(extension == null || extension.isEmpty())
+		{
+			return extension;
+		}
+		
+		return extension.substring(1); // extension without the leading dot
+	}
+
 	/** application/octet-stream */
 	public static final String TYPE_BINARY = "application/octet-stream";
 	public static final String TYPE_PDF = "application/pdf";
 	public static final String TYPE_TextPlain = "text/plain";
+	public static final String TYPE_IMAGE_PNG = "image/png";
+	public static final String TYPE_IMAGE_JPEG = "image/jpeg";
 
 	/**************************************************************************
 	 * Mime / Content Type Map
@@ -306,13 +319,13 @@ public final class MimeType
 			.put(".jar", "application/java-archive")
 			.put(".jcm", "application/x-java-commerce")
 			//
-			.put(".jpg", "image/jpeg") // default
-			.put(".jfif", "image/jpeg")
+			.put(".jpg", TYPE_IMAGE_JPEG) // default
+			.put(".jfif", TYPE_IMAGE_JPEG)
 			// .put( ".jfif", "image/pjpeg")
-			.put(".jfif-tbnl", "image/jpeg")
-			.put(".jpe", "image/jpeg")
+			.put(".jfif-tbnl", TYPE_IMAGE_JPEG)
+			.put(".jpe", TYPE_IMAGE_JPEG)
 			// .put( ".jpe", "image/pjpeg")
-			.put(".jpeg", "image/jpeg")
+			.put(".jpeg", TYPE_IMAGE_JPEG)
 			// .put( ".jpeg", "image/pjpeg")
 			// .put( ".jpg", "image/pjpeg")
 			//
@@ -470,7 +483,7 @@ public final class MimeType
 			// .put(".pm", "text/x-script.perl-module")
 			.put(".pm4", "application/x-pagemaker")
 			.put(".pm5", "application/x-pagemaker")
-			.put(".png", "image/png")
+			.put(".png", TYPE_IMAGE_PNG)
 			.put(".pnm", "application/x-portable-anymap")
 			// .put(".pnm", "image/x-portable-anymap")
 			.put(".pot", "application/mspowerpoint")
@@ -738,7 +751,7 @@ public final class MimeType
 			.put(".xpix", "application/x-vnd.ls-xpix")
 			// .put( ".xpm", "image/x-xpixmap")
 			.put(".xpm", "image/xpm")
-			.put(".x-png", "image/png")
+			.put(".x-png", TYPE_IMAGE_PNG)
 			.put(".xsr", "video/x-amt-showrun")
 			.put(".xwd", "image/x-xwd")
 			// .put( ".xwd", "image/x-xwindowdump")

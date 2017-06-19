@@ -22,6 +22,7 @@ import org.apache.ecs.xhtml.table;
 import org.apache.ecs.xhtml.td;
 import org.apache.ecs.xhtml.tr;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 /*
@@ -46,12 +47,12 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class WebEnv extends org.compiere.util.WebEnv
+public class WebEnv
 {
 	/** Add HTML Debug Info                     */
 	public static boolean DEBUG                 = true;
 	/**	Logging									*/
-	private static Logger			log = LogManager.getLogger(WebEnv.class);
+	private static final Logger log = LogManager.getLogger(WebEnv.class);
 
 	/** Encoding (ISO-8859-1 - UTF-8) 		*/
 	public static final String      ENCODING = "UTF-8";
@@ -61,101 +62,9 @@ public class WebEnv extends org.compiere.util.WebEnv
 	/** Timeout - 15 Minutes                    */
 	public static final int         TIMEOUT     = 15*60;
 
-
-	/** Initialization OK?                      */
-	private static boolean          s_initOK    = false;
 	/** Not Braking Space						*/
 	public static String			NBSP = "&nbsp;";
-
-//	/**
-//	 *  Init Web Environment.
-//	 *  To be called from every Servlet in the init method
-//	 *  or any other Web resource to make sure that the
-//	 *  environment is properly set.
-//	 *  @param config config
-//	 *  @return false if initialization problems
-//	 */
-//	public static boolean initWeb (ServletConfig config)
-//	{
-//		if (s_initOK)
-//		{
-//			log.info(config.getServletName());
-//			return true;
-//		}
-//
-//		final Enumeration<?> en = config.getInitParameterNames();
-//		final StringBuilder info = new StringBuilder("Servlet Init Parameter: ")
-//			.append(config.getServletName());
-//		while (en.hasMoreElements())
-//		{
-//			final String name = en.nextElement().toString();
-//			final String value = config.getInitParameter(name);
-//			System.setProperty(name, value);
-//			info.append("\n").append(name).append("=").append(value);
-//		}
-//
-//		final boolean retValue = initWeb (config.getServletContext());
-//		
-//		//	Logging now initiated
-//		log.info(info.toString());
-//		return retValue;
-//	}   //  initWeb
-//
-//	/**
-//	 * 	Init Web.
-//	 * 	Only call directly for Filters, etc.
-//	 *	@param context servlet context
-//	 *  @return false if initialization problems
-//	 */
-//	private static boolean initWeb (ServletContext context)
-//	{
-//		if (s_initOK)
-//		{
-//			log.info(context.getServletContextName());
-//			return true;
-//		}
-//		
-//		//  Load Environment Variables (serverApps/src/web/WEB-INF/web.xml)
-//		final Enumeration<?> en = context.getInitParameterNames();
-//		final StringBuilder info = new StringBuilder("Servlet Context Init Parameters: ")
-//				.append(context.getServletContextName());
-//		while (en.hasMoreElements())
-//		{
-//			final String name = en.nextElement().toString();
-//			final String value = context.getInitParameter(name);
-//			System.setProperty(name, value);
-//			info.append("\n").append(name).append("=").append(value);
-//		}
-//
-//		try
-//		{
-//			s_initOK = Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
-//		}
-//		catch (Exception ex)
-//		{
-//			// log.error("startup", ex); 
-//			throw AdempiereException.wrapIfNeeded(ex);
-//		}
-//		if (!s_initOK)
-//			return false;
-//
-//		//	Logging now initiated
-//		log.info(info.toString());
-//		//
-//		
-//		// don't try to send the mail, because to do that we require
-//		// de.metas.adempiere.service.impl.MailConfigBL which is currently in swat and might not be available un the current classpath (e.g. this might be executed from the adempiereMonitor servlet)
-////		Properties ctx = Env.newTemporaryCtx();
-////		MClient client = MClient.get(ctx, 0);
-////		MSystem system = MSystem.get(ctx);
-////		client.sendEMail(client.getRequestEMail(), 
-////			"Server started: " + system.getName(), 
-////			"ServerInfo: " + context.getServerInfo(), null);
-//
-//		return s_initOK;
-//	}	//	initWeb
-
-
+	
 	/**
 	 * 	Get Cell Content
 	 *	@param content optional content

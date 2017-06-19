@@ -7,8 +7,6 @@ public final class CustomColNames {
 
 	public static final String AD_OrgInfo_REPORT_PREFIX = "ReportPrefix";
 
-	public static final String AD_USER_ISDEFAULTCONTACT = "IsDefaultContact";
-
 	public static final String C_BPartner_M_FREIGHTCOST_ID = "M_FreightCost_ID";
 
 	/**

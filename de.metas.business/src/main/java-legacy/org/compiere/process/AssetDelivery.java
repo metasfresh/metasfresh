@@ -22,11 +22,11 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MAsset;
 import org.compiere.model.MAssetDelivery;
 import org.compiere.model.MClient;
 import org.compiere.model.MProductDownload;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.util.DB;
 
@@ -34,8 +34,8 @@ import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Deliver Assets Electronically
@@ -203,7 +203,7 @@ public class AssetDelivery extends JavaProcess
 		MAsset asset = new MAsset (getCtx(), A_Asset_ID, trxName);
 		if (asset.getAD_User_ID() == 0)
 			return "** No Asset User";
-		MUser user = new MUser (getCtx(), asset.getAD_User_ID(), get_TrxName());
+		I_AD_User user = asset.getAD_User();
 		if (user.getEMail() == null || user.getEMail().length() == 0)
 			return "** No Asset User Email";
 		
@@ -246,7 +246,7 @@ public class AssetDelivery extends JavaProcess
 		MAsset asset = new MAsset (getCtx(), A_Asset_ID, get_TrxName());
 		if (asset.getAD_User_ID() == 0)
 			return "** No Asset User";
-		MUser user = new MUser (getCtx(), asset.getAD_User_ID(), get_TrxName());
+		I_AD_User user = asset.getAD_User();
 		if (user.getEMail() == null || user.getEMail().length() == 0)
 			return "** No Asset User Email";
 		if (asset.getProductR_MailText_ID() == 0)

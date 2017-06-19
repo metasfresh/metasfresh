@@ -27,11 +27,12 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
-import org.compiere.model.MUser;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.SupportInfo;
@@ -331,7 +332,7 @@ public final class ADialog
 	{
 		log.info("ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
-		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		//
 		StringBuilder myMessage = new StringBuilder(message);
 		myMessage.append("\n");
@@ -354,7 +355,7 @@ public final class ADialog
 	{
 		log.info("ADialog.createSupportEMail");
 		String to = Adempiere.getSupportEMail();
-		MUser from = MUser.get(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		//
 		StringBuilder myMessage = new StringBuilder(message);
 		myMessage.append("\n");

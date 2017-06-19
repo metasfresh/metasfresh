@@ -3,6 +3,8 @@ package org.adempiere.model;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
@@ -26,10 +28,13 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
+import lombok.ToString;
 
 /*
  * #%L
@@ -44,11 +49,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -79,8 +84,8 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		internalName = builder.getInternalName();
 		adRelationTypeId = builder.getAD_RelationType_ID();
 
-		source = new ZoomProviderDestination(builder.getSource_Reference_ID(), builder.getSourceTableRefInfo(), builder.getSourceRoleDisplayName());
-		target = new ZoomProviderDestination(builder.getTarget_Reference_ID(), builder.getTargetTableRefInfo(), builder.getTargetRoleDisplayName());
+		source = new ZoomProviderDestination(builder.getSource_Reference_ID(), builder.getSourceTableRefInfoOrNull(), builder.getSourceRoleDisplayName());
+		target = new ZoomProviderDestination(builder.getTarget_Reference_ID(), builder.getTargetTableRefInfoOrNull(), builder.getTargetRoleDisplayName());
 	}
 
 	@Override
@@ -117,11 +122,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 		final MQuery query = mkQuery(zoomSource, target);
-		if(checkRecordsCount)
+		if (checkRecordsCount)
 		{
 			updateRecordsCountAndZoomValue(query);
 		}
-
 
 		final ITranslatableString display = target.getRoleDisplayName(adWindowId);
 
@@ -303,9 +307,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private final ITableRefInfo tableRefInfo;
 		private final ITranslatableString roleDisplayName;
 
-		private ZoomProviderDestination(final int AD_Reference_ID, final ITableRefInfo tableRefInfo, final ITranslatableString roleDisplayName)
+		private ZoomProviderDestination(final int AD_Reference_ID, @NonNull final ITableRefInfo tableRefInfo, @Nullable final ITranslatableString roleDisplayName)
 		{
 			super();
+			Preconditions.checkArgument(AD_Reference_ID > 0, "AD_Reference_ID > 0");
 			this.AD_Reference_ID = AD_Reference_ID;
 			this.tableRefInfo = tableRefInfo;
 			this.roleDisplayName = roleDisplayName;
@@ -407,24 +412,41 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 	}
 
+	@ToString(exclude = "lookupDAO")
 	public static final class Builder
 	{
+		private final transient ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+
 		private Boolean directed;
 		private String internalName;
 		private int adRelationTypeId;
 
 		private int sourceReferenceId = -1;
 		private ITranslatableString sourceRoleDisplayName;
+		private ITableRefInfo sourceTableRefInfo = null; // lazy
+
 		private int targetReferenceId = -1;
 		private ITranslatableString targetRoleDisplayName;
+		private ITableRefInfo targetTableRefInfo = null; // lazy
 
 		private Builder()
 		{
 			super();
 		}
 
-		public RelationTypeZoomProvider build()
+		public RelationTypeZoomProvider buildOrNull()
 		{
+			if(getSourceTableRefInfoOrNull() == null)
+			{
+				logger.info("Skip building {} because source tableRefInfo is null", this);
+				return null;
+			}
+			if(getTargetTableRefInfoOrNull() == null)
+			{
+				logger.info("Skip building {} because target tableRefInfo is null", this);
+				return null;
+			}
+			
 			return new RelationTypeZoomProvider(this);
 		}
 
@@ -472,9 +494,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return directed;
 		}
 
-		public Builder setSource_Reference_AD(final int SourceReferenceId)
+		public Builder setSource_Reference_AD(final int sourceReferenceId)
 		{
-			sourceReferenceId = SourceReferenceId;
+			this.sourceReferenceId = sourceReferenceId;
+			sourceTableRefInfo = null; // reset
 			return this;
 		}
 
@@ -484,9 +507,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return sourceReferenceId;
 		}
 
-		private ITableRefInfo getSourceTableRefInfo()
+		private ITableRefInfo getSourceTableRefInfoOrNull()
 		{
-			return Services.get(ILookupDAO.class).retrieveTableRefInfo(getSource_Reference_ID());
+			if(sourceTableRefInfo == null)
+			{
+				sourceTableRefInfo = lookupDAO.retrieveTableRefInfo(getSource_Reference_ID());
+			}
+			return sourceTableRefInfo;
 		}
 
 		public Builder setSourceRoleDisplayName(final ITranslatableString sourceRoleDisplayName)
@@ -500,9 +527,10 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return sourceRoleDisplayName;
 		}
 
-		public Builder setTarget_Reference_AD(final int TargetReferenceId)
+		public Builder setTarget_Reference_AD(final int targetReferenceId)
 		{
-			targetReferenceId = TargetReferenceId;
+			this.targetReferenceId = targetReferenceId;
+			targetTableRefInfo = null; // lazy
 			return this;
 		}
 
@@ -512,9 +540,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return targetReferenceId;
 		}
 
-		private ITableRefInfo getTargetTableRefInfo()
+		private ITableRefInfo getTargetTableRefInfoOrNull()
 		{
-			return Services.get(ILookupDAO.class).retrieveTableRefInfo(getTarget_Reference_ID());
+			if (targetTableRefInfo == null)
+			{
+				targetTableRefInfo = lookupDAO.retrieveTableRefInfo(getTarget_Reference_ID());
+			}
+			return targetTableRefInfo;
 		}
 
 		public Builder setTargetRoleDisplayName(final ITranslatableString targetRoleDisplayName)

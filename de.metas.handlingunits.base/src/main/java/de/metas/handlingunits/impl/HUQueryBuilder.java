@@ -194,6 +194,8 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		copy._huIdsToExclude.addAll(_huIdsToExclude);
 		copy._huPIVersionIdsToInclude.addAll(_huPIVersionIdsToInclude);
 		copy._excludeHUsOnPickingSlot = _excludeHUsOnPickingSlot;
+		
+		copy.huSubQueryFilter = huSubQueryFilter == null ? null : huSubQueryFilter.copy();
 
 		copy.otherFilters = otherFilters == null ? null : otherFilters.copy();
 

@@ -58,13 +58,15 @@ import javax.swing.table.DefaultTableModel;
 import org.adempiere.ad.security.permissions.UserPreferenceLevelConstraint;
 import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.user.api.IUserDAO;
+import org.adempiere.util.Services;
 import org.compiere.grid.VTable;
 import org.compiere.model.GridField;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MColumn;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CMenuItem;
 import org.compiere.swing.CPanel;
@@ -74,10 +76,8 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -347,7 +347,7 @@ public class FieldRecordInfo extends CDialog
 		line.add(showNewValue);
 		line.add(showOldValue);
 		//	UpdatedBy
-		MUser user = MUser.get(Env.getCtx(), UpdatedBy);
+		I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), UpdatedBy);
 		line.add(user == null ? "<" + UpdatedBy + ">" : user.getName());
 		//	Updated
 		line.add(m_dateFormat.format(Updated));

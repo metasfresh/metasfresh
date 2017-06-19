@@ -827,6 +827,7 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	private int AD_Form_ID = -1;
 	private int AD_Workflow_ID = -1;
 	private int AD_Task_ID = -1;
+	private int WEBUI_Board_ID = -1;
 	private boolean isCreateNewRecord = false;
 	private String webuiNameBrowse;
 	private String webuiNameNew;
@@ -881,6 +882,16 @@ public final class MTreeNode extends DefaultMutableTreeNode
 	public void setAD_Task_ID(int aD_Task_ID)
 	{
 		AD_Task_ID = aD_Task_ID;
+	}
+	
+	public int getWEBUI_Board_ID()
+	{
+		return WEBUI_Board_ID;
+	}
+	
+	public void setWEBUI_Board_ID(final int WEBUI_Board_ID)
+	{
+		this.WEBUI_Board_ID = WEBUI_Board_ID;
 	}
 
 	public void setIsCreateNewRecord(final boolean isCreateNewRecord)

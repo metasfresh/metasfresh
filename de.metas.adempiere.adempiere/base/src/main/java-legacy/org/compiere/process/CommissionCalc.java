@@ -22,22 +22,26 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.MCommission;
 import org.compiere.model.MCommissionAmt;
 import org.compiere.model.MCommissionDetail;
 import org.compiere.model.MCommissionLine;
 import org.compiere.model.MCommissionRun;
-import org.compiere.model.MUser;
 import org.compiere.util.AdempiereSystemError;
 import org.compiere.util.AdempiereUserError;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
+import de.metas.adempiere.model.I_AD_User;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.Language;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Commission Calculation	
@@ -201,20 +205,18 @@ public class CommissionCalc extends JavaProcess
 			//	CommissionOrders/Invoices
 			if (lines[i].isCommissionOrders())
 			{
-				MUser[] users = MUser.getOfBPartner(getCtx(), m_com.getC_BPartner_ID());
-				if (users == null || users.length == 0)
+				final List<I_AD_User> users = Services.get(IBPartnerDAO.class).retrieveContacts(getCtx(), m_com.getC_BPartner_ID(), ITrx.TRXNAME_None);
+				if (users.isEmpty())
 					throw new AdempiereUserError ("Commission Business Partner has no Users/Contact");
-				if (users.length == 1)
+				if (users.size() == 1)
 				{
-					int SalesRep_ID = users[0].getAD_User_ID();
+					int SalesRep_ID = users.get(0).getAD_User_ID();
 					sql.append(" AND h.SalesRep_ID=").append(SalesRep_ID);
 				}
 				else
 				{
-					log.warn("Not 1 User/Contact for C_BPartner_ID=" 
-						+ m_com.getC_BPartner_ID() + " but " + users.length);
-					sql.append(" AND h.SalesRep_ID IN (SELECT AD_User_ID FROM AD_User WHERE C_BPartner_ID=")
-						.append(m_com.getC_BPartner_ID()).append(")");
+					log.warn("Not 1 User/Contact for C_BPartner_ID=" + m_com.getC_BPartner_ID() + " but " + users.size());
+					sql.append(" AND h.SalesRep_ID IN (SELECT AD_User_ID FROM AD_User WHERE C_BPartner_ID=").append(m_com.getC_BPartner_ID()).append(")");
 				}
 			}
 			//	Organization

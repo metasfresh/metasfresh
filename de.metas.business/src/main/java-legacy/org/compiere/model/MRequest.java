@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -170,8 +171,6 @@ public class MRequest extends X_R_Request
 	private boolean			m_changed = false;
 	/**	BPartner					*/
 	private MBPartner		m_partner = null;
-	/** User/Contact				*/
-	private MUser			m_user = null;
 	/** List of EMail Notices		*/
 	private StringBuffer	m_emailTo = new StringBuffer();
 
@@ -524,11 +523,11 @@ public class MRequest extends X_R_Request
 	 *	@return Sales Rep User
 	 */
 	@Override
-	public MUser getSalesRep()
+	public I_AD_User getSalesRep()
 	{
 		if (getSalesRep_ID() == 0)
 			return null;
-		return MUser.get(getCtx(), getSalesRep_ID());
+		return Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getSalesRep_ID());
 	}	//	getSalesRep
 	
 	/**
@@ -537,7 +536,7 @@ public class MRequest extends X_R_Request
 	 */
 	public String getSalesRepName()
 	{
-		MUser sr = getSalesRep();
+		I_AD_User sr = getSalesRep();
 		if (sr == null)
 			return "n/a";
 		return sr.getName();
@@ -549,32 +548,17 @@ public class MRequest extends X_R_Request
 	 */
 	public String getCreatedByName()
 	{
-		MUser user = MUser.get(getCtx(), getCreatedBy());
+		I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), getCreatedBy());
 		return user.getName();
 	}	//	getCreatedByName
 
-	/**
-	 * 	Get Contact (may be not defined)
-	 *	@return Sales Rep User
-	 */
-	public MUser getUser()
-	{
-		if (getAD_User_ID() == 0)
-			return null;
-		if (m_user != null && m_user.getAD_User_ID() != getAD_User_ID())
-			m_user = null;
-		if (m_user == null)
-			m_user = new MUser (getCtx(), getAD_User_ID(), get_TrxName());
-		return m_user;
-	}	//	getUser
-	
 	/**
 	 * 	Get BPartner (may be not defined)
 	 *	@return Sales Rep User
 	 */
 	public MBPartner getBPartner()
 	{
-		if (getC_BPartner_ID() == 0)
+		if (getC_BPartner_ID() <= 0)
 			return null;
 		if (m_partner != null && m_partner.getC_BPartner_ID() != getC_BPartner_ID())
 			m_partner = null;
@@ -839,11 +823,12 @@ public class MRequest extends X_R_Request
 				oldSalesRep_ID = ((Integer)oo).intValue();
 			if (oldSalesRep_ID != 0)
 			{
+				final IUserDAO userDAO = Services.get(IUserDAO.class);
 				//  RequestActionTransfer - Request {} was transfered by {} from {} to {}
-				Object[] args = new Object[] {getDocumentNo(), 
-					MUser.getNameOfUser(AD_User_ID), 
-					MUser.getNameOfUser(oldSalesRep_ID),
-					MUser.getNameOfUser(getSalesRep_ID())
+				Object[] args = new Object[] {getDocumentNo(),
+						userDAO.retrieveUser(AD_User_ID), 
+						userDAO.retrieveUser(oldSalesRep_ID),
+						userDAO.retrieveUser(getSalesRep_ID())
 					};
 				String msg = Msg.getMsg(getCtx(), "RequestActionTransfer", args);
 				addToResult(msg);
@@ -1112,7 +1097,7 @@ public class MRequest extends X_R_Request
 		StringBuffer message = new StringBuffer();
 		//		UpdatedBy: Joe
 		int UpdatedBy = Env.getAD_User_ID(getCtx());
-		MUser from = MUser.get(getCtx(), UpdatedBy);
+		I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), UpdatedBy);
 		if (from != null)
 			message.append(Msg.translate(getCtx(), "UpdatedBy")).append(": ")
 				.append(from.getName());
@@ -1220,7 +1205,7 @@ public class MRequest extends X_R_Request
 					continue;
 				userList.add(ii);
 				//
-				MUser to = MUser.get (getCtx(), AD_User_ID);
+				I_AD_User to = Services.get(IUserDAO.class).retrieveUserOrNull(getCtx(), AD_User_ID);
 				//	Send Mail
 				if (X_AD_User.NOTIFICATIONTYPE_EMail.equals(NotificationType)
 					|| X_AD_User.NOTIFICATIONTYPE_EMailPlusNotice.equals(NotificationType))

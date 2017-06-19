@@ -26,11 +26,10 @@ import java.util.Collection;
 
 import org.adempiere.util.ISingletonService;
 
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_ProductAttribute;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 
 public interface IPPOrderProductAttributeBL extends ISingletonService
 {
@@ -46,18 +45,14 @@ public interface IPPOrderProductAttributeBL extends ISingletonService
 	 * @param hus
 	 */
 	void updateHUAttributes(Collection<I_M_HU> hus, final int fromPPOrderId);
-	
-	default void updateHUAttributes(final I_M_HU hu, final int fromPPOrderId)
-	{
-		updateHUAttributes(ImmutableSet.of(hu), fromPPOrderId);
-	}
 
 	/**
 	 * Create new PP_Order_ProductAttribute entries for the given cost collector
-	 * 
-	 * @param costCollector
 	 */
 	void addPPOrderProductAttributes(I_PP_Cost_Collector costCollector);
 
-
+	/**
+	 * Create new PP_Order_ProductAttribute entries for the given Issue Candidate
+	 */
+	void addPPOrderProductAttributesFromIssueCandidate(I_PP_Order_Qty issueCandidate);
 }

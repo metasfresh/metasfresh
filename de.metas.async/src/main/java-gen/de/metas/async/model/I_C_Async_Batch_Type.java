@@ -307,6 +307,29 @@ public interface I_C_Async_Batch_Type
     public static final String COLUMNNAME_NotificationType = "NotificationType";
 
 	/**
+	 * Set Skip Timeout (millis).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSkipTimeoutMillis (int SkipTimeoutMillis);
+
+	/**
+	 * Get Skip Timeout (millis).
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSkipTimeoutMillis();
+
+    /** Column definition for SkipTimeoutMillis */
+    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_SkipTimeoutMillis = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "SkipTimeoutMillis", null);
+    /** Column name SkipTimeoutMillis */
+    public static final String COLUMNNAME_SkipTimeoutMillis = "SkipTimeoutMillis";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

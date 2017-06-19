@@ -40,6 +40,8 @@ import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.user.api.IUserBL;
+import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IMsgBL;
@@ -49,11 +51,11 @@ import org.compiere.grid.ed.VLetterAttachment;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.GridTab;
 import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.Lookup;
 import org.compiere.model.MClient;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MTable;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.model.PO;
 import org.compiere.process.DocAction;
@@ -65,13 +67,11 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;
-import de.metas.logging.LogManager;
 import de.metas.logging.LogManager;
 
 /**
@@ -110,7 +110,7 @@ public class EMailDialog
 	 */
 	public EMailDialog(final Dialog owner,
 			final String title,
-			final MUser from,
+			final I_AD_User from,
 			final String to,
 			final String subject,
 			final String message,
@@ -133,7 +133,7 @@ public class EMailDialog
 	 */
 	public EMailDialog(final Frame owner,
 			final String title,
-			final MUser from,
+			final I_AD_User from,
 			final String to,
 			final String subject,
 			final String message,
@@ -144,7 +144,7 @@ public class EMailDialog
 
 	public EMailDialog(final Frame owner,
 			final String title,
-			final MUser from,
+			final I_AD_User from,
 			final String to,
 			final String subject,
 			final String message,
@@ -168,7 +168,7 @@ public class EMailDialog
 	 * @param message message
 	 * @param attachment optional attachment
 	 */
-	private void commonInit(final MUser from,
+	private void commonInit(final I_AD_User from,
 			final String to,
 			final String subject,
 			final String message,
@@ -214,11 +214,11 @@ public class EMailDialog
 	/** Client */
 	private MClient m_client = null;
 	/** Sender */
-	private MUser m_from = null;
+	private I_AD_User m_from = null;
 	/** Primary Recipient */
-	private MUser m_user = null;
+	private I_AD_User m_user = null;
 	/** Cc Recipient */
-	private MUser m_ccuser = null;
+	private I_AD_User m_ccuser = null;
 	//
 	private String m_to;
 	private String m_cc;
@@ -398,7 +398,7 @@ public class EMailDialog
 	/**
 	 * Set all properties
 	 */
-	public void set(final MUser from, final String to, final String subject, final String message)
+	public void set(final I_AD_User from, final String to, final String subject, final String message)
 	{
 		// Content
 		setFrom(from);
@@ -448,12 +448,15 @@ public class EMailDialog
 	/**
 	 * Set Sender
 	 */
-	public void setFrom(final MUser newFrom)
+	public void setFrom(final I_AD_User newFrom)
 	{
 		m_from = newFrom;
+		
+		final IUserBL userBL = Services.get(IUserBL.class);
+		
 		if (newFrom == null
-				|| !newFrom.isEMailValid()
-				|| !newFrom.isCanSendEMail())
+				|| !userBL.isEMailValid(newFrom)
+				|| !userBL.isCanSendEMail(newFrom))
 		{
 			confirmPanel.getOKButton().setEnabled(false);
 			fFrom.setText("**Invalid**");
@@ -467,7 +470,7 @@ public class EMailDialog
 	/**
 	 * Get Sender
 	 */
-	public MUser getFrom()
+	public I_AD_User getFrom()
 	{
 		return m_from;
 	}	// getFrom
@@ -621,7 +624,7 @@ public class EMailDialog
 			//
 			if (m_user != null)
 			{
-				new MUserMail(m_user, m_user.getAD_User_ID(), email, emailSentStatus).save();
+				new MUserMail(Env.getCtx(), m_user.getAD_User_ID(), email, emailSentStatus).save();
 			}
 			if (emailSentStatus.isSentOK())
 			{
@@ -667,7 +670,7 @@ public class EMailDialog
 			if (value instanceof Integer)
 			{
 				final int AD_User_ID = ((Integer)value).intValue();
-				m_user = MUser.get(Env.getCtx(), AD_User_ID);
+				m_user = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), AD_User_ID);
 				fTo.setValue(m_user.getEMail());
 			}
 		}
@@ -681,7 +684,7 @@ public class EMailDialog
 			if (value instanceof Integer)
 			{
 				final int AD_User_ID = ((Integer)value).intValue();
-				m_ccuser = MUser.get(Env.getCtx(), AD_User_ID);
+				m_ccuser = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), AD_User_ID);
 				fCc.setValue(m_ccuser.getEMail());
 			}
 		}
@@ -693,7 +696,7 @@ public class EMailDialog
 	private final CLabel lLetter = new CLabel();
 	private final VLetterAttachment fLetter = new VLetterAttachment(this);
 
-	public EMailDialog(final Frame owner, final String title, final MUser from,
+	public EMailDialog(final Frame owner, final String title, final I_AD_User from,
 			final String to, final String subject, final String message,
 			final File attachment,
 			final MADBoilerPlate textPreset, final I_AD_Archive archive,

@@ -3,8 +3,6 @@ package org.adempiere.util;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
-import edu.umd.cs.findbugs.annotations.DefaultAnnotationForParameters;
-
 /*
  * #%L
  * de.metas.util

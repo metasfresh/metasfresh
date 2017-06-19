@@ -53,7 +53,6 @@ import org.compiere.model.MAttachment;
 import org.compiere.model.MNote;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTask;
-import org.compiere.model.MUser;
 import org.compiere.model.X_AD_Scheduler;
 import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
@@ -420,7 +419,7 @@ public class Scheduler extends AdempiereServer
 		
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
-		final MUser from = new MUser(pi.getCtx(), pi.getAD_User_ID(), ITrx.TRXNAME_None);
+		final I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(pi.getCtx(), pi.getAD_User_ID());
 		final int adPInstanceTableId = Services.get(IADTableDAO.class).retrieveTableId(I_AD_PInstance.Table_Name);
 
 		notify(ok,
@@ -656,7 +655,7 @@ public class Scheduler extends AdempiereServer
 	 */
 
 	private void notify(final boolean ok,
-			final MUser from,
+			final I_AD_User from,
 			final String subject,
 			final String summary,
 			final String logInfo,
@@ -679,7 +678,7 @@ public class Scheduler extends AdempiereServer
 			final int supervisorId = m_model.getSupervisor_ID();
 			if (supervisorId > 0)
 			{
-				final I_AD_User recipient = userDAO.retrieveUser(ctx, supervisorId);
+				final I_AD_User recipient = userDAO.retrieveUserOrNull(ctx, supervisorId);
 				notificationBL.notifyUser(recipient, MSG_PROCESS_RUN_ERROR, summary + " " + logInfo,
 						new TableRecordReference(AD_Table_ID, Record_ID));
 			}
@@ -691,7 +690,7 @@ public class Scheduler extends AdempiereServer
 			{
 				for (int i = 0; i < userIDs.length; i++)
 				{
-					final I_AD_User recipient = userDAO.retrieveUser(ctx, userIDs[i]);
+					final I_AD_User recipient = userDAO.retrieveUserOrNull(ctx, userIDs[i]);
 					notificationBL.notifyUser(recipient, MSG_PROCESS_OK, summary + " " + logInfo,
 							new TableRecordReference(AD_Table_ID, Record_ID));
 				}

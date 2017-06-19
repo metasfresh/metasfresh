@@ -576,6 +576,33 @@ public interface I_AD_Menu
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
+	 * Set Board.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWEBUI_Board_ID (int WEBUI_Board_ID);
+
+	/**
+	 * Get Board.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getWEBUI_Board_ID();
+
+//	public de.metas.ui.web.base.model.I_WEBUI_Board getWEBUI_Board();
+//
+//	public void setWEBUI_Board(de.metas.ui.web.base.model.I_WEBUI_Board WEBUI_Board);
+//
+//    /** Column definition for WEBUI_Board_ID */
+//    public static final org.adempiere.model.ModelColumn<I_AD_Menu, de.metas.ui.web.base.model.I_WEBUI_Board> COLUMN_WEBUI_Board_ID = new org.adempiere.model.ModelColumn<I_AD_Menu, de.metas.ui.web.base.model.I_WEBUI_Board>(I_AD_Menu.class, "WEBUI_Board_ID", de.metas.ui.web.base.model.I_WEBUI_Board.class);
+    /** Column name WEBUI_Board_ID */
+    public static final String COLUMNNAME_WEBUI_Board_ID = "WEBUI_Board_ID";
+
+	/**
 	 * Set Browse name.
 	 *
 	 * <br>Type: String

@@ -33,13 +33,14 @@ import java.util.StringTokenizer;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.MClient;
 import org.compiere.model.MGroup;
-import org.compiere.model.MUser;
 import org.compiere.model.MUserMail;
 import org.compiere.model.Query;
 import org.compiere.model.X_R_Group;
 import org.compiere.print.ReportEngine;
+import org.compiere.util.Env;
 
 import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.email.EMail;
@@ -47,8 +48,8 @@ import de.metas.email.EMailSentStatus;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  * Send BoilerPlate to Bundle (R_Group)
@@ -153,7 +154,7 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 				return prospect.getR_Group_ID();
 			}
 			@Override
-			public EMail sendEMail(MUser from, String toEmail, String subject, Map<String, Object> variables)
+			public EMail sendEMail(I_AD_User from, String toEmail, String subject, Map<String, Object> variables)
 			{
 				String message = text.getTextSnippetParsed(variables);
 				//
@@ -174,7 +175,7 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 					
 					//
 					if (from != null)
-						new MUserMail(from, from.getAD_User_ID(), email, emailSentStatus).save();
+						new MUserMail(Env.getCtx(), from.getAD_User_ID(), email, emailSentStatus).save();
 					if (emailSentStatus.isSentOK())
 					{
 						//ADialog.info(0, this, "MessageSent");

@@ -40,6 +40,31 @@ public interface I_AD_User
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Sprache.
+	 * Sprache für diesen Eintrag
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Language (java.lang.String AD_Language);
+
+	/**
+	 * Get Sprache.
+	 * Sprache für diesen Eintrag
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAD_Language();
+
+    /** Column definition for AD_Language */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "AD_Language", null);
+    /** Column name AD_Language */
+    public static final String COLUMNNAME_AD_Language = "AD_Language";
+
+	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -150,6 +175,33 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
     /** Column name AD_User_InCharge_ID */
     public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
+
+	/**
+	 * Set Avatar.
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAvatar_ID (int Avatar_ID);
+
+	/**
+	 * Get Avatar.
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAvatar_ID();
+
+	public org.compiere.model.I_AD_Image getAvatar();
+
+	public void setAvatar(org.compiere.model.I_AD_Image Avatar);
+
+    /** Column definition for Avatar_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Image> COLUMN_Avatar_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Image>(I_AD_User.class, "Avatar_ID", org.compiere.model.I_AD_Image.class);
+    /** Column name Avatar_ID */
+    public static final String COLUMNNAME_Avatar_ID = "Avatar_ID";
 
 	/**
 	 * Set Geburtstag.
@@ -465,8 +517,8 @@ public interface I_AD_User
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set EMail.
-	 * Electronic Mail Address
+	 * Set eMail.
+	 * EMail-Adresse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -475,8 +527,8 @@ public interface I_AD_User
 	public void setEMail (java.lang.String EMail);
 
 	/**
-	 * Get EMail.
-	 * Electronic Mail Address
+	 * Get eMail.
+	 * EMail-Adresse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -686,6 +738,31 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Included_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Included_Tab_ID", null);
     /** Column name Included_Tab_ID */
     public static final String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
+
+	/**
+	 * Set IsAccountLocked.
+	 * Flag is yes if account is locked
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setIsAccountLocked (boolean IsAccountLocked);
+
+	/**
+	 * Get IsAccountLocked.
+	 * Flag is yes if account is locked
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public boolean isAccountLocked();
+
+    /** Column definition for IsAccountLocked */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsAccountLocked = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsAccountLocked", null);
+    /** Column name IsAccountLocked */
+    public static final String COLUMNNAME_IsAccountLocked = "IsAccountLocked";
 
 	/**
 	 * Set Aktiv.
@@ -926,6 +1003,29 @@ public interface I_AD_User
     public static final String COLUMNNAME_IsSubjectMatterContact = "IsSubjectMatterContact";
 
 	/**
+	 * Set Systembenutzer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsSystemUser (boolean IsSystemUser);
+
+	/**
+	 * Get Systembenutzer.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isSystemUser();
+
+    /** Column definition for IsSystemUser */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSystemUser = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSystemUser", null);
+    /** Column name IsSystemUser */
+    public static final String COLUMNNAME_IsSystemUser = "IsSystemUser";
+
+	/**
 	 * Set Nachname.
 	 *
 	 * <br>Type: String
@@ -972,6 +1072,129 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_LDAPUser = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "LDAPUser", null);
     /** Column name LDAPUser */
     public static final String COLUMNNAME_LDAPUser = "LDAPUser";
+
+	/**
+	 * Set LockedFromIP.
+	 * Client IP address that was used when this account was locked
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLockedFromIP (java.lang.String LockedFromIP);
+
+	/**
+	 * Get LockedFromIP.
+	 * Client IP address that was used when this account was locked
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLockedFromIP();
+
+    /** Column definition for LockedFromIP */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_LockedFromIP = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "LockedFromIP", null);
+    /** Column name LockedFromIP */
+    public static final String COLUMNNAME_LockedFromIP = "LockedFromIP";
+
+	/**
+	 * Set Login.
+	 * Used for login. See Help.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLogin (java.lang.String Login);
+
+	/**
+	 * Get Login.
+	 * Used for login. See Help.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getLogin();
+
+    /** Column definition for Login */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Login = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Login", null);
+    /** Column name Login */
+    public static final String COLUMNNAME_Login = "Login";
+
+	/**
+	 * Set LoginFailureCount.
+	 * Failed login count
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLoginFailureCount (int LoginFailureCount);
+
+	/**
+	 * Get LoginFailureCount.
+	 * Failed login count
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getLoginFailureCount();
+
+    /** Column definition for LoginFailureCount */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_LoginFailureCount = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "LoginFailureCount", null);
+    /** Column name LoginFailureCount */
+    public static final String COLUMNNAME_LoginFailureCount = "LoginFailureCount";
+
+	/**
+	 * Set LoginFailureDate.
+	 * Date when was last faild
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setLoginFailureDate (java.sql.Timestamp LoginFailureDate);
+
+	/**
+	 * Get LoginFailureDate.
+	 * Date when was last faild
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getLoginFailureDate();
+
+    /** Column definition for LoginFailureDate */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_LoginFailureDate = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "LoginFailureDate", null);
+    /** Column name LoginFailureDate */
+    public static final String COLUMNNAME_LoginFailureDate = "LoginFailureDate";
+
+	/**
+	 * Set Handynummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMobilePhone (java.lang.String MobilePhone);
+
+	/**
+	 * Get Handynummer.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getMobilePhone();
+
+    /** Column definition for MobilePhone */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_MobilePhone = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "MobilePhone", null);
+    /** Column name MobilePhone */
+    public static final String COLUMNNAME_MobilePhone = "MobilePhone";
 
 	/**
 	 * Set Name.
@@ -1245,6 +1468,31 @@ public interface I_AD_User
     public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Title = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Title", null);
     /** Column name Title */
     public static final String COLUMNNAME_Title = "Title";
+
+	/**
+	 * Set UnlockAccount.
+	 * Button that will call a process to unlock current selected account
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUnlockAccount (java.lang.String UnlockAccount);
+
+	/**
+	 * Get UnlockAccount.
+	 * Button that will call a process to unlock current selected account
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUnlockAccount();
+
+    /** Column definition for UnlockAccount */
+    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_UnlockAccount = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "UnlockAccount", null);
+    /** Column name UnlockAccount */
+    public static final String COLUMNNAME_UnlockAccount = "UnlockAccount";
 
 	/**
 	 * Get Aktualisiert.

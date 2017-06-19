@@ -113,18 +113,21 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
 
-		//
-		// Adjust movement line's qty to move
-		final BigDecimal inOutLine_Qty_Old = inOutLine.getMovementQty();
-		final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMove);
-		inOutLine.setMovementQty(inOutLine_Qty_New);
+		if (originInOutLine.getM_InOut_ID() != _inoutRef.getValue().getM_InOut_ID())
+		{
+			//
+			// Adjust movement line's qty to move
+			final BigDecimal inOutLine_Qty_Old = inOutLine.getMovementQty();
+			final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMove);
+			inOutLine.setMovementQty(inOutLine_Qty_New);
 
-		//
-		// Also set the qty entered
-		inOutLine.setQtyEntered(inOutLine_Qty_New);
+			//
+			// Also set the qty entered
+			inOutLine.setQtyEntered(inOutLine_Qty_New);
 
-		// Make sure the inout line is saved
-		InterfaceWrapperHelper.save(inOutLine);
+			// Make sure the inout line is saved
+			InterfaceWrapperHelper.save(inOutLine);
+		}
 
 		// Assign the HU to the inout line and mark it as shipped
 		{
@@ -138,13 +141,12 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			huAssignmentBL.createTradingUnitDerivedAssignmentBuilder(InterfaceWrapperHelper.getCtx(hu), inOutLine, huTopLevel, luHU, tuHU, trxName)
 					.build();
 
-			// mark hu as shipped ( if vendor return)  or Active (if customer return)
+			// mark hu as shipped ( if vendor return) or Active (if customer return)
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
 			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
 
 			setHUStatus(huContext, hu);
-
 
 		}
 	}
@@ -180,6 +182,13 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		if (existingInOutLine != null)
 		{
 			return existingInOutLine;
+		}
+
+		// #1306 verify if the origin line belongs to the manually created return ( _inOutRef)
+		if (originInOutLine.getM_InOut_ID() == inout.getM_InOut_ID())
+		{
+			_inOutLines.put(inOutLineKey, originInOutLine);
+			return originInOutLine;
 		}
 
 		//

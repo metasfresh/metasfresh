@@ -1,6 +1,7 @@
 package org.adempiere.util.api.impl;
 
 import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -69,6 +70,13 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.getMsg(ctx, adMessage, text);
 	}
+
+	@Override
+	public Map<String, String> getMsgMap(final String adLanguage, final String prefix, final boolean removePrefix)
+	{
+		return Msg.getMsgMap(adLanguage, prefix, removePrefix);
+	}
+
 
 	@Override
 	public String translate(final Properties ctx, final String text)
