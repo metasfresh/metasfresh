@@ -27,6 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 import javax.swing.DefaultComboBoxModel;
@@ -36,7 +38,6 @@ import javax.swing.table.DefaultTableModel;
 
 import org.adempiere.apps.wf.WFActivityModel;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;

@@ -942,4 +942,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		});
 
 	}
+
+	@Override
+	public boolean isShipped(final I_M_HU hu)
+	{
+		return X_M_HU.HUSTATUS_Shipped.equals(hu.getHUStatus());
+	}
 }

@@ -12,11 +12,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.PlainStringLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;

@@ -29,7 +29,7 @@ import org.adempiere.util.ISingletonService;
 public interface IConnectionCustomizerService extends ISingletonService
 {
 	/**
-	 * Registers the given instance to be applied whenever a connected is checked out of the database connection pool.
+	 * Registers the given instance to be applied whenever a connection is checked out of the database connection pool.
 	 *
 	 * @param connectionCustomizer should be a singleton
 	 */

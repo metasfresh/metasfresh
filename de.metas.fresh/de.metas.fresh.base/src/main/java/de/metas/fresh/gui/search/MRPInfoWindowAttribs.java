@@ -32,7 +32,6 @@ import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.minigrid.ColumnInfo;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
@@ -41,6 +40,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
+import de.metas.i18n.IMsgBL;
 
 /**
  * NOTE: consider moving this to either de.metas.handlingunits or org.adempiere.libero if and when one starts to depend on the other.

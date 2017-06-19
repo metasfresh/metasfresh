@@ -33,12 +33,12 @@ import javax.swing.JOptionPane;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialogDialog;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.adempiere.form.IAskDialogBuilder;
+import de.metas.i18n.IMsgBL;
 
 public class SwingAskDialogBuilder implements IAskDialogBuilder
 {

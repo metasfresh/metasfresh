@@ -10,7 +10,6 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -22,6 +21,7 @@ import de.metas.dimension.IDimensionSpecAttributeBL;
 import de.metas.dimension.IDimensionSpecAttributeDAO;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

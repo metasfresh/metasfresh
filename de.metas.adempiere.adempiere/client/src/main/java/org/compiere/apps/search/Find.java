@@ -30,11 +30,12 @@ import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.FindPanelUI;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.model.MQuery;
 import org.compiere.swing.CDialog;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 

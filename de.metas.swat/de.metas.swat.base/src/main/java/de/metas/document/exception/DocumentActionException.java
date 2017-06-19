@@ -27,8 +27,9 @@ import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
+
+import de.metas.i18n.IMsgBL;
 
 /**
  * Handles document action related exceptions

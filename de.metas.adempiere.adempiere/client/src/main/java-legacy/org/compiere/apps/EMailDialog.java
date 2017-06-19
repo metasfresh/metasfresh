@@ -43,7 +43,6 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.grid.ed.RichTextEditor;
 import org.compiere.grid.ed.VLetterAttachment;
@@ -69,6 +68,7 @@ import org.slf4j.Logger;
 
 import de.metas.email.EMail;
 import de.metas.email.EMailSentStatus;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.MADBoilerPlate;

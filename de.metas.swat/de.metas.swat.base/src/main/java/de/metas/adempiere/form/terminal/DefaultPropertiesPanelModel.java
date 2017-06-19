@@ -32,12 +32,12 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.util.NamePair;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.field.constraint.ITerminalFieldConstraint;
+import de.metas.i18n.IMsgBL;
 
 /**
  * A generic {@link IPropertiesPanelModel} which allows developer to define and customize the properties that are supported.

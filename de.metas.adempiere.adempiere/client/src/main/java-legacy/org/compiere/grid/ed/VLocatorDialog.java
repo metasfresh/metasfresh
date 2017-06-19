@@ -29,6 +29,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 import javax.swing.JCheckBox;
@@ -38,7 +40,6 @@ import javax.swing.JLabel;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;

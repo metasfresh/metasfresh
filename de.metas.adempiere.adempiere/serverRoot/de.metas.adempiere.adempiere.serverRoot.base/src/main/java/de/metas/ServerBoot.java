@@ -137,8 +137,7 @@ public class ServerBoot
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new RoleAccessUpdateHouseKeepingTask());
 		houseKeepingRegistry.registerStartupHouseKeepingTask(new MissingTranslationHouseKeepingTask());
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance();
-		adempiere.setApplicationContext(applicationContext);
+		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
 		adempiere.startup(RunMode.BACKEND);
 		return adempiere;
 	}

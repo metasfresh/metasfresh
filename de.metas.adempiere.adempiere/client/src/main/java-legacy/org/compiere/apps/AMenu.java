@@ -59,7 +59,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.ui.api.IWindowBL;
 import org.adempiere.ui.notifications.SwingEventNotifierService;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.apps.search.InfoWindowMenuBuilder;
@@ -87,6 +86,7 @@ import org.slf4j.Logger;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.swing.SwingClientUI;
 import de.metas.adempiere.model.I_AD_Form;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 

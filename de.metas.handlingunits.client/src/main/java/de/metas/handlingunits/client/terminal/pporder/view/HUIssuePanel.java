@@ -39,7 +39,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.model.I_C_BPartner;
@@ -90,6 +89,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 
 /**

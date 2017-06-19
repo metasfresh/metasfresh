@@ -37,11 +37,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 

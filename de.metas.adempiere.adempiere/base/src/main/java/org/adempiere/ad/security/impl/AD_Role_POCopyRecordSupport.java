@@ -7,11 +7,11 @@ import java.text.SimpleDateFormat;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_Role;
+import de.metas.i18n.IMsgBL;
 
 /*
  * #%L

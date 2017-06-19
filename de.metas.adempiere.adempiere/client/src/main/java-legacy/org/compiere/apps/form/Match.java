@@ -24,7 +24,6 @@ import de.metas.logging.LogManager;
 
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.MInOutLine;
@@ -38,6 +37,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.product.IProductBL;
 

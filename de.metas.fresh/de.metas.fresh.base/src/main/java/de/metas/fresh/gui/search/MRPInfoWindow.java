@@ -41,7 +41,6 @@ import javax.swing.event.ListSelectionEvent;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.apps.form.FormFrame;
@@ -62,6 +61,7 @@ import org.compiere.util.KeyNamePair;
 import org.eevolution.form.VMRPDetailed;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.i18n.IMsgBL;
 
 /**
  * This is about the MRP <b>Product</b> Info window.

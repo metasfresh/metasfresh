@@ -35,7 +35,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.DisplayType;
@@ -52,6 +51,7 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.impl.HUAndItemsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.i18n.IMsgBL;
 
 /**
  * Implementation of {@link IPropertiesPanelModel} which allows user to edit some HU fields.

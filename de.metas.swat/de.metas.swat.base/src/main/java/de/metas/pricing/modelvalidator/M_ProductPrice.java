@@ -35,10 +35,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.api.IPricingBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
+
+import de.metas.i18n.IMsgBL;
 
 @Validator(I_M_ProductPrice.class)
 public class M_ProductPrice

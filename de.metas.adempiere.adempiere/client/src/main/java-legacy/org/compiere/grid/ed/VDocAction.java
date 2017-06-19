@@ -31,7 +31,6 @@ import javax.swing.JTextArea;
 
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
@@ -51,6 +50,7 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.document.engine.IDocActionBL.IDocActionItem;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

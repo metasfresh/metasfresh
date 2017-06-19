@@ -93,6 +93,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
+	
+	/**
+	 * @param hu
+	 * @return true if HU was shipped
+	 */
+	boolean isShipped(I_M_HU hu);
 
 	/**
 	 * Refresh HU first before checking if it's destroyed

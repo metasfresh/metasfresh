@@ -46,12 +46,12 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.form.terminal.ITerminalCheckboxField;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.adempiere.form.terminal.table.annotation.TableInfo;
+import de.metas.i18n.IMsgBL;
 
 /**
  *

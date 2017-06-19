@@ -40,7 +40,6 @@ import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
@@ -68,6 +67,7 @@ import org.compiere.util.Util;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 

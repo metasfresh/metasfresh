@@ -32,13 +32,14 @@ import javax.swing.KeyStroke;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.grid.GridController;
 import org.compiere.grid.VTable;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.slf4j.Logger;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import org.compiere.util.Env;
 

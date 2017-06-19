@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.connection.IConnectionCustomizer;
 import de.metas.connection.IConnectionCustomizerService;
 import de.metas.connection.ITemporaryConnectionCustomizer;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -46,13 +47,13 @@ public class ConnectionCustomizerService implements IConnectionCustomizerService
 	private final ThreadLocal<Set<IConnectionCustomizer>> currentlyInvokedCustomizers = ThreadLocal.withInitial(() -> new IdentityHashSet<>());
 
 	@Override
-	public void registerPermanentCustomizer(final IConnectionCustomizer connectionCustomizer)
+	public void registerPermanentCustomizer(@NonNull final IConnectionCustomizer connectionCustomizer)
 	{
 		permanentCustomizers.add(connectionCustomizer);
 	}
 
 	@Override
-	public AutoCloseable registerTemporaryCustomizer(final ITemporaryConnectionCustomizer connectionCustomizer)
+	public AutoCloseable registerTemporaryCustomizer(@NonNull final ITemporaryConnectionCustomizer connectionCustomizer)
 	{
 		temporaryCustomizers.get().add(connectionCustomizer);
 
@@ -66,19 +67,20 @@ public class ConnectionCustomizerService implements IConnectionCustomizerService
 		};
 	}
 
-	private void removeTemporaryCustomizer(final ITemporaryConnectionCustomizer dlmConnectionCustomizer)
+	private void removeTemporaryCustomizer(@NonNull final ITemporaryConnectionCustomizer dlmConnectionCustomizer)
 	{
 		final boolean wasInTheList = temporaryCustomizers.get().remove(dlmConnectionCustomizer);
 		Check.errorIf(!wasInTheList, "ITemporaryConnectionCustomizer={} was not in the thread-local list of temperary customizers; this={}", dlmConnectionCustomizer, this);
 	}
 
 	@Override
-	public void fireRegisteredCustomizers(Connection c)
+	public void fireRegisteredCustomizers(@NonNull final Connection c)
 	{
 		getRegisteredCustomizers().forEach(
-				customizer -> {
-					invokeIfNotYetInvoked(customizer, c);
-				});
+				customizer ->
+					{
+						invokeIfNotYetInvoked(customizer, c);
+					});
 	}
 
 	@Override
@@ -102,7 +104,7 @@ public class ConnectionCustomizerService implements IConnectionCustomizerService
 	 * @param customizer
 	 * @param connection
 	 */
-	private void invokeIfNotYetInvoked(IConnectionCustomizer customizer, Connection connection)
+	private void invokeIfNotYetInvoked(@NonNull final IConnectionCustomizer customizer, @NonNull final Connection connection)
 	{
 		try
 		{

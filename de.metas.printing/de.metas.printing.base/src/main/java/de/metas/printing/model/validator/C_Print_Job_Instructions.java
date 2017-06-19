@@ -41,13 +41,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.notification.INotificationBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_PrinterRouting;

@@ -45,7 +45,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Period;
@@ -108,6 +107,7 @@ import de.metas.commission.util.Messages;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 

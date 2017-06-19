@@ -18,9 +18,11 @@ package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.adempiere.ad.service.IADMessageDAO;
+
 import org.adempiere.util.Services;
 import org.compiere.util.DB;
+
+import de.metas.i18n.IADMessageDAO;
 
 
 /**

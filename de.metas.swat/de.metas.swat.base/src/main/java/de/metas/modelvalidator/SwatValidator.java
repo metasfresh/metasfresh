@@ -58,8 +58,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
-import org.adempiere.util.api.IMsgDAO;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
@@ -101,6 +99,8 @@ import de.metas.adempiere.modelvalidator.Payment;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.document.ICounterDocBL;
 import de.metas.freighcost.modelvalidator.FreightCostValidator;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
 import de.metas.inout.model.validator.M_QualityNote;
@@ -310,7 +310,7 @@ public class SwatValidator implements ModelValidator
 		{
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final IMsgDAO msgDAO = Services.get(IMsgDAO.class);
+			final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 
 			final boolean throwException = sysConfigBL.getBooleanValue(SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION, true);
 			Check.setThrowException(throwException);

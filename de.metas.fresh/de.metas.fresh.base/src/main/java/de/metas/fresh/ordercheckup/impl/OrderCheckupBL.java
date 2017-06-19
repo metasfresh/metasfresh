@@ -33,7 +33,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_Resource;
@@ -48,6 +47,7 @@ import de.metas.fresh.ordercheckup.IOrderCheckupBL;
 import de.metas.fresh.ordercheckup.IOrderCheckupDAO;
 import de.metas.fresh.ordercheckup.model.I_C_BPartner;
 import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.i18n.IMsgBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 
 /**

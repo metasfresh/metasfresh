@@ -51,7 +51,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_OrderLine;
@@ -81,6 +80,7 @@ import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IReceiptCostCollectorCandidate;
 import org.eevolution.exceptions.LiberoException;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.IProductBL;

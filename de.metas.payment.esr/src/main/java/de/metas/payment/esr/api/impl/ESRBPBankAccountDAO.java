@@ -33,11 +33,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 
 import de.metas.adempiere.service.IBPartnerOrgBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 
 public class ESRBPBankAccountDAO extends AbstractBPBankAccountDAO

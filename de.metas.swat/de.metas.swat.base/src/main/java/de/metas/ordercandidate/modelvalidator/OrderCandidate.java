@@ -30,11 +30,11 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.ordercandidate.OrderCandidate_Constants;

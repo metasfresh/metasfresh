@@ -10,12 +10,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.adempiere.ad.service.IADMessageDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Note;
@@ -31,6 +29,8 @@ import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.ErrorCodes;
 import de.metas.material.planning.IMRPNoteBuilder;

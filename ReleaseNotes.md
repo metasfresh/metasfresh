@@ -16,13 +16,30 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
+  * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
+    * New Window for Calendar Maintenance in WebUI.
+  * [#1816](https://github.com/metasfresh/metasfresh/issues/1816) Fix the webui layout for Vendor returns (Lieferanten Rücklieferung) window
+    * New Window Layout for vendor Returns window, Main View and Subtab Lines.
   * [#1817](https://github.com/metasfresh/metasfresh/issues/1817) Allow to switch off transmission to Procurement UI via PMM_Product
     * Enhancement of the functionality to transmit Products to Procurement User Interface. Now allowing the user to switch of selected Transmissions also when contrcts exist and are valid.
+  * [#1819](https://github.com/metasfresh/metasfresh/issues/1819) make new pricelist a sales pricelist by default
+    * New Default behavior when creating new Price Lists. The List is set to "Sales Price List2 intially.
   * [#1823](https://github.com/metasfresh/metasfresh/issues/1823) New Procurement Windows in WebUI
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
     * New Window to allow the recording of Request for Quotations in WebUI.
-	
+  * [#1829](https://github.com/metasfresh/metasfresh/issues/1829) Different RFQ Windows in WebUI
+    * New Indows in WebUI that allow REF recording and Response maintenance.
+  * [#1830](https://github.com/metasfresh/metasfresh/issues/1830) Add filter for HU status in handling unit editor
+    * Additional Default Filters for the new Handling Unit Editor.
+  * [#1836](https://github.com/metasfresh/metasfresh/issues/1836) Adjustments for Empties Receive Window WebUI
+    * Further Layout adjustments for the Empties Receive Window in WebUI.
+  * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
+    * Layout Adjustments to Customer Return Window in WebUI.
+  * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
+    * Application dictionary cleanup on metasfresh instalations where it's needed
+
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
     * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.

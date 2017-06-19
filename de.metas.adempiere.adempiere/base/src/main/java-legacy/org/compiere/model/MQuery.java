@@ -34,7 +34,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -46,6 +45,7 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
 /**

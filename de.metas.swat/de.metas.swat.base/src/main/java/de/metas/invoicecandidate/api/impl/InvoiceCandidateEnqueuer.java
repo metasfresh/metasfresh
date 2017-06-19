@@ -37,11 +37,11 @@ import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.NullLoggable;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;

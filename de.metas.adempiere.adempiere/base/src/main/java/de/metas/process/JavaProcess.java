@@ -26,7 +26,6 @@ import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 import org.adempiere.util.StringUtils;
-import org.adempiere.util.api.IMsgBL;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.ImmutableReference;
@@ -44,6 +43,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
 

@@ -56,7 +56,6 @@ import org.adempiere.model.engines.IDocumentLine;
 import org.adempiere.model.engines.StorageEngine;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
-import org.adempiere.util.api.IMsgBL;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -83,6 +82,7 @@ import org.eevolution.exceptions.ActivityProcessedException;
 import org.eevolution.exceptions.LiberoException;
 
 import de.metas.document.engine.IDocActionBL;
+import de.metas.i18n.IMsgBL;
 import de.metas.interfaces.I_C_BPartner_Product;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.product.IProductBL;
