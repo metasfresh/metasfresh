@@ -231,6 +231,22 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 		return ii.intValue();
 	}
 
+	/** Set Batch-Gruppe.
+	@param BatchGroup Batch-Gruppe	  */
+	@Override
+	public void setBatchGroup (java.lang.String BatchGroup)
+	{
+		set_Value (COLUMNNAME_BatchGroup, BatchGroup);
+	}
+	
+	/** Get Batch-Gruppe.
+		@return Batch-Gruppe	  */
+	@Override
+	public java.lang.String getBatchGroup () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_BatchGroup);
+	}
+	
 	@Override
 	public org.compiere.model.I_C_BPartner getBill_BPartner() throws RuntimeException
 	{

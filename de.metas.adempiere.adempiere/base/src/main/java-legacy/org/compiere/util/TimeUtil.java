@@ -1100,6 +1100,29 @@ public class TimeUtil
 	}	// getYearLastDay
 
 	/**
+	 * Get first date in year
+	 * 
+	 * @param day day
+	 * @return year first day with 00:00
+	 */
+	// metas
+	static public Timestamp getYearFirstDay(Date day)
+	{
+		if (day == null)
+			day = new Timestamp(System.currentTimeMillis());
+		GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(day.getTime());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		//
+		cal.set(Calendar.MONTH, Calendar.JANUARY);
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		return new Timestamp(cal.getTimeInMillis());
+	}	// getYearFirstDay
+	
+	/**
 	 * Extract the year from a given date.
 	 * 
 	 * @param date

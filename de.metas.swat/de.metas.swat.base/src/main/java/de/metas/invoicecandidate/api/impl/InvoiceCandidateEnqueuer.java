@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -41,6 +40,10 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnableAdapter;
 
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.async.spi.impl.ConstantWorkpackagePrio;
+import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -85,6 +88,8 @@ import de.metas.lock.api.LockOwner;
 	private Boolean _failOnChanges = null;
 	private BigDecimal _totalNetAmtToInvoiceChecksum;
 	private IInvoicingParams _invoicingParams;
+	private I_C_Async_Batch _asyncBatch = null;
+	private IWorkpackagePrioStrategy _priority = null;
 
 	@Override
 	public IInvoiceCandidateEnqueueResult enqueueSelection(final int adPInstanceId)
@@ -156,7 +161,8 @@ import de.metas.lock.api.LockOwner;
 		// NOTE: loading them again after we made sure that they are fairly up to date.
 		final InvoiceCandidate2WorkpackageAggregator workpackageAggregator = new InvoiceCandidate2WorkpackageAggregator(ctx, trxName)
 				.setAD_PInstance_ID(adPInstanceId)
-				.setInvoiceCandidatesLock(icLock);
+				.setInvoiceCandidatesLock(icLock)
+				.setC_Async_Batch(_asyncBatch);
 
 		final int workpackageQueueSizeBeforeEnqueueing = workpackageAggregator.getQueueSize();
 		int invoiceCandidateSelectionCount = 0; // how many eligible items were in given selection
@@ -175,6 +181,29 @@ import de.metas.lock.api.LockOwner;
 			workpackageAggregator.add(ic);
 
 			//
+			// 06283 : use the priority from the first invoice candidate of each group
+			// NTH: use the max prio of all candidates of the group
+			final IWorkpackagePrioStrategy priorityToUse;
+			if (_priority == null)
+			{
+
+				if (!Check.isEmpty(ic.getPriority()))
+				{
+					priorityToUse = ConstantWorkpackagePrio.fromString(ic.getPriority());
+				}
+				else
+				{
+					priorityToUse = SizeBasedWorkpackagePrio.INSTANCE;// fallback to default
+				}
+			}
+			else
+			{
+				priorityToUse = _priority;
+			}
+
+			workpackageAggregator.setPriority(priorityToUse);
+
+			//
 			// 07666: Set approval back to false after enqueuing and save within transaction
 			try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
 			{
@@ -188,12 +217,12 @@ import de.metas.lock.api.LockOwner;
 			//
 			// Do an intermediate commit every 100 enqueued ICs
 			// this will also cause the previously finished (not the current one!) work package to be flagged as ready to be processed
-// workaround: avoid the system to attempty slitting of the last WP two times which results in an exception
-//			if (workpackageAggregator.getItemsCount() % 100 == 0)
-//			{
-//				workpackageAggregator.closeAllGroupExceptLastUsed();
-//				trxManager.commit(trxName);
-//			}
+			// workaround: avoid the system to attempty slitting of the last WP two times which results in an exception
+			// if (workpackageAggregator.getItemsCount() % 100 == 0)
+			// {
+			// workpackageAggregator.closeAllGroupExceptLastUsed();
+			// trxManager.commit(trxName);
+			// }
 		}
 
 		//
@@ -476,6 +505,20 @@ import de.metas.lock.api.LockOwner;
 	public IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum)
 	{
 		this._totalNetAmtToInvoiceChecksum = totalNetAmtToInvoiceChecksum;
+		return this;
+	}
+
+	@Override
+	public IInvoiceCandidateEnqueuer setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	{
+		_asyncBatch = asyncBatch;
+		return this;
+	}
+
+	@Override
+	public IInvoiceCandidateEnqueuer setPriority(final IWorkpackagePrioStrategy priority)
+	{
+		_priority = priority;
 		return this;
 	}
 }

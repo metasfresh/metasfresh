@@ -2225,6 +2225,19 @@ public interface I_C_Invoice_Candidate
     /** Column name PriceEntered_Override */
     public static final String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
 
+	/** Column name Priority */
+	public static final String COLUMNNAME_Priority = "Priority";
+
+	/**
+	 * Set Priority. Indicates if this request is of a high, medium or low priority.
+	 */
+	public void setPriority(java.lang.String Priority);
+
+	/**
+	 * Get Priority. Indicates if this request is of a high, medium or low priority.
+	 */
+	public java.lang.String getPriority();
+    
 	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.

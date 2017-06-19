@@ -227,6 +227,31 @@ public interface I_C_Printing_Queue
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Batch-Gruppe.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBatchGroup (java.lang.String BatchGroup);
+
+	/**
+	 * Get Batch-Gruppe.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getBatchGroup();
+
+    /** Column definition for BatchGroup */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_BatchGroup = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "BatchGroup", null);
+    /** Column name BatchGroup */
+    public static final String COLUMNNAME_BatchGroup = "BatchGroup";
+
+	/**
+    
+	/**
 	 * Set Rechnungspartner.
 	 * Geschäftspartners für die Rechnungsstellung
 	 *
