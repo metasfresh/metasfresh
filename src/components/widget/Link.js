@@ -4,20 +4,20 @@ class Link extends Component {
     constructor(props) {
         super(props);
     }
-    
+
     handleClick = (url) => {
         window.open(url, '_blank');
     }
 
     render() {
         const {
-            getClassnames, isEdited, widgetProperties, icon, fullScreen, 
+            getClassnames, isEdited, widgetProperties, icon, fullScreen,
             tabIndex, widgetData
         } = this.props;
 
         return (
             <div className="input-inner-container">
-                <div 
+                <div
                     className={
                         getClassnames() +
                         (isEdited ? 'input-focused ' : '')

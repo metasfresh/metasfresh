@@ -148,6 +148,10 @@ export function setUserDashboardWidgets(payload) {
     return axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }
 
+export function getMessages() {
+    return axios.get(config.API_URL + '/i18n/messages');
+}
+
 // END OF REQUESTS
 
 export function loginSuccess(auth) {
