@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Additional Default Filters for the new Handling Unit Editor.
   * [#1836](https://github.com/metasfresh/metasfresh/issues/1836) Adjustments for Empties Receive Window WebUI
     * Further Layout adjustments for the Empties Receive Window in WebUI.
+  * [#1839](https://github.com/metasfresh/metasfresh/issues/1839) New Window for Period & Period Control in WebUI
+    * New WIndow for Period and Period Control maintenance in Accounting.
   * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
     * Layout Adjustments to Customer Return Window in WebUI.
   * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
