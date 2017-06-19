@@ -461,12 +461,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public MFSession retrieveCurrentSession(final Properties ctx)
-	{
-		return Services.get(ISessionBL.class).getCurrentSession(ctx);
-	}
-
-	@Override
 	public List<I_AD_Printer> retrievePrinters(final Properties ctx, final int adOrgId)
 	{
 		final int adClientId = Env.getAD_Client_ID(ctx);

@@ -13,15 +13,14 @@ package de.metas.printing.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,6 +35,7 @@ import java.util.UUID;
 import javax.print.attribute.standard.MediaSize;
 
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -99,7 +99,7 @@ import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.printing.spi.IPrintJobMonitor;
 
-//there is high amount of methods because it's a helper...
+// there is high amount of methods because it's a helper...
 @SuppressWarnings("PMD.CouplingBetweenObjects")
 public class Helper
 {
@@ -211,7 +211,7 @@ public class Helper
 
 	public String getSessionHostKey()
 	{
-		return printingDAO.retrieveCurrentSession(ctx).getHostKey();
+		return Services.get(ISessionBL.class).getCurrentSession(ctx).getHostKey(ctx);
 	}
 
 	public POJOLookupMap getDB()
