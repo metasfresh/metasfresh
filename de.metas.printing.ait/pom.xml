@@ -91,7 +91,7 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
+			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.client</artifactId>
 			<version>1.0.0</version>
 			<type>test-jar</type>

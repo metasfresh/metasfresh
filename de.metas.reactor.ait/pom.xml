@@ -24,8 +24,6 @@
 		<module>../de.metas.banking.ait</module>
 		<module>../de.metas.commission.ait</module>
 		<module>../de.metas.contracts.ait</module>
-<!--    document.archive.esb is not used, and it fails for complicated reasons  -->		
-<!-- 	<module>../de.metas.document.archive.ait</module> -->
 		<module>../de.metas.materialtracking.ait</module>
 		<module>../de.metas.dunning.ait</module>
 		<module>../de.metas.printing.ait</module>

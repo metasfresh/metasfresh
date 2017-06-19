@@ -16,7 +16,7 @@
 
 	<packaging>pom</packaging>
 
-	<description>metasfresh parent pom with common settings (e.g. java file encoding, enforcer rules, depdendency management) to be used by all metasfreseh maven projects</description>
+	<description>metasfresh parent pom with common settings to be used by all metasfreseh maven projects</description>
 
 	<!-- TODO: consider removing jasperreports.version and dependencyManagement
 		from this pom. It will instead be handled by adempiereJasper-parent -->
