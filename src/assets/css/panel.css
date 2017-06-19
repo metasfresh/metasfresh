@@ -17,7 +17,8 @@
     background-color: #F8FAFB;
 }
 
-.panel-distance {
+.panel-distance,
+.panel-modal .panel-distance:last-child {
     margin-top: 1.25rem;
     margin-bottom: 1.25rem;
 }
