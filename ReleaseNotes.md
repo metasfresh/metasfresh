@@ -37,7 +37,9 @@ Here come the actual release notes:
     * Further Layout adjustments for the Empties Receive Window in WebUI.
   * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
     * Layout Adjustments to Customer Return Window in WebUI.
-	
+  * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
+    * Application dictionary cleanup on metasfresh instalations where it's needed
+
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
     * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
