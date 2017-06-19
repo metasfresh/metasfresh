@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
+import counterpart from 'counterpart';
 
 import onClickOutside from 'react-onclickoutside';
 
@@ -106,12 +107,16 @@ class Inbox extends Component {
                         <div
                             className="inbox-header"
                         >
-                            <span className="inbox-header-title">Inbox</span>
+                            <span className="inbox-header-title">{
+                                counterpart.translate('window.inbox.caption')
+                            }</span>
                             <span
                                 onClick={this.handleMarkAllAsRead}
                                 className="inbox-link"
                             >
-                                Mark all as read
+                                {counterpart.translate(
+                                    'window.markAsRead.caption'
+                                )}
                             </span>
                         </div>
                         <div className={
@@ -127,7 +132,9 @@ class Inbox extends Component {
                             )}
                             {inbox && inbox.notifications.length == 0 &&
                                 <div className="inbox-item inbox-item-empty">
-                                    Inbox is empty
+                                    {counterpart.translate(
+                                        'window.inbox.empty'
+                                    )}
                                 </div>
                             }
                         </div>
@@ -138,7 +145,9 @@ class Inbox extends Component {
                                 onClick={this.handleShowAll}
                                 className="inbox-link text-xs-center"
                             >
-                                Show all &gt;&gt;
+                                {counterpart.translate(
+                                    'window.allInbox.caption'
+                                )} &gt;&gt;
                             </div>}
                         </div>
                     </div>
