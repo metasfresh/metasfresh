@@ -918,14 +918,24 @@ public class OrderBL implements IOrderBL
 		aggregateOnOrder.sum(DYNATTR_QtyDeliveredSum, org.compiere.model.I_C_OrderLine.COLUMN_QtyDelivered);
 		aggregateOnOrder.sum(DYNATTR_QtyOrderedSum, org.compiere.model.I_C_OrderLine.COLUMN_QtyOrdered);
 
-		final List<org.compiere.model.I_C_Order> queryiedOrders = aggregateOnOrder.aggregate();
-		final org.compiere.model.I_C_Order queriedOrder = ListUtils.singleElement(queryiedOrders);
-
 		final de.metas.order.model.I_C_Order fOrder = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
-		fOrder.setQtyInvoiced(DYNATTR_QtyInvoicedSum.getValue(queriedOrder));
-		fOrder.setQtyMoved(DYNATTR_QtyDeliveredSum.getValue(queriedOrder));
-		fOrder.setQtyOrdered(DYNATTR_QtyOrderedSum.getValue(queriedOrder));
+		
+		final List<org.compiere.model.I_C_Order> queryiedOrders = aggregateOnOrder.aggregate();
+		if (!queryiedOrders.isEmpty())
+		{
+			// gh #1855: cover the case that the order has no lines or just packing lines.
+			fOrder.setQtyInvoiced(BigDecimal.ZERO);
+			fOrder.setQtyMoved(BigDecimal.ZERO);
+			fOrder.setQtyOrdered(BigDecimal.ZERO);
+		}
+		else
+		{
+			final org.compiere.model.I_C_Order queriedOrder = ListUtils.singleElement(queryiedOrders);
 
+			fOrder.setQtyInvoiced(DYNATTR_QtyInvoicedSum.getValue(queriedOrder));
+			fOrder.setQtyMoved(DYNATTR_QtyDeliveredSum.getValue(queriedOrder));
+			fOrder.setQtyOrdered(DYNATTR_QtyOrderedSum.getValue(queriedOrder));
+		}
 		InterfaceWrapperHelper.save(fOrder);
 	}
 }
