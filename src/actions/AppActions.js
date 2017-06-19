@@ -42,6 +42,17 @@ export function browseViewRequest(
     );
 }
 
+export function deleteView(
+    windowId, viewId
+){
+    return axios.delete(
+        config.API_URL +
+        '/documentView/' +
+        windowId + '/' +
+        viewId
+    );
+}
+
 export function createViewRequest(
     windowType, viewType, pageLength, filters, refDocType = null,
     refDocId = null

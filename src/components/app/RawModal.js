@@ -7,6 +7,10 @@ import {
     closeRawModal
 } from '../../actions/WindowActions';
 
+import {
+    deleteView
+} from '../../actions/AppActions';
+
 class RawModal extends Component {
     constructor(props) {
         super(props);
@@ -46,10 +50,11 @@ class RawModal extends Component {
     }
 
     handleClose = () => {
-        const {closeCallback} = this.props;
+        const {closeCallback, viewId, windowType} = this.props;
         const {isNew} = this.state;
 
         closeCallback && closeCallback(isNew);
+        deleteView(windowType, viewId);
         this.removeModal();
     }
 

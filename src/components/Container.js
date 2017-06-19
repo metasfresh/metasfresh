@@ -86,6 +86,8 @@ class Container extends Component {
                              modalTitle={modalTitle}
                              modalDescription={this.modalDescription}
                              modalDescription={modalDescription}
+                             windowType={rawModal.type}
+                             viewId={rawModal.viewId}
                          >
                             <div className="document-lists-wrapper">
                                  <DocumentList
