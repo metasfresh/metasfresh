@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Tooltips from '../tooltips/Tooltips';
 import Avatar from '../app/Avatar';
+import counterpart from 'counterpart';
 
 import onClickOutside from 'react-onclickoutside';
 
@@ -99,7 +100,8 @@ class UserDropdown extends Component {
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
-                            <i className="meta-icon-settings" /> Settings
+                            <i className="meta-icon-settings" />
+                            {counterpart.translate('window.settings.caption')}
                         </div>
                         <div
                             className="user-dropdown-item"
@@ -107,13 +109,16 @@ class UserDropdown extends Component {
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
-                            <i className="meta-icon-logout" /> Log out
+                            <i className="meta-icon-logout" />
+                            {counterpart.translate('window.logOut.caption')}
                         </div>
                     </div>
                 }
                 {tooltipOpen === shortcut && !open && <Tooltips
                     name={shortcut}
-                    action={'User menu'}
+                    action= {
+                        counterpart.translate('mainScreen.userMenu.tooltip')
+                    }
                     type={''}
                 />}
             </div>

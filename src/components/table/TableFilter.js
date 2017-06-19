@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import counterpart from 'counterpart';
 import TableQuickInput from './TableQuickInput';
 import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../keymap.js';
@@ -40,7 +41,7 @@ class TableFilter extends Component {
                             onClick={openModal}
                             tabIndex="-1"
                         >
-                            Add new
+                            {counterpart.translate('window.addNew.caption')}
                         </button>}
                         {(supportQuickInput && !fullScreen && allowCreateNew) &&
                             <button
@@ -54,7 +55,11 @@ class TableFilter extends Component {
                                 onMouseLeave={this.toggleTooltip}
                                 tabIndex="-1"
                             >
-                            {isBatchEntry ? 'Close batch entry' : 'Batch entry'}
+                            {isBatchEntry ? counterpart.translate(
+                                'window.batchEntryClose.caption'
+                            ) : counterpart.translate(
+                                'window.batchEntry.caption'
+                            )}
                             {isTooltipShow ===
                                 keymap.TABLE_CONTEXT.TOGGLE_QUICK_INPUT &&
                                 <Tooltips
@@ -63,7 +68,12 @@ class TableFilter extends Component {
                                     }
                                     action={
                                         isBatchEntry ?
-                                            'Close batch entry' : 'Batch entry'
+                                            counterpart.translate(
+                                                'window.batchEntryClose.caption'
+                                            ) :
+                                            counterpart.translate(
+                                                'window.batchEntry.caption'
+                                            )
                                     }
                                     type={''}
                                 />

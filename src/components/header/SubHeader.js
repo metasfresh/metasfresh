@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import counterpart from 'counterpart';
 
 import {updateBreadcrumb} from '../../actions/MenuActions';
 
@@ -129,7 +130,8 @@ class Subheader extends Component {
                     closeSubheader();
                 }}
             >
-                <i className="meta-icon-edit" /> Advanced Edit
+                <i className="meta-icon-edit" />
+                {counterpart.translate('window.advancedEdit.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}
                 </span>
@@ -142,7 +144,8 @@ class Subheader extends Component {
                     handlePrint(windowType, dataId, docNo); closeSubheader()
                 }}
             >
-                <i className="meta-icon-print" /> Print
+                <i className="meta-icon-print" />
+                {counterpart.translate('window.Print.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}
                 </span>
@@ -153,7 +156,8 @@ class Subheader extends Component {
                 tabIndex={0}
                 onClick={() => handleDelete()}
             >
-                <i className="meta-icon-delete" /> Delete
+                <i className="meta-icon-delete" />
+                {counterpart.translate('window.Delete.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}
                 </span>
@@ -192,7 +196,8 @@ class Subheader extends Component {
                         '/window/'+ windowType + '/new'
                     ); closeSubheader()}
                 }>
-                    <i className="meta-icon-report-1" /> New
+                    <i className="meta-icon-report-1" />
+                    {counterpart.translate('window.new.caption')}
                     <span className="tooltip-inline">
                         {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
                     </span>
