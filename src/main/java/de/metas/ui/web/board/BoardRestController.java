@@ -210,7 +210,7 @@ public class BoardRestController
 		return toJSONCardsViewResult(boardId, newView, userSession.getAD_Language());
 	}
 
-	@GetMapping("/{boardId/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
+	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesList getFilterParameterTypeahead(
 			@PathVariable("boardId") final int boardId,
 			@PathVariable("viewId") final String viewIdStr,
@@ -226,7 +226,7 @@ public class BoardRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	@GetMapping("/{boardId/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
+	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesList getFilterParameterDropdown(
 			@PathVariable("boardId") final int boardId,
 			@PathVariable("viewId") final String viewIdStr,
