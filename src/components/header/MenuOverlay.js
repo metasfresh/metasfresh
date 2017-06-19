@@ -140,7 +140,6 @@ class MenuOverlay extends Component {
                         className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
                         onClick={() => dispatch(push('/'))}
                         tabIndex={0}
-                        onKeyDown={(e) => this.handleKeyDown(e)}
                     >
                         Dashboard
                     </span>
@@ -148,10 +147,9 @@ class MenuOverlay extends Component {
                 {siteName !== 'Sitemap' &&
                     <div>
                         <span
-                            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+                            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header js-browse-item"
                             onClick={() => dispatch(push('/sitemap'))}
                             tabIndex={0}
-                            onKeyDown={(e) => this.handleKeyDown(e)}
                         >
                             Browse whole tree
                         </span>
@@ -219,17 +217,35 @@ class MenuOverlay extends Component {
         const firstQueryItem =
             document.getElementsByClassName('menu-overlay-query')[0]
                 .getElementsByClassName('js-menu-item')[0];
+        const browseItem = document.getElementsByClassName('js-browse-item')[0];
+        const isBrowseItemActive = document.activeElement.classList.contains('js-browse-item');
         const parentSibling = document.activeElement.parentElement.nextSibling;
+        const overlay = document.activeElement.classList.contains('js-menu-overlay');
+        const headerLink = document.getElementsByClassName('js-menu-header')[0];
+        const isHeaderLinkActive = document.activeElement.classList.contains('js-menu-header');
+
         switch(e.key){
             case 'ArrowDown':
                 if(document.activeElement === input) {
                     firstQueryItem.focus();
+                } else if(overlay) {
+                    browseItem.focus();
+                } else if(isBrowseItemActive) {
+                    firstMenuItem.focus();
+                } else if(isHeaderLinkActive){
+                    browseItem.focus();
+                }
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if(isBrowseItemActive) {
+                    headerLink.focus();
                 }
                 break;
             case 'Tab':
                  e.preventDefault();
                  if(document.activeElement === input) {
-                     firstMenuItem.focus();
+                     browseItem.focus();
                  } else {
                      input.focus();
                  }

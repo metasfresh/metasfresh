@@ -91,7 +91,7 @@ class MenuOverlayItem extends Component {
     handleGroupUp() {
         const previousGroup =
             document.activeElement.parentElement.previousSibling;
-        const headerLink = document.getElementsByClassName('js-menu-header')[0];
+        const browseItem = document.getElementsByClassName('js-browse-item')[0];
 
         if(previousGroup && previousGroup.classList.contains('js-menu-item')){
             previousGroup.focus();
@@ -111,7 +111,7 @@ class MenuOverlayItem extends Component {
 
                 }
             } else {
-                headerLink && headerLink.focus()
+                browseItem && browseItem.focus()
             }
         }
 
