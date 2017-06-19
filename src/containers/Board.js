@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import {getData} from '../actions/GenericActions';
+import update from 'react-addons-update';
+
+import {getData, patchRequest} from '../actions/GenericActions';
 import {connectWS, disconnectWS} from '../actions/WindowActions';
 
 import { DragDropContext } from 'react-dnd';
@@ -10,12 +12,14 @@ import HTML5Backend, { NativeTypes } from 'react-dnd-html5-backend';
 import Container from '../components/Container';
 import BlankPage from '../components/BlankPage';
 import Lanes from '../components/board/Lanes';
+import Sidenav from '../components/board/Sidenav';
 
 class Board extends Component {
     constructor(props){
         super(props);
         
         this.state = {
+            sidenav: false,
             board: null,
             targetIndicator: {
                 laneId: null,
@@ -48,12 +52,18 @@ class Board extends Component {
     }
     
     handleDrop = (card, targetLaneId) => {
+        const {board} = this.state;
         this.setState({
             targetIndicator: {
                 laneId: null,
                 index: null
             }
-        })
+        });
+        
+        patchRequest(
+            'board', board.boardId, null, null, null, 'laneId', targetLaneId,
+            'card', card.id
+        );
     }
     
     handleHover = (card, targetLaneId, targetIndex) => {
@@ -67,11 +77,11 @@ class Board extends Component {
 
     render() {
         const {
-            modal, rawModal, breadcrumb, indicator, query
+            modal, rawModal, breadcrumb, indicator
         } = this.props;
         
         const {
-            board, targetIndicator
+            board, targetIndicator, sidenav
         } = this.state;
 
         return (
@@ -80,14 +90,25 @@ class Board extends Component {
                 siteName={board && board.caption}
                 {...{modal, rawModal, breadcrumb, indicator}}
             >
+                {sidenav && (
+                    <Sidenav
+                        boardId={board.boardId}
+                        onClickOutside={() => this.setState({sidenav: false})}
+                    />
+                )}
                 {board === 404 ? 
                     <BlankPage what='Board' /> : 
                     <div className='board'>
                         <div 
                             key='board-header'
-                            className='board-header'
+                            className="board-header clearfix"
                         >
-                            s
+                            <button
+                                className="btn btn-meta-outline-secondary btn-sm float-xs-right"
+                                onClick={() => this.setState({sidenav: true})}
+                            >
+                                Add new
+                            </button>
                         </div>
                         <Lanes
                             {...{targetIndicator}}

@@ -4,8 +4,6 @@ import Avatar from '../app/Avatar';
 
 import onClickOutside from 'react-onclickoutside';
 
-import {getAvatar} from '../../actions/AppActions';
-
 class UserDropdown extends Component {
     constructor(props) {
         super(props);
@@ -67,7 +65,7 @@ class UserDropdown extends Component {
                 <div
                     className="header-item avatar-container"
                     onClick={() => handleUDOpen(true)}>
-                    <Avatar src={me.avatarId && getAvatar(me.avatarId)} />
+                    <Avatar id={me.avatarId} />
                 </div>
 
                 {open &&

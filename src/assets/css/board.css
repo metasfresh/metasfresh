@@ -25,6 +25,10 @@
     background-color: $brand-bright-color;
 }
 
+.board-draggable-wrapper, .board-draggable-wrapper > * {
+    height: 100%;
+}
+
 .board-lane-header {
     border-bottom: 1px solid $brand-border-color;
     padding: .4rem;
@@ -42,4 +46,26 @@
     width: calc(100% - .8rem);
     margin: .4rem;
     background-color: $brand-success-color;
+}
+
+.board-sidenav {
+    position: fixed;
+    top: 55px;
+    right: 0;
+    width:25%;
+    height: calc(100% - 55px);
+    z-index: 999;
+    background-color: $brand-bright-color;
+    overflow-y: auto;
+}
+
+.board-sidenav-header {
+    background-color: $brand-color-primary;
+    color: #fff;
+    text-align: center;
+    padding: .4rem;
+}
+
+.card-placeholder {
+    height: 100%;
 }

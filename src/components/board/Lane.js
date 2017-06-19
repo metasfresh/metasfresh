@@ -16,12 +16,19 @@ class Lane extends Component {
         return (
             <div className="board-lane">
                 <div className="board-lane-header">{caption}</div>
-                {cards.map((card, i) => <Card
-                    key={i}
-                    index={i}
-                    {...{laneId, onHover, onDrop, targetIndicator}}
-                    {...card} />
-                )}
+                <div className="board-draggable-wrapper">
+                    {!cards.length && <Card
+                        index={0}
+                        {...{laneId, onHover, onDrop, targetIndicator}}
+                        placeholder={true} />
+                    }
+                    {cards.map((card, i) => <Card
+                        key={i}
+                        index={i}
+                        {...{laneId, onHover, onDrop, targetIndicator}}
+                        {...card} />
+                    )}
+                </div>
             </div>
         );
     }

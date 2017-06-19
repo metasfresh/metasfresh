@@ -6,13 +6,13 @@ import ItemTypes from '../../constants/ItemTypes';
 
 const cardTarget = {
     drop(props, monitor) {
-        props.onDrop(monitor.getItem(), props.laneId);
+        props.onDrop && props.onDrop(monitor.getItem(), props.laneId);
     },
     hover(props, monitor) {
         const hoverIndex = props.index;
         const dragIndex = monitor.getItem().index;
         
-        if(dragIndex === hoverIndex){
+        if(dragIndex === hoverIndex || !props.onHover){
             return;
         }
         
@@ -31,7 +31,7 @@ function connect(connect) {
 const cardSource = {
     beginDrag(props) {
         return {
-            id: props.id,
+            id: props.cardId,
             index: props.index,
             laneId: props.laneId
         };
@@ -55,25 +55,47 @@ class Card extends Component {
     constructor(props) {
         super(props);
     }
+    
+    renderCard = () => {
+        const {
+            index, caption, description, users, placeholder
+        } = this.props;
+        if(placeholder){
+            return (<div className="card-placeholder" />);
+        }else{
+            return (
+                <div className='card'>
+                    <b>{caption}</b>
+                    <p>{description}</p>
+                    <span className='tag tag-primary'>asd</span>
+                    {users.map((user, i) =>
+                        <Avatar 
+                            key={i}
+                            id={user.avatarId}
+                            className="float-xs-right"
+                            size="sm"
+                            title={user.fullname}
+                        />
+                    )}
+                </div>
+            )
+        }
+    } 
 
     render() {
         const {
-            connectDragSource, connectDropTarget, targetIndicator, index, laneId
+            connectDragSource, connectDropTarget, targetIndicator, index,
+            laneId
         } = this.props;
-        
+                
         return connectDragSource(connectDropTarget(
             <div>
-                <TargetIndicator
+                {targetIndicator && <TargetIndicator
                     {...targetIndicator}
                     parentIndex={index}
                     parentLaneId={laneId}
-                />
-                <div className='card'>
-                    <b>Card</b>
-                    <p>Type description</p>
-                    <span className='tag tag-primary'>asd</span>
-                    <Avatar className='float-xs-right' size="sm" />
-                </div>
+                />}
+                {this.renderCard()}
             </div>
         ));
     }
