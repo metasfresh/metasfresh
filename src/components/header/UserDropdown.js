@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import defaultAvatar from '../../assets/images/default-avatar.png';
 import Tooltips from '../tooltips/Tooltips';
+import Avatar from '../app/Avatar';
 
 import onClickOutside from 'react-onclickoutside';
 
@@ -67,11 +67,7 @@ class UserDropdown extends Component {
                 <div
                     className="header-item avatar-container"
                     onClick={() => handleUDOpen(true)}>
-                    <img
-                        src={me.avatarId ?
-                            getAvatar(me.avatarId) : defaultAvatar}
-                        className="avatar img-fluid rounded-circle"
-                    />
+                    <Avatar src={me.avatarId && getAvatar(me.avatarId)} />
                 </div>
 
                 {open &&

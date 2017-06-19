@@ -1,0 +1,45 @@
+.board {
+    height: calc(100vh - 55px);
+    background-color: #fff;
+    padding: .4rem;
+}
+
+.board-header {
+    padding: .5rem;
+}
+
+.board-lanes {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    height: calc(100% - 55px);
+}
+
+.board-lane {
+    min-width: 25%;
+    border-radius: 3px;
+    border: 1px solid $brand-border-color;
+    margin-right: 3px;
+    background-color: $brand-bright-color;
+}
+
+.board-lane-header {
+    border-bottom: 1px solid $brand-border-color;
+    padding: .4rem;
+}
+
+.card {
+    margin: .4rem;
+    padding: .4rem;
+    background-color: #fff;
+    border: 1px solid $brand-border-color;
+}
+
+.lane-card-placeholder {
+    height:2px;
+    width: calc(100% - .8rem);
+    margin: .4rem;
+    background-color: $brand-success-color;
+}
