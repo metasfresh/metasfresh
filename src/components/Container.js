@@ -20,7 +20,8 @@ class Container extends Component {
             query, attachments, showIndicator, isDocumentNotSaved, hideHeader,
             handleDeletedStatus, dropzoneFocused, notfound, rawModal, modal,
             selected, selectedWindowType, indicator, modalTitle, setModalTitle,
-            includedView, closeModalCallback
+            includedView, closeModalCallback, setModalDescription,
+            modalDescription
         } = this.props;
 
         return (
@@ -83,6 +84,8 @@ class Container extends Component {
                      {rawModal.visible &&
                          <RawModal
                              modalTitle={modalTitle}
+                             modalDescription={this.modalDescription}
+                             modalDescription={modalDescription}
                          >
                             <div className="document-lists-wrapper">
                                  <DocumentList
@@ -92,6 +95,8 @@ class Container extends Component {
                                      selected={selected}
                                      selectedWindowType={selectedWindowType}
                                      setModalTitle={setModalTitle}
+                                     setModalDescription={setModalDescription}
+                                     modalDescription={this.modalDescription}
                                      isModal={true}
                                      processStatus={processStatus}
                                      includedView={includedView}

@@ -192,7 +192,8 @@ class TableItem extends Component {
 
     renderTree = (huType) => {
         const {
-            indent, lastChild, includedDocuments, indentSupported, rowId
+            indent, lastChild, includedDocuments, rowId,
+            collapsed, handleRowCollapse, collapsible
         } = this.props;
 
         let indentation = [];
@@ -201,7 +202,10 @@ class TableItem extends Component {
             indentation.push(
                 <div
                     key={i}
-                    className="indent-item-mid"
+                    className={
+                        'indent-item-mid ' +
+                        (collapsible ? 'indent-collapsible-item-mid ' : '')
+                    }
                 >
                     {i === indent.length - 1 && <div className="indent-mid"/>}
                     <div
@@ -216,28 +220,35 @@ class TableItem extends Component {
             )
         }
 
-        if(indentSupported){
-            return (
+        return (
+            <div className={'indent'}>
+                {indentation}
+                {includedDocuments && !collapsed &&
+                    <div
+                        className={
+                            'indent-bot ' +
+                            (collapsible ? 'indent-collapsible-bot ' : '')
+                        }
+                    />
+                }
+                {includedDocuments && collapsible ? (collapsed ?
+                        <i
+                            onClick={handleRowCollapse}
+                            className="meta-icon-plus indent-collapse-icon" /> :
+                        <i
+                            onClick={handleRowCollapse}
+                            className="meta-icon-minus indent-collapse-icon" />)
+                    : ''}
                 <div
-                    className="indent"
+                    className="indent-icon"
                     onClick={(e) =>
                         this.handleIndentSelect(e, rowId, includedDocuments)
                     }
                 >
-                    {indentation}
-
-                    {includedDocuments && <div className="indent-bot"/>}
-
-                    <div
-                        className="indent-icon"
-                    >
-                        <i className={this.getIconClassName(huType)} />
-                    </div>
+                    <i className={this.getIconClassName(huType)} />
                 </div>
-            );
-        }else{
-            return false;
-        }
+            </div>
+        );
     }
 
     render() {

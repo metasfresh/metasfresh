@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import {push} from 'react-router-redux';
+import {push, replace} from 'react-router-redux';
 
 import {
     attachFileAction,
     clearMasterData,
     getTab,
     addRowData,
-    sortTab
+    sortTab,
+    connectWS,
+    disconnectWS
 } from '../actions/WindowActions';
 
 import {
@@ -45,6 +47,45 @@ class MasterWindow extends Component {
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
 
+        if(
+            prevProps.me.language !== undefined &&
+            JSON.stringify(prevProps.me.language) !==
+            JSON.stringify(this.props.me.language)
+        ){
+            if(!params.windowType && !params.docId){
+                return;
+            }
+            dispatch(replace(''));
+            dispatch(replace(
+                '/window/' + params.windowType + '/' + params.docId)
+            );
+        }
+
+        if(prevProps.master.websocket !== master.websocket && master.websocket){
+            connectWS.call(this, master.websocket, msg => {
+                const {includedTabsInfo} = msg;
+                const {master} = this.props;
+                includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
+                    const tabLayout = master.layout.tabs.filter(tab =>
+                        tab.tabId === tabId
+                    )[0];
+                    if(
+                        tabLayout && tabLayout.queryOnActivate &&
+                        master.layout.activeTab !== tabId
+                    ){
+                        return;
+                    }
+                    includedTabsInfo[tabId] &&
+                        getTab(tabId, params.windowType, master.docId)
+                            .then(tab => {
+                                dispatch(
+                                    addRowData({[tabId]: tab}, 'master')
+                                );
+                            });
+                })
+            });
+        }
+
         if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
             window.addEventListener('beforeunload', this.confirm)
         }
@@ -54,12 +95,13 @@ class MasterWindow extends Component {
 
         // When closing modal, we need to update the stale tabs
         if(!modal.visible && modal.visible !== prevProps.modal.visible){
-            Object.keys(master.includedTabsInfo).map(tabId => {
-                getTab(tabId, params.windowType, master.docId)
-                    .then(tab => {
-                        dispatch(addRowData({[tabId]: tab}, 'master'));
-                    });
-            })
+            master.includedTabsInfo &&
+                Object.keys(master.includedTabsInfo).map(tabId => {
+                    getTab(tabId, params.windowType, master.docId)
+                        .then(tab => {
+                            dispatch(addRowData({[tabId]: tab}, 'master'));
+                        });
+                })
         }
     }
 
@@ -81,6 +123,7 @@ class MasterWindow extends Component {
         }
 
         dispatch(clearMasterData());
+        disconnectWS.call(this);
     }
 
     confirm = (e) => {
@@ -247,6 +290,7 @@ MasterWindow.propTypes = {
     selected: PropTypes.array,
     rawModal: PropTypes.object.isRequired,
     indicator: PropTypes.string.isRequired,
+    me: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
@@ -274,9 +318,11 @@ function mapStateToProps(state) {
     }
 
     const {
-        processStatus
+        processStatus,
+        me
     } = appHandler || {
-        processStatus: ''
+        processStatus: '',
+        me: {}
     }
 
     const {
@@ -294,7 +340,8 @@ function mapStateToProps(state) {
         indicator,
         selectedWindowType,
         includedView,
-        processStatus
+        processStatus,
+        me
     }
 }
 

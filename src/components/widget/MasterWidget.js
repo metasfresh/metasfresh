@@ -178,43 +178,24 @@ class MasterWidget extends Component {
             dataId, rowId, tabId, icon, gridAlign, isModal, entity,
             handleBackdropLock, tabIndex, dropdownOpenCallback, autoFocus,
             fullScreen, disabled, buttonProcessId, listenOnKeys,
-            listenOnKeysFalse, closeTableField
+            listenOnKeysFalse, closeTableField, allowShowPassword
         } = this.props;
 
         const {updated, data} = this.state;
 
         return (
             <RawWidget
-                entity={entity}
-                widgetType={widgetType}
-                fields={fields}
-                windowType={windowType}
-                dataId={dataId}
-                widgetData={widgetData}
-                rowId={rowId}
-                tabId={tabId}
-                icon={icon}
-                gridAlign={gridAlign}
+                {...{allowShowPassword, entity, widgetType, fields, windowType,
+                    dataId, widgetData, rowId, tabId, icon, gridAlign, updated,
+                    isModal, noLabel, type, caption, handleBackdropLock,
+                    tabIndex, dropdownOpenCallback, autoFocus, fullScreen,
+                    disabled, buttonProcessId, listenOnKeys, listenOnKeysFalse,
+                    closeTableField, data
+                }}
                 handlePatch={this.handlePatch}
                 handleChange={this.handleChange}
                 handleProcess={this.handleProcess}
-                updated={updated}
-                isModal={isModal}
                 setEditedFlag={this.setEditedFlag}
-                noLabel={noLabel}
-                type={type}
-                caption={caption}
-                handleBackdropLock={handleBackdropLock}
-                tabIndex={tabIndex}
-                dropdownOpenCallback={dropdownOpenCallback}
-                autoFocus={autoFocus}
-                fullScreen={fullScreen}
-                disabled={disabled}
-                buttonProcessId={buttonProcessId}
-                listenOnKeys={listenOnKeys}
-                listenOnKeysFalse={listenOnKeysFalse}
-                closeTableField={closeTableField}
-                inputValue={data}
                 handleZoomInto={this.handleZoomInto}
             />
         )

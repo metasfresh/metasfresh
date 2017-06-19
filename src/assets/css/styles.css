@@ -401,6 +401,16 @@ body {
     height: 1rem;
 }
 
+.icon-spaced {
+    margin: 0 .3rem;
+}
+
+.widget-link {
+    color: $brand-link-color;
+    display:block;
+    padding:1px;
+}
+
 @keyframes rotation {
     from {
         transform: rotate(0deg);
@@ -586,6 +596,14 @@ body {
 
 .search-wrapper {
     padding-top: 20px;
+}
+
+.search-wrapper .input-primary {
+    background-color: #fff; 
+}
+
+.search-wrapper .input-field {
+    margin-left: .3rem;
 }
 
 .query-results .query-results {
@@ -1151,17 +1169,13 @@ td.pulse-off input {
     align-items: center;
     justify-content: flex-start;
     
-    margin-top: .5rem;
+    margin-top: 2rem;
 }
 
 .separator-title {
     white-space: nowrap;
     color: $brand-font-color-weak;
-}
-
-.separator-hr {
-    width: 100%;
-    margin-left: 1rem;
+    font-size: 15px;
 }
 
 .avatar {
@@ -1215,4 +1229,27 @@ td.pulse-off input {
 .disabled {
     pointer-events: none;
     opacity: .5;
+}
+
+.btn-bookmark {
+    padding-right: 1.5rem;
+}
+
+.btn-bookmark:hover .btn-bookmark-icon{
+    color: $brand-font-color-weak;
+}
+
+.btn-bookmark-icon {
+    cursor: pointer;
+    font-size: .9em;
+    color: $brand-icon-off;
+    padding: .3rem .2rem .2rem 0;
+}
+
+.btn-bookmark-icon.active {
+    color: $brand-success-color;
+}
+
+.btn-bookmark:hover .btn-bookmark-icon.active {
+    color: $brand-success-dark-color;
 }

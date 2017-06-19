@@ -3,6 +3,7 @@ import update from 'immutability-helper';
 
 const initialState = {
 	notifications: {},
+    me: {},
     isLogged: false,
     processStatus: 'saved',
     inbox: {
@@ -13,6 +14,14 @@ const initialState = {
 
 export default function appHandler(state = initialState, action) {
     switch(action.type){
+        case types.USER_SESSION_INIT:
+            return Object.assign({}, state, {
+                me: action.me
+            })
+        case types.USER_SESSION_UPDATE:
+            return Object.assign({}, state, {
+                me: Object.assign({}, state.me, action.me)
+            })
         case types.LOGIN_SUCCESS:
             return Object.assign({}, state, {
                 isLogged: true

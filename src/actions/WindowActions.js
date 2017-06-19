@@ -2,6 +2,9 @@ import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import { push, replace } from 'react-router-redux';
 
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
+
 import {
     getWindowBreadcrumb
 } from './MenuActions';
@@ -44,6 +47,14 @@ export function closeRawModal() {
     }
 }
 
+export function activateTab(scope, tabId) {
+    return {
+        type: types.ACTIVATE_TAB,
+        scope,
+        tabId
+    }
+}
+
 export function initLayoutSuccess(layout, scope) {
     return {
         type: types.INIT_LAYOUT_SUCCESS,
@@ -53,7 +64,7 @@ export function initLayoutSuccess(layout, scope) {
 }
 
 export function initDataSuccess(
-    data, scope, docId, saveStatus, validStatus, includedTabsInfo
+    data, scope, docId, saveStatus, validStatus, includedTabsInfo, websocket
 ) {
     return {
         type: types.INIT_DATA_SUCCESS,
@@ -62,7 +73,8 @@ export function initDataSuccess(
         docId,
         saveStatus,
         validStatus,
-        includedTabsInfo
+        includedTabsInfo,
+        websocket
     }
 }
 
@@ -280,12 +292,12 @@ export function createWindow(
                 }
 
                 docId = response.data[elem].id;
-
                 dispatch(initDataSuccess(
                     parseToDisplay(response.data[elem].fieldsByName),
                     getScope(isModal), docId,
                     response.data[0].saveStatus, response.data[0].validStatus,
-                    response.data[0].includedTabsInfo
+                    response.data[0].includedTabsInfo,
+                    response.data[0].websocketEndpoint
                 ));
 
                 if (isModal) {
@@ -466,21 +478,7 @@ function updateRow(row, scope){
 
 function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
     return (dispatch) => {
-        let staleTabIds = [];
-
         data.map((item, index) => {
-            // Merging staleTabIds
-            item.includedTabsInfo &&
-                Object.keys(item.includedTabsInfo).map(tabId => {
-                    const tabInfo = item.includedTabsInfo[tabId];
-                    if(
-                        tabInfo.stale &&
-                        staleTabIds.indexOf(tabInfo.tabid) === -1
-                    ){
-                        staleTabIds.push(tabInfo.tabid);
-                    }
-                })
-
             const parsedItem = item.fieldsByName ? Object.assign({}, item, {
                 fieldsByName: parseToDisplay(item.fieldsByName)
             }) : item;
@@ -506,13 +504,6 @@ function mapDataToState(data, isModal, rowId, id, windowType, isAdvanced) {
                     ));
                 }
             }
-        })
-
-        //Handling staleTabIds
-        !isModal && staleTabIds.map(staleTabId => {
-            getTab(staleTabId, windowType, id).then(tab => {
-                dispatch(addRowData({[staleTabId]: tab}, 'master'));
-            });
         })
     }
 }
@@ -810,7 +801,9 @@ export function getItemsByProperty(arr, prop, value) {
     return ret;
 }
 
-export function mapIncluded(node, indent, isParentLastChild = false) {
+export function mapIncluded(
+    node, indent, isParentLastChild = false
+) {
     let ind = indent ? indent : [];
     let result = [];
 
@@ -840,4 +833,23 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
     }
 
     return result;
+}
+
+export function connectWS(topic, cb) {
+    (this.sockClient && this.sockClient.connected) &&
+        this.sockClient.disconnect();
+
+    this.sock = new SockJs(config.WS_URL);
+    this.sockClient = Stomp.Stomp.over(this.sock);
+    this.sockClient.debug = null;
+    this.sockClient.connect({}, () => {
+        this.sockClient.subscribe(topic, msg => {
+            cb(JSON.parse(msg.body));
+        });
+    });
+}
+
+export function disconnectWS() {
+    (this.sockClient && this.sockClient.connected) &&
+        this.sockClient.disconnect();
 }

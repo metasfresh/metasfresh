@@ -24,6 +24,7 @@ class DocList extends Component {
 
         this.state = {
             modalTitle: '',
+            modalDescription: '',
             notfound: false
         }
     }
@@ -57,6 +58,12 @@ class DocList extends Component {
         })
     }
 
+    setModalDescription = (desc) => {
+        this.setState({
+            modalDescription: desc
+        })
+    }
+
     setNotFound = (isNotFound) => {
         this.setState({
             notfound: isNotFound
@@ -70,7 +77,7 @@ class DocList extends Component {
         } = this.props;
 
         const {
-            modalTitle, notfound
+            modalTitle, notfound, modalDescription
         } = this.state;
 
         return (
@@ -80,6 +87,8 @@ class DocList extends Component {
                     selected, selectedWindowType, indicator, modalTitle,
                     processStatus, includedView}}
                 setModalTitle={this.setModalTitle}
+                setModalDescription={this.setModalDescription}
+                modalDescription={modalDescription}
                 showIndicator={!modal.visible && !rawModal.visible}
             >
                  <DocumentList

@@ -16,7 +16,7 @@ import NotificationHandler
 
 import {
     noConnection
-} from '../actions/WindowActions'
+} from '../actions/WindowActions';
 
 import {
     addNotification,
@@ -57,7 +57,7 @@ export default class App extends Component {
              */
             if(error.response.status == 401){
                 store.dispatch(setProcessSaved());
-                store.dispatch(logoutSuccess(this.auth));
+                logoutSuccess(this.auth);
                 store.dispatch(push('/login?redirect=true'));
             }else if(error.response.status != 404){
                 if(localStorage.isLogged){

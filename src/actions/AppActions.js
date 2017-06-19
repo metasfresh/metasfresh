@@ -6,6 +6,16 @@ import {LOCAL_LANG}  from '../constants/Constants';
 
 // REQUESTS
 
+export function getAvatar(id) {
+    return config.API_URL +
+        '/image/' + id +
+        '?maxWidth=200&maxHeight=200';
+}
+
+export function getUserSession() {
+    return axios.get(config.API_URL + '/userSession');
+}
+
 export function getUserLang() {
     return axios.get(config.API_URL + '/userSession/language');
 }
@@ -93,7 +103,7 @@ export function markAsRead(id) {
 export function getAttributesInstance(
     attrType, tmpId, docType, docId, tabId, rowId, fieldName, entity
 ) {
-    const type = entity === 'process' ? 'processId':'windowId';
+    const type = entity === 'process' ? 'processId' : 'windowId';
 
     return axios.post(config.API_URL + '/' + attrType, {
         'templateId': tmpId,
@@ -154,6 +164,16 @@ export function loginSuccess(auth) {
     return dispatch => {
         localStorage.setItem('isLogged', true);
 
+        getUserSession().then(session => {
+            dispatch(userSessionInit(session.data));
+            languageSuccess(Object.keys(session.data.language)[0]);
+            auth.initSessionClient(session.data.websocketEndpoint, msg => {
+                const me = JSON.parse(msg.body);
+                dispatch(userSessionUpdate(me));
+                me.language && languageSuccess(Object.keys(me.language)[0]);
+            });
+        })
+
         getNotificationsEndpoint().then(topic => {
             auth.initNotificationClient(topic, msg => {
                 const notification = JSON.parse(msg.body);
@@ -193,10 +213,8 @@ export function languageSuccess(lang) {
 }
 
 export function logoutSuccess(auth) {
-    return () => {
-        auth.closeNotificationClient();
-        localStorage.removeItem('isLogged');
-    }
+    auth.close();
+    localStorage.removeItem('isLogged');
 }
 
 export function addNotification(title, msg, time, notifType, shortMsg){
@@ -269,5 +287,19 @@ export function setProcessPending() {
 export function setProcessSaved() {
     return {
         type: types.SET_PROCESS_STATE_SAVED
+    }
+}
+
+export function userSessionInit(me) {
+    return {
+        type: types.USER_SESSION_INIT,
+        me
+    }
+}
+
+export function userSessionUpdate(me) {
+    return {
+        type: types.USER_SESSION_UPDATE,
+        me
     }
 }

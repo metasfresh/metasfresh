@@ -110,7 +110,12 @@ class Header extends Component {
     }
 
     handleScroll = (event) => {
-        let scrollTop = event.srcElement.body.scrollTop;
+        const target = event.srcElement;
+        let scrollTop = target && target.body.scrollTop;
+
+        if(!scrollTop){
+            scrollTop = document.documentElement.scrollTop;
+        }
 
         if(scrollTop > 0) {
             this.setState({
@@ -247,7 +252,7 @@ class Header extends Component {
             docSummaryData, siteName, docNoData, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
             inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
-            selectedWindowType, notfound, docId
+            selectedWindowType, notfound, docId, me
         } = this.props;
 
         const {
@@ -441,7 +446,7 @@ class Header extends Component {
                                     shortcut={
                                         keymap.GLOBAL_CONTEXT.OPEN_AVATAR_MENU}
                                     toggleTooltip={this.toggleTooltip}
-                                    {...{tooltipOpen}}
+                                    {...{tooltipOpen, me}}
                                 />
 
                                 {showSidelist &&
@@ -494,20 +499,17 @@ class Header extends Component {
                 </nav>
 
                 {isSubheaderShow && <Subheader
-                    dataId={dataId}
-                    windowType={windowType}
                     closeSubheader={() => this.closeOverlays('isSubheaderShow')}
                     docNo={docNoData && docNoData.value}
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
                     redirect={this.redirect}
-                    selected={selected}
-                    selectedWindowType={selectedWindowType}
-                    entity={entity}
                     disableOnClickOutside={!isSubheaderShow}
-                    query={query}
-                    notfound={notfound}
+                    {...{breadcrumb, notfound, query, entity,
+                        selectedWindowType, selected, dataId, windowType,
+                        siteName
+                    }}
                 />}
 
                 {showSidelist && isSideListShow && <SideList
@@ -565,16 +567,19 @@ class Header extends Component {
 Header.propTypes = {
     dispatch: PropTypes.func.isRequired,
     selected: PropTypes.array.isRequired,
-    inbox: PropTypes.object.isRequired
+    inbox: PropTypes.object.isRequired,
+    me: PropTypes.object.isRequired
 };
 
 function mapStateToProps(state) {
     const {windowHandler, appHandler} = state;
 
     const {
-        inbox
+        inbox,
+        me
     } = appHandler || {
-        inbox: {}
+        inbox: {},
+        me: {}
     }
 
     const {
@@ -588,7 +593,8 @@ function mapStateToProps(state) {
     return {
         selected,
         inbox,
-        selectedWindowType
+        selectedWindowType,
+        me
     }
 }
 

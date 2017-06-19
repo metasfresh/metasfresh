@@ -206,3 +206,21 @@
 .meta-icon-receipt:before {
   content: '\33';
 }
+.meta-icon-star:before {
+  content: '\34';
+}
+.meta-icon-minus:before {
+  content: '\2d';
+}
+.meta-icon-plus:before {
+  content: '\2b';
+}
+.meta-icon-show:before {
+  content: '\35';
+}
+.meta-icon-hide:before {
+  content: '\36';
+}
+.meta-icon-link:before {
+  content: '\37';
+}

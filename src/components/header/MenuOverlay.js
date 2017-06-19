@@ -239,6 +239,7 @@ class MenuOverlay extends Component {
                             handleNewRedirect={this.handleNewRedirect}
                             handlePath={this.handlePath}
                             parent={node}
+                            transparentBookmarks={true}
                             back={e => this.handleClickBack(e)}
                             handleMenuOverlay={handleMenuOverlay}
                             openModal={openModal}
@@ -349,61 +350,60 @@ class MenuOverlay extends Component {
                 <div className="menu-overlay-body breadcrumbs-shadow">
                     {nodeId == 0 ?
                         //ROOT
-                        <div>
-                            <div className="menu-overlay-root-body">
-                                {this.renderNaviagtion(
-                                    deepNode ? deepNode : nodeData)
-                                }
-                                <div
-                                    className="menu-overlay-query hidden-sm-down"
-                                >
-                                    <div className="input-flex input-primary">
-                                        <i
-                                            className="input-icon meta-icon-preview"
-                                        />
-                                        <DebounceInput
-                                            debounceTimeout={250}
-                                            type="text"
-                                            id="search-input-query"
-                                            className="input-field"
-                                            placeholder="Type phrase here"
-                                            onChange={e => this.handleQuery(e)}
-                                            onKeyDown={(e) =>
-                                                this.handleKeyDown(e)}
-                                        />
-                                        {this.state.query && <i
-                                            className="input-icon meta-icon-close-alt pointer"
-                                            onClick={e => this.handleClear(e)}
-                                        />}
-                                    </div>
-                                    {queriedResults && queriedResults.map(
-                                        (result, index) =>
-                                            <MenuOverlayItem
-                                                key={index}
-                                                handleClickOnFolder={
-                                                    this.handleDeeper
-                                                }
-                                                handleRedirect={
-                                                    this.handleRedirect
-                                                }
-                                                handleNewRedirect={
-                                                    this.handleNewRedirect
-                                                }
-                                                query={true}
-                                                handlePath={this.handlePath
-                                                }
-                                                handleMenuOverlay={
-                                                    handleMenuOverlay
-                                                }
-                                                openModal={openModal}
-                                                {...result}
-                                            />
-                                    )}
-                                    {queriedResults.length === 0 &&
-                                        query != '' &&
-                                        <span>There are no results</span>
-                                    }
+                        <div className="menu-overlay-root-body">
+                            {this.renderNaviagtion(
+                                deepNode ? deepNode : nodeData)
+                            }
+                            <div
+                                className="menu-overlay-query hidden-sm-down"
+                            >
+                                <div className="input-flex input-primary">
+                                    <i
+                                        className="input-icon meta-icon-preview"
+                                    />
+                                    <DebounceInput
+                                        debounceTimeout={250}
+                                        type="text"
+                                        id="search-input-query"
+                                        className="input-field"
+                                        placeholder="Type phrase here"
+                                        onChange={e => this.handleQuery(e)}
+                                        onKeyDown={(e) =>
+                                            this.handleKeyDown(e)}
+                                    />
+                                    {this.state.query && <i
+                                        className="input-icon meta-icon-close-alt pointer"
+                                        onClick={e => this.handleClear(e)}
+                                    />}
                                 </div>
+                                {queriedResults && queriedResults.map(
+                                    (result, index) =>
+                                        <MenuOverlayItem
+                                            transparentBookmarks={true}
+                                            key={index}
+                                            handleClickOnFolder={
+                                                this.handleDeeper
+                                            }
+                                            handleRedirect={
+                                                this.handleRedirect
+                                            }
+                                            handleNewRedirect={
+                                                this.handleNewRedirect
+                                            }
+                                            query={true}
+                                            handlePath={this.handlePath
+                                            }
+                                            handleMenuOverlay={
+                                                handleMenuOverlay
+                                            }
+                                            openModal={openModal}
+                                            {...result}
+                                        />
+                                )}
+                                {queriedResults.length === 0 &&
+                                    query != '' &&
+                                    <span>There are no results</span>
+                                }
                             </div>
                         </div> :
                         //NOT ROOT

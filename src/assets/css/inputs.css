@@ -37,6 +37,11 @@ input {
     text-align: inherit;
 }
 
+.input-inner-container {
+    display: flex;
+    flex-direction: row;
+}
+
 .form-group-flex {
     display: flex;
     flex-direction: row;
@@ -53,7 +58,7 @@ input {
 }
 
 .form-control-label {
-    margin-top:.5rem;
+    margin-top:.3rem;
     margin-bottom: .3rem;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -63,8 +68,12 @@ input {
 *  CUSTOM BUTTONS
 */
 
-button {
+button, .btn {
     position: relative;
+}
+
+.btn:active {
+    box-shadow: inset 0 0 4px rgba(0,0,0,.1);
 }
 
 .btn-flag {
