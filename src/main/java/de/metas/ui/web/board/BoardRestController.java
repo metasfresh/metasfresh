@@ -198,7 +198,7 @@ public class BoardRestController
 		return toJSONCardsViewResult(boardId, viewResult, userSession.getAD_Language());
 	}
 
-	@PostMapping("/{boardId/newCardsView/{viewId}/filter")
+	@PostMapping("/{boardId}/newCardsView/{viewId}/filter")
 	public JSONViewResult filterNewCardsView( //
 			@PathVariable("boardId") final int boardId,
 			@PathVariable("viewId") final String viewIdStr,
