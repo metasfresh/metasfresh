@@ -10,6 +10,11 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.15 (2017-26)
+
+**upcoming release for week 2017-26**
+
+
 # metasfresh 5.14 (2017-25)
 
 **upcoming release for week 2017-25**
@@ -39,28 +44,50 @@ Here come the actual release notes:
   * [#1836](https://github.com/metasfresh/metasfresh/issues/1836) Adjustments for Empties Receive Window WebUI
     * Further Layout adjustments for the Empties Receive Window in WebUI.
   * [#1839](https://github.com/metasfresh/metasfresh/issues/1839) New Window for Period & Period Control in WebUI
-    * New WIndow for Period and Period Control maintenance in Accounting.
+    * New WIndow for Period and Period Control maintenance in Accounting
+  * [#1840](https://github.com/metasfresh/metasfresh/issues/1840) internal: refactor and improve PO translation code
   * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
     * Layout Adjustments to Customer Return Window in WebUI.
   * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
     * Application dictionary cleanup on metasfresh instalations where it's needed
+  * [#1852](https://github.com/metasfresh/metasfresh/issues/1852) intern: discover interceptors which were annotated with @Component
+
+* metasfresh-webui-api
+  * [#458](https://github.com/metasfresh/metasfresh-webui-api/issues/458) Debug endpoint to track websocket outbound events
+  * [#462](https://github.com/metasfresh/metasfresh-webui-api/issues/462) Dashboard editing API prototype
+
 
 * metasfresh-webui-frontend
-  * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
-    * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
+  * [#861](https://github.com/metasfresh/metasfresh-webui-frontend/issues/861) Make remaining UI components translatable
   * [#885](https://github.com/metasfresh/metasfresh-webui-frontend/issues/885) Change the Bookmark Subtab Group Functionality
     * Changes the Bookmark Grouping Functionality and now shows a flat and compressed representation of the sitemap in shortcut/ bookmark menu.
   * [#886](https://github.com/metasfresh/metasfresh-webui-frontend/issues/886) Optimize Browse-whole-tree Navigation Link
     * Moves the 'Browse whole tree' to more prominent place above the Bookmark menu. This allows teh user to quickly open the sitemap if needed.
+  * [#895](https://github.com/metasfresh/metasfresh-webui-frontend/issues/895) Modal view: when user presses Done the server shall be notified
+  * [#897](https://github.com/metasfresh/metasfresh-webui-frontend/issues/897) Clicking the search icon should open partner list
+  * [#898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/898) Lookup Field Dropdowns automatism
+  * [#907](https://github.com/metasfresh/metasfresh-webui-frontend/issues/907) Margin missing in Advanced Edit when Scrollbar visible
 
 ## Fixes
 
 * metasfresh-backend
   * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
+  * [#1808](https://github.com/metasfresh/metasfresh/issues/1808) Sometimes i get empty window when i zoom to related sales invoices of a given sales order
+  * [#1843](https://github.com/metasfresh/metasfresh/issues/1843) Error Table M_Product does not have a simple primary key
+  * [#1855](https://github.com/metasfresh/metasfresh/issues/1855) error with order that has just packaging lines
+
+* metasfresh-webui-api
+  * [#443](https://github.com/metasfresh/metasfresh-webui-api/issues/443) Make remaining UI components translatable
+  * [#454](https://github.com/metasfresh/metasfresh-webui-api/issues/454) Can not add attribute to attribute set
 
 * metasfresh-webui-frontend
+  * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
+    * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
   * [#877](https://github.com/metasfresh/metasfresh-webui-frontend/issues/877) n instead of none in dropdowns
     * Fixes a minor Bug with the description of the emptyvalues in fields.
+  * [#893](https://github.com/metasfresh/metasfresh-webui-frontend/issues/893) Navigation Menu keyboard usage broken
+  * [#900](https://github.com/metasfresh/metasfresh-webui-frontend/issues/900) Handling Unit Window does not open in some cases
+  * [#904](https://github.com/metasfresh/metasfresh-webui-frontend/issues/904) Navigation Menu vs. Sitemap entries w/ linebreak
 
 # metasfresh 5.13 (2017-24)
 
