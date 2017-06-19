@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Adding the Procurement Windows to WebUI.
   * [#1824](https://github.com/metasfresh/metasfresh/issues/1824) New Request for Quotation Windows in WebUI
     * New Window to allow the recording of Request for Quotations in WebUI.
+  * [#1825](https://github.com/metasfresh/metasfresh/issues/1825) Disable Quickstart, Admin and System Administrator Roles for WebUI
+    * Housekeeping Issue, restricting less default roles for usage in WebUI.
   * [#1829](https://github.com/metasfresh/metasfresh/issues/1829) Different RFQ Windows in WebUI
     * New Indows in WebUI that allow REF recording and Response maintenance.
   * [#1830](https://github.com/metasfresh/metasfresh/issues/1830) Add filter for HU status in handling unit editor
