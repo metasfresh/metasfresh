@@ -1169,7 +1169,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return this;
 			}
 
-			public Builder setCustomAttribute(final String attributeName, final String value)
+			public Builder setCustomAttribute(final String attributeName, final Object value)
 			{
 				setAttribute(attributeName, value);
 				return this;
