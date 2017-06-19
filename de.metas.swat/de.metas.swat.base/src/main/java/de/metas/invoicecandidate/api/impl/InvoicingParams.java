@@ -98,4 +98,23 @@ public class InvoicingParams implements IInvoicingParams
 	{
 		return params.getParameterAsBigDecimal(PARA_Check_NetAmtToInvoice);
 	}
+
+
+	/**
+	 * Always returns {@code false}.
+	 */
+	@Override
+	public boolean isAssumeOneInvoice()
+	{
+		return false;
+	}
+
+	/**
+	 * Always returns {@code false}.
+	 */
+	@Override
+	public boolean isStoreInvoicesInResult()
+	{
+		return false;
+	}
 }

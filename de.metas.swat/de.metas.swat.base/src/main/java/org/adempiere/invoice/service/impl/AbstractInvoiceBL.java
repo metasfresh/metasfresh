@@ -54,11 +54,14 @@ import org.adempiere.util.comparator.ComparatorChain;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
@@ -84,9 +87,15 @@ import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import lombok.NonNull;
 
 /**
  * Implements those methods that are DB decoupled
@@ -1385,5 +1394,88 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public String getDefaultPaymentRule()
 	{
 		return Services.get(ISysConfigBL.class).getValue(SYSCONFIG_C_Invoice_PaymentRule, X_C_Invoice.PAYMENTRULE_OnCredit);
+	}
+	
+	@Override
+	public I_C_Invoice voidAndRecreateInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		// first make sure that payments have the flag auto-allocate set
+		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
+		final de.metas.adempiere.model.I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class);
+
+		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
+
+		for (final I_C_Payment payment : availablePayments)
+		{
+			payment.setIsAutoAllocateAvailableAmt(true);
+			InterfaceWrapperHelper.save(payment);
+		}
+
+		// first fetch invoice candidates
+		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
+		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<I_C_Invoice_Candidate>();
+
+		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
+		for (final MInvoiceLine ilPO : invoicePO.getLines(true))
+		{
+			final I_C_InvoiceLine il = InterfaceWrapperHelper.create(ilPO, I_C_InvoiceLine.class);
+			invoiceCands.addAll(invoiceCandDB.retrieveIcForIl(il));
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+
+		// void invoice
+		Services.get(IDocActionBL.class).processEx(invoice, DocAction.ACTION_Reverse_Correct, DocAction.STATUS_Reversed);
+
+		// update invalids
+		invoiceCandBL.updateInvalid()
+				.setContext(ctx, trxName)
+				.setOnlyC_Invoice_Candidates(invoiceCands.iterator())
+				.update();
+
+		for (final I_C_Invoice_Candidate ic : invoiceCands)
+		{
+			InterfaceWrapperHelper.refresh(ic); // this is important ;-)
+			final Timestamp today = SystemTime.asDayTimestamp();
+			// if the invoice was a future invoice, use same date
+			if (today.before(invoicePO.getDateInvoiced()))
+			{
+				ic.setDateInvoiced(invoicePO.getDateInvoiced());
+			}
+			// we set this to null in order to have the new invoice with the current date
+			else
+			{
+				ic.setDateInvoiced(null);
+			}
+			InterfaceWrapperHelper.save(ic, trxName);
+		}
+
+		// recreate invoice for those specific invoice candidates
+		final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
+				.setContext(ctx, trxName)
+				.setInvoicingParams(new PlainInvoicingParams()
+						.setStoreInvoicesInResult(true)
+						.setAssumeOneInvoice(true))
+				.generateInvoices(invoiceCands.iterator());
+
+		final I_C_Invoice newInvoice;
+		if (result.getInvoiceCount() == 1)
+		{
+			newInvoice = result.getC_Invoices().get(0);
+		}
+		else if (result.getInvoiceCount() > 1)
+		{
+			throw new AdempiereException("Internal error: More then one invoices were generated for given candidate (" + result + ")");
+		}
+		else
+		{
+			newInvoice = null;
+		}
+
+		return newInvoice;
 	}
 }

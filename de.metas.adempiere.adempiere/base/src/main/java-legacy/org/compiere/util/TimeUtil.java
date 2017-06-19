@@ -411,6 +411,21 @@ public class TimeUtil
 	}	// isSameHour
 
 	/**
+	 * If is the dates are form the same year, returns true
+	 * 
+	 * @param one
+	 * @param two
+	 * @return
+	 */
+	static public boolean isSameYear(Timestamp one, Timestamp two)
+	{
+		final int year1 = getYearFromTimestamp(one);
+		final int year2 = getYearFromTimestamp(two);
+
+		return year1 == year2;
+	}
+
+	/**
 	 * Is all day
 	 * 
 	 * @param start start date
@@ -671,8 +686,7 @@ public class TimeUtil
 	{
 		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
 	}
-	
-	
+
 	/**
 	 * Return DateTime + offset in millis
 	 * 
@@ -692,7 +706,6 @@ public class TimeUtil
 		cal.add(Calendar.MILLISECOND, offset);			// may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
 	}	// addMillis
-
 
 	/**
 	 * Return DateTime + offset in hours
@@ -1121,7 +1134,7 @@ public class TimeUtil
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		return new Timestamp(cal.getTimeInMillis());
 	}	// getYearFirstDay
-	
+
 	/**
 	 * Extract the year from a given date.
 	 * 

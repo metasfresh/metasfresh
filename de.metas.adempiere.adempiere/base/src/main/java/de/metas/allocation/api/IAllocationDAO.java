@@ -98,4 +98,6 @@ public interface IAllocationDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_AllocationHdr> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+
+	List<I_C_Payment> retrieveInvoicePayments(I_C_Invoice invoice);
 }
