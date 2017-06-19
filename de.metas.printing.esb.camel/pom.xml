@@ -1,6 +1,4 @@
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -49,6 +47,22 @@
 				<exclusion>
 					<artifactId>de.metas.jax.rs</artifactId>
 					<groupId>de.metas.jax.rs</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot-starter-web</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot-starter-actuator</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>spring-boot-starter-thymeleaf</artifactId>
+					<groupId>org.springframework.boot</groupId>
+				</exclusion>
+					<exclusion>
+					<artifactId>groovy-jsr223</artifactId>
+					<groupId>org.codehaus.groovy</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
