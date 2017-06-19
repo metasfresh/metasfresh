@@ -106,7 +106,7 @@ public class IMP_Processors_StandaloneLauncher
 
 	public static final void main(String[] args) throws InterruptedException
 	{
-		Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
+		Env.getSingleAdempiereInstance(null).startup(RunMode.BACKEND);
 
 		final IMP_Processors_StandaloneLauncher launcher = new IMP_Processors_StandaloneLauncher();
 		launcher.start();

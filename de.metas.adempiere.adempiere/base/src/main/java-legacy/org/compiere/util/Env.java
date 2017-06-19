@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -57,6 +58,7 @@ import org.compiere.db.CConnection;
 import org.compiere.model.MLanguage;
 import org.compiere.swing.CFrame;
 import org.slf4j.Logger;
+import org.springframework.context.ApplicationContext;
 
 import com.google.common.base.Supplier;
 
@@ -2492,8 +2494,12 @@ public final class Env
 
 	// metas: end
 
-	public static Adempiere getSingleAdempiereInstance()
+	public static Adempiere getSingleAdempiereInstance(@Nullable final ApplicationContext applicationContext)
 	{
+		if (applicationContext != null)
+		{
+			Adempiere.instance.setApplicationContext(applicationContext);
+		}
 		return Adempiere.instance;
 	}
 

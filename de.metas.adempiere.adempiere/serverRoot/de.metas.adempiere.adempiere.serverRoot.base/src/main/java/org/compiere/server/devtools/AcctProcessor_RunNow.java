@@ -51,7 +51,7 @@ public class AcctProcessor_RunNow
 			throw new IllegalStateException("Make sure the PropertyFile is configured in eclipse luncher");
 		}
 
-		Env.getSingleAdempiereInstance().startup(RunMode.BACKEND);
+		Env.getSingleAdempiereInstance(null).startup(RunMode.BACKEND);
 
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 0);

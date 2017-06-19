@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
+  * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
   * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
@@ -35,7 +36,11 @@ Here come the actual release notes:
     * Additional Default Filters for the new Handling Unit Editor.
   * [#1836](https://github.com/metasfresh/metasfresh/issues/1836) Adjustments for Empties Receive Window WebUI
     * Further Layout adjustments for the Empties Receive Window in WebUI.
-	
+  * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
+    * Layout Adjustments to Customer Return Window in WebUI.
+  * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
+    * Application dictionary cleanup on metasfresh instalations where it's needed
+
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
     * Decided to have a clean 1-column Layout for now for the shortcut/ bookmark menu.
@@ -45,6 +50,9 @@ Here come the actual release notes:
     * Moves the 'Browse whole tree' to more prominent place above the Bookmark menu. This allows teh user to quickly open the sitemap if needed.
 
 ## Fixes
+
+* metasfresh-backend
+  * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
 
 * metasfresh-webui-frontend
   * [#877](https://github.com/metasfresh/metasfresh-webui-frontend/issues/877) n instead of none in dropdowns

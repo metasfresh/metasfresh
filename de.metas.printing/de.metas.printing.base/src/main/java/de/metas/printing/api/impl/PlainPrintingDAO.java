@@ -33,8 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.POJOQuery;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -431,20 +429,6 @@ public class PlainPrintingDAO extends AbstractPrintingDAO
 				return pojo.getC_Print_Job_ID() == printJob.getC_Print_Job_ID();
 			}
 		});
-	}
-
-	@Override
-	public MFSession retrieveCurrentSession(final Properties ctx)
-	{
-		return Services.get(ISessionBL.class).getCurrentSession(ctx);
-//		final int sessionId = Env.getContextAsInt(ctx, Env.CTXNAME_AD_Session_ID);
-//		Check.assume(sessionId > 0, "No session found in context");
-//		final I_AD_Session sessionPO = lookupMap.lookup(I_AD_Session.class, sessionId);
-//		if(sessionPO == null)
-//		{
-//			return null;
-//		}
-//		return new MFSession(sessionPO);
 	}
 
 	@Override

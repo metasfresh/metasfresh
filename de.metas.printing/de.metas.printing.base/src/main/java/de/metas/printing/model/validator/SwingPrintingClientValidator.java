@@ -83,7 +83,7 @@ public class SwingPrintingClientValidator extends AbstractModuleInterceptor
 			// Get HostKey
 			final Properties ctx = Env.getCtx();
 			final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
-			final String hostKey = session.getHostKey();
+			final String hostKey = session.getHostKey(ctx);
 
 			//
 			// Create/Start the printing client thread *if* we do not use another client's config

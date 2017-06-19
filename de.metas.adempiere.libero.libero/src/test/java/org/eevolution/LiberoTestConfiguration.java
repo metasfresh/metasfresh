@@ -40,10 +40,7 @@ public class LiberoTestConfiguration
 	@Bean
 	public Adempiere adempiere(final ApplicationContext applicationContext)
 	{
-		final Adempiere adempiere = Env.getSingleAdempiereInstance();
-		adempiere.setApplicationContext(applicationContext);
-
-		return adempiere;
+		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	/**
