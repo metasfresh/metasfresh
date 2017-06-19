@@ -69,6 +69,12 @@ import de.metas.ui.web.base.session.UserPreference;
 	private UserPreference userPreference = null;
 	private boolean loggedIn = false;
 	private Locale locale = null;
+	
+	//
+	// User info
+	private String userFullname;
+	private String userEmail;
+	private String avatarId;
 
 	//
 	// Defaults

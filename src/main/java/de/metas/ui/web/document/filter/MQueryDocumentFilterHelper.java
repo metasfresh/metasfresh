@@ -9,6 +9,7 @@ import org.compiere.model.MQuery;
 
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 
 /*
@@ -45,7 +46,7 @@ public final class MQueryDocumentFilterHelper
 	{
 	}
 
-	public static DocumentFilter createDocumentFilterFromMQuery(final MQuery mquery)
+	public static DocumentFilter createDocumentFilterFromMQuery(final MQuery mquery, final ITranslatableString caption)
 	{
 		final List<DocumentFilterParam> parameters = new ArrayList<>();
 		for (int restrictionIdx = 0, restrictionsCount = mquery.getRestrictionCount(); restrictionIdx < restrictionsCount; restrictionIdx++)
@@ -66,6 +67,7 @@ public final class MQueryDocumentFilterHelper
 
 		return DocumentFilter.builder()
 				.setFilterId(filterId)
+				.setCaption(caption)
 				.setParameters(parameters)
 				.build();
 	}
@@ -78,8 +80,9 @@ public final class MQueryDocumentFilterHelper
 			{
 				final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);
 				final String sqlWhereClause = mquery.getDirectWhereClause(restrictionIndex);
+				final List<Object> sqlWhereClauseParams = null;
 
-				return DocumentFilterParam.ofSqlWhereClause(joinAnd, sqlWhereClause);
+				return DocumentFilterParam.ofSqlWhereClause(joinAnd, sqlWhereClause, sqlWhereClauseParams);
 			}
 
 			final boolean joinAnd = mquery.isJoinAnd(restrictionIndex);

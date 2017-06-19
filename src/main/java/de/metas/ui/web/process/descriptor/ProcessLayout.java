@@ -181,6 +181,7 @@ public class ProcessLayout
 					.setCaption(processParaDescriptor.getCaption())
 					.setDescription(processParaDescriptor.getDescription())
 					.setWidgetType(processParaDescriptor.getWidgetType())
+					.setAllowShowPassword(processParaDescriptor.isAllowShowPassword())
 					.addField(DocumentLayoutElementFieldDescriptor.builder(processParaDescriptor.getFieldName())
 							.setLookupSource(processParaDescriptor.getLookupSourceType())
 							.setPublicField(true)

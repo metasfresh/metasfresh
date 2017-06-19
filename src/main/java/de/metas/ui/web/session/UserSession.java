@@ -23,6 +23,8 @@ import de.metas.ui.web.base.session.UserPreference;
 import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.websocket.WebSocketConfig;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.NonNull;
 
 /*
@@ -84,6 +86,21 @@ public class UserSession
 				}
 			}
 		}
+		return userSession;
+	}
+
+	public static UserSession getCurrentIfMatchingOrNull(final int adUserId)
+	{
+		final UserSession userSession = getCurrentOrNull();
+		if (userSession == null)
+		{
+			return null;
+		}
+		if (userSession.getAD_User_ID() != adUserId)
+		{
+			return null;
+		}
+
 		return userSession;
 	}
 
@@ -206,7 +223,7 @@ public class UserSession
 	 * @param adLanguage
 	 * @return old AD_Language
 	 */
-	public String setAD_Language(final String adLanguage)
+	String setAD_Language(final String adLanguage)
 	{
 		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
 		final Language lang = Language.getLanguage(adLanguage);
@@ -236,6 +253,12 @@ public class UserSession
 	public Language getLanguage()
 	{
 		return data.getLanguage();
+	}
+
+	public JSONLookupValue getLanguageAsJson()
+	{
+		final Language language = getLanguage();
+		return JSONLookupValue.of(language.getAD_Language(), language.getName());
 	}
 
 	public Locale getLocale()
@@ -279,6 +302,48 @@ public class UserSession
 	public IUserRolePermissions getUserRolePermissions()
 	{
 		return Env.getUserRolePermissions(data.getCtx());
+	}
+
+	public String getAvatarId()
+	{
+		return data.getAvatarId();
+	}
+
+	public String getUserEmail()
+	{
+		return data.getUserEmail();
+	}
+
+	public String getUserFullname()
+	{
+		return data.getUserFullname();
+	}
+
+	String setAvatarId(final String avatarId)
+	{
+		final String avatarIdOld = data.getAvatarId();
+		data.setAvatarId(avatarId);
+		return avatarIdOld;
+	}
+
+	String setUserEmail(final String userEmail)
+	{
+		final String userEmailOld = data.getUserEmail();
+		data.setUserEmail(userEmail);
+		return userEmailOld;
+	}
+
+	String setUserFullname(final String userFullname)
+	{
+		final String userFullnameOld = data.getUserFullname();
+		data.setUserFullname(userFullname);
+		return userFullnameOld;
+	}
+	
+	/** @return websocket notifications endpoint on which the frontend shall listen */
+	public String getWebsocketEndpoint()
+	{		
+		return WebSocketConfig.buildUserSessionTopicName(getAD_User_ID());
 	}
 
 	public void assertDeprecatedRestAPIAllowed()

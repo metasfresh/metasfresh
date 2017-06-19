@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -17,10 +16,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.view.ViewAction;
@@ -107,6 +109,12 @@ public class PPOrderLinesView implements IView
 				.asiAttributesProvider(asiAttributesProvider)
 				.build()
 				.retrieveData(ppOrderId));
+	}
+
+	@Override
+	public ITranslatableString getDescription()
+	{
+		return getData().getDescription();
 	}
 
 	public String getPlanningStatus()
@@ -305,17 +313,12 @@ public class PPOrderLinesView implements IView
 			throw new IllegalStateException("Row processed");
 		}
 
-		final List<Integer> huIdsToAvailableToIssue = Services.get(IHUPPOrderBL.class).retrieveHUsAvailableToIssue(selectedRow.getM_Product_ID());
-		if (huIdsToAvailableToIssue.isEmpty())
-		{
-			// NOTE: don't throw EntityNotFoundException because that one would be ignored by frontend.
-			throw new AdempiereException("No HUs to issue found");
-		}
+		final IHUQueryBuilder huIdsToAvailableToIssueQuery = Services.get(IHUPPOrderBL.class).createHUsAvailableToIssueQuery(selectedRow.getM_Product_ID());
 
 		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class); // TODO dirty workaround
 		final IView husToIssueView = viewsRepo.createView(CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 				.setParentViewId(getViewId())
-				.setFilterOnlyIds(huIdsToAvailableToIssue)
+				.addStickyFilters(HUIdsFilterHelper.createFilter(huIdsToAvailableToIssueQuery))
 				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
 				.build());
 

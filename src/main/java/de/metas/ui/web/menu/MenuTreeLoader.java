@@ -183,6 +183,11 @@ final class MenuTreeLoader
 			final String elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toJson();
 			builder.setType(MenuNodeType.Report, elementId);
 		}
+		else if (X_AD_Menu.ACTION_Board.equals(action))
+		{
+			final String elementId = String.valueOf(nodeModel.getWEBUI_Board_ID());
+			builder.setType(MenuNodeType.Board, elementId);
+		}
 		else
 		{
 			return null;

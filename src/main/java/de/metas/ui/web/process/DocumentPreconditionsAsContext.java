@@ -84,6 +84,12 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	}
 	
 	@Override
+	public int getSingleSelectedRecordId()
+	{
+		return document.getDocumentIdAsInt();
+	}
+	
+	@Override
 	public int getSelectionSize()
 	{
 		return 1;

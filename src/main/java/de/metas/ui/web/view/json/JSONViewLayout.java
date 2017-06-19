@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -65,7 +64,6 @@ public final class JSONViewLayout implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final WindowId windowId;
 
-
 	@JsonProperty("caption")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String caption;
@@ -96,6 +94,12 @@ public final class JSONViewLayout implements Serializable
 	//
 	@JsonProperty("supportTree")
 	private final boolean supportTree;
+	@JsonProperty("collapsible")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean collapsible;
+	@JsonProperty("expandedDepth")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer expandedDepth;
 	//
 	@JsonProperty("supportIncludedView")
 	private final boolean supportIncludedView;
@@ -135,47 +139,28 @@ public final class JSONViewLayout implements Serializable
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
 
 		supportAttributes = layout.isAttributesSupport();
-		supportTree = layout.isTreeSupport();
 		supportIncludedView = layout.isIncludedViewSupport();
-	}
-
-	@JsonCreator
-	private JSONViewLayout(
-			@JsonProperty("windowId") final WindowId windowId //
-			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("description") final String description //
-			, @JsonProperty("emptyResultText") final String emptyResultText //
-			, @JsonProperty("emptyResultHint") final String emptyResultHint //
-			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
-			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty(value = PROPERTY_supportAttributes) final boolean supportAttributes //
-			, @JsonProperty(value = "supportTree") final boolean supportTree //
-			, @JsonProperty(value = "supportIncludedView") final boolean supportIncludedView //
-			//
-			, @JsonProperty("newRecordCaption") final String newRecordCaption //
-			, @JsonProperty("supportNewRecord") final boolean supportNewRecord //
-			)
-	{
-		super();
-		this.windowId = windowId;
-		this.type = windowId;
-
-		this.caption = caption;
-		this.description = description;
-		this.emptyResultText = emptyResultText;
-		this.emptyResultHint = emptyResultHint;
-
-		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
-		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
-
-		this.supportAttributes = supportAttributes;
-		this.supportTree = supportTree;
-		this.supportIncludedView = supportIncludedView;
 
 		//
-		// New record support
-		this.supportNewRecord = supportNewRecord;
-		this.newRecordCaption = newRecordCaption;
+		// Tree
+		supportTree = layout.isTreeSupport();
+		if (supportTree)
+		{
+			collapsible = layout.isTreeCollapsible();
+			if (collapsible)
+			{
+				expandedDepth = layout.getTreeExpandedDepth();
+			}
+			else
+			{
+				expandedDepth = null;
+			}
+		}
+		else
+		{
+			collapsible = null;
+			expandedDepth = null;
+		}
 	}
 
 	@Override
@@ -245,7 +230,7 @@ public final class JSONViewLayout implements Serializable
 		supportNewRecord = true;
 		this.newRecordCaption = newRecordCaption;
 	}
-	
+
 	public void setViewId(final String viewId)
 	{
 		this.viewId = viewId;

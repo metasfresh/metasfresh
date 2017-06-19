@@ -22,6 +22,9 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -66,29 +69,39 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private final HUEditorViewRepository huEditorRepo;
 	private final IStringExpression sqlSelectHUIdsByPage;
+	
+	private final ImmutableList<DocumentFilter> stickyFilters;
 
 	private final SqlViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final AtomicReference<ViewRowIdsOrderedSelection> defaultSelectionRef;
 
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
-	HUEditorViewBuffer_HighVolume( //
-			final WindowId windowId //
-			, final HUEditorViewRepository huEditorRepo //
-			, final List<DocumentFilter> filters //
-	)
+	HUEditorViewBuffer_HighVolume(
+			final WindowId windowId,
+			final HUEditorViewRepository huEditorRepo,
+			final List<DocumentFilter> stickyFilters,
+			final List<DocumentFilter> filters)
 	{
 		this.huEditorRepo = huEditorRepo;
 
 		final SqlViewBinding viewBinding = huEditorRepo.getSqlViewBinding();
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(viewBinding);
 		sqlSelectHUIdsByPage = viewBinding.getSqlSelectByPage();
+		
+		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
-
-		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filters, viewBinding.getDefaultOrderBys());
+		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
+		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filtersAll, viewBinding.getDefaultOrderBys());
 		defaultSelectionRef = new AtomicReference<>(defaultSelection);
 
+	}
+	
+	@Override
+	public List<DocumentFilter> getStickyFilters()
+	{
+		return stickyFilters;
 	}
 
 	private ViewRowIdsOrderedSelection getDefaultSelection()
@@ -96,11 +109,12 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return defaultSelectionRef.get();
 	}
 
+	/** @return true if selection was really changed */
 	private boolean changeDefaultSelection(final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
 	{
 		final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.get();
 		final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.updateAndGet(mapper);
-		return Objects.equals(defaultSelectionOld, defaultSelectionNew);
+		return !Objects.equals(defaultSelectionOld, defaultSelectionNew);
 	}
 
 	@Override

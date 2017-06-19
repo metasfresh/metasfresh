@@ -29,9 +29,10 @@ import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 
 public enum JSONMenuNodeType
 {
-	group //
-	, window, newRecord //
-	, process, report //
+	group, //
+	window, newRecord, //
+	process, report, //
+	board //
 	;
 
 	public static final JSONMenuNodeType fromNullable(final MenuNodeType type)
@@ -55,6 +56,7 @@ public enum JSONMenuNodeType
 			.put(MenuNodeType.NewRecord, newRecord)
 			.put(MenuNodeType.Process, process)
 			.put(MenuNodeType.Report, report)
+			.put(MenuNodeType.Board, board)
 			.build();
 
 	public final MenuNodeType toMenuNodeType()

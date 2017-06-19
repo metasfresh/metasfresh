@@ -9,6 +9,7 @@ import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -82,6 +83,9 @@ public class WindowQuickInputRestController
 	@Autowired
 	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
 
+	@Autowired
+	private SimpMessagingTemplate websocketMessagingTemplate;
+
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 
 	private JSONOptions newJSONOptions()
@@ -104,7 +108,7 @@ public class WindowQuickInputRestController
 		final DocumentEntityDescriptor includedDocumentDescriptor = documentsCollection.getDocumentEntityDescriptor(windowId)
 				.getIncludedEntityByDetailId(DetailId.fromJson(tabIdStr));
 
-		if(quickInputDescriptors.hasQuickInputEntityDescriptor(includedDocumentDescriptor))
+		if (quickInputDescriptors.hasQuickInputEntityDescriptor(includedDocumentDescriptor))
 		{
 			return new ResponseEntity<>(HttpStatus.OK);
 		}
@@ -170,7 +174,7 @@ public class WindowQuickInputRestController
 							.bindRootDocument(rootDocument)
 							.assertTargetWritable();
 				}
-				catch(Exception ex)
+				catch (Exception ex)
 				{
 					// Avoid showing "weird" exception to use, so we return HTTP 404 which is interpreted by frontend
 					// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/487
@@ -274,15 +278,20 @@ public class WindowQuickInputRestController
 		final QuickInputPath quickInputPath = QuickInputPath.of(windowIdStr, documentIdStr, tabIdStr, quickInputIdStr);
 		return Execution.callInNewExecution("quickInput-writable-" + quickInputPath, () -> {
 			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-			
+
 			forQuickInputWritable(quickInputPath, changesCollector, quickInput -> {
 				quickInput.processValueChanges(events);
-				
+
 				changesCollector.setPrimaryChange(quickInput.getDocumentPath());
 				return null; // void
 			});
-			
-			return JSONDocument.ofEvents(changesCollector, newJSONOptions());
+
+			final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, newJSONOptions());
+
+			// Extract and send websocket events
+			JSONDocument.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketMessagingTemplate);
+
+			return jsonDocumentEvents;
 		});
 	}
 

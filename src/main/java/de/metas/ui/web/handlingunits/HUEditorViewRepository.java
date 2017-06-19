@@ -19,7 +19,9 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -33,6 +35,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -79,8 +82,7 @@ public class HUEditorViewRepository
 			@NonNull final WindowId windowId //
 			, final String referencingTableName //
 			, final HUEditorRowAttributesProvider attributesProvider //
-			, final SqlViewBinding sqlViewBinding
-	)
+			, final SqlViewBinding sqlViewBinding)
 	{
 		super();
 
@@ -91,7 +93,7 @@ public class HUEditorViewRepository
 
 		this.sqlViewBinding = sqlViewBinding;
 	}
-	
+
 	SqlViewBinding getSqlViewBinding()
 	{
 		return sqlViewBinding;
@@ -343,21 +345,43 @@ public class HUEditorViewRepository
 		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
-	public List<Integer> retrieveHUIdsEffective(final Collection<Integer> huIds, final List<DocumentFilter> filters)
+	public List<Integer> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters)
 	{
-		//
-		// Convert the "filters" to SQL
-		final List<Object> sqlFilterParams = new ArrayList<>();
-		final String sqlFilter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding)
-				.getSql(sqlFilterParams, filters);
+		final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+
+		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery())
+		{
+			return onlyHUIds;
+		}
 
 		//
-		// Retrieve only given huIds but also apply the filters SQL on top of it.
-		return Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder()
-				.setContext(PlainContextAware.newOutOfTrx())
-				.addOnlyHUIds(huIds)
-				.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams))
-				.createQuery()
-				.listIds();
+		// Create HU query
+		IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
+		if (huQuery == null)
+		{
+			huQuery = Services.get(IHandlingUnitsDAO.class).createHUQueryBuilder();
+		}
+		huQuery.setContext(PlainContextAware.newOutOfTrx());
+
+		// Only HUs
+		if (!onlyHUIds.isEmpty())
+		{
+			huQuery.addOnlyHUIds(onlyHUIds);
+		}
+
+		// Exclude HUs
+		huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
+
+		//
+		// Convert the "filters" to SQL
+		if (!filters.isEmpty())
+		{
+			final List<Object> sqlFilterParams = new ArrayList<>();
+			final String sqlFilter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding)
+					.getSql(sqlFilterParams, filters);
+			huQuery.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams));
+		}
+
+		return huQuery.createQuery().listIds();
 	}
 }

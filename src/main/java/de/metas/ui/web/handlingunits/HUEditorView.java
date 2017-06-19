@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -16,12 +15,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -86,7 +85,6 @@ public class HUEditorView implements IView
 	private final HUEditorRowAttributesProvider huAttributesProvider;
 
 	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	private final ImmutableList<DocumentFilter> stickyFilters;
 	private final ImmutableList<DocumentFilter> filters;
 
 	private HUEditorView(final Builder builder)
@@ -94,9 +92,10 @@ public class HUEditorView implements IView
 		parentViewId = builder.getParentViewId();
 		viewType = builder.getViewType();
 
+		final List<DocumentFilter> stickyFilters = builder.getStickyFilters();
+		final boolean isHighVolume = HUIdsFilterHelper.isHighVolume(stickyFilters);
 		//
 		// Build the attributes provider
-		final boolean isHighVolume = builder.isHighVolume();
 		huAttributesProvider = HUEditorRowAttributesProvider.builder()
 				.readonly(isHighVolume)
 				.build();
@@ -111,24 +110,6 @@ public class HUEditorView implements IView
 				.build();
 
 		viewFilterDescriptors = builder.getSqlViewBinding().getViewFilterDescriptors();
-
-		//
-		// Build stickyFilters
-		{
-			final Collection<Integer> builder_huIds = builder.getHUIds();
-			final List<DocumentFilter> stickyFilters = new ArrayList<>(builder.getStickyFilters());
-
-			final DocumentFilter stickyFilter_HUIds_Existing = HUIdsDocumentFilterFactory.findExistingOrNull(stickyFilters);
-
-			// Create the sticky filter by HUIds from builder's huIds (if any huIds)
-			if (stickyFilter_HUIds_Existing == null && !builder_huIds.isEmpty())
-			{
-				final DocumentFilter stickyFilter_HUIds_New = HUIdsDocumentFilterFactory.createFilter(builder_huIds);
-				stickyFilters.add(stickyFilter_HUIds_New);
-			}
-
-			this.stickyFilters = ImmutableList.copyOf(stickyFilters);
-		}
 
 		//
 		// Build filters
@@ -154,20 +135,11 @@ public class HUEditorView implements IView
 	{
 		if (isHighVolume)
 		{
-			final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
-
-			return new HUEditorViewBuffer_HighVolume(windowId, huEditorRepo, filtersAll);
+			return new HUEditorViewBuffer_HighVolume(windowId, huEditorRepo, stickyFilters, filters);
 		}
 		else
 		{
-			final List<Integer> huIds = HUIdsDocumentFilterFactory.extractHUIdsOrEmpty(stickyFilters);
-
-			final List<DocumentFilter> stickyFiltersEffective = stickyFilters.stream()
-					.filter(HUIdsDocumentFilterFactory::isNotHUIdsFilter)
-					.collect(ImmutableList.toImmutableList());
-			final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersEffective, filters));
-
-			return new HUEditorViewBuffer_FullyCached(windowId, huEditorRepo, huIds, filtersAll);
+			return new HUEditorViewBuffer_FullyCached(windowId, huEditorRepo, stickyFilters, filters);
 		}
 
 	}
@@ -188,6 +160,12 @@ public class HUEditorView implements IView
 	public JSONViewDataType getViewType()
 	{
 		return viewType;
+	}
+
+	@Override
+	public ITranslatableString getDescription()
+	{
+		return ImmutableTranslatableString.empty();
 	}
 
 	@Override
@@ -269,7 +247,7 @@ public class HUEditorView implements IView
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
-		return stickyFilters;
+		return rowsBuffer.getStickyFilters();
 	}
 
 	@Override
@@ -322,6 +300,8 @@ public class HUEditorView implements IView
 		{
 			invalidateAll();
 		}
+		
+		
 	}
 
 	public void addHUAndInvalidate(final I_M_HU hu)
@@ -423,52 +403,7 @@ public class HUEditorView implements IView
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
-	/**
-	 * Helper class to handle the HUIds document filter.
-	 */
-	private static final class HUIdsDocumentFilterFactory
-	{
-		private static final String FILTER_ID = "huIds";
-		private static final String FILTER_PARAM_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
-
-		public static final DocumentFilter findExistingOrNull(final Collection<DocumentFilter> filters)
-		{
-			if (filters == null || filters.isEmpty())
-			{
-				return null;
-			}
-
-			return filters.stream()
-					.filter(filter -> FILTER_ID.equals(filter.getFilterId()))
-					.findFirst().orElse(null);
-		}
-
-		public static final DocumentFilter createFilter(final Collection<Integer> huIds)
-		{
-			return DocumentFilter.inArrayFilter(FILTER_ID, FILTER_PARAM_M_HU_ID, huIds);
-		}
-
-		private static final List<Integer> extractHUIds(@NonNull final DocumentFilter huIdsFilter)
-		{
-			Preconditions.checkArgument(!isNotHUIdsFilter(huIdsFilter), "Not a HUIds filter: %s", huIdsFilter);
-			return huIdsFilter.getParameter(FILTER_PARAM_M_HU_ID).getValueAsIntList();
-		}
-
-		public static final List<Integer> extractHUIdsOrEmpty(final Collection<DocumentFilter> filters)
-		{
-			final DocumentFilter huIdsFilter = findExistingOrNull(filters);
-			if (huIdsFilter == null)
-			{
-				return ImmutableList.of();
-			}
-			return HUIdsDocumentFilterFactory.extractHUIds(huIdsFilter);
-		}
-
-		public static final boolean isNotHUIdsFilter(final DocumentFilter filter)
-		{
-			return !FILTER_ID.equals(filter.getFilterId());
-		}
-	}
+	
 
 	//
 	//
@@ -486,11 +421,8 @@ public class HUEditorView implements IView
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 
-		private Collection<Integer> huIds;
 		private List<DocumentFilter> stickyFilters;
 		private List<DocumentFilter> filters;
-
-		private boolean highVolume;
 
 		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
 		{
@@ -538,32 +470,6 @@ public class HUEditorView implements IView
 		private JSONViewDataType getViewType()
 		{
 			return viewType;
-		}
-
-		public Builder setHUIds(final Collection<Integer> huIds)
-		{
-			this.huIds = huIds;
-			return this;
-		}
-
-		private Collection<Integer> getHUIds()
-		{
-			if (huIds == null || huIds.isEmpty())
-			{
-				return ImmutableSet.of();
-			}
-			return huIds;
-		}
-
-		public Builder setHighVolume(final boolean highVolume)
-		{
-			this.highVolume = highVolume;
-			return this;
-		}
-
-		private boolean isHighVolume()
-		{
-			return highVolume;
 		}
 
 		public Builder setReferencingDocumentPaths(final String referencingTableName, final Set<DocumentPath> referencingDocumentPaths)

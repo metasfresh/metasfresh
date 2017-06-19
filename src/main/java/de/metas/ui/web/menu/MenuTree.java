@@ -2,11 +2,9 @@ package de.metas.ui.web.menu;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.compiere.util.Util;
@@ -290,8 +288,6 @@ public final class MenuTree
 
 	public MenuNode getRootNodeWithFavoritesOnly(@NonNull final MenuNodeFavoriteProvider menuNodeFavoriteProvider)
 	{
-		final Set<String> parentNodeIdsToAlwaysAccept = new HashSet<>();
-
 		return getRootNode()
 				.deepCopy(node -> {
 					if (node.isRoot())
@@ -299,36 +295,17 @@ public final class MenuTree
 						return MenuNodeFilterResolution.Accept;
 					}
 
-					if (menuNodeFavoriteProvider.isFavorite(node))
-					{
-						// If favorite grouping node then we shall include all it's children, no matter what
-						if (node.isGroupingNode())
-						{
-							parentNodeIdsToAlwaysAccept.add(node.getId());
-						}
-
-						return MenuNodeFilterResolution.Accept;
-					}
-
-					if (parentNodeIdsToAlwaysAccept.contains(node.getParentId()))
-					{
-						// If grouping node which is a child of a favorite grouping node then we shall include all it's children, no matter what
-						if (node.isGroupingNode())
-						{
-							parentNodeIdsToAlwaysAccept.add(node.getId());
-						}
-
-						return MenuNodeFilterResolution.Accept;
-					}
-
 					if (node.isGroupingNode())
 					{
 						return MenuNodeFilterResolution.AcceptIfHasChildren;
 					}
-					else
+
+					if (menuNodeFavoriteProvider.isFavorite(node))
 					{
-						return MenuNodeFilterResolution.Reject;
+						return MenuNodeFilterResolution.Accept;
 					}
+
+					return MenuNodeFilterResolution.Reject;
 				});
 	}
 }

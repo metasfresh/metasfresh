@@ -56,6 +56,7 @@ public final class JSONDocumentLayoutElement
 		return elements.stream()
 				.filter(jsonOpts.documentLayoutElementFilter())
 				.map(element -> new JSONDocumentLayoutElement(element, jsonOpts))
+				.filter(JSONDocumentLayoutElement::hasFields) // IMPORTANT: we shall avoid having elements without any field, see https://github.com/metasfresh/metasfresh-webui-frontend/issues/870#issuecomment-307770832
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -83,6 +84,11 @@ public final class JSONDocumentLayoutElement
 
 	@JsonProperty("widgetType")
 	private final JSONLayoutWidgetType widgetType;
+	
+	@JsonProperty("allowShowPassword")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Boolean allowShowPassword; // in case widgetType is Password
+
 	
 	@JsonProperty("buttonProcessId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -127,6 +133,7 @@ public final class JSONDocumentLayoutElement
 		description = element.getDescription(adLanguage);
 
 		widgetType = JSONLayoutWidgetType.fromNullable(element.getWidgetType());
+		allowShowPassword = element.isAllowShowPassword() ? Boolean.TRUE : null;
 		precision = element.getPrecision().orElse(null);
 		
 		final ButtonFieldActionDescriptor buttonAction = element.getButtonActionDescriptor();
@@ -154,6 +161,7 @@ public final class JSONDocumentLayoutElement
 		description = null;
 
 		this.widgetType = JSONLayoutWidgetType.fromNullable(widgetType);
+		allowShowPassword = null;
 		buttonProcessId = null;
 		precision = null;
 
@@ -170,5 +178,10 @@ public final class JSONDocumentLayoutElement
 				, (String)null // newRecordCaption
 				, widgetType.isSupportZoomInto() // supportZoomInfo
 		));
+	}
+	
+	private boolean hasFields()
+	{
+		return !fields.isEmpty();
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -117,7 +118,8 @@ public class HUEditorViewFactory implements IViewFactory
 							.addDescriptors(huStandardFilters)
 							.addDescriptor(HUBarcodeSqlDocumentFilterConverter.createDocumentFilterDescriptor())
 							.build())
-					.addViewFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance);
+					.addViewFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
+					.addViewFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
 		}
 
 		//
@@ -263,21 +265,33 @@ public class HUEditorViewFactory implements IViewFactory
 			referencingTableName = null;
 		}
 
-		final Set<Integer> huIds = request.getFilterOnlyIds();
-		List<DocumentFilter> stickyFilters = request.getStickyFilters();
+		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
 		final List<DocumentFilter> filters = JSONDocumentFilter.unwrapList(request.getFilters(), getSqlViewBinding().getViewFilterDescriptors());
 
 		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setWindowId(windowId)
 				.setViewType(request.getViewType())
-				.setHUIds(huIds)
 				.setStickyFilters(stickyFilters)
 				.setFilters(filters)
-				.setHighVolume(huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD)
 				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())
 				.build();
+	}
+
+	private static List<DocumentFilter> extractStickyFilters(final List<DocumentFilter> requestStickyFilters, final Set<Integer> huIds)
+	{
+		List<DocumentFilter> stickyFilters = new ArrayList<>(requestStickyFilters);
+
+		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExistingOrNull(stickyFilters);
+		// Create the sticky filter by HUIds from builder's huIds (if any huIds)
+		if (stickyFilter_HUIds_Existing == null && !huIds.isEmpty())
+		{
+			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(huIds);
+			stickyFilters.add(0, stickyFilter_HUIds_New);
+		}
+
+		return ImmutableList.copyOf(stickyFilters);
 	}
 
 	/**

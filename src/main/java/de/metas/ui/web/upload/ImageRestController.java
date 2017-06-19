@@ -42,11 +42,11 @@ import de.metas.ui.web.session.UserSession;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -56,7 +56,7 @@ import de.metas.ui.web.session.UserSession;
 public class ImageRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/image";
-	
+
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
 
 	@Autowired
@@ -80,15 +80,15 @@ public class ImageRestController
 
 		return adImage.getAD_Image_ID();
 	}
-	
+
 	private static final String normalizeUploadFilename(final String name, final String contentType)
 	{
 		final String fileExtension = MimeType.getExtensionByType(contentType);
-		
+
 		final String nameNormalized;
-		if(Check.isEmpty(name, true)
+		if (Check.isEmpty(name, true)
 				|| "blob".equals(name) // HARDCODED: this happens when the image is taken from webcam
-				)
+		)
 		{
 			nameNormalized = DATE_FORMAT.format(LocalDateTime.now());
 		}
@@ -96,13 +96,15 @@ public class ImageRestController
 		{
 			nameNormalized = name.trim();
 		}
-		
+
 		return FileUtils.changeFileExtension(nameNormalized, fileExtension);
 	}
 
 	@GetMapping("/{imageId}")
 	@ResponseBody
-	public ResponseEntity<byte[]> getImage(@PathVariable final int imageId)
+	public ResponseEntity<byte[]> getImage(@PathVariable final int imageId,
+			@RequestParam(name = "maxWidth", required = false, defaultValue = "-1") int maxWidth,
+			@RequestParam(name = "maxHeight", required = false, defaultValue = "-1") int maxHeight)
 	{
 		userSession.assertLoggedIn();
 
@@ -124,8 +126,8 @@ public class ImageRestController
 		}
 
 		final String imageName = adImage.getName();
-		final byte[] imageData = adImage.getData();
-		final String contentType = MimeType.getMimeType(imageName);
+		final String contentType = adImage.getContentType();
+		final byte[] imageData = adImage.getScaledImageData(maxWidth, maxHeight);
 
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.parseMediaType(contentType));

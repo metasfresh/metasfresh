@@ -8,6 +8,7 @@ import javax.annotation.concurrent.Immutable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -44,6 +45,7 @@ import lombok.NonNull;
 @Immutable
 /* package */final class PPOrderLinesViewData
 {
+	private final ITranslatableString description;
 	private final String planningStatus;
 
 	/** Top level records list */
@@ -51,12 +53,18 @@ import lombok.NonNull;
 	/** All records (included ones too) indexed by DocumentId */
 	private final ImmutableMap<DocumentId, PPOrderLineRow> allRecordsById;
 
-	PPOrderLinesViewData(@NonNull final String planningStatus, final List<PPOrderLineRow> records)
+	PPOrderLinesViewData(@NonNull final ITranslatableString description, @NonNull final String planningStatus, final List<PPOrderLineRow> records)
 	{
 		super();
+		this.description = description;
 		this.planningStatus = planningStatus;
 		this.records = ImmutableList.copyOf(records);
 		allRecordsById = buildRecordsByIdMap(this.records);
+	}
+	
+	public ITranslatableString getDescription()
+	{
+		return description;
 	}
 
 	public String getPlanningStatus()

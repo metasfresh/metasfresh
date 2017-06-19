@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -65,8 +66,8 @@ public final class CreateViewRequest
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
 				.setStickyFilters(view.getStickyFilters())
 				.setFilters(filterViewRequest.getFilters())
-		// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
-		;
+				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+				.addActions(view.getActions());
 	}
 
 	private final WindowId windowId;
@@ -201,6 +202,16 @@ public final class CreateViewRequest
 			this.stickyFilters = stickyFilters;
 			return this;
 		}
+		
+		public Builder addStickyFilters(@NonNull final DocumentFilter stickyFilter)
+		{
+			if(stickyFilters == null)
+			{
+				stickyFilters = new ArrayList<>();
+			}
+			stickyFilters.add(stickyFilter);
+			return this;
+		}
 
 		private List<DocumentFilter> getStickyFilters()
 		{
@@ -246,6 +257,12 @@ public final class CreateViewRequest
 		public Builder addActionsFromUtilityClass(final Class<?> utilityClass)
 		{
 			final ViewActionDescriptorsList actionsToAdd = ViewActionDescriptorsFactory.instance.getFromClass(utilityClass);
+			addActions(actionsToAdd);
+			return this;
+		}
+
+		public Builder addActions(final ViewActionDescriptorsList actionsToAdd)
+		{
 			this.actions = this.actions.mergeWith(actionsToAdd);
 			return this;
 		}

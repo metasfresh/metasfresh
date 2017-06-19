@@ -1,10 +1,14 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import org.compiere.util.DisplayType;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 
 import io.swagger.annotations.ApiModel;
+import lombok.Value;
 
 /*
  * #%L
@@ -19,16 +23,18 @@ import io.swagger.annotations.ApiModel;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 @ApiModel("document-change-event")
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@Value
 public class JSONDocumentChangedEvent
 {
 	@JsonCreator
@@ -36,7 +42,7 @@ public class JSONDocumentChangedEvent
 	{
 		return new JSONDocumentChangedEvent(operation, path, value);
 	}
-	
+
 	public static final JSONDocumentChangedEvent replace(final String fieldName, final Object valueJson)
 	{
 		return new JSONDocumentChangedEvent(JSONOperation.replace, fieldName, valueJson);
@@ -54,37 +60,24 @@ public class JSONDocumentChangedEvent
 	private final String path;
 	@JsonProperty("value")
 	private final Object value;
-
-	private JSONDocumentChangedEvent(final JSONOperation operation, final String path, final Object value)
+	
+	public boolean isReplace()
 	{
-		super();
-		this.operation = operation;
-		this.path = path;
-		this.value = value;
+		return operation == JSONOperation.replace;
+	}
+	
+	public Boolean getValueAsBoolean(final Boolean defaultValue)
+	{
+		return DisplayType.toBoolean(value, defaultValue);
+	}
+	
+	public int getValueAsInteger(final int defaultValueIfNull)
+	{
+		if(value == null)
+		{
+			return defaultValueIfNull;
+		}
+		return Integer.parseInt(value.toString());
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("op", operation)
-				.add("path", path)
-				.add("value", value)
-				.toString();
-	}
-
-	public JSONOperation getOperation()
-	{
-		return operation;
-	}
-
-	public String getPath()
-	{
-		return path;
-	}
-
-	public Object getValue()
-	{
-		return value;
-	}
 }

@@ -48,9 +48,7 @@ public final class MenuNode
 
 	public static enum MenuNodeType
 	{
-		Group //
-		, Window, NewRecord //
-		, Process, Report //
+		Group, Window, NewRecord, Process, Report, Board,
 	}
 
 	@FunctionalInterface
@@ -326,7 +324,7 @@ public final class MenuNode
 
 	public static final class Builder
 	{
-		private int adMenuId;
+		private int adMenuId = -1;
 
 		private String caption;
 		private String captionBreadcrumb;
@@ -354,7 +352,9 @@ public final class MenuNode
 
 		private int getAD_Menu_ID()
 		{
-			if (adMenuId <= 0)
+			// NOTE: tolerate adMenuId=0 because there are some case in old API where we have a MTreeNode with Node_ID=0 (usually the root)
+			// see https://github.com/metasfresh/metasfresh-webui-api/issues/446
+			if (adMenuId < 0)
 			{
 				throw new AdempiereException("AD_Menu_ID not set");
 			}

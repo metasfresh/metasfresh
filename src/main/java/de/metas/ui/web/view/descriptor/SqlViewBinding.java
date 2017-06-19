@@ -70,6 +70,7 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final IStringExpression sqlWhereClause;
 	private final IStringExpression sqlSelectByPage;
 	private final IStringExpression sqlSelectById;
+	private final IStringExpression sqlSelectLinesByRowIds;
 	private final List<SqlViewRowFieldLoader> rowFieldLoaders;
 
 	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
@@ -96,15 +97,22 @@ public class SqlViewBinding implements SqlEntityBinding
 		sqlWhereClause = builder.getSqlWhereClause();
 		sqlSelectByPage = sqlSelect.toComposer()
 				.append("\n WHERE ")
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?")
-				.append("\n AND " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
+				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo + " BETWEEN ? AND ?")
 				.append("\n ORDER BY " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_SeqNo)
 				.build();
 
 		sqlSelectById = sqlSelect.toComposer()
 				.append("\n WHERE ")
-				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?")
-				.append("\n AND " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
+				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + "=?")
+				.build();
+
+		sqlSelectLinesByRowIds = SqlViewSelectionQueryBuilder.buildSqlSelectLines(_tableName, _tableAlias, _keyField.getColumnName(), displayFieldNames, allFields)
+				.toComposer()
+				.append("\n WHERE ")
+				// .append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_UUID + "=?") // already filtered above
+				.append("\n " + SqlViewSelectionQueryBuilder.COLUMNNAME_Paging_Record_ID + " IN ").append(SqlViewSelectionQueryBuilder.Paging_Record_IDsPlaceholder)
 				.build();
 
 		final List<SqlViewRowFieldLoader> rowFieldLoaders = new ArrayList<>(allFields.size());
@@ -202,6 +210,11 @@ public class SqlViewBinding implements SqlEntityBinding
 	public IStringExpression getSqlSelectById()
 	{
 		return sqlSelectById;
+	}
+
+	public IStringExpression getSqlSelectLinesByRowIds()
+	{
+		return sqlSelectLinesByRowIds;
 	}
 
 	public List<SqlViewRowFieldLoader> getRowFieldLoaders()

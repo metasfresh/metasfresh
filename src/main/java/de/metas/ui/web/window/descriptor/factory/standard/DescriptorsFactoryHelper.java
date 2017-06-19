@@ -163,6 +163,10 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentFieldWidgetType.Password;
 		}
+		else if(displayType == DisplayType.URL)
+		{
+			return DocumentFieldWidgetType.URL;
+		}
 		else if (DisplayType.isText(displayType))
 		{
 			return DocumentFieldWidgetType.Text;

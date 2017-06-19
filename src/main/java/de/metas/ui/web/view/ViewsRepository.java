@@ -6,22 +6,31 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuNode;
 import de.metas.ui.web.menu.MenuTreeRepository;
@@ -66,13 +75,16 @@ public class ViewsRepository implements IViewsRepository
 	@Autowired
 	private MenuTreeRepository menuTreeRepo;
 
+	@Value("${metasfresh.webui.view.truncateOnStartUp:true}")
+	private boolean truncateSelectionOnStartUp;
+
 	private final Cache<String, IView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
 
 	@Autowired
-	public ViewsRepository(final ApplicationContext context)
+	public ViewsRepository(final ApplicationContext context, final Adempiere adempiere_NOTUSED)
 	{
 		//
 		// Discover context factories
@@ -93,6 +105,30 @@ public class ViewsRepository implements IViewsRepository
 				factories.put(mkFactoryKey(windowId, viewType), factory);
 				logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
 			}
+		}
+	}
+
+	@PostConstruct
+	private void truncateTempTablesIfAllowed()
+	{
+		if (truncateSelectionOnStartUp)
+		{
+			truncateTable(I_T_WEBUI_ViewSelection.Table_Name);
+			truncateTable(I_T_WEBUI_ViewSelectionLine.Table_Name);
+		}
+	}
+
+	private static void truncateTable(final String tableName)
+	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		try
+		{
+			final int no = DB.executeUpdateEx("DELETE FROM " + tableName, ITrx.TRXNAME_NoneNotNull);
+			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed deleting all from {} (Took: {})", tableName, stopwatch, ex);
 		}
 	}
 

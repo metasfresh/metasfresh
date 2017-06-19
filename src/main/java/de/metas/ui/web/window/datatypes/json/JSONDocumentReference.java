@@ -82,13 +82,14 @@ public final class JSONDocumentReference
 
 	private JSONDocumentReference(final DocumentReference documentReference, final JSONOptions jsonOpts)
 	{
-		super();
+		final String adLanguage = jsonOpts.getAD_Language();
+		
 		id = documentReference.getId();
-		caption = documentReference.getCaption(jsonOpts.getAD_Language());
+		caption = documentReference.getCaption(adLanguage);
 		windowId = documentReference.getWindowId();
 		documentsCount = documentReference.getDocumentsCount();
 
 		final DocumentFilter filter = documentReference.getFilter();
-		this.filter = JSONDocumentFilter.of(filter);
+		this.filter = JSONDocumentFilter.of(filter, adLanguage);
 	}
 }

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.i18n.Language;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 
@@ -32,7 +34,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONUserSession
 {
 	public static final JSONUserSession of(final UserSession userSession)
@@ -43,9 +45,23 @@ public class JSONUserSession
 	@JsonProperty("loggedIn")
 	private final boolean loggedIn;
 
+	/** login user */
 	@JsonProperty("username")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String username;
+
+	/** user's full name/display name */
+	@JsonProperty("fullname")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String fullname;
+
+	@JsonProperty("email")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String email;
+
+	@JsonProperty("avatarId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final String avatarId;
 
 	@JsonProperty("rolename")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -56,6 +72,16 @@ public class JSONUserSession
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
+	
+	@JsonProperty("websocketEndpoint")
+	private final String websocketEndpoint;
+
+	@JsonProperty("userProfileWindowId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final WindowId userProfileWindowId;
+	@JsonProperty("userProfileId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private final Integer userProfileId;
 
 	private JSONUserSession(final UserSession userSession)
 	{
@@ -66,11 +92,26 @@ public class JSONUserSession
 		{
 			username = userSession.getUserName();
 			rolename = userSession.getRoleName();
+
+			fullname = userSession.getUserFullname();
+			email = userSession.getUserEmail();
+			avatarId = userSession.getAvatarId();
+
+			userProfileWindowId = WindowConstants.WINDOWID_UserProfile;
+			userProfileId = userSession.getAD_User_ID();
+			
+			websocketEndpoint = userSession.getWebsocketEndpoint();
 		}
 		else
 		{
 			username = null;
 			rolename = null;
+			fullname = null;
+			email = null;
+			avatarId = null;
+			userProfileWindowId = null;
+			userProfileId = null;
+			websocketEndpoint = null;
 		}
 
 		final Language language = userSession.getLanguage();

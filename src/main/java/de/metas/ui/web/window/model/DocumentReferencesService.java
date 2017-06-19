@@ -16,7 +16,10 @@ import org.springframework.stereotype.Service;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.ui.web.document.filter.MQueryDocumentFilterHelper;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -58,11 +61,12 @@ public class DocumentReferencesService
 			}
 
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
+			final ITranslatableString filterCaption = extractFilterCaption(document);
 
 			return ZoomInfoFactory.get()
 					.retrieveZoomInfos(zoomSource)
 					.stream()
-					.map(zoomInfo -> createDocumentReference(zoomInfo))
+					.map(zoomInfo -> createDocumentReference(zoomInfo, filterCaption))
 					.collect(ImmutableList.toImmutableList());
 		});
 	}
@@ -78,18 +82,53 @@ public class DocumentReferencesService
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
 
 			final ZoomInfo zoomInfo = ZoomInfoFactory.get().retrieveZoomInfo(zoomSource, targetWindowId.toInt());
-			return createDocumentReference(zoomInfo);
+			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument);
+			return createDocumentReference(zoomInfo, filterCaption);
 		});
 	}
+	
+	private final ITranslatableString extractFilterCaption(final Document sourceDocument)
+	{
+		//
+		// Window caption
+		final ITranslatableString windowCaption = sourceDocument.getEntityDescriptor().getCaption();
+		
+		//
+		// Document info
+		// TODO: i think we shall use lookup to fetch the document description
+		final ITranslatableString documentSummary;
+		if(sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentSummary))
+		{
+			final String documentSummaryStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentSummary).getValueAs(String.class);
+			documentSummary = ImmutableTranslatableString.constant(documentSummaryStr);
+		}
+		else if(sourceDocument.hasField(WindowConstants.FIELDNAME_DocumentNo))
+		{
+			final String documentNoStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_DocumentNo).getValueAs(String.class);
+			documentSummary = ImmutableTranslatableString.constant(documentNoStr);
+		}
+		else if(sourceDocument.hasField(WindowConstants.FIELDNAME_Name))
+		{
+			final String nameStr = sourceDocument.getFieldView(WindowConstants.FIELDNAME_Name).getValueAs(String.class);
+			documentSummary = ImmutableTranslatableString.constant(nameStr);
+		}
+		else
+		{
+			documentSummary = ImmutableTranslatableString.constant(sourceDocument.getDocumentId().toString());
+		}
 
-	private static final DocumentReference createDocumentReference(final ZoomInfo zoomInfo)
+		// Window caption + document info
+		return ITranslatableString.compose(" ", windowCaption, documentSummary);
+	}
+
+	private static final DocumentReference createDocumentReference(final ZoomInfo zoomInfo, ITranslatableString filterCaption)
 	{
 		return DocumentReference.builder()
 				.id(zoomInfo.getId())
 				.caption(zoomInfo.getLabel())
 				.windowId(WindowId.of(zoomInfo.getAD_Window_ID()))
 				.documentsCount(zoomInfo.getRecordCount())
-				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery()))
+				.filter(MQueryDocumentFilterHelper.createDocumentFilterFromMQuery(zoomInfo.getQuery(), filterCaption))
 				.build();
 	}
 

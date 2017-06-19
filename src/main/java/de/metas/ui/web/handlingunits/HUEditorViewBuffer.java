@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -43,6 +44,8 @@ import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 interface HUEditorViewBuffer
 {
 	ViewId getViewId();
+	
+	List<DocumentFilter> getStickyFilters();
 	
 	long size();
 

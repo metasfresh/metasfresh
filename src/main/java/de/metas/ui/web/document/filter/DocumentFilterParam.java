@@ -1,6 +1,8 @@
 package de.metas.ui.web.document.filter;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -42,11 +44,11 @@ public class DocumentFilterParam
 		return new Builder();
 	}
 
-	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
+	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause, final List<Object> sqlWhereClauseParams)
 	{
-		return new DocumentFilterParam(joinAnd, sqlWhereClause);
+		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
 	}
-
+	
 	public static enum Operator
 	{
 		EQUAL, NOT_EQUAL, //
@@ -77,6 +79,7 @@ public class DocumentFilterParam
 	private final Object valueTo;
 	//
 	private final String sqlWhereClause;
+	private final List<Object> sqlWhereClauseParams;
 
 	private DocumentFilterParam(final Builder builder)
 	{
@@ -94,9 +97,10 @@ public class DocumentFilterParam
 		valueTo = builder.valueTo;
 
 		sqlWhereClause = null;
+		sqlWhereClauseParams = null;
 	}
 
-	private DocumentFilterParam(final boolean joinAnd, final String sqlWhereClause)
+	private DocumentFilterParam(final boolean joinAnd, final String sqlWhereClause, final List<Object> sqlWhereClauseParams)
 	{
 		super();
 
@@ -108,6 +112,7 @@ public class DocumentFilterParam
 		valueTo = null;
 
 		this.sqlWhereClause = sqlWhereClause;
+		this.sqlWhereClauseParams = sqlWhereClauseParams != null ? Collections.unmodifiableList(new ArrayList<>(sqlWhereClauseParams)) : ImmutableList.of();
 	}
 
 	@Override
@@ -121,6 +126,7 @@ public class DocumentFilterParam
 				.add("value", value)
 				.add("valueTo", valueTo)
 				.add("sqlWhereClause", sqlWhereClause)
+				.add("sqlWhereClauseParams", sqlWhereClauseParams)
 				.toString();
 	}
 
@@ -137,6 +143,11 @@ public class DocumentFilterParam
 	public String getSqlWhereClause()
 	{
 		return sqlWhereClause;
+	}
+	
+	public List<Object> getSqlWhereClauseParams()
+	{
+		return sqlWhereClauseParams;
 	}
 
 	public String getFieldName()
