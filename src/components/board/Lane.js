@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import Card from './Card';
-import { DropTarget } from 'react-dnd';
-import ItemTypes from '../../constants/ItemTypes';
 
 class Lane extends Component {
     constructor(props) {
@@ -10,13 +8,18 @@ class Lane extends Component {
 
     render() {
         const {
-            caption, cards, laneId, onHover, onDrop, targetIndicator, onReject
+            caption, cards, laneId, onHover, onDrop, targetIndicator, onReject,
+            onDelete, placeholder
         } = this.props;
-        
+
+        if(placeholder){
+            return (<div className="board-lane-placeholder" />)
+        }
+
         return (
             <div className="board-lane">
                 <div className="board-lane-header">{caption}</div>
-                <div 
+                <div
                     className={
                         'board-draggable-wrapper ' +
                         (!cards.length ? 'board-draggable-placeholder ' : '')
@@ -31,7 +34,8 @@ class Lane extends Component {
                         key={i}
                         index={i}
                         {...{
-                            laneId, onHover, onDrop, onReject, targetIndicator
+                            laneId, onHover, onDrop, onReject, targetIndicator,
+                            onDelete
                         }}
                         {...card} />
                     )}

@@ -8,16 +8,16 @@ class Avatar extends Component {
     }
 
     render() {
-        const {src, size, className, id, title} = this.props;
+        const {size, className, id, title} = this.props;
         return (
             <img
                 src={id ? getAvatar(id) : defaultAvatar}
                 title={title}
                 className={
-                    'avatar img-fluid rounded-circle ' + 
+                    'avatar img-fluid rounded-circle ' +
                     (size ? 'avatar-' + size + ' ' : '') +
                     (className ? className : '')
-                } 
+                }
             />
         );
     }

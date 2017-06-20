@@ -3,7 +3,6 @@ import Avatar from '../app/Avatar';
 import { DragSource, DropTarget } from 'react-dnd';
 import ItemTypes from '../../constants/ItemTypes';
 
-
 const cardTarget = {
     drop(props, monitor) {
         props.onDrop && props.onDrop(monitor.getItem(), props.laneId);
@@ -14,7 +13,7 @@ const cardTarget = {
         ){
             return;
         }
-        
+
         if(
              monitor.getItem().index === props.index &&
              props.laneId === monitor.getItem().laneId
@@ -23,7 +22,7 @@ const cardTarget = {
         }
 
         props.onHover(monitor.getItem(), props.laneId, props.index);
-        
+
         monitor.getItem().index = props.index;
         monitor.getItem().laneId = props.laneId;
     }
@@ -59,34 +58,39 @@ function collect(connect, monitor) {
 const TargetIndicator = (props) => {
     const {index, laneId, parentIndex, parentLaneId} = props;
     if(laneId !== parentLaneId || index !== parentIndex) return false;
-    return (<div className='lane-card-placeholder' />);
+    return (<div className="lane-card-placeholder" />);
 }
 
 class Card extends Component {
     constructor(props) {
         super(props);
+
+        this.state = {
+            mouseOn: false
+        }
     }
-    
+
     renderCard = () => {
         const {
-            index, caption, description, users, placeholder, connectDragSource,
-            connectDropTarget, onDelete
+            caption, description, users, placeholder, connectDragSource,
+            connectDropTarget, onDelete, cardId, laneId
         } = this.props;
-        
+
+        const {mouseOn} = this.state;
+
         if(placeholder){
             return connectDropTarget(<div className="card-placeholder" />);
         }else{
             return connectDragSource(connectDropTarget(
                 <div className="card">
-                    <i
-                        className="meta-icon-close-1 float-xs-right"
-                        onClick={onDelete}
-                    />
+                    {mouseOn && onDelete && <i
+                        className="pointer meta-icon-close-1 float-xs-right"
+                        onClick={() => onDelete(laneId, cardId)}
+                    />}
                     <b>{caption}</b>
                     <p>{description}</p>
-                    <span className="tag tag-primary">asd</span>
                     {users.map((user, i) =>
-                        <Avatar 
+                        <Avatar
                             key={i}
                             id={user.avatarId}
                             className="float-xs-right"
@@ -94,18 +98,22 @@ class Card extends Component {
                             title={user.fullname}
                         />
                     )}
+                    <span className="clearfix"/>
                 </div>
             ));
         }
-    } 
+    }
 
     render() {
         const {
             targetIndicator, index, laneId
         } = this.props;
-                
+
         return (
-            <div>
+            <div
+                onMouseEnter={() => this.setState({mouseOn: true})}
+                onMouseLeave={() => this.setState({mouseOn: false})}
+            >
                 {targetIndicator && <TargetIndicator
                     {...targetIndicator}
                     parentIndex={index}

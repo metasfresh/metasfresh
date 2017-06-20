@@ -7,19 +7,26 @@ class Lanes extends Component {
     }
 
     render() {
-        const {lanes, onDrop, onHover, onReject, targetIndicator} = this.props;
-        
+        const {
+            lanes, onDrop, onHover, onReject, onDelete, targetIndicator
+        } = this.props;
+
         if(!lanes) return false;
-        
+
         return (
             <div className="board-lanes">
                 {lanes.map((lane, i) => (
-                    <Lane 
+                    <Lane
                         key={i}
-                        {...{onDrop, onHover, onReject, targetIndicator}}
+                        {...{
+                            onDrop, onHover, onDelete, onReject, targetIndicator
+                        }}
                         {...lane}
                     />)
                 )}
+                <Lane
+                    placeholder={true}
+                />
             </div>
         );
     }

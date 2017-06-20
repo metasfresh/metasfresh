@@ -3,12 +3,12 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import update from 'immutability-helper';
 
-import {getData, patchRequest} from '../actions/GenericActions';
+import {getData, patchRequest, deleteRequest} from '../actions/GenericActions';
 import {connectWS, disconnectWS} from '../actions/WindowActions';
 import {addCard} from '../actions/BoardActions';
 
 import { DragDropContext } from 'react-dnd';
-import HTML5Backend, { NativeTypes } from 'react-dnd-html5-backend';
+import HTML5Backend from 'react-dnd-html5-backend';
 
 import Container from '../components/Container';
 import BlankPage from '../components/BlankPage';
@@ -18,31 +18,35 @@ import Sidenav from '../components/board/Sidenav';
 class Board extends Component {
     constructor(props){
         super(props);
-        
+
         this.state = {
             sidenav: false,
             board: null,
             targetIndicator: {
                 laneId: null,
                 index: null
-            }
+            },
+            sidenavViewId: null
         }
     }
-    
+
     componentWillMount = () => {
         this.init();
     }
-    
+
+    componentWillUnmount = () => {
+        disconnectWS.call(this);
+    }
+
     init = () => {
         const {boardId} = this.props;
-        
+
         getData('board', boardId).then(res => {
             this.setState({
                 board: res.data
             }, () => {
                 connectWS.call(this, res.data.websocketEndpoint, msg => {
                     //TODO
-                    console.log(msg);
                 })
             })
         }).catch(err => {
@@ -51,30 +55,41 @@ class Board extends Component {
             })
         })
     }
-    
+
     handleDrop = (card, targetLaneId) => {
         const {board} = this.state;
-        
+
+        this.clearTargetIndicator();
+
         const laneIndex = board.lanes.findIndex(l => l.laneId === targetLaneId);
-        
+
         if(card.initLaneId === 0) {
             // Adding card
             addCard(
                 board.boardId, targetLaneId, card.id, card.index
             ).then(res => {
-                this.setState(update(this.state.board.lanes[laneIndex], {
-                    cards: {$push: [res.data]}
-                }))
+                this.addCard(laneIndex, res.data);
             });
         }else{
             // Moving card
+            const staleLaneIndex =
+                board.lanes.findIndex(l => l.laneId === card.initLaneId);
+
+            const staleCardIndex = board.lanes[staleLaneIndex].cards
+                .findIndex(c =>
+                    c.cardId === card.id
+                );
+
             patchRequest(
                 'board', board.boardId, null, null, null, 'laneId',
                 targetLaneId, 'card', card.id
-            );
+            ).then(res => {
+                this.removeCard(staleLaneIndex, staleCardIndex);
+                this.addCard(laneIndex, res.data);
+            });
         }
     }
-    
+
     handleHover = (card, targetLaneId, targetIndex) => {
         this.setState({
             targetIndicator: {
@@ -83,7 +98,7 @@ class Board extends Component {
             }
         });
     }
-    
+
     clearTargetIndicator = () => {
         this.setState({
             targetIndicator: {
@@ -93,13 +108,54 @@ class Board extends Component {
         });
     }
 
+    removeCard = (laneIndex, cardIndex) => {
+        this.setState(prev => update(prev, {
+            board: {
+                lanes: {
+                    [laneIndex]: {
+                        cards: {$splice: [[cardIndex, 1]]}
+                    }
+                }
+            }
+        }))
+    }
+
+    addCard = (laneIndex, card) => {
+        this.setState(prev => update(prev, {
+            board: {
+                lanes: {
+                    [laneIndex]: {
+                        cards: {$push: [card]}
+                    }
+                }
+            }
+        }));
+    }
+
+    handleDelete = (laneId, cardId) => {
+        const {board} = this.state;
+
+        const laneIndex = board.lanes.findIndex(l => l.laneId === laneId);
+
+        deleteRequest(
+            'board', board.boardId, null, null, null, 'card', cardId
+        ).then(() => {
+            this.removeCard(
+                laneIndex,
+                board.lanes[laneIndex].cards
+                    .findIndex(c => c.cardId === cardId));
+        });
+    }
+
+    setSidenavViewId = (id) => {this.setState({sidenavViewId: id})}
+
     render() {
         const {
             modal, rawModal, breadcrumb, indicator
         } = this.props;
-        
+
         const {
-            board, targetIndicator, sidenav
+            board, targetIndicator, sidenav, sidenavViewId
         } = this.state;
 
         return (
@@ -111,14 +167,16 @@ class Board extends Component {
                 {sidenav && (
                     <Sidenav
                         boardId={board.boardId}
+                        viewId={sidenavViewId}
                         onClickOutside={() => this.setState({sidenav: false})}
+                        setViewId={this.setSidenavViewId}
                     />
                 )}
-                {board === 404 ? 
-                    <BlankPage what='Board' /> : 
-                    <div className='board'>
-                        <div 
-                            key='board-header'
+                {board === 404 ?
+                    <BlankPage what="Board" /> :
+                    <div className="board">
+                        <div
+                            key="board-header"
                             className="board-header clearfix"
                         >
                             <button
@@ -130,10 +188,11 @@ class Board extends Component {
                         </div>
                         <Lanes
                             {...{targetIndicator}}
-                            key='board-lanes'
+                            key="board-lanes"
                             onDrop={this.handleDrop}
                             onHover={this.handleHover}
                             onReject={this.clearTargetIndicator}
+                            onDelete={this.handleDelete}
                             lanes={board && board.lanes}
                         />
                     </div>
@@ -153,7 +212,7 @@ Board.propTypes = {
 
 function mapStateToProps(state) {
     const { windowHandler, menuHandler } = state;
-    
+
     const {
         modal,
         rawModal,
@@ -169,7 +228,7 @@ function mapStateToProps(state) {
     } = menuHandler || {
         breadcrumb: []
     }
-    
+
     return {
         modal, rawModal, indicator, breadcrumb
     }

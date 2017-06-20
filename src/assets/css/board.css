@@ -18,9 +18,17 @@
 }
 
 .board-lane {
+    border: 1px solid $brand-border-color;
+}
+
+.board-lane-placeholder {
+    opacity: .8;
+}
+
+.board-lane,
+.board-lane-placeholder {
     min-width: 25%;
     border-radius: 3px;
-    border: 1px solid $brand-border-color;
     margin-right: 3px;
     background-color: $brand-bright-color;
 }
