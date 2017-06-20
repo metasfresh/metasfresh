@@ -116,7 +116,7 @@ public class BoardRestController
 		return JSONBoardCard.of(card, userSession.getAD_Language());
 	}
 
-	@PostMapping("/{boardId}/card/{cardId}")
+	@GetMapping("/{boardId}/card/{cardId}")
 	public JSONBoardCard getCard(@PathVariable("boardId") final int boardId, @PathVariable("cardId") final int cardId)
 	{
 		final BoardCard card = boardsRepo.getCard(boardId, cardId);
