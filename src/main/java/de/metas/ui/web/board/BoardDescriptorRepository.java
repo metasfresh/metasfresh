@@ -17,6 +17,8 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,6 +52,8 @@ import de.metas.ui.web.board.BoardDescriptor.BoardDescriptorBuilder;
 import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList;
 import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList.JSONBoardChangedEventsListBuilder;
 import de.metas.ui.web.board.json.events.JSONBoardLaneChangedEvent;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
@@ -162,11 +166,12 @@ public class BoardDescriptorRepository
 
 		//
 		// Board document lookup provider
+		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
 		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
 				.setColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setAD_Val_Rule_ID(boardPO.getAD_Val_Rule_ID())
+				.setAD_Val_Rule_ID(adValRuleId)
 				.buildProvider();
 
 		//
@@ -182,10 +187,26 @@ public class BoardDescriptorRepository
 				.tableName(tableName)
 				.tableAlias(tableAlias)
 				.keyColumnName(keyColumnName)
-				.adValRuleId(boardPO.getAD_Val_Rule_ID())
 				.userIdColumnName(userIdColumnName)
 				//
 				.websocketEndpoint(WebSocketConfig.buildBoardTopicName(boardId));
+		
+		//
+		// Source document filters: AD_Val_Rule_ID
+		if(adValRuleId > 0)
+		{
+			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableName, adValRuleId);
+			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
+					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
+
+			final List<Object> sqlWhereClauseParams = ImmutableList.of();
+			final DocumentFilter adValRuleFilter = DocumentFilter.builder()
+					.setFilterId("AD_Val_Rule_" + adValRuleId)
+					.addParameter(DocumentFilterParam.ofSqlWhereClause(true, sqlWhereClause, sqlWhereClauseParams))
+					.build();
+			boardDescriptor.documentFilter(adValRuleFilter);
+		}
+
 
 		//
 		// Lanes
@@ -330,6 +351,11 @@ public class BoardDescriptorRepository
 
 	public List<BoardCard> retrieveCardCandidates(final int boardId, final List<Integer> cardIds)
 	{
+		if(cardIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		
 		final BoardDescriptor boardDescriptor = getBoardDescriptor(boardId);
 
 		final String keyColumnName = boardDescriptor.getKeyColumnName();

@@ -4,9 +4,11 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import lombok.Builder;
@@ -57,6 +59,8 @@ public final class BoardDescriptor
 	private final WindowId documentWindowId;
 	@NonNull
 	private LookupDescriptorProvider documentLookupDescriptorProvider;
+	@Singular
+	private ImmutableList<DocumentFilter> documentFilters;
 
 	// Source record mapping
 	@NonNull
@@ -65,7 +69,6 @@ public final class BoardDescriptor
 	private final String tableAlias;
 	@NonNull
 	private final String keyColumnName;
-	private final int adValRuleId;
 	@NonNull
 	private final String userIdColumnName;
 

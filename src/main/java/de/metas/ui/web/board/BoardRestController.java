@@ -190,9 +190,9 @@ public class BoardRestController
 		userSession.assertLoggedIn();
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
-
+		
 		final CreateViewRequest request = CreateViewRequest.builder(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list)
-				// TODO: apply board's AD_Val_Rule_ID
+				.setStickyFilters(boardDescriptor.getDocumentFilters())
 				.build();
 		final IView view = viewsRepo.createView(request);
 		return toJSONCardsViewResult(boardId, view, userSession.getAD_Language());
