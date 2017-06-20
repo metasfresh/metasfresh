@@ -51,6 +51,7 @@
     "react-dnd-html5-backend": "~2.1.2",
     "react-dom": "~15.5.0",
     "react-dropzone": "~3.9.2",
+    "react-infinite-scroller": "^1.0.12",
     "react-interpolate-component": "~0.11.0",
     "react-onclickoutside": "~5.3.3",
     "react-redux": "~4.4.5",

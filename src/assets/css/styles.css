@@ -2,7 +2,8 @@
 @import './variables.css';
 @import './focus.css';
 
-
+@import './board.css';
+@import './charts.css';
 @import './charts.css';
 @import './daterangepicker.css';
 @import './datetime.css';
@@ -1176,6 +1177,11 @@ td.pulse-off input {
 .avatar {
     width: 35px;
     height: 35px;
+}
+
+.avatar-sm {
+    width: 25px;
+    height: 25px;
 }
 
 .avatar-container {
