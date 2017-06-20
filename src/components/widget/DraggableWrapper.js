@@ -7,6 +7,7 @@ import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawChart from '../charts/RawChart';
+import Sidenav from '../dashboard/Sidenav';
 
 import {
     getKPIsDashboard,
@@ -21,15 +22,16 @@ export class DraggableWrapper extends Component {
             cards: [],
             isVisible: true,
             idMaximized: false,
-            indicators: []
+            indicators: [],
+            sidenav: null
         };
     }
-
+    
     componentDidMount = () => {
         this.getDashboard();
         this.getIndicators();
     }
-
+    
     getIndicators = () => {
         getTargetIndicatorsDashboard().then(response => {
             this.setState(Object.assign({}, this.state, {
@@ -37,7 +39,7 @@ export class DraggableWrapper extends Component {
             }));
         });
     }
-
+    
     getDashboard = () => {
         getKPIsDashboard().then(response => {
             this.setState(Object.assign({}, this.state, {
@@ -45,11 +47,11 @@ export class DraggableWrapper extends Component {
             }));
         });
     }
-
+    
     moveCard = (dragIndex, hoverIndex) => {
         const { cards } = this.state;
         const dragCard = cards[dragIndex];
-
+        
         this.setState(update(this.state, {
             cards: {
                 $splice: [
@@ -67,31 +69,40 @@ export class DraggableWrapper extends Component {
             //TO DO: future implementation
         });
     }
-
+    
     hideWidgets = (id) => {
         this.setState({
             isVisible: false,
             idMaximized: id
         })
     }
-
+    
     showWidgets = () => {
         this.setState({
             isVisible: true,
             idMaximized: false
         })
     }
-
+    
     render() {
-        const { cards, idMaximized, indicators } = this.state;
-
+        const { cards, idMaximized, indicators, sidenav} = this.state;
+        
         return (
             <div className="dashboard-cards-wrapper">
-
-                {indicators.length > 0 && <div className={
+                <div className="dashboard-cards-wrapper">
+                    <div className="dashboard-edit-bar clearfix">
+                        <button
+                            className="btn btn-meta-outline-secondary btn-xs float-xs-right"
+                            onClick={() => this.setState({sidenav: "targetIndicators"})}
+                        >
+                            <i className="meta-icon-settings" /> Target ind. settings
+                        </button>
+                    </div>
+                    {indicators.length > 0 && <div className={
                         'indicators-wrapper ' +
                         (idMaximized !== false ? 'indicator-hidden' : '')
                     }>
+                    
                     {indicators.map((indicator, id) =>
                         <RawChart
                             key={id}
@@ -101,48 +112,62 @@ export class DraggableWrapper extends Component {
                             pollInterval={indicator.kpi.pollIntervalSec}
                             chartType={'Indicator'}
                             kpi={false}
-
-                        />
+                            
+                            />
                     )}
-                </div>}
-
-                { cards.length > 0 ?
-
-                    cards.map((item, id) => {
-                    return (
-                        <DraggableWidget
-                            key={item.id}
-                            id={item.id}
-                            index={id}
-                            chartType={item.kpi.chartType}
-                            caption={item.caption}
-                            fields={item.kpi.fields}
-                            groupBy={item.kpi.groupByField}
-                            pollInterval={item.kpi.pollIntervalSec}
-                            kpi={true}
-                            moveCard={this.moveCard}
-                            hideWidgets={this.hideWidgets}
-                            showWidgets={this.showWidgets}
-                            idMaximized={idMaximized}
-                            text={item.caption}
-                        />
-                    );
-                }):
-                    <div className="dashboard-wrapper dashboard-logo-wrapper">
-                        <div className="logo-wrapper">
-                            <img src={logo} />
-                        </div>
+                    </div>}
+                    <div className="dashboard-edit-bar clearfix">
+                        <button
+                            className="btn btn-meta-outline-secondary btn-xs float-xs-right"
+                            onClick={() => this.setState({sidenav: "kpis"})}
+                        >
+                            <i className="meta-icon-settings" /> KPIs settings
+                            </button>
                     </div>
-                }
-            </div>
-        );
+                        {cards.length > 0 ?
+                            cards.map((item, id) => {
+                                return (
+                                    <DraggableWidget
+                                        key={item.id}
+                                        id={item.id}
+                                        index={id}
+                                        chartType={item.kpi.chartType}
+                                        caption={item.caption}
+                                        fields={item.kpi.fields}
+                                        groupBy={item.kpi.groupByField}
+                                        pollInterval={item.kpi.pollIntervalSec}
+                                        kpi={true}
+                                        moveCard={this.moveCard}
+                                        hideWidgets={this.hideWidgets}
+                                        showWidgets={this.showWidgets}
+                                        idMaximized={idMaximized}
+                                        text={item.caption}
+                                        />
+                                );
+                            }):
+                            <div className="dashboard-wrapper dashboard-logo-wrapper">
+                                <div className="logo-wrapper">
+                                    <img src={logo} />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    {sidenav && 
+                        <Sidenav
+                            onClickOutside={() =>
+                                this.setState({sidenav: null})}
+                            entity={sidenav}
+                        />
+                    }
+                </div>
+            );
+        }
     }
-}
-
-DraggableWrapper.propTypes = {
-    dispatch: PropTypes.func.isRequired
-};
-
-DraggableWrapper = connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
-
-export default DraggableWrapper;
+    
+    DraggableWrapper.propTypes = {
+        dispatch: PropTypes.func.isRequired
+    };
+    
+    DraggableWrapper = connect()(DragDropContext(HTML5Backend)(DraggableWrapper));
+    
+    export default DraggableWrapper;
