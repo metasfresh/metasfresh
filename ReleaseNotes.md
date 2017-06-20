@@ -53,6 +53,8 @@ Here come the actual release notes:
   * [#1852](https://github.com/metasfresh/metasfresh/issues/1852) intern: discover interceptors which were annotated with @Component
   * [#1857](https://github.com/metasfresh/metasfresh/issues/1857) Translation de_DE for static UI components in WebUI
     * New base language Translation for the static elements in ad_messages in WebUI.
+  * [#1859](https://github.com/metasfresh/metasfresh/issues/1859) Export all webui AD_Messages from w101
+    * Exporting the whole webui ad_messages for migration purpose.
 
 * metasfresh-webui-api
   * [#458](https://github.com/metasfresh/metasfresh-webui-api/issues/458) Debug endpoint to track websocket outbound events
