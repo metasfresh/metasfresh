@@ -24,19 +24,23 @@ import de.metas.ui.web.board.json.JSONBoard.JSONBoardBuilder;
 import de.metas.ui.web.board.json.JSONBoardCard;
 import de.metas.ui.web.board.json.JSONBoardCardAddRequest;
 import de.metas.ui.web.board.json.JSONBoardLane;
+import de.metas.ui.web.board.json.JSONNewCardsViewLayout;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 
 /*
@@ -75,6 +79,11 @@ public class BoardRestController
 
 	@Autowired
 	private IViewsRepository viewsRepo;
+
+	private JSONOptions newJSONOptions()
+	{
+		return JSONOptions.builder(userSession).build();
+	}
 
 	@GetMapping("/{boardId}")
 	public JSONBoard getBoard(@PathVariable("boardId") final int boardId)
@@ -180,6 +189,26 @@ public class BoardRestController
 				.build();
 		final IView view = viewsRepo.createView(request);
 		return toJSONCardsViewResult(boardId, view, userSession.getAD_Language());
+	}
+
+	@GetMapping("/{boardId}/newCardsView/layout")
+	public JSONNewCardsViewLayout getNewCardsViewLayout(@PathVariable("boardId") final int boardId)
+	{
+		userSession.assertLoggedIn();
+
+		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
+
+		final ViewLayout documentsViewLayout = viewsRepo.getViewLayout(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list);
+
+		final JSONOptions jsonOpts = newJSONOptions();
+		final String adLanguage = jsonOpts.getAD_Language();
+		return JSONNewCardsViewLayout.builder()
+				.caption(documentsViewLayout.getCaption(adLanguage))
+				.description(documentsViewLayout.getDescription(adLanguage))
+				.emptyResultHint(documentsViewLayout.getEmptyResultHint(adLanguage))
+				.emptyResultText(documentsViewLayout.getEmptyResultText(adLanguage))
+				.filters(JSONDocumentFilterDescriptor.ofCollection(documentsViewLayout.getFilters(), jsonOpts))
+				.build();
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}")
