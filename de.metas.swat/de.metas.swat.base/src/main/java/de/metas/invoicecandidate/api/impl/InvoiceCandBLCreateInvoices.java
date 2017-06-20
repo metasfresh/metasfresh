@@ -840,7 +840,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	{
 		final List<IInvoiceHeader> aggregationResult = aggregationEngine.aggregate();
 
-		if (getInvoicingParams().isAssumeOneInvoice())
+		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
 					aggregationResult.size(), aggregationResult);
@@ -1125,7 +1125,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (_collector == null)
 		{
 			// note that we don't want to store the actual invoices in the result if there is a change to encounter memory problems
-			_collector = invoiceCandBL.createInvoiceGenerateResult(_invoicingParams.isStoreInvoicesInResult());
+			_collector = invoiceCandBL.createInvoiceGenerateResult(_invoicingParams == null ? false : _invoicingParams.isStoreInvoicesInResult());
 		}
 		return _collector;
 	}
