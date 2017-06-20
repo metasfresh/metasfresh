@@ -117,7 +117,7 @@ class Subheader extends Component {
     renderNavColumn = () => {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
-            handleDelete, docNo, redirect, breadcrumb, siteName
+            handleDelete, docNo, redirect, breadcrumb, siteName, handleEmail
         } = this.props;
 
         const docLinks = dataId && [
@@ -161,6 +161,15 @@ class Subheader extends Component {
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}
                 </span>
+            </div>,
+            <div
+                key={4}
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
+                onClick={() => handleEmail()}
+            >
+                <i className="meta-icon-message" />
+                Email
             </div>
         ]
 
