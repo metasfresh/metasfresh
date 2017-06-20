@@ -7,7 +7,6 @@ import MenuOverlayItem from './MenuOverlayItem';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import {
-    nodePathsRequest,
     queryPathsRequest,
     pathRequest,
     getWindowBreadcrumb,
@@ -21,10 +20,8 @@ class MenuOverlay extends Component {
         this.state = {
             queriedResults: [],
             query: '',
-            deepNode: null,
             deepSubNode: null,
             path: '',
-            subPath: '',
             data: {}
         };
     }
@@ -126,7 +123,6 @@ class MenuOverlay extends Component {
     }
 
     renderNaviagtion = (node) => {
-        const {path, deepNode} = this.state;
         const {handleMenuOverlay, openModal, dispatch, siteName} = this.props;
         return (
              <div
@@ -178,23 +174,24 @@ class MenuOverlay extends Component {
     }
 
     renderSubnavigation = (nodeData) => {
+        const {handleMenuOverlay, openModal} = this.props;
         return(
             <div>
-                {(nodeData && nodeData.children) &&
-                    nodeData.children.map((item, index) =>
-                    <span
-                        className="menu-overlay-expanded-link"
-                        key={index}
-                    >
-                        <span
-                            className={item.elementId ?
-                                'menu-overlay-link' : 'menu-overlay-expand'
-                            }
-                            onClick={ () => this.linkClick(item) }>
-                                {item.caption}
-                        </span>
-                    </span>
-                )}
+                <MenuOverlayContainer
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    handlePath={this.handlePath}
+                    parent={nodeData}
+                    printChildren={true}
+                    transparentBookmarks={true}
+                    back={e => this.handleClickBack(e)}
+                    handleMenuOverlay={handleMenuOverlay}
+                    openModal={openModal}
+                    subNavigation={true}
+                    children={nodeData.children}
+                    type={nodeData.type}
+                />
             </div>
         )
     }
@@ -217,6 +214,7 @@ class MenuOverlay extends Component {
         const firstQueryItem =
             document.getElementsByClassName('menu-overlay-query')[0]
                 .getElementsByClassName('js-menu-item')[0];
+
         const browseItem = document.getElementsByClassName('js-browse-item')[0];
         const isBrowseItemActive = document.activeElement.classList.contains('js-browse-item');
         const parentSibling = document.activeElement.parentElement.nextSibling;
@@ -270,16 +268,20 @@ class MenuOverlay extends Component {
 
     render() {
         const {
-            queriedResults, deepNode, deepSubNode, subPath, query, data
+            queriedResults, deepSubNode, query, data
         } = this.state;
         const {
-            nodeId, node, siteName, handleMenuOverlay, openModal
+            nodeId, node, handleMenuOverlay, openModal
         } = this.props;
+        const nodeData = nodeId == '0' ? data : node.children;
         return (
             <div
                 className="menu-overlay menu-overlay-primary"
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
+
+                { nodeId == 0 ?
+                    //ROOT
                     <div className="menu-overlay-root-body">
                         {this.renderNaviagtion(data)}
                         <div
@@ -333,7 +335,20 @@ class MenuOverlay extends Component {
                                 <span>There are no results</span>
                             }
                         </div>
-                    </div>
+                    </div> :
+                    //NOT ROOT
+                    <div
+                    className="menu-overlay-node-container menu-suboverlay">
+                            {
+                                    <p className="menu-overlay-header">
+                                        {nodeData && nodeData.caption}
+                                    </p>
+                            }
+                            {this.renderSubnavigation(
+                                deepSubNode ? deepSubNode : nodeData
+                            )}
+                        </div>
+                }
                 </div>
             </div>
         )
