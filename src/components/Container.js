@@ -20,8 +20,21 @@ class Container extends Component {
     }
 
     getTranslates = () => {
+        //to remove
+        const tmp = {
+            view: {
+                selectAllItems: {
+                    caption: 'Select all %(size) items',
+                    you_clicked_on: 'You clicked on %(what)s.'
+                }
+            }
+        }
         getMessages().then(response => {
-            counterpart.registerTranslations('lang', response.data);
+            console.log(response.data);
+            // counterpart.registerTranslations('lang', response.data);
+            // counterpart.setLocale('lang');
+
+            counterpart.registerTranslations('lang', tmp);
             counterpart.setLocale('lang');
         })
     }

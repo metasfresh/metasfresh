@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
+import Translate from 'react-translate-component';
 
 import {updateBreadcrumb} from '../../actions/MenuActions';
 
@@ -222,6 +223,8 @@ class Subheader extends Component {
     }
 
     render() {
+        const _t = Translate.translate; //todo
+
         return (
             <div
                 className="subheader-container overlay-shadow subheader-open js-not-unselect"
@@ -229,6 +232,16 @@ class Subheader extends Component {
                 onKeyDown={this.handleKeyDown}
                 ref={(c)=> this.subHeader = c}
             >
+            
+            { // todo
+                _t('view.selectAllItems.caption', {size: '22'}) }
+            { _t('view.selectAllItems.you_clicked_on', { what: 'bbb' }) }
+            {
+                
+                
+                
+                //
+            }
                 <div className="container-fluid-subheader container-fluid">
                     <div className="subheader-row">
                         {this.renderNavColumn()}
