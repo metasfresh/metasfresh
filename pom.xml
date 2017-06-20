@@ -19,16 +19,14 @@
 	<properties>
 		<start-class>de.metas.procurement.webui.Application</start-class>
 
-		<java.version>1.8</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
 		<version.vaadin>7.6.1</version.vaadin>
 		<vaadin.plugin.version>${version.vaadin}</vaadin.plugin.version>
 
 		<touchkit.version>4.1.0.rc1</touchkit.version>
 
 		<vaadin4spring.version>0.0.7.RELEASE</vaadin4spring.version>
+
+		<vaadin-spring.version>1.0.0.beta3</vaadin-spring.version>
 
 		<spring-boot.version>1.4.1.RELEASE</spring-boot.version>
 
@@ -87,16 +85,34 @@
 			<groupId>org.vaadin.spring.extensions</groupId>
 			<artifactId>vaadin-spring-ext-boot</artifactId>
 			<version>${vaadin4spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-spring</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.vaadin.spring.addons</groupId>
 			<artifactId>vaadin-spring-addon-eventbus</artifactId>
 			<version>${vaadin4spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-spring</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.vaadin.spring.addons</groupId>
 			<artifactId>vaadin-spring-addon-i18n</artifactId>
 			<version>${vaadin4spring.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-spring</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -134,7 +150,7 @@
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-spring</artifactId>
-			<version>1.0.0.beta3</version>
+			<version>${vaadin-spring.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.vaadin.addon</groupId>
@@ -158,7 +174,18 @@
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-client</artifactId>
 			<version>${version.vaadin}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.validation</groupId>
+					<artifactId>validation-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>com.vaadin</groupId>
 			<artifactId>vaadin-push</artifactId>
@@ -177,7 +204,14 @@
 			<groupId>org.vaadin</groupId>
 			<artifactId>viritin</artifactId>
 			<version>1.35</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.vaadin</groupId>
+					<artifactId>vaadin-server</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
+
 		<dependency>
 			<groupId>org.vaadin.addons</groupId>
 			<artifactId>qrcode</artifactId>
@@ -285,15 +319,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
-				</configuration>
 			</plugin>
 
 			<plugin>
