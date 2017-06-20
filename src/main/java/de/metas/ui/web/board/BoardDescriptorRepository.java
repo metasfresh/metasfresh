@@ -22,6 +22,7 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.NumberUtils;
@@ -720,13 +721,23 @@ public class BoardDescriptorRepository
 		final JSONBoardChangedEventsListBuilder eventsCollector = JSONBoardChangedEventsList.builder();
 
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
-			final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
-			assignment.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-			assignment.setWEBUI_Board_ID(boardId);
-			assignment.setWEBUI_Board_Lane_ID(laneId);
-			assignment.setRecord_ID(cardId);
-			assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
-			InterfaceWrapperHelper.save(assignment);
+			try
+			{
+				final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
+				assignment.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+				assignment.setWEBUI_Board_ID(boardId);
+				assignment.setWEBUI_Board_Lane_ID(laneId);
+				assignment.setRecord_ID(cardId);
+				assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
+				InterfaceWrapperHelper.save(assignment);
+			}
+			catch (final DBUniqueConstraintException ex)
+			{
+				throw new AdempiereException("Card was already added to this board")
+						.setParameter("boardI", boardId)
+						.setParameter("laneId", laneId)
+						.setParameter("cardId", cardId);
+			}
 
 			final LaneCardsSequence orderedCardIds = changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardIdAtPosition(cardId, position));
 			eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, laneId, orderedCardIds.getCardIds()));
