@@ -733,7 +733,7 @@ public class BoardDescriptorRepository
 			}
 			catch (final DBUniqueConstraintException ex)
 			{
-				throw new AdempiereException("Card was already added to this board")
+				throw new AdempiereException("Card was already added to this board", ex)
 						.setParameter("boardI", boardId)
 						.setParameter("laneId", laneId)
 						.setParameter("cardId", cardId);
