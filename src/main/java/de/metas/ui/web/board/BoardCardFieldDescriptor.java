@@ -53,6 +53,9 @@ public class BoardCardFieldDescriptor
 	private final boolean usingDisplayColumn;
 	private final IStringExpression sqlSelectDisplayValue;
 
+	@NonNull
+	private final IStringExpression sqlOrderBy;
+
 	/** Retrieves a particular field from given {@link ResultSet}. */
 	@FunctionalInterface
 	public static interface BoardFieldLoader

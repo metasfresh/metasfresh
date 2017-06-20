@@ -23,6 +23,7 @@ import de.metas.ui.web.board.json.JSONBoard;
 import de.metas.ui.web.board.json.JSONBoard.JSONBoardBuilder;
 import de.metas.ui.web.board.json.JSONBoardCard;
 import de.metas.ui.web.board.json.JSONBoardCardAddRequest;
+import de.metas.ui.web.board.json.JSONBoardCardOrderBy;
 import de.metas.ui.web.board.json.JSONBoardLane;
 import de.metas.ui.web.board.json.JSONNewCardsViewLayout;
 import de.metas.ui.web.config.WebConfig;
@@ -183,14 +184,14 @@ public class BoardRestController
 	{
 		return createNewCardsView(boardId);
 	}
-	
+
 	@PostMapping("/{boardId}/newCardsView")
 	public JSONViewResult createNewCardsView(@PathVariable("boardId") final int boardId)
 	{
 		userSession.assertLoggedIn();
 
 		final BoardDescriptor boardDescriptor = boardsRepo.getBoardDescriptor(boardId);
-		
+
 		final CreateViewRequest request = CreateViewRequest.builder(boardDescriptor.getDocumentWindowId(), JSONViewDataType.list)
 				.setStickyFilters(boardDescriptor.getDocumentFilters())
 				.build();
@@ -215,6 +216,12 @@ public class BoardRestController
 				.emptyResultHint(documentsViewLayout.getEmptyResultHint(adLanguage))
 				.emptyResultText(documentsViewLayout.getEmptyResultText(adLanguage))
 				.filters(JSONDocumentFilterDescriptor.ofCollection(documentsViewLayout.getFilters(), jsonOpts))
+				.orderBys(boardDescriptor.getCardFields().stream()
+						.map(cardField -> JSONBoardCardOrderBy.builder()
+								.fieldName(cardField.getFieldName())
+								.caption(cardField.getCaption().translate(adLanguage))
+								.build())
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

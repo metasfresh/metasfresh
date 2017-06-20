@@ -300,6 +300,7 @@ public class BoardDescriptorRepository
 				//
 				.usingDisplayColumn(isDisplayColumnAvailable)
 				.sqlSelectDisplayValue(fieldBinding.getSqlSelectDisplayValue())
+				.sqlOrderBy(fieldBinding.getSqlOrderBy())
 				.fieldLoader(fieldLoader)
 				.build();
 	}

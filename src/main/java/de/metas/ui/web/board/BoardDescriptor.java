@@ -59,6 +59,8 @@ public final class BoardDescriptor
 	private final WindowId documentWindowId;
 	@NonNull
 	private LookupDescriptorProvider documentLookupDescriptorProvider;
+
+	/** document sticky filters (those will be applied no matter what; can come from WEBUI_Dashboard.AD_Val_Rule_ID for example) */
 	@Singular
 	private ImmutableList<DocumentFilter> documentFilters;
 
