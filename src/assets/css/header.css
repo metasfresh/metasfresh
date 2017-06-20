@@ -357,7 +357,12 @@
     display: block;
 }
 
-.sitemap .menu-overlay-node-container {
+
+.menu-overlay-node-container.menu-suboverlay {
+    width: 100%;
+}
+
+.menu-suboverlay .menu-overlay-node-container {
     width: 100%;
 }
 
