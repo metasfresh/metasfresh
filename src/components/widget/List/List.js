@@ -30,7 +30,7 @@ class List extends Component {
     }
 
     componentDidUpdate(prevProps){
-        const {isInputEmpty} = this.props;
+        const {isInputEmpty, localClearing, resetLocalClearing} = this.props;
 
         if(isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
 
@@ -38,6 +38,14 @@ class List extends Component {
                 prevValue: ''
             });
 
+        }
+
+        if(localClearing) {
+            console.log('localClearing');
+            this.setState({
+                list: []
+            });
+            resetLocalClearing();
         }
     }
 

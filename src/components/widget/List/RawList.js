@@ -31,6 +31,13 @@ class RawList extends Component {
             blur && this.handleBlur();
         }
 
+        console.log(list.length);
+
+        if(prevState.isOpen != this.state.isOpen && autofocus){
+            list.length === 0 && console.log('select null ' + list.length);
+            // list.length === 0 && this.handleSelect('');
+        }
+
         if(this.dropdown && autofocus) {
             this.dropdown.focus();
             if (prevState.selected !== this.state.selected) {
