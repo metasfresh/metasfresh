@@ -243,10 +243,12 @@ public class BoardRestController
 
 	private final JSONViewResult toJSONCardsViewResult(final int boardId, final ViewResult viewResult, final String adLanguage)
 	{
+		final List<Integer> boardCardIds = boardsRepo.retrieveCardIds(boardId);
 		final List<Integer> cardIds = viewResult.getRowIds()
 				.stream()
 				.filter(DocumentId::isInt)
 				.map(DocumentId::toInt)
+				.filter(cardId -> !boardCardIds.contains(cardId)) // filter out cards which already exist in our board
 				.collect(ImmutableList.toImmutableList());
 
 		final List<JSONBoardCard> jsonCards = boardsRepo.retrieveCardCandidates(boardId, cardIds)

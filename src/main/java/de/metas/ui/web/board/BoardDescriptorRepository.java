@@ -318,6 +318,16 @@ public class BoardDescriptorRepository
 		return retrieveCardsFromSql(sql, sqlParams, boardDescriptor);
 	}
 
+	/** @return all cardIds contained in given <code>boardId</code> */
+	public List<Integer> retrieveCardIds(final int boardId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_WEBUI_Board_RecordAssignment.class)
+				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_ID, boardId)
+				.create()
+				.listDistinct(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, Integer.class);
+	}
+
 	public List<BoardCard> retrieveCardCandidates(final int boardId, final List<Integer> cardIds)
 	{
 		final BoardDescriptor boardDescriptor = getBoardDescriptor(boardId);
