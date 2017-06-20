@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Item_Storage
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 790935216L;
+	private static final long serialVersionUID = 1557154859L;
 
     /** Standard Constructor */
     public X_M_HU_Item_Storage (Properties ctx, int M_HU_Item_Storage_ID, String trxName)

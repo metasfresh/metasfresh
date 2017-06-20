@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Attribute
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 567598441L;
+	private static final long serialVersionUID = 1660606286L;
 
     /** Standard Constructor */
     public X_M_HU_Attribute (Properties ctx, int M_HU_Attribute_ID, String trxName)

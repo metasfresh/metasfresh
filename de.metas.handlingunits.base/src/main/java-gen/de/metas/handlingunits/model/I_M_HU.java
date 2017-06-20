@@ -127,6 +127,29 @@ public interface I_M_HU
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set TUs Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCompressed_TUsCount (int Compressed_TUsCount);
+
+	/**
+	 * Get TUs Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCompressed_TUsCount();
+
+    /** Column definition for Compressed_TUsCount */
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Compressed_TUsCount = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Compressed_TUsCount", null);
+    /** Column name Compressed_TUsCount */
+    public static final String COLUMNNAME_Compressed_TUsCount = "Compressed_TUsCount";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -257,20 +280,45 @@ public interface I_M_HU
     public static final String COLUMNNAME_IsChildHU = "IsChildHU";
 
 	/**
-	 * Set Gesperrt.
+	 * Set Compressed VHU.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
+	public void setIsCompressedVHU (boolean IsCompressedVHU);
+
+	/**
+	 * Get Compressed VHU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCompressedVHU();
+
+    /** Column definition for IsCompressedVHU */
+    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsCompressedVHU = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "IsCompressedVHU", null);
+    /** Column name IsCompressedVHU */
+    public static final String COLUMNNAME_IsCompressedVHU = "IsCompressedVHU";
+
+	/**
+	 * Set Gesperrt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
 	public void setLocked (boolean Locked);
 
 	/**
 	 * Get Gesperrt.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
 	 */
 	public boolean isLocked();
 

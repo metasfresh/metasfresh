@@ -234,7 +234,7 @@ public interface I_M_HU_PI_Attribute
     public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
-	 * Set Instanz-Attribut.
+	 * Set Instanz Merkmal.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
@@ -244,7 +244,7 @@ public interface I_M_HU_PI_Attribute
 	public void setIsInstanceAttribute (boolean IsInstanceAttribute);
 
 	/**
-	 * Get Instanz-Attribut.
+	 * Get Instanz Merkmal.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo

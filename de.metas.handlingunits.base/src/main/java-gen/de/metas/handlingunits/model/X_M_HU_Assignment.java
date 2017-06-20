@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Assignment
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -197246446L;
+	private static final long serialVersionUID = 1104235555L;
 
     /** Standard Constructor */
     public X_M_HU_Assignment (Properties ctx, int M_HU_Assignment_ID, String trxName)
@@ -25,8 +24,7 @@ public class X_M_HU_Assignment extends org.compiere.model.PO implements I_M_HU_A
       /** if (M_HU_Assignment_ID == 0)
         {
 			setAD_Table_ID (0);
-			setIsTransferPackingMaterials (true);
-// Y
+			setIsTransferPackingMaterials (true); // Y
 			setM_HU_Assignment_ID (0);
 			setM_HU_ID (0);
 			setRecord_ID (0);
