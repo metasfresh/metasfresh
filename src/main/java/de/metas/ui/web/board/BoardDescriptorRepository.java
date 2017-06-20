@@ -23,6 +23,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
@@ -39,9 +40,12 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.NumberTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_WEBUI_Board;
 import de.metas.ui.web.base.model.I_WEBUI_Board_CardField;
@@ -190,10 +194,10 @@ public class BoardDescriptorRepository
 				.userIdColumnName(userIdColumnName)
 				//
 				.websocketEndpoint(WebSocketConfig.buildBoardTopicName(boardId));
-		
+
 		//
 		// Source document filters: AD_Val_Rule_ID
-		if(adValRuleId > 0)
+		if (adValRuleId > 0)
 		{
 			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableName, adValRuleId);
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
@@ -206,7 +210,6 @@ public class BoardDescriptorRepository
 					.build();
 			boardDescriptor.documentFilter(adValRuleFilter);
 		}
-
 
 		//
 		// Lanes
@@ -246,7 +249,7 @@ public class BoardDescriptorRepository
 
 	private final BoardCardFieldDescriptor createBoardCardFieldDescriptor(final I_WEBUI_Board_CardField cardFieldPO, final DocumentEntityDescriptor documentEntityDescriptor)
 	{
-		final String fieldName = cardFieldPO.getAD_Column().getColumnName(); // TODO: might be not so performant
+		final String fieldName = cardFieldPO.getAD_Column().getColumnName(); // TODO: might be not so performant, we just need the ColumnName
 
 		final DocumentFieldDescriptor documentField = documentEntityDescriptor.getField(fieldName);
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = documentField.getDataBindingNotNull(SqlDocumentFieldDataBindingDescriptor.class);
@@ -258,6 +261,7 @@ public class BoardDescriptorRepository
 		return BoardCardFieldDescriptor.builder()
 				.caption(documentField.getCaption())
 				.fieldName(fieldBinding.getColumnName())
+				.widgetType(documentField.getWidgetType())
 				.sqlSelectValue(fieldBinding.getSqlSelectValue())
 				//
 				.usingDisplayColumn(isDisplayColumnAvailable)
@@ -351,11 +355,11 @@ public class BoardDescriptorRepository
 
 	public List<BoardCard> retrieveCardCandidates(final int boardId, final List<Integer> cardIds)
 	{
-		if(cardIds.isEmpty())
+		if (cardIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
-		
+
 		final BoardDescriptor boardDescriptor = getBoardDescriptor(boardId);
 
 		final String keyColumnName = boardDescriptor.getKeyColumnName();
@@ -487,6 +491,7 @@ public class BoardDescriptorRepository
 			{
 				continue;
 			}
+
 			cardValues.put(cardField.getFieldName(), fieldValue);
 		}
 		final ITranslatableString description = buildDescription(cardValues, boardDescriptor);
@@ -524,41 +529,71 @@ public class BoardDescriptorRepository
 		return ITranslatableString.compose("\n", fieldDescriptions);
 	}
 
+	private static ITranslatableString toDisplayValue(final Object value, final DocumentFieldWidgetType widgetType)
+	{
+		if (value == null)
+		{
+			return ITranslatableString.empty();
+		}
+
+		//
+		if (widgetType == DocumentFieldWidgetType.Password)
+		{
+			// hide passwords
+			return ITranslatableString.constant("*****");
+		}
+		else if (widgetType.isText())
+		{
+			return ITranslatableString.constant(value.toString());
+		}
+		else if (widgetType == DocumentFieldWidgetType.Date)
+		{
+			return DateTimeTranslatableString.ofDate((java.util.Date)value);
+		}
+		else if (widgetType == DocumentFieldWidgetType.DateTime)
+		{
+			return DateTimeTranslatableString.ofDateTime((java.util.Date)value);
+		}
+		else if (widgetType == DocumentFieldWidgetType.Integer)
+		{
+			return ITranslatableString.constant(value.toString());
+		}
+		else if (widgetType.isNumeric())
+		{
+			final BigDecimal valueBD = NumberUtils.asBigDecimal(value, null);
+			if (valueBD != null)
+			{
+				return NumberTranslatableString.of(valueBD, widgetType.getDisplayType());
+			}
+		}
+		else if (widgetType.isLookup())
+		{
+			if (value instanceof LookupValue)
+			{
+				return ((LookupValue)value).getDisplayNameTrl();
+			}
+			else if (value instanceof JSONLookupValue)
+			{
+				return ImmutableTranslatableString.constant(((JSONLookupValue)value).getName().trim());
+			}
+		}
+		else if (widgetType.isBoolean())
+		{
+			final boolean valueBoolean = DisplayType.toBoolean(value);
+			return Services.get(IMsgBL.class).getTranslatableMsgText(valueBoolean ? "Y" : "N");
+		}
+
+		return ITranslatableString.constant(value.toString());
+	}
+
 	private static final ITranslatableString buildDescription(final Object value, final BoardCardFieldDescriptor cardField)
 	{
-		final ITranslatableString valueStr;
 		if (value == null)
 		{
 			return null;
 		}
-		else if (value instanceof LookupValue)
-		{
-			valueStr = ((LookupValue)value).getDisplayNameTrl();
-		}
-		else if (value instanceof JSONLookupValue)
-		{
-			valueStr = ImmutableTranslatableString.constant(((JSONLookupValue)value).getName().trim());
-		}
-		else if (value instanceof java.util.Date)
-		{
-			// TODO: format dates
-			valueStr = ImmutableTranslatableString.constant(value.toString());
-		}
-		else if (value instanceof BigDecimal)
-		{
-			// TODO: format numbers
-			valueStr = ImmutableTranslatableString.constant(value.toString());
-		}
-		else if (value instanceof Boolean)
-		{
-			// TODO: format booleans
-			valueStr = ImmutableTranslatableString.constant(value.toString());
-		}
-		else
-		{
-			valueStr = ImmutableTranslatableString.constant(value.toString().trim());
-		}
 
+		final ITranslatableString valueStr = toDisplayValue(value, cardField.getWidgetType());
 		return ITranslatableString.compose(": ", cardField.getCaption(), valueStr);
 	}
 

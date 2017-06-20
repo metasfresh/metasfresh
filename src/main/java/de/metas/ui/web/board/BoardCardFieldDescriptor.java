@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.adempiere.ad.expression.api.IStringExpression;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,6 +42,8 @@ public class BoardCardFieldDescriptor
 
 	@NonNull
 	private final String fieldName;
+	@NonNull
+	private final DocumentFieldWidgetType widgetType;
 	@NonNull
 	private final String sqlSelectValue;
 
