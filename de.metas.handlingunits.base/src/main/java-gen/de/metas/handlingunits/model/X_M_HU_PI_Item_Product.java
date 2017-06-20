@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_PI_Item_Product
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1276359644L;
+	private static final long serialVersionUID = 883893087L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (Properties ctx, int M_HU_PI_Item_Product_ID, String trxName)
@@ -24,10 +23,8 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
       super (ctx, M_HU_PI_Item_Product_ID, trxName);
       /** if (M_HU_PI_Item_Product_ID == 0)
         {
-			setIsAllowAnyProduct (false);
-// N
-			setIsInfiniteCapacity (false);
-// N
+			setIsAllowAnyProduct (false); // N
+			setIsInfiniteCapacity (false); // N
 			setM_HU_PI_Item_ID (0);
 			setM_HU_PI_Item_Product_ID (0);
 			setQty (BigDecimal.ZERO);

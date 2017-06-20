@@ -14,7 +14,7 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 431111907L;
+	private static final long serialVersionUID = -1772676787L;
 
     /** Standard Constructor */
     public X_M_HU_Process (Properties ctx, int M_HU_Process_ID, String trxName)
@@ -23,12 +23,9 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
       /** if (M_HU_Process_ID == 0)
         {
 			setAD_Process_ID (0);
-			setIsApplyLU (false);
-// N
-			setIsApplyTU (false);
-// N
-			setIsApplyVirtualPI (false);
-// N
+			setIsApplyLU (false); // N
+			setIsApplyTU (false); // N
+			setIsApplyVirtualPI (false); // N
 			setM_HU_Process_ID (0);
         } */
     }
