@@ -1,9 +1,11 @@
 package de.metas.ui.web.board;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -238,7 +240,12 @@ public class BoardRestController
 		final ViewResult viewResult = viewsRepo.getView(viewIdStr)
 				.getPageWithRowIdsOnly(firstRow, pageLength, DocumentQueryOrderBy.parseOrderBysList(orderBysListStr));
 
-		return toJSONCardsViewResult(boardId, viewResult, userSession.getAD_Language());
+		final List<Integer> boardCardIds = boardsRepo.retrieveCardIds(boardId);
+
+		return toJSONCardsViewResult(boardId, viewResult,
+				userSession.getAD_Language(), // language
+				cardId -> !boardCardIds.contains(cardId) // filter out cards which already exist in our board
+		);
 	}
 
 	@PostMapping("/{boardId}/newCardsView/{viewId}/filter")
@@ -284,21 +291,19 @@ public class BoardRestController
 				.transform(JSONLookupValuesList::ofLookupValuesList);
 	}
 
-	private final JSONViewResult toJSONCardsViewResult(final int boardId, final ViewResult viewResult, final String adLanguage)
+	private final JSONViewResult toJSONCardsViewResult(final int boardId, final ViewResult viewResult, final String adLanguage, Predicate<Integer> cardIdFilter)
 	{
-		final List<Integer> boardCardIds = boardsRepo.retrieveCardIds(boardId);
 		final List<Integer> cardIds = viewResult.getRowIds()
 				.stream()
-				.filter(DocumentId::isInt)
-				.map(DocumentId::toInt)
-				.filter(cardId -> !boardCardIds.contains(cardId)) // filter out cards which already exist in our board
+				.filter(DocumentId::isInt).map(DocumentId::toInt)
+				.filter(cardIdFilter)
 				.collect(ImmutableList.toImmutableList());
 
 		final List<JSONBoardCard> jsonCards = boardsRepo.retrieveCardCandidates(boardId, cardIds)
 				.stream()
 				.map(card -> JSONBoardCard.of(card, adLanguage))
+				.sorted(FixedOrderByKeyComparator.notMatchedAtTheEnd(cardIds, JSONBoardCard::getCardId))
 				.collect(ImmutableList.toImmutableList());
-		// TODO: make sure they are in the same order as the cardIds!!!!
 
 		return JSONViewResult.of(viewResult, jsonCards, adLanguage);
 	}
