@@ -223,8 +223,8 @@ class TablePagination extends Component {
                 >
                     {selectedWholePage ?
                         counterpart.translate(
-                            'view.selectAll.caption'
-                        ) + size + ' items' :
+                            'view.selectAllItems.caption',
+                            {size: size}) :
                         counterpart.translate('view.selectAllOnPage.caption')
                     }
                 </div>
