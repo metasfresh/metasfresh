@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {push} from 'react-router-redux';
+import counterpart from 'counterpart';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -315,7 +316,11 @@ class Header extends Component {
                                                     .GLOBAL_CONTEXT
                                                     .OPEN_ACTIONS_MENU
                                             }
-                                            action={'Action menu'}
+                                            action={
+                                                counterpart.translate(
+                                                'mainScreen.actionMenu.tooltip'
+                                                )
+                                            }
                                             type={''}
                                         /> }
                                 </div>
@@ -374,7 +379,11 @@ class Header extends Component {
                                                         .GLOBAL_CONTEXT
                                                         .DOC_STATUS
                                                 }
-                                                action={'Doc status'}
+                                                action= {
+                                                counterpart.translate(
+                                                'mainScreen.docStatus.tooltip'
+                                                )
+                                                }
                                                 type={''}
                                             />
                                         }
@@ -425,7 +434,11 @@ class Header extends Component {
                                                     .GLOBAL_CONTEXT
                                                     .OPEN_INBOX_MENU
                                             }
-                                            action={'Inbox'}
+                                            action= {
+                                                counterpart.translate(
+                                                    'mainScreen.inbox.tooltip'
+                                                )
+                                            }
                                             type={''}
                                         />
                                     }
@@ -485,7 +498,9 @@ class Header extends Component {
                                                         .GLOBAL_CONTEXT
                                                         .OPEN_SIDEBAR_MENU_0
                                                 }
-                                                action={'Side list'}
+                                                action={
+                                                'mainScreen.sideList.tooltip'
+                                                }
                                                 type={''}
                                             />
                                         }
