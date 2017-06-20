@@ -4,6 +4,7 @@ import {connect} from 'react-redux';
 import BarChart from './BarChartComponent';
 import PieChart from './PieChartComponent';
 import Indicator from './Indicator';
+import Loader from '../app/Loader';
 
 import {
     getKPIData,
@@ -15,7 +16,7 @@ class RawChart extends Component {
         super(props);
 
         this.state = {
-            chartData: [],
+            chartData: null,
             intervalId: null,
             err: null
         }
@@ -133,14 +134,14 @@ class RawChart extends Component {
         }
     }
 
-    renderNoData() {
+    renderNoData(data) {
         const {chartType} = this.props;
 
         switch(chartType){
             case 'Indicator':
-                return <Indicator value="No data" />
+                return <Indicator value={"No data"} loader={data === null} />
             default:
-                return <div>No data</div>
+                return <div>{data === null ? <Loader /> : "No data"}</div>
         }
     }
 
@@ -151,7 +152,7 @@ class RawChart extends Component {
             this.renderError() :
             (chartData && chartData.length > 0 ?
                 this.renderChart() :
-                this.renderNoData()
+                this.renderNoData(chartData)
             )
     }
 }
