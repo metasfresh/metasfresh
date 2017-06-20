@@ -75,7 +75,7 @@
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
- 
+
 		<dependency>
 			<groupId>de.metas.report.jasper.client</groupId>
 			<artifactId>de.metas.report.jasper.client</artifactId>
@@ -100,12 +100,6 @@
 			<groupId>ftp4che</groupId>
 			<artifactId>ftp4che</artifactId>
 			<version>0.7.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-vfs2</artifactId>
-			<version>2.0</version>
 		</dependency>
 
 		<dependency>
