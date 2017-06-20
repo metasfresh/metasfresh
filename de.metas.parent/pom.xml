@@ -30,7 +30,8 @@
 		<!-- right now 6.2.2 is the latest, but there we suffer from http://community.jaspersoft.com/jasperreports-library/issues/7521 -->
 		<jasperreports.version>6.2.1</jasperreports.version>
 
-		<!-- FRESH-397: jasper 6.2.2 uses itext, poi and zxing with theses versions -->
+		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
+		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't don't -->
 		<itext.version>2.1.7.js5</itext.version>
 		<poi.version>3.12</poi.version>
 		<zxing.version>2.3.0</zxing.version>
@@ -106,6 +107,11 @@
 					<exclusion>
 						<groupId>org.apache.lucene</groupId>
 						<artifactId>lucene-queryparser</artifactId>
+					</exclusion>
+					<!-- excluding itext, because jasper 6.2.1 accidentally uses version 2.1.7.js5-SNAPSHOT -->
+					<exclusion>
+						<groupId>com.lowagie</groupId>
+						<artifactId>itext</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -257,7 +263,7 @@
 					<artifactId>maven-release-plugin</artifactId>
 					<version>2.3.1</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
@@ -517,7 +523,7 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
-		
+
 		</plugins>
 	</build>
 

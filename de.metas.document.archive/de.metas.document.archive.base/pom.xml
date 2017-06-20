@@ -57,11 +57,18 @@
 			<version>1.0.0</version>
 		</dependency>
 
+		<!-- added for RestHttpArchiveStorage -->
 		<dependency>
-			<!-- temporary added for RestHttpArchiveStorage -->
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<version>3.1</version>
+			<!-- we use a different version at various places -->
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

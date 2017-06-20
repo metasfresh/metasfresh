@@ -75,7 +75,7 @@
 			<artifactId>metasfresh-material-event</artifactId>
 			<version>1.0.0</version>
 		</dependency>
-
+ 
 		<dependency>
 			<groupId>de.metas.report.jasper.client</groupId>
 			<artifactId>de.metas.report.jasper.client</artifactId>
@@ -133,8 +133,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
-		
 		
 		<!--
 			Lombok
@@ -147,7 +145,6 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
 
 	</dependencies>
 
@@ -157,7 +154,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
 				<executions>
 					<execution>
 						<goals>
