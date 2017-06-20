@@ -179,24 +179,21 @@ class MenuOverlay extends Component {
         const {handleMenuOverlay, openModal} = this.props;
         return(
             <div>
-                {nodeData && nodeData.children &&
-                    nodeData.children.map((item, index) =>
-                    <MenuOverlayContainer
-                        key={index}
-                        handleClickOnFolder={this.handleDeeper}
-                        handleRedirect={this.handleRedirect}
-                        handleNewRedirect={this.handleNewRedirect}
-                        handlePath={this.handlePath}
-                        parent={nodeData}
-                        printChildren={true}
-                        transparentBookmarks={true}
-                        back={e => this.handleClickBack(e)}
-                        handleMenuOverlay={handleMenuOverlay}
-                        openModal={openModal}
-                        deep={true}
-                        {...item}
-                    />
-                )}
+                <MenuOverlayContainer
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    handlePath={this.handlePath}
+                    parent={nodeData}
+                    printChildren={true}
+                    transparentBookmarks={true}
+                    back={e => this.handleClickBack(e)}
+                    handleMenuOverlay={handleMenuOverlay}
+                    openModal={openModal}
+                    subNavigation={true}
+                    children={nodeData.children}
+                    type={nodeData.type}
+                />
             </div>
         )
     }
