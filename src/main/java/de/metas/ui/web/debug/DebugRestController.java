@@ -292,8 +292,9 @@ public class DebugRestController
 
 	public static enum LoggingModule
 	{
-		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()) //
-		, cache(
+		websockets(de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName()),
+		view(de.metas.ui.web.view.IView.class.getPackage().getName()), 
+		cache(
 				org.compiere.util.CCache.class.getName() //
 				, org.compiere.util.CacheMgt.class.getName() //
 				, org.adempiere.ad.dao.cache.IModelCacheService.class.getName() // model caching
@@ -315,8 +316,8 @@ public class DebugRestController
 	}
 
 	@GetMapping("/logger/_setLevel/{level}")
-	public void setLoggerLevel(
-			@RequestParam("module") final LoggingModule module //
+	public Set<String> setLoggerLevel(
+			@RequestParam(name="module", required=false) final LoggingModule module //
 			, @RequestParam(name = "loggerName", required = false) final String loggerName //
 			, @PathVariable("level") final String levelStr //
 	)
@@ -365,6 +366,8 @@ public class DebugRestController
 				throw new IllegalStateException("For some reason " + logger + " could not be set to level " + level);
 			}
 		}
+		
+		return loggerNamesEffective;
 	}
 
 	@GetMapping("http.cache.maxAge")
