@@ -25,7 +25,7 @@
     background-color: $brand-bright-color;
 }
 
-.board-draggable-wrapper, .board-draggable-wrapper > * {
+.board-draggable-wrapper, .board-draggable-placeholder > * {
     height: 100%;
 }
 

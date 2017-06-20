@@ -7,7 +7,7 @@ class Lanes extends Component {
     }
 
     render() {
-        const {lanes, onDrop, onHover, targetIndicator} = this.props;
+        const {lanes, onDrop, onHover, onReject, targetIndicator} = this.props;
         
         if(!lanes) return false;
         
@@ -16,7 +16,7 @@ class Lanes extends Component {
                 {lanes.map((lane, i) => (
                     <Lane 
                         key={i}
-                        {...{onDrop, onHover, targetIndicator}}
+                        {...{onDrop, onHover, onReject, targetIndicator}}
                         {...lane}
                     />)
                 )}

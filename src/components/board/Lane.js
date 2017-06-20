@@ -10,13 +10,18 @@ class Lane extends Component {
 
     render() {
         const {
-            caption, cards, laneId, onHover, onDrop, targetIndicator
+            caption, cards, laneId, onHover, onDrop, targetIndicator, onReject
         } = this.props;
         
         return (
             <div className="board-lane">
                 <div className="board-lane-header">{caption}</div>
-                <div className="board-draggable-wrapper">
+                <div 
+                    className={
+                        'board-draggable-wrapper ' +
+                        (!cards.length ? 'board-draggable-placeholder ' : '')
+                    }
+                >
                     {!cards.length && <Card
                         index={0}
                         {...{laneId, onHover, onDrop, targetIndicator}}
@@ -25,7 +30,9 @@ class Lane extends Component {
                     {cards.map((card, i) => <Card
                         key={i}
                         index={i}
-                        {...{laneId, onHover, onDrop, targetIndicator}}
+                        {...{
+                            laneId, onHover, onDrop, onReject, targetIndicator
+                        }}
                         {...card} />
                     )}
                 </div>

@@ -9,16 +9,23 @@ const cardTarget = {
         props.onDrop && props.onDrop(monitor.getItem(), props.laneId);
     },
     hover(props, monitor) {
-        const hoverIndex = props.index;
-        const dragIndex = monitor.getItem().index;
-        
-        if(dragIndex === hoverIndex || !props.onHover){
+        if(
+            !props.onHover
+        ){
             return;
         }
         
+        if(
+             monitor.getItem().index === props.index &&
+             props.laneId === monitor.getItem().laneId
+        ){
+            return;
+        }
+
         props.onHover(monitor.getItem(), props.laneId, props.index);
         
-        monitor.getItem().index = hoverIndex;
+        monitor.getItem().index = props.index;
+        monitor.getItem().laneId = props.laneId;
     }
 };
 
@@ -33,8 +40,12 @@ const cardSource = {
         return {
             id: props.cardId,
             index: props.index,
+            initLaneId: props.laneId,
             laneId: props.laneId
         };
+    },
+    endDrag(props) {
+        props.onReject && props.onReject();
     }
 };
 
@@ -58,16 +69,22 @@ class Card extends Component {
     
     renderCard = () => {
         const {
-            index, caption, description, users, placeholder
+            index, caption, description, users, placeholder, connectDragSource,
+            connectDropTarget, onDelete
         } = this.props;
+        
         if(placeholder){
-            return (<div className="card-placeholder" />);
+            return connectDropTarget(<div className="card-placeholder" />);
         }else{
-            return (
-                <div className='card'>
+            return connectDragSource(connectDropTarget(
+                <div className="card">
+                    <i
+                        className="meta-icon-close-1 float-xs-right"
+                        onClick={onDelete}
+                    />
                     <b>{caption}</b>
                     <p>{description}</p>
-                    <span className='tag tag-primary'>asd</span>
+                    <span className="tag tag-primary">asd</span>
                     {users.map((user, i) =>
                         <Avatar 
                             key={i}
@@ -78,17 +95,16 @@ class Card extends Component {
                         />
                     )}
                 </div>
-            )
+            ));
         }
     } 
 
     render() {
         const {
-            connectDragSource, connectDropTarget, targetIndicator, index,
-            laneId
+            targetIndicator, index, laneId
         } = this.props;
                 
-        return connectDragSource(connectDropTarget(
+        return (
             <div>
                 {targetIndicator && <TargetIndicator
                     {...targetIndicator}
@@ -97,7 +113,7 @@ class Card extends Component {
                 />}
                 {this.renderCard()}
             </div>
-        ));
+        );
     }
 }
 

@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import update from 'react-addons-update';
+import update from 'immutability-helper';
 
 import {getData, patchRequest} from '../actions/GenericActions';
 import {connectWS, disconnectWS} from '../actions/WindowActions';
+import {addCard} from '../actions/BoardActions';
 
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend, { NativeTypes } from 'react-dnd-html5-backend';
@@ -53,17 +54,25 @@ class Board extends Component {
     
     handleDrop = (card, targetLaneId) => {
         const {board} = this.state;
-        this.setState({
-            targetIndicator: {
-                laneId: null,
-                index: null
-            }
-        });
         
-        patchRequest(
-            'board', board.boardId, null, null, null, 'laneId', targetLaneId,
-            'card', card.id
-        );
+        const laneIndex = board.lanes.findIndex(l => l.laneId === targetLaneId);
+        
+        if(card.initLaneId === 0) {
+            // Adding card
+            addCard(
+                board.boardId, targetLaneId, card.id, card.index
+            ).then(res => {
+                this.setState(update(this.state.board.lanes[laneIndex], {
+                    cards: {$push: [res.data]}
+                }))
+            });
+        }else{
+            // Moving card
+            patchRequest(
+                'board', board.boardId, null, null, null, 'laneId',
+                targetLaneId, 'card', card.id
+            );
+        }
     }
     
     handleHover = (card, targetLaneId, targetIndex) => {
@@ -71,6 +80,15 @@ class Board extends Component {
             targetIndicator: {
                 laneId: targetLaneId,
                 index: targetIndex
+            }
+        });
+    }
+    
+    clearTargetIndicator = () => {
+        this.setState({
+            targetIndicator: {
+                laneId: undefined,
+                index: undefined
             }
         });
     }
@@ -115,6 +133,7 @@ class Board extends Component {
                             key='board-lanes'
                             onDrop={this.handleDrop}
                             onHover={this.handleHover}
+                            onReject={this.clearTargetIndicator}
                             lanes={board && board.lanes}
                         />
                     </div>

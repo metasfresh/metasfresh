@@ -16,8 +16,8 @@ class Sidenav extends Component {
     componentWillMount = () => {
         const {boardId} = this.props;
         
-        getView('board', boardId).then(res => {
-            getView('board', boardId, res.data.viewId, 0).then(res =>
+        getView(boardId).then(res => {
+            getView(boardId, res.data.viewId, 0).then(res =>
                 this.setState({
                     view: res.data
                 })
