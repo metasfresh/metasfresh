@@ -342,11 +342,15 @@
 						<!-- if you want to avoid duplicate class names in your dependency tree, then good luck with vaadin ;-)  -->
 						<banDuplicateClasses>
 							<ignoreClasses>
-								<ignoreClass>javax.el.*</ignoreClass>
-								<ignoreClass>com.vaadin.*</ignoreClass>
-								<ignoreClass>javax.persistence.*</ignoreClass>
 								<ignoreClass>com.google.*</ignoreClass>
+								<ignoreClass>com.vaadin.*</ignoreClass>
 								<ignoreClass>elemental.*</ignoreClass>
+								<ignoreClass>javax.annotation.*</ignoreClass>
+								<ignoreClass>javax.el.*</ignoreClass>
+								<ignoreClass>javax.persistence.*</ignoreClass>
+								<ignoreClass>javax.servlet.*</ignoreClass>
+								<ignoreClass>javax.transaction.*</ignoreClass>
+								<ignoreClass>org.apache.juli.*</ignoreClass>
 								<ignoreClass>org.mozilla.*</ignoreClass>
 							</ignoreClasses>
 						</banDuplicateClasses>
