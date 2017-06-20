@@ -27,46 +27,19 @@
 			<artifactId>de.metas.printing.api</artifactId>
 			<groupId>de.metas.printing</groupId>
 			<version>${project.version}</version>
-		</dependency>
-
-<!-- 
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
+			<!-- came comes with its own version -->
 			<exclusions>
 				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-jdk14</artifactId>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-databind</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>de.metas.jax.rs</artifactId>
-					<groupId>de.metas.jax.rs</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot-starter-web</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot-starter-actuator</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot-starter-thymeleaf</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-					<exclusion>
-					<artifactId>groovy-jsr223</artifactId>
-					<groupId>org.codehaus.groovy</groupId>
+					<groupId>com.fasterxml.jackson.core</groupId>
+					<artifactId>jackson-core</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
--->
+
 		<dependency>
 			<artifactId>camel-test</artifactId>
 			<groupId>org.apache.camel</groupId>
@@ -77,11 +50,23 @@
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-httpclient</groupId>
 			<artifactId>commons-httpclient</artifactId>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
