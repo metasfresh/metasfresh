@@ -33,7 +33,7 @@
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
 			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>

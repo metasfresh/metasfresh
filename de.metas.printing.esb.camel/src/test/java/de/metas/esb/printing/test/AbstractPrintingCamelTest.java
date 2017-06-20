@@ -30,7 +30,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import org.adempiere.util.Check;
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -48,6 +47,8 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
+
+import de.metas.printing.esb.base.util.Check;
 
 @ContextConfiguration
 public abstract class AbstractPrintingCamelTest extends CamelTestSupport
@@ -240,7 +241,7 @@ public abstract class AbstractPrintingCamelTest extends CamelTestSupport
 	 */
 	public void assertCamelError(final Throwable exception)
 	{
-		Check.assumeNotNull(exception, "exception not null");
+		Check.assumeNotNull(exception, "Parameter 'exception' is not null");
 
 		final List<Throwable> failures = outJMSADEP.getFailures();
 		if (failures == null || failures.isEmpty())

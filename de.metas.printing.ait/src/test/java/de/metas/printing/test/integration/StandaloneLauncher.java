@@ -1,4 +1,4 @@
-package de.metas.printing.esb.camel.test;
+package de.metas.printing.test.integration;
 
 /*
  * #%L
@@ -13,15 +13,14 @@ package de.metas.printing.esb.camel.test;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.net.URI;
 import java.util.Arrays;
@@ -43,12 +42,13 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class StandaloneLauncher
 {
 	private static final String ACTIVEMQ_URL = "tcp://localhost:61616";
-	private static final String[] CAMEL_CONTEXTS = new String[] {
-			"META-INF/spring/properties-standalone.xml",
-			"META-INF/spring/beans.xml"
-	};
+	private static final String[] CAMEL_CONTEXTS = new String[]
+		{
+				"META-INF/spring/properties-standalone.xml",
+				"META-INF/spring/beans.xml"
+		};
 	private static final String ADEMPIERE_PropertyFile = "c:/workspaces//de.metas.endcustomer./Adempiere.properties_tsa";
-	
+
 	private boolean startADempiereServer = false;
 
 	public static void main(final String[] args)
@@ -89,7 +89,7 @@ public class StandaloneLauncher
 
 	private void startAdempiereServer()
 	{
-		if(!startADempiereServer)
+		if (!startADempiereServer)
 		{
 			System.out.println("SKIP Starting ADempiere Import Processors.");
 			return;
@@ -138,8 +138,10 @@ public class StandaloneLauncher
 
 	private void startCamel()
 	{
-		final ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(CAMEL_CONTEXTS);
-		System.out.println("Application context: " + applicationContext);
-		System.out.println("Camel started");
+		try (final ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext(CAMEL_CONTEXTS);)
+		{
+			System.out.println("Application context: " + applicationContext);
+			System.out.println("Camel started");
+		}
 	}
 }
