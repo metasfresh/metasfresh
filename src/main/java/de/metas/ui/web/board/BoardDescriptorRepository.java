@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -39,7 +40,10 @@ import org.springframework.stereotype.Repository;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.currency.Amount;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
@@ -61,6 +65,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -253,16 +258,45 @@ public class BoardDescriptorRepository
 
 		final DocumentFieldDescriptor documentField = documentEntityDescriptor.getField(fieldName);
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = documentField.getDataBindingNotNull(SqlDocumentFieldDataBindingDescriptor.class);
-
+		final DocumentFieldWidgetType widgetType = documentField.getWidgetType();
 		final boolean isDisplayColumnAvailable = fieldBinding.isUsingDisplayColumn();
-		final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
-		final BoardFieldLoader fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+
+		final ImmutableSet<String> sqlSelectValues;
+		final BoardFieldLoader fieldLoader;
+		if (widgetType == DocumentFieldWidgetType.Amount && documentEntityDescriptor.hasField(WindowConstants.FIELDNAME_C_Currency_ID))
+		{
+			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue(), WindowConstants.FIELDNAME_C_Currency_ID);
+			fieldLoader = (rs, adLanguage) -> {
+				final BigDecimal valueBD = rs.getBigDecimal(fieldBinding.getColumnName());
+				if (valueBD == null)
+				{
+					return null;
+				}
+
+				final int currencyId = rs.getInt(WindowConstants.FIELDNAME_C_Currency_ID);
+				final String currencyCode = Services.get(ICurrencyDAO.class).getISO_Code(Env.getCtx(), currencyId);
+				if (currencyCode == null)
+				{
+					return valueBD;
+				}
+
+				return Amount.of(valueBD, currencyCode);
+
+			};
+
+		}
+		else
+		{
+			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue());
+			final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
+			fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+		}
 
 		return BoardCardFieldDescriptor.builder()
 				.caption(documentField.getCaption())
 				.fieldName(fieldBinding.getColumnName())
-				.widgetType(documentField.getWidgetType())
-				.sqlSelectValue(fieldBinding.getSqlSelectValue())
+				.widgetType(widgetType)
+				.sqlSelectValues(sqlSelectValues)
 				//
 				.usingDisplayColumn(isDisplayColumnAvailable)
 				.sqlSelectDisplayValue(fieldBinding.getSqlSelectDisplayValue())
@@ -407,13 +441,13 @@ public class BoardDescriptorRepository
 		final String keyColumnName = boardDescriptor.getKeyColumnName();
 		final String userIdColumnName = boardDescriptor.getUserIdColumnName();
 
-		final List<String> sqlSelectValuesList = new ArrayList<>();
+		final LinkedHashSet<String> sqlSelectValuesList = new LinkedHashSet<>();
 		sqlSelectValuesList.add(keyColumnName);
 		sqlSelectValuesList.add(userIdColumnName);
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		boardDescriptor.getCardFields()
 				.forEach(cardField -> {
-					sqlSelectValuesList.add(cardField.getSqlSelectValue());
+					sqlSelectValuesList.addAll(cardField.getSqlSelectValues());
 
 					if (cardField.isUsingDisplayColumn())
 					{
@@ -537,6 +571,18 @@ public class BoardDescriptorRepository
 		}
 
 		//
+		// Determine by value type
+		if (value instanceof Amount)
+		{
+			final Amount amount = (Amount)value;
+			return ITranslatableString.compose(" ",
+					NumberTranslatableString.of(amount.getValue(), DisplayType.Amount),
+					ITranslatableString.constant(amount.getCurrencyCode()));
+
+		}
+
+		//
+		// Determine by widgetType
 		if (widgetType == DocumentFieldWidgetType.Password)
 		{
 			// hide passwords

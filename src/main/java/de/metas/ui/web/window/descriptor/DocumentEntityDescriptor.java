@@ -267,6 +267,11 @@ public class DocumentEntityDescriptor
 	{
 		return fields.values();
 	}
+	
+	public boolean hasField(final String fieldName)
+	{
+		return fields.containsKey(fieldName);
+	}
 
 	public DocumentFieldDescriptor getFieldOrNull(final String fieldName)
 	{
