@@ -245,6 +245,7 @@ public final class Language implements Serializable
 		}
 
 		// Search existing Languages
+		// TODO: optimize this at least when searching by adLanguage
 		for (final Language language : s_languages)
 		{
 			if (language.matchesLangInfo(langInfoActual))
@@ -255,6 +256,7 @@ public final class Language implements Serializable
 
 		//
 		// Create Language on the fly
+		// FIXME: this method shall not create a new Language on the fly here. That special case shall be handled on upper level.
 		if (langInfoActual.length() == 5) 		// standard format <language>_<Country>
 		{
 			String language = langInfoActual.substring(0, 2);
