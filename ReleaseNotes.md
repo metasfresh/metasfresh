@@ -59,6 +59,8 @@ Here come the actual release notes:
     * Exporting the whole webui ad_messages for migration purpose.
 
 * metasfresh-webui-api
+  * [#443](https://github.com/metasfresh/metasfresh-webui-api/issues/443) Make remaining UI components translatable
+    * Endpoints Implementation in metasfresh API for the new Translation Feature of static Elements in Frontend.
   * [#458](https://github.com/metasfresh/metasfresh-webui-api/issues/458) Debug endpoint to track websocket outbound events
     * Implementation of Debug Endpoints to be able to test the behavior of websockets.
   * [#462](https://github.com/metasfresh/metasfresh-webui-api/issues/462) Dashboard editing API prototype
@@ -94,8 +96,8 @@ Here come the actual release notes:
     * Fixes an error in Orders which don't have products in their lines, but only Packaging Material.
 
 * metasfresh-webui-api
-  * [#443](https://github.com/metasfresh/metasfresh-webui-api/issues/443) Make remaining UI components translatable
   * [#454](https://github.com/metasfresh/metasfresh-webui-api/issues/454) Can not add attribute to attribute set
+    * Fixes an issue when adding a new Attribute to an Attribute set, for mandatory fields.
 
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
@@ -103,8 +105,11 @@ Here come the actual release notes:
   * [#877](https://github.com/metasfresh/metasfresh-webui-frontend/issues/877) n instead of none in dropdowns
     * Fixes a minor Bug with the description of the emptyvalues in fields.
   * [#893](https://github.com/metasfresh/metasfresh-webui-frontend/issues/893) Navigation Menu keyboard usage broken
+    * Adjustments in the Sitemap screen, now allowing the user to navigate smoothly via keyboard.
   * [#900](https://github.com/metasfresh/metasfresh-webui-frontend/issues/900) Handling Unit Window does not open in some cases
+    * Fixes a Bug that prevented to open the Handling Unit Editor in minor cases.
   * [#904](https://github.com/metasfresh/metasfresh-webui-frontend/issues/904) Navigation Menu vs. Sitemap entries w/ linebreak
+    * Adjustments of the sitemap screen, now showing the manu entries without a linebreak in case there is enough horizontal space.
 
 # metasfresh 5.13 (2017-24)
 
