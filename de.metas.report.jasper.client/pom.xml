@@ -39,7 +39,7 @@
 				</exclusion>
 				<!--  exclude commons-logging because jasperreports 6.2.1 uses 1.1.1, and we use 1.2 -->
 				<exclusion>
-					<groupId>-commons-logging</groupId>
+					<groupId>commons-logging</groupId>
 					<artifactId>commons-logging</artifactId>
 				</exclusion>
 			</exclusions>
@@ -48,6 +48,10 @@
 		<dependency>
 			<groupId>com.lowagie</groupId>
 			<artifactId>itext</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
 		</dependency>
 
 		<!-- 
