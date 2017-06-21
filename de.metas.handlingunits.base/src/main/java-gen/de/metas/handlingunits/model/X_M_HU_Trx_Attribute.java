@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_Trx_Attribute
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1543538405L;
+	private static final long serialVersionUID = -1466964180L;
 
     /** Standard Constructor */
     public X_M_HU_Trx_Attribute (Properties ctx, int M_HU_Trx_Attribute_ID, String trxName)
@@ -28,8 +27,7 @@ public class X_M_HU_Trx_Attribute extends org.compiere.model.PO implements I_M_H
 			setM_HU_Trx_Attribute_ID (0);
 			setM_HU_Trx_Hdr_ID (0);
 			setOperation (null);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
         } */
     }
 
