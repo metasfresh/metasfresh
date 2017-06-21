@@ -14,7 +14,7 @@ public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2145252053L;
+	private static final long serialVersionUID = 287280127L;
 
     /** Standard Constructor */
     public X_M_HU_PI (Properties ctx, int M_HU_PI_ID, String trxName)
@@ -22,8 +22,7 @@ public class X_M_HU_PI extends org.compiere.model.PO implements I_M_HU_PI, org.c
       super (ctx, M_HU_PI_ID, trxName);
       /** if (M_HU_PI_ID == 0)
         {
-			setIsDefaultLU (false);
-// N
+			setIsDefaultLU (false); // N
 			setM_HU_PI_ID (0);
 			setName (null);
         } */
