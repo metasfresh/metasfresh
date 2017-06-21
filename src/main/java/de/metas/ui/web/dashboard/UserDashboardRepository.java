@@ -40,7 +40,6 @@ import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.base.model.I_WEBUI_KPI_Field;
-import de.metas.ui.web.base.model.X_WEBUI_KPI;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
@@ -183,18 +182,6 @@ public class UserDashboardRepository
 		final List<Integer> kpiIds = queryBL.createQueryBuilder(I_WEBUI_KPI.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
-				.create()
-				.listIds();
-
-		return getKPIs(kpiIds);
-	}
-
-	public Collection<KPI> getTargetIndicatorsAvailableToAdd()
-	{
-		final List<Integer> kpiIds = queryBL.createQueryBuilder(I_WEBUI_KPI.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.addEqualsFilter(I_WEBUI_KPI.COLUMN_ChartType, X_WEBUI_KPI.CHARTTYPE_Metric)
 				.create()
 				.listIds();
 

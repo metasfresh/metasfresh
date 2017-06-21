@@ -2,7 +2,9 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIChartType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -42,10 +44,12 @@ public class JsonKPI
 				.kpiId(kpi.getId())
 				.caption(kpi.getCaption(jsonOpts.getAD_Language()))
 				.chartType(kpi.getChartType())
+				.widgetTypes(ImmutableSet.copyOf(kpi.getSupportedWidgetTypes()))
 				.build();
 	}
 
 	private final int kpiId;
 	private final String caption;
 	private final KPIChartType chartType;
+	private final ImmutableSet<DashboardWidgetType> widgetTypes;
 }

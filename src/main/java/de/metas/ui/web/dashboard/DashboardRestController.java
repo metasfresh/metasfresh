@@ -93,8 +93,14 @@ public class DashboardRestController
 		return JSONDashboard.of(userDashboard.getItems(DashboardWidgetType.KPI), newJSONOpts());
 	}
 
+	// TODO unify getTargetIndicatorsToAdd and getKPIsToAdd
+	// add firstRow, pageLength params
+	// in JsonKPI: add list of target types (Target Indicator, KPI), where this KPI can be dragged
+
 	@GetMapping("/kpis/available")
-	public List<JsonKPI> getKPIsAvailableToAdd()
+	public List<JsonKPI> getKPIsAvailableToAdd(
+			@RequestParam(name = "firstRow", required = false, defaultValue = "0") final int firstRow,
+			@RequestParam(name = "pageLength", required = false, defaultValue = "0") final int pageLength)
 	{
 		userSession.assertLoggedIn();
 
@@ -104,6 +110,8 @@ public class DashboardRestController
 		return kpis.stream()
 				.map(kpi -> JsonKPI.of(kpi, jsonOpts))
 				.sorted(Comparator.comparing(JsonKPI::getCaption))
+				.skip(firstRow >= 0 ? firstRow : 0)
+				.limit(pageLength > 0 ? pageLength : Integer.MAX_VALUE)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -187,16 +195,14 @@ public class DashboardRestController
 	}
 
 	@GetMapping("/targetIndicators/available")
-	public List<JsonKPI> getTargetIndicatorsAvailableToAdd()
+	@Deprecated
+	public List<JsonKPI> getTargetIndicatorsAvailableToAdd_DEPRECATED()
 	{
-		userSession.assertLoggedIn();
-
-		final Collection<KPI> kpis = userDashboardRepo.getTargetIndicatorsAvailableToAdd();
-
-		final JSONOptions jsonOpts = newJSONOpts();
-		return kpis.stream()
-				.map(kpi -> JsonKPI.of(kpi, jsonOpts))
-				.sorted(Comparator.comparing(JsonKPI::getCaption))
+		final int firsRow = 0;
+		final int pageLength = Integer.MAX_VALUE;
+		return getKPIsAvailableToAdd(firsRow, pageLength)
+				.stream()
+				.filter(kpi -> kpi.getWidgetTypes().contains(DashboardWidgetType.TargetIndicator))
 				.collect(ImmutableList.toImmutableList());
 	}
 
