@@ -22,7 +22,6 @@ Here come the actual release notes:
 ## Features
 * metasfresh-backend
   * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
-  * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
     * Different Enhancements in the Vendor Returns Functionality.
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
@@ -68,14 +67,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#861](https://github.com/metasfresh/metasfresh-webui-frontend/issues/861) Make remaining UI components translatable
+    * Implementation for translations of static Elements. Now it's able to translate the whole User Interface of metasfresh WebUI.
   * [#885](https://github.com/metasfresh/metasfresh-webui-frontend/issues/885) Change the Bookmark Subtab Group Functionality
     * Changes the Bookmark Grouping Functionality and now shows a flat and compressed representation of the sitemap in shortcut/ bookmark menu.
   * [#886](https://github.com/metasfresh/metasfresh-webui-frontend/issues/886) Optimize Browse-whole-tree Navigation Link
     * Moves the 'Browse whole tree' to more prominent place above the Bookmark menu. This allows teh user to quickly open the sitemap if needed.
   * [#895](https://github.com/metasfresh/metasfresh-webui-frontend/issues/895) Modal view: when user presses Done the server shall be notified
+    * Enhancement in WebUI for Done Actions. The Frontend is now callong a new Endpoint so the API is aware about that the action was triggered.
   * [#897](https://github.com/metasfresh/metasfresh-webui-frontend/issues/897) Clicking the search icon should open partner list
+    * New Feature in Lookup Fields. When pressing the magnifying Glass item, the user receives a list of possible entries.
   * [#898](https://github.com/metasfresh/metasfresh-webui-frontend/issues/898) Lookup Field Dropdowns automatism
+    * Enhancements of the Lookup Fields behavior when result seletions entries
   * [#907](https://github.com/metasfresh/metasfresh-webui-frontend/issues/907) Margin missing in Advanced Edit when Scrollbar visible
+    * Minor Design adjustment in Modal Overlays, adding a larger bottom Margin.
 
 ## Fixes
 
@@ -83,8 +87,11 @@ Here come the actual release notes:
   * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
     * Enhancement for the Host-Key Functionality needed in async- and batch-printing. Now showing the Host-Key in Swing Client seetings.
   * [#1808](https://github.com/metasfresh/metasfresh/issues/1808) Sometimes i get empty window when i zoom to related sales invoices of a given sales order
+    * Fixes an issue in the Zoom-To related Documents Feature, leaving the destination windows empty in minor cases.
   * [#1843](https://github.com/metasfresh/metasfresh/issues/1843) Error Table M_Product does not have a simple primary key
+    * Adding a simple primary key to M_Product database table.
   * [#1855](https://github.com/metasfresh/metasfresh/issues/1855) error with order that has just packaging lines
+    * Fixes an error in Orders which don't have products in their lines, but only Packaging Material.
 
 * metasfresh-webui-api
   * [#443](https://github.com/metasfresh/metasfresh-webui-api/issues/443) Make remaining UI components translatable
