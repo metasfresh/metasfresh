@@ -21,8 +21,9 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-backend
-  * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
   * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
+  * [#1603](https://github.com/metasfresh/metasfresh/issues/1603) Enhance Vendor returns
+    * Different Enhancements in the Vendor Returns Functionality.
   * [#1790](https://github.com/metasfresh/metasfresh/issues/1790) New Window for Calendar in WebUI
     * New Window for Calendar Maintenance in WebUI.
   * [#1816](https://github.com/metasfresh/metasfresh/issues/1816) Fix the webui layout for Vendor returns (Lieferanten Rücklieferung) window
@@ -46,11 +47,13 @@ Here come the actual release notes:
   * [#1839](https://github.com/metasfresh/metasfresh/issues/1839) New Window for Period & Period Control in WebUI
     * New WIndow for Period and Period Control maintenance in Accounting
   * [#1840](https://github.com/metasfresh/metasfresh/issues/1840) internal: refactor and improve PO translation code
+    * Enhancement of the Multi-Language Translation Functionality.
   * [#1845](https://github.com/metasfresh/metasfresh/issues/1845) Customer Returns Layout Improvement
     * Layout Adjustments to Customer Return Window in WebUI.
   * [#1848](https://github.com/metasfresh/metasfresh/issues/1848) EDI Desadv Create from Order Warning in Log
     * Application dictionary cleanup on metasfresh instalations where it's needed
   * [#1852](https://github.com/metasfresh/metasfresh/issues/1852) intern: discover interceptors which were annotated with @Component
+    * Internal Housekeeping Issue about annotations in Spring context.
   * [#1857](https://github.com/metasfresh/metasfresh/issues/1857) Translation de_DE for static UI components in WebUI
     * New base language Translation for the static elements in ad_messages in WebUI.
   * [#1859](https://github.com/metasfresh/metasfresh/issues/1859) Export all webui AD_Messages from w101
@@ -58,7 +61,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#458](https://github.com/metasfresh/metasfresh-webui-api/issues/458) Debug endpoint to track websocket outbound events
+    * Implementation of Debug Endpoints to be able to test the behavior of websockets.
   * [#462](https://github.com/metasfresh/metasfresh-webui-api/issues/462) Dashboard editing API prototype
+    * This is the API Prototype for the new Features required for the User Dashboard.
 
 
 * metasfresh-webui-frontend
@@ -76,6 +81,7 @@ Here come the actual release notes:
 
 * metasfresh-backend
   * [#1314](https://github.com/metasfresh/metasfresh/issues/1314) lazy-assigned Hostkey is not shown in swing-client's settings
+    * Enhancement for the Host-Key Functionality needed in async- and batch-printing. Now showing the Host-Key in Swing Client seetings.
   * [#1808](https://github.com/metasfresh/metasfresh/issues/1808) Sometimes i get empty window when i zoom to related sales invoices of a given sales order
   * [#1843](https://github.com/metasfresh/metasfresh/issues/1843) Error Table M_Product does not have a simple primary key
   * [#1855](https://github.com/metasfresh/metasfresh/issues/1855) error with order that has just packaging lines
