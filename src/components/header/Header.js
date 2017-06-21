@@ -179,6 +179,12 @@ class Header extends Component {
         });
     }
 
+    handleCloseEmail = () => {
+        this.setState({
+            isEmailOpen: false
+        });
+    }
+
     handlePromptCancelClick = () => {
         this.setState({
             prompt: Object.assign({}, this.state.prompt, {
@@ -549,7 +555,9 @@ class Header extends Component {
                 />}
 
                 {   isEmailOpen &&
-                    <NewEmail/>
+                    <NewEmail
+                        handleCloseEmail={this.handleCloseEmail}
+                    />
                 }
 
                 <GlobalContextShortcuts
