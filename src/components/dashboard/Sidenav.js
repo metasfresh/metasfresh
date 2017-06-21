@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import onClickOutside from 'react-onclickoutside';
-import InfiniteScroll from 'react-infinite-scroller';
 import Loader from '../app/Loader';
 import RawChart from '../charts/RawChart';
 import Indicator from '../charts/Indicator';
@@ -21,19 +19,11 @@ class Sidenav extends Component {
     componentWillMount = () => {
         const {entity} = this.props;
         
-        getRequest('dashboard', entity, 'available').then(res => {
+        getRequest('dashboard', 'available').then(res => {
             this.setState({
                 view: res.data
             })
         })
-    }
-
-    loadMore = (page) => {
-    }
-
-    handleClickOutside = () => {
-        const {onClickOutside} = this.props;
-        onClickOutside();
     }
 
     render() {
@@ -43,28 +33,24 @@ class Sidenav extends Component {
             <div
                 className="board-sidenav overlay-shadow"
             >
-                <InfiniteScroll
-                   pageStart={0}
-                   loadMore={this.loadMore}
-                   initialLoad={false}
-                   loader={<Loader />}
-                   hasMore={view.result && view.size >= view.result.length}
-                   useWindow={false}
-                >
-                    <div className="board-sidenav-header">
-                        {entity === 'kpis' ? 'Add KPI widgets' : 'Add target indicators'}
-                    </div>
-                    <div>
-                        {view && view.map((item, i) =>
-                            entity === 'kpis' ? 
-                                <RawChart key={i} /> : 
-                                <Indicator key={i} fullWidth={1} value={item.chartType} caption={item.caption} />
-                        )}
-                    </div>
-                </InfiniteScroll>
+                <div className="board-sidenav-header">
+                    Add widgets
+                </div>
+                <div>
+                    {view && view.map((item, i) =>
+                        item.chartType === 'kpis' ? 
+                            <RawChart key={i} /> : 
+                            <Indicator
+                                key={i}
+                                fullWidth={1}
+                                value={item.chartType}
+                                caption={item.caption}
+                            />
+                    )}
+                </div>
             </div>
         );
     }
 }
 
-export default onClickOutside(Sidenav);
+export default Sidenav;

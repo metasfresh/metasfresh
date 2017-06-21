@@ -2,15 +2,22 @@
     border-radius: 3px;
     overflow: hidden;
     margin: .5rem;
+}
+
+.indicators-wrapper {
     display: flex;
+    flex-direction: row;
+}
+
+.indicators-wrapper > * {
+    flex:1;
 }
 
 .indicator {
-    width: 25%;
     border: 1px solid $brand-border-color;
     border-right: none;
-    flex-direction: column;
     display: flex;
+    flex-direction: column;
     align-items: center;
     height: 130px;
     padding: 10px;

@@ -22,6 +22,26 @@ class RawChart extends Component {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if(
+            prevProps.isMaximize !== this.props.isMaximize ||
+            prevProps.index !== this.props.index ||
+            prevProps.id !== this.props.id
+        ) {
+            if(this.props.chartType === 'Indicator'){
+                this.fetchData();
+            }else{
+                this.setState({
+                    forceChartReRender: true,
+                }, () => {
+                    this.setState({
+                        forceChartReRender: false
+                    })
+                })
+            }
+        }
+    }
+
     componentDidMount(){
         const { pollInterval } = this.props;
 
@@ -85,10 +105,10 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, reRender, height,
+            id, chartType, caption, fields, groupBy, height,
             isMaximize, chartTitle
         } = this.props;
-        const {chartData} = this.state;
+        const {chartData, forceChartReRender} = this.state;
         const data = chartData[0] && chartData[0].values;
 
         switch(chartType){
@@ -96,10 +116,11 @@ class RawChart extends Component {
                 return(
                     <BarChart
                         {...{
-                            data, groupBy, caption, chartType, height, reRender,
+                            data, groupBy, caption, chartType, height,
                             fields, isMaximize, chartTitle
                         }}
                         chartClass={'chart-' + id}
+                        reRender={forceChartReRender}
                         colors = {[
                             '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
                             '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
@@ -110,10 +131,11 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
-                        {...{data, fields, groupBy, height, reRender,
+                        {...{data, fields, groupBy, height,
                             isMaximize, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}
+                        reRender={forceChartReRender}
                         colors = {[
                             '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
                             '#c9d5dc', '#aab5e0', '#6aad18', '#298216',

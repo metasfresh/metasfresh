@@ -93,3 +93,18 @@
     height: 100%;
     float: left;
 }
+
+.draggable-icon-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+}
+
+.dnd-widget {
+    position: relative;
+}
+
+.dnd-placeholder {
+    width: 100%;
+    background-color: $brand-primary-light-color;
+}

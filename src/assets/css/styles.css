@@ -892,6 +892,10 @@ td.pulse-off input {
     padding-top: 10px;
 }
 
+.dashboard-edit-mode {
+    width: 75%;
+}
+
 .dashboard-edit-bar {
     margin: 0 .5rem;
 }
