@@ -60,7 +60,11 @@
     border-top: 1px solid $brand-super-light-color;
     justify-content: space-between;
     color: $brand-font-color;
-    align-items: baseline;
+    align-items: center;
+}
+
+.panel-email-footer button {
+    min-width: 100px;
 }
 
 .email-attachments-wrapper {
@@ -79,4 +83,40 @@
     justify-content: space-between;
     border-radius: 2px;
     margin-bottom: 10px;
+}
+
+.react-tagsinput-tag {
+    margin-bottom: 5px;
+    margin-right: 0;
+    margin-left: 5px;
+    background: white;
+    border: 1px solid $brand-light-color;
+    color: $brand-font-color;
+}
+
+.react-autosuggest__container {
+    display: inline-block
+}
+
+.react-autosuggest__suggestions-container--open {
+    position: absolute;
+    background: white;
+    border: 1px solid $brand-light-color;
+}
+
+.react-autosuggest__suggestions-list {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+}
+
+.react-autosuggest__suggestions-list li {
+    padding: 5px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid $brand-super-light-color;
+}
+
+.react-autosuggest__suggestions-list li:hover {
+    color: white;
+    background-color: $brand-color-primary;
 }
