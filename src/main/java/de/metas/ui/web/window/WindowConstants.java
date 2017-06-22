@@ -47,7 +47,7 @@ public final class WindowConstants
 	 * Changing the level of this logger will affect all loggers.
 	 */
 	public static final Logger logger = LogManager.getLogger(WindowConstants.class.getPackage().getName());
-	
+
 	public static final WindowId WINDOWID_R_Request = WindowId.of(232); // FIXME: HARDCODED
 	public static final WindowId WINDOWID_UserProfile = WindowId.of(53100); // FIXME: HARDCODED
 
@@ -60,6 +60,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_IsSOTrx = "IsSOTrx";
 	public static final String FIELDNAME_Processing = "Processing";
 	public static final String FIELDNAME_Processed = "Processed";
+	public static final String FIELDNAME_C_Currency_ID = "C_Currency_ID";
 	public static final String FIELDNAME_C_DocType_ID = "C_DocType_ID";
 	public static final String FIELDNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 	public static final String FIELDNAME_OrderType = "OrderType";
@@ -79,7 +80,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_DocumentSummary = "V$DocumentSummary";
 
 	public static final String CONTEXTVAR_NextLineNo = "CtxVar_NextLineNo";
-	
+
 	public static final String TABLENAME_AD_Ref_List = "AD_Ref_List";
 
 	private WindowConstants()

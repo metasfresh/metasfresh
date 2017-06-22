@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
@@ -161,7 +162,12 @@ public class WEBUI_M_HU_CreateMaterialReceipt extends JavaProcess implements IPr
 	private Set<I_M_HU> retrieveHUsToReceive()
 	{
 		final IQuery<I_M_HU> query = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, this)
-				.filter(getProcessInfo().getQueryFilter())
+
+				// https://github.com/metasfresh/metasfresh/issues/1863
+				// if the queryFilter is empty, then *do not* return everything to avoid an OOME
+				.filter(getProcessInfo().getQueryFilterOrElse(
+						ConstantQueryFilter.of(false)))
+
 				.addOnlyActiveRecordsFilter()
 				.create();
 		final List<I_M_HU> hus = query.list(I_M_HU.class);
