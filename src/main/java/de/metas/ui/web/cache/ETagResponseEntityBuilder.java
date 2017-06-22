@@ -118,6 +118,11 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 
 	public <JSONType> ResponseEntity<JSONType> toJson(final BiFunction<R, JSONOptions, JSONType> toJsonMapper)
 	{
+		return toResponseEntity((responseBuilder, result) -> responseBuilder.body(toJsonMapper.apply(result, getJSONOptions())));
+	}
+
+	public <BodyType> ResponseEntity<BodyType> toResponseEntity(final BiFunction<ResponseEntity.BodyBuilder, R, ResponseEntity<BodyType>> toJsonMapper)
+	{
 		// Check ETag
 		final String etag = getETag().toETagString();
 		if (request.checkNotModified(etag))
@@ -128,12 +133,9 @@ public class ETagResponseEntityBuilder<T extends ETagAware, R>
 
 		// Get the result and convert it to JSON
 		final R result = this.result.get();
-		final JSONOptions jsonOptions = getJSONOptions();
-		final JSONType json = toJsonMapper.apply(result, jsonOptions);
 
-		// Response: 200 OK
-		return newResponse(HttpStatus.OK, etag)
-				.body(json);
+		final ResponseEntity.BodyBuilder newResponse = newResponse(HttpStatus.OK, etag);
+		return toJsonMapper.apply(newResponse, result);
 	}
 
 	private final ResponseEntity.BodyBuilder newResponse(final HttpStatus status, final String etag)

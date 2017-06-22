@@ -12,7 +12,6 @@ import org.compiere.model.MImage;
 import org.compiere.util.MimeType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,12 +21,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.collect.ImmutableMap;
+
 import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.cache.ETag;
+import de.metas.ui.web.cache.ETagAware;
+import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -61,6 +68,11 @@ public class ImageRestController
 
 	@Autowired
 	private UserSession userSession;
+
+	private JSONOptions newJSONOptions()
+	{
+		return JSONOptions.builder(userSession).build();
+	}
 
 	@PostMapping
 	public int uploadImage(@RequestParam("file") final MultipartFile file) throws IOException
@@ -103,11 +115,24 @@ public class ImageRestController
 	@GetMapping("/{imageId}")
 	@ResponseBody
 	public ResponseEntity<byte[]> getImage(@PathVariable final int imageId,
-			@RequestParam(name = "maxWidth", required = false, defaultValue = "-1") int maxWidth,
-			@RequestParam(name = "maxHeight", required = false, defaultValue = "-1") int maxHeight)
+			@RequestParam(name = "maxWidth", required = false, defaultValue = "-1") final int maxWidth,
+			@RequestParam(name = "maxHeight", required = false, defaultValue = "-1") final int maxHeight,
+			final WebRequest request)
 	{
 		userSession.assertLoggedIn();
 
+		return ETagResponseEntityBuilder.ofETagAware(request, getWebuiImage(imageId, maxWidth, maxHeight))
+				.includeLanguageInETag()
+				.cacheMaxAge(userSession.getHttpCacheMaxAge())
+				.jsonOptions(() -> newJSONOptions())
+				.toResponseEntity((responseBuilder, webuiImage) -> responseBuilder
+						.contentType(MediaType.parseMediaType(webuiImage.getContentType()))
+						.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + webuiImage.getImageName() + "\"")
+						.body(webuiImage.getImageData()));
+	}
+
+	private WebuiImage getWebuiImage(final int imageId, final int maxWidth, final int maxHeight)
+	{
 		if (imageId <= 0)
 		{
 			throw new IllegalArgumentException("Invalid image id");
@@ -125,16 +150,54 @@ public class ImageRestController
 			throw new EntityNotFoundException("Image id not found: " + imageId);
 		}
 
-		final String imageName = adImage.getName();
-		final String contentType = adImage.getContentType();
-		final byte[] imageData = adImage.getScaledImageData(maxWidth, maxHeight);
+		return WebuiImage.of(adImage, maxWidth, maxHeight);
+	}
 
-		final HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.parseMediaType(contentType));
-		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + imageName + "\"");
-		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-		final ResponseEntity<byte[]> response = new ResponseEntity<byte[]>(imageData, headers, HttpStatus.OK);
-		return response;
+	private static final class WebuiImage implements ETagAware
+	{
+		public static final WebuiImage of(final MImage adImage, final int maxWidth, final int maxHeight)
+		{
+			return new WebuiImage(adImage, maxWidth, maxHeight);
+		}
+
+		private final MImage adImage;
+		private final int maxWidth;
+		private final int maxHeight;
+		private final ETag etag;
+
+		private WebuiImage(@NonNull final MImage adImage, final int maxWidth, final int maxHeight)
+		{
+			this.adImage = adImage;
+			this.maxWidth = maxWidth > 0 ? maxWidth : 0;
+			this.maxHeight = maxHeight > 0 ? maxHeight : 0;
+
+			etag = ETag.of(adImage.getUpdated().getTime(), ImmutableMap.<String, String> builder()
+					.put("maxWidth", String.valueOf(maxWidth))
+					.put("maxHeight", String.valueOf(maxHeight))
+					.put("imageId", String.valueOf(adImage.getAD_Image_ID()))
+					.build());
+		}
+
+		@Override
+		public ETag getETag()
+		{
+			return etag;
+		}
+
+		public String getImageName()
+		{
+			return adImage.getName();
+		}
+
+		public String getContentType()
+		{
+			return adImage.getContentType();
+		}
+
+		public byte[] getImageData()
+		{
+			return adImage.getScaledImageData(maxWidth, maxHeight);
+		}
 	}
 
 }

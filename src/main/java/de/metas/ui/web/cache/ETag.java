@@ -39,17 +39,17 @@ public final class ETag
 		return new ETag(version, ImmutableMap.of());
 	}
 
-	public static final ETag of(final int version, final Map<String, String> attributes)
+	public static final ETag of(final long version, final Map<String, String> attributes)
 	{
 		return new ETag(version, ImmutableMap.copyOf(attributes));
 	}
 
-	private final int version;
+	private final long version;
 	private final ImmutableMap<String, String> attributes;
 
 	private transient volatile String _etagString = null; // lazy
 
-	private ETag(final int version, final ImmutableMap<String, String> attributes)
+	private ETag(final long version, final ImmutableMap<String, String> attributes)
 	{
 		this.version = version;
 		this.attributes = attributes;
