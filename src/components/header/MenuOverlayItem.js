@@ -24,7 +24,7 @@ class MenuOverlayItem extends Component {
         const {
             handleClickOnFolder, handleNewRedirect, openModal, caption
         } = this.props;
-
+        
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
         } else if (type === 'window' || type === 'board') {
