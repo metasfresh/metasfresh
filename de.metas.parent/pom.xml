@@ -41,6 +41,9 @@
 
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
 
+		<!-- this is the version uses by elasticsearch:2.4.4 which is turn is used by spring-boot 1.5.3 -->
+		<lucene.version>5.5.2</lucene.version>
+
 		<!--
 			Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base
 			for some reason. -->
@@ -93,6 +96,28 @@
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
 				<version>${jasperreports.version}</version>
+			</dependency>
+			
+			<!-- manage the versions of lucene because we need to exclude them from jasperreports and then want to explicitly add them -->
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-queryparser</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-analyzers-common</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-core</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-queries</artifactId>
+				<version>${lucene.version}</version>
 			</dependency>
 
 			<dependency>
