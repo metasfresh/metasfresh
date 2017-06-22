@@ -1,0 +1,10 @@
+-- 2017-06-22T07:15:32.032
+-- URL zum Konzept
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-06-22 07:15:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=558660 AND AD_Language='en_US'
+;
+
+-- 2017-06-22T07:15:55.915
+-- URL zum Konzept
+UPDATE AD_Field SET Name='WebUI Rolle',Updated=TO_TIMESTAMP('2017-06-22 07:15:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=558660
+;
+
