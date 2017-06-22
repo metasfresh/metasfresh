@@ -30,6 +30,7 @@ import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -252,13 +253,13 @@ public final class SqlViewSelectionQueryBuilder
 		//
 		// WHERE clause (from query)
 		{
-			final List<Object> sqlWhereClauseParams = new ArrayList<>();
+			final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
 			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters);
 
 			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
 				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
-				sqlParams.addAll(sqlWhereClauseParams);
+				sqlParams.addAll(sqlWhereClauseParams.toList());
 			}
 		}
 
@@ -326,13 +327,13 @@ public final class SqlViewSelectionQueryBuilder
 		//
 		// WHERE clause (from query)
 		{
-			final List<Object> sqlWhereClauseParams = new ArrayList<>();
+			final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
 			final IStringExpression sqlWhereClause = buildSqlWhereClause(sqlWhereClauseParams, filters);
 
 			if (sqlWhereClause != null && !sqlWhereClause.isNullExpression())
 			{
 				sqlBuilder.append("\n AND (\n").append(sqlWhereClause).append("\n)");
-				sqlParams.addAll(sqlWhereClauseParams);
+				sqlParams.addAll(sqlWhereClauseParams.toList());
 			}
 		}
 
@@ -431,7 +432,7 @@ public final class SqlViewSelectionQueryBuilder
 		return new SqlAndParams(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
 	}
 
-	private final IStringExpression buildSqlWhereClause(final List<Object> sqlParams, final List<DocumentFilter> filters)
+	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, final List<DocumentFilter> filters)
 	{
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 

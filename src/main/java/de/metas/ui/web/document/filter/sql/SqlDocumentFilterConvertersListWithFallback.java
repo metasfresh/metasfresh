@@ -1,7 +1,5 @@
 package de.metas.ui.web.document.filter.sql;
 
-import java.util.List;
-
 import de.metas.ui.web.document.filter.DocumentFilter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -52,7 +50,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public String getSql(final List<Object> sqlParamsOut, final DocumentFilter filter)
+	public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter)
 	{
 		// Find the effective converter to be used for given filter
 		final String filterId = filter.getFilterId();

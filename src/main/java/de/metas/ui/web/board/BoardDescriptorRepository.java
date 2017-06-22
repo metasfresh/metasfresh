@@ -211,10 +211,9 @@ public class BoardDescriptorRepository
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
 					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
 
-			final List<Object> sqlWhereClauseParams = ImmutableList.of();
 			final DocumentFilter adValRuleFilter = DocumentFilter.builder()
 					.setFilterId("AD_Val_Rule_" + adValRuleId)
-					.addParameter(DocumentFilterParam.ofSqlWhereClause(true, sqlWhereClause, sqlWhereClauseParams))
+					.addParameter(DocumentFilterParam.ofSqlWhereClause(true, sqlWhereClause))
 					.build();
 			boardDescriptor.documentFilter(adValRuleFilter);
 		}

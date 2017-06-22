@@ -20,6 +20,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
@@ -234,7 +235,7 @@ public final class HUIdsFilterHelper
 		}
 
 		@Override
-		public String getSql(final List<Object> sqlParamsOut, final DocumentFilter filter)
+		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
 			final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
@@ -266,7 +267,7 @@ public final class HUIdsFilterHelper
 
 			final String sql = sqlQueryFilter.getSql();
 			final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
-			sqlParamsOut.addAll(sqlParams);
+			sqlParamsOut.collectAll(sqlParams);
 			return sql;
 		}
 

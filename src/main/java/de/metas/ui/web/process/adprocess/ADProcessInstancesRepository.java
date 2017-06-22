@@ -216,7 +216,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			{
 				recordId = -1;
 			}
-
+			
 			sqlWhereClause = viewDocumentIds.isEmpty() ? null : view.getSqlWhereClause(viewDocumentIds);
 		}
 		//
