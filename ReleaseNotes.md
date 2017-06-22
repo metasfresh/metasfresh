@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-26**
 
 * metasfresh-backend
+  * [#1872](https://github.com/metasfresh/metasfresh/issues/1872) WebUI Default Filter missing in Windows compared to Swing
+    * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
 
