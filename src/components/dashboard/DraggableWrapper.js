@@ -8,7 +8,8 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawChart from '../charts/RawChart';
 import DndWidget from './DndWidget';
-import Sidenav from '../dashboard/Sidenav';
+import Sidenav from './Sidenav';
+import Placeholder from './Placeholder';
 import Indicator from '../charts/Indicator';
 
 import {
@@ -94,7 +95,10 @@ export class DraggableWrapper extends Component {
                     placeholder={true}
                     entity={'indicators'}
                 >
-                    <Indicator />
+                    <Placeholder
+                        entity={'indicators'}
+                        description={'Drop Target Indicator widget here.'}
+                    />
                 </DndWidget>
             </div>
         );
@@ -135,6 +139,20 @@ export class DraggableWrapper extends Component {
     renderKpis = () => {
         const {cards, idMaximized, editmode} = this.state;
         
+        if(!cards.length && editmode) return (
+            <div className="kpis-wrapper">
+                <DndWidget
+                    placeholder={true}
+                    entity={'cards'}
+                >
+                    <Placeholder
+                        entity={'cards'}
+                        description={'Drop KPI widget here.'}
+                    />
+                </DndWidget>
+            </div>
+        );
+        
         return (
             <div className="kpis-wrapper">
                 {cards.length > 0 ? cards.map((item, id) => {
@@ -163,6 +181,7 @@ export class DraggableWrapper extends Component {
                                 showWidgets={this.showWidgets}
                                 idMaximized={idMaximized}
                                 text={item.caption}
+                                {...{editmode}}
                             />
                         </DndWidget>
                     );

@@ -1,7 +1,16 @@
 .indicators-wrapper {
     border-radius: 3px;
     overflow: hidden;
+    margin: 1rem 0;
+}
+
+.kpis-wrapper {
+    margin: -.5rem;
+}
+
+.kpis-wrapper .dnd-placeholder {
     margin: .5rem;
+    width: calc(100% - 1rem);
 }
 
 .indicators-wrapper {

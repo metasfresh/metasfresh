@@ -48,7 +48,7 @@ export class ChartWidget extends Component {
         const {
             text,
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
-            caption, fields, groupBy, pollInterval
+            caption, fields, groupBy, pollInterval, editmode
         } = this.props;
 
         const {
@@ -67,11 +67,11 @@ export class ChartWidget extends Component {
                         () => {this.maximizeWidget(); hideWidgets(index)}}
                 >
                     {text}
-                    <i
+                    {!editmode && <i
                         className="draggable-widget-icon meta-icon-down-1 input-icon-sm"
                         onClick={() => this.toggleMenu()}
-                    />
-                    {toggleWidgetMenu &&
+                    />}
+                    {toggleWidgetMenu && !editmode &&
                         <div className="draggable-widget-menu">
 
                             { isMaximize ?

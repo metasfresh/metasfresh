@@ -68,7 +68,7 @@ export class DndWidget extends Component {
                 }
             >
                 {!placeholder && <i
-                    className="meta-icon-trash draggable-icon-remove"
+                    className="meta-icon-trash draggable-icon-remove pointer"
                     onClick={() => removeCard(entity, id)}
                 />}
                 {children}

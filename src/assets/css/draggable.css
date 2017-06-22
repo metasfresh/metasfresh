@@ -96,8 +96,9 @@
 
 .draggable-icon-remove {
     position: absolute;
-    top: 3px;
-    right: 3px;
+    top: 8px;
+    right: 8px;
+    z-index:999;
 }
 
 .dnd-widget {
@@ -107,4 +108,11 @@
 .dnd-placeholder {
     width: 100%;
     background-color: $brand-primary-light-color;
+}
+
+.dnd-placeholder-filling {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
