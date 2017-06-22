@@ -44,7 +44,7 @@ public interface IViewDataRepository
 {
 	String getTableName();
 
-	String getSqlWhereClause(ViewId viewId, DocumentIdsSelection rowIds);
+	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds);
 
 	DocumentFilterDescriptorsProvider getViewFilterDescriptors();
 

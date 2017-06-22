@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +34,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
@@ -376,10 +376,10 @@ public class HUEditorViewRepository
 		// Convert the "filters" to SQL
 		if (!filters.isEmpty())
 		{
-			final List<Object> sqlFilterParams = new ArrayList<>();
+			final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
 			final String sqlFilter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding)
 					.getSql(sqlFilterParams, filters);
-			huQuery.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams));
+			huQuery.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList()));
 		}
 
 		return huQuery.createQuery().listIds();

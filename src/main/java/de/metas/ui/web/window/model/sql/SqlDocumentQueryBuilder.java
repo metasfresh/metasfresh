@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -366,7 +367,7 @@ public class SqlDocumentQueryBuilder
 
 	private IPair<IStringExpression, List<Object>> buildSqlWhereClause()
 	{
-		final List<Object> sqlParams = new ArrayList<>();
+		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
 
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
@@ -396,8 +397,7 @@ public class SqlDocumentQueryBuilder
 			}
 
 			sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-			sqlWhereClauseBuilder.append(" /* key */ ").append(sqlKeyColumnName).append("=?");
-			sqlParams.add(recordId.toInt());
+			sqlWhereClauseBuilder.append(" /* key */ ").append(sqlKeyColumnName).append("=").append(sqlParams.placeholder(recordId.toInt()));
 		}
 
 		//
@@ -417,8 +417,7 @@ public class SqlDocumentQueryBuilder
 				final Object sqlParentLinkValue = SqlDocumentsRepository.convertValueToPO(parentLinkValue, parentLinkColumnName, parentLinkWidgetType, targetClass);
 
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-				sqlWhereClauseBuilder.append(" /* parent link */ ").append(linkColumnName).append("=?");
-				sqlParams.add(sqlParentLinkValue);
+				sqlWhereClauseBuilder.append(" /* parent link */ ").append(linkColumnName).append("=").append(sqlParams.placeholder(sqlParentLinkValue));
 			}
 		}
 
@@ -436,7 +435,7 @@ public class SqlDocumentQueryBuilder
 
 		//
 		// Build the final SQL where clause
-		return ImmutablePair.of(sqlWhereClauseBuilder.build(), Collections.unmodifiableList(sqlParams));
+		return ImmutablePair.of(sqlWhereClauseBuilder.build(), Collections.unmodifiableList(sqlParams.toList()));
 	}
 
 	private List<DocumentQueryOrderBy> getOrderBysEffective()

@@ -44,10 +44,13 @@ public class DocumentFilterParam
 		return new Builder();
 	}
 
-	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause, final List<Object> sqlWhereClauseParams)
+	public static final DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
 	{
+		// NOTE: avoid having sqlWhereClauseParams because they might introduce issues when we have to convert to SQL code without params.
+		final List<Object> sqlWhereClauseParams = ImmutableList.of();
 		return new DocumentFilterParam(joinAnd, sqlWhereClause, sqlWhereClauseParams);
 	}
+
 	
 	public static enum Operator
 	{

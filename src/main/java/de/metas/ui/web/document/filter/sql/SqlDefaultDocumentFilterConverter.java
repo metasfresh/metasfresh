@@ -1,5 +1,6 @@
 package de.metas.ui.web.document.filter.sql;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.adempiere.db.DBConstants;
@@ -71,7 +72,7 @@ import lombok.NonNull;
 
 	/** Build document filter where clause */
 	@Override
-	public String getSql(final List<Object> sqlParams, final DocumentFilter filter)
+	public String getSql(final SqlParamsCollector sqlParams, final DocumentFilter filter)
 	{
 		final StringBuilder sql = new StringBuilder();
 
@@ -95,7 +96,7 @@ import lombok.NonNull;
 	}
 
 	/** Build document filter parameter where clause */
-	private String buildSqlWhereClause(final List<Object> sqlParams, final DocumentFilterParam filterParam)
+	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam)
 	{
 		//
 		// SQL filter
@@ -103,7 +104,7 @@ import lombok.NonNull;
 		{
 			final String sqlWhereClause = replaceTableNameWithTableAlias(filterParam.getSqlWhereClause());
 			final List<Object> sqlWhereClauseParams = filterParam.getSqlWhereClauseParams();
-			sqlParams.addAll(sqlWhereClauseParams);
+			sqlParams.collectAll(sqlWhereClauseParams);
 			return sqlWhereClause;
 		}
 
@@ -204,16 +205,15 @@ import lombok.NonNull;
 		return sqlValue;
 	}
 
-	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final List<Object> sqlParams)
+	private static final String buildSqlWhereClause_Equals(final String sqlColumnExpr, final Object sqlValue, final boolean negate, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
 			return buildSqlWhereClause_IsNull(sqlColumnExpr, negate);
 		}
 
-		sqlParams.add(sqlValue);
 		return new StringBuilder()
-				.append(sqlColumnExpr).append(negate ? " <> ?" : " = ?")
+				.append(sqlColumnExpr).append(negate ? " <> ?" : " = ").append(sqlParams.placeholder(sqlValue))
 				.toString();
 	}
 
@@ -224,20 +224,35 @@ import lombok.NonNull;
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, final Object sqlValue, final List<Object> sqlParams)
+	private static final String buildSqlWhereClause_Compare(final String sqlColumnExpr, final String sqlOperator, final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
-		sqlParams.add(sqlValue);
 		return new StringBuilder()
-				.append(sqlColumnExpr).append(sqlOperator).append("?")
+				.append(sqlColumnExpr).append(sqlOperator).append(sqlParams.placeholder(sqlValue))
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final List<Object> sqlParams)
+	private static final String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final SqlParamsCollector sqlParams)
 	{
-		return DB.buildSqlList(sqlColumnExpr, sqlValues, sqlParams);
+		if(sqlValues == null || sqlValues.isEmpty())
+		{
+			// TODO log a warning or throw exception?!
+			return null;
+		}
+		
+		if(sqlParams.isCollecting())
+		{
+			final List<Object> sqlValuesEffective = new ArrayList<>();
+			final String sql = DB.buildSqlList(sqlColumnExpr, sqlValues, sqlValuesEffective);
+			sqlParams.collectAll(sqlValuesEffective); // safe
+			return sql;
+		}
+		else
+		{
+			return DB.buildSqlList(sqlParams.toList());
+		}
 	}
 
-	private static final String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final List<Object> sqlParams)
+	private static final String buildSqlWhereClause_Like(final String sqlColumnExpr, final boolean negate, final boolean ignoreCase, final Object sqlValue, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -263,15 +278,14 @@ import lombok.NonNull;
 
 		final String sqlOperator = (negate ? " NOT " : " ") + (ignoreCase ? "ILIKE " : "LIKE ");
 
-		sqlParams.add(sqlValueStr);
 		return new StringBuilder()
 				.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(sqlColumnExpr).append(", 1)")
 				.append(sqlOperator)
-				.append(DBConstants.FUNCNAME_unaccent_string).append("(?, 1)")
+				.append(DBConstants.FUNCNAME_unaccent_string).append("(").append(sqlParams.placeholder(sqlValueStr)).append(", 1)")
 				.toString();
 	}
 
-	private static final String buildSqlWhereClause_Between(final String sqlColumnExpr, final Object sqlValue, final Object sqlValueTo, final List<Object> sqlParams)
+	private static final String buildSqlWhereClause_Between(final String sqlColumnExpr, final Object sqlValue, final Object sqlValueTo, final SqlParamsCollector sqlParams)
 	{
 		if (sqlValue == null)
 		{
@@ -288,10 +302,8 @@ import lombok.NonNull;
 			return buildSqlWhereClause_Compare(sqlColumnExpr, ">=", sqlValue, sqlParams);
 		}
 
-		sqlParams.add(sqlValue);
-		sqlParams.add(sqlValueTo);
 		return new StringBuilder()
-				.append(sqlColumnExpr).append(" BETWEEN ").append("? AND ?")
+				.append(sqlColumnExpr).append(" BETWEEN ").append(sqlParams.placeholder(sqlValue)).append(" AND ").append(sqlParams.placeholder(sqlValueTo))
 				.toString();
 	}
 
