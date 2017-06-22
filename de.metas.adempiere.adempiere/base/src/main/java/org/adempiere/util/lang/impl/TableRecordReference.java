@@ -108,6 +108,20 @@ public final class TableRecordReference implements ITableRecordReference
 				.map(model -> of(model))
 				.collect(GuavaCollectors.toImmutableList());
 	}
+	
+	public static final List<TableRecordReference> ofRecordIds(final String tableName, final Collection<Integer> recordIds)
+	{
+		if (recordIds == null || recordIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return recordIds
+				.stream()
+				.map(recordId -> of(tableName, recordId))
+				.collect(GuavaCollectors.toImmutableList());
+	}
+
 
 	public static final Set<TableRecordReference> ofSet(final Collection<?> models)
 	{
@@ -165,7 +179,7 @@ public final class TableRecordReference implements ITableRecordReference
 	/**
 	 * @return immutable list of {@link TableRecordReference}s
 	 */
-	public static final List<ITableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
+	public static final List<TableRecordReference> ofRecordIds(final String tableName, final List<Integer> recordIds)
 	{
 		if (recordIds == null || recordIds.isEmpty())
 		{
