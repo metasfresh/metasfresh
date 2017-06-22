@@ -60,7 +60,6 @@ public final class WindowConstants
 	public static final String FIELDNAME_IsSOTrx = "IsSOTrx";
 	public static final String FIELDNAME_Processing = "Processing";
 	public static final String FIELDNAME_Processed = "Processed";
-	public static final String FIELDNAME_C_Currency_ID = "C_Currency_ID";
 	public static final String FIELDNAME_C_DocType_ID = "C_DocType_ID";
 	public static final String FIELDNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
 	public static final String FIELDNAME_OrderType = "OrderType";
