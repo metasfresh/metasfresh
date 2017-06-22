@@ -31,30 +31,32 @@ class Sidenav extends Component {
     }
     
     renderChartList = (charts) => {
+        const {moveCard} = this.props;
         if(!charts) return;
-        
         return charts.map((item, i) =>
             <DndWidget
                 key={i}
-                moveCard={this.moveCard}
-                entity={item.widgetTypes[0]}
+                id={item.kpiId}
+                index={item.kpiId}
+                moveCard={moveCard}
+                entity={item.widgetTypes[0] === 'KPI' ? 'cards' : 'indicators'}
                 transparent={false}
             >
-            {item.widgetTypes[0] === 'KPI' ? 
-                <ChartWidget
-                    id={item.id}
-                    index={i}
-                    chartType={item.chartType}
-                    kpi={true}
-                    caption={item.chartType}
-                    framework={true}
-                    idMaximized={false}
-                /> : 
-                <Indicator
-                    fullWidth={1}
-                    value={item.chartType}
-                    caption={item.caption}
-                />}
+                {item.widgetTypes[0] === 'KPI' ? 
+                    <ChartWidget
+                        id={item.kpiId}
+                        index={i}
+                        chartType={item.chartType}
+                        kpi={true}
+                        text={item.caption}
+                        framework={true}
+                        idMaximized={false}
+                    /> : 
+                    <Indicator
+                        fullWidth={1}
+                        value={item.chartType}
+                        caption={item.caption}
+                    />}
             </DndWidget>
         )
     }

@@ -17,6 +17,10 @@ import {
     getTargetIndicatorsDashboard
 } from '../../actions/AppActions';
 
+import {
+    addDashboardWidget
+} from '../../actions/BoardActions';
+
 export class DraggableWrapper extends Component {
     constructor(props) {
         super(props);
@@ -50,16 +54,32 @@ export class DraggableWrapper extends Component {
         });
     }
     
-    moveCard = (entity, dragIndex, hoverIndex) => {
-        const draggedItem = this.state[entity][dragIndex];
-        this.setState(prev => update(prev, {
-            [entity]: {
-                $splice: [
-                    [dragIndex, 1],
-                    [hoverIndex, 0, draggedItem]
-                ]
-            }
-        }));
+    addCard = (entity, id) => {
+        addDashboardWidget(entity, id).then(res => {
+            console.log(res);
+        })
+        // this.setState(prev => update(prev, {
+        //     [entity]: {
+        //         $push: []
+        //     }
+        // }));
+    }
+    
+    moveCard = (entity, dragIndex, hoverIndex, isNew) => {
+        if(isNew){
+            this.addCard(entity, dragIndex);
+        }else{
+            const draggedItem = this.state[entity][dragIndex];
+            
+            this.setState(prev => update(prev, {
+                [entity]: {
+                    $splice: [
+                        [dragIndex, 1],
+                        [hoverIndex, 0, draggedItem]
+                    ]
+                }
+            }));
+        }
     }
     
     removeCard = (entity, index) => {
@@ -214,7 +234,9 @@ export class DraggableWrapper extends Component {
                     {this.renderKpis()}
                 </div>
                 {editmode &&
-                    <Sidenav />
+                    <Sidenav
+                        addCard={this.addCard}
+                    />
                 }
             </div>
         );

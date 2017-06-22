@@ -30,3 +30,12 @@ export function filterCards(boardId, viewId) {
         '/filter'
     );
 }
+
+export function addDashboardWidget(entity, id) {
+    return axios.post(
+        config.API_URL +
+        '/dashboard/targetIndicators/new', {
+            'kpiId': id
+        }
+    );
+}

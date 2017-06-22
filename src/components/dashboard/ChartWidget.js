@@ -59,7 +59,7 @@ export class ChartWidget extends Component {
             <div className={
                 (isMaximize ? ' draggable-widget-maximize' : '') +
                 ((idMaximized !== false) && !isMaximize ? ' hidden-xs-up' : '')
-            } >
+            }>
                 <div
                     className="draggable-widget-header"
                     onDoubleClick={isMaximize ?
@@ -73,7 +73,6 @@ export class ChartWidget extends Component {
                     />}
                     {toggleWidgetMenu && !editmode &&
                         <div className="draggable-widget-menu">
-
                             { isMaximize ?
                                 <span
                                     onClick={() => {

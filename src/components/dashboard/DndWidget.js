@@ -23,7 +23,7 @@ const cardTarget = {
         }
 
         // Time to actually perform the action
-        props.moveCard(props.entity, dragIndex, hoverIndex);
+        props.moveCard(props.entity, dragIndex, hoverIndex, true);
 
         // Note: we're mutating the monitor item here!
         // Generally it's better to avoid mutations,
