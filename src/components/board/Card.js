@@ -73,7 +73,8 @@ class Card extends Component {
     renderCard = () => {
         const {
             caption, description, users, placeholder, connectDragSource,
-            connectDropTarget, onDelete, cardId, laneId
+            connectDropTarget, onDelete, cardId, laneId, onCaptionClick,
+            documentPath
         } = this.props;
 
         const {mouseOn} = this.state;
@@ -87,7 +88,10 @@ class Card extends Component {
                         className="pointer meta-icon-close-1 float-xs-right"
                         onClick={() => onDelete(laneId, cardId)}
                     />}
-                    <b>{caption}</b>
+                    <b
+                        className="pointer"
+                        onClick={() => onCaptionClick(documentPath)}
+                    >{caption}</b>
                     <p>{description}</p>
                     {users.map((user, i) =>
                         <Avatar

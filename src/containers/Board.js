@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import update from 'immutability-helper';
+import {push} from 'react-router-redux';
 
 import {getData, patchRequest, deleteRequest} from '../actions/GenericActions';
 import {connectWS, disconnectWS} from '../actions/WindowActions';
@@ -131,6 +132,16 @@ class Board extends Component {
             }
         }));
     }
+    
+    handleCaptionClick = (docPath) => {
+        const {dispatch} = this.props;
+        if(!docPath) return;
+        
+        dispatch(push(
+            '/window/' + docPath.windowId +
+            (docPath.documentId ? '/' + docPath.documentId : '') 
+        ))
+    }
 
     handleDelete = (laneId, cardId) => {
         const {board} = this.state;
@@ -151,7 +162,7 @@ class Board extends Component {
 
     render() {
         const {
-            modal, rawModal, breadcrumb, indicator
+            modal, rawModal, breadcrumb, indicator, dispatch
         } = this.props;
 
         const {
@@ -193,6 +204,7 @@ class Board extends Component {
                             onHover={this.handleHover}
                             onReject={this.clearTargetIndicator}
                             onDelete={this.handleDelete}
+                            onCaptionClick={this.handleCaptionClick}
                             lanes={board && board.lanes}
                         />
                     </div>
