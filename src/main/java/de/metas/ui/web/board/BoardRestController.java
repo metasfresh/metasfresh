@@ -1,6 +1,8 @@
 package de.metas.ui.web.board;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -41,10 +43,13 @@ import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 /*
  * #%L
@@ -131,8 +136,26 @@ public class BoardRestController
 	@GetMapping("/{boardId}/card/{cardId}")
 	public JSONBoardCard getCard(@PathVariable("boardId") final int boardId, @PathVariable("cardId") final int cardId)
 	{
+		userSession.assertLoggedIn();
+
 		final BoardCard card = boardsRepo.getCard(boardId, cardId);
 		return JSONBoardCard.of(card, userSession.getAD_Language());
+	}
+
+	@GetMapping("/{boardId}/card")
+	@ApiOperation("gets cards indexed by cardId")
+	public Map<Integer, JSONBoardCard> getCards(@PathVariable("boardId") final int boardId,
+			@RequestParam("cardIds") @ApiParam("comma separated cardIds") final String cardIdsListStr)
+	{
+		userSession.assertLoggedIn();
+
+		final Set<Integer> cardIds = DocumentIdsSelection.ofCommaSeparatedString(cardIdsListStr).toIntSet();
+		final List<BoardCard> cards = boardsRepo.getCards(boardId, cardIds);
+
+		final String adLanguage = userSession.getAD_Language();
+		return cards.stream()
+				.map(card -> JSONBoardCard.of(card, adLanguage))
+				.collect(GuavaCollectors.toImmutableMapByKey(JSONBoardCard::getCardId));
 	}
 
 	@DeleteMapping("/{boardId}/card/{cardId}")

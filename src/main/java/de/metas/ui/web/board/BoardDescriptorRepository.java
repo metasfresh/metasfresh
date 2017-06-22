@@ -5,10 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -317,12 +319,22 @@ public class BoardDescriptorRepository
 
 	public List<BoardCard> getCards(final int boardId)
 	{
-		return retrieveCards(boardId, -1/* cardId */);
+		final Set<Integer> onlyCardIds = ImmutableSet.of();
+		return retrieveCards(boardId, onlyCardIds);
 	}
 
 	public BoardCard getCard(final int boardId, final int cardId)
 	{
-		return ListUtils.singleElement(retrieveCards(boardId, cardId));
+		Preconditions.checkArgument(cardId >= 0, "cardId >= 0"); // zero is OK because we might have recordId=0
+		final Set<Integer> onlyCardIds = ImmutableSet.of(cardId);
+
+		return ListUtils.singleElement(retrieveCards(boardId, onlyCardIds));
+	}
+
+	public List<BoardCard> getCards(final int boardId, final Collection<Integer> cardIds)
+	{
+		Preconditions.checkArgument(!cardIds.isEmpty(), "cardIds shall not be empty");
+		return retrieveCards(boardId, cardIds);
 	}
 
 	private int getLaneIdForCardId(final int boardId, final int cardId)
@@ -330,7 +342,7 @@ public class BoardDescriptorRepository
 		return getCard(boardId, cardId).getLaneId();
 	}
 
-	private List<BoardCard> retrieveCards(final int boardId, final int cardId)
+	private List<BoardCard> retrieveCards(final int boardId, final Collection<Integer> onlyCardIds)
 	{
 		final BoardDescriptor boardDescriptor = getBoardDescriptor(boardId);
 
@@ -367,10 +379,9 @@ public class BoardDescriptorRepository
 					.append("\n a." + I_WEBUI_Board_RecordAssignment.COLUMNNAME_WEBUI_Board_ID + "=?");
 			sqlParams.add(boardId);
 
-			if (cardId >= 0) // zero is also ok because we might have records with ID zero
+			if (!onlyCardIds.isEmpty())
 			{
-				sqlExpr.append("\n AND " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID + "=?");
-				sqlParams.add(cardId);
+				sqlExpr.append("\n AND ").append(DB.buildSqlList(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, onlyCardIds, sqlParams));
 			}
 		}
 
