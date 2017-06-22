@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Loader from '../app/Loader';
-import RawChart from '../charts/RawChart';
+import ChartWidget from './ChartWidget';
 import Indicator from '../charts/Indicator';
+import DndWidget from './DndWidget';
 
 import {
     getRequest
@@ -12,41 +13,70 @@ class Sidenav extends Component {
         super(props);
 
         this.state = {
-            view: []
+            cards: [],
+            indicators: []
         }
     }
 
-    componentWillMount = () => {
+    componentDidMount = () => {
         const {entity} = this.props;
         
-        getRequest('dashboard', 'available').then(res => {
+        getRequest('dashboard', 'kpis', 'available').then(res => {
             this.setState({
-                view: res.data
+                indicators: res.data.filter(chart => 
+                    chart.widgetTypes[0] === 'TargetIndicator'),
+                cards: res.data.filter(chart => chart.widgetTypes[0] === 'KPI')
             })
         })
     }
+    
+    renderChartList = (charts) => {
+        if(!charts) return;
+        
+        return charts.map((item, i) =>
+            <DndWidget
+                key={i}
+                moveCard={this.moveCard}
+                entity={item.widgetTypes[0]}
+                transparent={false}
+            >
+            {item.widgetTypes[0] === 'KPI' ? 
+                <ChartWidget
+                    id={item.id}
+                    index={i}
+                    chartType={item.chartType}
+                    kpi={true}
+                    caption={item.chartType}
+                    framework={true}
+                    idMaximized={false}
+                /> : 
+                <Indicator
+                    fullWidth={1}
+                    value={item.chartType}
+                    caption={item.caption}
+                />}
+            </DndWidget>
+        )
+    }
 
     render() {
-        const {view} = this.state;
+        const {indicators, cards} = this.state;
         const {entity} = this.props;
         return (
             <div
                 className="board-sidenav overlay-shadow"
             >
                 <div className="board-sidenav-header">
-                    Add widgets
+                    Add Target Indicator widget
                 </div>
                 <div>
-                    {view && view.map((item, i) =>
-                        item.chartType === 'kpis' ? 
-                            <RawChart key={i} /> : 
-                            <Indicator
-                                key={i}
-                                fullWidth={1}
-                                value={item.chartType}
-                                caption={item.caption}
-                            />
-                    )}
+                    {this.renderChartList(indicators)}
+                </div>
+                <div className="board-sidenav-header">
+                    Add KPI widget
+                </div>
+                <div>
+                    {this.renderChartList(cards)}
                 </div>
             </div>
         );

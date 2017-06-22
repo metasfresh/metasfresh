@@ -106,7 +106,7 @@ class RawChart extends Component {
     renderChart() {
         const {
             id, chartType, caption, fields, groupBy, height,
-            isMaximize, chartTitle
+            isMaximize, chartTitle, editmode
         } = this.props;
         const {chartData, forceChartReRender} = this.state;
         const data = chartData[0] && chartData[0].values;
@@ -148,7 +148,7 @@ class RawChart extends Component {
                     <Indicator
                         value={data[0][fields[0].fieldName] +
                             (fields[0].unit ? ' ' + fields[0].unit : '')}
-                        {...{caption}}
+                        {...{caption, editmode}}
                     />
                 );
             default:

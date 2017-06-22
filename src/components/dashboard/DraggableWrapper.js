@@ -129,6 +129,7 @@ export class DraggableWrapper extends Component {
                             pollInterval={indicator.kpi.pollIntervalSec}
                             chartType={'Indicator'}
                             kpi={false}
+                            {...{editmode}}
                         />
                     </DndWidget>
                 )}

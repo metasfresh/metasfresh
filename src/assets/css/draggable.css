@@ -98,7 +98,7 @@
     position: absolute;
     top: 8px;
     right: 8px;
-    z-index:999;
+    z-index:5;
 }
 
 .dnd-widget {

@@ -33,6 +33,10 @@
     overflow: hidden;
 }
 
+.indicator-draggable {
+    cursor: move;
+}
+
 .indicator:last-child {
     border-right: 1px solid $brand-border-color;
 }
