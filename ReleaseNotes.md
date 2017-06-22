@@ -98,6 +98,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#454](https://github.com/metasfresh/metasfresh-webui-api/issues/454) Can not add attribute to attribute set
     * Fixes an issue when adding a new Attribute to an Attribute set, for mandatory fields.
+  * [metasfresh/metasfresh/#1863](https://github.com/metasfresh/metasfresh/issues/1863) memory issue releated to material receipt
 
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
@@ -110,10 +111,12 @@ Here come the actual release notes:
     * Fixes a Bug that prevented to open the Handling Unit Editor in minor cases.
   * [#904](https://github.com/metasfresh/metasfresh-webui-frontend/issues/904) Navigation Menu vs. Sitemap entries w/ linebreak
     * Adjustments of the sitemap screen, now showing the manu entries without a linebreak in case there is enough horizontal space.
+  * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
+    * Fix to allow the Opening of Boards via WebUI Menu.
 
 # metasfresh 5.13 (2017-24)
 
-**upcoming release for week 2017-24**
+**release for week 2017-24**
 
 ## Features
 * metasfresh-backend
