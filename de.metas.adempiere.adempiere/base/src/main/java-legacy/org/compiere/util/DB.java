@@ -1772,6 +1772,7 @@ public final class DB
 	 */
 	public static final String TO_SQL(final Object param)
 	{
+		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
 			return "NULL";
 		else if (param instanceof String)
@@ -2359,6 +2360,7 @@ public final class DB
 				sql.append(",");
 			}
 
+			// TODO: check and refactor together with TO_SQL(..)
 			if (paramIn == null)
 			{
 				sql.append("NULL");
