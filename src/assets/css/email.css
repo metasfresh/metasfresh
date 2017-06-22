@@ -61,6 +61,7 @@
     justify-content: space-between;
     color: $brand-font-color;
     align-items: center;
+    position: relative;
 }
 
 .panel-email-footer button {
@@ -72,17 +73,37 @@
     padding: 0 20px 20px 20px;
     flex-direction: column;
     width: 40%;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+}
+
+@media (max-width: $breakpoint-md){
+    .email-attachments-wrapper {
+        width: 60%;
+    }
+}
+@media (max-width: $breakpoint){
+    .email-attachments-wrapper {
+        width: 100%;
+    }
 }
 
 .attachment {
     background-color: $brand-light-color;
     color: $brand-font-color;
     display: flex;
-    padding: 20px 10px;
+    padding: 10px;
     align-items: center;
     justify-content: space-between;
     border-radius: 2px;
     margin-bottom: 10px;
+}
+
+.attachnemt-text {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .react-tagsinput-tag {
