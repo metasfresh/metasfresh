@@ -92,7 +92,7 @@ class Card extends Component {
                         className="pointer"
                         onClick={() => onCaptionClick(documentPath)}
                     >{caption}</b>
-                    <p>{description}</p>
+                    <p className="card-description">{description}</p>
                     {users.map((user, i) =>
                         <Avatar
                             key={i}

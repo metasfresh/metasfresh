@@ -48,6 +48,10 @@
     border: 1px solid $brand-border-color;
 }
 
+.card-description {
+    white-space: pre-wrap;
+}
+
 .lane-card-placeholder {
     height:2px;
     width: calc(100% - .8rem);
