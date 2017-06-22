@@ -14,6 +14,10 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-26**
 
+* metasfresh-backend
+  * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
+    * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
+
 
 # metasfresh 5.14 (2017-25)
 
