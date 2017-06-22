@@ -111,6 +111,8 @@ Here come the actual release notes:
     * Fixes a Bug that prevented to open the Handling Unit Editor in minor cases.
   * [#904](https://github.com/metasfresh/metasfresh-webui-frontend/issues/904) Navigation Menu vs. Sitemap entries w/ linebreak
     * Adjustments of the sitemap screen, now showing the manu entries without a linebreak in case there is enough horizontal space.
+  * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
+    * Fix to allow the Opening of Boards via WebUI Menu.
 
 # metasfresh 5.13 (2017-24)
 
