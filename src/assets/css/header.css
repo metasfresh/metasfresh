@@ -488,6 +488,10 @@
     width: auto;
 }
 
+.menu-overlay-header {
+    border-bottom: 1px solid transparent;
+}
+
 .menu-overlay-header:focus {
     border-bottom: 1px solid $brand-font-color-secondary;
 }

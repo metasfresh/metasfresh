@@ -223,13 +223,16 @@ class MenuOverlay extends Component {
         const overlay = document.activeElement.classList.contains('js-menu-overlay');
         const headerLink = document.getElementsByClassName('js-menu-header')[0];
         const isHeaderLinkActive = document.activeElement.classList.contains('js-menu-header');
+        const headerItem = document.getElementsByClassName('js-menu-header')[0];
 
         switch(e.key){
             case 'ArrowDown':
+            console.log('ArrowDown');
                 if(document.activeElement === input) {
                     firstQueryItem.focus();
                 } else if(overlay) {
-                    browseItem.focus();
+                    // browseItem.focus();
+                    headerItem.focus();
                 } else if(isBrowseItemActive) {
                     firstMenuItem.focus();
                 } else if(isHeaderLinkActive){
