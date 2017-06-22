@@ -111,7 +111,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	@Override
 	public int getAD_Window_ID()
 	{
-		return windowId.toInt();
+		return windowId.toIntOr(-1);
 	}
 
 	@Override

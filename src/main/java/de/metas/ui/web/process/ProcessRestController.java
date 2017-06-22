@@ -247,7 +247,7 @@ public class ProcessRestController
 				.execute(() -> {
 					final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 					return instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
-						final ProcessInstanceResult result = processInstance.startProcess();
+						final ProcessInstanceResult result = processInstance.startProcess(viewsRepo);
 						return JSONProcessInstanceResult.of(result);
 					});
 				});

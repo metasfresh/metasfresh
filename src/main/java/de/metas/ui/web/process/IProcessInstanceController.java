@@ -3,6 +3,7 @@ package de.metas.ui.web.process;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
@@ -47,7 +48,7 @@ public interface IProcessInstanceController
 {
 	DocumentId getInstanceId();
 
-	ProcessInstanceResult startProcess();
+	ProcessInstanceResult startProcess(IViewsRepository viewsRepo);
 
 	/**
 	 * @return execution result or throws exception if the process was not already executed

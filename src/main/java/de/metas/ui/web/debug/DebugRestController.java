@@ -51,6 +51,7 @@ import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.websocket.WebsocketSender.WebsocketEvent;
@@ -121,6 +122,7 @@ public class DebugRestController
 		documentCollection.cacheReset();
 		menuTreeRepo.cacheReset();
 		processesController.cacheReset();
+		ViewColumnHelper.cacheReset();
 		Services.get(IUserRolePermissionsDAO.class).resetLocalCache();
 
 		System.gc();

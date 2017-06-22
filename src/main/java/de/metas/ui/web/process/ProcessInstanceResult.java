@@ -9,11 +9,13 @@ import org.compiere.util.Util;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -163,6 +165,14 @@ public final class ProcessInstanceResult implements Serializable
 	public static class OpenIncludedViewAction implements ResultAction
 	{
 		private final ViewId viewId;
+	}
+
+	@lombok.Value
+	@AllArgsConstructor(staticName = "of")
+	public static class CreateAndOpenIncludedViewAction implements ResultAction
+	{
+		@NonNull
+		private final CreateViewRequest createViewRequest;
 	}
 
 	@lombok.Value
