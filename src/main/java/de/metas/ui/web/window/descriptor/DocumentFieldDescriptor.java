@@ -443,8 +443,15 @@ public final class DocumentFieldDescriptor implements Serializable
 			{
 				if (value instanceof String)
 				{
+					final String valueStr = (String)value;
+					if(valueStr.isEmpty())
+					{
+						return null;
+					}
+					
+					final BigDecimal valueBD = new BigDecimal(valueStr); 
 					@SuppressWarnings("unchecked")
-					final T valueConv = (T)(Integer)Integer.parseInt((String)value);
+					final T valueConv = (T)(Integer)valueBD.intValueExact();
 					return valueConv;
 				}
 				else if (value instanceof Number)
