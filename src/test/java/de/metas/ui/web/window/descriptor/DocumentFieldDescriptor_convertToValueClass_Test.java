@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
@@ -36,6 +37,8 @@ public class DocumentFieldDescriptor_convertToValueClass_Test
 		final DocumentFieldWidgetType widgetType = DocumentFieldWidgetType.Integer;
 		final Class<?> targetType = widgetType.getValueClass();
 		final LookupValueByIdSupplier lookupDataSource= null;
-		DocumentFieldDescriptor.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+		
+		final Object valueConverted = DocumentFieldDescriptor.convertToValueClass(fieldName, value, widgetType, targetType, lookupDataSource);
+		Assert.assertEquals(12345, valueConverted);
 	}
 }
