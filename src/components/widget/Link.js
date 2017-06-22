@@ -14,7 +14,6 @@ class Link extends Component {
             getClassnames, isEdited, widgetProperties, icon, fullScreen,
             tabIndex, widgetData
         } = this.props;
-
         return (
             <div className="input-inner-container">
                 <div
@@ -36,7 +35,8 @@ class Link extends Component {
                     className={
                         'btn btn-icon btn-meta-outline-secondary btn-inline ' + 
                         'pointer btn-distance-rev btn-sm ' +
-                        (!widgetData[0].validStatus.valid ? 
+                        (!widgetData[0].validStatus.valid ||
+                            widgetData[0].value === '' ? 
                             'btn-disabled btn-meta-disabled' : '')
                     }
                 >
