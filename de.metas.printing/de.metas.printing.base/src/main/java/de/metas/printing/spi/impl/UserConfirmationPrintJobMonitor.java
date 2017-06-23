@@ -29,9 +29,8 @@ import org.adempiere.util.Services;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.printing.spi.IPrintJobBatchMonitor;
-import de.metas.printing.spi.IPrintJobMonitor;
 
-public class UserConfirmationPrintJobMonitor implements IPrintJobMonitor
+public class UserConfirmationPrintJobMonitor extends AbstractPrintJobMonitor
 {
 	private final IClientUIInstance clientUI;
 

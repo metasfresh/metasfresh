@@ -33,7 +33,7 @@ import de.metas.printing.spi.IPrintJobMonitor;
  * @author tsa
  * 
  */
-public final class NullPrintJobMonitor implements IPrintJobMonitor
+public final class NullPrintJobMonitor extends AbstractPrintJobMonitor
 {
 	private final static IPrintJobBatchMonitor NULL_BATCH_MONITOR = new IPrintJobBatchMonitor()
 	{
