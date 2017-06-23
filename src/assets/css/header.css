@@ -204,6 +204,10 @@
     color: inherit;
 }
 
+.subheader-item i {
+    margin-right: 5px;
+}
+
 .subheader-caption {
     position: relative;
     width: 100%;
