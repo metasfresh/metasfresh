@@ -83,7 +83,7 @@ public class PickingSlotViewRepository
 				.map(pickingSlotPO -> createPickingSlotRow(pickingSlotPO))
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public Set<Integer> retrieveAllRowIds()
 	{
 		return Services.get(IPickingSlotDAO.class).retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -91,7 +91,6 @@ public class PickingSlotViewRepository
 				.map(I_M_PickingSlot::getM_PickingSlot_ID)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 
 	private PickingSlotRow createPickingSlotRow(final I_M_PickingSlot pickingSlotPO)
 	{
@@ -103,10 +102,10 @@ public class PickingSlotViewRepository
 				.type(DefaultRowType.Row)
 				.processed(false)
 				//
-				.name(pickingSlotPO.getPickingSlot())
-				.warehouse(warehouseLookup.findById(pickingSlotPO.getM_Warehouse_ID()))
-				.bpartner(bpartnerLookup.findById(pickingSlotPO.getC_BPartner_ID()))
-				.bpartnerLocation(bpartnerLocationLookup.findById(pickingSlotPO.getC_BPartner_Location_ID()))
+				.pickingSlotName(pickingSlotPO.getPickingSlot())
+				.pickingSlotWarehouse(warehouseLookup.findById(pickingSlotPO.getM_Warehouse_ID()))
+				.pickingSlotBPartner(bpartnerLookup.findById(pickingSlotPO.getC_BPartner_ID()))
+				.pickingSlotBPLocation(bpartnerLocationLookup.findById(pickingSlotPO.getC_BPartner_Location_ID()))
 				//
 				.build();
 	}

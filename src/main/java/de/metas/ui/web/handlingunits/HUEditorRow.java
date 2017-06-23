@@ -19,7 +19,6 @@ import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
@@ -28,6 +27,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -35,6 +38,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
 
 /*
@@ -65,7 +69,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public final class HUEditorRow implements IViewRow, IHUEditorRow
+public final class HUEditorRow implements IViewRow
 {
 	public static final Builder builder(final WindowId windowId)
 	{
@@ -97,27 +101,66 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		return DocumentIdsSelection.of(rowIds).toIntSet();
 	}
 
+	static final int HUSTATUS_AD_Reference_ID = X_M_HU.HUSTATUS_AD_Reference_ID;
+
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
 	private final HUEditorRowType type;
 	private final boolean topLevel;
 	private final boolean processed;
 
-	private final Map<String, Object> values;
+	static final String COLUMNNAME_M_HU_ID = I_M_HU.COLUMNNAME_M_HU_ID;
+	@ViewColumn(fieldName = COLUMNNAME_M_HU_ID, widgetType = DocumentFieldWidgetType.Integer)
 	private final int huId;
+
+	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
+	})
 	private final String code;
-	// private final JSONLookupValue huUnitType;
-	private final JSONLookupValue huStatus;
-	private final String packingInfo;
+
+	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
+	})
 	private final JSONLookupValue product;
-	private final JSONLookupValue uom;
+
+	@ViewColumn(captionKey = "HU_UnitType", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
+			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
+	})
+	private final JSONLookupValue huUnitType;
+
+	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+	})
+	private final String packingInfo;
+
+	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+	})
 	private final BigDecimal qtyCU;
+
+	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
+			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
+	})
+	private final JSONLookupValue uom;
+
+	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
+			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
+	})
+	private final JSONLookupValue huStatus;
 
 	private final Supplier<HUEditorRowAttributes> attributesSupplier;
 
 	private final List<HUEditorRow> includedRows;
 
 	private transient String _summary; // lazy
+	private transient Map<String, Object> _values; // lazy
 
 	private HUEditorRow(final Builder builder)
 	{
@@ -128,10 +171,9 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 		topLevel = builder.isTopLevel();
 		processed = builder.isProcessed();
 
-		values = builder.buildValuesMap();
 		huId = builder.huId;
 		code = builder.code;
-		// huUnitType = builder.huUnitType;
+		huUnitType = builder.huUnitType;
 		huStatus = builder.huStatus;
 		packingInfo = builder.packingInfo;
 		product = builder.product;
@@ -190,12 +232,17 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 
 	Object getFieldValueAsJson(final String fieldName)
 	{
-		return values.get(fieldName);
+		return getFieldNameAndJsonValues().get(fieldName);
 	}
 
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
+		Map<String, Object> values = _values;
+		if (values == null)
+		{
+			values = _values = ViewColumnHelper.extractJsonMap(this);
+		}
 		return values;
 	}
 
@@ -326,7 +373,7 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 	{
 		return getType() == HUEditorRowType.LU;
 	}
-	
+
 	public boolean isTopLevel()
 	{
 		return topLevel;
@@ -473,31 +520,6 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 			return new HUEditorRow(this);
 		}
 
-		private ImmutableMap<String, Object> buildValuesMap()
-		{
-			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_M_HU_ID, huId);
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_Value, code);
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_HU_UnitType, huUnitType);
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_HUStatus, huStatus);
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_PackingInfo, packingInfo);
-
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_M_Product_ID, product);
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_C_UOM_ID, uom);
-			putIfNotNull(map, IHUEditorRow.COLUMNNAME_QtyCU, qtyCU);
-
-			return map.build();
-		}
-
-		private static final void putIfNotNull(final ImmutableMap.Builder<String, Object> map, final String name, final Object value)
-		{
-			if (value == null)
-			{
-				return;
-			}
-			map.put(name, value);
-		}
-
 		private DocumentPath getDocumentPath()
 		{
 			final DocumentId rowId = getRowId();
@@ -528,13 +550,13 @@ public final class HUEditorRow implements IViewRow, IHUEditorRow
 			this.type = type;
 			return this;
 		}
-		
+
 		public Builder setTopLevel(final boolean topLevel)
 		{
 			this.topLevel = topLevel;
 			return this;
 		}
-		
+
 		private boolean isTopLevel()
 		{
 			Check.assumeNotNull(topLevel, "Parameter topLevel is not null");

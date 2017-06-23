@@ -64,7 +64,7 @@ public class PickingViewFactory implements IViewFactory
 				.setHasTreeSupport(false)
 				.setHasIncludedViewSupport(true)
 				//
-				.addElementsFromViewRowClass(PickingRow.class)
+				.addElementsFromViewRowClass(PickingRow.class, viewDataType)
 				//
 				.build();
 	}

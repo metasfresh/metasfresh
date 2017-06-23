@@ -14,7 +14,9 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -45,7 +47,7 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString
+@ToString(exclude = "_fieldNameAndJsonValues")
 public final class PickingRow implements IViewRow
 {
 	private final DocumentId id;
@@ -53,21 +55,32 @@ public final class PickingRow implements IViewRow
 	private final boolean processed;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID, seqNo = 10)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
+	})
 	private final LookupValue warehouse;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, seqNo = 20)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20)
+	})
 	private final LookupValue product;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyToDeliver, seqNo = 30)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyToDeliver, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
+	})
 	private final BigDecimal qtyToDeliver;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_DeliveryDate, seqNo = 40)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_DeliveryDate, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
+	})
 	private final java.util.Date deliveryDate;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, seqNo = 50)
+	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
+	})
 	private final java.util.Date preparationDate;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
 	@Builder
-	private PickingRow(@NonNull final DocumentId id,
+	private PickingRow(
+			@NonNull final DocumentId id,
 			final IViewRowType type,
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
@@ -82,6 +95,7 @@ public final class PickingRow implements IViewRow
 		this.type = type;
 		this.processed = processed;
 		this.documentPath = documentPath;
+
 		this.warehouse = warehouse;
 		this.product = product;
 		this.qtyToDeliver = qtyToDeliver;

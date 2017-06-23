@@ -40,8 +40,6 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -159,32 +157,13 @@ public class HUEditorViewFactory implements IViewFactory
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(IHUEditorRow.COLUMNNAME_M_HU_ID)
+				.setIdFieldName(HUEditorRow.COLUMNNAME_M_HU_ID)
 				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
 				//
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption("Code")
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_Value)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("M_Product_ID")
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_M_Product_ID)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("M_HU_PI_Item_Product_ID")
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_PackingInfo)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("QtyCU")
-						.setWidgetType(DocumentFieldWidgetType.Quantity)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_QtyCU)))
+				.addElementsFromViewRowClass(HUEditorRow.class, JSONViewDataType.includedView)
 				//
 				.build();
 	}
@@ -196,48 +175,13 @@ public class HUEditorViewFactory implements IViewFactory
 				.setCaption("HU Editor")
 				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
 				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
-				.setIdFieldName(IHUEditorRow.COLUMNNAME_M_HU_ID)
+				.setIdFieldName(HUEditorRow.COLUMNNAME_M_HU_ID)
 				.setFilters(getSqlViewBinding().getViewFilterDescriptors().getAll())
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
 				//
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaption("Code")
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_Value)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("M_Product_ID")
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_M_Product_ID)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("HU_UnitType")
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_HU_UnitType)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("M_HU_PI_Item_Product_ID")
-						.setWidgetType(DocumentFieldWidgetType.Text)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_PackingInfo)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("QtyCU")
-						.setWidgetType(DocumentFieldWidgetType.Quantity)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_QtyCU)))
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message("C_UOM_ID")
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_C_UOM_ID)))
-				//
-				.addElement(DocumentLayoutElementDescriptor.builder()
-						.setCaptionFromAD_Message(IHUEditorRow.COLUMNNAME_HUStatus)
-						.setWidgetType(DocumentFieldWidgetType.Lookup)
-						.setGridElement()
-						.addField(DocumentLayoutElementFieldDescriptor.builder(IHUEditorRow.COLUMNNAME_HUStatus)))
+				.addElementsFromViewRowClass(HUEditorRow.class, JSONViewDataType.grid)
 				//
 				.build();
 	}

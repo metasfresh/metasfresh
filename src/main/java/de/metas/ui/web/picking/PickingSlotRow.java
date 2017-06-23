@@ -12,7 +12,9 @@ import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -51,14 +53,25 @@ public final class PickingSlotRow implements IViewRow
 	private final boolean processed;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_PickingSlot.COLUMNNAME_PickingSlot, seqNo = 10)
-	private final String name;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID, seqNo = 20)
-	private final LookupValue warehouse;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, seqNo = 30)
-	private final LookupValue bpartner;
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID, seqNo = 40)
-	private final LookupValue bpartnerLocation;
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, captionKey = I_M_PickingSlot.COLUMNNAME_PickingSlot, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
+	})
+	private final String pickingSlotName;
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
+	})
+	private final LookupValue pickingSlotWarehouse;
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_PickingSlot.COLUMNNAME_C_BPartner_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
+	})
+	private final LookupValue pickingSlotBPartner;
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+	})
+	private final LookupValue pickingSlotBPLocation;
+	
+	// TODO: picking slot columns: name, bp and loc
+	// TODO: HU included view columns
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
@@ -68,20 +81,20 @@ public final class PickingSlotRow implements IViewRow
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
 			//
-			final String name,
-			final LookupValue warehouse,
-			final LookupValue bpartner,
-			final LookupValue bpartnerLocation)
+			final String pickingSlotName,
+			final LookupValue pickingSlotWarehouse,
+			final LookupValue pickingSlotBPartner,
+			final LookupValue pickingSlotBPLocation)
 	{
 		this.id = id;
 		this.type = type;
 		this.processed = processed;
 		this.documentPath = documentPath;
 
-		this.name = name;
-		this.warehouse = warehouse;
-		this.bpartner = bpartner;
-		this.bpartnerLocation = bpartnerLocation;
+		this.pickingSlotName = pickingSlotName;
+		this.pickingSlotWarehouse = pickingSlotWarehouse;
+		this.pickingSlotBPartner = pickingSlotBPartner;
+		this.pickingSlotBPLocation = pickingSlotBPLocation;
 	}
 
 	@Override

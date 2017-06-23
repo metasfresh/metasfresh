@@ -54,7 +54,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		return ViewLayout.builder()
 				.setWindowId(PickingConstants.WINDOWID_PickingSlotView)
 				.setCaption("Picking slots")
-				.addElementsFromViewRowClass(PickingSlotRow.class)
+				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
 				.build();
 	}
 

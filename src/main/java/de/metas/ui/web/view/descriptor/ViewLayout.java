@@ -23,6 +23,7 @@ import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -461,9 +462,9 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass)
+		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)
 		{
-			ViewColumnHelper.getLayoutElementsForClass(viewRowClass)
+			ViewColumnHelper.createLayoutElementsForClass(viewRowClass, viewType)
 					.forEach(this::addElement);
 			return this;
 		}
