@@ -19,6 +19,10 @@ Here come the actual release notes:
     * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
+    
+* metasfresh-webui-frontend
+  * [#908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/908) URL widget: disable the link button if the URL is not valid
+    * Disabling the URL Widget Button as long as the URL Field is empty.
 
 
 # metasfresh 5.14 (2017-25)
