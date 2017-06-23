@@ -19,6 +19,10 @@ Here come the actual release notes:
     * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
+
+* metasfresh-webui-api
+  * [#468](https://github.com/metasfresh/metasfresh-webui-api/issues/468) Fix user full name in Avatar
+    * Adjusting the Avatar Name. Now showing Firstname Lastname.
     
 * metasfresh-webui-frontend
   * [#896](https://github.com/metasfresh/metasfresh-webui-frontend/issues/896) KPIs: show Loading indicator instead of No data
