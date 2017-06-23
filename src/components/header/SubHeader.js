@@ -131,7 +131,7 @@ class Subheader extends Component {
                 }}
             >
                 <i className="meta-icon-edit" />
-                {' ' + counterpart.translate('window.advancedEdit.caption')}
+                {counterpart.translate('window.advancedEdit.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_ADVANCED_EDIT}
                 </span>
@@ -145,7 +145,7 @@ class Subheader extends Component {
                 }}
             >
                 <i className="meta-icon-print" />
-                {' ' + counterpart.translate('window.Print.caption')}
+                {counterpart.translate('window.Print.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_PRINT_RAPORT}
                 </span>
@@ -157,7 +157,7 @@ class Subheader extends Component {
                 onClick={() => handleDelete()}
             >
                 <i className="meta-icon-delete" />
-                {' ' + counterpart.translate('window.Delete.caption')}
+                {counterpart.translate('window.Delete.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}
                 </span>
@@ -197,7 +197,7 @@ class Subheader extends Component {
                     ); closeSubheader()}
                 }>
                     <i className="meta-icon-report-1" />
-                    {' ' + counterpart.translate('window.new.caption')}
+                    {counterpart.translate('window.new.caption')}
                     <span className="tooltip-inline">
                         {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
                     </span>
