@@ -39,9 +39,11 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -122,6 +124,13 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		return retrievePrintJobLines(job, fromSeqNo, toSeqNo);
 	}
 
+	@Override
+	public int countItems(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
+	{
+		final IQuery<I_C_Printing_Queue> query = createQuery(ctx, queueQuery, trxName);
+		return query.count();
+	}
+	
 	@Override
 	public List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
 	{

@@ -112,6 +112,16 @@ public interface IPrintingDAO extends ISingletonService
 	I_C_Print_Job_Line retrievePrintJobLine(I_C_Print_Job job, int seqNo);
 
 	/**
+	 * count items
+	 * @param ctx
+	 * @param queueQuery
+	 * @param trxName
+	 * @return
+	 */
+	int countItems(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
+
+	
+	/**
 	 * Retrieve the print job details for the given job line. Assumes that there is at least one, never returns an empty list.
 	 * 
 	 * @param jobLine
