@@ -163,4 +163,11 @@ public class SingletonPrintingQueueSource extends AbstractPrintingQueueSource
 			temporaryPrinted = true;
 		}
 	}
+	
+	@Override
+	public int countItems() 
+	{
+		return 1;
+	}
+
 }
