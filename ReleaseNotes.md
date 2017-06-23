@@ -34,7 +34,7 @@ Here come the actual release notes:
 
 # metasfresh 5.14 (2017-25)
 
-**release for week 2017-25 **
+**release for week 2017-25**
 
 ## Features
 * metasfresh-backend
