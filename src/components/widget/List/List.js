@@ -40,13 +40,13 @@ class List extends Component {
 
         }
 
-        if(localClearing) {
-            console.log('localClearing');
-            this.setState({
-                list: []
-            });
-            resetLocalClearing();
-        }
+        // if(localClearing) {
+        //     console.log('localClearing');
+        //     this.setState({
+        //         list: []
+        //     });
+        //     resetLocalClearing();
+        // }
     }
 
     handleFocus = () => {

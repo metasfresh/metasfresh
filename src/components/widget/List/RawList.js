@@ -192,7 +192,7 @@ class RawList extends Component {
         console.log(list.length);
         console.log(doNotOpenOnFocus);
 
-        !doNotOpenOnFocus && list.length > 1  && this.setState({
+        !doNotOpenOnFocus && this.setState({
             isOpen: true
         })
     }
