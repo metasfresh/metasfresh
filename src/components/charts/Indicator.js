@@ -8,9 +8,9 @@ class Indicator extends Component {
 
     render() {
         const {value, caption, loader} = this.props;
-        
+
         if(loader) return <div className="indicator"><Loader /></div>;
-        
+
         return (
             <div className="indicator">
                 <div className="indicator-value">{value}</div>

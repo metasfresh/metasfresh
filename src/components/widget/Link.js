@@ -33,10 +33,10 @@ class Link extends Component {
                 <div
                     onClick={() => this.handleClick(widgetData[0].value)}
                     className={
-                        'btn btn-icon btn-meta-outline-secondary btn-inline ' + 
+                        'btn btn-icon btn-meta-outline-secondary btn-inline ' +
                         'pointer btn-distance-rev btn-sm ' +
                         (!widgetData[0].validStatus.valid ||
-                            widgetData[0].value === '' ? 
+                            widgetData[0].value === '' ?
                             'btn-disabled btn-meta-disabled' : '')
                     }
                 >

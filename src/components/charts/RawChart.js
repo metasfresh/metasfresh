@@ -139,9 +139,9 @@ class RawChart extends Component {
 
         switch(chartType){
             case 'Indicator':
-                return <Indicator value={"No data"} loader={data === null} />
+                return <Indicator value={'No data'} loader={data === null} />
             default:
-                return <div>{data === null ? <Loader /> : "No data"}</div>
+                return <div>{data === null ? <Loader /> : 'No data'}</div>
         }
     }
 
