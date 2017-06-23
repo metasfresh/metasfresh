@@ -20,10 +20,8 @@ class MenuOverlay extends Component {
         this.state = {
             queriedResults: [],
             query: '',
-            deepNode: null,
             deepSubNode: null,
             path: '',
-            subPath: '',
             data: {}
         };
     }
@@ -76,11 +74,14 @@ class MenuOverlay extends Component {
         });
     }
 
-    handleRedirect = (elementId, isNew) => {
+    handleRedirect = (elementId, isNew, entity) => {
         this.handleClickOutside();
 
         this.props.dispatch(
-            push('/window/' + elementId + (isNew ? '/new' : ''))
+            push(
+                '/' + (entity ? entity : 'window') + '/' +
+                elementId + (isNew ? '/new' : '')
+            )
         );
     }
 
@@ -176,23 +177,24 @@ class MenuOverlay extends Component {
     }
 
     renderSubnavigation = (nodeData) => {
+        const {handleMenuOverlay, openModal} = this.props;
         return(
             <div>
-                {(nodeData && nodeData.children) &&
-                    nodeData.children.map((item, index) =>
-                    <span
-                        className="menu-overlay-expanded-link"
-                        key={index}
-                    >
-                        <span
-                            className={item.elementId ?
-                                'menu-overlay-link' : 'menu-overlay-expand'
-                            }
-                            onClick={ () => this.linkClick(item) }>
-                                {item.caption}
-                        </span>
-                    </span>
-                )}
+                <MenuOverlayContainer
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    handlePath={this.handlePath}
+                    parent={nodeData}
+                    printChildren={true}
+                    transparentBookmarks={true}
+                    back={e => this.handleClickBack(e)}
+                    handleMenuOverlay={handleMenuOverlay}
+                    openModal={openModal}
+                    subNavigation={true}
+                    children={nodeData.children}
+                    type={nodeData.type}
+                />
             </div>
         )
     }
@@ -377,16 +379,20 @@ class MenuOverlay extends Component {
 
     render() {
         const {
-            queriedResults, query, data
+            queriedResults, deepSubNode, query, data
         } = this.state;
         const {
-            handleMenuOverlay, openModal
+            nodeId, node, handleMenuOverlay, openModal
         } = this.props;
+        const nodeData = nodeId == '0' ? data : node.children;
         return (
             <div
                 className="menu-overlay menu-overlay-primary"
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
+
+                { nodeId == 0 ?
+                    //ROOT
                     <div className="menu-overlay-root-body">
                         {this.renderNaviagtion(data)}
                         <div
@@ -440,7 +446,20 @@ class MenuOverlay extends Component {
                                 <span>There are no results</span>
                             }
                         </div>
-                    </div>
+                    </div> :
+                    //NOT ROOT
+                    <div
+                    className="menu-overlay-node-container menu-suboverlay">
+                            {
+                                    <p className="menu-overlay-header">
+                                        {nodeData && nodeData.caption}
+                                    </p>
+                            }
+                            {this.renderSubnavigation(
+                                deepSubNode ? deepSubNode : nodeData
+                            )}
+                        </div>
+                }
                 </div>
             </div>
         )

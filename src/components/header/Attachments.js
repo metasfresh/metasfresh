@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
+import counterpart from 'counterpart';
 
 import Loader from '../app/Loader';
 
@@ -120,7 +121,9 @@ class Attachments extends Component {
             ) :
                 <div
                     className="subheader-item subheader-item-disabled"
-                >There is no attachment</div>
+                >{counterpart.translate(
+                    'window.sideList.attachments.empty'
+                )}</div>
     }
 
     render() {

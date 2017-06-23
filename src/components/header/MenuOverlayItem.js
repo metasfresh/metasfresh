@@ -27,8 +27,8 @@ class MenuOverlayItem extends Component {
 
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
-        } else if (type === 'window') {
-            this.handleClick(elementId)
+        } else if (type === 'window' || type === 'board') {
+            this.handleClick(elementId, type)
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
         } else if (type === 'report' || type === 'process') {
@@ -36,9 +36,9 @@ class MenuOverlayItem extends Component {
         }
     }
 
-    handleClick = (elementId) => {
+    handleClick = (elementId, entity) => {
         const {handleRedirect} = this.props;
-        handleRedirect(elementId);
+        handleRedirect(elementId, null, entity);
         this.renderBreadcrumb(elementId)
     }
 

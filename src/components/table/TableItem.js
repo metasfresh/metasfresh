@@ -254,7 +254,7 @@ class TableItem extends Component {
     render() {
         const {
             isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
-            indentSupported, contextType, lastChild, processed,
+            indentSupported, indent, contextType, lastChild, processed,
             includedDocuments, notSaved
         } = this.props;
 
@@ -272,7 +272,7 @@ class TableItem extends Component {
                     (notSaved ? 'row-not-saved ': '')
                 }
             >
-                {indentSupported &&
+                {indentSupported && indent &&
                     <td className="indented">
                         {this.renderTree(contextType)}
                     </td>
