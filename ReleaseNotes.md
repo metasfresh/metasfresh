@@ -82,6 +82,8 @@ Here come the actual release notes:
     * Implementation of Debug Endpoints to be able to test the behavior of websockets.
   * [#462](https://github.com/metasfresh/metasfresh-webui-api/issues/462) Dashboard editing API prototype
     * This is the API Prototype for the new Features required for the User Dashboard.
+  * [#463](https://github.com/metasfresh/metasfresh-webui-api/issues/463) filter is ignored when doing mass invoice or shipping
+    * Fixes an issue in adding Filter Criteria to Mass invoiceing/ shipping process.
 
 
 * metasfresh-webui-frontend
