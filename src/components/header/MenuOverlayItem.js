@@ -76,80 +76,16 @@ class MenuOverlayItem extends Component {
     }
 
     handeArrowUp() {
-        console.log('ArrowUp item');
         let prevSiblings = document.activeElement.previousSibling;
-        // let prevSiblings = document.activeElement.previousSibling && document.activeElement.previousSibling.classList.contains('js-menu-item');
         if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
             document.getElementById('search-input-query').focus();
         } else if (
-            prevSiblings && prevSiblings.classList.contains('js-menu-item')
+            prevSiblings && prevSiblings.classList.contains('js-menu-item') &&
+            document.activeElement.parentElement.classList
+            .contains('menu-overlay-query')
         ) {
             document.activeElement.previousSibling.focus();
-        } else {
-            this.handleGroupUp();
         }
-    }
-
-    findPreviousGroup() {
-        let elem = document.activeElement.parentElement;
-        let i = 0;
-        while (!elem.classList.contains('js-menu-container') || !elem.previousSibling.children.length === 0 || !elem.classList.contains('js-menu-main-container') && i < 100) {
-            elem = elem.parentElement;
-            i++;
-        }
-
-        // if(elem.previousSibling.children.length === 0) {
-            
-        //     this.findPreviousGroup(elem);
-        // } else {
-        //     return elem.previousSibling;
-        // }
-
-        return elem.previousSibling;
-        
-
-        
-    }
-
-    selectLastItem(previousGroup) {
-        const listChildren = previousGroup.childNodes;
-        const lastChildren = listChildren[listChildren.length - 1];
-        if(listChildren.length == 1){
-            listChildren[0].focus && listChildren[0].focus();
-        }else{
-            if(lastChildren.classList.contains('js-menu-item')) {
-                lastChildren.focus();
-            } else {
-                if(lastChildren.children[lastChildren.children.length - 1].classList.contains('js-menu-item')){
-                    lastChildren.children[lastChildren.children.length - 1].focus();
-                } else {
-                    lastChildren.children[lastChildren.children.length - 1].getElementsByClassName('js-menu-item')[lastChildren.children[lastChildren.children.length - 1].getElementsByClassName('js-menu-item').length-1].focus();
-                }
-                
-            }
-
-        }
-    }
-
-    handleGroupUp() {
-        
-        const previousMainGroup = this.findPreviousGroup();
-        const previousGroup =
-            document.activeElement.parentElement.previousSibling;
-        const browseItem = document.getElementsByClassName('js-browse-item')[0];
-
-        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
-            previousGroup.focus();
-        } else {
-            if (previousGroup.children.length > 0) {
-                this.selectLastItem(previousGroup);
-            } else if(previousMainGroup) {
-                this.selectLastItem(previousMainGroup);
-            } else {
-                browseItem && browseItem.focus()
-            }
-        }
-
     }
 
     handleArrowDown() {
@@ -170,21 +106,25 @@ class MenuOverlayItem extends Component {
                 if(listChildren.length == 1){
                     listChildren[0].focus();
                 }else{
-                    if(listChildren[1].classList.contains("js-menu-item")){
+                    if(listChildren[1].classList.contains('js-menu-item')){
                         listChildren[1].focus();
                     } else {
-                        listChildren[1].getElementsByClassName('js-menu-item')[0].focus();
+                        listChildren[1]
+                        .getElementsByClassName('js-menu-item')[0].focus();
                     }
                 }
             } else if(parentElem.parentElement.nextSibling) {
-                if (parentElem.parentElement.nextSibling.childNodes[1].classList.contains("js-menu-item")){
+                if (parentElem.parentElement.nextSibling.childNodes[1]
+                .classList.contains('js-menu-item')){
                     parentElem.parentElement.nextSibling.childNodes[1].focus();
                 } else {
-                    parentElem.parentElement.nextSibling.childNodes[1].getElementsByClassName('js-menu-item')[0].focus();
+                    parentElem.parentElement.nextSibling.childNodes[1]
+                    .getElementsByClassName('js-menu-item')[0].focus();
                 }
-                
+
             } else if(parentElem.parentElement.parentElement.nextSibling) {
-                parentElem.parentElement.parentElement.nextSibling.getElementsByClassName('js-menu-item')[0].focus();
+                parentElem.parentElement.parentElement.nextSibling
+                .getElementsByClassName('js-menu-item')[0].focus();
             }
         }
     }
