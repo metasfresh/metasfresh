@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
     
 * metasfresh-webui-frontend
+  * [#896](https://github.com/metasfresh/metasfresh-webui-frontend/issues/896) KPIs: show Loading indicator instead of No data
+    * Exchanging "No Data" Notification with a Loading Indicator in KPI when data is not available.
   * [#908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/908) URL widget: disable the link button if the URL is not valid
     * Disabling the URL Widget Button as long as the URL Field is empty.
 
