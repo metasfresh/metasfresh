@@ -30,7 +30,7 @@ const cardTarget = {
         monitor.getItem().index = hoverIndex;
     },
     drop(props, monitor) {
-        if(monitor.getItem().isNew){
+        if(monitor.getItem().isNew && props.addCard){
             props.addCard(props.entity, monitor.getItem().id);
         }
     }
@@ -71,7 +71,7 @@ export class DndWidget extends Component {
                     (placeholder ? 'dnd-placeholder ' : '')
                 }
             >
-                {!placeholder && <i
+                {!placeholder && removeCard && <i
                     className="meta-icon-trash draggable-icon-remove pointer"
                     onClick={() => removeCard(entity, index, id)}
                 />}

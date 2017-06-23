@@ -1,7 +1,8 @@
 
 .draggable-widget {
+    flex:1;
     border: 1px solid $brand-light-color;
-    width: calc(33.333% - 1rem);
+    min-width: calc(33.333% - 1rem);
     margin: .5rem;
     background-color: white;
     display: inline-block;
@@ -16,6 +17,17 @@
     }
 }
 
+.draggable-widget-title {
+    overflow: hidden;
+    padding-right: 2rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.draggable-widget-edited {
+    cursor: move;
+}
+
 .draggable-widget-header {
     padding: 6px 10px;
     background: $brand-super-light-color;
@@ -23,12 +35,7 @@
     font-size: 0.875rem;
     color: $brand-font-color;
     position: relative;
-    cursor: move;
     height: 34px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    padding-right: 2rem;
 }
 
 .draggable-widget-body {

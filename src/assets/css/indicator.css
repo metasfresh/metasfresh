@@ -6,6 +6,9 @@
 
 .kpis-wrapper {
     margin: -.5rem;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .kpis-wrapper .dnd-placeholder {
@@ -20,7 +23,7 @@
 }
 
 .indicators-wrapper > * {
-    flex:1;
+    flex: 1;
 }
 
 .indicator {

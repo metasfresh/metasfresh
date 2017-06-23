@@ -61,13 +61,20 @@ export class ChartWidget extends Component {
                 ((idMaximized !== false) && !isMaximize ? ' hidden-xs-up' : '')
             }>
                 <div
-                    className="draggable-widget-header"
+                    className={
+                        "draggable-widget-header " +
+                        (editmode ? 'draggable-widget-edited ' : '')
+                    }
                     onDoubleClick={isMaximize ?
                         () => {this.minimizeWidget(); showWidgets() } :
                         () => {this.maximizeWidget(); hideWidgets(index)}}
                 >
-                    {text}
-                    {!editmode && <i
+                    <p
+                        className="draggable-widget-title"
+                    >
+                        {text}
+                    </p>
+                    {!editmode && !framework && <i
                         className="draggable-widget-icon meta-icon-down-1 input-icon-sm"
                         onClick={() => this.toggleMenu()}
                     />}

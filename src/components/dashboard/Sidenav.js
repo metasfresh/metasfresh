@@ -57,6 +57,7 @@ class Sidenav extends Component {
                         fullWidth={1}
                         value={item.chartType}
                         caption={item.caption}
+                        framework={true}
                     />}
             </DndWidget>
         )
