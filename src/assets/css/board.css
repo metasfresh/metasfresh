@@ -1,5 +1,5 @@
 .board {
-    height: calc(100vh - 55px);
+    min-height: calc(100vh - 55px);
     background-color: #fff;
     padding: .4rem;
 }
@@ -14,7 +14,6 @@
     align-items: stretch;
     overflow-x: scroll;
     overflow-y: hidden;
-    height: calc(100% - 55px);
 }
 
 .board-lane {
@@ -47,6 +46,10 @@
     padding: .4rem;
     background-color: #fff;
     border: 1px solid $brand-border-color;
+}
+
+.card-description {
+    white-space: pre-wrap;
 }
 
 .lane-card-placeholder {

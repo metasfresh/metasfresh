@@ -8,7 +8,8 @@ class Lanes extends Component {
 
     render() {
         const {
-            lanes, onDrop, onHover, onReject, onDelete, targetIndicator
+            lanes, onDrop, onHover, onReject, onDelete, targetIndicator,
+            onCaptionClick
         } = this.props;
 
         if(!lanes) return false;
@@ -19,7 +20,8 @@ class Lanes extends Component {
                     <Lane
                         key={i}
                         {...{
-                            onDrop, onHover, onDelete, onReject, targetIndicator
+                            onDrop, onHover, onDelete, onReject,
+                            targetIndicator, onCaptionClick
                         }}
                         {...lane}
                     />)

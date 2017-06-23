@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
+import FiltersStatic from './FiltersStatic';
 
 class Filters extends Component {
     constructor(props) {
@@ -89,7 +90,9 @@ class Filters extends Component {
     sortFilters = (data) => {
         return {
             frequentFilters: data.filter(filter => filter.frequent),
-            notFrequentFilters: data.filter(filter => !filter.frequent)
+            notFrequentFilters: data.filter(filter =>
+                !filter.frequent && !filter.static),
+            staticFilters: data.filter(filter => filter.static)
         }
     }
 
@@ -116,7 +119,7 @@ class Filters extends Component {
     render() {
         const {filterData, windowType, viewId} = this.props;
         const {
-            frequentFilters, notFrequentFilters
+            frequentFilters, notFrequentFilters, staticFilters
         } = this.sortFilters(filterData);
         const {notValidFields, widgetShown, filter} = this.state;
         return (
@@ -149,6 +152,12 @@ class Filters extends Component {
                             clearFilters={this.clearFilters}
                             active={filter}
                             dropdownToggled={this.dropdownToggled}
+                        />
+                    }
+                    {!!staticFilters.length &&
+                        <FiltersStatic
+                            data={staticFilters}
+                            clearFilters={this.clearFilters}
                         />
                     }
                 </div>

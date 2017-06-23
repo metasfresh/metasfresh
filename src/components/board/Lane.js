@@ -9,7 +9,7 @@ class Lane extends Component {
     render() {
         const {
             caption, cards, laneId, onHover, onDrop, targetIndicator, onReject,
-            onDelete, placeholder
+            onDelete, placeholder, onCaptionClick
         } = this.props;
 
         if(placeholder){
@@ -35,7 +35,7 @@ class Lane extends Component {
                         index={i}
                         {...{
                             laneId, onHover, onDrop, onReject, targetIndicator,
-                            onDelete
+                            onDelete, onCaptionClick
                         }}
                         {...card} />
                     )}

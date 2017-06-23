@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Loader from '../app/Loader';
 
 class Indicator extends Component {
     constructor(props) {
@@ -6,7 +7,10 @@ class Indicator extends Component {
     }
 
     render() {
-        const {value, caption} = this.props;
+        const {value, caption, loader} = this.props;
+        
+        if(loader) return <div className="indicator"><Loader /></div>;
+        
         return (
             <div className="indicator">
                 <div className="indicator-value">{value}</div>

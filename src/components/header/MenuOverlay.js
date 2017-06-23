@@ -74,11 +74,14 @@ class MenuOverlay extends Component {
         });
     }
 
-    handleRedirect = (elementId, isNew) => {
+    handleRedirect = (elementId, isNew, entity) => {
         this.handleClickOutside();
 
         this.props.dispatch(
-            push('/window/' + elementId + (isNew ? '/new' : ''))
+            push(
+                '/' + (entity ? entity : 'window') + '/' + 
+                elementId + (isNew ? '/new' : '')
+            )
         );
     }
 
