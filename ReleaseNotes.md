@@ -111,7 +111,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
   * [#454](https://github.com/metasfresh/metasfresh-webui-api/issues/454) Can not add attribute to attribute set
     * Fixes an issue when adding a new Attribute to an Attribute set, for mandatory fields.
-  * [metasfresh/metasfresh/#1863](https://github.com/metasfresh/metasfresh/issues/1863) memory issue releated to material receipt
+  * [#1863](https://github.com/metasfresh/metasfresh/issues/1863) memory issue releated to material receipt
+    * Fixes an Out of memory issue that occured in cornercases working in material Receipt Canidates window.
 
 * metasfresh-webui-frontend
   * [#876](https://github.com/metasfresh/metasfresh-webui-frontend/issues/876) Clean and unify the two-column structure in MenuOverlay
