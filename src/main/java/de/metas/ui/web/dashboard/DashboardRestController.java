@@ -120,10 +120,9 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboard userDashboard = getUserDashboardForWriting();
-		final int itemId = userDashboardRepo.addUserDashboardItem(userDashboard, DashboardWidgetType.KPI, request);
+		final int itemId = userDashboardRepo.addUserDashboardItem(getUserDashboardForWriting(), DashboardWidgetType.KPI, request);
 
-		final UserDashboardItem kpiItem = userDashboard.getItemById(DashboardWidgetType.KPI, itemId);
+		final UserDashboardItem kpiItem = getUserDashboardForReading().getItemById(DashboardWidgetType.KPI, itemId);
 		return JSONDashboardItem.of(kpiItem, newJSONOpts());
 	}
 
@@ -132,8 +131,7 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboard dashboard = getUserDashboardForWriting();
-		userDashboardRepo.changeDashboardItems(dashboard, DashboardWidgetType.KPI, events);
+		userDashboardRepo.changeDashboardItems(getUserDashboardForWriting(), DashboardWidgetType.KPI, events);
 	}
 
 	private final KPIDataResult getKPIData(final UserDashboardItem dashboardItem, final long fromMillis, final long toMillis, final boolean prettyValues)
@@ -178,10 +176,9 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboard dashboard = getUserDashboardForWriting();
-		final int itemId = userDashboardRepo.addUserDashboardItem(dashboard, DashboardWidgetType.TargetIndicator, request);
+		final int itemId = userDashboardRepo.addUserDashboardItem(getUserDashboardForWriting(), DashboardWidgetType.TargetIndicator, request);
 
-		final UserDashboardItem targetIndicatorItem = dashboard.getItemById(DashboardWidgetType.TargetIndicator, itemId);
+		final UserDashboardItem targetIndicatorItem = getUserDashboardForReading().getItemById(DashboardWidgetType.TargetIndicator, itemId);
 		return JSONDashboardItem.of(targetIndicatorItem, newJSONOpts());
 	}
 
