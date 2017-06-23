@@ -615,6 +615,12 @@ public final class ProcessInfo implements Serializable
 		if (Check.isEmpty(whereClause, true))
 		{
 			whereFilter = defaultQueryFilter;
+			
+			// In case te default filter is null, return null
+			if(whereFilter == null)
+			{
+				return null;
+			}
 		}
 		else
 		{
