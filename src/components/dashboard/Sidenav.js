@@ -39,6 +39,7 @@ class Sidenav extends Component {
                 id={item.kpiId}
                 index={item.kpiId}
                 moveCard={moveCard}
+                isNew={true}
                 entity={item.widgetTypes[0] === 'KPI' ? 'cards' : 'indicators'}
                 transparent={false}
             >

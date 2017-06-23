@@ -18,7 +18,8 @@ import {
 } from '../../actions/AppActions';
 
 import {
-    addDashboardWidget
+    addDashboardWidget,
+    removeDashboardWidget
 } from '../../actions/BoardActions';
 
 export class DraggableWrapper extends Component {
@@ -38,6 +39,8 @@ export class DraggableWrapper extends Component {
         this.getIndicators();
     }
     
+    getType = (entity) => entity === 'cards' ? 'kpis' : 'targetIndicators';
+    
     getIndicators = () => {
         getTargetIndicatorsDashboard().then(response => {
             this.setState({
@@ -55,22 +58,20 @@ export class DraggableWrapper extends Component {
     }
     
     addCard = (entity, id) => {
-        addDashboardWidget(entity, id).then(res => {
-            console.log(res);
-        })
-        // this.setState(prev => update(prev, {
-        //     [entity]: {
-        //         $push: []
-        //     }
-        // }));
+        const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
+        addDashboardWidget(this.getType(entity), id).then(res => {
+            this.setState(prev => update(prev, {
+                [entity]: {
+                    [tmpItemIndex]: {$set: res.data}
+                }
+            }));
+        });
     }
     
-    moveCard = (entity, dragIndex, hoverIndex, isNew) => {
-        if(isNew){
-            this.addCard(entity, dragIndex);
-        }else{
-            const draggedItem = this.state[entity][dragIndex];
-            
+    moveCard = (entity, dragIndex, hoverIndex, item) => {
+        const draggedItem = this.state[entity][dragIndex];
+        if(draggedItem){
+            // When we are inserting added
             this.setState(prev => update(prev, {
                 [entity]: {
                     $splice: [
@@ -79,10 +80,27 @@ export class DraggableWrapper extends Component {
                     ]
                 }
             }));
+        }else{
+            // When we are adding card
+            const newItem = {
+                id: item.id,
+                fetchOnDrop: true,
+                text: "Metric",
+                caption: "New",
+                kpi: {chartType: "Indicator"}
+            };
+            this.setState(prev => update(prev, {
+                [entity]: prev[entity].length === 0 ? {
+                    $set: [newItem]
+                } : {
+                    $splice: [[dragIndex, 0, newItem]]
+                }
+            }));
         }
     }
     
-    removeCard = (entity, index) => {
+    removeCard = (entity, index, id) => {
+        removeDashboardWidget(this.getType(entity), id);
         this.setState(prev => update(prev, {
             [entity]: {
                 $splice: [
@@ -112,8 +130,11 @@ export class DraggableWrapper extends Component {
         if(!indicators.length && editmode) return (
             <div className='indicators-wrapper'>
                 <DndWidget
-                    placeholder={true}
+                    moveCard={this.moveCard}
+                    addCard={this.addCard}
                     entity={'indicators'}
+                    placeholder={true}
+                    transparent={!editmode}
                 >
                     <Placeholder
                         entity={'indicators'}
@@ -135,8 +156,10 @@ export class DraggableWrapper extends Component {
                 {indicators.map((indicator, id) =>
                     <DndWidget
                         key={id}
+                        id={indicator.id}
                         index={id}
                         moveCard={this.moveCard}
+                        addCard={this.addCard}
                         removeCard={this.removeCard}
                         entity={'indicators'}
                         transparent={!editmode}
@@ -149,6 +172,7 @@ export class DraggableWrapper extends Component {
                             pollInterval={indicator.kpi.pollIntervalSec}
                             chartType={'Indicator'}
                             kpi={false}
+                            noData={indicator.fetchOnDrop}
                             {...{editmode}}
                         />
                     </DndWidget>
@@ -165,6 +189,9 @@ export class DraggableWrapper extends Component {
                 <DndWidget
                     placeholder={true}
                     entity={'cards'}
+                    moveCard={this.moveCard}
+                    addCard={this.addCard}
+                    transparent={!editmode}
                 >
                     <Placeholder
                         entity={'cards'}
@@ -181,7 +208,9 @@ export class DraggableWrapper extends Component {
                         <DndWidget
                             key={id}
                             index={id}
+                            id={item.id}
                             moveCard={this.moveCard}
+                            addCard={this.addCard}
                             removeCard={this.removeCard}
                             entity={'cards'}
                             className="draggable-widget"
@@ -202,6 +231,7 @@ export class DraggableWrapper extends Component {
                                 showWidgets={this.showWidgets}
                                 idMaximized={idMaximized}
                                 text={item.caption}
+                                noData={false}
                                 {...{editmode}}
                             />
                         </DndWidget>

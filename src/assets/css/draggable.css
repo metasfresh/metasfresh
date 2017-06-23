@@ -27,6 +27,8 @@
     height: 34px;
     white-space: nowrap;
     text-overflow: ellipsis;
+    overflow: hidden;
+    padding-right: 2rem;
 }
 
 .draggable-widget-body {

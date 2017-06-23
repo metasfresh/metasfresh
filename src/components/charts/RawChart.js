@@ -29,6 +29,7 @@ class RawChart extends Component {
             prevProps.id !== this.props.id
         ) {
             if(this.props.chartType === 'Indicator'){
+                if(this.props.noData) return;
                 this.fetchData();
             }else{
                 this.setState({
@@ -43,7 +44,9 @@ class RawChart extends Component {
     }
 
     componentDidMount(){
-        const { pollInterval } = this.props;
+        const { pollInterval, noData } = this.props;
+
+        if(noData) return;
 
         this.fetchData();
 
@@ -106,7 +109,7 @@ class RawChart extends Component {
     renderChart() {
         const {
             id, chartType, caption, fields, groupBy, height,
-            isMaximize, chartTitle, editmode
+            isMaximize, chartTitle, editmode, noData
         } = this.props;
         const {chartData, forceChartReRender} = this.state;
         const data = chartData[0] && chartData[0].values;
@@ -146,8 +149,8 @@ class RawChart extends Component {
             case 'Indicator':
                 return(
                     <Indicator
-                        value={data[0][fields[0].fieldName] +
-                            (fields[0].unit ? ' ' + fields[0].unit : '')}
+                        value={noData ? '' : (data[0][fields[0].fieldName] +
+                            (fields[0].unit ? ' ' + fields[0].unit : ''))}
                         {...{caption, editmode}}
                     />
                 );

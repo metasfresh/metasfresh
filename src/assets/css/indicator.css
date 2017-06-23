@@ -16,6 +16,7 @@
 .indicators-wrapper {
     display: flex;
     flex-direction: row;
+    flex-wrap:wrap;
 }
 
 .indicators-wrapper > * {

@@ -10,14 +10,15 @@ class Indicator extends Component {
         const {value, caption, loader, fullWidth, editmode} = this.props;
         
         if(loader) return <div className="indicator"><Loader /></div>;
-        
+
         return (
             <div
                 className={
-                    'indicator ' +
+                    'indicator js-indicator' +
                     (editmode ? 'indicator-draggable ' : '')
                 }
-                style={fullWidth ? {width: '100%'} : {}}>
+                style={fullWidth ? {width: '100%'} : {}}
+            >
                 <div className="indicator-value">{value}</div>
                 <div className="indicator-kpi-caption">{caption}</div>
             </div>

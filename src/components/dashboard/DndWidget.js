@@ -7,7 +7,8 @@ const cardSource = {
     beginDrag(props) {
         return {
             id: props.id,
-            index: props.index
+            index: props.index,
+            isNew: props.isNew,
         };
     }
 };
@@ -17,19 +18,21 @@ const cardTarget = {
         const dragIndex = monitor.getItem().index;
         const hoverIndex = props.index;
 
-        // Don't replace items with themselves
-        if (dragIndex === hoverIndex) {
+        if (
+            dragIndex === hoverIndex ||
+            monitor.getItem().id === props.id
+        ) {
             return;
         }
 
-        // Time to actually perform the action
-        props.moveCard(props.entity, dragIndex, hoverIndex, true);
-
-        // Note: we're mutating the monitor item here!
-        // Generally it's better to avoid mutations,
-        // but it's good here for the sake of performance
-        // to avoid expensive index searches.
+        props.moveCard && props.moveCard(
+            props.entity, dragIndex, hoverIndex, monitor.getItem());
         monitor.getItem().index = hoverIndex;
+    },
+    drop(props, monitor) {
+        if(monitor.getItem().isNew){
+            props.addCard(props.entity, monitor.getItem().id);
+        }
     }
 };
 
@@ -50,11 +53,12 @@ export class DndWidget extends Component {
     constructor(props) {
         super(props);
     }
-
+    
     render() {
         const {
             children, connectDragSource, connectDropTarget, isDragging,
-            className, transparent, removeCard, entity, id, placeholder
+            className, transparent, removeCard, entity, id, placeholder,
+            index
         } = this.props;
         
         if(transparent) return <div {...{className}}>{children}</div>;
@@ -69,7 +73,7 @@ export class DndWidget extends Component {
             >
                 {!placeholder && <i
                     className="meta-icon-trash draggable-icon-remove pointer"
-                    onClick={() => removeCard(entity, id)}
+                    onClick={() => removeCard(entity, index, id)}
                 />}
                 {children}
             </div>

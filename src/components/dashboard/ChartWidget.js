@@ -46,7 +46,7 @@ export class ChartWidget extends Component {
 
     render() {
         const {
-            text, framework,
+            text, framework, noData,
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
             caption, fields, groupBy, pollInterval, editmode
         } = this.props;
@@ -100,7 +100,7 @@ export class ChartWidget extends Component {
                     {!framework ? <RawChart
                         {...{
                             index, chartType, caption, fields, groupBy,
-                            pollInterval, height, isMaximize, id
+                            pollInterval, height, isMaximize, id, noData
                         }}
                         responsive={true}
                         chartTitle={text}
