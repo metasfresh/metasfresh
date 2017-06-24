@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-26**
 
 * metasfresh-backend
+  * [#1786](https://github.com/metasfresh/metasfresh/issues/1786) New Window for Flatrate Conditions in Webui
+    * New Window that allows the maintenance of Flatrate Terms/ Conditions in WebUI.
   * [#1814](https://github.com/metasfresh/metasfresh/issues/1814) Hide Processed flag from all M_InOut/Returns windows (webui)
     * The redundant processed flag is now removed from InOut Windows (Empties return/ receive, Vendor Returns). The information is already given by the Document Status Field.
   * [#1872](https://github.com/metasfresh/metasfresh/issues/1872) WebUI Default Filter missing in Windows compared to Swing
