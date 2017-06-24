@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-26**
 
 * metasfresh-backend
+  * [#1814](https://github.com/metasfresh/metasfresh/issues/1814) Hide Processed flag from all M_InOut/Returns windows (webui)
+    * The redundant processed flag is now removed from InOut Windows (Empties return/ receive, Vendor Returns). The information is already given by the Document Status Field.
   * [#1872](https://github.com/metasfresh/metasfresh/issues/1872) WebUI Default Filter missing in Windows compared to Swing
     * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
