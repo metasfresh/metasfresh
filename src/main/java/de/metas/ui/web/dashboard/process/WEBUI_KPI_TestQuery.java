@@ -20,8 +20,8 @@ import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIDataLoader;
 import de.metas.ui.web.dashboard.KPIDataResult;
+import de.metas.ui.web.dashboard.KPIRepository;
 import de.metas.ui.web.dashboard.TimeRange;
-import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 
 /*
@@ -60,7 +60,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 	}
 
 	@Autowired
-	private UserDashboardRepository userDashboardRepo;
+	private KPIRepository kpisRepo;
 	@Autowired
 	private ObjectMapper jsonObjectMapper;
 	@Autowired
@@ -85,9 +85,9 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 			throw new EntityNotFoundException("@NotFound@ @" + I_WEBUI_KPI.COLUMNNAME_WEBUI_KPI_ID + "@");
 		}
 
-		userDashboardRepo.invalidateKPI(kpiId);
+		kpisRepo.invalidateKPI(kpiId);
 
-		final KPI kpi = userDashboardRepo.getKPI(kpiId);
+		final KPI kpi = kpisRepo.getKPI(kpiId);
 		final TimeRange timeRange = kpi.getTimeRangeDefaults().createTimeRange(p_DateFrom, p_DateTo);
 
 		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi)

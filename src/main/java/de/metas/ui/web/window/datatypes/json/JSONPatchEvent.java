@@ -68,6 +68,11 @@ public class JSONPatchEvent<PathType>
 		return op == JSONOperation.replace;
 	}
 
+	public String getValueAsString()
+	{
+		return value != null ? value.toString() : null;
+	}
+
 	public Boolean getValueAsBoolean(final Boolean defaultValue)
 	{
 		return DisplayType.toBoolean(value, defaultValue);
@@ -109,6 +114,29 @@ public class JSONPatchEvent<PathType>
 		else
 		{
 			throw new AdempiereException("Cannot convert value to int list").setParameter("event", this);
+		}
+	}
+
+	public <ET extends Enum<ET>> ET getValueAsEnum(final Class<ET> enumType)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+
+		if (enumType.isAssignableFrom(value.getClass()))
+		{
+			@SuppressWarnings("unchecked")
+			final ET valueConv = (ET)value;
+			return valueConv;
+		}
+		else if (value instanceof String)
+		{
+			return Enum.valueOf(enumType, value.toString());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert value " + value + " to " + enumType);
 		}
 	}
 }
