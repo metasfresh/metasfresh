@@ -74,6 +74,8 @@ Here come the actual release notes:
     * New base language Translation for the static elements in ad_messages in WebUI.
   * [#1859](https://github.com/metasfresh/metasfresh/issues/1859) Export all webui AD_Messages from w101
     * Exporting the whole webui ad_messages for migration purpose.
+  * [#1882](https://github.com/metasfresh/metasfresh/issues/1882) assign role webui to user IT
+  * [#1884](https://github.com/metasfresh/metasfresh/issues/1884) make sure no bookmarks for user metasfresh so fallback menu is displayed
 
 * metasfresh-webui-api
   * [#443](https://github.com/metasfresh/metasfresh-webui-api/issues/443) Make remaining UI components translatable
