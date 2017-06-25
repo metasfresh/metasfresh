@@ -1,7 +1,7 @@
 [![Join the chat at https://gitter.im/metasfresh/metasfresh](https://badges.gitter.im/metasfresh/metasfresh.svg)](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 
-# metasfresh ERP Software
+# metasfresh - Competitive ERP is FREE.
 
 metasfresh is a free and Open Source ERP System for midsize companies from industry and trade.
 The Development is based on requirement implementations of midsize company projects during the last 8 years. The metasfresh Project was initially founded in October 2015, as a friendly fork of the Open Source ERP System ADempiere.
