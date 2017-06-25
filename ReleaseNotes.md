@@ -26,6 +26,8 @@ Here come the actual release notes:
     * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
+  * [#1890](https://github.com/metasfresh/metasfresh/issues/1890) Harmonize the Shipment Window to our current Look&Feel concept
+    * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
 
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
