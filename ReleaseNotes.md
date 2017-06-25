@@ -14,29 +14,47 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-26**
 
-* metasfresh-backend
+# Feature
+* metasfresh-app
   * [#1786](https://github.com/metasfresh/metasfresh/issues/1786) New Window for Flatrate Conditions in Webui
     * New Window that allows the maintenance of Flatrate Terms/ Conditions in WebUI.
   * [#1788](https://github.com/metasfresh/metasfresh/issues/1788) New Window for Flatrate Transition in WebUI
     * New Window for Flatrate Transition maintenance.
-  * [#1814](https://github.com/metasfresh/metasfresh/issues/1814) Hide Processed flag from all M_InOut/Returns windows (webui)
-    * The redundant processed flag is now removed from InOut Windows (Empties return/ receive, Vendor Returns). The information is already given by the Document Status Field.
+  * [#1861](https://github.com/metasfresh/metasfresh/issues/1861) Performance degradation in HUKey.isReadonly()
+  * [#1867](https://github.com/metasfresh/metasfresh/issues/1867) restore old ordercheckup jasper files
   * [#1872](https://github.com/metasfresh/metasfresh/issues/1872) WebUI Default Filter missing in Windows compared to Swing
     * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
 
 * metasfresh-webui-api
+  * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
+  * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
+  * [#467](https://github.com/metasfresh/metasfresh-webui-api/issues/467) board API: GET board/{boardId}/card?cardIds
   * [#468](https://github.com/metasfresh/metasfresh-webui-api/issues/468) Fix user full name in Avatar
     * Adjusting the Avatar Name. Now showing Firstname Lastname.
-    
+  * [#470](https://github.com/metasfresh/metasfresh-webui-api/issues/470) Cache image endpoint
+  * [#474](https://github.com/metasfresh/metasfresh-webui-api/issues/474) Dashboard API: specify position when adding a new KPI/target indicator
+
 * metasfresh-webui-frontend
+  * [#833](https://github.com/metasfresh/metasfresh-webui-frontend/issues/833) Dashboard Window w/ Swimlane type functionalities
+  * [#864](https://github.com/metasfresh/metasfresh-webui-frontend/issues/864) Show view sticky/readonly filters
   * [#896](https://github.com/metasfresh/metasfresh-webui-frontend/issues/896) KPIs: show Loading indicator instead of No data
     * Exchanging "No Data" Notification with a Loading Indicator in KPI when data is not available.
   * [#908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/908) URL widget: disable the link button if the URL is not valid
     * Disabling the URL Widget Button as long as the URL Field is empty.
   * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
     * Fix to allow the Opening of Boards via WebUI Menu.
+
+## Fixes
+* metasfresh-app
+  * [#1814](https://github.com/metasfresh/metasfresh/issues/1814) Hide Processed flag from all M_InOut/Returns windows (webui)
+    * The redundant processed flag is now removed from InOut Windows (Empties return/ receive, Vendor Returns). The information is already given by the Document Status Field.
+  * [#1873](https://github.com/metasfresh/metasfresh/issues/1873) Fix control amount and qty in payment data imported from camt.54
+
+* metasfresh-webui-frontend
+  * [#913](https://github.com/metasfresh/metasfresh-webui-frontend/issues/913) Incompatible Sock.js versions
+  * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
 
 # metasfresh 5.14 (2017-25)
 
