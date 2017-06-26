@@ -2,11 +2,10 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableList;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.Getter;
+import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -31,36 +30,23 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Dashboard changed events collection to be sent via websocket.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@Builder
 @Value
-public class JsonUserDashboardItemAddRequest
+@Builder
+public class JSONDashboardChangedEventsList
 {
-	private final int kpiId;
-	@Default
-	private final int position = -1;
+	@Singular
+	private final ImmutableList<JSONDashboardChangedEvent> events;
 
-	//
-	// Optional params
-	private final String caption;
-	private final JSONInterval interval;
-	private final JSONWhen when;
-	
-	@AllArgsConstructor
-	@Getter
-	public static enum JSONInterval
+	public boolean isEmpty()
 	{
-		week("P-7D");
-
-		private final String esTimeRange;
+		return events.isEmpty();
 	}
 
-	@AllArgsConstructor
-	@Getter
-	public static enum JSONWhen
-	{
-		now(null), lastWeek("P-7D");
-
-		private final String esTimeRangeEnd;
-	}
 }
