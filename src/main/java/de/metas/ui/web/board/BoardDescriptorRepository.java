@@ -514,6 +514,10 @@ public class BoardDescriptorRepository
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 	private BoardCard createCard(final ResultSet rs, final BoardDescriptor boardDescriptor) throws SQLException
