@@ -142,6 +142,13 @@ public class MultiCustomerHUReturnsInOutProducer
 					continue;
 				}
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
+
+				if (!inout.isSOTrx())
+				{
+					// do not allow HUs from receipts to get into customer returns
+					continue;
+				}
+				
 				final int bpartnerId = inout.getC_BPartner_ID();
 
 				final I_C_Order order = inout.getC_Order();
