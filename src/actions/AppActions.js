@@ -186,6 +186,12 @@ export function loginSuccess(auth) {
                 const me = JSON.parse(msg.body);
                 dispatch(userSessionUpdate(me));
                 me.language && languageSuccess(Object.keys(me.language)[0]);
+                getNotifications().then(response => {
+                    dispatch(getNotificationsSuccess(
+                        response.data.notifications,
+                        response.data.unreadCount
+                    ));
+                });
             });
         })
 
