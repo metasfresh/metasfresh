@@ -5,6 +5,7 @@ import counterpart from 'counterpart';
 import TableQuickInput from './TableQuickInput';
 import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../keymap.js';
+import counterpart from 'counterpart';
 
 class TableFilter extends Component {
     constructor(props) {
@@ -105,7 +106,12 @@ class TableFilter extends Component {
                     {isTooltipShow === keymap.TABLE_CONTEXT.TOGGLE_EXPAND &&
                         <Tooltips
                             name={keymap.TABLE_CONTEXT.TOGGLE_EXPAND}
-                            action={fullScreen ? 'Collapse' : 'Expand'}
+                            action={fullScreen ?
+                                counterpart.translate(
+                                    'window.table.collapse') :
+                                counterpart.translate(
+                                    'window.table.expand')
+                            }
                             type={''}
                         />
                     }
