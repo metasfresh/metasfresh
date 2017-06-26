@@ -39,7 +39,8 @@ export class ChartWidget extends Component {
         } = this.state;
         
         const isMaximized = idMaximized === id;
-
+        if(!isMaximized && typeof idMaximized === 'number') return false;
+        
         return (
             <div>
                 <div
