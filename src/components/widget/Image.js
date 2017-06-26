@@ -1,5 +1,16 @@
 import React, { Component } from 'react';
 import { getImageAction, postImageAction } from '../../actions/AppActions';
+import Loader from '../app/Loader';
+
+const Placeholder = (props) => (
+    <div className="image-placeholder">
+        <div
+            className="placeholder-value"
+        >
+            {props.children}
+        </div>
+    </div>
+);
 
 class Image extends Component{
     constructor(props){
@@ -185,6 +196,26 @@ class Image extends Component{
                 Take from camera
             </div>
     }
+    
+    renderImagePreview() {
+        const {isLoading, imageSrc} = this.state;
+        const {fields} = this.props;
+        
+        if(isLoading)
+            return <Placeholder><Loader /></Placeholder>
+        else if(imageSrc)
+            return (
+                <div className="image-preview">
+                    <img
+                        src={imageSrc}
+                        alt="image"
+                        className="img-fluid"
+                    />
+                </div>
+            );
+        else
+            return <Placeholder>{fields[0].emptyText}</Placeholder>
+    }
 
     render(){
         const { imageSrc, usingCamera } = this.state;
@@ -196,21 +227,7 @@ class Image extends Component{
                 onKeyDown={this.handleKeyDown}
                 tabIndex={0}
             >
-                {imageSrc ?
-                    <div className="image-preview">
-                        <img
-                            src={imageSrc}
-                            alt="image"
-                            className="img-fluid"
-                        />
-                    </div>
-                    :
-                    <div className="image-placeholder">
-                        <div
-                            className="placeholder-value"
-                        >{fields[0].emptyText}</div>
-                    </div>
-                }
+                {this.renderImagePreview()}
 
                 {usingCamera && this.renderVideoPreview()}
 
