@@ -46,8 +46,7 @@ class Header extends Component {
             tooltipOpen: '',
             prompt: {
                 open: false
-            },
-            reRender: false
+            }
         }
     }
 
