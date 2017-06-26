@@ -902,6 +902,7 @@ td.pulse-off input {
 }
 
 .dashboard-logo-wrapper {
+    width: 100%;
     margin-top: 5rem;
     justify-content: center;
 }
