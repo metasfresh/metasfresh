@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import {push} from 'react-router-redux';
+import {push, replace} from 'react-router-redux';
 import counterpart from 'counterpart';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -66,6 +66,18 @@ class Header extends Component {
             nextProps.dropzoneFocused
         ){
             this.closeOverlays();
+        }
+    }
+    
+    componentDidUpdate = (prevProps) => {
+        const {dispatch, pathname} = this.props;
+        if(
+            prevProps.me.language !== undefined &&
+            JSON.stringify(prevProps.me.language) !==
+            JSON.stringify(this.props.me.language)
+        ){
+            dispatch(replace(''));
+            dispatch(replace(pathname));
         }
     }
 
@@ -587,7 +599,7 @@ Header.propTypes = {
 };
 
 function mapStateToProps(state) {
-    const {windowHandler, appHandler} = state;
+    const {windowHandler, appHandler, routing} = state;
 
     const {
         inbox,
@@ -605,11 +617,18 @@ function mapStateToProps(state) {
         selectedWindowType: null
     }
 
+    const {
+        pathname
+    } = routing.locationBeforeTransitions || {
+        pathname: ''
+    }
+
     return {
         selected,
         inbox,
         selectedWindowType,
-        me
+        me,
+        pathname
     }
 }
 
