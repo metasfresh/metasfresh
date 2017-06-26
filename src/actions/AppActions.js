@@ -1,5 +1,6 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
+import counterpart from 'counterpart';
 import {replace} from 'react-router-redux';
 import Moment from 'moment';
 import {LOCAL_LANG}  from '../constants/Constants';
@@ -191,6 +192,10 @@ export function loginSuccess(auth) {
                         response.data.notifications,
                         response.data.unreadCount
                     ));
+                });
+                getMessages().then(response => {
+                    counterpart.registerTranslations('lang', response.data);
+                    counterpart.setLocale('lang');
                 });
             });
         })
