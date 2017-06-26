@@ -317,6 +317,29 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.firstOnly(I_AD_Print_Clients.class);
 	}
+	
+	@Override
+	public List<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Printing_Queue printingQueue)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(printingQueue);
+		final String trxName = InterfaceWrapperHelper.getTrxName(printingQueue);
+
+		final StringBuilder whereClause = new StringBuilder();
+		final List<Object> params = new ArrayList<Object>();
+
+		whereClause.append(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID).append("=?");
+		params.add(printingQueue.getC_Printing_Queue_ID());
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_Job_Line.class, ctx, trxName)
+				.addEqualsFilter(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID, printingQueue.getC_Printing_Queue_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_C_Print_Job_Line.COLUMNNAME_SeqNo, true)
+				.endOrderBy()
+				.create()
+				.list(I_C_Print_Job_Line.class);
+	}
+
 
 	@Override
 	public final I_AD_PrinterHW_MediaSize retrieveMediaSize(final I_AD_PrinterHW hwPrinter,

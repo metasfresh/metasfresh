@@ -274,6 +274,14 @@ public interface IPrintingDAO extends ISingletonService
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
 	
 	/**
+	 * retrieve print job lines based on printing queue
+	 * 
+	 * @param printingQueue
+	 * @return
+	 */
+	List<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Printing_Queue printingQueue);
+	
+	/**
 	 * Retrieve <b>the latest</b> printing queue for the given {@code archive}.
 	 * @param archive
 	 * @return

@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,6 +40,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_User_Substitute;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -170,6 +172,27 @@ public class UserDAO implements IUserDAO
 			throw new AdempiereException("No user found for ID=" + adUserId);
 		}
 		return user;
+	}
+	
+	@Override
+	public I_AD_User retrieveDefaultUser(I_C_BPartner bpartner)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner, true);
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_AD_User.class)
+				.addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false)
+				.createQueryOrderBy();
+
+		return queryBL.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsDefaultContact, true)
+				.create()
+				.setOnlyActiveRecords(true)
+				.setOrderBy(orderBy)
+				.first(I_AD_User.class);
+
 	}
 
 	@Override

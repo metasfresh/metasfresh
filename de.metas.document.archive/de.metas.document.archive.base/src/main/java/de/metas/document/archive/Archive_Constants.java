@@ -7,6 +7,8 @@ public final class Archive_Constants
 
 	}
 	
+	public static final String ForceUserAction = "ForceUserAction";
+	
 	/**
 	 * Internal Name for ReCreatePDF async batch
 	 */

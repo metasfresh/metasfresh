@@ -14,6 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.email.EmailValidator;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
@@ -258,5 +259,17 @@ public class MailBL implements IMailBL
 			throw new AdempiereException("@Notfound@ @R_MailText_ID@=" + R_MailText_ID);
 		}
 		return MailTextBuilder.of(mailTextDef);
+	}
+	
+	@Override
+	public void validateEmail(String email)
+	{
+		if (!Check.isEmpty(email, true))
+		{
+			if (!EmailValidator.validate(email))
+			{
+				throw new AdempiereException("@EmailNotValid@");
+			}
+		}
 	}
 }

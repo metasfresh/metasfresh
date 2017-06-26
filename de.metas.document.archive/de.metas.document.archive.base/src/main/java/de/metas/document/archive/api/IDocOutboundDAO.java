@@ -94,4 +94,13 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
+
+	/**
+	 * retrieve selected docoutbounds
+	 * @param ctx
+	 * @param pInstanceId
+	 * @param trxName
+	 * @return
+	 */
+	List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(Properties ctx, int pInstanceId, String trxName);
 }
