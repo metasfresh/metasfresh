@@ -255,6 +255,9 @@
 }
 
 .subheader-header {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
     padding: .75rem 1.25rem;
     color: $brand-color-primary;
     font-size: 1.1rem;
