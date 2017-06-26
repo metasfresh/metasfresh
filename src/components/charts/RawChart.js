@@ -24,7 +24,7 @@ class RawChart extends Component {
 
     componentDidUpdate(prevProps) {
         if(
-            prevProps.isMaximize !== this.props.isMaximize ||
+            prevProps.isMaximized !== this.props.isMaximized ||
             prevProps.index !== this.props.index ||
             prevProps.id !== this.props.id
         ) {
@@ -109,7 +109,7 @@ class RawChart extends Component {
     renderChart() {
         const {
             id, chartType, caption, fields, groupBy, height,
-            isMaximize, chartTitle, editmode, noData
+            isMaximized, chartTitle, editmode, noData
         } = this.props;
         const {chartData, forceChartReRender} = this.state;
         const data = chartData[0] && chartData[0].values;
@@ -120,7 +120,7 @@ class RawChart extends Component {
                     <BarChart
                         {...{
                             data, groupBy, caption, chartType, height,
-                            fields, isMaximize, chartTitle
+                            fields, isMaximized, chartTitle
                         }}
                         chartClass={'chart-' + id}
                         reRender={forceChartReRender}
@@ -135,7 +135,7 @@ class RawChart extends Component {
                 return(
                     <PieChart
                         {...{data, fields, groupBy, height,
-                            isMaximize, chartTitle}}
+                            isMaximized, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}
                         reRender={forceChartReRender}

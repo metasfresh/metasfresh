@@ -79,10 +79,10 @@
 }
 
 .draggable-widget-maximize {
-    width: 100%;
-    height: calc(100vh - 100px);
-    position: relative;
-    margin: 0;
+    position: absolute;
+    width: calc(100% - 6rem);
+    top: 55px;
+    z-index:5;
 }
 
 .dragging {

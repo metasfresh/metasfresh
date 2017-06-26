@@ -10,7 +10,6 @@ export class ChartWidget extends Component {
         super(props);
         this.state = {
             toggleWidgetMenu: false,
-            isMaximize: false,
             height: 400
         };
     }
@@ -21,53 +20,38 @@ export class ChartWidget extends Component {
         })
     }
 
-    toggleMenu = () => {
+    toggleMenu = (opt) => {
         const { toggleWidgetMenu } = this.state;
         this.setState({
-            toggleWidgetMenu: !toggleWidgetMenu
-        })
-    }
-
-    maximizeWidget = () => {
-        this.setState({
-            isMaximize: true,
-            toggleWidgetMenu: false,
-            height: 500
-        })
-    }
-
-    minimizeWidget = () => {
-        this.setState({
-            isMaximize: false,
-            toggleWidgetMenu: false,
-            height: 400
+            toggleWidgetMenu: typeof opt === 'boolean' ? opt : !toggleWidgetMenu
         })
     }
 
     render() {
         const {
-            text, framework, noData,
+            text, framework, noData, maximizeWidget,
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
             caption, fields, groupBy, pollInterval, editmode
         } = this.props;
 
         const {
-            toggleWidgetMenu, isMaximize, height
+            toggleWidgetMenu, height
         } = this.state;
+        
+        const isMaximized = idMaximized === id;
 
         return (
-            <div className={
-                (isMaximize ? ' draggable-widget-maximize' : '') +
-                ((idMaximized !== false) && !isMaximize ? ' hidden-xs-up' : '')
-            }>
+            <div>
                 <div
                     className={
                         "draggable-widget-header " +
                         (editmode ? 'draggable-widget-edited ' : '')
                     }
-                    onDoubleClick={isMaximize ?
-                        () => {this.minimizeWidget(); showWidgets() } :
-                        () => {this.maximizeWidget(); hideWidgets(index)}}
+                    onDoubleClick={!editmode && (() => {
+                        isMaximized ?
+                            maximizeWidget() : maximizeWidget(id);
+                        this.toggleMenu(false);
+                    })}
                 >
                     <p
                         className="draggable-widget-title"
@@ -80,21 +64,17 @@ export class ChartWidget extends Component {
                     />}
                     {toggleWidgetMenu && !editmode &&
                         <div className="draggable-widget-menu">
-                            { isMaximize ?
-                                <span
-                                    onClick={() => {
-                                        this.minimizeWidget();
-                                        showWidgets()
-                                    }}
-                                >
+                            { isMaximized ?
+                                <span onClick={() => {
+                                        maximizeWidget();
+                                        this.toggleMenu(false)}
+                                    }>
                                     Minimize
                                 </span> :
-                                <span
-                                    onClick={() => {
-                                        this.maximizeWidget();
-                                        hideWidgets(index)
-                                    }}
-                                >
+                                <span onClick={() => {
+                                        maximizeWidget(id);
+                                        this.toggleMenu(false)}
+                                    }>
                                     Maximize
                                 </span>
                             }
@@ -107,7 +87,7 @@ export class ChartWidget extends Component {
                     {!framework ? <RawChart
                         {...{
                             index, chartType, caption, fields, groupBy,
-                            pollInterval, height, isMaximize, id, noData
+                            pollInterval, height, isMaximized, id, noData
                         }}
                         responsive={true}
                         chartTitle={text}

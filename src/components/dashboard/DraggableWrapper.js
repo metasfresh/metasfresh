@@ -27,10 +27,9 @@ export class DraggableWrapper extends Component {
         super(props);
         this.state = {
             cards: [],
-            isVisible: true,
-            idMaximized: false,
             indicators: [],
-            sidenav: null
+            sidenav: null,
+            idMaximized: null
         };
     }
     
@@ -110,17 +109,9 @@ export class DraggableWrapper extends Component {
         }));
     }
     
-    hideWidgets = (id) => {
+    maximizeWidget = (id) => {
         this.setState({
-            isVisible: false,
             idMaximized: id
-        })
-    }
-    
-    showWidgets = () => {
-        this.setState({
-            isVisible: true,
-            idMaximized: false
         })
     }
     
@@ -148,10 +139,7 @@ export class DraggableWrapper extends Component {
         
         return (
             <div
-                className={
-                    'indicators-wrapper ' +
-                    (idMaximized !== false ? 'indicator-hidden' : '')
-                }
+                className={'indicators-wrapper'}
             >
                 {indicators.map((indicator, id) =>
                     <DndWidget
@@ -213,7 +201,11 @@ export class DraggableWrapper extends Component {
                             addCard={this.addCard}
                             removeCard={this.removeCard}
                             entity={'cards'}
-                            className="draggable-widget"
+                            className={
+                                'draggable-widget ' +
+                                (idMaximized === item.id ?
+                                    'draggable-widget-maximize ' : '')
+                            }
                             transparent={!editmode}
                         >
                             <ChartWidget
@@ -227,9 +219,8 @@ export class DraggableWrapper extends Component {
                                 pollInterval={item.kpi.pollIntervalSec}
                                 kpi={true}
                                 moveCard={this.moveCard}
-                                hideWidgets={this.hideWidgets}
-                                showWidgets={this.showWidgets}
                                 idMaximized={idMaximized}
+                                maximizeWidget={this.maximizeWidget}
                                 text={item.caption}
                                 noData={false}
                                 {...{editmode}}
