@@ -47,20 +47,6 @@ class MasterWindow extends Component {
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
 
-        if(
-            prevProps.me.language !== undefined &&
-            JSON.stringify(prevProps.me.language) !==
-            JSON.stringify(this.props.me.language)
-        ){
-            if(!params.windowType && !params.docId){
-                return;
-            }
-            dispatch(replace(''));
-            dispatch(replace(
-                '/window/' + params.windowType + '/' + params.docId)
-            );
-        }
-
         if(prevProps.master.websocket !== master.websocket && master.websocket){
             connectWS.call(this, master.websocket, msg => {
                 const {includedTabsInfo} = msg;
