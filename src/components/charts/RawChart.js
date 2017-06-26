@@ -120,7 +120,7 @@ class RawChart extends Component {
                     <BarChart
                         {...{
                             data, groupBy, caption, chartType, height,
-                            fields, isMaximized, chartTitle
+                            fields, isMaximized, chartTitle, noData
                         }}
                         chartClass={'chart-' + id}
                         reRender={forceChartReRender}
@@ -134,7 +134,7 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
-                        {...{data, fields, groupBy, height,
+                        {...{data, fields, groupBy, height, noData,
                             isMaximized, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}

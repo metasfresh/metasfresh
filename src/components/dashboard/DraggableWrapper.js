@@ -58,7 +58,7 @@ export class DraggableWrapper extends Component {
     
     addCard = (entity, id) => {
         const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
-        addDashboardWidget(this.getType(entity), id).then(res => {
+        addDashboardWidget(this.getType(entity), id, tmpItemIndex).then(res => {
             this.setState(prev => update(prev, {
                 [entity]: {
                     [tmpItemIndex]: {$set: res.data}
@@ -84,15 +84,16 @@ export class DraggableWrapper extends Component {
             const newItem = {
                 id: item.id,
                 fetchOnDrop: true,
-                text: "Metric",
-                caption: "New",
-                kpi: {chartType: "Indicator"}
+                kpi: {chartType: this.getType(entity)}
             };
             this.setState(prev => update(prev, {
                 [entity]: prev[entity].length === 0 ? {
                     $set: [newItem]
                 } : {
-                    $splice: [[dragIndex, 0, newItem]]
+                    $splice: [
+                        [dragIndex, 1],
+                        [hoverIndex, 0, newItem]
+                    ]
                 }
             }));
         }
@@ -222,7 +223,7 @@ export class DraggableWrapper extends Component {
                                 idMaximized={idMaximized}
                                 maximizeWidget={this.maximizeWidget}
                                 text={item.caption}
-                                noData={false}
+                                noData={item.fetchOnDrop}
                                 {...{editmode}}
                             />
                         </DndWidget>
