@@ -130,7 +130,7 @@ export function getAttributesInstance(
 
 export function getImageAction(id) {
     return axios({
-        url: `${config.API_URL}/image/${id}`,
+        url: `${config.API_URL}/image/${id}?maxWidth=200&maxHeight=200`,
         responseType: 'blob'
     })
         .then(response => response.data);
