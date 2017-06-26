@@ -79,4 +79,5 @@
 
 .card-placeholder {
     height: 100%;
+    min-height: 100px;
 }
