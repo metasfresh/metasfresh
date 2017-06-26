@@ -174,8 +174,7 @@ class Lookup extends Component {
                                         {...{dataId, entity, windowType,
                                             filterWidget, tabId, rowId,
                                             subentity, subentityId, viewId,
-                                            onChange, isInputEmpty, property,
-                                            localClearing
+                                            onChange, isInputEmpty, property
                                         }}
                                         properties={[item]}
                                         lookupList={true}
@@ -194,9 +193,6 @@ class Lookup extends Component {
                                         mainProperty={[item]}
                                         blur={!property?true:false}
                                         readonly={disabled || readonly}
-                                        resetLocalClearing={
-                                            this.resetLocalClearing
-                                            }
                                     />
                                 </div>
                         }

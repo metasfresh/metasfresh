@@ -179,7 +179,9 @@ class RawList extends Component {
 
     handleFocus = (e) => {
         e.preventDefault();
-        const {onFocus, doNotOpenOnFocus, autofocus, list, loading } = this.props;
+        const {
+            onFocus, doNotOpenOnFocus, autofocus
+        } = this.props;
 
         onFocus && onFocus();
 

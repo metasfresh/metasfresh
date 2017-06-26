@@ -30,7 +30,7 @@ class List extends Component {
     }
 
     componentDidUpdate(prevProps){
-        const {isInputEmpty, localClearing, resetLocalClearing} = this.props;
+        const {isInputEmpty} = this.props;
 
         if(isInputEmpty && prevProps.isInputEmpty !== isInputEmpty) {
 
@@ -39,14 +39,6 @@ class List extends Component {
             });
 
         }
-
-        // if(localClearing) {
-        //     console.log('localClearing');
-        //     this.setState({
-        //         list: []
-        //     });
-        //     resetLocalClearing();
-        // }
     }
 
     handleFocus = () => {
