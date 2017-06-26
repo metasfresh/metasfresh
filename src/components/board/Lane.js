@@ -39,6 +39,11 @@ class Lane extends Component {
                         }}
                         {...card} />
                     )}
+                    {cards.length && <Card
+                        index={undefined}
+                        {...{laneId, onHover, onDrop, targetIndicator}}
+                        placeholder={true} />
+                    }
                 </div>
             </div>
         );
