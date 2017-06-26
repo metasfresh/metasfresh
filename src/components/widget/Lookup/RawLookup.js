@@ -51,7 +51,7 @@ class RawLookup extends Component {
         const {
             autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus,
             filterWidget, initialFocus, lookupEmpty, localClearing,
-            resetLocalClearing
+            resetLocalClearing, fireDropdownList
         } = this.props;
 
         if(localClearing && !defaultValue) {
@@ -87,6 +87,11 @@ class RawLookup extends Component {
 
         if(filterWidget && defaultValue === null && lookupEmpty){
             this.inputSearch.value = defaultValue;
+        }
+
+        if(fireDropdownList && prevProps.fireDropdownList !==
+            fireDropdownList) {
+            this.handleChange('', true);
         }
     }
 
@@ -159,16 +164,16 @@ class RawLookup extends Component {
         });
     }
 
-    handleChange = (handleChangeOnFocus) => {
+    handleChange = (handleChangeOnFocus, allowEmpty) => {
         const {
             recent, windowType, dataId, filterWidget, parameterName,
             tabId, rowId, entity, subentity, subentityId, viewId, mainProperty,
             handleInputEmptyStatus
         } = this.props;
 
-        if(this.inputSearch.value != ''){
+        if(this.inputSearch.value != '' || allowEmpty){
 
-            handleInputEmptyStatus(false);
+            !allowEmpty && handleInputEmptyStatus(false);
 
             this.setState({
                 isInputEmpty: false,

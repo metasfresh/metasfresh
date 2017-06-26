@@ -7,7 +7,6 @@ import MenuOverlayItem from './MenuOverlayItem';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
 import {
-    nodePathsRequest,
     queryPathsRequest,
     pathRequest,
     getWindowBreadcrumb,
@@ -21,10 +20,8 @@ class MenuOverlay extends Component {
         this.state = {
             queriedResults: [],
             query: '',
-            deepNode: null,
             deepSubNode: null,
             path: '',
-            subPath: '',
             data: {}
         };
     }
@@ -77,11 +74,14 @@ class MenuOverlay extends Component {
         });
     }
 
-    handleRedirect = (elementId, isNew) => {
+    handleRedirect = (elementId, isNew, entity) => {
         this.handleClickOutside();
 
         this.props.dispatch(
-            push('/window/' + elementId + (isNew ? '/new' : ''))
+            push(
+                '/' + (entity ? entity : 'window') + '/' +
+                elementId + (isNew ? '/new' : '')
+            )
         );
     }
 
@@ -126,7 +126,6 @@ class MenuOverlay extends Component {
     }
 
     renderNaviagtion = (node) => {
-        const {path, deepNode} = this.state;
         const {handleMenuOverlay, openModal, dispatch, siteName} = this.props;
         return (
              <div
@@ -140,7 +139,6 @@ class MenuOverlay extends Component {
                         className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
                         onClick={() => dispatch(push('/'))}
                         tabIndex={0}
-                        onKeyDown={(e) => this.handleKeyDown(e)}
                     >
                         Dashboard
                     </span>
@@ -148,10 +146,9 @@ class MenuOverlay extends Component {
                 {siteName !== 'Sitemap' &&
                     <div>
                         <span
-                            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header"
+                            className="menu-overlay-header menu-overlay-header-spaced menu-overlay-header-main pointer js-menu-header js-browse-item"
                             onClick={() => dispatch(push('/sitemap'))}
                             tabIndex={0}
-                            onKeyDown={(e) => this.handleKeyDown(e)}
                         >
                             Browse whole tree
                         </span>
@@ -180,23 +177,24 @@ class MenuOverlay extends Component {
     }
 
     renderSubnavigation = (nodeData) => {
+        const {handleMenuOverlay, openModal} = this.props;
         return(
             <div>
-                {(nodeData && nodeData.children) &&
-                    nodeData.children.map((item, index) =>
-                    <span
-                        className="menu-overlay-expanded-link"
-                        key={index}
-                    >
-                        <span
-                            className={item.elementId ?
-                                'menu-overlay-link' : 'menu-overlay-expand'
-                            }
-                            onClick={ () => this.linkClick(item) }>
-                                {item.caption}
-                        </span>
-                    </span>
-                )}
+                <MenuOverlayContainer
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    handlePath={this.handlePath}
+                    parent={nodeData}
+                    printChildren={true}
+                    transparentBookmarks={true}
+                    back={e => this.handleClickBack(e)}
+                    handleMenuOverlay={handleMenuOverlay}
+                    openModal={openModal}
+                    subNavigation={true}
+                    children={nodeData.children}
+                    type={nodeData.type}
+                />
             </div>
         )
     }
@@ -219,17 +217,69 @@ class MenuOverlay extends Component {
         const firstQueryItem =
             document.getElementsByClassName('menu-overlay-query')[0]
                 .getElementsByClassName('js-menu-item')[0];
-        const parentSibling = document.activeElement.parentElement.nextSibling;
+        const browseItem =
+            document.getElementsByClassName('js-browse-item')[0];
+        const isBrowseItemActive =
+            document.activeElement.classList.contains('js-browse-item');
+        const overlay =
+            document.activeElement.classList.contains('js-menu-overlay');
+        const headerLink =
+            document.getElementsByClassName('js-menu-header')[0];
+        const isHeaderLinkActive =
+            document.activeElement.classList.contains('js-menu-header');
+        const headerItem =
+            document.getElementsByClassName('js-menu-header')[0];
+        const prevParentSibling =
+            document.activeElement.parentElement.previousSibling;
+
         switch(e.key){
             case 'ArrowDown':
                 if(document.activeElement === input) {
-                    firstQueryItem.focus();
+                    firstQueryItem && firstQueryItem.focus();
+                } else if(overlay) {
+                    headerItem.focus();
+                } else if(isBrowseItemActive) {
+                    firstMenuItem.focus();
+                } else if(isHeaderLinkActive){
+                    if(browseItem) {
+                        browseItem.focus();
+                    } else {
+                         firstMenuItem.focus();
+                    }
+
                 }
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+
+                if(
+                    document.activeElement.classList.contains('js-menu-header')
+                ){
+                    prevParentSibling.children[0] &&
+                    prevParentSibling.children[0]
+                        .classList.contains('js-menu-header') &&
+                    prevParentSibling.children[0].focus();
+                } else if(
+                    document.activeElement ===
+                    document.getElementsByClassName('js-menu-item')[0]
+                ) {
+                    if(browseItem) {
+                        browseItem.focus();
+                    } else {
+                        headerItem.focus();
+                    }
+
+                }
+
+                if(document.activeElement.classList.contains('js-menu-item')) {
+                    this.handeArrowUp();
+                }
+
                 break;
             case 'Tab':
                  e.preventDefault();
                  if(document.activeElement === input) {
-                     firstMenuItem.focus();
+                     headerLink.focus();
                  } else {
                      input.focus();
                  }
@@ -252,18 +302,97 @@ class MenuOverlay extends Component {
         }
     }
 
+    handeArrowUp() {
+        let prevSiblings = document.activeElement.previousSibling;
+        if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
+            document.getElementById('search-input-query').focus();
+        } else if (
+            prevSiblings && prevSiblings.classList.contains('js-menu-item')
+        ) {
+            document.activeElement.previousSibling.focus();
+        } else {
+            this.handleGroupUp();
+        }
+    }
+
+    findPreviousGroup() {
+        let elem = document.activeElement.parentElement;
+        let i = 0;
+        while (
+            !(elem && elem.classList.contains('js-menu-container') &&
+                elem.previousSibling && elem.previousSibling.children.length
+                !== 0 || elem &&
+                elem.classList.contains('js-menu-main-container') &&
+                i < 100)
+            ) {
+            elem = elem && elem.parentElement;
+            i++;
+        }
+
+        return elem.previousSibling;
+    }
+
+    selectLastItem(previousGroup) {
+        const listChildren = previousGroup.childNodes;
+        const lastChildren = listChildren[listChildren.length - 1];
+        if(listChildren.length == 1){
+            listChildren[0].focus && listChildren[0].focus();
+        }else{
+            if(lastChildren.classList.contains('js-menu-item')) {
+                lastChildren.focus();
+            } else {
+                if(lastChildren.children[lastChildren.children.length - 1]
+                    .classList.contains('js-menu-item')){
+                    lastChildren.children[lastChildren.children.length - 1]
+                    .focus();
+                } else {
+                    lastChildren.children[lastChildren.children.length - 1]
+                    .getElementsByClassName('js-menu-item')[lastChildren
+                    .children[lastChildren.children.length - 1]
+                    .getElementsByClassName('js-menu-item').length-1].focus();
+                }
+
+            }
+
+        }
+    }
+
+    handleGroupUp() {
+
+        const previousMainGroup = this.findPreviousGroup();
+        const previousGroup =
+            document.activeElement.parentElement.previousSibling;
+
+        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
+            previousGroup.focus();
+        } else {
+            if (previousGroup.children.length > 0) {
+                this.selectLastItem(previousGroup);
+            } else if(previousMainGroup) {
+                this.selectLastItem(previousMainGroup);
+            } else {
+                document.activeElement.previousSibling.focus();
+            }
+        }
+
+    }
+
     render() {
         const {
-            queriedResults, deepNode, deepSubNode, subPath, query, data
+            queriedResults, deepSubNode, query, data
         } = this.state;
         const {
-            nodeId, node, siteName, handleMenuOverlay, openModal
+            nodeId, node, handleMenuOverlay, openModal
         } = this.props;
+        const nodeData = nodeId == '0' ? data : node.children;
         return (
             <div
                 className="menu-overlay menu-overlay-primary"
             >
                 <div className="menu-overlay-body breadcrumbs-shadow">
+
+                { nodeId == 0 ?
+                    //ROOT
                     <div className="menu-overlay-root-body">
                         {this.renderNaviagtion(data)}
                         <div
@@ -317,7 +446,20 @@ class MenuOverlay extends Component {
                                 <span>There are no results</span>
                             }
                         </div>
-                    </div>
+                    </div> :
+                    //NOT ROOT
+                    <div
+                    className="menu-overlay-node-container menu-suboverlay">
+                            {
+                                    <p className="menu-overlay-header">
+                                        {nodeData && nodeData.caption}
+                                    </p>
+                            }
+                            {this.renderSubnavigation(
+                                deepSubNode ? deepSubNode : nodeData
+                            )}
+                        </div>
+                }
                 </div>
             </div>
         )

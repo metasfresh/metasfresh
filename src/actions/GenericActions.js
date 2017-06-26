@@ -231,3 +231,9 @@ export function openFile(entity, docType, docId, fileType, fileId) {
 
     window.open(url, '_blank');
 }
+
+export function getRequest() {
+    const url = config.API_URL + '/' + Array.from(arguments).join('/');
+    
+    return axios.get(url);
+}

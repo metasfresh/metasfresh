@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
@@ -128,9 +127,11 @@ class NavigationTree extends Component {
         }
     }
 
-    handleRedirect = (elementId) => {
+    handleRedirect = (elementId, isNew, type) => {
         const {dispatch} = this.props;
-        dispatch(push('/window/' + elementId));
+        dispatch(push(
+            '/' + (type ? type : 'window') + '/' + elementId
+        ));
     }
 
     handleNewRedirect = (elementId) => {
@@ -159,7 +160,7 @@ class NavigationTree extends Component {
         const {rootResults, queriedResults, query} = this.state;
 
         return(
-            <div>
+            <div className="sitemap">
                 <div className="search-wrapper">
                     <div className="input-flex input-primary">
                         <i className="input-icon meta-icon-preview"/>

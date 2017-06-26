@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import defaultAvatar from '../../assets/images/default-avatar.png';
 import Tooltips from '../tooltips/Tooltips';
+import Avatar from '../app/Avatar';
+import counterpart from 'counterpart';
 
 import onClickOutside from 'react-onclickoutside';
-
-import {getAvatar} from '../../actions/AppActions';
 
 class UserDropdown extends Component {
     constructor(props) {
@@ -67,11 +66,7 @@ class UserDropdown extends Component {
                 <div
                     className="header-item avatar-container"
                     onClick={() => handleUDOpen(true)}>
-                    <img
-                        src={me.avatarId ?
-                            getAvatar(me.avatarId) : defaultAvatar}
-                        className="avatar img-fluid rounded-circle"
-                    />
+                    <Avatar id={me.avatarId} />
                 </div>
 
                 {open &&
@@ -105,7 +100,8 @@ class UserDropdown extends Component {
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
-                            <i className="meta-icon-settings" /> Settings
+                            <i className="meta-icon-settings" />
+                            {counterpart.translate('window.settings.caption')}
                         </div>
                         <div
                             className="user-dropdown-item"
@@ -113,13 +109,16 @@ class UserDropdown extends Component {
                                 handleUDOpen(false)}}
                             tabIndex={0}
                         >
-                            <i className="meta-icon-logout" /> Log out
+                            <i className="meta-icon-logout" />
+                            {counterpart.translate('window.logOut.caption')}
                         </div>
                     </div>
                 }
                 {tooltipOpen === shortcut && !open && <Tooltips
                     name={shortcut}
-                    action={'User menu'}
+                    action= {
+                        counterpart.translate('mainScreen.userMenu.tooltip')
+                    }
                     type={''}
                 />}
             </div>

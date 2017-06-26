@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {push} from 'react-router-redux';
+import counterpart from 'counterpart';
 
 import MenuOverlay from './MenuOverlay';
 import Tooltips from '../tooltips/Tooltips';
@@ -129,7 +130,11 @@ class Breadcrumb extends Component {
                     <Tooltips
                         extraClass="tooltip-home-menu"
                         name={keymap.GLOBAL_CONTEXT.OPEN_NAVIGATION_MENU}
-                        action={'Navigation'}
+                        action= {
+                            counterpart.translate(
+                                'mainScreen.navigation.tooltip'
+                                )
+                        }
                         type={''}
                     />
                 }

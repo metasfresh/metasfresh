@@ -3,6 +3,7 @@ import {Route, IndexRoute, NoMatch} from 'react-router';
 import {push} from 'react-router-redux';
 
 import Login from './containers/Login.js';
+import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
 import MasterWindow from './containers/MasterWindow.js';
 import DocList from './containers/DocList.js';
@@ -68,10 +69,16 @@ export const getRoutes = (store, auth) => {
                     )}
                 />
                 <Route path="/sitemap" component={NavigationTree} />
+                <Route path="/board/:boardId"
+                    component={(nextState) =>
+                        <Board
+                            query={nextState.location.query}
+                            boardId={nextState.params.boardId}
+                        />
+                    }
+                />
                 <Route path="/inbox" component={InboxAll} />
                 <Route path="/logout" onEnter={logout} />
-                <Route path="/dashboard1" component={Dashboard} />
-                <Route path="/dashboard2" component={Dashboard} />
             </Route>
             <Route path="/login" component={nextState =>
                 <Login

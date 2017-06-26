@@ -30,9 +30,9 @@ class MenuOverlayContainer extends Component {
                 tabIndex={0}
                 onKeyDown={onKeyDown}
                 className={
-                    'menu-overlay-node-container ' +
+                    'menu-overlay-node-container js-menu-container ' +
                     (deep ? 'menu-overlay-node-spaced ' :
-                        'menu-overlay-expanded-link-spaced')
+                        'menu-overlay-expanded-link-spaced js-menu-main-container')
                 }>
                 {type === 'group' &&
                     <span

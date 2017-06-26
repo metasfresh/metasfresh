@@ -204,6 +204,10 @@
     color: inherit;
 }
 
+.subheader-item i {
+    margin-right: 5px;
+}
+
 .subheader-caption {
     position: relative;
     width: 100%;
@@ -357,6 +361,18 @@
     display: block;
 }
 
+.sitemap .menu-overlay-node-container {
+    width: 100%;
+}
+
+.menu-overlay-node-container.menu-suboverlay {
+    width: 100%;
+}
+
+.menu-suboverlay .menu-overlay-node-container {
+    width: 100%;
+}
+
 .menu-overlay-header-deep {
     font-weight: 400;
 }
@@ -486,6 +502,10 @@
 .menu-overlay-expanded-link {
     color: $brand-link-color;
     width: auto;
+}
+
+.menu-overlay-header {
+    border-bottom: 1px solid transparent;
 }
 
 .menu-overlay-header:focus {

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {connect} from 'react-redux';
 import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
+import counterpart from 'counterpart';
 
 import Loader from '../app/Loader';
 
@@ -102,7 +103,7 @@ class Referenced extends Component {
                     </div>
                 ))}
         ) : <div className="subheader-item subheader-item-disabled">
-            There is no referenced document
+            {counterpart.translate('window.sideList.referenced.empty')}
         </div>
     }
 
