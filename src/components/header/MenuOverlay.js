@@ -74,11 +74,14 @@ class MenuOverlay extends Component {
         });
     }
 
-    handleRedirect = (elementId, isNew) => {
+    handleRedirect = (elementId, isNew, entity) => {
         this.handleClickOutside();
 
         this.props.dispatch(
-            push('/window/' + elementId + (isNew ? '/new' : ''))
+            push(
+                '/' + (entity ? entity : 'window') + '/' +
+                elementId + (isNew ? '/new' : '')
+            )
         );
     }
 
@@ -214,36 +217,69 @@ class MenuOverlay extends Component {
         const firstQueryItem =
             document.getElementsByClassName('menu-overlay-query')[0]
                 .getElementsByClassName('js-menu-item')[0];
-
-        const browseItem = document.getElementsByClassName('js-browse-item')[0];
-        const isBrowseItemActive = document.activeElement.classList.contains('js-browse-item');
-        const parentSibling = document.activeElement.parentElement.nextSibling;
-        const overlay = document.activeElement.classList.contains('js-menu-overlay');
-        const headerLink = document.getElementsByClassName('js-menu-header')[0];
-        const isHeaderLinkActive = document.activeElement.classList.contains('js-menu-header');
+        const browseItem =
+            document.getElementsByClassName('js-browse-item')[0];
+        const isBrowseItemActive =
+            document.activeElement.classList.contains('js-browse-item');
+        const overlay =
+            document.activeElement.classList.contains('js-menu-overlay');
+        const headerLink =
+            document.getElementsByClassName('js-menu-header')[0];
+        const isHeaderLinkActive =
+            document.activeElement.classList.contains('js-menu-header');
+        const headerItem =
+            document.getElementsByClassName('js-menu-header')[0];
+        const prevParentSibling =
+            document.activeElement.parentElement.previousSibling;
 
         switch(e.key){
             case 'ArrowDown':
                 if(document.activeElement === input) {
-                    firstQueryItem.focus();
+                    firstQueryItem && firstQueryItem.focus();
                 } else if(overlay) {
-                    browseItem.focus();
+                    headerItem.focus();
                 } else if(isBrowseItemActive) {
                     firstMenuItem.focus();
                 } else if(isHeaderLinkActive){
-                    browseItem.focus();
+                    if(browseItem) {
+                        browseItem.focus();
+                    } else {
+                         firstMenuItem.focus();
+                    }
+
                 }
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                if(isBrowseItemActive) {
-                    headerLink.focus();
+
+                if(
+                    document.activeElement.classList.contains('js-menu-header')
+                ){
+                    prevParentSibling.children[0] &&
+                    prevParentSibling.children[0]
+                        .classList.contains('js-menu-header') &&
+                    prevParentSibling.children[0].focus();
+                } else if(
+                    document.activeElement ===
+                    document.getElementsByClassName('js-menu-item')[0]
+                ) {
+                    if(browseItem) {
+                        browseItem.focus();
+                    } else {
+                        headerItem.focus();
+                    }
+
                 }
+
+                if(document.activeElement.classList.contains('js-menu-item')) {
+                    this.handeArrowUp();
+                }
+
                 break;
             case 'Tab':
                  e.preventDefault();
                  if(document.activeElement === input) {
-                     browseItem.focus();
+                     headerLink.focus();
                  } else {
                      input.focus();
                  }
@@ -264,6 +300,81 @@ class MenuOverlay extends Component {
                 e.preventDefault();
                 handleMenuOverlay('', '');
         }
+    }
+
+    handeArrowUp() {
+        let prevSiblings = document.activeElement.previousSibling;
+        if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
+            document.getElementById('search-input-query').focus();
+        } else if (
+            prevSiblings && prevSiblings.classList.contains('js-menu-item')
+        ) {
+            document.activeElement.previousSibling.focus();
+        } else {
+            this.handleGroupUp();
+        }
+    }
+
+    findPreviousGroup() {
+        let elem = document.activeElement.parentElement;
+        let i = 0;
+        while (
+            !(elem && elem.classList.contains('js-menu-container') &&
+                elem.previousSibling && elem.previousSibling.children.length
+                !== 0 || elem &&
+                elem.classList.contains('js-menu-main-container') &&
+                i < 100)
+            ) {
+            elem = elem && elem.parentElement;
+            i++;
+        }
+
+        return elem.previousSibling;
+    }
+
+    selectLastItem(previousGroup) {
+        const listChildren = previousGroup.childNodes;
+        const lastChildren = listChildren[listChildren.length - 1];
+        if(listChildren.length == 1){
+            listChildren[0].focus && listChildren[0].focus();
+        }else{
+            if(lastChildren.classList.contains('js-menu-item')) {
+                lastChildren.focus();
+            } else {
+                if(lastChildren.children[lastChildren.children.length - 1]
+                    .classList.contains('js-menu-item')){
+                    lastChildren.children[lastChildren.children.length - 1]
+                    .focus();
+                } else {
+                    lastChildren.children[lastChildren.children.length - 1]
+                    .getElementsByClassName('js-menu-item')[lastChildren
+                    .children[lastChildren.children.length - 1]
+                    .getElementsByClassName('js-menu-item').length-1].focus();
+                }
+
+            }
+
+        }
+    }
+
+    handleGroupUp() {
+
+        const previousMainGroup = this.findPreviousGroup();
+        const previousGroup =
+            document.activeElement.parentElement.previousSibling;
+
+        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
+            previousGroup.focus();
+        } else {
+            if (previousGroup.children.length > 0) {
+                this.selectLastItem(previousGroup);
+            } else if(previousMainGroup) {
+                this.selectLastItem(previousMainGroup);
+            } else {
+                document.activeElement.previousSibling.focus();
+            }
+        }
+
     }
 
     render() {

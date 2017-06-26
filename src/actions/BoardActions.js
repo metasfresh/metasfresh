@@ -1,5 +1,13 @@
 import axios from 'axios';
 
+export function createView(boardId) {
+    return axios.post(
+        config.API_URL +
+        '/board/' + boardId +
+        '/newCardsView'
+    );
+}
+
 export function getView(boardId, viewId, firstRow) {
     return axios.get(
         config.API_URL +

@@ -127,9 +127,11 @@ class NavigationTree extends Component {
         }
     }
 
-    handleRedirect = (elementId) => {
+    handleRedirect = (elementId, isNew, type) => {
         const {dispatch} = this.props;
-        dispatch(push('/window/' + elementId));
+        dispatch(push(
+            '/' + (type ? type : 'window') + '/' + elementId
+        ));
     }
 
     handleNewRedirect = (elementId) => {

@@ -5,7 +5,7 @@ import Card from './Card';
 import Loader from '../app/Loader';
 import update from 'immutability-helper';
 
-import {getView} from '../../actions/BoardActions';
+import {getView, createView} from '../../actions/BoardActions';
 
 class Sidenav extends Component {
     constructor(props) {
@@ -26,7 +26,7 @@ class Sidenav extends Component {
                 })
             );
         }else{
-            getView(boardId).then(res => {
+            createView(boardId).then(res => {
                 setViewId(res.data.viewId);
                 getView(boardId, res.data.viewId, 0).then(res =>
                     this.setState({

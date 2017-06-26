@@ -27,8 +27,8 @@ class MenuOverlayItem extends Component {
 
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
-        } else if (type === 'window') {
-            this.handleClick(elementId)
+        } else if (type === 'window' || type === 'board') {
+            this.handleClick(elementId, type)
         } else if (type === 'group') {
             handleClickOnFolder(e, nodeId)
         } else if (type === 'report' || type === 'process') {
@@ -36,9 +36,9 @@ class MenuOverlayItem extends Component {
         }
     }
 
-    handleClick = (elementId) => {
+    handleClick = (elementId, entity) => {
         const {handleRedirect} = this.props;
-        handleRedirect(elementId);
+        handleRedirect(elementId, null, entity);
         this.renderBreadcrumb(elementId)
     }
 
@@ -80,41 +80,12 @@ class MenuOverlayItem extends Component {
         if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
             document.getElementById('search-input-query').focus();
         } else if (
-            prevSiblings && prevSiblings.classList.contains('js-menu-item')
+            prevSiblings && prevSiblings.classList.contains('js-menu-item') &&
+            document.activeElement.parentElement.classList
+            .contains('menu-overlay-query')
         ) {
             document.activeElement.previousSibling.focus();
-        } else {
-            this.handleGroupUp();
         }
-    }
-
-    handleGroupUp() {
-        const previousGroup =
-            document.activeElement.parentElement.previousSibling;
-        const browseItem = document.getElementsByClassName('js-browse-item')[0];
-
-        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
-            previousGroup.focus();
-        } else {
-            if (previousGroup) {
-                const listChildren = previousGroup.childNodes;
-                const lastChildren = listChildren[listChildren.length - 1];
-                if(listChildren.length == 1){
-                    listChildren[0].focus && listChildren[0].focus();
-                }else{
-                    if(lastChildren.classList.contains('js-menu-item')) {
-                        lastChildren.focus();
-                    } else {
-                        lastChildren.children[lastChildren.children.length - 1]
-                            .focus();
-                    }
-
-                }
-            } else {
-                browseItem && browseItem.focus()
-            }
-        }
-
     }
 
     handleArrowDown() {
@@ -135,10 +106,25 @@ class MenuOverlayItem extends Component {
                 if(listChildren.length == 1){
                     listChildren[0].focus();
                 }else{
-                    listChildren[1].focus();
+                    if(listChildren[1].classList.contains('js-menu-item')){
+                        listChildren[1].focus();
+                    } else {
+                        listChildren[1]
+                        .getElementsByClassName('js-menu-item')[0].focus();
+                    }
                 }
             } else if(parentElem.parentElement.nextSibling) {
-                parentElem.parentElement.nextSibling.childNodes[1].focus();
+                if (parentElem.parentElement.nextSibling.childNodes[1]
+                .classList.contains('js-menu-item')){
+                    parentElem.parentElement.nextSibling.childNodes[1].focus();
+                } else {
+                    parentElem.parentElement.nextSibling.childNodes[1]
+                    .getElementsByClassName('js-menu-item')[0].focus();
+                }
+
+            } else if(parentElem.parentElement.parentElement.nextSibling) {
+                parentElem.parentElement.parentElement.nextSibling
+                .getElementsByClassName('js-menu-item')[0].focus();
             }
         }
     }
