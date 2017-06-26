@@ -60,12 +60,12 @@ class FiltersFrequent extends Component {
                                 <i className="meta-icon-preview" />
                                 { isActive ?
                                     
-                                    {counterpart.translate(
+                                    counterpart.translate(
                                         'window.filters.caption'
-                                    )} + ': ' + item.caption :
-                                    {counterpart.translate(
+                                    ) + ': ' + item.caption :
+                                    counterpart.translate(
                                         'window.filters.caption2'
-                                    )} + ': ' + item.caption
+                                    ) + ': ' + item.caption
                                 }
                             </button>
 
