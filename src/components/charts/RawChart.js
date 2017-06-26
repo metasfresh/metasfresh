@@ -22,8 +22,31 @@ class RawChart extends Component {
         }
     }
 
+    componentDidUpdate(prevProps) {
+        if(
+            prevProps.isMaximized !== this.props.isMaximized ||
+            prevProps.index !== this.props.index ||
+            prevProps.id !== this.props.id
+        ) {
+            if(this.props.chartType === 'Indicator'){
+                if(this.props.noData) return;
+                this.fetchData();
+            }else{
+                this.setState({
+                    forceChartReRender: true,
+                }, () => {
+                    this.setState({
+                        forceChartReRender: false
+                    })
+                })
+            }
+        }
+    }
+
     componentDidMount(){
-        const { pollInterval } = this.props;
+        const { pollInterval, noData } = this.props;
+
+        if(noData) return;
 
         this.fetchData();
 
@@ -85,10 +108,10 @@ class RawChart extends Component {
 
     renderChart() {
         const {
-            id, chartType, caption, fields, groupBy, reRender, height,
-            isMaximize, chartTitle
+            id, chartType, caption, fields, groupBy, height,
+            isMaximized, chartTitle, editmode, noData
         } = this.props;
-        const {chartData} = this.state;
+        const {chartData, forceChartReRender} = this.state;
         const data = chartData[0] && chartData[0].values;
 
         switch(chartType){
@@ -96,10 +119,11 @@ class RawChart extends Component {
                 return(
                     <BarChart
                         {...{
-                            data, groupBy, caption, chartType, height, reRender,
-                            fields, isMaximize, chartTitle
+                            data, groupBy, caption, chartType, height,
+                            fields, isMaximized, chartTitle
                         }}
                         chartClass={'chart-' + id}
+                        reRender={forceChartReRender}
                         colors = {[
                             '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
                             '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
@@ -110,10 +134,11 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
-                        {...{data, fields, groupBy, height, reRender,
-                            isMaximize, chartTitle}}
+                        {...{data, fields, groupBy, height,
+                            isMaximized, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}
+                        reRender={forceChartReRender}
                         colors = {[
                             '#89d729', '#9aafbd', '#7688c9', '#c1ea8e',
                             '#c9d5dc', '#aab5e0', '#6aad18', '#298216',
@@ -124,9 +149,9 @@ class RawChart extends Component {
             case 'Indicator':
                 return(
                     <Indicator
-                        value={data[0][fields[0].fieldName] +
-                            (fields[0].unit ? ' ' + fields[0].unit : '')}
-                        {...{caption}}
+                        value={noData ? '' : (data[0][fields[0].fieldName] +
+                            (fields[0].unit ? ' ' + fields[0].unit : ''))}
+                        {...{caption, editmode}}
                     />
                 );
             default:

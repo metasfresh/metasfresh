@@ -1,20 +1,44 @@
 .indicators-wrapper {
     border-radius: 3px;
     overflow: hidden;
-    margin: .5rem;
+    margin: 1rem 0;
+}
+
+.kpis-wrapper {
+    margin: -.5rem;
     display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.kpis-wrapper .dnd-placeholder {
+    margin: .5rem;
+    width: calc(100% - 1rem);
+}
+
+.indicators-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap:wrap;
+}
+
+.indicators-wrapper > * {
+    flex: 1;
 }
 
 .indicator {
-    width: 25%;
     border: 1px solid $brand-border-color;
     border-right: none;
-    flex-direction: column;
     display: flex;
+    flex-direction: column;
     align-items: center;
     height: 130px;
     padding: 10px;
     overflow: hidden;
+}
+
+.indicator-draggable {
+    cursor: move;
 }
 
 .indicator:last-child {

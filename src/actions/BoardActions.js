@@ -38,3 +38,16 @@ export function filterCards(boardId, viewId) {
         '/filter'
     );
 }
+
+export function addDashboardWidget(entity, id) {
+    return axios.post(
+        config.API_URL +
+        '/dashboard/' + entity + '/new', {
+            'kpiId': id
+        }
+    );
+}
+
+export function removeDashboardWidget(entity, id) {
+    return axios.delete(config.API_URL + '/dashboard/' + entity + '/' + id);
+}

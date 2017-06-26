@@ -1,7 +1,8 @@
 
 .draggable-widget {
+    flex:1;
     border: 1px solid $brand-light-color;
-    width: calc(33.333% - 1rem);
+    min-width: calc(33.333% - 1rem);
     margin: .5rem;
     background-color: white;
     display: inline-block;
@@ -16,6 +17,17 @@
     }
 }
 
+.draggable-widget-title {
+    overflow: hidden;
+    padding-right: 2rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.draggable-widget-edited {
+    cursor: move;
+}
+
 .draggable-widget-header {
     padding: 6px 10px;
     background: $brand-super-light-color;
@@ -23,10 +35,7 @@
     font-size: 0.875rem;
     color: $brand-font-color;
     position: relative;
-    cursor: move;
     height: 34px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
 .draggable-widget-body {
@@ -70,10 +79,10 @@
 }
 
 .draggable-widget-maximize {
-    width: 100%;
-    height: calc(100vh - 100px);
-    position: relative;
-    margin: 0;
+    position: absolute;
+    width: calc(100% - 6rem);
+    top: 55px;
+    z-index:5;
 }
 
 .dragging {
@@ -92,4 +101,27 @@
     min-height: 280px;
     height: 100%;
     float: left;
+}
+
+.draggable-icon-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index:5;
+}
+
+.dnd-widget {
+    position: relative;
+}
+
+.dnd-placeholder {
+    width: 100%;
+    background-color: $brand-primary-light-color;
+}
+
+.dnd-placeholder-filling {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }

@@ -101,13 +101,13 @@ class BarChartComponent extends Component {
 
     render() {
         const {
-            chartClass, isMaximize, data, fields, groupBy, chartTitle
+            chartClass, isMaximized, data, fields, groupBy, chartTitle
         } = this.props;
 
         return (
             <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
                 <svg className={chartClass} />
-                {isMaximize &&
+                {isMaximized &&
                 <div className={'panel panel-primary panel-bordered '+
                     'chart-data-table-wrapper'}>
                     <table className={'table table-bordered-vertically '+
