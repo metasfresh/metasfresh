@@ -310,6 +310,33 @@ public interface I_C_Printing_Queue
     public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Async_Batch_ID();
+
+	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch();
+
+	public void setC_Async_Batch(de.metas.async.model.I_C_Async_Batch C_Async_Batch);
+
+    /** Column definition for C_Async_Batch_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, de.metas.async.model.I_C_Async_Batch> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, de.metas.async.model.I_C_Async_Batch>(I_C_Printing_Queue.class, "C_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
+    /** Column name C_Async_Batch_ID */
+    public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+    
+	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
