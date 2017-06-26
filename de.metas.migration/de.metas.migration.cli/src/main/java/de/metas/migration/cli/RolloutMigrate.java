@@ -136,8 +136,8 @@ public final class RolloutMigrate
 		// Settings
 		{
 			final Option option = new Option(RolloutMigrate.OPTION_SettingsFile,
-					"Settings file (e.g. settings_<hostname>.properties). If ommitted, then "
-							+ System.getProperty("user.home") + "/" + DEFAULT_SETTINGS_FILENAME + " will be used, where " + System.getProperty("user.home") + " is the current user's home directory");
+					"Name of the settings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*. If ommitted, then "
+							+ System.getProperty("user.home") + "/" + DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
 			option.setArgs(1);
 			option.setArgName("Settings file");
 			option.setRequired(false);
@@ -237,13 +237,13 @@ public final class RolloutMigrate
 			setTemplateDBName(optionValues[0]);
 			setNewDBName(optionValues[1]);
 		}
-		
+
 		if (cmd.hasOption(OPTION_Interactive))
 		{
 			log("Interactive mode: true");
 			scriptsApplierListener = ConsoleScriptsApplierListener.instance;
 		}
-		
+
 		return true;
 	}
 
