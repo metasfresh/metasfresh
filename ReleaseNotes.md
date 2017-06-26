@@ -28,6 +28,7 @@ Here come the actual release notes:
     * Translations for the Customer and Vendor Returns Quick actions in Material Receipt and Handling Unit Editor.
   * [#1890](https://github.com/metasfresh/metasfresh/issues/1890) Harmonize the Shipment Window to our current Look&Feel concept
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
+  * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
 
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
