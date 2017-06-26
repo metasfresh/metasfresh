@@ -903,6 +903,7 @@ td.pulse-off input {
 
 .dashboard-logo-wrapper {
     width: 100%;
+    margin-left: 6rem;
     margin-top: 5rem;
     justify-content: center;
 }
