@@ -57,6 +57,8 @@ Here come the actual release notes:
     * Disabling the URL Widget Button as long as the URL Field is empty.
   * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
     * Fix to allow the Opening of Boards via WebUI Menu.
+  * [#938](https://github.com/metasfresh/metasfresh-webui-frontend/issues/938) Lookup Fields improvements
+    * Adjustment of the Lookup Fields behavior. Now only showing the drop down selection List when there is more than 1 entry in the list.
 
 ## Fixes
 * metasfresh-app
