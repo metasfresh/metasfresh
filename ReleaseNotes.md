@@ -20,7 +20,7 @@ Here come the actual release notes:
     * Adjusting the Product Planning Window to our current Layout Concept.
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
   * [#1909](https://github.com/metasfresh/metasfresh/issues/1909) Translate Open/ Close Edit Mode for Windows
-    * German Translation of the Window Edit Mode Caption. First time used in Unser Dahboard Customizer Action Menue Entry.
+    * German Translation of the Window Edit Mode Caption. First time used in Unser Dashboard Customizer Action Menue Entry.
   
 * metasfresh-webui-frontend
   * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
@@ -34,6 +34,10 @@ Here come the actual release notes:
 * metasfresh-app
   * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
   * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
+  
+* metasfresh-webui-frontend
+  * [#951](https://github.com/metasfresh/metasfresh-webui-frontend/issues/951) Frontend is broken (showstopper)
+    * Fixes a Bug that raises exceptions after login and prevented the usage of Action Menu.
 
 # metasfresh 5.15 (2017-26)
 
