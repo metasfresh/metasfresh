@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
-
 import counterpart from 'counterpart';
-
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
 import FiltersStatic from './FiltersStatic';
@@ -160,8 +158,6 @@ class Filters extends Component {
                             dropdownToggled={this.dropdownToggled}
                         />
                     }
-                    
-                    
                     {
                         //TODO: temporary solution to refactor.
                         // Structure data/layout corrupted.
