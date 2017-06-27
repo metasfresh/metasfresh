@@ -36,6 +36,8 @@ Here come the actual release notes:
   * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
   
 * metasfresh-webui-frontend
+  * [#931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/931) Notifications are not refreshed when the language is changed
+    * Now the Notifications are alos shown in the correct language after switching the language in User settings.
   * [#951](https://github.com/metasfresh/metasfresh-webui-frontend/issues/951) Frontend is broken (showstopper)
     * Fixes a Bug that raises exceptions after login and prevented the usage of Action Menu.
 
