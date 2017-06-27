@@ -19,6 +19,8 @@ Here come the actual release notes:
   * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
     * Adjusting the Product Planning Window to our current Layout Concept.
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
+  * [#1909](https://github.com/metasfresh/metasfresh/issues/1909) Translate Open/ Close Edit Mode for Windows
+    * German Translation of the Window Edit Mode Caption. First time used in Unser Dahboard Customizer Action Menue Entry.
   
 * metasfresh-webui-frontend
   * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
