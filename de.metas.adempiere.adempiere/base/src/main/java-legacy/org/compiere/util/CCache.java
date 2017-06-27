@@ -60,7 +60,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 {
 	/**
 	 * Creates a new LRU cache
-	 * 
+	 *
 	 * @param cacheName cache name (shall respect the current naming conventions)
 	 * @param maxSize LRU cache maximum size
 	 * @param expireAfterMinutes if positive, the entries will expire after given number of minutes
@@ -112,7 +112,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Adempiere Cache - expires after 2 hours
-	 * 
+	 *
 	 * @param name (table) name of the cache
 	 * @param initialCapacity initial capacity
 	 */
@@ -123,7 +123,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Adempiere Cache
-	 * 
+	 *
 	 * @param name (table) name of the cache
 	 * @param initialCapacity initial capacity
 	 * @param expireMinutes expire after minutes (0=no expire)
@@ -180,9 +180,9 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Extracts TableName from given <code>cacheName</code>.
-	 * 
+	 *
 	 * NOTE: we assume cacheName has following format: TableName#by#ColumnName1#ColumnName2...
-	 * 
+	 *
 	 * @param cacheName
 	 * @return tableName or null
 	 */
@@ -288,7 +288,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Cache was just reset.
-	 * 
+	 *
 	 * NOTE:
 	 * <ul>
 	 * <li>this flag is set to <code>false</code> after any change operation (e.g. {@link #put(Object, Object)})
@@ -304,7 +304,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Resets the Reset flag
-	 * 
+	 *
 	 * @see #isReset()
 	 */
 	public final void setUsed()
@@ -314,9 +314,9 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Reset Cache.
-	 * 
+	 *
 	 * It is the same as calling {@link #clear()} but this method will return how many items were cleared.
-	 * 
+	 *
 	 * @return number of items cleared
 	 * @see org.compiere.util.CacheInterface#reset()
 	 */
@@ -363,7 +363,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * String Representation
-	 * 
+	 *
 	 * @return info
 	 */
 	@Override
@@ -423,9 +423,9 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Gets cached value by <code>key</code>.
-	 * 
+	 *
 	 * For more informations, see {@link #get(Object, Callable)}.
-	 * 
+	 *
 	 * @param key
 	 * @param valueInitializer
 	 * @return cached value
@@ -455,11 +455,11 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Gets cached value by <code>key</code>.
-	 * 
+	 *
 	 * If value is not present in case it will try to initialize it by using <code>valueInitializer</code>.
-	 * 
+	 *
 	 * If the <code>valueInitializer</code> returns null then this method will return <code>null</code> and the value will NOT be cached.
-	 * 
+	 *
 	 * @param key
 	 * @param valueInitializer optional cache initializer.
 	 * @return cached value or <code>null</code>
@@ -498,7 +498,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Same as {@link #get(Object, Callable)}. Introduced here to be able to use it with lambdas, without having ambiguous method calls.
-	 * 
+	 *
 	 * @param key
 	 * @param valueLoader
 	 * @return
@@ -512,12 +512,12 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Gets all values which are identified by given keys.
-	 * 
-	 * For those keys which were not found in cache, the <code>valuesLoader</code> will be called with all missing keys.
+	 *
+	 * For those keys which were not found in cache, the <code>valuesLoader</code> will be called <b>one time</b> with all missing keys.
 	 * The expected return of <code>valuesLoader</code> is a key/value map of all those values loaded.
-	 * 
+	 *
 	 * The values which were just loaded will be also added to cache.
-	 * 
+	 *
 	 * @param keys
 	 * @param valuesLoader
 	 * @return values (IMPORTANT: order is not guaranteed)
@@ -561,7 +561,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Return the value, if present, otherwise throw an exception to be created by the provided supplier.
-	 * 
+	 *
 	 * @param key
 	 * @param exceptionSupplier
 	 * @return value; not null
@@ -599,7 +599,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Add all key/value pairs to this cache.
-	 * 
+	 *
 	 * @param map key/value pairs
 	 */
 	public void putAll(Map<? extends K, ? extends V> map)
@@ -653,7 +653,7 @@ public class CCache<K, V> implements ITableAwareCacheInterface
 
 	/**
 	 * Adds an additional table which when the cache is reset for that one, it also shall reset this cache.
-	 * 
+	 *
 	 * @param tableName
 	 * @return this
 	 */
