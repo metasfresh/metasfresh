@@ -265,7 +265,8 @@ class Header extends Component {
             docSummaryData, siteName, docNoData, docStatus,
             docStatusData, windowType, dataId, breadcrumb, showSidelist,
             inbox, selected, entity, query, showIndicator, isDocumentNotSaved,
-            selectedWindowType, notfound, docId, me
+            selectedWindowType, notfound, docId, me, editmode,
+            handleEditModeToggle
         } = this.props;
 
         const {
@@ -535,7 +536,7 @@ class Header extends Component {
                     disableOnClickOutside={!isSubheaderShow}
                     {...{breadcrumb, notfound, query, entity,
                         selectedWindowType, selected, dataId, windowType,
-                        siteName
+                        siteName, editmode, handleEditModeToggle
                     }}
                 />}
 

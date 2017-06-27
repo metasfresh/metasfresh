@@ -37,7 +37,6 @@ export class DraggableWrapper extends Component {
         this.state = {
             cards: [],
             indicators: [],
-            sidenav: null,
             idMaximized: null,
             websocketEndpoint: null
         };
@@ -104,7 +103,6 @@ export class DraggableWrapper extends Component {
     }
     
     onDrop = (entity, id) => {
-        console.log(entity, id);
         const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
         patchRequest(
             'dashboard', null, null, null, null, 'position',
@@ -162,7 +160,8 @@ export class DraggableWrapper extends Component {
     }
     
     renderIndicators = () => {
-        const {indicators, idMaximized, editmode} = this.state;
+        const {indicators, idMaximized} = this.state;
+        const {editmode} = this.props;
         
         if(!indicators.length && editmode) return (
             <div className='indicators-wrapper'>
@@ -217,7 +216,8 @@ export class DraggableWrapper extends Component {
     }
     
     renderKpis = () => {
-        const {cards, idMaximized, editmode} = this.state;
+        const {cards, idMaximized} = this.state;
+        const {editmode} = this.props;
         
         if(!cards.length && editmode) return (
             <div className="kpis-wrapper">
@@ -286,19 +286,11 @@ export class DraggableWrapper extends Component {
     }
     
     render() {
-        const {editmode} = this.state;
+        const {editmode, toggleEditMode} = this.props;
         
         return (
             <div className="dashboard-cards-wrapper">
                 <div className={(editmode ? 'dashboard-edit-mode' : '')}>
-                    <div className="dashboard-edit-bar clearfix">
-                        <button
-                            className="btn btn-meta-outline-secondary btn-xs float-xs-right"
-                            onClick={() => this.setState(prev => ({editmode: !prev.editmode}))}
-                        >
-                            <i className="meta-icon-settings" /> {editmode ? 'Close edit mode' : 'Open edit mode'}
-                        </button>
-                    </div>
                     {this.renderIndicators()}
                     {this.renderKpis()}
                 </div>

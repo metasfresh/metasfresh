@@ -35,7 +35,7 @@ class Container extends Component {
             handleDeletedStatus, dropzoneFocused, notfound, rawModal, modal,
             selected, selectedWindowType, indicator, modalTitle, setModalTitle,
             includedView, closeModalCallback, setModalDescription,
-            modalDescription
+            modalDescription, editmode, handleEditModeToggle
         } = this.props;
 
         return (
@@ -47,7 +47,8 @@ class Container extends Component {
                             handleDeletedStatus, isDocumentNotSaved,
                             showIndicator, query, siteName, showSidelist,
                             attachments, actions, references, windowType,
-                            breadcrumb, dataId, dropzoneFocused, notfound, docId
+                            breadcrumb, dataId, dropzoneFocused, notfound,
+                            docId, editmode, handleEditModeToggle
                         }}
                         docStatus = {docActionElem}
                     />
