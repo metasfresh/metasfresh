@@ -251,6 +251,12 @@ class DocumentList extends Component {
             clickOutsideLock: !!value
         })
     }
+    
+    clearStaticFilters = () => {
+        const {dispatch, windowType, viewId} = this.props;
+
+        dispatch(push('/window/' + windowType));
+    }
 
     // FETCHING LAYOUT && DATA -------------------------------------------------
 
@@ -498,6 +504,7 @@ class DocumentList extends Component {
                                     filterData={layout.filters}
                                     filtersActive={filters}
                                     updateDocList={this.handleFilterChange}
+                                    clearStaticFilters={this.clearStaticFilters}
                                 />}
                             </div>
                             <QuickActions

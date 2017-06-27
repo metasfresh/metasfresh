@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import {push} from 'react-router-redux';
 
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
@@ -117,11 +118,12 @@ class Filters extends Component {
     // RENDERING FILTERS -------------------------------------------------------
 
     render() {
-        const {filterData, windowType, viewId} = this.props;
+        const {filterData, windowType, viewId, clearStaticFilters} = this.props;
         const {
             frequentFilters, notFrequentFilters, staticFilters
         } = this.sortFilters(filterData);
         const {notValidFields, widgetShown, filter} = this.state;
+
         return (
             <div className="filter-wrapper js-not-unselect">
                 <span>Filters: </span>
@@ -154,12 +156,18 @@ class Filters extends Component {
                             dropdownToggled={this.dropdownToggled}
                         />
                     }
-                    {!!staticFilters.length &&
-                        <FiltersStatic
-                            data={staticFilters}
-                            clearFilters={this.clearFilters}
-                        />
+                    
+                    
+                    {
+                        //TODO: temporary solution to refactor.
+                        // Structure data/layout corrupted.
                     }
+                    {filter && filter.static && (
+                        <FiltersStatic
+                            data={[filter]}
+                            clearFilters={clearStaticFilters}
+                        />
+                    )}
                 </div>
             </div>
         )
