@@ -22,6 +22,15 @@ import {
     removeDashboardWidget
 } from '../../actions/BoardActions';
 
+import {
+    connectWS,
+    disconnectWS
+} from '../../actions/WindowActions';
+
+import {
+    patchRequest
+} from '../../actions/GenericActions';
+
 export class DraggableWrapper extends Component {
     constructor(props) {
         super(props);
@@ -29,13 +38,39 @@ export class DraggableWrapper extends Component {
             cards: [],
             indicators: [],
             sidenav: null,
-            idMaximized: null
+            idMaximized: null,
+            websocketEndpoint: null
         };
     }
     
     componentDidMount = () => {
         this.getDashboard();
         this.getIndicators();
+    }
+    
+    componentDidUpdate = (prevProps, prevState) => {
+        const {websocketEndpoint} = this.state;
+        if(
+            websocketEndpoint !== null &&
+            prevState.websocketEndpoint !== websocketEndpoint
+        ){
+            connectWS.call(this, websocketEndpoint, msg => {
+                msg.events.map(event => {
+                    switch(event.widgetType){
+                        case 'TargetIndicator':
+                            this.getIndicators();
+                            break;
+                        case 'KPI':
+                            this.getDashboard();
+                            break;
+                    }
+                })
+            })
+        }
+    }
+    
+    componentWillUnmount = () => {
+        disconnectWS.call(this);
     }
     
     getType = (entity) => entity === 'cards' ? 'kpis' : 'targetIndicators';
@@ -51,7 +86,8 @@ export class DraggableWrapper extends Component {
     getDashboard = () => {
         getKPIsDashboard().then(response => {
             this.setState({
-                cards: response.data.items
+                cards: response.data.items,
+                websocketEndpoint: response.data.websocketEndpoint
             });
         });
     }
@@ -65,6 +101,15 @@ export class DraggableWrapper extends Component {
                 }
             }));
         });
+    }
+    
+    onDrop = (entity, id) => {
+        console.log(entity, id);
+        const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
+        patchRequest(
+            'dashboard', null, null, null, null, 'position',
+            tmpItemIndex, this.getType(entity), id
+        );
     }
     
     moveCard = (entity, dragIndex, hoverIndex, item) => {
@@ -149,6 +194,7 @@ export class DraggableWrapper extends Component {
                         index={id}
                         moveCard={this.moveCard}
                         addCard={this.addCard}
+                        onDrop={this.onDrop}
                         removeCard={this.removeCard}
                         entity={'indicators'}
                         transparent={!editmode}
@@ -200,6 +246,7 @@ export class DraggableWrapper extends Component {
                             id={item.id}
                             moveCard={this.moveCard}
                             addCard={this.addCard}
+                            onDrop={this.onDrop}
                             removeCard={this.removeCard}
                             entity={'cards'}
                             className={
