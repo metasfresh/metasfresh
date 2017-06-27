@@ -214,7 +214,7 @@ public class HUReportExecutor
 		 * @task https://github.com/metasfresh/metasfresh/issues/1263
 		 *
 		 */
-		boolean commitWasDone = false;
+		private boolean commitWasDone = false;
 
 		@Override
 		public void afterCommit(final ITrx trx)
