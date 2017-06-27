@@ -12,13 +12,19 @@ Here come the actual release notes:
 
 # metasfresh 5.16 (2017-27)
 
-**upcoming release for week 2017-26**
+**upcoming release for week 2017-27**
 
 ## Features
 * metasfresh-app
   * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
     * Adjusting the Product Planning Window to our current Layout Concept.
-    
+  * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
+  
+## Fixes
+* metasfresh-app
+  * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
+  * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
+
 # metasfresh 5.15 (2017-26)
 
 **upcoming release for week 2017-26**
@@ -38,7 +44,6 @@ Here come the actual release notes:
   * [#1890](https://github.com/metasfresh/metasfresh/issues/1890) Harmonize the Shipment Window to our current Look&Feel concept
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
   * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
-  * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
 
 
 * metasfresh-webui-api
@@ -67,7 +72,6 @@ Here come the actual release notes:
   * [#1814](https://github.com/metasfresh/metasfresh/issues/1814) Hide Processed flag from all M_InOut/Returns windows (webui)
     * The redundant processed flag is now removed from InOut Windows (Empties return/ receive, Vendor Returns). The information is already given by the Document Status Field.
   * [#1873](https://github.com/metasfresh/metasfresh/issues/1873) Fix control amount and qty in payment data imported from camt.54
-  * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
   * [#1900](https://github.com/metasfresh/metasfresh/issues/1900) Migration Script for "Select all lines count"
     * Fix of the number delimiter in a message Translation the leads to failing switch of link in frontend for 'Select all x records'.
 
