@@ -585,6 +585,7 @@ class Header extends Component {
                             .getElementsByClassName('js-dropdown-toggler')[0] ?
                             this.handleDocStatusToggle : ''
                     }
+                    handleEditModeToggle={handleEditModeToggle}
                     closeOverlays={this.closeOverlays}
                 />
             </div>

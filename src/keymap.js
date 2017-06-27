@@ -22,7 +22,7 @@ export default {
         OPEN_PRINT_RAPORT: mod + '+' + 'p',
         DELETE_DOCUMENT: mod + '+' + 'd',
         NEW_DOCUMENT: mod + '+' + 'm',
-        TOGGLE_EDIT_MODE: mod + '+' + 'i'
+        TOGGLE_EDIT_MODE: mod + '+' + 'o'
     },
     DOCUMENT_LIST_CONTEXT: {
         OPEN_SELECTED: mod + '+' + 'b', //open document in new tab

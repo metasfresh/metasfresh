@@ -208,7 +208,7 @@ class Subheader extends Component {
                     key={editmode}
                     className="subheader-item js-subheader-item"
                     tabIndex={0}
-                    onClick={handleEditModeToggle}
+                    onClick={() => {handleEditModeToggle(); closeSubheader()}}
                 >
                     <i className="meta-icon-settings" />
                     {editmode ?
