@@ -16,8 +16,11 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.CreateAndOpenIncludedViewAction;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.ResultAction;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -76,8 +79,7 @@ import lombok.ToString;
 			@NonNull final IView view,
 			@NonNull final ViewActionDescriptor viewActionDescriptor,
 			@NonNull final DocumentIdsSelection selectedDocumentIds,
-			@NonNull final IDocumentChangesCollector changesCollector
-	)
+			@NonNull final IDocumentChangesCollector changesCollector)
 	{
 		processId = ViewProcessInstancesRepository.buildProcessId(view.getViewId(), viewActionDescriptor.getActionId());
 		this.pinstanceId = pinstanceId;
@@ -109,7 +111,7 @@ import lombok.ToString;
 		}
 		return view;
 	}
-	
+
 	public ProcessId getProcessId()
 	{
 		return processId;
@@ -157,7 +159,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess()
+	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo)
 	{
 		assertNotExecuted();
 
@@ -182,9 +184,10 @@ import lombok.ToString;
 			final Object targetObject = Modifier.isStatic(viewActionMethod.getModifiers()) ? null : view;
 			final Object resultActionObj = viewActionMethod.invoke(targetObject, viewActionParams);
 			final ResultAction resultAction = viewActionDescriptor.convertReturnType(resultActionObj);
+			final ResultAction resultActionProcessed = processResultAction(resultAction, viewsRepo);
 
 			final ProcessInstanceResult result = ProcessInstanceResult.builder(pinstanceId)
-					.setAction(resultAction)
+					.setAction(resultActionProcessed)
 					.build();
 
 			this.result = result;
@@ -194,6 +197,22 @@ import lombok.ToString;
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
+	}
+
+	private ResultAction processResultAction(final ResultAction resultAction, final IViewsRepository viewRepos)
+	{
+		if (resultAction == null)
+		{
+			return null;
+		}
+
+		if (resultAction instanceof CreateAndOpenIncludedViewAction)
+		{
+			final IView view = viewRepos.createView(((CreateAndOpenIncludedViewAction)resultAction).getCreateViewRequest());
+			return OpenIncludedViewAction.builder().viewId(view.getViewId()).build();
+		}
+
+		return resultAction;
 	}
 
 	/* package */ void assertNotExecuted()

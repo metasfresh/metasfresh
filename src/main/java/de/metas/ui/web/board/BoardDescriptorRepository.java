@@ -5,9 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -17,10 +20,14 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.RecordZoomWindowFinder;
+import org.adempiere.util.NumberUtils;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.ListUtils;
 import org.compiere.model.I_AD_User;
@@ -36,10 +43,16 @@ import org.springframework.stereotype.Repository;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
+import de.metas.currency.Amount;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.DateTimeTranslatableString;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.NumberTranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.base.model.I_WEBUI_Board;
 import de.metas.ui.web.base.model.I_WEBUI_Board_CardField;
@@ -50,9 +63,12 @@ import de.metas.ui.web.board.BoardDescriptor.BoardDescriptorBuilder;
 import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList;
 import de.metas.ui.web.board.json.events.JSONBoardChangedEventsList.JSONBoardChangedEventsListBuilder;
 import de.metas.ui.web.board.json.events.JSONBoardLaneChangedEvent;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -162,11 +178,12 @@ public class BoardDescriptorRepository
 
 		//
 		// Board document lookup provider
+		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
 		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
 				.setColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setAD_Val_Rule_ID(boardPO.getAD_Val_Rule_ID())
+				.setAD_Val_Rule_ID(adValRuleId)
 				.buildProvider();
 
 		//
@@ -182,10 +199,24 @@ public class BoardDescriptorRepository
 				.tableName(tableName)
 				.tableAlias(tableAlias)
 				.keyColumnName(keyColumnName)
-				.adValRuleId(boardPO.getAD_Val_Rule_ID())
 				.userIdColumnName(userIdColumnName)
 				//
 				.websocketEndpoint(WebSocketConfig.buildBoardTopicName(boardId));
+
+		//
+		// Source document filters: AD_Val_Rule_ID
+		if (adValRuleId > 0)
+		{
+			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(tableName, adValRuleId);
+			final String sqlWhereClause = validationRule.getPrefilterWhereClause()
+					.evaluate(Evaluatees.ofCtx(Env.getCtx()), OnVariableNotFound.Fail);
+
+			final DocumentFilter adValRuleFilter = DocumentFilter.builder()
+					.setFilterId("AD_Val_Rule_" + adValRuleId)
+					.addParameter(DocumentFilterParam.ofSqlWhereClause(true, sqlWhereClause))
+					.build();
+			boardDescriptor.documentFilter(adValRuleFilter);
+		}
 
 		//
 		// Lanes
@@ -225,22 +256,53 @@ public class BoardDescriptorRepository
 
 	private final BoardCardFieldDescriptor createBoardCardFieldDescriptor(final I_WEBUI_Board_CardField cardFieldPO, final DocumentEntityDescriptor documentEntityDescriptor)
 	{
-		final String fieldName = cardFieldPO.getAD_Column().getColumnName(); // TODO: might be not so performant
+		final String fieldName = cardFieldPO.getAD_Column().getColumnName(); // TODO: might be not so performant, we just need the ColumnName
 
 		final DocumentFieldDescriptor documentField = documentEntityDescriptor.getField(fieldName);
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = documentField.getDataBindingNotNull(SqlDocumentFieldDataBindingDescriptor.class);
-
+		final DocumentFieldWidgetType widgetType = documentField.getWidgetType();
 		final boolean isDisplayColumnAvailable = fieldBinding.isUsingDisplayColumn();
-		final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
-		final BoardFieldLoader fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+
+		final ImmutableSet<String> sqlSelectValues;
+		final BoardFieldLoader fieldLoader;
+		if (widgetType == DocumentFieldWidgetType.Amount && documentEntityDescriptor.hasField(WindowConstants.FIELDNAME_C_Currency_ID))
+		{
+			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue(), WindowConstants.FIELDNAME_C_Currency_ID);
+			fieldLoader = (rs, adLanguage) -> {
+				final BigDecimal valueBD = rs.getBigDecimal(fieldBinding.getColumnName());
+				if (valueBD == null)
+				{
+					return null;
+				}
+
+				final int currencyId = rs.getInt(WindowConstants.FIELDNAME_C_Currency_ID);
+				final String currencyCode = Services.get(ICurrencyDAO.class).getISO_Code(Env.getCtx(), currencyId);
+				if (currencyCode == null)
+				{
+					return valueBD;
+				}
+
+				return Amount.of(valueBD, currencyCode);
+
+			};
+
+		}
+		else
+		{
+			sqlSelectValues = ImmutableSet.of(fieldBinding.getSqlSelectValue());
+			final DocumentFieldValueLoader documentFieldValueLoader = fieldBinding.getDocumentFieldValueLoader();
+			fieldLoader = (rs, adLanguage) -> documentFieldValueLoader.retrieveFieldValue(rs, isDisplayColumnAvailable, adLanguage);
+		}
 
 		return BoardCardFieldDescriptor.builder()
 				.caption(documentField.getCaption())
 				.fieldName(fieldBinding.getColumnName())
-				.sqlSelectValue(fieldBinding.getSqlSelectValue())
+				.widgetType(widgetType)
+				.sqlSelectValues(sqlSelectValues)
 				//
 				.usingDisplayColumn(isDisplayColumnAvailable)
 				.sqlSelectDisplayValue(fieldBinding.getSqlSelectDisplayValue())
+				.sqlOrderBy(fieldBinding.getSqlOrderBy())
 				.fieldLoader(fieldLoader)
 				.build();
 	}
@@ -256,12 +318,22 @@ public class BoardDescriptorRepository
 
 	public List<BoardCard> getCards(final int boardId)
 	{
-		return retrieveCards(boardId, -1/* cardId */);
+		final Set<Integer> onlyCardIds = ImmutableSet.of();
+		return retrieveCards(boardId, onlyCardIds);
 	}
 
 	public BoardCard getCard(final int boardId, final int cardId)
 	{
-		return ListUtils.singleElement(retrieveCards(boardId, cardId));
+		Preconditions.checkArgument(cardId >= 0, "cardId >= 0"); // zero is OK because we might have recordId=0
+		final Set<Integer> onlyCardIds = ImmutableSet.of(cardId);
+
+		return ListUtils.singleElement(retrieveCards(boardId, onlyCardIds));
+	}
+
+	public List<BoardCard> getCards(final int boardId, final Collection<Integer> cardIds)
+	{
+		Preconditions.checkArgument(!cardIds.isEmpty(), "cardIds shall not be empty");
+		return retrieveCards(boardId, cardIds);
 	}
 
 	private int getLaneIdForCardId(final int boardId, final int cardId)
@@ -269,7 +341,7 @@ public class BoardDescriptorRepository
 		return getCard(boardId, cardId).getLaneId();
 	}
 
-	private List<BoardCard> retrieveCards(final int boardId, final int cardId)
+	private List<BoardCard> retrieveCards(final int boardId, final Collection<Integer> onlyCardIds)
 	{
 		final BoardDescriptor boardDescriptor = getBoardDescriptor(boardId);
 
@@ -306,10 +378,9 @@ public class BoardDescriptorRepository
 					.append("\n a." + I_WEBUI_Board_RecordAssignment.COLUMNNAME_WEBUI_Board_ID + "=?");
 			sqlParams.add(boardId);
 
-			if (cardId >= 0) // zero is also ok because we might have records with ID zero
+			if (!onlyCardIds.isEmpty())
 			{
-				sqlExpr.append("\n AND " + I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID + "=?");
-				sqlParams.add(cardId);
+				sqlExpr.append("\n AND ").append(DB.buildSqlList(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, onlyCardIds, sqlParams));
 			}
 		}
 
@@ -318,8 +389,23 @@ public class BoardDescriptorRepository
 		return retrieveCardsFromSql(sql, sqlParams, boardDescriptor);
 	}
 
+	/** @return all cardIds contained in given <code>boardId</code> */
+	public List<Integer> retrieveCardIds(final int boardId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_WEBUI_Board_RecordAssignment.class)
+				.addEqualsFilter(I_WEBUI_Board_RecordAssignment.COLUMN_WEBUI_Board_ID, boardId)
+				.create()
+				.listDistinct(I_WEBUI_Board_RecordAssignment.COLUMNNAME_Record_ID, Integer.class);
+	}
+
 	public List<BoardCard> retrieveCardCandidates(final int boardId, final List<Integer> cardIds)
 	{
+		if (cardIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		final BoardDescriptor boardDescriptor = getBoardDescriptor(boardId);
 
 		final String keyColumnName = boardDescriptor.getKeyColumnName();
@@ -367,13 +453,13 @@ public class BoardDescriptorRepository
 		final String keyColumnName = boardDescriptor.getKeyColumnName();
 		final String userIdColumnName = boardDescriptor.getUserIdColumnName();
 
-		final List<String> sqlSelectValuesList = new ArrayList<>();
+		final LinkedHashSet<String> sqlSelectValuesList = new LinkedHashSet<>();
 		sqlSelectValuesList.add(keyColumnName);
 		sqlSelectValuesList.add(userIdColumnName);
 		final List<IStringExpression> sqlSelectDisplayNamesList = new ArrayList<>();
 		boardDescriptor.getCardFields()
 				.forEach(cardField -> {
-					sqlSelectValuesList.add(cardField.getSqlSelectValue());
+					sqlSelectValuesList.addAll(cardField.getSqlSelectValues());
 
 					if (cardField.isUsingDisplayColumn())
 					{
@@ -428,6 +514,10 @@ public class BoardDescriptorRepository
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 	private BoardCard createCard(final ResultSet rs, final BoardDescriptor boardDescriptor) throws SQLException
@@ -451,6 +541,7 @@ public class BoardDescriptorRepository
 			{
 				continue;
 			}
+
 			cardValues.put(cardField.getFieldName(), fieldValue);
 		}
 		final ITranslatableString description = buildDescription(cardValues, boardDescriptor);
@@ -488,41 +579,83 @@ public class BoardDescriptorRepository
 		return ITranslatableString.compose("\n", fieldDescriptions);
 	}
 
+	private static ITranslatableString toDisplayValue(final Object value, final DocumentFieldWidgetType widgetType)
+	{
+		if (value == null)
+		{
+			return ITranslatableString.empty();
+		}
+
+		//
+		// Determine by value type
+		if (value instanceof Amount)
+		{
+			final Amount amount = (Amount)value;
+			return ITranslatableString.compose(" ",
+					NumberTranslatableString.of(amount.getValue(), DisplayType.Amount),
+					ITranslatableString.constant(amount.getCurrencyCode()));
+
+		}
+
+		//
+		// Determine by widgetType
+		if (widgetType == DocumentFieldWidgetType.Password)
+		{
+			// hide passwords
+			return ITranslatableString.constant("*****");
+		}
+		else if (widgetType.isText())
+		{
+			return ITranslatableString.constant(value.toString());
+		}
+		else if (widgetType == DocumentFieldWidgetType.Date)
+		{
+			return DateTimeTranslatableString.ofDate((java.util.Date)value);
+		}
+		else if (widgetType == DocumentFieldWidgetType.DateTime)
+		{
+			return DateTimeTranslatableString.ofDateTime((java.util.Date)value);
+		}
+		else if (widgetType == DocumentFieldWidgetType.Integer)
+		{
+			return ITranslatableString.constant(value.toString());
+		}
+		else if (widgetType.isNumeric())
+		{
+			final BigDecimal valueBD = NumberUtils.asBigDecimal(value, null);
+			if (valueBD != null)
+			{
+				return NumberTranslatableString.of(valueBD, widgetType.getDisplayType());
+			}
+		}
+		else if (widgetType.isLookup())
+		{
+			if (value instanceof LookupValue)
+			{
+				return ((LookupValue)value).getDisplayNameTrl();
+			}
+			else if (value instanceof JSONLookupValue)
+			{
+				return ImmutableTranslatableString.constant(((JSONLookupValue)value).getName().trim());
+			}
+		}
+		else if (widgetType.isBoolean())
+		{
+			final boolean valueBoolean = DisplayType.toBoolean(value);
+			return Services.get(IMsgBL.class).getTranslatableMsgText(valueBoolean ? "Y" : "N");
+		}
+
+		return ITranslatableString.constant(value.toString());
+	}
+
 	private static final ITranslatableString buildDescription(final Object value, final BoardCardFieldDescriptor cardField)
 	{
-		final ITranslatableString valueStr;
 		if (value == null)
 		{
 			return null;
 		}
-		else if (value instanceof LookupValue)
-		{
-			valueStr = ((LookupValue)value).getDisplayNameTrl();
-		}
-		else if (value instanceof JSONLookupValue)
-		{
-			valueStr = ImmutableTranslatableString.constant(((JSONLookupValue)value).getName().trim());
-		}
-		else if (value instanceof java.util.Date)
-		{
-			// TODO: format dates
-			valueStr = ImmutableTranslatableString.constant(value.toString());
-		}
-		else if (value instanceof BigDecimal)
-		{
-			// TODO: format numbers
-			valueStr = ImmutableTranslatableString.constant(value.toString());
-		}
-		else if (value instanceof Boolean)
-		{
-			// TODO: format booleans
-			valueStr = ImmutableTranslatableString.constant(value.toString());
-		}
-		else
-		{
-			valueStr = ImmutableTranslatableString.constant(value.toString().trim());
-		}
 
+		final ITranslatableString valueStr = toDisplayValue(value, cardField.getWidgetType());
 		return ITranslatableString.compose(": ", cardField.getCaption(), valueStr);
 	}
 
@@ -602,13 +735,23 @@ public class BoardDescriptorRepository
 		final JSONBoardChangedEventsListBuilder eventsCollector = JSONBoardChangedEventsList.builder();
 
 		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
-			final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
-			assignment.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-			assignment.setWEBUI_Board_ID(boardId);
-			assignment.setWEBUI_Board_Lane_ID(laneId);
-			assignment.setRecord_ID(cardId);
-			assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
-			InterfaceWrapperHelper.save(assignment);
+			try
+			{
+				final I_WEBUI_Board_RecordAssignment assignment = InterfaceWrapperHelper.newInstance(I_WEBUI_Board_RecordAssignment.class);
+				assignment.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
+				assignment.setWEBUI_Board_ID(boardId);
+				assignment.setWEBUI_Board_Lane_ID(laneId);
+				assignment.setRecord_ID(cardId);
+				assignment.setSeqNo(Integer.MAX_VALUE); // will be updated later
+				InterfaceWrapperHelper.save(assignment);
+			}
+			catch (final DBUniqueConstraintException ex)
+			{
+				throw new AdempiereException("Card was already added to this board", ex)
+						.setParameter("boardI", boardId)
+						.setParameter("laneId", laneId)
+						.setParameter("cardId", cardId);
+			}
 
 			final LaneCardsSequence orderedCardIds = changeCardsOrder(boardId, laneId, cardIds -> cardIds.addCardIdAtPosition(cardId, position));
 			eventsCollector.event(JSONBoardLaneChangedEvent.of(boardId, laneId, orderedCardIds.getCardIds()));

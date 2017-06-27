@@ -32,6 +32,9 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
@@ -82,6 +85,8 @@ class SqlViewDataRepository implements IViewDataRepository
 	private final String keyFieldName;
 	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
 
+	private final SqlDocumentFilterConverter filterConverters;
+
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
 		tableName = sqlBindings.getTableName();
@@ -109,6 +114,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		this.keyFieldName = keyFieldName;
 		this.rowFieldLoaders = rowFieldLoaders.build();
 
+		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
 	}
 
 	@Override
@@ -126,9 +132,37 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(final ViewId viewId, List<DocumentFilter> filters, final DocumentIdsSelection rowIds)
 	{
-		return viewRowIdsOrderedSelectionFactory.getSqlWhereClause(viewId, rowIds);
+		final StringBuilder sqlWhereClause = new StringBuilder();
+
+		// Convert filters to SQL
+		{
+			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters);
+			if (!Check.isEmpty(sqlFilters, true))
+			{
+				if (sqlWhereClause.length() > 0)
+				{
+					sqlWhereClause.append(" AND ");
+				}
+				sqlWhereClause.append("(").append(sqlFilters).append(")");
+			}
+		}
+		
+		// Filter by rowIds
+		{
+			final String sqlFilterByRowIds = viewRowIdsOrderedSelectionFactory.getSqlWhereClause(viewId, rowIds);
+			if(!Check.isEmpty(sqlFilterByRowIds, true))
+			{
+				if (sqlWhereClause.length() > 0)
+				{
+					sqlWhereClause.append(" AND ");
+				}
+				sqlWhereClause.append("(").append(sqlFilterByRowIds).append(")");
+			}
+		}
+		
+		return sqlWhereClause.toString();
 	}
 
 	@Override
@@ -428,7 +462,8 @@ class SqlViewDataRepository implements IViewDataRepository
 			return ImmutableList.of();
 		}
 
-		final String sqlWhereClause = getSqlWhereClause(viewId, rowIds);
+		final List<DocumentFilter> filters = ImmutableList.of();
+		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds);
 		if (Check.isEmpty(sqlWhereClause, true))
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);

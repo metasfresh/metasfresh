@@ -2,6 +2,7 @@ package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -51,6 +53,7 @@ public class KPI
 	private final ITranslatableString caption;
 	private final ITranslatableString description;
 	private final KPIChartType chartType;
+	private final ImmutableSet<DashboardWidgetType> supportedWidgetTypes;
 	private final Duration compareOffset;
 
 	private final List<KPIField> fields;
@@ -82,6 +85,7 @@ public class KPI
 		caption = builder.caption;
 		description = builder.description;
 		chartType = builder.chartType;
+		supportedWidgetTypes = ImmutableSet.copyOf(builder.getSupportedWidgetTypes());
 		compareOffset = builder.compareOffset;
 
 		timeRangeDefaults = builder.timeRangeDefaults;
@@ -138,6 +142,11 @@ public class KPI
 	public KPIChartType getChartType()
 	{
 		return chartType;
+	}
+	
+	public Set<DashboardWidgetType> getSupportedWidgetTypes()
+	{
+		return supportedWidgetTypes;
 	}
 
 	public List<KPIField> getFields()
@@ -243,6 +252,18 @@ public class KPI
 		{
 			this.chartType = chartType;
 			return this;
+		}
+		
+		private Set<DashboardWidgetType> getSupportedWidgetTypes()
+		{
+			if(chartType == KPIChartType.Metric)
+			{
+				return ImmutableSet.of(DashboardWidgetType.TargetIndicator);
+			}
+			else
+			{
+				return ImmutableSet.of(DashboardWidgetType.KPI);
+			}
 		}
 
 		public Builder setFields(final List<KPIField> fields)

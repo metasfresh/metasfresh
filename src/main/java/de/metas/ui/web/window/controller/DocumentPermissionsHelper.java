@@ -66,7 +66,14 @@ public class DocumentPermissionsHelper
 
 	public static void assertWindowAccess(final WindowId windowId, final String windowName, final IUserRolePermissions permissions)
 	{
-		final int adWindowId = windowId.toInt();
+		final int adWindowId = windowId.toIntOr(-1);
+		if(adWindowId < 0)
+		{
+			// cannot apply window access if the WindowId is not integer.
+			// usually those are special window placeholders.
+			return; // accept it
+		}
+		
 		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
 		if (!windowPermission.hasReadAccess())
 		{

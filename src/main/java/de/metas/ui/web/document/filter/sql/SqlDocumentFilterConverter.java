@@ -47,9 +47,9 @@ public interface SqlDocumentFilterConverter
 	 * @param filter
 	 * @return SQL
 	 */
-	String getSql(List<Object> sqlParamsOut, DocumentFilter filter);
+	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter);
 
-	default String getSql(final List<Object> sqlParamsOut, final List<DocumentFilter> filters)
+	default String getSql(SqlParamsCollector sqlParamsOut, final List<DocumentFilter> filters)
 	{
 		if (filters.isEmpty())
 		{

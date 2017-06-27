@@ -69,7 +69,7 @@ public class UserSessionRepository
 		final JSONUserSessionChangesEventBuilder changesCollector = JSONUserSessionChangesEvent.builder();
 
 		// Fullname
-		final String userFullnameOld = userSession.setUserFullname(fromUser.getName());
+		final String userFullnameOld = userSession.setUserFullname(buildUserFullname(fromUser));
 		final String userFullnameNew = userSession.getUserFullname();
 		if (!Objects.equals(userFullnameNew, userFullnameOld))
 		{
@@ -117,6 +117,49 @@ public class UserSessionRepository
 			websocketSender.convertAndSend(websocketEndpoint, changesEvent);
 
 		}
+	}
+
+	/**
+	 * Builds user's full name.
+	 * 
+	 * @param user
+	 * @return user's full name (e.g. FirstName LastName)
+	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/468
+	 */
+	private final String buildUserFullname(final I_AD_User user)
+	{
+		final StringBuilder fullname = new StringBuilder();
+		final String firstname = user.getFirstname();
+		if (!Check.isEmpty(firstname, true))
+		{
+			fullname.append(firstname.trim());
+		}
+
+		final String lastname = user.getLastname();
+		if (!Check.isEmpty(lastname, true))
+		{
+			if (fullname.length() > 0)
+			{
+				fullname.append(" ");
+			}
+			fullname.append(lastname.trim());
+		}
+
+		if (fullname.length() <= 0)
+		{
+			final String login = user.getLogin();
+			if (!Check.isEmpty(login, true)) // shall not happen to be empty
+			{
+				fullname.append(login.trim());
+			}
+		}
+
+		if (fullname.length() <= 0)
+		{
+			fullname.append(user.getAD_User_ID());
+		}
+
+		return fullname.toString();
 	}
 
 	public void setAD_Language(final int adUserId, final String adLanguage)

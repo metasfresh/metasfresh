@@ -4,9 +4,11 @@ import java.util.Collection;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import lombok.Builder;
@@ -58,6 +60,10 @@ public final class BoardDescriptor
 	@NonNull
 	private LookupDescriptorProvider documentLookupDescriptorProvider;
 
+	/** document sticky filters (those will be applied no matter what; can come from WEBUI_Dashboard.AD_Val_Rule_ID for example) */
+	@Singular
+	private ImmutableList<DocumentFilter> documentFilters;
+
 	// Source record mapping
 	@NonNull
 	private final String tableName;
@@ -65,7 +71,6 @@ public final class BoardDescriptor
 	private final String tableAlias;
 	@NonNull
 	private final String keyColumnName;
-	private final int adValRuleId;
 	@NonNull
 	private final String userIdColumnName;
 

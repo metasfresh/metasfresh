@@ -71,6 +71,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	private static final String TOPIC_View = "/view";
 	private static final String TOPIC_Document = "/document";
 	private static final String TOPIC_Board = "/board";
+	public static final String TOPIC_Dashboard = "/dashboard";
 	public static final String TOPIC_Devices = "/devices";
 
 	public static final String buildUserSessionTopicName(final int adUserId)
@@ -99,7 +100,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 		Preconditions.checkArgument(boardId > 0);
 		return TOPIC_Board + "/" + boardId;
 	}
-
+	
 	@Override
 	public void registerStompEndpoints(final StompEndpointRegistry registry)
 	{
@@ -122,6 +123,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 				TOPIC_View,
 				TOPIC_Document,
 				TOPIC_Board,
+				TOPIC_Dashboard,
 				TOPIC_Devices);
 
 		// use the /app prefix for others

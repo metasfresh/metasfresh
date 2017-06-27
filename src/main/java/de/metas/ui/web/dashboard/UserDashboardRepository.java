@@ -1,12 +1,13 @@
 package de.metas.ui.web.dashboard;
 
 import java.io.Serializable;
-import java.time.Duration;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.Immutable;
@@ -18,31 +19,29 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Element;
 import org.compiere.util.CCache;
-import org.compiere.util.DisplayType;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.i18n.Language;
+import de.metas.i18n.po.POTrlInfo;
+import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
-import de.metas.ui.web.base.model.I_WEBUI_KPI_Field;
-import de.metas.ui.web.base.model.X_WEBUI_KPI;
-import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,27 +75,53 @@ public class UserDashboardRepository
 	// Services
 	private static final Logger logger = LogManager.getLogger(UserDashboardRepository.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	@Autowired
+	private KPIRepository kpisRepo;
 
-	private final CCache<UserDashboardKey, UserDashboard> userDashboadCache = CCache.<UserDashboardKey, UserDashboard> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#UserDashboard", Integer.MAX_VALUE, 0)
+	private final CCache<UserDashboardKey, Integer> key2dashboardId = CCache.<UserDashboardKey, Integer> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
+
+	private final CCache<Integer, UserDashboard> dashboadsCache = CCache.<Integer, UserDashboard> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#UserDashboard", Integer.MAX_VALUE, 0)
 			.addResetForTableName(I_WEBUI_DashboardItem.Table_Name);
-	private final CCache<Integer, KPI> kpisCache = CCache.<Integer, KPI> newLRUCache(I_WEBUI_KPI.Table_Name + "#KPIs", Integer.MAX_VALUE, 0)
-			.addResetForTableName(I_WEBUI_KPI_Field.Table_Name);
+
+	private UserDashboard getUserDashboardById(final int dashboardId)
+	{
+		return dashboadsCache.getOrLoad(dashboardId, () -> retrieveUserDashboard(dashboardId));
+	}
 
 	public UserDashboard getUserDashboard(final UserDashboardKey userDashboardKey)
 	{
-		return userDashboadCache.getOrLoad(userDashboardKey, () -> retrieveUserDashboard(userDashboardKey));
+		final Integer dashboardId = key2dashboardId.getOrLoad(userDashboardKey, () -> retrieveUserDashboardId(userDashboardKey));
+		if (dashboardId == null || dashboardId <= 0)
+		{
+			return UserDashboard.EMPTY;
+		}
+
+		return getUserDashboardById(dashboardId);
 	}
 
-	private void invalidateUserDashboard(final UserDashboard userDashboard)
+	private void invalidateUserDashboard(final int dashboardId)
 	{
-		userDashboadCache.remove(UserDashboardKey.of(userDashboard.getAdClientId()));
+		dashboadsCache.remove(dashboardId);
 	}
 
-	private UserDashboard retrieveUserDashboard(final UserDashboardKey key)
+	private UserDashboard retrieveUserDashboard(final int dashboardId)
+	{
+		final I_WEBUI_Dashboard webuiDashboard = queryBL
+				.createQueryBuilder(I_WEBUI_Dashboard.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_WEBUI_Dashboard.COLUMN_WEBUI_Dashboard_ID, dashboardId)
+				//
+				.create()
+				.firstOnlyNotNull(I_WEBUI_Dashboard.class);
+
+		return createUserDashboard(webuiDashboard);
+	}
+
+	private int retrieveUserDashboardId(final UserDashboardKey key)
 	{
 		final int adClientId = key.getAdClientId();
 
-		final I_WEBUI_Dashboard webuiDashboard = queryBL
+		final int dashboardId = queryBL
 				.createQueryBuilder(I_WEBUI_Dashboard.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, Env.CTXVALUE_AD_Client_ID_System, adClientId)
@@ -108,14 +133,9 @@ public class UserDashboardRepository
 				.endOrderBy()
 				//
 				.create()
-				.first(I_WEBUI_Dashboard.class);
+				.firstId();
 
-		if (webuiDashboard == null)
-		{
-			return UserDashboard.EMPTY;
-		}
-
-		return createUserDashboard(webuiDashboard);
+		return dashboardId > 0 ? dashboardId : -1;
 	}
 
 	private UserDashboard createUserDashboard(final I_WEBUI_Dashboard webuiDashboard)
@@ -153,228 +173,119 @@ public class UserDashboardRepository
 
 	}
 
-	private UserDashboardItem createUserDashboardItem(final I_WEBUI_DashboardItem webuiDashboardItem)
+	private UserDashboardItem createUserDashboardItem(final I_WEBUI_DashboardItem itemPO)
 	{
-		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(webuiDashboardItem);
+		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(itemPO);
 
 		return UserDashboardItem.builder()
-				.setId(webuiDashboardItem.getWEBUI_DashboardItem_ID())
-				.setCaption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, webuiDashboardItem.getName()))
-				.setUrl(webuiDashboardItem.getURL())
-				.setSeqNo(webuiDashboardItem.getSeqNo())
-				.setWidgetType(DashboardWidgetType.ofCode(webuiDashboardItem.getWEBUI_DashboardWidgetType()))
-				.setKPI(() -> getKPIOrNull(webuiDashboardItem.getWEBUI_KPI_ID()))
+				.setId(itemPO.getWEBUI_DashboardItem_ID())
+				.setCaption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, itemPO.getName()))
+				.setUrl(itemPO.getURL())
+				.setSeqNo(itemPO.getSeqNo())
+				.setWidgetType(DashboardWidgetType.ofCode(itemPO.getWEBUI_DashboardWidgetType()))
+				.setKPI(() -> kpisRepo.getKPIOrNull(itemPO.getWEBUI_KPI_ID()))
 				//
 				.setTimeRangeDefaults(KPITimeRangeDefaults.builder()
-						.defaultTimeRangeFromString(webuiDashboardItem.getES_TimeRange())
-						.defaultTimeRangeEndOffsetFromString(webuiDashboardItem.getES_TimeRange_End())
+						.defaultTimeRangeFromString(itemPO.getES_TimeRange())
+						.defaultTimeRangeEndOffsetFromString(itemPO.getES_TimeRange_End())
 						.build())
 				//
 				.build();
 	}
 
-	public void invalidateKPI(final int id)
+	private void changeUserDashboardItemAndSave(@NonNull final I_WEBUI_DashboardItem itemPO, @NonNull final UserDashboardItemChangeRequest request)
 	{
-		kpisCache.remove(id);
-	}
+		logger.trace("Changing {} from {}", itemPO, request);
 
-	public Collection<KPI> getKPIsAvailableToAdd()
-	{
-		final List<Integer> kpiIds = queryBL.createQueryBuilder(I_WEBUI_KPI.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.create()
-				.listIds();
-
-		return getKPIs(kpiIds);
-	}
-
-	public Collection<KPI> getTargetIndicatorsAvailableToAdd()
-	{
-		final List<Integer> kpiIds = queryBL.createQueryBuilder(I_WEBUI_KPI.class)
-				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClientOrSystem()
-				.addEqualsFilter(I_WEBUI_KPI.COLUMN_ChartType, X_WEBUI_KPI.CHARTTYPE_Metric)
-				.create()
-				.listIds();
-
-		return getKPIs(kpiIds);
-	}
-
-	private Collection<KPI> getKPIs(final Collection<Integer> kpiIds)
-	{
-		return kpisCache.getAllOrLoad(kpiIds, this::retrieveKPIs);
-	}
-
-	private final Map<Integer, KPI> retrieveKPIs(final Collection<Integer> kpiIds)
-	{
-		return queryBL.createQueryBuilder(I_WEBUI_KPI.class)
-				.addInArrayFilter(I_WEBUI_KPI.COLUMN_WEBUI_KPI_ID, kpiIds)
-				.create()
-				.stream(I_WEBUI_KPI.class)
-				.map(kpiDef -> {
-					try
-					{
-						return createKPI(kpiDef);
-					}
-					catch (final Exception ex)
-					{
-						logger.warn("Failed creating KPI for {}", kpiDef, ex);
-						return null;
-					}
-				})
-				.filter(kpi -> kpi != null)
-				.collect(GuavaCollectors.toImmutableMapByKey(KPI::getId));
-	}
-
-	public KPI getKPI(final int id)
-	{
-		final KPI kpi = getKPIOrNull(id);
-		if (kpi == null)
+		//
+		// Caption -> Name
+		final POTrlInfo trlInfo = InterfaceWrapperHelper.getStrictPO(itemPO).getPOInfo().getTrlInfo();
+		final String adLanguage = request.getAdLanguage();
+		String captionTrl = null;
+		if (!Check.isEmpty(request.getCaption(), true))
 		{
-			throw new EntityNotFoundException("KPI (id=" + id + ")");
-		}
-		return kpi;
-	}
-
-	private KPI getKPIOrNull(final int WEBUI_KPI_ID)
-	{
-		if (WEBUI_KPI_ID <= 0)
-		{
-			return null;
-		}
-		return kpisCache.getOrLoad(WEBUI_KPI_ID, () -> {
-			final I_WEBUI_KPI kpiDef = InterfaceWrapperHelper.create(Env.getCtx(), WEBUI_KPI_ID, I_WEBUI_KPI.class, ITrx.TRXNAME_None);
-			if (kpiDef == null)
+			final String caption = request.getCaption();
+			if (Language.isBaseLanguage(adLanguage) || !trlInfo.isColumnTranslated(I_WEBUI_DashboardItem.COLUMNNAME_Name))
 			{
-				return null;
+				itemPO.setName(caption);
 			}
+			else
+			{
+				captionTrl = caption;
+			}
+		}
 
-			return createKPI(kpiDef);
+		//
+		// Interval -> ES_TimeRange
+		if (request.getInterval() != null)
+		{
+			itemPO.setES_TimeRange(request.getInterval().getEsTimeRange());
+		}
+
+		//
+		// When -> ES_TimeRange_End
+		if (request.getWhen() != null)
+		{
+			itemPO.setES_TimeRange_End(request.getWhen().getEsTimeRangeEnd());
+		}
+
+		//
+		// Save
+		InterfaceWrapperHelper.save(itemPO);
+
+		//
+		// Change translations (after save)
+		if (captionTrl != null)
+		{
+			final int recordId = itemPO.getWEBUI_DashboardItem_ID();
+			POTrlRepository.instance.updateTranslation(trlInfo, recordId, adLanguage, I_WEBUI_DashboardItem.COLUMNNAME_Name, captionTrl);
+		}
+	}
+
+	private void changeUserDashboardItemAndSave(final UserDashboardItemChangeRequest request)
+	{
+		final I_WEBUI_DashboardItem itemPO = InterfaceWrapperHelper.load(request.getItemId(), I_WEBUI_DashboardItem.class);
+		if (itemPO == null)
+		{
+			throw new AdempiereException("no item found for itemId=" + request.getItemId());
+		}
+
+		changeUserDashboardItemAndSave(itemPO, request);
+	}
+
+	/**
+	 * Execute given changeActions in a transaction. If successful, the given dashboad will be invalidated.
+	 */
+	private void executeChangeActionsAndInvalidate(final int dashboardId, final List<Runnable> changeActions)
+	{
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
+			changeActions.forEach(Runnable::run);
 		});
+
+		invalidateUserDashboard(dashboardId);
 	}
 
-	private KPI createKPI(final I_WEBUI_KPI kpiDef)
+	private void executeChangeActionAndInvalidate(final int dashboardId, final Runnable changeAction)
 	{
-		final IModelTranslationMap trls = InterfaceWrapperHelper.getModelTranslationMap(kpiDef);
-
-		Duration compareOffset = null;
-		if (kpiDef.isGenerateComparation())
-		{
-			final String compareOffetStr = kpiDef.getCompareOffset();
-			compareOffset = Duration.parse(compareOffetStr);
-		}
-
-		return KPI.builder()
-				.setId(kpiDef.getWEBUI_KPI_ID())
-				.setCaption(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Name, kpiDef.getName()))
-				.setDescription(trls.getColumnTrl(I_WEBUI_KPI.COLUMNNAME_Description, kpiDef.getDescription()))
-				.setChartType(KPIChartType.forCode(kpiDef.getChartType()))
-				.setFields(retrieveKPIFields(kpiDef.getWEBUI_KPI_ID(), kpiDef.isGenerateComparation()))
-				//
-				.setCompareOffset(compareOffset)
-				//
-				.setTimeRangeDefaults(KPITimeRangeDefaults.builder()
-						.defaultTimeRangeFromString(kpiDef.getES_TimeRange())
-						.defaultTimeRangeEndOffsetFromString(kpiDef.getES_TimeRange_End())
-						.build())
-				//
-				.setPollIntervalSec(kpiDef.getPollIntervalSec())
-				//
-				.setESSearchIndex(kpiDef.getES_Index())
-				.setESSearchTypes(kpiDef.getES_Type())
-				.setESQuery(kpiDef.getES_Query())
-				//
-				.build();
+		executeChangeActionsAndInvalidate(dashboardId, ImmutableList.of(changeAction));
 	}
 
-	private List<KPIField> retrieveKPIFields(final int WEBUI_KPI_ID, final boolean isComputeOffset)
+	private <R> R executeChangeActionAndInvalidateAndReturn(final int dashboardId, final Callable<R> changeAction)
 	{
-		return queryBL.createQueryBuilder(I_WEBUI_KPI_Field.class, Env.getCtx(), ITrx.TRXNAME_None)
-				.addEqualsFilter(I_WEBUI_KPI_Field.COLUMN_WEBUI_KPI_ID, WEBUI_KPI_ID)
-				.addOnlyActiveRecordsFilter()
-				//
-				.orderBy()
-				// TODO: add SeqNo
-				.addColumn(I_WEBUI_KPI_Field.COLUMN_WEBUI_KPI_Field_ID)
-				.endOrderBy()
-				//
-				.create()
-				.stream(I_WEBUI_KPI_Field.class)
-				.map(kpiField -> createKPIField(kpiField, isComputeOffset))
-				.collect(GuavaCollectors.toImmutableList());
-	}
+		final Mutable<R> result = new Mutable<>();
+		final Runnable changeActionRunnable = () -> {
+			try
+			{
+				result.setValue(changeAction.call());
+			}
+			catch (final Exception ex)
+			{
+				throw AdempiereException.wrapIfNeeded(ex);
+			}
+		};
 
-	private static final KPIField createKPIField(final I_WEBUI_KPI_Field kpiFieldDef, final boolean isComputeOffset)
-	{
-		final I_AD_Element adElement = kpiFieldDef.getAD_Element();
-		final String fieldName = adElement.getColumnName();
-
-		//
-		// Extract field caption and description
-		final IModelTranslationMap kpiFieldDefTrl = InterfaceWrapperHelper.getModelTranslationMap(kpiFieldDef);
-		final ITranslatableString caption;
-		final ITranslatableString description;
-		if (Check.isEmpty(kpiFieldDef.getName(), true))
-		{
-			final IModelTranslationMap adElementTrl = InterfaceWrapperHelper.getModelTranslationMap(adElement);
-			caption = adElementTrl.getColumnTrl(I_AD_Element.COLUMNNAME_Name, adElement.getName());
-			description = adElementTrl.getColumnTrl(I_AD_Element.COLUMNNAME_Description, adElement.getDescription());
-		}
-		else
-		{
-			caption = kpiFieldDefTrl.getColumnTrl(I_WEBUI_KPI_Field.COLUMNNAME_Name, kpiFieldDef.getName());
-			description = ImmutableTranslatableString.empty();
-		}
-
-		//
-		// Extract offset field's caption and description
-		final ITranslatableString offsetCaption;
-		if (!isComputeOffset)
-		{
-			offsetCaption = ImmutableTranslatableString.empty();
-		}
-		else if (Check.isEmpty(kpiFieldDef.getOffsetName(), true))
-		{
-			offsetCaption = caption;
-		}
-		else
-		{
-			offsetCaption = kpiFieldDefTrl.getColumnTrl(I_WEBUI_KPI_Field.COLUMNNAME_OffsetName, kpiFieldDef.getOffsetName());
-		}
-
-		return KPIField.builder()
-				.setFieldName(fieldName)
-				.setGroupBy(kpiFieldDef.isGroupBy())
-				//
-				.setCaption(caption)
-				.setOffsetCaption(offsetCaption)
-				.setDescription(description)
-				.setUnit(kpiFieldDef.getUOMSymbol())
-				.setValueType(KPIFieldValueType.fromDisplayType(kpiFieldDef.getAD_Reference_ID()))
-				.setNumberPrecision(extractNumberPrecision(kpiFieldDef.getAD_Reference_ID()))
-				.setColor(kpiFieldDef.getColor())
-				//
-				.setESPath(kpiFieldDef.getES_FieldPath())
-				.build();
-	}
-
-	private static final Integer extractNumberPrecision(final int displayType)
-	{
-		if (displayType == DisplayType.Integer)
-		{
-			return 0;
-		}
-		else if (displayType == DisplayType.Amount
-				|| displayType == DisplayType.CostPrice
-				|| displayType == DisplayType.Quantity)
-		{
-			return 2;
-		}
-		else
-		{
-			return null;
-		}
+		executeChangeActionsAndInvalidate(dashboardId, ImmutableList.of(changeActionRunnable));
+		return result.getValue();
 	}
 
 	public static enum DashboardPatchPath
@@ -382,12 +293,14 @@ public class UserDashboardRepository
 		orderedItemIds
 	};
 
-	public void changeDashboardItems(@NonNull final UserDashboard userDashboard, @NonNull final DashboardWidgetType widgetType, @NonNull final List<JSONPatchEvent<DashboardPatchPath>> events)
+	public void changeDashboard(@NonNull final UserDashboard userDashboard, @NonNull final DashboardWidgetType widgetType, @NonNull final List<JSONPatchEvent<DashboardPatchPath>> events)
 	{
 		if (events.isEmpty())
 		{
 			throw new AdempiereException("no events");
 		}
+
+		final int dashboardId = userDashboard.getId();
 
 		//
 		// Extract change actions
@@ -403,8 +316,7 @@ public class UserDashboardRepository
 			if (DashboardPatchPath.orderedItemIds.equals(path))
 			{
 				final List<Integer> orderItemIds = event.getValueAsIntegersList();
-				final Set<Integer> allItemIds = userDashboard.getItemIds(widgetType);
-				changeActions.add(() -> changeDashboardItemsOrder(userDashboard, orderItemIds, allItemIds));
+				changeActions.add(() -> changeDashboardItemsOrder(dashboardId, widgetType, orderItemIds));
 			}
 			else
 			{
@@ -414,23 +326,22 @@ public class UserDashboardRepository
 
 		//
 		// Execute the change actions
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
-			changeActions.forEach(Runnable::run);
-		});
+		executeChangeActionsAndInvalidate(dashboardId, changeActions);
 	}
 
-	private void changeDashboardItemsOrder(final UserDashboard userDashboard, final List<Integer> requestOrderedItemIds, final Collection<Integer> allItemIdsCollection)
+	private void changeDashboardItemsOrder(final int dashboardId, final DashboardWidgetType dashboardWidgetType, final List<Integer> requestOrderedItemIds)
 	{
-		final List<Integer> allItemIds = ImmutableList.copyOf(allItemIdsCollection); // convert it to list
+		// Retrieve all itemIds ordered
+		final List<Integer> allItemIds = retrieveDashboardItemIdsOrdered(dashboardId, dashboardWidgetType);
 
 		//
 		// Start building the orderedIds list by adding all the IDs from the request
 		final List<Integer> orderedIds = requestOrderedItemIds
 				.stream()
 				.filter(allItemIds::contains) // skip those IDs which are not present in our "all" ids list
-				.collect(Collectors.toCollection(ArrayList::new));
+				.collect(Collectors.toCollection(ArrayList::new)); // mutable list
 
-		// At the end of orderedIds all all those ids which where not present in provided request.
+		// At the end of orderedIds all all those IDs which where not present in provided request (those might exist only in database).
 		allItemIds.forEach(id -> {
 			if (!orderedIds.contains(id))
 			{
@@ -446,28 +357,88 @@ public class UserDashboardRepository
 
 		//
 		// Persist changes
-		Services.get(ITrxManager.class)
-				.run((trxName) -> {
-					int nextSeqNo = 10;
-					for (final int itemId : orderedIds)
-					{
-						final I_WEBUI_DashboardItem webuiDashboardItem = InterfaceWrapperHelper.load(itemId, I_WEBUI_DashboardItem.class);
-						webuiDashboardItem.setSeqNo(nextSeqNo);
-						InterfaceWrapperHelper.save(webuiDashboardItem);
-
-						nextSeqNo += 10;
-					}
-				});
-
-		// Invalidate the dashboard
-		invalidateUserDashboard(userDashboard);
+		updateUserDashboardItemsOrder(dashboardId, orderedIds);
 	}
 
-	/** @return itemId */
-	public int addUserDashboardItem(final UserDashboard userDashboard, @NonNull final DashboardWidgetType dashboardWidgetType, @NonNull final JsonUserDashboardItemAddRequest request)
+	private void updateUserDashboardItemsOrder(final int dashboardId, final List<Integer> allItemIdsOrdered)
 	{
-		final int userDashboardId = userDashboard.getId();
+		final String sql = "UPDATE " + I_WEBUI_DashboardItem.Table_Name
+				+ " SET " + I_WEBUI_DashboardItem.COLUMNNAME_SeqNo + "=?"
+				+ " WHERE " + I_WEBUI_DashboardItem.COLUMNNAME_WEBUI_Dashboard_ID + "=?"
+				+ " AND " + I_WEBUI_DashboardItem.COLUMNNAME_WEBUI_DashboardItem_ID + "=?";
+		PreparedStatement pstmt = null;
+		try
+		{
+			for (int newSeqNo = 0; newSeqNo < allItemIdsOrdered.size(); newSeqNo++)
+			{
+				final int itemId = allItemIdsOrdered.get(newSeqNo);
 
+				if (pstmt == null)
+				{
+					pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+				}
+
+				final int sqlNewSeqNo = newSeqNo * 10 + 10; // convert 0-based index to "10, 20, 30.." sequence number (starting from 10)
+				DB.setParameters(pstmt, new Object[] { sqlNewSeqNo, dashboardId, itemId });
+				pstmt.addBatch();
+			}
+
+			if (pstmt == null)
+			{
+				return;
+			}
+
+			pstmt.executeBatch();
+		}
+		catch (final SQLException ex)
+		{
+			throw DBException.wrapIfNeeded(ex);
+		}
+		finally
+		{
+			DB.close(pstmt);
+		}
+	}
+
+	/** @return new itemId */
+	public int addUserDashboardItem(final UserDashboard userDashboard, @NonNull final UserDashboardItemAddRequest request)
+	{
+		final int dashboardId = userDashboard.getId();
+		final DashboardWidgetType dashboardWidgetType = request.getWidgetType();
+		final Set<Integer> allItemIds = userDashboard.getItemIds(dashboardWidgetType);
+
+		logger.trace("Adding to dashboard {}: type={}, request={}", dashboardId, dashboardWidgetType, request);
+		logger.trace("Current ordered itemIds: {}", allItemIds);
+
+		return executeChangeActionAndInvalidateAndReturn(dashboardId, () -> {
+			//
+			// Create dashboard item in database (will be added last).
+			final int itemId = createAndSaveDashboardItem(dashboardId, request);
+
+			//
+			// Calculate item's position
+			final List<Integer> orderedItemIds = new ArrayList<>(allItemIds);
+			if (request.getPosition() >= 0 && request.getPosition() < orderedItemIds.size())
+			{
+				orderedItemIds.add(request.getPosition(), itemId);
+			}
+			else
+			{
+				orderedItemIds.add(itemId);
+			}
+			logger.trace("New ordered itemIds: {}", allItemIds);
+
+			//
+			// Update dashboard items order
+			changeDashboardItemsOrder(dashboardId, dashboardWidgetType, orderedItemIds);
+
+			//
+			return itemId;
+		});
+	}
+
+	private int createAndSaveDashboardItem(final int dashboardId, @NonNull final UserDashboardItemAddRequest request)
+	{
 		//
 		// Get the KPI
 		final int kpiId = request.getKpiId();
@@ -478,43 +449,73 @@ public class UserDashboardRepository
 		}
 		final I_WEBUI_KPI kpi = InterfaceWrapperHelper.loadOutOfTrx(kpiId, I_WEBUI_KPI.class);
 
+		final DashboardWidgetType widgetType = request.getWidgetType();
+		final int seqNo = retrieveLastSeqNo(dashboardId, widgetType) + 10;
 		//
-		// Create dashboard item in database
-		final int itemId;
-		{
-			final int seqNo = retrieveLastSeqNo(userDashboardId, dashboardWidgetType) + 10;
-			final String esTimeRange = request.getInterval() != null ? request.getInterval().getEsTimeRange() : null;
-			final String esTimeRangeEnd = request.getWhen() != null ? request.getWhen().getEsTimeRangeEnd() : null;
-			//
-			final I_WEBUI_DashboardItem webuiDashboardItem = InterfaceWrapperHelper.newInstance(I_WEBUI_DashboardItem.class);
-			webuiDashboardItem.setWEBUI_Dashboard_ID(userDashboardId);
-			webuiDashboardItem.setIsActive(true);
-			webuiDashboardItem.setName(kpi.getName());
-			webuiDashboardItem.setSeqNo(seqNo);
-			webuiDashboardItem.setWEBUI_KPI_ID(kpiId);
-			webuiDashboardItem.setWEBUI_DashboardWidgetType(dashboardWidgetType.getCode());
-			webuiDashboardItem.setES_TimeRange(esTimeRange);
-			webuiDashboardItem.setES_TimeRange_End(esTimeRangeEnd);
-			InterfaceWrapperHelper.save(webuiDashboardItem);
+		final I_WEBUI_DashboardItem webuiDashboardItem = InterfaceWrapperHelper.newInstance(I_WEBUI_DashboardItem.class);
+		webuiDashboardItem.setWEBUI_Dashboard_ID(dashboardId);
+		webuiDashboardItem.setIsActive(true);
+		webuiDashboardItem.setName(kpi.getName());
+		webuiDashboardItem.setSeqNo(seqNo);
+		webuiDashboardItem.setWEBUI_KPI_ID(kpiId);
+		webuiDashboardItem.setWEBUI_DashboardWidgetType(widgetType.getCode());
+		// will be set by change request:
+		// webuiDashboardItem.setES_TimeRange(esTimeRange);
+		// webuiDashboardItem.setES_TimeRange_End(esTimeRangeEnd);
 
-			itemId = webuiDashboardItem.getWEBUI_DashboardItem_ID();
+		InterfaceWrapperHelper.save(webuiDashboardItem);
+		logger.trace("Created {} for dashboard {}", webuiDashboardItem, dashboardId);
+		// TODO: copy trl but also consider the request.getCaption() and use it only for the current language trl.
+
+		//
+		// Apply the change request
+		if (request.getChangeRequest() != null)
+		{
+			changeUserDashboardItemAndSave(webuiDashboardItem, request.getChangeRequest());
 		}
 
-		// Cache invalidate
-		invalidateUserDashboard(userDashboard);
-
-		// Return the created dashboard itemId
+		final int itemId = webuiDashboardItem.getWEBUI_DashboardItem_ID();
 		return itemId;
 	}
 
 	public void deleteUserDashboardItem(final UserDashboard dashboard, final DashboardWidgetType dashboardWidgetType, final int itemId)
 	{
-		dashboard.getItemById(dashboardWidgetType, itemId); // will fail if itemId does not exist
+		dashboard.assertItemIdExists(dashboardWidgetType, itemId);
 
-		final I_WEBUI_DashboardItem item = InterfaceWrapperHelper.load(itemId, I_WEBUI_DashboardItem.class);
-		InterfaceWrapperHelper.delete(item);
+		executeChangeActionAndInvalidate(dashboard.getId(), () -> {
+			final I_WEBUI_DashboardItem item = InterfaceWrapperHelper.load(itemId, I_WEBUI_DashboardItem.class);
+			InterfaceWrapperHelper.delete(item);
+		});
+	}
 
-		invalidateUserDashboard(dashboard);
+	public static enum DashboardItemPatchPath
+	{
+		caption, interval, when
+	}
+
+	public void changeUserDashboardItem(final UserDashboard dashboard, final UserDashboardItemChangeRequest request)
+	{
+		dashboard.assertItemIdExists(request.getWidgetType(), request.getItemId());
+		final int dashboardId = dashboard.getId();
+
+		//
+		// Execute the change request
+		executeChangeActionAndInvalidate(dashboardId, () -> changeUserDashboardItemAndSave(request));
+	}
+
+	private List<Integer> retrieveDashboardItemIdsOrdered(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
+	{
+		return retrieveWEBUI_DashboardItemsQuery(dashboardId)
+				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardWidgetType, dashboardWidgetType.getCode())
+				//
+				.orderBy()
+				.addColumn(I_WEBUI_DashboardItem.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
+				.addColumn(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardItem_ID)
+				.endOrderBy()
+				//
+				.create()
+				.listIds();
+
 	}
 
 	private final int retrieveLastSeqNo(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
@@ -526,6 +527,11 @@ public class UserDashboardRepository
 				.aggregate(I_WEBUI_DashboardItem.COLUMN_SeqNo, IQuery.AGGREGATE_MAX, Integer.class);
 
 		return maxSeqNo != null ? maxSeqNo : 0;
+	}
+
+	public Collection<KPI> getKPIsAvailableToAdd()
+	{
+		return kpisRepo.getKPIs();
 	}
 
 	//

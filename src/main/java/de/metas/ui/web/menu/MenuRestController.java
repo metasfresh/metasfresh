@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNode;
 import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
@@ -20,6 +22,7 @@ import de.metas.ui.web.menu.datatypes.json.JSONPatchMenuNodeRequest;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 
 /*
@@ -123,17 +126,6 @@ public class MenuRestController
 				.build();
 	}
 
-	@GetMapping("/node")
-	@Deprecated
-	public JSONMenuNode getNode_OLD(
-			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
-			, @RequestParam(name = PARAM_Depth, required = false, defaultValue = "1") final int depth //
-			, @RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit //
-	)
-	{
-		return getNode(nodeId, depth, childrenLimit);
-	}
-
 	@PatchMapping("/node/{nodeId}")
 	public List<JSONMenuNode> patchNode(@PathVariable(PARAM_NodeId) final String nodeId, @RequestBody List<JSONDocumentChangedEvent> events)
 	{
@@ -156,6 +148,7 @@ public class MenuRestController
 		return JSONMenuNode.ofList(changedMenuNodesById.values(), menuTreeRepository);
 	}
 
+	@ApiOperation("Gets node's path (from root node) ")
 	@GetMapping("/node/{nodeId}/path")
 	public JSONMenuNode getPath(
 			@PathVariable(PARAM_NodeId) final String nodeId,
@@ -171,14 +164,19 @@ public class MenuRestController
 		return JSONMenuNode.ofPath(path, skipRootNode, includeLastNode, menuTreeRepository);
 	}
 
-	@GetMapping("/path")
-	@Deprecated
-	public JSONMenuNode getPath_OLD(
-			@RequestParam(name = PARAM_NodeId, required = true) final String nodeId //
-			, @RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
-	)
+	@ApiOperation("Gets breadcrumb menu to be displayed when user clicks on that node in the breadcrumb")
+	@GetMapping("/node/{nodeId}/breadcrumbMenu")
+	public List<JSONMenuNode> getNodeBreadcrumbMenu(@PathVariable(PARAM_NodeId) final String nodeId)
 	{
-		return getPath(nodeId, includeLastNode);
+		userSession.assertLoggedIn();
+
+		final List<MenuNode> children = getMenuTree().getNodeById(nodeId)
+				.getChildren()
+				.stream()
+				.filter(child -> child.isEffectiveLeafNode())
+				.collect(ImmutableList.toImmutableList());
+
+		return JSONMenuNode.ofList(children, menuTreeRepository);
 	}
 
 	@GetMapping("/elementPath")

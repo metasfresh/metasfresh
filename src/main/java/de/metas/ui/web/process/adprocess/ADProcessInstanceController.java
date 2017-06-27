@@ -241,7 +241,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	}
 
 	@Override
-	public ProcessInstanceResult startProcess()
+	public ProcessInstanceResult startProcess(final IViewsRepository viewsRepo)
 	{
 		assertNotExecuted();
 

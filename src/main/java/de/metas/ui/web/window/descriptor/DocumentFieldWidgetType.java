@@ -3,6 +3,8 @@ package de.metas.ui.web.window.descriptor;
 import java.math.BigDecimal;
 import java.util.Set;
 
+import org.compiere.util.DisplayType;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -34,46 +36,46 @@ public enum DocumentFieldWidgetType
 {
 	//
 	// Text
-	Text(LayoutAlign.Left, String.class) //
-	, LongText(LayoutAlign.Left, String.class) //
-	, URL(LayoutAlign.Left, String.class) //
-	, Password(LayoutAlign.Left, String.class) //
+	Text(LayoutAlign.Left, String.class, DisplayType.Text) //
+	, LongText(LayoutAlign.Left, String.class, DisplayType.TextLong) //
+	, URL(LayoutAlign.Left, String.class, DisplayType.URL) //
+	, Password(LayoutAlign.Left, String.class, DisplayType.Text) //
 
 	//
 	// Dates
-	, Date(LayoutAlign.Right, java.util.Date.class) //
-	, Time(LayoutAlign.Right, java.util.Date.class) //
-	, DateTime(LayoutAlign.Right, java.util.Date.class) //
+	, Date(LayoutAlign.Right, java.util.Date.class, DisplayType.Date) //
+	, Time(LayoutAlign.Right, java.util.Date.class, DisplayType.Time) //
+	, DateTime(LayoutAlign.Right, java.util.Date.class, DisplayType.DateTime) //
 
 	// Numbers, Amounts, Prices
-	, Integer(LayoutAlign.Right, Integer.class) //
-	, Number(LayoutAlign.Right, BigDecimal.class) //
-	, Amount(LayoutAlign.Right, BigDecimal.class) //
-	, Quantity(LayoutAlign.Right, BigDecimal.class) //
-	, CostPrice(LayoutAlign.Right, BigDecimal.class) //
+	, Integer(LayoutAlign.Right, Integer.class, DisplayType.Integer) //
+	, Number(LayoutAlign.Right, BigDecimal.class, DisplayType.Number) //
+	, Amount(LayoutAlign.Right, BigDecimal.class, DisplayType.Amount) //
+	, Quantity(LayoutAlign.Right, BigDecimal.class, DisplayType.Quantity) //
+	, CostPrice(LayoutAlign.Right, BigDecimal.class, DisplayType.CostPrice) //
 
 	//
 	// General Lookups
-	, List(LayoutAlign.Left, null) //
-	, Lookup(LayoutAlign.Left, null) //
+	, List(LayoutAlign.Left, null, DisplayType.Search) //
+	, Lookup(LayoutAlign.Left, null, DisplayType.Search) //
 
 	//
 	// Special lookups
-	, Address(LayoutAlign.Left, IntegerLookupValue.class) //
-	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class) //
-	, Image(LayoutAlign.Left, Integer.class) // TODO Image widgetType not yet supported
+	, Address(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.Location) //
+	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.PAttribute) //
+	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image)
 
 	//
 	// Checkboxes
-	, YesNo(LayoutAlign.Center, Boolean.class) //
-	, Switch(LayoutAlign.Center, Boolean.class) //
+	, YesNo(LayoutAlign.Center, Boolean.class, DisplayType.YesNo) //
+	, Switch(LayoutAlign.Center, Boolean.class, DisplayType.YesNo) //
 
 	//
 	// Buttons
-	, Button(LayoutAlign.Left, null) //
-	, ActionButton(LayoutAlign.Left, null) //
-	, ProcessButton(LayoutAlign.Left, String.class) //
-	, ZoomIntoButton(LayoutAlign.Left, Integer.class) //
+	, Button(LayoutAlign.Left, null, DisplayType.Button) //
+	, ActionButton(LayoutAlign.Left, null, DisplayType.Button) //
+	, ProcessButton(LayoutAlign.Left, String.class, DisplayType.Button) //
+	, ZoomIntoButton(LayoutAlign.Left, Integer.class, DisplayType.Button) //
 
 	//
 	;
@@ -84,11 +86,18 @@ public enum DocumentFieldWidgetType
 
 	private final LayoutAlign gridAlign;
 	private final Class<?> valueClass;
+	private final int displayType;
 
-	private DocumentFieldWidgetType(final LayoutAlign gridAlign, final Class<?> valueClass)
+	private DocumentFieldWidgetType(final LayoutAlign gridAlign, final Class<?> valueClass, final int displayType)
 	{
 		this.gridAlign = gridAlign;
 		this.valueClass = valueClass;
+		this.displayType = displayType;
+	}
+	
+	public int getDisplayType()
+	{
+		return displayType;
 	}
 
 	public LayoutAlign getGridAlign()
@@ -141,10 +150,15 @@ public enum DocumentFieldWidgetType
 	{
 		return this == Lookup || this == List;
 	}
-	
+
 	public final boolean isSupportZoomInto()
 	{
 		return isLookup() || this == DocumentFieldWidgetType.ZoomIntoButton;
+	}
+
+	public final boolean isBoolean()
+	{
+		return this == YesNo || this == Switch;
 	}
 
 	/**

@@ -5,6 +5,8 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import de.metas.ui.web.base.model.X_WEBUI_DashboardItem;
 
 /*
@@ -40,6 +42,12 @@ public enum DashboardWidgetType
 	DashboardWidgetType(final String code)
 	{
 		this.code = code;
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return name();
 	}
 
 	public String getCode()

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.Value;
 
@@ -36,9 +37,15 @@ import lombok.Value;
 public class JsonUserDashboardItemAddRequest
 {
 	private final int kpiId;
+	@Default
+	private final int position = -1;
+
+	//
+	// Optional params
+	private final String caption;
 	private final JSONInterval interval;
 	private final JSONWhen when;
-
+	
 	@AllArgsConstructor
 	@Getter
 	public static enum JSONInterval
