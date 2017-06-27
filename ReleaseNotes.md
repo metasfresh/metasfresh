@@ -20,6 +20,10 @@ Here come the actual release notes:
     * Adjusting the Product Planning Window to our current Layout Concept.
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
   
+* metasfresh-webui-frontend
+  * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
+    * Adjustment of the content in the Breadcrumb Navigation, now only showing the leaf entries of the selected Breadcrumb Hierarchy.
+  
 ## Fixes
 * metasfresh-app
   * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
