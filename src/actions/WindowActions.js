@@ -850,8 +850,37 @@ export function mapIncluded(
             )
         }
     }
-
     return result;
+}
+
+export function collapsedMap(
+    node, isCollapsed, initialMap
+) {
+    let collapsedMap = [];
+    if(initialMap){
+        if(!isCollapsed) {
+            initialMap.splice(
+                initialMap.indexOf(node.includedDocuments[0]),
+                node.includedDocuments.length
+                );
+            collapsedMap = initialMap;
+        } else {
+            initialMap.map(item => {
+                collapsedMap.push(item);
+                if(item.id === node.id) {
+                    collapsedMap = collapsedMap.concat(node.includedDocuments);
+
+                }
+            });
+        }
+
+    } else {
+        if(node.includedDocuments){
+            collapsedMap.push(node);
+        }
+    }
+
+    return collapsedMap;
 }
 
 export function connectWS(topic, cb) {
