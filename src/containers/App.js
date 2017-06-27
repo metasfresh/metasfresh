@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import axios from 'axios';
+import counterpart from 'counterpart';
 
 import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
@@ -23,7 +24,8 @@ import {
     logoutSuccess,
     getAvailableLang,
     setProcessSaved,
-    languageSuccess
+    languageSuccess,
+    getMessages
 } from '../actions/AppActions';
 
 import '../assets/css/styles.css';
@@ -113,6 +115,11 @@ export default class App extends Component {
             languageSuccess(valuesFlatten.indexOf(navigator.language) > -1 ?
                 navigator.language : defaultValue);
         });
+        
+        getMessages().then(response => {
+            counterpart.registerTranslations('lang', response.data);
+            counterpart.setLocale('lang');
+        })
     }
 
     render() {
