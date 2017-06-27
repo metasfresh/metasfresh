@@ -118,7 +118,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private boolean collectIfOwnPackingMaterialsOnly = false;
 
 	/**
-	 * memorize how many TUs were set per source, in case this number is needed later in the code
+	 * memorize how many TUs were set per source, in case this number is needed later in the code. Also check the aggregated HUs for LU type 
 	 */
 	private boolean isCollectTUNumberPerOrigin = false;
 
@@ -260,7 +260,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			I_M_HU_PI_Item_Product materialItemProduct = hu.getM_HU_PI_Item_Product();
 
 			// Check if the material item product does have a different packing material, and make a candidate for it too in case it does
-			if (materialItemProduct != null)
+			if (materialItemProduct != null && isCollectTUNumberPerOrigin)
 			{
 
 				final List<I_M_HU_PackingMaterial> includedPackingMaterials = Services.get(IHUPackingMaterialDAO.class).retrievePackingMaterials(materialItemProduct);
