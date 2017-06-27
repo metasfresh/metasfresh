@@ -10,11 +10,20 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.16 (2017-27)
+
+**upcoming release for week 2017-26**
+
+## Features
+* metasfresh-app
+  * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
+    * Adjusting the Product Planning Window to our current Layout Concept.
+    
 # metasfresh 5.15 (2017-26)
 
 **upcoming release for week 2017-26**
 
-# Feature
+## Features
 * metasfresh-app
   * [#1786](https://github.com/metasfresh/metasfresh/issues/1786) New Window for Flatrate Conditions in Webui
     * New Window that allows the maintenance of Flatrate Terms/ Conditions in WebUI.
