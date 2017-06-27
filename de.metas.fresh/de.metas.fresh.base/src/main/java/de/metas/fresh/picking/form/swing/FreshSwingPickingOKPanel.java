@@ -69,7 +69,7 @@ import de.metas.picking.terminal.form.swing.SwingPickingOKPanel;
 import de.metas.picking.terminal.form.swing.SwingPickingTerminalPanel;
 
 /**
- * Picking First Window Panel (fresh)
+ * Picking First Window Panel, where basically the shipment schedules that sahll be picked can be selectedfor the next window.
  * 
  * @author cg
  * 
@@ -90,7 +90,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 
 	// task fresh_06982
 	private static final String ACTION_DDOrder = "FreshSwingPickingOKPanel_DDOrder";
-
+	
 	public FreshSwingPickingOKPanel(final SwingPickingTerminalPanel basePanel)
 	{
 		super(basePanel);
@@ -178,7 +178,7 @@ public class FreshSwingPickingOKPanel extends SwingPickingOKPanel
 	{
 		Check.assumeInstanceOf(detailsModel, FreshPackingDetailsMd.class, "detailsModel");
 		final FreshPackingDetailsMd packingDetailsModel = (FreshPackingDetailsMd)detailsModel;
-
+				
 		final FreshSwingPackageTerminal packageTerminal = new FreshSwingPackageTerminal(this, packingDetailsModel);
 		return packageTerminal;
 	}
