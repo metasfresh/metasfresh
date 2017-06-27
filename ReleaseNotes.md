@@ -12,13 +12,25 @@ Here come the actual release notes:
 
 # metasfresh 5.16 (2017-27)
 
-**upcoming release for week 2017-26**
+**upcoming release for week 2017-27**
 
 ## Features
 * metasfresh-app
   * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
     * Adjusting the Product Planning Window to our current Layout Concept.
-    
+  * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
+  
+* metasfresh-webui-frontend
+  * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
+    * Adjustment of the content in the Breadcrumb Navigation, now only showing the leaf entries of the selected Breadcrumb Hierarchy.
+  * [#950](https://github.com/metasfresh/metasfresh-webui-frontend/issues/950) Dashboard: move the "Open edit mode" button to Actions menu
+    * New Action for Dashboard >Edit mode. Allows the user to toggle between Edit and Live Mode of the User/ KPI Dashboard.
+  
+## Fixes
+* metasfresh-app
+  * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
+  * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
+
 # metasfresh 5.15 (2017-26)
 
 **upcoming release for week 2017-26**
@@ -39,6 +51,7 @@ Here come the actual release notes:
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
   * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
 
+
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
   * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
@@ -57,6 +70,8 @@ Here come the actual release notes:
     * Disabling the URL Widget Button as long as the URL Field is empty.
   * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
     * Fix to allow the Opening of Boards via WebUI Menu.
+  * [#938](https://github.com/metasfresh/metasfresh-webui-frontend/issues/938) Lookup Fields improvements
+    * Adjustment of the Lookup Fields behavior. Now only showing the drop down selection List when there is more than 1 entry in the list.
 
 ## Fixes
 * metasfresh-app

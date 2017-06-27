@@ -4,7 +4,7 @@ import java.io.InputStream;
 
 import org.adempiere.util.Check;
 
-import de.metas.payment.esr.dataimporter.impl.ESRDataImporterCamt54;
+import de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRDataImporterV11;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.X_ESR_Import;
@@ -21,12 +21,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +55,7 @@ public class ESRDataLoaderFactory
 
 	/**
 	 * Tries to guess the {@link I_ESR_Import#COLUMN_DataType} from the given {@code fileName}. May return {@code null}.
-	 * 
+	 *
 	 * @param fileName
 	 * @return
 	 */
