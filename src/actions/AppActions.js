@@ -170,8 +170,10 @@ export function setUserDashboardWidgets(payload) {
     return axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }
 
-export function getMessages() {
-    return axios.get(config.API_URL + '/i18n/messages');
+export function getMessages(lang) {
+    return axios.get(
+        config.API_URL + '/i18n/messages' + (lang ? '?=' + lang : '')
+    );
 }
 
 // END OF REQUESTS
@@ -179,7 +181,12 @@ export function getMessages() {
 export function loginSuccess(auth) {
     return dispatch => {
         localStorage.setItem('isLogged', true);
-
+        
+        getMessages().then(response => {
+            counterpart.registerTranslations('lang', response.data);
+            counterpart.setLocale('lang');
+        });
+        
         getUserSession().then(session => {
             dispatch(userSessionInit(session.data));
             languageSuccess(Object.keys(session.data.language)[0]);
@@ -193,6 +200,7 @@ export function loginSuccess(auth) {
                         response.data.unreadCount
                     ));
                 });
+                
                 getMessages().then(response => {
                     counterpart.registerTranslations('lang', response.data);
                     counterpart.setLocale('lang');
