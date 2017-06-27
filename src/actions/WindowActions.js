@@ -826,6 +826,8 @@ export function mapIncluded(
     let ind = indent ? indent : [];
     let result = [];
 
+    let includedMap = [];
+
     const nodeCopy = Object.assign({}, node, {
         indent: ind
     });
@@ -837,6 +839,7 @@ export function mapIncluded(
     }
 
     if(node.includedDocuments){
+        includedMap = includedMap.push(node);
         for(let i = 0; i < node.includedDocuments.length; i++){
             let copy = node.includedDocuments[i];
             if(i === node.includedDocuments.length - 1){
@@ -850,8 +853,37 @@ export function mapIncluded(
             )
         }
     }
-
     return result;
+}
+
+export function collapsedMap(
+    node, isCollapsed, initialMap
+) {
+    let collapsedMap = [];
+    if(initialMap){
+        if(!isCollapsed) {
+            initialMap.splice(
+                initialMap.indexOf(node.includedDocuments[0]),
+                node.includedDocuments.length
+                );
+            collapsedMap = initialMap;
+        } else {
+            initialMap.map(item => {
+                collapsedMap.push(item);
+                if(item.id === node.id) {
+                    collapsedMap = collapsedMap.concat(node.includedDocuments);
+
+                }
+            });
+        }
+
+    } else {
+        if(node.includedDocuments){
+            collapsedMap.push(node);
+        }
+    }
+
+    return collapsedMap;
 }
 
 export function connectWS(topic, cb) {
