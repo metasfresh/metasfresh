@@ -193,7 +193,7 @@ class MenuOverlay extends Component {
                     handleMenuOverlay={handleMenuOverlay}
                     openModal={openModal}
                     subNavigation={true}
-                    children={nodeData.children}
+                    children={nodeData.children.filter(item => !item.children)}
                     type={nodeData.type}
                 />
             </div>
@@ -452,16 +452,12 @@ class MenuOverlay extends Component {
                     </div> :
                     //NOT ROOT
                     <div
-                    className="menu-overlay-node-container menu-suboverlay">
-                            {
-                                    <p className="menu-overlay-header">
-                                        {nodeData && nodeData.caption}
-                                    </p>
-                            }
-                            {this.renderSubnavigation(
-                                deepSubNode ? deepSubNode : nodeData
-                            )}
-                        </div>
+                        className="menu-overlay-node-container menu-suboverlay"
+                    >
+                        {this.renderSubnavigation(
+                            deepSubNode ? deepSubNode : nodeData
+                        )}
+                    </div>
                 }
                 </div>
             </div>
