@@ -137,7 +137,7 @@ public class ManualCustomerReturnInOutProducer
 			}
 			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
 			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			Services.get(IHUInOutBL.class).activateHUsForCustomerReturn(ctx, getHUsToReturn());
+			Services.get(IHUInOutBL.class).moveHUsForCustomerReturn(ctx, getHUsToReturn());
 
 			handlingUnitsBL.setHUStatusActive(_husToReturn);
 		}
