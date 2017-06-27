@@ -642,7 +642,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_Value", columnName);
 			Trace.printStack();
 			return null;
 		}
@@ -711,7 +711,7 @@ public abstract class PO
 		int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
 		{
-			log.warn("Not found - AD_Column_ID=" + AD_Column_ID);
+			log.warn("Column with AD_Column_ID={} not found in method PO.get_ValueOfColumn", AD_Column_ID);
 			return null;
 		}
 		return get_Value(index);
@@ -745,7 +745,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_ValueOld", columnName);
 			return null;
 		}
 		return get_ValueOld(index);
@@ -762,7 +762,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_ValueOldAsInt", columnName);
 			return 0;
 		}
 		return get_ValueOldAsInt(index);
@@ -845,7 +845,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.is_ValueChanged", columnName);
 			return false;
 		}
 		return is_ValueChanged(index);
@@ -915,7 +915,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found - " + columnName);
+			log.warn("Column {} not found in method PO.get_ValueDifference", columnName);
 			return null;
 		}
 		return get_ValueDifference(index);
@@ -937,7 +937,7 @@ public abstract class PO
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
-			log.error("Column not found - " + ColumnName);
+			log.warn("Column {} not found in method PO.set_Value", ColumnName);
 			return false;
 		}
 		if (ColumnName.endsWith("_ID") && value instanceof String)
@@ -1159,7 +1159,7 @@ public abstract class PO
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
 		{
-			log.error("Column not found - " + ColumnName);
+			log.warn("Column {} not found in method PO.set_ValueNoCheck", ColumnName);
 			return false;
 		}
 		return set_ValueNoCheck(index, value);
@@ -1281,7 +1281,7 @@ public abstract class PO
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
 		{
-			log.error("Not found - ColumnName={}", columnName);
+			log.warn("Column {} not found in method PO.set_ValueOfColumnReturningBoolean", columnName);
 			return false;
 		}
 
@@ -1300,7 +1300,7 @@ public abstract class PO
 		final int columnIndex = p_info.getColumnIndex(AD_Column_ID);
 		if (columnIndex < 0)
 		{
-			log.error("Not found - AD_Column_ID={}", AD_Column_ID);
+			log.warn("Column with AD_Column_ID={} not found in method PO.set_ValueOfAD_Column_ID", AD_Column_ID);
 			return false;
 		}
 
@@ -1350,7 +1350,7 @@ public abstract class PO
 			return set_Value(columnName, value);
 		}
 		if (m_custom == null)
-			m_custom = new HashMap<String, String>();
+			m_custom = new HashMap<>();
 		String valueString = "NULL";
 		if (value == null)
 			;
@@ -1649,7 +1649,7 @@ public abstract class PO
 						{
 							if (to.m_poCacheLocals == null)
 							{
-								to.m_poCacheLocals = new HashMap<String, POCacheLocal>();
+								to.m_poCacheLocals = new HashMap<>();
 							}
 							final POCacheLocal poCacheLocalCopy = poCacheLocal.copy(to);
 							to.m_poCacheLocals.put(colName, poCacheLocalCopy);
@@ -1711,7 +1711,7 @@ public abstract class PO
 
 	/**
 	 * Do the actual loading.
-	 * 
+	 *
 	 * @param trxName
 	 * @param isRetry if there is a loading problem, we invoke the registered {@link INoDataFoundHandler}s and retry <b>one time</b>. This flag being {@code true} means that this invocation is that retry.
 	 */
@@ -2053,7 +2053,7 @@ public abstract class PO
 	 */
 	protected final HashMap<String, String> get_HashMap()
 	{
-		HashMap<String, String> hmOut = new HashMap<String, String>();
+		HashMap<String, String> hmOut = new HashMap<>();
 		int size = get_ColumnCount();
 		for (int i = 0; i < size; i++)
 		{
@@ -4199,7 +4199,7 @@ public abstract class PO
 		if (s_acctColumns == null	// cannot cache C_BP_*_Acct as there are 3
 				|| acctTable.startsWith("C_BP_"))
 		{
-			s_acctColumns = new ArrayList<String>();
+			s_acctColumns = new ArrayList<>();
 			final String sql = "SELECT c.ColumnName "
 					+ "FROM AD_Column c INNER JOIN AD_Table t ON (c.AD_Table_ID=t.AD_Table_ID) "
 					+ "WHERE t.TableName=? AND c.IsActive='Y' AND c.AD_Reference_ID=25 ORDER BY c.ColumnName";
@@ -4463,7 +4463,7 @@ public abstract class PO
 	 */
 	public static int[] getAllIDs(String TableName, String WhereClause, String trxName)
 	{
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Integer> list = new ArrayList<>();
 		StringBuilder sql = new StringBuilder("SELECT ");
 		sql.append(TableName).append("_ID FROM ").append(TableName);
 		if (WhereClause != null && WhereClause.length() > 0)
@@ -4584,7 +4584,7 @@ public abstract class PO
 		PO_LOB lob = new PO_LOB(p_info.getTableName(), get_ColumnName(index),
 				get_WhereClause(true), displayType, value);
 		if (m_lobInfo == null)
-			m_lobInfo = new ArrayList<PO_LOB>();
+			m_lobInfo = new ArrayList<>();
 		m_lobInfo.add(lob);
 	}	// lobAdd
 
@@ -4828,7 +4828,7 @@ public abstract class PO
 	public final Object setDynAttribute(String name, Object value)
 	{
 		if (m_dynAttrs == null)
-			m_dynAttrs = new HashMap<String, Object>();
+			m_dynAttrs = new HashMap<>();
 		return m_dynAttrs.put(name, value);
 	}
 
@@ -4913,7 +4913,7 @@ public abstract class PO
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
 		{
-			log.warn("Column not found: {}", columnName);
+			log.warn("Column {} not found in method PO.get_ValueOldAsString", columnName);
 			return "";
 		}
 		return get_ValueOldAsString(index);
@@ -5139,7 +5139,7 @@ public abstract class PO
 		}
 		if (markedChangedColumns == null)
 		{
-			markedChangedColumns = new HashSet<Integer>();
+			markedChangedColumns = new HashSet<>();
 		}
 		markedChangedColumns.add(columnIndex);
 	}
@@ -5215,7 +5215,7 @@ public abstract class PO
 		poCopy.m_newValues = this.m_newValues == null ? null : Arrays.copyOf(this.m_newValues, this.m_newValues.length);
 		poCopy.m_KeyColumns = this.m_KeyColumns == null ? null : Arrays.copyOf(this.m_KeyColumns, this.m_KeyColumns.length);
 		// m_currentChangeType : int
-		poCopy.m_custom = this.m_custom == null ? null : new HashMap<String, String>(this.m_custom);
+		poCopy.m_custom = this.m_custom == null ? null : new HashMap<>(this.m_custom);
 		// poCopy.m_doc = this.m_doc // NOTE: don't need to copy; it will be set by org.compiere.acct.Doc
 		poCopy.m_dynAttrs = null; // don't copy DynAttributes
 		poCopy.m_isReplication = false; // don't copy IsReplication
@@ -5226,8 +5226,8 @@ public abstract class PO
 		poCopy.m_stale = this.m_stale;
 		// m_translations : Map<String, Map<String, String>> // TODO: copy the translations
 		poCopy.m_valueLoaded = this.m_valueLoaded == null ? null : Arrays.copyOf(this.m_valueLoaded, this.m_valueLoaded.length);
-		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<Integer>(this.markedChangedColumns);
-		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<String>(this.s_acctColumns);
+		poCopy.markedChangedColumns = this.markedChangedColumns == null ? null : new HashSet<>(this.markedChangedColumns);
+		poCopy.s_acctColumns = this.s_acctColumns == null ? null : new ArrayList<>(this.s_acctColumns);
 
 		//
 		// Manual User Action (i.e. if user loaded this PO from a window)

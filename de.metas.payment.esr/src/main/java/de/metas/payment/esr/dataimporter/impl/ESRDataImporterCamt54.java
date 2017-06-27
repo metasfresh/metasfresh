@@ -32,9 +32,9 @@ import de.metas.payment.camt054.jaxb.Document;
 import de.metas.payment.camt054.jaxb.ReportEntry8;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
-import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import lombok.NonNull;
 
@@ -48,18 +48,30 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * Creates an {@link ESRStatement} from camt.54 XML data.
+ * <p>
+ * <b>Important:</b> currently the control quantity and control amount are not taken from the XML data, but simply summed up from the transactions imported by this implementation!
+ *
+ * The XSD file for the xml this implementation imports is available at <a href="https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.04.zip">BankToCustomerDebitCreditNotificationV04</a>.
+ *
+ * Also see <a href="https://www.six-interbank-clearing.com/dam/downloads/en/standardization/iso/swiss-recommendations/implementation-guidelines-camt.pdf">Swiss Implementation Guidelines for Cash Management</a>.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
 
@@ -107,6 +119,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		{
 			final ESRStatementBuilder stmtBuilder = ESRStatement.builder();
 
+			// https://github.com/metasfresh/metasfresh/issues/1873
+			// get the values; if possible, read them from the XML in future
+			BigDecimal ctrAmount = BigDecimal.ZERO;
+			BigDecimal ctrlQty = BigDecimal.ZERO;
+
 			for (final AccountNotification12 ntfctn : bkToCstmrDbtCdtNtfctn.getNtfctn())
 			{
 				for (final ReportEntry8 ntry : ntfctn.getNtry())
@@ -146,14 +163,18 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 						amountValue = null;
 					}
 
+					// get the esr reference string out of the XML tree
 					final Optional<String> esrReferenceNumberString = ntry.getNtryDtls().stream()
 							.flatMap(ntryDtl -> ntryDtl.getTxDtls().stream())
 							.flatMap(txDtl -> txDtl.getRmtInf().getStrd().stream())
 							.map(strd -> strd.getCdtrRefInf())
+
+							// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
 							.filter(cdtrRefInf -> cdtrRefInf != null
 									&& cdtrRefInf.getTp() != null
 									&& cdtrRefInf.getTp().getCdOrPrtry() != null
 									&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
+
 							.map(cdtrRefInf -> cdtrRefInf.getRef())
 							.findFirst();
 					Check.errorUnless(esrReferenceNumberString.isPresent(), "Missing ESR creditor reference");
@@ -167,9 +188,17 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 							.esrParticipantNo(ntry.getNtryRef())
 							.esrReferenceNumber(esrReferenceNumberString.get())
 							.build());
+
+					// https://github.com/metasfresh/metasfresh/issues/1873
+					// for now, just sum up the values because it's not clear if and where they are stored in the XML
+					ctrAmount = ctrAmount.add(amountValue);
+					ctrlQty = ctrlQty.add(BigDecimal.ONE);
 				}
 			}
-			return stmtBuilder.build();
+			return stmtBuilder
+					.ctrlAmount(ctrAmount)
+					.ctrlQty(ctrlQty)
+					.build();
 		}
 
 	}

@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-05-30T19:04:51 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/ordercheckup/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.3.0  -->
+<!-- 2016-07-07T15:15:35 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
-	<property name="com.jaspersoft.studio.unit." value="pixel"/>
-	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -20,15 +18,36 @@
 	<parameter name="ad_language" class="java.lang.String">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
-	<parameter name="barcodeURL" class="java.lang.String" isForPrompting="false">
-		<defaultValueExpression><![CDATA["http://xxxxxxxx:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
+	<parameter name="C_BPartner_ID" class="java.math.BigDecimal">
+		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
+	<parameter name="DatePromised" class="java.util.Date"/>
+	<parameter name="M_Warehouse_ID" class="java.math.BigDecimal"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root( $P{RECORD_ID});]]>
+		<![CDATA[SELECT
+	r.AD_Org_ID,
+	r.DocStatus,
+	r.PrintName,
+	r.C_BPartner_Location_ID,
+	r.C_Order_ID
+FROM report.RV_C_Order_MFGWarehouse_Report_Header r
+WHERE true
+AND
+CASE
+		WHEN $P{RECORD_ID} IS NOT NULL
+			THEN r.C_Order_MFGWarehouse_Report_ID = $P{RECORD_ID}
+		WHEN $P{C_BPartner_ID} IS NOT NULL AND $P{DatePromised}::date IS NOT NULL
+			THEN r.C_BPartner_ID = $P{C_BPartner_ID} AND r.DatePromised::date = $P{DatePromised}::date AND r.ReportDocumentType='WH'
+
+		ELSE false -- shall never nappen
+	END
+LIMIT 1
+;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
 	<field name="docstatus" class="java.lang.String"/>
 	<field name="printname" class="java.lang.String"/>
+	<field name="c_bpartner_location_id" class="java.math.BigDecimal"/>
 	<field name="c_order_id" class="java.lang.Integer"/>
 	<background>
 		<band height="842" splitType="Stretch">
@@ -49,32 +68,41 @@
 		</band>
 	</background>
 	<title>
-		<band height="192" splitType="Stretch">
+		<band height="247" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="-20" y="30" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
+				<reportElement key="subreport-4" x="0" y="31" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printname">
+					<subreportParameterExpression><![CDATA[$F{printname}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="116" width="555" height="75" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+				<reportElement key="subreport-8" x="0" y="116" width="595" height="131" uuid="57fee363-fabe-49b7-9652-20fecfd01700"/>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="DatePromised">
+					<subreportParameterExpression><![CDATA[$P{DatePromised}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="C_BPartner_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="235" y="116" width="319" height="75" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0"/>
+				<reportElement key="subreport-6" x="286" y="200" width="309" height="41" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0"/>
+				<subreportParameter name="bp_loc_id">
+					<subreportParameterExpression><![CDATA[$F{c_bpartner_location_id}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -82,10 +110,10 @@
 					<subreportParameterExpression><![CDATA[$F{c_order_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="doctype">
-					<subreportParameterExpression><![CDATA[(new String("o"))]]></subreportParameterExpression>
+					<subreportParameterExpression><![CDATA[($P{RECORD_ID} != null ? new String("o") : null)]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock_unbold.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_bpblock.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
@@ -93,9 +121,12 @@
 		<band height="116" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="-20" y="31" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
+				<reportElement key="subreport-5" x="0" y="31" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="printname">
+					<subreportParameterExpression><![CDATA[$F{printname}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
@@ -105,25 +136,45 @@
 	<detail>
 		<band height="14" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="555" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-				</reportElement>
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
+				<subreportParameter name="Date">
+					<subreportParameterExpression><![CDATA[$P{DatePromised}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="M_Warehouse_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Warehouse_ID}]]></subreportParameterExpression>
+				</subreportParameter>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="RECORD_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="barcodeURL">
-					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>
+				<subreportParameter name="C_BPartner_ID">
+					<subreportParameterExpression><![CDATA[$P{C_BPartner_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
+		<band height="14">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
+				<subreportParameter name="M_Warehouse_ID">
+					<subreportParameterExpression><![CDATA[$P{M_Warehouse_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_details_hu.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
 	</detail>
 	<pageFooter>
-		<band height="92" splitType="Stretch">
+		<band height="75" splitType="Stretch">
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-62" x="507" y="20" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="19def8f8-db8e-472e-845e-a0f7ab5aea53"/>
 				<box>

@@ -13,15 +13,14 @@ package de.metas.picking.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -38,6 +37,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_BPartner;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.adempiere.util.CacheCtx;
@@ -63,6 +64,28 @@ public class PickingSlotDAO implements IPickingSlotDAO
 				.create()
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
+				.list(I_M_PickingSlot.class);
+	}
+
+	@Override
+	public List<I_M_PickingSlot> retrievePickingSlotsByIds(final Collection<Integer> pickingSlotIds)
+	{
+		if (pickingSlotIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_PickingSlot.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addInArrayFilter(I_M_PickingSlot.COLUMN_M_PickingSlot_ID, pickingSlotIds)
+				//
+				.orderBy()
+				.addColumn(I_M_PickingSlot.COLUMNNAME_PickingSlot)
+				.endOrderBy()
+				//
+				.create()
 				.list(I_M_PickingSlot.class);
 	}
 

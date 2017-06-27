@@ -14,7 +14,7 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 759839647L;
+	private static final long serialVersionUID = -59133326L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Version (Properties ctx, int M_HU_PI_Version_ID, String trxName)
@@ -22,8 +22,7 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
       super (ctx, M_HU_PI_Version_ID, trxName);
       /** if (M_HU_PI_Version_ID == 0)
         {
-			setIsCurrent (false);
-// N
+			setIsCurrent (false); // N
 			setM_HU_PI_ID (0);
 			setM_HU_PI_Version_ID (0);
 			setName (null);
@@ -66,11 +65,11 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	 * Reference name: HU_UnitType
 	 */
 	public static final int HU_UNITTYPE_AD_Reference_ID=540472;
-	/** Transport Unit = TU */
+	/** TransportUnit = TU */
 	public static final String HU_UNITTYPE_TransportUnit = "TU";
-	/** Load/Logistique Unit = LU */
+	/** LoadLogistiqueUnit = LU */
 	public static final String HU_UNITTYPE_LoadLogistiqueUnit = "LU";
-	/** Virtual PI = V */
+	/** VirtualPI = V */
 	public static final String HU_UNITTYPE_VirtualPI = "V";
 	/** Set Handling Unit Typ.
 		@param HU_UnitType Handling Unit Typ	  */

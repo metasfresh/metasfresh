@@ -180,7 +180,20 @@ public class C_Invoice_Candidate_EnqueueSelection extends JavaProcess
 	private IQueryBuilder<I_C_Invoice_Candidate> createICQueryBuilder()
 	{
 		// Get the user selection filter (i.e. what user filtered in his window)
-		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = getProcessInfo().getQueryFilter();
+		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter;
+		if(Ini.isClient())
+		{
+			// In case of Swing, preserve the old functionality, i.e. if no where clause then select all 
+			userSelectionFilter = getProcessInfo().getQueryFilter();
+		}
+		else
+		{
+			userSelectionFilter = getProcessInfo().getQueryFilterOrElse(null);
+			if(userSelectionFilter == null)
+			{
+				throw new AdempiereException("@NoSelection@");
+			}
+		}
 
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Invoice_Candidate.class, getCtx(), ITrx.TRXNAME_None)

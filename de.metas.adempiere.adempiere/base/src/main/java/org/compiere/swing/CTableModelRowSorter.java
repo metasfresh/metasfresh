@@ -32,16 +32,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Vector;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.event.TableModelEvent;
 
 import org.adempiere.util.comparator.ComparatorChain;
-import org.adempiere.util.comparator.FixedOrderComparator;
 import org.compiere.util.MSort;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * {@link CTable}'s row sorter which sorts the rows directly on model level (i.e. not on view level).
@@ -313,7 +313,7 @@ public class CTableModelRowSorter
 	}
 
 	/**
-	 * Contains custom comparators which are available to be added externally for column indexes (i.e {@link FixedOrderComparator})
+	 * Contains custom comparators which are available to be added externally for column indexes.
 	 */
 	final Map<Integer, List<Comparator<Object>>> _modelIndex2AdditionalSortIndexComparators = new LinkedHashMap<>();
 

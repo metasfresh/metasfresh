@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_LUTU_Configuration
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 196512502L;
+	private static final long serialVersionUID = 1426073199L;
 
     /** Standard Constructor */
     public X_M_HU_LUTU_Configuration (Properties ctx, int M_HU_LUTU_Configuration_ID, String trxName)
@@ -25,12 +24,9 @@ public class X_M_HU_LUTU_Configuration extends org.compiere.model.PO implements 
       /** if (M_HU_LUTU_Configuration_ID == 0)
         {
 			setC_UOM_ID (0);
-			setIsInfiniteQtyCU (false);
-// N
-			setIsInfiniteQtyLU (false);
-// N
-			setIsInfiniteQtyTU (false);
-// N
+			setIsInfiniteQtyCU (false); // N
+			setIsInfiniteQtyLU (false); // N
+			setIsInfiniteQtyTU (false); // N
 			setM_HU_LUTU_Configuration_ID (0);
 			setM_Product_ID (0);
 			setM_TU_HU_PI_ID (0);

@@ -536,13 +536,13 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private IPair<BigDecimal, BigDecimal> calculateQtyDeliveredFromInOutLines(final Collection<I_M_ShipmentSchedule_QtyPicked> allocations)
 	{
 		// set of the linked inouts that have status Complete. It will be needed to determine the number of LUs
-		final Set<Integer> seenIOIds = new HashSet<Integer>();
+		final Set<Integer> seenIOIds = new HashSet<>();
 
 		// task 08298: fallback and use the actual lines' TU-Qty
 		BigDecimal iolTuQtySum = BigDecimal.ZERO;
 
 		// not sure if each line is always allocated just once..using this set to make sure we don't count a line twice
-		final Set<Integer> seenIolIds = new HashSet<Integer>();
+		final Set<Integer> seenIolIds = new HashSet<>();
 
 		for (final I_M_ShipmentSchedule_QtyPicked alloc : allocations)
 		{

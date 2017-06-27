@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_HU_Quantities_Summary
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_RV_HU_Quantities_Summary extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 969057434L;
+	private static final long serialVersionUID = -1018620139L;
 
     /** Standard Constructor */
     public X_RV_HU_Quantities_Summary (Properties ctx, int RV_HU_Quantities_Summary_ID, String trxName)
