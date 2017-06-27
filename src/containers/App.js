@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import axios from 'axios';
-
 import counterpart from 'counterpart';
+
 import configureStore from '../store/configureStore';
 import { getRoutes } from '../routes.js';
 import {LOCAL_LANG}  from '../constants/Constants';
@@ -11,6 +11,7 @@ import { syncHistoryWithStore, push } from 'react-router-redux';
 import { Router, browserHistory } from 'react-router';
 
 import Auth from '../services/Auth';
+import Translation from '../components/Translation';
 
 import NotificationHandler
     from '../components/notifications/NotificationHandler';
@@ -24,8 +25,7 @@ import {
     logoutSuccess,
     getAvailableLang,
     setProcessSaved,
-    languageSuccess,
-    getMessages
+    languageSuccess
 } from '../actions/AppActions';
 
 import '../assets/css/styles.css';
@@ -116,29 +116,22 @@ export default class App extends Component {
                 navigator.language : defaultValue;
                 
             languageSuccess(lang);
-                
-            getMessages(lang).then(response => {
-                counterpart.registerTranslations('lang', response.data);
-                counterpart.setLocale('lang');
-                this.setState({ready: true});
-            });
         });
         
-        this.state = {
-            ready: false
-        }
+        counterpart.setMissingEntryGenerator(() => '');
     }
 
     render() {
-        if(!this.state.ready) return false;
         return (
             <Provider store={store}>
-                <NotificationHandler>
-                    <Router
-                        history={history}
-                        routes={getRoutes(store, this.auth)}
-                    />
-                </NotificationHandler>
+                <Translation>
+                    <NotificationHandler>
+                        <Router
+                            history={history}
+                            routes={getRoutes(store, this.auth)}
+                        />
+                    </NotificationHandler>
+                </Translation>
             </Provider>
         )
     }
