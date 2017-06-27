@@ -32,7 +32,7 @@ class RawChart extends Component {
                 if(this.props.noData) return;
                 this.fetchData();
             }else{
-                this.setState({
+                this.mounted && this.setState({
                     forceChartReRender: true,
                 }, () => {
                     this.setState({
@@ -45,6 +45,7 @@ class RawChart extends Component {
 
     componentDidMount(){
         const { pollInterval, noData } = this.props;
+        this.mounted = true;
 
         if(noData) return;
         this.init();
@@ -52,11 +53,13 @@ class RawChart extends Component {
 
     componentWillUnmount(){
         const {intervalId} = this.state;
-
+        
+        this.mounted = false;
+        
         if (intervalId){
             clearInterval(intervalId);
 
-            this.setState({
+            this.mounted && this.setState({
                 intervalId: null
             })
         }
@@ -67,7 +70,7 @@ class RawChart extends Component {
         this.fetchData();
 
         if (pollInterval){
-            this.setState({
+            this.mounted && this.setState({
                 intervalId: setInterval(() => {
                     this.fetchData();
                 }, pollInterval * 1000)
@@ -95,9 +98,9 @@ class RawChart extends Component {
     fetchData(){
         this.getData()
             .then(chartData => {
-                this.setState({ chartData: chartData, err: null });
+                this.mounted && this.setState({ chartData: chartData, err: null });
             }).catch(err => {
-                this.setState({ err })
+                this.mounted && this.setState({ err })
             })
     }
 
