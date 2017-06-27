@@ -61,7 +61,7 @@ class Actions extends Component {
                 {item.caption}
             </div>
         ) : <div className="subheader-item subheader-item-disabled">
-            There is no actions
+            {counterpart.translate('window.actions.emptyText')}
         </div>
     }
 
@@ -72,7 +72,9 @@ class Actions extends Component {
                 className="subheader-column js-subheader-column"
                 tabIndex={0}
             >
-                <div className="subheader-header">Actions</div>
+                <div className="subheader-header">
+                    {counterpart.translate('window.actions.caption')}
+                </div>
                 <div className="subheader-break" />
                 {!data ?
                     <Loader /> :

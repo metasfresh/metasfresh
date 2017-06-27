@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import {
     initLayout,
@@ -83,7 +84,8 @@ class SelectionAttributes extends Component {
         return (
             <div className="js-not-unselect">
                 <div className="attributes-selector-header">
-                    Selection attributes
+                    {counterpart.translate(
+                        'window.selectionAttributes.caption')}
                 </div>
                 <div
                     tabIndex={1}
@@ -117,7 +119,11 @@ class SelectionAttributes extends Component {
                         />
                     )}
                     {DLWrapperLayout && !DLWrapperLayout.length &&
-                        <i>Select element to display its attributes.</i>
+                        <i>
+                            {counterpart.translate(
+                                'window.selectionAttributes.callToAction'
+                            )}
+                        </i>
                     }
                 </div>
                 <div

@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 
+import counterpart from 'counterpart';
+
 import {
     quickActionsRequest
 } from '../../actions/ListActions';
@@ -122,7 +124,9 @@ class QuickActions extends Component {
                         (disabled ? 'disabled ' : '')
                     }
                 >
-                    <span className="spacer-right">Actions:</span>
+                    <span className="spacer-right">
+                        {counterpart.translate('window.quickActions.caption')}:
+                    </span>
                     <div className="quick-actions-wrapper">
                         <div
                             className={

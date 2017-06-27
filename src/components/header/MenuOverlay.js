@@ -6,6 +6,7 @@ import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
 import {push} from 'react-router-redux';
 import DebounceInput from 'react-debounce-input';
+import counterpart from 'counterpart';
 import {
     queryPathsRequest,
     pathRequest,
@@ -407,7 +408,9 @@ class MenuOverlay extends Component {
                                     type="text"
                                     id="search-input-query"
                                     className="input-field"
-                                    placeholder="Type phrase here"
+                                    placeholder={counterpart.translate(
+                                        'window.type.placeholder'
+                                    )}
                                     onChange={e => this.handleQuery(e)}
                                     onKeyDown={(e) =>
                                         this.handleKeyDown(e)}
