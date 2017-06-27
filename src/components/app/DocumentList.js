@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import QuickActions from './QuickActions';
 import BlankPage from '../BlankPage';
@@ -472,7 +473,9 @@ class DocumentList extends Component {
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
         if(notfound || layout === 'notfound' || data === 'notfound'){
-            return <BlankPage what="Document type"/>
+            return <BlankPage 
+                what={counterpart.translate('view.error.windowName')}
+            />
         }
 
         if(layout && data) {

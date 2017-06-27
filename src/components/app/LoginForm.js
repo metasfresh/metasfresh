@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {push, goBack} from 'react-router-redux';
+import counterpart from 'counterpart';
 
 import {connect} from 'react-redux';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -111,7 +112,8 @@ class LoginForm extends Component {
                 .catch(err => {
                     this.setState({
                         err: (err.response ?
-                            err.response.data.message : 'Connection problem'),
+                            err.response.data.message : 
+                            counterpart.translate('login.error.fallback')),
                         pending: false
                     });
                 })
@@ -136,7 +138,9 @@ class LoginForm extends Component {
                 </div>
                 {roleSelect ? <div>
                         <div className="form-control-label">
-                            <small>Select role</small>
+                            <small>{counterpart.translate(
+                                    'login.selectRole.caption')}
+                            </small>
                         </div>
                         <RawList
                             rank="primary"
@@ -157,7 +161,9 @@ class LoginForm extends Component {
                         }
                         <div>
                             <div className="form-control-label">
-                                <small>Login</small>
+                                <small>
+                                    {counterpart.translate('login.caption')}
+                                </small>
                             </div>
                             <input
                                 type="text"
@@ -172,7 +178,10 @@ class LoginForm extends Component {
                         </div>
                         <div>
                             <div className="form-control-label">
-                                <small>Password</small>
+                                <small>
+                                    {counterpart.translate(
+                                        'login.password.caption')}
+                                </small>
                             </div>
                             <input
                                 type="password"
@@ -196,7 +205,10 @@ class LoginForm extends Component {
                         onClick={this.handleLogin}
                         disabled={pending}
                     >
-                        {roleSelect? 'Send' : 'Login'}
+                        {roleSelect ? 
+                            counterpart.translate('login.send.caption') :
+                            counterpart.translate('login.callToAction')
+                        }
                     </button>
                 </div>
             </div>

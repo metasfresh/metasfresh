@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 
 class ErrorScreen extends Component {
     constructor(props) {
@@ -7,10 +8,9 @@ class ErrorScreen extends Component {
     render() {
         return (
             <div className="screen-freeze">
-                <h3>Connection lost.</h3>
+                <h3>{counterpart.translate('window.error.noStatus.title')}</h3>
                 <p>
-                    There are some connection issues.
-                    Check connection and try to refresh the page.
+                    {counterpart.translate('window.error.noStatus.description')}
                 </p>
             </div>
         )
