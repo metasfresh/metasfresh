@@ -4,9 +4,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -27,9 +29,11 @@ import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
@@ -73,6 +77,7 @@ public class MultiCustomerHUReturnsInOutProducer
 	// services
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -102,6 +107,27 @@ public class MultiCustomerHUReturnsInOutProducer
 		final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class); // The M_InOutLine's table id
 		for (final I_M_HU hu : getHUsToReturn())
 		{
+			// activate hu's children
+			{
+
+				final Set<I_M_HU> childHUs = new HashSet<I_M_HU>();
+
+				{
+					final List<I_M_HU_Item> huItems = handlingUnitsDAO.retrieveItems(hu);
+
+					for (final I_M_HU_Item huItem : huItems)
+					{
+						childHUs.addAll(handlingUnitsDAO.retrieveChildHUsForItem(huItem));
+					}
+				}
+				
+				for(final I_M_HU childHU : childHUs)
+				{
+					childHU.setIsActive(true);
+					InterfaceWrapperHelper.save(childHU);
+				}
+			
+			}
 			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
 
@@ -142,6 +168,13 @@ public class MultiCustomerHUReturnsInOutProducer
 					continue;
 				}
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
+
+				if (!inout.isSOTrx())
+				{
+					// do not allow HUs from receipts to get into customer returns
+					continue;
+				}
+
 				final int bpartnerId = inout.getC_BPartner_ID();
 
 				final I_C_Order order = inout.getC_Order();
@@ -178,7 +211,7 @@ public class MultiCustomerHUReturnsInOutProducer
 			}
 			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
 			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			Services.get(IHUInOutBL.class).activateHUsForCustomerReturn(ctx, getHUsToReturn());
+			Services.get(IHUInOutBL.class).moveHUsForCustomerReturn(ctx, getHUsToReturn());
 
 			handlingUnitsBL.setHUStatusActive(_husToReturn);
 		}

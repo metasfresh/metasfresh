@@ -355,4 +355,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return the aggregated item or null.
 	 */
 	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	/**
+	 * Retrieve all the child HUs of the given item, both active and not active
+	 * 
+	 * @param parentItem
+	 * @return
+	 */
+	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 }

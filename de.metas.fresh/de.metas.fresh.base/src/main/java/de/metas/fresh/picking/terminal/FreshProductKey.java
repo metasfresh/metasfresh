@@ -41,6 +41,7 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -297,6 +298,16 @@ public class FreshProductKey extends ProductKey
 			if (!X_M_HU.HUSTATUS_Active.equals(vhu.getHUStatus()))
 			{
 				continue;
+			}
+			
+			final I_M_Locator locator = huStorageRecord.getLocator();
+			
+			if(locator!= null)
+			{
+				if(locator.getM_Locator_ID() != vhu.getM_Locator_ID())
+				{
+					continue;
+				}
 			}
 
 			vhus.add(vhu);

@@ -62,7 +62,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -372,7 +371,6 @@ public class HUInOutBL implements IHUInOutBL
 
 		//
 		// Create HU generator
-		
 
 		List<I_M_HU> hus = new ArrayList<>();
 		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
@@ -382,7 +380,7 @@ public class HUInOutBL implements IHUInOutBL
 			hus.addAll(huGenerator.generate());
 		}
 
-		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
+		moveHUsForCustomerReturn(ctxAware.getCtx(), hus);
 
 		updateManualCustomerReturnInOutForHUs(customerReturn, hus);
 
@@ -390,7 +388,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void activateHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
+	public void moveHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
 	{
 		final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
 
@@ -402,11 +400,6 @@ public class HUInOutBL implements IHUInOutBL
 
 		Services.get(IHUMovementBL.class).moveHUsToWarehouse(husToReturn, qualiytReturnWarehouse);
 
-		for (final I_M_HU hu : husToReturn)
-		{
-			hu.setHUStatus(X_M_HU.HUSTATUS_Active);
-			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
-		}
 	}
 
 }
