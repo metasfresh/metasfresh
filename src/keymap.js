@@ -47,5 +47,10 @@ export default {
     },
     DOCUMENT_STATUS_CONTEXT: {
         COMPLETE_STATUS: mod + '+' + 'u'
+    },
+    MODAL_CONTEXT: {
+        START: mod + '+' + 's',
+        CLOSE: mod + '+' + 'c',
+        CANCEL: mod + '+' + 'q'
     }
 }
