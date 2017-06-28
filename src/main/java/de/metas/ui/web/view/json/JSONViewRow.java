@@ -45,14 +45,14 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows)
+	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final String adLanguage)
 	{
 		return rows.stream()
-				.map(JSONViewRow::ofRow)
+				.map(row -> ofRow(row, adLanguage))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(final IViewRow row)
+	private static JSONViewRow ofRow(final IViewRow row, final String adLanguage)
 	{
 		//
 		// Document view record
@@ -97,7 +97,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(JSONViewRow::ofRow)
+						.map(includedRow -> ofRow(includedRow, adLanguage))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
@@ -108,12 +108,20 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		{
 			jsonRow.supportAttributes = true;
 		}
-		
+
 		//
 		// Included views
-		if(row.hasIncludedView())
+		if (row.hasIncludedView())
 		{
 			jsonRow.supportIncludedViews = true;
+		}
+
+		//
+		// Single column row
+		if (row.isSingleColumn())
+		{
+			jsonRow.colspan = true;
+			jsonRow.caption = row.getSingleColumnCaption().translate(adLanguage);
 		}
 
 		return jsonRow;
@@ -143,6 +151,15 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<JSONViewRow> includedDocuments;
+
+	//
+	// Single column row
+	@JsonProperty("colspan")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean colspan;
+	@JsonProperty("caption")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String caption;
 
 	private JSONViewRow(final DocumentId documentId)
 	{

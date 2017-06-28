@@ -15,9 +15,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -94,13 +92,8 @@ public class PickingSlotViewRepository
 
 	private PickingSlotRow createPickingSlotRow(final I_M_PickingSlot pickingSlotPO)
 	{
-		final DocumentId rowId = DocumentId.of(pickingSlotPO.getM_PickingSlot_ID());
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, rowId);
-		return PickingSlotRow.builder()
-				.documentPath(documentPath)
-				.id(rowId)
-				.type(DefaultRowType.Row)
-				.processed(false)
+		return PickingSlotRow.fromPickingSlotBuilder()
+				.pickingSlotId(pickingSlotPO.getM_PickingSlot_ID())
 				//
 				.pickingSlotName(pickingSlotPO.getPickingSlot())
 				.pickingSlotWarehouse(warehouseLookup.findById(pickingSlotPO.getM_Warehouse_ID()))

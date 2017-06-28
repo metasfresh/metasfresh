@@ -224,7 +224,7 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowId, viewIdStr);
 		final List<? extends IViewRow> result = viewsRepo.getView(viewId)
 				.getByIds(rowIds);
-		return JSONViewRow.ofViewRows(result);
+		return JSONViewRow.ofViewRows(result, userSession.getAD_Language());
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
