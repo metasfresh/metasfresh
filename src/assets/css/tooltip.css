@@ -138,3 +138,11 @@
     border: solid 1px #c9d5dc;
     padding: 20px;
 }
+
+.tooltip-parent {
+    position: relative;
+}
+
+.tooltip-parent .tooltip-wrapp {
+    line-height: 15px;
+}
