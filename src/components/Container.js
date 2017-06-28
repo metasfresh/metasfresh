@@ -1,29 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
-import counterpart from 'counterpart';
 import Header from './header/Header';
 import ErrorScreen from './app/ErrorScreen';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import DocumentList from './app/DocumentList';
 
-import {getMessages} from '../actions/AppActions';
 
 class Container extends Component {
     constructor(props){
         super(props);
-    }
-
-    componentDidMount(){
-        this.getTranslates();
-    }
-
-    getTranslates = () => {
-        getMessages().then(response => {
-            counterpart.registerTranslations('lang', response.data);
-            counterpart.setLocale('lang');
-        })
     }
 
     render() {
@@ -35,7 +22,7 @@ class Container extends Component {
             handleDeletedStatus, dropzoneFocused, notfound, rawModal, modal,
             selected, selectedWindowType, indicator, modalTitle, setModalTitle,
             includedView, closeModalCallback, setModalDescription,
-            modalDescription
+            modalDescription, editmode, handleEditModeToggle
         } = this.props;
 
         return (
@@ -47,7 +34,8 @@ class Container extends Component {
                             handleDeletedStatus, isDocumentNotSaved,
                             showIndicator, query, siteName, showSidelist,
                             attachments, actions, references, windowType,
-                            breadcrumb, dataId, dropzoneFocused, notfound, docId
+                            breadcrumb, dataId, dropzoneFocused, notfound,
+                            docId, editmode, handleEditModeToggle
                         }}
                         docStatus = {docActionElem}
                     />

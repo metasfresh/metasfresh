@@ -39,11 +39,12 @@ export function filterCards(boardId, viewId) {
     );
 }
 
-export function addDashboardWidget(entity, id) {
+export function addDashboardWidget(entity, id, pos) {
     return axios.post(
         config.API_URL +
         '/dashboard/' + entity + '/new', {
-            'kpiId': id
+            'kpiId': id,
+            'position': pos
         }
     );
 }

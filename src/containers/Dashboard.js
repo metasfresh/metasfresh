@@ -7,23 +7,34 @@ import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 export class Dashboard extends Component {
     constructor(props){
         super(props);
+        
+        this.state = {
+            editmode: false
+        }
     }
+
+    toggleEditMode = () => this.setState(prev => ({editmode: !prev.editmode}));
 
     render() {
         const {
             location, modal, selected, rawModal, indicator, processStatus,
             includedView
         } = this.props;
+        
+        const {editmode} = this.state;
 
         return (
             <Container
                 siteName="Dashboard"
                 noMargin={true}
+                handleEditModeToggle={this.toggleEditMode}
                 {...{modal, rawModal, selected, indicator, processStatus,
-                    includedView}}
+                    includedView, editmode}}
             >
                 <div className="container-fluid dashboard-wrapper">
                     <DraggableWrapper
+                        {...{editmode}}
+                        toggleEditMode={this.toggleEditMode}
                         dashboard={location.pathname}
                     />
                 </div>

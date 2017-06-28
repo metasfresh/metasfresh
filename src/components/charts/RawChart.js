@@ -32,7 +32,7 @@ class RawChart extends Component {
                 if(this.props.noData) return;
                 this.fetchData();
             }else{
-                this.setState({
+                this.mounted && this.setState({
                     forceChartReRender: true,
                 }, () => {
                     this.setState({
@@ -45,28 +45,35 @@ class RawChart extends Component {
 
     componentDidMount(){
         const { pollInterval, noData } = this.props;
+        this.mounted = true;
 
         if(noData) return;
-
-        this.fetchData();
-
-        if (pollInterval){
-            this.setState({
-                intervalId: setInterval(() => {
-                    this.fetchData();
-                }, pollInterval * 1000)
-            })
-        }
+        this.init();
     }
 
     componentWillUnmount(){
         const {intervalId} = this.state;
-
+        
+        this.mounted = false;
+        
         if (intervalId){
             clearInterval(intervalId);
 
-            this.setState({
+            this.mounted && this.setState({
                 intervalId: null
+            })
+        }
+    }
+    
+    init = () => {
+        const {pollInterval} = this.props;
+        this.fetchData();
+
+        if (pollInterval){
+            this.mounted && this.setState({
+                intervalId: setInterval(() => {
+                    this.fetchData();
+                }, pollInterval * 1000)
             })
         }
     }
@@ -91,9 +98,9 @@ class RawChart extends Component {
     fetchData(){
         this.getData()
             .then(chartData => {
-                this.setState({ chartData: chartData, err: null });
+                this.mounted && this.setState({ chartData: chartData, err: null });
             }).catch(err => {
-                this.setState({ err })
+                this.mounted && this.setState({ err })
             })
     }
 
@@ -120,7 +127,7 @@ class RawChart extends Component {
                     <BarChart
                         {...{
                             data, groupBy, caption, chartType, height,
-                            fields, isMaximized, chartTitle
+                            fields, isMaximized, chartTitle, noData
                         }}
                         chartClass={'chart-' + id}
                         reRender={forceChartReRender}
@@ -134,7 +141,7 @@ class RawChart extends Component {
             case 'PieChart':
                 return(
                     <PieChart
-                        {...{data, fields, groupBy, height,
+                        {...{data, fields, groupBy, height, noData,
                             isMaximized, chartTitle}}
                         chartClass={'chart-' + id}
                         responsive={true}

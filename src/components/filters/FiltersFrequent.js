@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
+import counterpart from 'counterpart';
 
 import FiltersItem from './FiltersItem';
 
@@ -58,8 +59,13 @@ class FiltersFrequent extends Component {
                             >
                                 <i className="meta-icon-preview" />
                                 { isActive ?
-                                    'Filter: ' + item.caption :
-                                    'Filter by ' + item.caption
+                                    
+                                    counterpart.translate(
+                                        'window.filters.caption'
+                                    ) + ': ' + item.caption :
+                                    counterpart.translate(
+                                        'window.filters.caption2'
+                                    ) + ': ' + item.caption
                                 }
                             </button>
 

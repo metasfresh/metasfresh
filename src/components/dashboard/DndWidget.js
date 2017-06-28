@@ -32,6 +32,8 @@ const cardTarget = {
     drop(props, monitor) {
         if(monitor.getItem().isNew && props.addCard){
             props.addCard(props.entity, monitor.getItem().id);
+        }else{
+            props.onDrop && props.onDrop(props.entity, monitor.getItem().id)
         }
     }
 };

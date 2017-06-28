@@ -117,7 +117,8 @@ class Subheader extends Component {
     renderNavColumn = () => {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
-            handleDelete, docNo, redirect, breadcrumb, siteName
+            handleDelete, docNo, redirect, breadcrumb, siteName, editmode,
+            handleEditModeToggle
         } = this.props;
 
         const docLinks = dataId && [
@@ -203,6 +204,21 @@ class Subheader extends Component {
                     </span>
                 </div>}
                 {docLinks}
+                {editmode !== undefined && <div
+                    key={editmode}
+                    className="subheader-item js-subheader-item"
+                    tabIndex={0}
+                    onClick={() => {handleEditModeToggle(); closeSubheader()}}
+                >
+                    <i className="meta-icon-settings" />
+                    {editmode ?
+                        counterpart.translate('window.closeEditMode') :
+                        counterpart.translate('window.openEditMode')
+                    }
+                    <span className="tooltip-inline">
+                        {keymap.GLOBAL_CONTEXT.TOGGLE_EDIT_MODE}
+                    </span>
+                </div>}
             </div>
         )
     }

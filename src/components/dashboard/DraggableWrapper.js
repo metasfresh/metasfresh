@@ -22,20 +22,54 @@ import {
     removeDashboardWidget
 } from '../../actions/BoardActions';
 
+import {
+    connectWS,
+    disconnectWS
+} from '../../actions/WindowActions';
+
+import {
+    patchRequest
+} from '../../actions/GenericActions';
+
 export class DraggableWrapper extends Component {
     constructor(props) {
         super(props);
         this.state = {
             cards: [],
             indicators: [],
-            sidenav: null,
-            idMaximized: null
+            idMaximized: null,
+            websocketEndpoint: null
         };
     }
     
     componentDidMount = () => {
         this.getDashboard();
         this.getIndicators();
+    }
+    
+    componentDidUpdate = (prevProps, prevState) => {
+        const {websocketEndpoint} = this.state;
+        if(
+            websocketEndpoint !== null &&
+            prevState.websocketEndpoint !== websocketEndpoint
+        ){
+            connectWS.call(this, websocketEndpoint, msg => {
+                msg.events.map(event => {
+                    switch(event.widgetType){
+                        case 'TargetIndicator':
+                            this.getIndicators();
+                            break;
+                        case 'KPI':
+                            this.getDashboard();
+                            break;
+                    }
+                })
+            })
+        }
+    }
+    
+    componentWillUnmount = () => {
+        disconnectWS.call(this);
     }
     
     getType = (entity) => entity === 'cards' ? 'kpis' : 'targetIndicators';
@@ -51,20 +85,29 @@ export class DraggableWrapper extends Component {
     getDashboard = () => {
         getKPIsDashboard().then(response => {
             this.setState({
-                cards: response.data.items
+                cards: response.data.items,
+                websocketEndpoint: response.data.websocketEndpoint
             });
         });
     }
     
     addCard = (entity, id) => {
         const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
-        addDashboardWidget(this.getType(entity), id).then(res => {
+        addDashboardWidget(this.getType(entity), id, tmpItemIndex).then(res => {
             this.setState(prev => update(prev, {
                 [entity]: {
                     [tmpItemIndex]: {$set: res.data}
                 }
             }));
         });
+    }
+    
+    onDrop = (entity, id) => {
+        const tmpItemIndex = this.state[entity].findIndex(i => i.id === id);
+        patchRequest(
+            'dashboard', null, null, null, null, 'position',
+            tmpItemIndex, this.getType(entity), id
+        );
     }
     
     moveCard = (entity, dragIndex, hoverIndex, item) => {
@@ -84,15 +127,16 @@ export class DraggableWrapper extends Component {
             const newItem = {
                 id: item.id,
                 fetchOnDrop: true,
-                text: "Metric",
-                caption: "New",
-                kpi: {chartType: "Indicator"}
+                kpi: {chartType: this.getType(entity)}
             };
             this.setState(prev => update(prev, {
                 [entity]: prev[entity].length === 0 ? {
                     $set: [newItem]
                 } : {
-                    $splice: [[dragIndex, 0, newItem]]
+                    $splice: [
+                        [dragIndex, 1],
+                        [hoverIndex, 0, newItem]
+                    ]
                 }
             }));
         }
@@ -116,7 +160,8 @@ export class DraggableWrapper extends Component {
     }
     
     renderIndicators = () => {
-        const {indicators, idMaximized, editmode} = this.state;
+        const {indicators, idMaximized} = this.state;
+        const {editmode} = this.props;
         
         if(!indicators.length && editmode) return (
             <div className='indicators-wrapper'>
@@ -148,6 +193,7 @@ export class DraggableWrapper extends Component {
                         index={id}
                         moveCard={this.moveCard}
                         addCard={this.addCard}
+                        onDrop={this.onDrop}
                         removeCard={this.removeCard}
                         entity={'indicators'}
                         transparent={!editmode}
@@ -170,7 +216,8 @@ export class DraggableWrapper extends Component {
     }
     
     renderKpis = () => {
-        const {cards, idMaximized, editmode} = this.state;
+        const {cards, idMaximized} = this.state;
+        const {editmode} = this.props;
         
         if(!cards.length && editmode) return (
             <div className="kpis-wrapper">
@@ -199,6 +246,7 @@ export class DraggableWrapper extends Component {
                             id={item.id}
                             moveCard={this.moveCard}
                             addCard={this.addCard}
+                            onDrop={this.onDrop}
                             removeCard={this.removeCard}
                             entity={'cards'}
                             className={
@@ -222,7 +270,7 @@ export class DraggableWrapper extends Component {
                                 idMaximized={idMaximized}
                                 maximizeWidget={this.maximizeWidget}
                                 text={item.caption}
-                                noData={false}
+                                noData={item.fetchOnDrop}
                                 {...{editmode}}
                             />
                         </DndWidget>
@@ -238,19 +286,11 @@ export class DraggableWrapper extends Component {
     }
     
     render() {
-        const {editmode} = this.state;
+        const {editmode, toggleEditMode} = this.props;
         
         return (
             <div className="dashboard-cards-wrapper">
                 <div className={(editmode ? 'dashboard-edit-mode' : '')}>
-                    <div className="dashboard-edit-bar clearfix">
-                        <button
-                            className="btn btn-meta-outline-secondary btn-xs float-xs-right"
-                            onClick={() => this.setState(prev => ({editmode: !prev.editmode}))}
-                        >
-                            <i className="meta-icon-settings" /> {editmode ? 'Close edit mode' : 'Open edit mode'}
-                        </button>
-                    </div>
                     {this.renderIndicators()}
                     {this.renderKpis()}
                 </div>

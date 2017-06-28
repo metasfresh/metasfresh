@@ -4,7 +4,9 @@ import {connect} from 'react-redux';
 import update from 'immutability-helper';
 import {push} from 'react-router-redux';
 
-import {getData, patchRequest, deleteRequest} from '../actions/GenericActions';
+import {
+    getData, patchRequest, deleteRequest, getRequest
+} from '../actions/GenericActions';
 import {connectWS, disconnectWS} from '../actions/WindowActions';
 import {addCard} from '../actions/BoardActions';
 
@@ -38,6 +40,22 @@ class Board extends Component {
     componentWillUnmount = () => {
         disconnectWS.call(this);
     }
+    
+    laneCardsChanged = (event) => {
+        const {board} = this.state;
+        const {laneId, cardIds} = event;
+        const laneIndex = board.lanes.findIndex(lane => lane.laneId === laneId);
+        const lane = board.lanes[laneIndex];
+        
+        
+        const prom = Promise.all(
+            cardIds.map(id => getRequest('board', board.boardId, 'card', id)));
+            
+        prom.then(res => {
+            const cards = res.map(item => item.data);
+            this.addCards(laneIndex, cards);
+        })
+    }
 
     init = () => {
         const {boardId} = this.props;
@@ -47,7 +65,13 @@ class Board extends Component {
                 board: res.data
             }, () => {
                 connectWS.call(this, res.data.websocketEndpoint, msg => {
-                    //TODO
+                    msg.events.map(event => {
+                        switch(event.changeType){
+                            case 'laneCardsChanged':
+                                this.laneCardsChanged(event);
+                                break;
+                        }
+                    })
                 })
             })
         }).catch(err => {
@@ -59,35 +83,27 @@ class Board extends Component {
 
     handleDrop = (card, targetLaneId) => {
         const {board} = this.state;
-
         this.clearTargetIndicator();
-
-        const laneIndex = board.lanes.findIndex(l => l.laneId === targetLaneId);
-
+        
         if(card.initLaneId === 0) {
             // Adding card
-            addCard(
-                board.boardId, targetLaneId, card.id, card.index
-            ).then(res => {
-                this.addCard(laneIndex, res.data);
-            });
+            addCard(board.boardId, targetLaneId, card.id, card.index);
         }else{
             // Moving card
-            const staleLaneIndex =
-                board.lanes.findIndex(l => l.laneId === card.initLaneId);
-
-            const staleCardIndex = board.lanes[staleLaneIndex].cards
-                .findIndex(c =>
-                    c.cardId === card.id
+            if(card.initLaneId === targetLaneId){
+                //Changing position
+                patchRequest(
+                    'board', board.boardId, null, null, null, 'position',
+                    card.index, 'card', card.id
                 );
-
-            patchRequest(
-                'board', board.boardId, null, null, null, 'laneId',
-                targetLaneId, 'card', card.id
-            ).then(res => {
-                this.removeCard(staleLaneIndex, staleCardIndex);
-                this.addCard(laneIndex, res.data);
-            });
+            }else{
+                //Changing lane at least
+                patchRequest(
+                    'board', board.boardId, null, null, null,
+                    ['laneId', 'position'], [targetLaneId, card.index], 'card',
+                    card.id
+                );
+            }
         }
     }
 
@@ -121,12 +137,12 @@ class Board extends Component {
         }))
     }
 
-    addCard = (laneIndex, card) => {
+    addCards = (laneIndex, cards) => {
         this.setState(prev => update(prev, {
             board: {
                 lanes: {
                     [laneIndex]: {
-                        cards: {$push: [card]}
+                        cards: {$set: cards}
                     }
                 }
             }

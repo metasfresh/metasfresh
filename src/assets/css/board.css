@@ -36,6 +36,10 @@
     height: 100%;
 }
 
+.board-draggable-wrapper > *:last-child {
+    height: 100%;
+}
+
 .board-lane-header {
     border-bottom: 1px solid $brand-border-color;
     padding: .4rem;
@@ -79,4 +83,5 @@
 
 .card-placeholder {
     height: 100%;
+    min-height: 100%;
 }

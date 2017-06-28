@@ -603,8 +603,10 @@ export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
 
 export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
+    let processInBackground = 0;
     return (dispatch) => {
         dispatch(setProcessPending());
+        processInBackground++;
 
         return getProcessData(
             processType, viewId, type, ids, tabId, rowId
@@ -614,29 +616,46 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
             pid = response.data.pinstanceId;
 
             if (Object.keys(preparedData).length === 0) {
+                processInBackground++;
                 startProcess(processType, pid).then(response => {
-                    dispatch(setProcessSaved());
+                    processInBackground>0 && processInBackground--;
+                    if(processInBackground === 0) {
+                        dispatch(setProcessSaved());
+                    }
                     dispatch(handleProcessResponse(response, processType, pid));
                 }).catch(err => {
-                    dispatch(setProcessSaved());
+                    processInBackground>0 && processInBackground--;
+                    if(processInBackground === 0) {
+                        dispatch(setProcessSaved());
+                    }
                     throw err;
                 });
                 throw new Error('close_modal');
             }else{
                 dispatch(initDataSuccess(preparedData, 'modal'));
+                processInBackground++;
                 initLayout('process', processType).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })
-                    dispatch(setProcessSaved());
+                    processInBackground>0 && processInBackground--;
+                    if(processInBackground === 0) {
+                        dispatch(setProcessSaved());
+                    }
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 }).catch(err => {
-                    dispatch(setProcessSaved());
+                    processInBackground>0 && processInBackground--;
+                    if(processInBackground === 0) {
+                        dispatch(setProcessSaved());
+                    }
                     throw err;
                 });
             }
         }).catch(err => {
-            dispatch(setProcessSaved());
+            processInBackground>0 && processInBackground--;
+            if(processInBackground === 0) {
+                dispatch(setProcessSaved());
+            }
             throw err;
         });
     }
@@ -831,8 +850,37 @@ export function mapIncluded(
             )
         }
     }
-
     return result;
+}
+
+export function collapsedMap(
+    node, isCollapsed, initialMap
+) {
+    let collapsedMap = [];
+    if(initialMap){
+        if(!isCollapsed) {
+            initialMap.splice(
+                initialMap.indexOf(node.includedDocuments[0]),
+                node.includedDocuments.length
+                );
+            collapsedMap = initialMap;
+        } else {
+            initialMap.map(item => {
+                collapsedMap.push(item);
+                if(item.id === node.id) {
+                    collapsedMap = collapsedMap.concat(node.includedDocuments);
+
+                }
+            });
+        }
+
+    } else {
+        if(node.includedDocuments){
+            collapsedMap.push(node);
+        }
+    }
+
+    return collapsedMap;
 }
 
 export function connectWS(topic, cb) {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import Window from '../Window';
 import Process from '../Process';
@@ -290,7 +291,7 @@ class Modal extends Component {
                             onClick={this.removeModal}
                             tabIndex={0}
                         >
-                            Cancel
+                            {counterpart.translate('modal.actions.cancel')}
                         </button>}
                         <button
                             className={
@@ -301,7 +302,10 @@ class Modal extends Component {
                             onClick={this.handleClose}
                             tabIndex={0}
                         >
-                            {modalType === 'process' ? 'Cancel' : 'Done'}
+                            {modalType === 'process' ? 
+                                counterpart.translate('modal.actions.cancel') : 
+                                counterpart.translate('modal.actions.done')
+                            }
                         </button>
                         {modalType === 'process' &&
                             <button
@@ -313,7 +317,7 @@ class Modal extends Component {
                                 onClick={this.handleStart}
                                 tabIndex={0}
                             >
-                                Start
+                                {counterpart.translate('modal.actions.start')}
                             </button>
                         }
                     </div>

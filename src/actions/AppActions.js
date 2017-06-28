@@ -1,5 +1,6 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
+import counterpart from 'counterpart';
 import {replace} from 'react-router-redux';
 import Moment from 'moment';
 import {LOCAL_LANG}  from '../constants/Constants';
@@ -130,7 +131,7 @@ export function getAttributesInstance(
 
 export function getImageAction(id) {
     return axios({
-        url: `${config.API_URL}/image/${id}`,
+        url: `${config.API_URL}/image/${id}?maxWidth=200&maxHeight=200`,
         responseType: 'blob'
     })
         .then(response => response.data);
@@ -169,8 +170,10 @@ export function setUserDashboardWidgets(payload) {
     return axios.patch(config.API_URL + '/dashboard/kpis', payload);
 }
 
-export function getMessages() {
-    return axios.get(config.API_URL + '/i18n/messages');
+export function getMessages(lang) {
+    return axios.get(
+        config.API_URL + '/i18n/messages' + (lang ? '?=' + lang : '')
+    );
 }
 
 // END OF REQUESTS
@@ -178,7 +181,12 @@ export function getMessages() {
 export function loginSuccess(auth) {
     return dispatch => {
         localStorage.setItem('isLogged', true);
-
+        
+        getMessages().then(response => {
+            counterpart.registerTranslations('lang', response.data);
+            counterpart.setLocale('lang');
+        });
+        
         getUserSession().then(session => {
             dispatch(userSessionInit(session.data));
             languageSuccess(Object.keys(session.data.language)[0]);
@@ -186,6 +194,17 @@ export function loginSuccess(auth) {
                 const me = JSON.parse(msg.body);
                 dispatch(userSessionUpdate(me));
                 me.language && languageSuccess(Object.keys(me.language)[0]);
+                getNotifications().then(response => {
+                    dispatch(getNotificationsSuccess(
+                        response.data.notifications,
+                        response.data.unreadCount
+                    ));
+                });
+                
+                getMessages().then(response => {
+                    counterpart.registerTranslations('lang', response.data);
+                    counterpart.setLocale('lang');
+                });
             });
         })
 

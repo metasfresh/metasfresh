@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {push} from 'react-router-redux';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import QuickActions from './QuickActions';
 import BlankPage from '../BlankPage';
@@ -251,6 +252,12 @@ class DocumentList extends Component {
             clickOutsideLock: !!value
         })
     }
+    
+    clearStaticFilters = () => {
+        const {dispatch, windowType, viewId} = this.props;
+
+        dispatch(push('/window/' + windowType));
+    }
 
     // FETCHING LAYOUT && DATA -------------------------------------------------
 
@@ -466,7 +473,9 @@ class DocumentList extends Component {
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
         if(notfound || layout === 'notfound' || data === 'notfound'){
-            return <BlankPage what="Document type"/>
+            return <BlankPage 
+                what={counterpart.translate('view.error.windowName')}
+            />
         }
 
         if(layout && data) {
@@ -498,6 +507,7 @@ class DocumentList extends Component {
                                     filterData={layout.filters}
                                     filtersActive={filters}
                                     updateDocList={this.handleFilterChange}
+                                    clearStaticFilters={this.clearStaticFilters}
                                 />}
                             </div>
                             <QuickActions
