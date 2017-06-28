@@ -29,6 +29,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
     * Adjustment of the content in the Breadcrumb Navigation, now only showing the leaf entries of the selected Breadcrumb Hierarchy.
+  * [#934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/934) Image widget might generate considerable traffic
+    * The Upload of Avatar/ User Images is now limited to an image size of 200x200.
   * [#935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/935) Image widget: show uploading indicator
     * Now showing an uploading/ processing Indicator to the user durcing the upload of a User image. The Indicator is shown when the image will be shown.
   * [#944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/944) Show the metasfresh logo centered when there are no KPIs
