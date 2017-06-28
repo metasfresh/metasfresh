@@ -167,7 +167,7 @@ class Subheader extends Component {
                 key={4}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
-                onClick={() => handleEmail()}
+                onClick={() => {handleEmail(); closeSubheader()}}
             >
                 <i className="meta-icon-message" />
                 Email

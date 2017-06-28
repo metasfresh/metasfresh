@@ -1,91 +1,84 @@
 import React, { Component } from 'react';
-import TagsInput from 'react-tagsinput';
-import 'react-tagsinput/react-tagsinput.css';
-import Autosuggest from 'react-autosuggest';
+import {connect} from 'react-redux';
+
+import Attachments from './Attachments';
+import AutocompleteTo from './AutocompleteTo';
+
+import {
+    addNotification
+} from '../../actions/AppActions';
+
+import {
+    patchRequest
+} from '../../actions/GenericActions';
+
+import {
+    createEmail,
+    sendEmail
+} from '../../actions/EmailActions';
 
 class NewEmail extends Component {
     constructor(props){
         super(props);
 
         this.state = {
-            tags: [],
-            emails: [
-                {
-                    name: 'Musterfrau',
-                    mail: 'musterfrau@gmail.com'
-                },
-                {
-                    name: 'metas-xx',
-                    mail: 'metas-xx@gmail.com'
-                },
-                {
-                    name: 'test',
-                    mail: 'test@gmail.com'
-                },
-                {
-                    name: 'Annie',
-                    mail: 'annie@gmail.com'
-                },
-                {
-                    name: 'Heinz Muller',
-                    mail: 'muller@gmail.com'
-                },
-                {
-                    name: 'Jorg Jorgsen',
-                    mail: 'jorg@gmail.com'
-                }
-            ]
+            init: false,
+            cached: {}
         }
     }
-
-    handleChange = (tags) => {
-        this.setState({tags})
-    }
-
-    autocompleteRenderInput = ({addTag, ...props}) => {
-        const {emails} = this.state;
-
-        const handleOnChange = (e, {newValue, method}) => {
-            if (method === 'enter') {
-                e.preventDefault()
-            } else {
-                props.onChange(e)
-            }
-        }
-
-        const inputValue = (
-            props.value && props.value.trim().toLowerCase()
-            ) || ''
-        const inputLength = inputValue.length
-
-        let suggestions = emails.filter((item) => {
-            return item.name.toLowerCase().slice(0, inputLength) === inputValue
+    
+    componentWillMount = () => {
+        const {dispatch, windowId, docId, handleCloseEmail} = this.props;
+        createEmail(windowId, docId).then(res => {
+            this.setState({
+                init: true,
+                ...res.data,
+                cached: res.data
+            })
+        }).catch(err => {
+            handleCloseEmail();
         })
-
-        return (
-            <Autosuggest
-                ref={props.ref}
-                suggestions={suggestions}
-                shouldRenderSuggestions={
-                    (value) => value && value.trim().length > 0
-                }
-                getSuggestionValue={(suggestion) => suggestion.name}
-                renderSuggestion={
-                    (suggestion) => <span>{suggestion.name}</span>
-                }
-                inputProps={{...props, onChange: handleOnChange}}
-                onSuggestionSelected={(e, {suggestion}) => {
-                    addTag(suggestion.name)
-                }}
-                onSuggestionsClearRequested={() => {}}
-                onSuggestionsFetchRequested={() => {}}
-            />
-        )
+    }
+    
+    change = (prop, value) => {
+        this.setState({
+            [prop]: value
+        })
+    }
+    
+    patch = (prop, value) => {
+        const {emailId} = this.state;
+        
+        if(this.state.cached[prop] === value) return;
+        
+        patchRequest('mail', emailId, null, null, null, prop, value)
+            .then(res => {
+                this.setState({
+                    ...res.data,
+                    cached: res.data
+                })
+            })
+    }
+    
+    send = () => {
+        const {emailId} = this.state;
+        const {handleCloseEmail, dispatch} = this.props;
+        sendEmail(emailId).then(() => {
+            handleCloseEmail();
+            dispatch(addNotification(
+                'Email', 'Email has been sent.', 5000, 'success'
+            ));
+        });
     }
 
     render() {
-        const {handleCloseEmail} = this.props
-        const {emails} = this.state
+        const {handleCloseEmail, windowId, docId} = this.props;
+        const {
+            suggestions, tags, init, attachments, emailId, subject, message
+        } = this.state;
+        
+        if(!init) return false;
+        
         return (
             <div className="screen-freeze">
                 <div className="panel panel-modal panel-email panel-modal-primary">
@@ -103,68 +96,50 @@ class NewEmail extends Component {
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
                                 <span>To:</span>
-                                <TagsInput
-                                    className="tagsinput"
-                                    renderInput={this.autocompleteRenderInput}
-                                    inputProps={
-                                        {placeholder: 'Add emails',
-                                        className: 'email-input'}
-                                    }
-                                    value={this.state.tags}
-                                    onChange={this.handleChange}
+                                <AutocompleteTo
+                                    {...{windowId, docId, emailId}}
                                 />
-
                             </div>
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span>Topic:</span> <input className="email-input email-input-msg" type="text"/>
+                                <span>Topic:</span>
+                                <input
+                                    className="email-input email-input-msg"
+                                    type="text"
+                                    onChange={e =>
+                                        this.change('subject', e.target.value)}
+                                    value={subject}
+                                    onBlur={
+                                        () => this.patch('subject', subject)
+                                    }
+                                />
                             </div>
                         </div>
                     </div>
                     <div className="panel-email-body">
-                        <textarea></textarea>
+                        <textarea
+                            value={message}
+                            onChange={e =>
+                                this.change('message', e.target.value)}
+                            onBlur={() => this.patch('message', message)}
+                        />
                     </div>
                     <div className="panel-email-footer">
-                        <div className="email-attachments-wrapper">
-                            <div className="attachment">
-                                <div className="attachnemt-text">
-                                    attachment.pdf <span>(230 kb)</span>
-                                </div>
-                                <div className="input-icon input-icon-lg">
-                                    <i className="meta-icon-close-1"/>
-                                </div>
-                            </div>
-                            <div className="attachment">
-                                <div className="attachnemt-text">
-                                    new_metasfresh.pdf <span>(230 kb)</span>
-                                </div>
-                                <div className="input-icon input-icon-lg">
-                                    <i className="meta-icon-close-1"/>
-                                </div>
-                            </div>
-                            <div className="attachment">
-                                <div className="attachnemt-text">
-                                    xxx.pdf <span>(230 kb)</span>
-                                </div>
-                                <div className="input-icon input-icon-lg">
-                                    <i className="meta-icon-close-1"/>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <i className="meta-icon-attachments"/>
-                             add attachment
-                        </div>
-                        <button className="btn btn-meta-success btn-sm btn-submit">
+                        <Attachments {...{attachments}} />
+                        <button
+                            onClick={this.send}
+                            className="btn btn-meta-success btn-sm btn-submit"
+                        >
                             Send
                         </button>
                     </div>
-
                 </div>
             </div>
         )
     }
 }
+
+NewEmail = connect()(NewEmail);
 
 export default NewEmail;

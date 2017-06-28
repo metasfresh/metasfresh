@@ -569,6 +569,8 @@ class Header extends Component {
 
                 {   isEmailOpen &&
                     <NewEmail
+                        windowId={windowType ? windowType : ''}
+                        docId={dataId}
                         handleCloseEmail={this.handleCloseEmail}
                     />
                 }
