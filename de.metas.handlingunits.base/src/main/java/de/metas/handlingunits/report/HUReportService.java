@@ -139,14 +139,19 @@ public class HUReportService
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final String valueForBPartner = sysConfigBL.getValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID + vendorBPartnerId, "NOT_SET", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final String vendorSysconfigName = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID + vendorBPartnerId;
+		final String valueForBPartner = sysConfigBL.getValue(vendorSysconfigName, "NOT_SET", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		logger.info("SysConfig {}={};", vendorSysconfigName, valueForBPartner);
+
 		if (!"NOT_SET".equals(valueForBPartner))
 		{
 			return DisplayType.toBoolean(valueForBPartner, false);
 		}
 
-		final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, false, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		return enabled;
+		final String genericValue = sysConfigBL.getValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, "N", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		logger.info("SysConfig {}={};", SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, genericValue);
+
+		return DisplayType.toBoolean(genericValue, false);
 	}
 
 }
