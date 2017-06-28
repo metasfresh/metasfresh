@@ -17,12 +17,12 @@ import java.awt.image.BufferedImage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -88,7 +88,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.inout.impl.InOutDAO;
+import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
@@ -209,7 +209,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				continue;
 			}
 
-			final List<I_M_HU> husToUnassign = new ArrayList<I_M_HU>(2);
+			final List<I_M_HU> husToUnassign = new ArrayList<>(2);
 
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 			if (tuHU != null && tuHU.isActive()
@@ -300,7 +300,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * @param receiptSchedules
 	 * @param selectedHUs
 	 * @param storeReceipts
-	 * 
+	 *
 	 * @return inout generated result
 	 */
 	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx,
@@ -374,9 +374,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// https://github.com/metasfresh/metasfresh/issues/1905
 		// Create the material receipt label right here.
 		// We used to create it in ReceiptInOutLineHUAssignmentListener, but there we could not detect the code
-		// being called multiple times in a row, from different transactions. 
+		// being called multiple times in a row, from different transactions.
 		// This happens if there are >1 inout lines sharing the same LU.
-		final InOutDAO inOutDAO = Services.get(InOutDAO.class);
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 		final Set<Integer> seenHUIds = new HashSet<>();
