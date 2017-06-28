@@ -21,6 +21,8 @@ Here come the actual release notes:
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
   * [#1909](https://github.com/metasfresh/metasfresh/issues/1909) Translate Open/ Close Edit Mode for Windows
     * German Translation of the Window Edit Mode Caption. First time used in Unser Dashboard Customizer Action Menue Entry.
+  * [#1919](https://github.com/metasfresh/metasfresh/issues/1919) Additional static element Translations
+    * New Translations for static window elements in WebUI.
 
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
