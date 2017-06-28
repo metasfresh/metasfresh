@@ -272,7 +272,7 @@ class RawList extends Component {
 
     handleKeyDown = (e) => {
         const {selected, isOpen} = this.state;
-        const {onSelect} = this.props;
+        const {onSelect, list} = this.props;
 
         if(e.keyCode > 47 && e.keyCode < 123){
             this.navigateToAlphanumeric(e.key);
@@ -296,11 +296,13 @@ class RawList extends Component {
                     } else {
                         onSelect(null);
                     }
-
                     break;
                 case 'Escape':
                     e.preventDefault();
                     this.handleBlur();
+                    break;
+                case 'Tab':
+                    list.length === 0 && onSelect(null);
                     break;
             }
         }
