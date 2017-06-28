@@ -132,13 +132,14 @@ public class HUReportService
 	 *
 	 * @param ctx
 	 * @param hu
+	 * @param vendorBPartnerId the original vendor. By now, might not be the same as M_HU.C_BPartner_ID anymore
 	 * @return
 	 */
-	public boolean isReceiptLabelAutoPrintEnabled(final Properties ctx, final I_M_HU hu)
+	public boolean isReceiptLabelAutoPrintEnabled(final Properties ctx, final I_M_HU hu, final int vendorBPartnerId)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final String valueForBPartner = sysConfigBL.getValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID + hu.getC_BPartner_ID(), "NOT_SET", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		final String valueForBPartner = sysConfigBL.getValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID + vendorBPartnerId, "NOT_SET", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		if (!"NOT_SET".equals(valueForBPartner))
 		{
 			return DisplayType.toBoolean(valueForBPartner, false);
