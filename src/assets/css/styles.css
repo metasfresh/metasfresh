@@ -901,9 +901,12 @@ td.pulse-off input {
     height: 100%;
 }
 
+.dashboard-cards {
+    height: 100%;
+}
+
 .dashboard-logo-wrapper {
     width: 100%;
-    margin-top: 5rem;
     justify-content: center;
 }
 

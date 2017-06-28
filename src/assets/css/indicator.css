@@ -5,7 +5,7 @@
 }
 
 .kpis-wrapper {
-    clear:both;
+    height: 100%;
     margin: -.5rem;
     display: flex;
     flex-direction: row;

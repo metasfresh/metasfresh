@@ -290,7 +290,9 @@ export class DraggableWrapper extends Component {
         
         return (
             <div className="dashboard-cards-wrapper">
-                <div className={(editmode ? 'dashboard-edit-mode' : '')}>
+                <div
+                    className={(editmode ?
+                        'dashboard-edit-mode' : 'dashboard-cards')}>
                     {this.renderIndicators()}
                     {this.renderKpis()}
                 </div>
