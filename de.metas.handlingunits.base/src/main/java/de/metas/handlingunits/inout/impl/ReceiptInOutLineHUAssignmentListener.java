@@ -94,7 +94,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 
 		//
 		// Print receipt label, see https://github.com/metasfresh/metasfresh-webui/issues/209
-		printReceiptLabel(hu);
+		printReceiptLabel(hu, inout.getC_BPartner_ID());
 
 	}
 
@@ -229,9 +229,10 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	/**
 	 *
 	 * @param hu
+	 * @param vendorBPartnerId
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
 	 */
-	private void printReceiptLabel(final I_M_HU hu)
+	private void printReceiptLabel(final I_M_HU hu, final int vendorBPartnerId)
 	{
 		if (hu == null)
 		{
@@ -242,7 +243,7 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
 
 		final HUReportService huReportService = HUReportService.get();
-		if (!huReportService.isReceiptLabelAutoPrintEnabled(ctx, hu))
+		if (!huReportService.isReceiptLabelAutoPrintEnabled(ctx, hu, vendorBPartnerId))
 		{
 			logger.info("Auto printing receipt labels is not enabled via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED);
 			return;
