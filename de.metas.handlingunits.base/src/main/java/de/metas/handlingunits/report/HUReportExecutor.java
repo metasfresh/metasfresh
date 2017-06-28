@@ -3,12 +3,15 @@ package de.metas.handlingunits.report;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.service.ISysConfigBL;
@@ -21,6 +24,7 @@ import org.compiere.util.Env;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
 import de.metas.process.ProcessInfo;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,7 +51,7 @@ import de.metas.process.ProcessInfo;
 /**
  * This little class is specialized on executing jasper report processes
  * that are assigned to the {@link I_M_HU} table by {@link I_AD_Table_Process} records.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -58,6 +62,8 @@ public class HUReportExecutor
 	 */
 	private static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
 	private static final String PARA_BarcodeURL = "barcodeURL";
+
+	private static final String REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
 
 	private final Properties ctx;
 
@@ -101,17 +107,19 @@ public class HUReportExecutor
 
 	/**
 	 * Prepares everything and creates a trx-listener to run the report after the current trx is committed (or right now, if there is no currently open trx).
-	 * 
+	 *
 	 * @param adProcessId the (jasper-)process to be executed
 	 * @param husToProcess the HUs to be processed/shown in the report. These HUs' IDs are added to the {@code T_Select} table and can be accessed by the jasper file.
-	 * @param printCopies number of copies. "1" means one printout
 	 */
-	public void executeHUReportAfterCommit(final int adProcessId, final List<I_M_HU> husToProcess)
+	public void executeHUReportAfterCommit(final int adProcessId, @NonNull final List<I_M_HU> husToProcess)
 	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 		//
 		// Collect HU's C_BPartner_IDs and M_HU_IDs
 		final Set<Integer> huBPartnerIds = new HashSet<>();
 		final List<Integer> huIds = new ArrayList<>();
+
 		for (final I_M_HU hu : husToProcess)
 		{
 			final int huId = hu.getM_HU_ID();
@@ -125,69 +133,152 @@ public class HUReportExecutor
 			}
 		}
 
-		//
-		// Use BPartner's Language as reporting language if our HUs have an unique BPartner
-		final Language reportLanguage;
-		if (huBPartnerIds.size() == 1)
+		// check if we actually got any new M_HU_ID
+		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+
+		final HUReportTrxListener huReportTrxListener;
+		if (trx != null)
 		{
-			final int bpartnerId = huBPartnerIds.iterator().next();
-			reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+			huReportTrxListener = trx.getProperty("huReportTrxListener", () -> new HUReportTrxListener(ctx, adProcessId, windowNo, copies));
 		}
 		else
 		{
-			reportLanguage = null; // N/A
+			huReportTrxListener = new HUReportTrxListener(ctx, adProcessId, windowNo, copies);
 		}
 
-		final String barcodeServlet = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_BarcodeServlet,
-				null,  // defaultValue,
-				Env.getAD_Client_ID(ctx),
-				Env.getAD_Org_ID(ctx));
+		if (!huReportTrxListener.addAll(huIds))
+		{
+			return; // there are no new HU IDs
+		}
 
-		// gh #1121: do this not now, but after the current transaction was committed. Because "right now", the Hus in question are probably not yet ready.
+		// Use BPartner's Language, if all HUs' partners have a common language
+		{
+			if (huBPartnerIds.size() == 1)
+			{
+				final int bpartnerId = huBPartnerIds.iterator().next();
+				Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+				huReportTrxListener.setLanguage(reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language());
+			}
+			else
+			{
+				huReportTrxListener.setLanguage(REPORT_LANG_NONE);
+			}
+		}
+
+		if (huReportTrxListener.isListenerWasRegistered())
+		{
+			return;
+		}
+
+		// gh #1121: do this not now, but after the current transaction was committed. Because "right now", the HUs in question are probably not yet ready.
 		// The background is that in the handling unit framework we have some "decoupled" DAOs, that collect data in memory and then safe it all at once, right before the commit is made.
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.registerListener(
-						new TrxListenerAdapter()
-						{
-							/**
-							 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
-							 * Therefore (and because right now there is not time to get to the root of the problem),
-							 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
-							 * 
-							 * @task https://github.com/metasfresh/metasfresh/issues/1263
-							 * 
-							 */
-							boolean commitWasDone = false;
+				.registerListener(huReportTrxListener);
+		huReportTrxListener.setListenerWasRegistered();
+	}
 
-							@Override
-							public void afterCommit(final ITrx trx)
-							{
-								commitWasDone = true;
-							}
+	private static final class HUReportTrxListener extends TrxListenerAdapter
+	{
+		private final Properties listenerCtx;
+		private final int listenerAdProcessId;
+		private final int listenerWindowNo;
+		private final int listenerCopies;
 
-							@Override
-							public void afterClose(final ITrx trx)
-							{
-								if (!commitWasDone)
-								{
-									return;
-								}
-								ProcessInfo.builder()
-										.setCtx(ctx)
-										.setAD_Process_ID(adProcessId)
-										.setWindowNo(windowNo)
-										.setTableName(I_M_HU.Table_Name)
-										.setReportLanguage(reportLanguage)
-										.addParameter(PARA_BarcodeURL, barcodeServlet)
-										.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
-										//
-										// Execute report in a new transaction
-										.buildAndPrepareExecution()
-										.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), huIds, ITrx.TRXNAME_ThreadInherited))
-										.executeSync();
-							}
-						});
+		private final Set<Integer> husToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
+
+		private String language;
+
+		/**
+		 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
+		 * Therefore (and because right now there is not time to get to the root of the problem),
+		 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
+		 *
+		 * @task https://github.com/metasfresh/metasfresh/issues/1263
+		 *
+		 */
+		private boolean commitWasDone = false;
+
+		private boolean listenerWasRegistered = false;
+
+		private HUReportTrxListener(@NonNull final Properties ctx,
+				final int adProcessId,
+				final int windowNo,
+				final int copies)
+		{
+			this.listenerCtx = ctx;
+			this.listenerAdProcessId = adProcessId;
+			this.listenerWindowNo = windowNo;
+			this.listenerCopies = copies;
+		}
+
+		public boolean addAll(@NonNull final List<Integer> huIds)
+		{
+			return husToProcess.addAll(huIds);
+		}
+
+		public void setLanguage(@NonNull final String language)
+		{
+			if (this.language == null)
+			{
+				this.language = language;
+			}
+			else if (!Objects.equals(this.language, language))
+			{
+				this.language = REPORT_LANG_NONE;
+			}
+		}
+
+		public boolean isListenerWasRegistered()
+		{
+			return listenerWasRegistered;
+		}
+
+		public void setListenerWasRegistered()
+		{
+			this.listenerWasRegistered = true;
+		}
+
+		@Override
+		public void afterCommit(final ITrx trx)
+		{
+			commitWasDone = true;
+		}
+
+		@Override
+		public void afterClose(final ITrx trx)
+		{
+			if (!commitWasDone)
+			{
+				return;
+			}
+
+			if (husToProcess.isEmpty())
+			{
+				return;
+			}
+
+			final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, language) ? null : language;
+
+			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+			final String barcodeServlet = sysConfigBL.getValue(SYSCONFIG_BarcodeServlet,
+					null,  // defaultValue,
+					Env.getAD_Client_ID(listenerCtx),
+					Env.getAD_Org_ID(listenerCtx));
+
+			ProcessInfo.builder()
+					.setCtx(listenerCtx)
+					.setAD_Process_ID(listenerAdProcessId)
+					.setWindowNo(listenerWindowNo)
+					.setTableName(I_M_HU.Table_Name)
+					.setReportLanguage(reportLanguageToUse)
+					.addParameter(PARA_BarcodeURL, barcodeServlet)
+					.addParameter(IJasperService.PARAM_PrintCopies, BigDecimal.valueOf(listenerCopies))
+					//
+					// Execute report in a new transaction
+					.buildAndPrepareExecution()
+					.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), husToProcess, ITrx.TRXNAME_ThreadInherited))
+					.executeSync();
+		}
 	}
 }
