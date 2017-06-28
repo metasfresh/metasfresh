@@ -9,6 +9,7 @@ import {
     selectTableItems,
     deleteLocal,
     mapIncluded,
+    collapsedMap,
     getItemsByProperty,
     getZoomIntoWindow
 } from '../../actions/WindowActions';
@@ -52,7 +53,8 @@ class Table extends Component {
             rows: [],
             collapsedRows: [],
             collapsedParentsRows: [],
-            pendingInit: true
+            pendingInit: true,
+            collapsedArrayMap: []
         }
     }
 
@@ -133,12 +135,17 @@ class Table extends Component {
                     document.getElementsByClassName('js-table')[0].focus();
                 }
 
+                let mapCollapsed = [];
                 if(collapsible){
+
                     rows && !!rows.length && rows.map(row => {
                         if(
                             row.indent.length >= expandedDepth &&
                             row.includedDocuments
                         ){
+                            mapCollapsed = mapCollapsed.concat(
+                                collapsedMap(row)
+                            );
                             this.setState(prev => ({
                                 collapsedParentsRows:
                                     prev.collapsedParentsRows.concat(
@@ -156,6 +163,10 @@ class Table extends Component {
                         }
                     })
                 }
+
+                this.setState({
+                    collapsedArrayMap: mapCollapsed
+                });
             })
         } else {
             this.setState({
@@ -271,7 +282,7 @@ class Table extends Component {
     }
 
     handleKeyDown = (e) => {
-        const {selected, rows, listenOnKeys} = this.state;
+        const {selected, rows, listenOnKeys, collapsedArrayMap} = this.state;
 
         if(!listenOnKeys){
             return;
@@ -299,7 +310,9 @@ class Table extends Component {
             case 'ArrowDown': {
                 e.preventDefault();
 
-                const array = rows.map((item) => item[keyProperty]);
+                const array = collapsedArrayMap.length > 0 ?
+                    collapsedArrayMap.map((item) => item[keyProperty]) :
+                    rows.map((item) => item[keyProperty]);
                 const currentId = array.findIndex(x =>
                     x === selected[selected.length-1]
                 );
@@ -322,7 +335,9 @@ class Table extends Component {
             case 'ArrowUp': {
                 e.preventDefault();
 
-                const array = rows.map(item => item[keyProperty]);
+                const array = collapsedArrayMap.length > 0 ?
+                    collapsedArrayMap.map((item) => item[keyProperty]) :
+                    rows.map((item) => item[keyProperty]);
                 const currentId = array.findIndex(x =>
                     x === selected[selected.length-1]
                 );
@@ -615,7 +630,13 @@ class Table extends Component {
 
     handleRowCollapse = (node, collapsed) => {
         const {keyProperty} = this.props;
-        const {collapsedParentsRows, collapsedRows} = this.state;
+        const {
+            collapsedParentsRows, collapsedRows, collapsedArrayMap
+        } = this.state;
+
+        this.setState({
+            collapsedArrayMap: collapsedMap(node, collapsed, collapsedArrayMap)
+        });
 
         if(collapsed){
             this.setState(prev => ({
