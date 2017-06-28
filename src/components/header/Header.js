@@ -15,6 +15,7 @@ import Indicator from '../app/Indicator';
 import Inbox from '../inbox/Inbox';
 import Tooltips from '../tooltips/Tooltips';
 import Prompt from '../app/Prompt';
+import NewEmail from '../email/NewEmail';
 
 import {
     openModal
@@ -44,6 +45,7 @@ class Header extends Component {
             isInboxOpen: false,
             isUDOpen: false,
             tooltipOpen: '',
+            isEmailOpen: false,
             prompt: {
                 open: false
             }
@@ -183,6 +185,18 @@ class Header extends Component {
         });
     }
 
+    handleEmail = () => {
+        this.setState({
+            isEmailOpen: true
+        });
+    }
+
+    handleCloseEmail = () => {
+        this.setState({
+            isEmailOpen: false
+        });
+    }
+
     handlePromptCancelClick = () => {
         this.setState({
             prompt: Object.assign({}, this.state.prompt, {
@@ -271,7 +285,8 @@ class Header extends Component {
 
         const {
             isSubheaderShow, isSideListShow, menuOverlay, isInboxOpen, scrolled,
-            isMenuOverlayShow, tooltipOpen, prompt, sideListTab, isUDOpen
+            isMenuOverlayShow, tooltipOpen, prompt, sideListTab, isUDOpen,
+            isEmailOpen
         } = this.state;
 
         return (
@@ -532,6 +547,7 @@ class Header extends Component {
                     openModal={this.openModal}
                     handlePrint={this.handlePrint}
                     handleDelete={this.handleDelete}
+                    handleEmail={this.handleEmail}
                     redirect={this.redirect}
                     disableOnClickOutside={!isSubheaderShow}
                     {...{breadcrumb, notfound, query, entity,
@@ -550,6 +566,12 @@ class Header extends Component {
                     defaultTab={sideListTab}
                     open={true}
                 />}
+
+                {   isEmailOpen &&
+                    <NewEmail
+                        handleCloseEmail={this.handleCloseEmail}
+                    />
+                }
 
                 <GlobalContextShortcuts
                     handleSidelistToggle={(id) =>
