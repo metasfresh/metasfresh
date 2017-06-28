@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -19,8 +20,6 @@ import org.compiere.model.I_AD_Table_Process;
 import org.compiere.report.IJasperService;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-
-import com.google.common.base.Objects;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
@@ -64,12 +63,7 @@ public class HUReportExecutor
 	private static final String SYSCONFIG_BarcodeServlet = "de.metas.adempiere.report.barcode.BarcodeServlet";
 	private static final String PARA_BarcodeURL = "barcodeURL";
 
-	private static final String TRX_PROPERTY_HU_IDs = HUReportExecutor.class.getName() + ".husToProcessIDs";
-
-	private static final String TRX_PROPERTY_REPORT_LANG = HUReportExecutor.class.getName() + ".reportLanguage";
-	private static final String TRX_PROPERTY_REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
-
-	private static final String TRX_PROPERTY_LISTENER_REGISTERED = HUReportExecutor.class.getName() + ".listenerRegistered";
+	private static final String REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
 
 	private final Properties ctx;
 
@@ -141,59 +135,71 @@ public class HUReportExecutor
 
 		// check if we actually got any new M_HU_ID
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		final Set<Integer> knownIds = trx.getProperty(TRX_PROPERTY_HU_IDs, () -> new LinkedHashSet<>());
-		if (!knownIds.addAll(huIds))
+
+		final HUReportTrxListener huReportTrxListener;
+		if (trx != null)
 		{
-			return;
+			huReportTrxListener = trx.getProperty("huReportTrxListener", () -> new HUReportTrxListener(ctx, adProcessId, windowNo, copies));
+		}
+		else
+		{
+			huReportTrxListener = new HUReportTrxListener(ctx, adProcessId, windowNo, copies);
+		}
+
+		if (!huReportTrxListener.addAll(huIds))
+		{
+			return; // there are no new HU IDs
 		}
 
 		// Use BPartner's Language, if all HUs' partners have a common language
 		{
-			final Language reportLanguage;
 			if (huBPartnerIds.size() == 1)
 			{
 				final int bpartnerId = huBPartnerIds.iterator().next();
-				reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+				Language reportLanguage = Services.get(IBPartnerBL.class).getLanguage(ctx, bpartnerId);
+				huReportTrxListener.setLanguage(reportLanguage == null ? REPORT_LANG_NONE : reportLanguage.getAD_Language());
 			}
 			else
 			{
-				reportLanguage = null; // N/A
-			}
-
-			final String previouslyStoredLang = trx.getProperty(TRX_PROPERTY_REPORT_LANG);
-			if (previouslyStoredLang == null)
-			{
-				trx.setProperty(TRX_PROPERTY_REPORT_LANG, reportLanguage.getAD_Language());
-			}
-			else if (!Objects.equal(previouslyStoredLang, TRX_PROPERTY_REPORT_LANG_NONE)
-					&& !Objects.equal(previouslyStoredLang, reportLanguage.getAD_Language()))
-			{
-				// the property was not yet set to TRX_PROPERTY_REPORT_LANG_NONE, but now it is, because this time around, the reportLanguage we found differs from the one we already found earlier.
-				trx.setProperty(TRX_PROPERTY_REPORT_LANG, TRX_PROPERTY_REPORT_LANG_NONE);
+				huReportTrxListener.setLanguage(REPORT_LANG_NONE);
 			}
 		}
 
-		final Boolean listenerWasRegistered = trx.getProperty(TRX_PROPERTY_LISTENER_REGISTERED, () -> Boolean.FALSE);
-		if (listenerWasRegistered)
+		if (huReportTrxListener.isListenerWasRegistered())
 		{
 			return;
 		}
 
 		// gh #1121: do this not now, but after the current transaction was committed. Because "right now", the HUs in question are probably not yet ready.
 		// The background is that in the handling unit framework we have some "decoupled" DAOs, that collect data in memory and then safe it all at once, right before the commit is made.
-		trx.setProperty(TRX_PROPERTY_LISTENER_REGISTERED, Boolean.TRUE);
 		trxManager
 				.getTrxListenerManagerOrAutoCommit(ITrx.TRXNAME_ThreadInherited)
-				.registerListener(
-						new HUReportTrxListener(ctx, adProcessId, windowNo, copies));
+				.registerListener(huReportTrxListener);
+		huReportTrxListener.setListenerWasRegistered();
 	}
 
 	private static final class HUReportTrxListener extends TrxListenerAdapter
 	{
-		private Properties listenerCtx;
-		private int listenerAdProcessId;
-		private int listenerWindowNo;
-		private int listenerCopies;
+		private final Properties listenerCtx;
+		private final int listenerAdProcessId;
+		private final int listenerWindowNo;
+		private final int listenerCopies;
+
+		private final Set<Integer> husToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
+
+		private String language;
+
+		/**
+		 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
+		 * Therefore (and because right now there is not time to get to the root of the problem),
+		 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
+		 *
+		 * @task https://github.com/metasfresh/metasfresh/issues/1263
+		 *
+		 */
+		private boolean commitWasDone = false;
+
+		private boolean listenerWasRegistered = false;
 
 		private HUReportTrxListener(@NonNull final Properties ctx,
 				final int adProcessId,
@@ -206,15 +212,32 @@ public class HUReportExecutor
 			this.listenerCopies = copies;
 		}
 
-		/**
-		 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
-		 * Therefore (and because right now there is not time to get to the root of the problem),
-		 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
-		 *
-		 * @task https://github.com/metasfresh/metasfresh/issues/1263
-		 *
-		 */
-		private boolean commitWasDone = false;
+		public boolean addAll(@NonNull final List<Integer> huIds)
+		{
+			return husToProcess.addAll(huIds);
+		}
+
+		public void setLanguage(@NonNull final String language)
+		{
+			if (this.language == null)
+			{
+				this.language = language;
+			}
+			else if (!Objects.equals(this.language, language))
+			{
+				this.language = REPORT_LANG_NONE;
+			}
+		}
+
+		public boolean isListenerWasRegistered()
+		{
+			return listenerWasRegistered;
+		}
+
+		public void setListenerWasRegistered()
+		{
+			this.listenerWasRegistered = true;
+		}
 
 		@Override
 		public void afterCommit(final ITrx trx)
@@ -230,14 +253,12 @@ public class HUReportExecutor
 				return;
 			}
 
-			final ArrayList<Integer> knownIds = trx.getProperty(TRX_PROPERTY_HU_IDs, () -> new ArrayList<>());
-			if (knownIds.isEmpty())
+			if (husToProcess.isEmpty())
 			{
 				return;
 			}
 
-			final String lang = trx.getProperty(TRX_PROPERTY_REPORT_LANG);
-			final String reportLanguageToUse = Objects.equal(TRX_PROPERTY_REPORT_LANG_NONE, lang) ? null : lang;
+			final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, language) ? null : language;
 
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final String barcodeServlet = sysConfigBL.getValue(SYSCONFIG_BarcodeServlet,
@@ -256,7 +277,7 @@ public class HUReportExecutor
 					//
 					// Execute report in a new transaction
 					.buildAndPrepareExecution()
-					.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), knownIds, ITrx.TRXNAME_ThreadInherited))
+					.callBefore(processInfo -> DB.createT_Selection(processInfo.getAD_PInstance_ID(), husToProcess, ITrx.TRXNAME_ThreadInherited))
 					.executeSync();
 		}
 	}
