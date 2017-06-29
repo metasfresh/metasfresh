@@ -14,6 +14,7 @@
     align-items: stretch;
     overflow-x: scroll;
     overflow-y: hidden;
+    min-height: calc(100vh - 117px);
 }
 
 .board-lane {
