@@ -23,6 +23,8 @@ Here come the actual release notes:
     * German Translation of the Window Edit Mode Caption. First time used in Unser Dashboard Customizer Action Menue Entry.
   * [#1919](https://github.com/metasfresh/metasfresh/issues/1919) Additional static element Translations
     * New Translations for static window elements in WebUI.
+  * [#1926](https://github.com/metasfresh/metasfresh/issues/1926) Change Column Reference of C_Allotment_ID to search
+    * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
 
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
@@ -79,7 +81,6 @@ Here come the actual release notes:
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
   * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
 
-
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
   * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
@@ -108,6 +109,8 @@ Here come the actual release notes:
   * [#1873](https://github.com/metasfresh/metasfresh/issues/1873) Fix control amount and qty in payment data imported from camt.54
   * [#1900](https://github.com/metasfresh/metasfresh/issues/1900) Migration Script for "Select all lines count"
     * Fix of the number delimiter in a message Translation the leads to failing switch of link in frontend for 'Select all x records'.
+  * [#1921](https://github.com/metasfresh/metasfresh/issues/1921) Export webui messages from w101 again
+  * [#1924](https://github.com/metasfresh/metasfresh/issues/1924) ESR Line AcctDate not set error
 
 * metasfresh-webui-frontend
   * [#913](https://github.com/metasfresh/metasfresh-webui-frontend/issues/913) Incompatible Sock.js versions
