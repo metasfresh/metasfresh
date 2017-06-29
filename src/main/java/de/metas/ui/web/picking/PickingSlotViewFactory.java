@@ -70,10 +70,13 @@ public class PickingSlotViewFactory implements IViewFactory
 		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
 		final List<PickingSlotRow> rows = pickingSlotRepo.retrieveRowsByIds(rowIds);
 
+		final ViewId pickingViewId = request.getParentViewId();
+		final DocumentId pickingRowId = request.getSingleReferencingDocumentPathOrNull().getDocumentId();
+		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
+
 		return PickingSlotView.builder()
-				.viewId(ViewId.random(request.getWindowId()))
+				.viewId(pickingSlotViewId)
 				.rows(rows)
 				.build();
 	}
-
 }

@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -67,7 +68,7 @@ public class PickingViewRepository
 				.provideForScope(LookupScope.DocumentField));
 	}
 
-	public List<PickingRow> retrieveRowsByIds(final Collection<DocumentId> rowIds)
+	public List<PickingRow> retrieveRowsByIds(final ViewId viewId, final Collection<DocumentId> rowIds)
 	{
 		final Set<Integer> shipmentScheduleIds = rowIds.stream().map(DocumentId::toInt).collect(ImmutableSet.toImmutableSet());
 		if (shipmentScheduleIds.isEmpty())
@@ -80,17 +81,18 @@ public class PickingViewRepository
 				.addInArrayFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
 				.stream(I_M_Packageable_V.class)
-				.map(packageable -> createPickingRow(packageable))
+				.map(packageable -> createPickingRow(viewId, packageable))
 				.collect(ImmutableList.toImmutableList());
 
 	}
 
-	private PickingRow createPickingRow(final I_M_Packageable_V packageable)
+	private PickingRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
 		final DocumentId rowId = DocumentId.of(packageable.getM_ShipmentSchedule_ID());
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingView, rowId);
 		return PickingRow.builder()
 				.documentPath(documentPath)
+				.viewId(viewId)
 				.id(rowId)
 				.type(DefaultRowType.Row)
 				.processed(false)

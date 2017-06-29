@@ -103,6 +103,8 @@ public final class JSONViewLayout implements Serializable
 	//
 	@JsonProperty("supportIncludedView")
 	private final boolean supportIncludedView;
+	@JsonProperty("supportIncludedViewOnSelect")
+	private final Boolean supportIncludedViewOnSelect;
 
 	//
 	// New record support
@@ -139,7 +141,9 @@ public final class JSONViewLayout implements Serializable
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(layout.getFilters(), jsonOpts);
 
 		supportAttributes = layout.isAttributesSupport();
+		
 		supportIncludedView = layout.isIncludedViewSupport();
+		supportIncludedViewOnSelect = layout.isIncludedViewOnSelectSupport() ? Boolean.TRUE : null;
 
 		//
 		// Tree

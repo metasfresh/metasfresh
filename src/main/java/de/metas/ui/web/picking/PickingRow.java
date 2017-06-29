@@ -13,6 +13,7 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -50,6 +51,7 @@ import lombok.ToString;
 @ToString(exclude = "_fieldNameAndJsonValues")
 public final class PickingRow implements IViewRow
 {
+	private final ViewId viewId;
 	private final DocumentId id;
 	private final IViewRowType type;
 	private final boolean processed;
@@ -75,12 +77,15 @@ public final class PickingRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
 	private final java.util.Date preparationDate;
+	
+	private final ViewId includedViewId;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
 	@Builder
 	private PickingRow(
 			@NonNull final DocumentId id,
+			@NonNull final ViewId viewId,
 			final IViewRowType type,
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
@@ -92,6 +97,7 @@ public final class PickingRow implements IViewRow
 			final Date preparationDate)
 	{
 		this.id = id;
+		this.viewId = viewId;
 		this.type = type;
 		this.processed = processed;
 		this.documentPath = documentPath;
@@ -101,6 +107,8 @@ public final class PickingRow implements IViewRow
 		this.qtyToDeliver = qtyToDeliver;
 		this.deliveryDate = deliveryDate;
 		this.preparationDate = preparationDate;
+		
+		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
 	}
 
 	@Override
@@ -159,5 +167,11 @@ public final class PickingRow implements IViewRow
 	public boolean hasIncludedView()
 	{
 		return true;
+	}
+
+	@Override
+	public ViewId getIncludedViewId()
+	{
+		return includedViewId;
 	}
 }

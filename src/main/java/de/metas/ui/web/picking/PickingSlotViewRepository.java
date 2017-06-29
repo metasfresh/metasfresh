@@ -6,8 +6,10 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -51,7 +53,8 @@ public class PickingSlotViewRepository
 	private final LookupDataSource bpartnerLookup;
 	private final LookupDataSource bpartnerLocationLookup;
 
-	public PickingSlotViewRepository()
+	@Autowired
+	public PickingSlotViewRepository(final Adempiere databaseAccess)
 	{
 		warehouseLookup = LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
