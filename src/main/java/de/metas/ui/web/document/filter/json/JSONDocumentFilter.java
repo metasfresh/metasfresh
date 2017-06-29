@@ -180,16 +180,27 @@ public final class JSONDocumentFilter implements Serializable
 		}
 
 		return filters.stream()
-				.map(filter -> ofStickyFilter(filter, adLanguage))
+				.map(filter -> ofStickyFilterOrNull(filter, adLanguage))
+				.filter(filter -> filter != null)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	public static final JSONDocumentFilter ofStickyFilter(final DocumentFilter filter, final String adLanguage)
+	private static final JSONDocumentFilter ofStickyFilterOrNull(final DocumentFilter filter, final String adLanguage)
 	{
+		// Don't expose the sticky filter if it does not have a caption,
+		// because usually that's an internal filter.
+		// (see https://github.com/metasfresh/metasfresh-webui-api/issues/481)
+		final String caption = filter.getCaption(adLanguage);
+		if(Check.isEmpty(caption, true))
+		{
+			return null;
+		}
+		
 		final String filterId = filter.getFilterId();
 		final boolean stickyFilter = true;
 		final List<JSONDocumentFilterParam> jsonParameters = ImmutableList.of(); // don't export the parameters
-		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), stickyFilter, jsonParameters);
+		
+		return new JSONDocumentFilter(filterId, caption, stickyFilter, jsonParameters);
 	}
 
 	@JsonProperty("filterId")
