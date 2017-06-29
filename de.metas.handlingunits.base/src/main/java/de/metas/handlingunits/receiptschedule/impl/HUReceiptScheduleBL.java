@@ -3,6 +3,8 @@
  */
 package de.metas.handlingunits.receiptschedule.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.createList;
+
 import java.awt.image.BufferedImage;
 
 /*
@@ -15,18 +17,17 @@ import java.awt.image.BufferedImage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -54,11 +56,14 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUTrxBL;
@@ -74,15 +79,21 @@ import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.handlingunits.report.HUReportExecutor;
+import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
+import de.metas.logging.LogManager;
 
 /**
  * @author cg
@@ -92,7 +103,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 {
 	private final IDocumentLUTUConfigurationHandler<I_M_ReceiptSchedule> lutuConfigurationHandler = ReceiptScheduleDocumentLUTUConfigurationHandler.instance;
 	private final IDocumentLUTUConfigurationHandler<List<I_M_ReceiptSchedule>> lutuConfigurationListHandler = new CompositeDocumentLUTUConfigurationHandler<>(lutuConfigurationHandler);
-	
+
+	private static final transient Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
+
 	@Override
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -101,16 +114,16 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		{
 			return null;
 		}
-		
+
 		final BigDecimal qtyTU = ol.getQtyEnteredTU();
 		return qtyTU;
 	}
-	
+
 	@Override
 	public BigDecimal getQtyOrderedTUOrZero(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrNull(receiptSchedule);
-		if(qtyOrderedTU == null)
+		if (qtyOrderedTU == null)
 		{
 			return BigDecimal.ZERO;
 		}
@@ -123,15 +136,15 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final BigDecimal qtyOrderedTU = getQtyOrderedTUOrZero(receiptSchedule);
 		final BigDecimal qtyMovedTU = receiptSchedule.getQtyMovedTU();
 		final BigDecimal qtyToMoveTU = qtyOrderedTU.subtract(qtyMovedTU);
+
 		return qtyToMoveTU;
 	}
 
-
 	@Override
-	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx, 
-			final InOutGenerateResult resultInitial, 
+	public IInOutProducer createInOutProducerFromReceiptScheduleHU(final Properties ctx,
+			final InOutGenerateResult resultInitial,
 			final Set<Integer> selectedHUIds,
-			 final boolean createReceiptWithDatePromised)
+			final boolean createReceiptWithDatePromised)
 	{
 		final InOutProducerFromReceiptScheduleHU producer = new InOutProducerFromReceiptScheduleHU(ctx, resultInitial, selectedHUIds, createReceiptWithDatePromised);
 		return producer;
@@ -196,11 +209,11 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				continue;
 			}
 
-			final List<I_M_HU> husToUnassign = new ArrayList<I_M_HU>(2);
+			final List<I_M_HU> husToUnassign = new ArrayList<>(2);
 
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 			if (tuHU != null && tuHU.isActive()
-					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+			// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
 					&& X_M_HU.HUSTATUS_Planning.equals(tuHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, tuHU);
@@ -209,7 +222,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 			final I_M_HU luHU = rsa.getM_LU_HU();
 			if (luHU != null && luHU.isActive()
-					// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
+			// rsa.isActive()=Y does not mean the HU can be destroyed! Only destroy if it is still in the planning stage
 					&& X_M_HU.HUSTATUS_Planning.equals(luHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, luHU);
@@ -287,12 +300,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * @param receiptSchedules
 	 * @param selectedHUs
 	 * @param storeReceipts
-	 * 
+	 *
 	 * @return inout generated result
 	 */
-	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx, 
-			final List<I_M_ReceiptSchedule> receiptSchedules, 
-			final Set<I_M_HU> selectedHUs, 
+	private final InOutGenerateResult processReceiptSchedules0(final Properties ctx,
+			final List<I_M_ReceiptSchedule> receiptSchedules,
+			final Set<I_M_HU> selectedHUs,
 			final boolean storeReceipts)
 	{
 		// TODO: make sure receipt schedules and selected HUs have TrxNone or InheritedTrx
@@ -305,16 +318,16 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final Set<Integer> selectedHUIds = new HashSet<>(selectedHUs.size());
 		for (final I_M_HU hu : selectedHUs)
 		{
-			if(!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
 			{
 				throw new HUException("@Invalid@ @HUStatus@: " + hu.getValue());
 			}
-			
+
 			final int huId = hu.getM_HU_ID();
 			selectedHUIds.add(huId);
 		}
 		//
-		if(selectedHUIds.isEmpty())
+		if (selectedHUIds.isEmpty())
 		{
 			throw new HUException("@NoSelection@ @M_HU_ID@");
 		}
@@ -355,8 +368,90 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 					.setExceptionHandler(FailTrxItemExceptionHandler.instance)
 					// Process schedules => receipt(s) will be generated
 					.execute(receiptSchedules.iterator());
+
+		}
+
+		// https://github.com/metasfresh/metasfresh/issues/1905
+		// Create the material receipt label right here.
+		// We used to create it in ReceiptInOutLineHUAssignmentListener, but there we could not detect the code
+		// being called multiple times in a row, from different transactions.
+		// This happens if there are >1 inout lines sharing the same LU.
+		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+
+		final Set<Integer> seenHUIds = new HashSet<>();
+
+		final List<I_M_InOut> inouts = createList(result.getInOuts(), I_M_InOut.class);
+		for (final I_M_InOut inout : inouts)
+		{
+			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
+			for (final I_M_InOutLine inoutLine : inoutLines)
+			{
+				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveHUAssignmentsForModel(inoutLine);
+				for (final I_M_HU_Assignment huAssignment : huAssignments)
+				{
+					if (seenHUIds.add(huAssignment.getM_HU_ID()))
+					{
+						printReceiptLabel(huAssignment.getM_HU(), inout.getC_BPartner_ID());
+					}
+				}
+			}
 		}
 		return result;
+	}
+
+	/**
+	 *
+	 * @param hu
+	 * @param vendorBPartnerId
+	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
+	 */
+	private void printReceiptLabel(final I_M_HU hu, final int vendorBPartnerId)
+	{
+		if (hu == null)
+		{
+			logger.info("Param 'hu'==null; nothing to do");
+			return;
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(hu);
+
+		final HUReportService huReportService = HUReportService.get();
+		if (!huReportService.isReceiptLabelAutoPrintEnabled(ctx, hu, vendorBPartnerId))
+		{
+			logger.info("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			return;
+		}
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isTopLevel(hu))
+		{
+			logger.info("We only print top level HUs; nothing to do; hu={}", hu);
+			return;
+		}
+
+		final int adProcessId = huReportService.retrievePrintReceiptLabelProcessId(ctx);
+		if (adProcessId <= 0)
+		{
+			logger.info("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
+			return;
+		}
+
+		final List<I_M_HU> husToProcess = huReportService
+				.getHUsToProcess(hu, adProcessId).stream()
+				.filter(huToProcess -> handlingUnitsBL.isTopLevel(huToProcess)) // gh #1160: here we need to filter because we still only want to process top level HUs (either LUs or TUs)
+				.collect(Collectors.toList());
+		if (husToProcess.isEmpty())
+		{
+			logger.info("hu's type does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			return;
+		}
+
+		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount(ctx);
+
+		HUReportExecutor.get(ctx)
+				.withNumberOfCopies(copies)
+				.executeHUReportAfterCommit(adProcessId, husToProcess);
 	}
 
 	@Override
@@ -367,7 +462,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedule not empty");
 
 		//
-		// Iterate all receipt schedules and get: 
+		// Iterate all receipt schedules and get:
 		// * PriceActual; Make sure it's unique for all receipt schedule lines.
 		// * C_OrderLine_IDs
 		BigDecimal priceActual = null;
@@ -390,7 +485,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
 						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
 			}
-			
+
 			final int orderLineId = receiptSchedule.getC_OrderLine_ID();
 			if (orderLineId > 0)
 			{
@@ -411,7 +506,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final I_M_Attribute attr_CostPrice = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_CostPrice, I_M_Attribute.class);
 		initialAttributeValueDefaults.put(attr_CostPrice, priceActual);
-		
+
 		//
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
@@ -419,7 +514,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			final I_M_Attribute attr_PurchaseOrderLine = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_PurchaseOrderLine_ID, I_M_Attribute.class);
 			initialAttributeValueDefaults.put(attr_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
-		
+
 		return request;
 	}
 
@@ -453,5 +548,5 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		archiveStorage.setBinaryData(archive, imagePDFBytes);
 		InterfaceWrapperHelper.save(archive);
 	}
-	
+
 }

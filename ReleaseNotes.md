@@ -21,12 +21,26 @@ Here come the actual release notes:
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
   * [#1909](https://github.com/metasfresh/metasfresh/issues/1909) Translate Open/ Close Edit Mode for Windows
     * German Translation of the Window Edit Mode Caption. First time used in Unser Dashboard Customizer Action Menue Entry.
+  * [#1919](https://github.com/metasfresh/metasfresh/issues/1919) Additional static element Translations
+    * New Translations for static window elements in WebUI.
+
+* metasfresh-webui-api
+  * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
+    * Adding the Key Field to WebUI KPI Translation Window.
   
 * metasfresh-webui-frontend
   * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
     * Adjustment of the content in the Breadcrumb Navigation, now only showing the leaf entries of the selected Breadcrumb Hierarchy.
+  * [#922](https://github.com/metasfresh/metasfresh-webui-frontend/issues/922) Language switch does not update static elements
+    * Adding the immediate Translations of menu Tooltips when switching the Language in User Settings.
+  * [#924](https://github.com/metasfresh/metasfresh-webui-frontend/issues/924) Remaining untranslated static elements in WebUI
+    * Translations for static elements added to metasfresh WebUI.
+  * [#934](https://github.com/metasfresh/metasfresh-webui-frontend/issues/934) Image widget might generate considerable traffic
+    * The Upload of Avatar/ User Images is now limited to an image size of 200x200.
+  * [#935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/935) Image widget: show uploading indicator
+    * Now showing an uploading/ processing Indicator to the user durcing the upload of a User image. The Indicator is shown when the image will be shown.
   * [#944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/944) Show the metasfresh logo centered when there are no KPIs
-    * Centering the metasfresh LOgo thats shown when the User/ KPI Dashboard remains empty without added KPI Cards.
+    * Centering the metasfresh Logo thats shown when the User/ KPI Dashboard remains empty without added KPI Cards.
   * [#950](https://github.com/metasfresh/metasfresh-webui-frontend/issues/950) Dashboard: move the "Open edit mode" button to Actions menu
     * New Action for Dashboard >Edit mode. Allows the user to toggle between Edit and Live Mode of the User/ KPI Dashboard.
   
@@ -35,8 +49,11 @@ Here come the actual release notes:
   * [#1869](https://github.com/metasfresh/metasfresh/issues/1869) Customer Returns for HU more than 1 Document
   * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
   * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
+  * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
   
 * metasfresh-webui-frontend
+  * [#921](https://github.com/metasfresh/metasfresh-webui-frontend/issues/921) Browser issue: Window Bookmark Header
+    * The jumping linebreak effect for Window headers in Action Menu is now solved in Chrome Browser.
   * [#931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/931) Notifications are not refreshed when the language is changed
     * Now the Notifications are alos shown in the correct language after switching the language in User settings.
   * [#951](https://github.com/metasfresh/metasfresh-webui-frontend/issues/951) Frontend is broken (showstopper)

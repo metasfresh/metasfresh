@@ -16,15 +16,14 @@ package de.metas.picking.terminal.form.swing;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.awt.Cursor;
 import java.awt.event.WindowAdapter;
@@ -88,6 +87,7 @@ import de.metas.adempiere.form.terminal.ITerminalTable;
 import de.metas.adempiere.form.terminal.ITerminalTextPane;
 import de.metas.adempiere.form.terminal.TerminalException;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
+import de.metas.adempiere.form.terminal.context.ITerminalContextReferences;
 import de.metas.adempiere.form.terminal.swing.TerminalSubPanel;
 import de.metas.adempiere.form.terminal.swing.TerminalTable;
 import de.metas.i18n.IMsgBL;
@@ -493,6 +493,13 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		return model;
 	}
 
+	/**
+	 * Used to be able to dispose components that are created while the "packing" terminal window is open.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/1911
+	 */
+	private ITerminalContextReferences packageTerminalRefs;
+
 	@Override
 	protected final void executePacking(final IPackingDetailsModel detailsModel)
 	{
@@ -502,8 +509,11 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		if (packageTerminalOld != null && packageTerminalOld.getFrame() != null)
 		{
 			packageTerminalOld.getFrame().removeWindowListener(packageTerminalWindowListener);
+			getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
 		}
-		this.packageTerminal = null;
+		packageTerminal = null;
+		
+		packageTerminalRefs = getTerminalContext().newReferences(); // gh #1911
 
 		//
 		// Create and setup new Package Terminal
@@ -512,7 +522,7 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		final FormFrame packageTerminalNewFrame = new FormFrame();
 		packageTerminalNew.init(terminalContext.getWindowNo(), packageTerminalNewFrame);
 		packageTerminalNewFrame.addWindowListener(packageTerminalWindowListener);
-		this.packageTerminal = packageTerminalNew;
+		packageTerminal = packageTerminalNew;
 
 		// we saving the tree and in this way we assure that only one user can see this specific tree
 		if (!getModel().isGroupByProduct())
@@ -550,6 +560,8 @@ public class SwingPickingOKPanel extends Packing implements PickingOKPanel
 		}
 
 		unlockShipmentSchedules(); // task 08153: make sure we unlock *and* update the scheds we did picking on
+
+		getTerminalContext().deleteReferences(packageTerminalRefs); // gh #1911
 
 		//
 		// If this window was already disposed (i.e. user closed all windows all together, e.g. on logout) then do nothing
