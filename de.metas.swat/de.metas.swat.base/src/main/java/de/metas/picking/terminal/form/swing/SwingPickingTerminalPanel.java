@@ -273,13 +273,13 @@ public class SwingPickingTerminalPanel extends PickingTerminalPanel
 		}
 	}
 
-	protected final IComponent createPanel(IContainer content, IComponent component, Object constraints)
+	protected final IComponent createPanel(final IContainer content, final IComponent component, final Object constraints)
 	{
 		content.add(component, constraints);
 
-		ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(content);
+		final ITerminalScrollPane scroll = getTerminalFactory().createScrollPane(content);
 		scroll.setUnitIncrementVSB(16);
-		IContainer card = getTerminalFactory().createContainer();
+		final IContainer card = getTerminalFactory().createContainer();
 		card.add(scroll, "growx, growy");
 		return card;
 	}
