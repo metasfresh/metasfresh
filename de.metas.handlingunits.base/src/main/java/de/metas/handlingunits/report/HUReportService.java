@@ -8,6 +8,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_AD_Process;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -42,7 +43,7 @@ import de.metas.logging.LogManager;
 
 /**
  * This service facade offers useful methods around to handling unit related jasper report processed.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -53,6 +54,8 @@ public class HUReportService
 	public static final String SYSCONFIG_RECEIPT_LABEL_PROCESS_ID = "de.metas.handlingunits.MaterialReceiptLabel.AD_Process_ID";
 
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Enabled";
+
+	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED + ".C_BPartner_ID_";
 
 	public static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_COPIES = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Copies";
 
@@ -78,7 +81,7 @@ public class HUReportService
 
 	/**
 	 * For the given {@code hu} and {@code process} this method traverses the HU hierarchy (using the hu as root) and collects every HU that is a fit for the process according to {@link IMHUProcessBL#processFitsType(I_AD_Process, String)}.
-	 * 
+	 *
 	 * @param hu
 	 * @param process
 	 * @return never {@code null}
@@ -124,12 +127,31 @@ public class HUReportService
 		return copies;
 	}
 
-	public boolean isReceiptLabelAutoPrintEnabled(final Properties ctx)
+	/**
+	 * Checks the sysconfig and returns true or if receipt label auto printing is enabled in general or for the given HU's C_BPartner_ID.
+	 *
+	 * @param ctx
+	 * @param hu
+	 * @param vendorBPartnerId the original vendor. By now, might not be the same as M_HU.C_BPartner_ID anymore
+	 * @return
+	 */
+	public boolean isReceiptLabelAutoPrintEnabled(final Properties ctx, final I_M_HU hu, final int vendorBPartnerId)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-		final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, false, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		return enabled;
-	}
+		final String vendorSysconfigName = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID + vendorBPartnerId;
+		final String valueForBPartner = sysConfigBL.getValue(vendorSysconfigName, "NOT_SET", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		logger.info("SysConfig {}={};", vendorSysconfigName, valueForBPartner);
+
+		if (!"NOT_SET".equals(valueForBPartner))
+		{
+			return DisplayType.toBoolean(valueForBPartner, false);
+		}
+
+		final String genericValue = sysConfigBL.getValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, "N", Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		logger.info("SysConfig {}={};", SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, genericValue);
+
+		return DisplayType.toBoolean(genericValue, false);
+}
 
 }
