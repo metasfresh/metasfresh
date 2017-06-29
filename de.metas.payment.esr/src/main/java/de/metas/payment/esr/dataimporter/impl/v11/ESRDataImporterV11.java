@@ -159,6 +159,8 @@ public class ESRDataImporterV11 implements IESRDataImporter
 				final Date paymentDate = ESRTransactionLineMatcherUtil.extractPaymentDate(currentTextLine);
 				esrTransactionBuilder.paymentDate(paymentDate);
 
+				final Date accountingDate = ESRTransactionLineMatcherUtil.extractAccountingDate(currentTextLine);
+				esrTransactionBuilder.accountingDate(accountingDate);
 			}
 			else
 			{
