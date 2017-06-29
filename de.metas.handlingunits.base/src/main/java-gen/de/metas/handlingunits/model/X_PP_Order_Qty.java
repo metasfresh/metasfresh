@@ -15,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -360386190L;
+	private static final long serialVersionUID = 1843637414L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -195,7 +195,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Datum.
+	/** Set Bewegungsdatum.
 		@param MovementDate 
 		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
@@ -205,7 +205,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 		set_ValueNoCheck (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungs-Datum.
+	/** Get Bewegungsdatum.
 		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
