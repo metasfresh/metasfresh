@@ -27,7 +27,7 @@
 
 .board-lane,
 .board-lane-placeholder {
-    min-width: 25%;
+    min-width: 16%;
     border-radius: 3px;
     margin-right: 3px;
     background-color: $brand-bright-color;
