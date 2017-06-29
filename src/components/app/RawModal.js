@@ -70,10 +70,6 @@ class RawModal extends Component {
     handleClose = () => {
         const {closeCallback, viewId, windowType} = this.props;
         const {isNew} = this.state;
-        console.log('handle close');
-        console.log(windowType);
-        console.log(viewId);
-        console.log(isNew);
 
         closeCallback && closeCallback(isNew);
         deleteView(windowType, viewId);

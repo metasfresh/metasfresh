@@ -12,17 +12,14 @@ class ModalContextShortcuts extends Component {
             case 'START':
                 event.preventDefault();
                 start();
-                console.log('start');
                 break;
             case 'CLOSE':
                 event.preventDefault();
                 close();
-                console.log('close');
                 break;
             case 'CANCEL':
                 event.preventDefault();
                 cancel();
-                console.log('cancel');
                 break;
         }
     }

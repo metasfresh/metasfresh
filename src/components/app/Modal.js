@@ -283,8 +283,6 @@ class Modal extends Component {
             scrolled, pending, isNewDoc, isTooltipShow
         } = this.state;
 
-        console.log(modalType === 'process');
-
         return(
             Object.keys(data).length > 0 && <div
                 className="screen-freeze js-not-unselect"
