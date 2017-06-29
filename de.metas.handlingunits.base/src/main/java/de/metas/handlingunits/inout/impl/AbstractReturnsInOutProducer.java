@@ -45,6 +45,7 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import lombok.NonNull;
@@ -67,7 +68,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private Date _movementDate = null;
 	private boolean _complete = true;
 
-	private I_M_InOut _manualReturnInOut = null;
+	protected I_M_InOut _manualReturnInOut = null;
 
 	/** #643 The order on based on which the empties inout is created (if it was selected) */
 	private I_C_Order _order = null;
@@ -128,7 +129,10 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 				// nothing created
 				return null;
 			}
-
+			
+			
+				Services.get(IHUInOutBL.class).recreatePackingMaterialLines(inout);
+		
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
 			afterInOutProcessed(inout);
