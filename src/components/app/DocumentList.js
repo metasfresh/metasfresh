@@ -153,10 +153,11 @@ class DocumentList extends Component {
         ) {
             if(!inBackground){
                 // In case of preventing cached selection restore
+
                 cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
-                    cachedSelection: undefined
+                    // cachedSelection: undefined
                 })
             }else{
                 this.setState({
@@ -182,6 +183,12 @@ class DocumentList extends Component {
                 dispatch(setListIncludedView());
             })
         }
+    }
+
+    resetCachedSelection = () => {
+        this.setState({
+            cachedSelection: undefined
+        })
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -514,6 +521,7 @@ class DocumentList extends Component {
                                 {...{windowType, selectedWindowType, viewId,
                                     refresh, processStatus}}
                                 selected={selectionValid ? selected : undefined}
+                                resetCachedSelection={this.resetCachedSelection}
                                 fetchOnInit={fetchQuickActionsOnInit}
                                 disabled={hasIncluded}
                                 shouldNotUpdate={inBackground && !hasIncluded}

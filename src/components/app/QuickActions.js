@@ -64,6 +64,8 @@ class QuickActions extends Component {
             (JSON.stringify(prevProps.viewId) !== JSON.stringify(viewId))
         ){
             this.fetchActions();
+        }else if(JSON.stringify(prevProps.selected) === JSON.stringify(selected)){
+            this.props.resetCachedSelection();
         }
     }
 
