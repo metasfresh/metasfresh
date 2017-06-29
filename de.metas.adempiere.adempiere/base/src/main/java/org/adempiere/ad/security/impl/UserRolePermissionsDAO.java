@@ -66,6 +66,7 @@ import org.compiere.model.I_AD_Table_Access;
 import org.compiere.model.I_AD_Task;
 import org.compiere.model.I_AD_Task_Access;
 import org.compiere.model.I_AD_User_OrgAccess;
+import org.compiere.model.I_AD_User_Roles;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
@@ -91,6 +92,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	private static final Set<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
+			I_AD_User_Roles.Table_Name, // User to Role assignment (see https://github.com/metasfresh/metasfresh-webui-api/issues/482)
 			// Included role
 			I_AD_Role_Included.Table_Name,
 			// Org Access
