@@ -183,7 +183,7 @@ class Subheader extends Component {
                         transparentBookmarks={!!siteName}
                         updateData={this.handleUpdateBreadcrumb}
                     >
-                        <span>
+                        <span className="subheader-title">
                             {currentNode ? currentNode.caption : siteName}
                         </span>
                     </BookmarkButton>

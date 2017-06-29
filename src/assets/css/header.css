@@ -171,6 +171,14 @@
     display: block;
 }
 
+.subheader-title {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: inline-block;
+    width: calc(100% - 2rem);
+    line-height: 1.1rem;
+}
+
 .subheader-column {
     width: 50%;
     border-right: 1px solid #e1e7ec;
@@ -256,7 +264,6 @@
 
 .subheader-header {
     white-space: nowrap;
-    text-overflow: ellipsis;
     overflow: hidden;
     padding: .75rem 1.25rem;
     color: $brand-color-primary;
