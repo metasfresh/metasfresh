@@ -79,7 +79,6 @@ Here come the actual release notes:
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
   * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
 
-
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
   * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
@@ -109,6 +108,7 @@ Here come the actual release notes:
   * [#1900](https://github.com/metasfresh/metasfresh/issues/1900) Migration Script for "Select all lines count"
     * Fix of the number delimiter in a message Translation the leads to failing switch of link in frontend for 'Select all x records'.
   * [#1921](https://github.com/metasfresh/metasfresh/issues/1921) Export webui messages from w101 again
+  * [#1924](https://github.com/metasfresh/metasfresh/issues/1924) ESR Line AcctDate not set error
 
 * metasfresh-webui-frontend
   * [#913](https://github.com/metasfresh/metasfresh-webui-frontend/issues/913) Incompatible Sock.js versions
