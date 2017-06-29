@@ -150,13 +150,12 @@ class Board extends Component {
     }
 
     handleCaptionClick = (docPath) => {
-        const {dispatch} = this.props;
         if(!docPath) return;
 
-        dispatch(push(
-            '/window/' + docPath.windowId +
-            (docPath.documentId ? '/' + docPath.documentId : '')
-        ))
+        const url = '/window/' + docPath.windowId +
+            (docPath.documentId ? '/' + docPath.documentId : '');
+        
+        window.open(url, '_blank');
     }
 
     handleDelete = (laneId, cardId) => {
