@@ -63,8 +63,9 @@ public class PickingViewFactory implements IViewFactory
 				.setHasAttributesSupport(false)
 				.setHasTreeSupport(false)
 				.setHasIncludedViewSupport(true)
+				.setHasIncludedViewOnSelectSupport(true)
 				//
-				.addElementsFromViewRowClass(PickingRow.class)
+				.addElementsFromViewRowClass(PickingRow.class, viewDataType)
 				//
 				.build();
 	}
@@ -84,11 +85,13 @@ public class PickingViewFactory implements IViewFactory
 			throw new IllegalArgumentException("Invalid request's windowId: " + request);
 		}
 
+		final ViewId viewId = ViewId.random(PickingConstants.WINDOWID_PickingView);
+		
 		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		final List<PickingRow> rows = pickingViewRepo.retrieveRowsByIds(rowIds);
+		final List<PickingRow> rows = pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
 
 		return PickingView.builder()
-				.viewId(ViewId.random(PickingConstants.WINDOWID_PickingView))
+				.viewId(viewId)
 				.description(ITranslatableString.empty())
 				.rows(rows)
 				.build();

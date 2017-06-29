@@ -18,9 +18,14 @@ import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -47,7 +52,7 @@ import lombok.ToString;
  */
 
 @ToString
-public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
+public class PPOrderLineRow implements IViewRow
 {
 	public static final Builder builder(final DocumentId rowId)
 	{
@@ -61,7 +66,6 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 
 	private final DocumentPath documentPath;
 	private final DocumentId rowId;
-	private final PPOrderLineType type;
 
 	private final Supplier<? extends IViewRowAttributes> attributesSupplier;
 
@@ -73,13 +77,28 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	private final int ppOrderQtyId;
 	private final int huId;
 
-	private final ImmutableMap<String, Object> values;
+	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10))
 	private final JSONLookupValue product;
-	private final JSONLookupValue uom;
-	private final String packingInfo;
+
+	@ViewColumn(captionKey = "Code", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20))
 	private final String code;
-	private final BigDecimal qty;
+
+	@ViewColumn(captionKey = "Type", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30))
+	private final PPOrderLineType type;
+
+	@ViewColumn(captionKey = "PackingInfo", widgetType = DocumentFieldWidgetType.Text, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40))
+	private final String packingInfo;
+
+	@ViewColumn(captionKey = "QtyPlan", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50))
 	private final BigDecimal qtyPlan;
+
+	@ViewColumn(captionKey = "Qty", widgetType = DocumentFieldWidgetType.Quantity, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60))
+	private final BigDecimal qty;
+
+	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70))
+	private final JSONLookupValue uom;
+
+	private transient ImmutableMap<String, Object> _values;
 
 	private PPOrderLineRow(final Builder builder)
 	{
@@ -102,7 +121,6 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 		code = builder.code;
 		qty = builder.qty;
 		qtyPlan = builder.qtyPlan;
-		values = builder.buildValuesMap();
 
 		attributesSupplier = builder.attributesSupplier;
 		includedDocuments = builder.buildIncludedDocuments();
@@ -132,6 +150,11 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	@Override
 	public Map<String, Object> getFieldNameAndJsonValues()
 	{
+		ImmutableMap<String, Object> values = _values;
+		if (values == null)
+		{
+			values = _values = ViewColumnHelper.extractJsonMap(this);
+		}
 		return values;
 	}
 
@@ -146,13 +169,12 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 	{
 		return type;
 	}
-	
+
 	@Override
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
 	}
-
 
 	public JSONLookupValue getProduct()
 	{
@@ -262,9 +284,9 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 		private boolean processed = false;
 
 		private JSONLookupValue product;
+		private String code;
 		private JSONLookupValue uom;
 		private String packingInfo;
-		private String code;
 		private BigDecimal qtyPlan;
 		private BigDecimal qty;
 		private boolean qtyAsSumOfIncludedQtys = false;
@@ -277,29 +299,6 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 		public PPOrderLineRow build()
 		{
 			return new PPOrderLineRow(this);
-		}
-
-		private ImmutableMap<String, Object> buildValuesMap()
-		{
-			final ImmutableMap.Builder<String, Object> map = ImmutableMap.builder();
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Value, code);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Type, type.getName());
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_M_Product_ID, product);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_C_UOM_ID, uom);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_PackingInfo, packingInfo);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_Qty, qty);
-			putIfNotNull(map, IPPOrderBOMLine.COLUMNNAME_QtyPlan, qtyPlan);
-
-			return map.build();
-		}
-
-		private static final void putIfNotNull(final ImmutableMap.Builder<String, Object> map, final String name, final Object value)
-		{
-			if (value == null)
-			{
-				return;
-			}
-			map.put(name, value);
 		}
 
 		public Builder ppOrder(final int ppOrderId)
@@ -333,7 +332,7 @@ public class PPOrderLineRow implements IViewRow, IPPOrderBOMLine
 			this.processed = processed;
 			return this;
 		}
-		
+
 		private DocumentId getRowId()
 		{
 			return rowId;

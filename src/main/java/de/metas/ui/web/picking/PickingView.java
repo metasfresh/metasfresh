@@ -3,6 +3,7 @@ package de.metas.ui.web.picking;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -61,9 +62,16 @@ import lombok.NonNull;
 
 public class PickingView implements IView
 {
+	public static PickingView cast(final IView view)
+	{
+		return (PickingView)view;
+	}
+
 	private final ViewId viewId;
 	private final ITranslatableString description;
 	private final Map<DocumentId, PickingRow> rows;
+	
+	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
 
 	@Builder
 	private PickingView(@NonNull final ViewId viewId,
@@ -231,6 +239,23 @@ public class PickingView implements IView
 		// TODO Auto-generated method stub
 
 	}
+	
+	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
+	{
+		pickingSlotsViewByRowId.put(rowId, pickingSlotView);
+	}
+	
+	/* package */ void removePickingSlotView(@NonNull final DocumentId rowId)
+	{
+		pickingSlotsViewByRowId.remove(rowId);
+	}
+	
+	/* package */ PickingSlotView getPickingSlotViewOrNull(@NonNull final DocumentId rowId)
+	{
+		return pickingSlotsViewByRowId.get(rowId);
+	}
+
+
 
 	@ViewAction(caption = "picking slots", defaultAction = true)
 	public CreateAndOpenIncludedViewAction openPickingSlots(final PickingView pickingView, final DocumentIdsSelection selectedRowIds)
@@ -243,14 +268,15 @@ public class PickingView implements IView
 		// TODO: fetch the picking slots eligible for selected picking row
 		final DocumentId pickingRowId = selectedRowIds.getSingleDocumentId();
 		final PickingRow pickingRow = pickingView.getById(pickingRowId);
+
 		final PickingSlotViewRepository pickingSlotRepo = Adempiere.getBean(PickingSlotViewRepository.class);
 		final Set<Integer> pickingSlotRowIds = pickingSlotRepo.retrieveAllRowIds();
 
 		final CreateViewRequest createViewRequest = CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
 				.setParentViewId(viewId)
+				.setReferencingDocumentPath(pickingRow.getDocumentPath())
 				.setFilterOnlyIds(pickingSlotRowIds)
 				.build();
 		return CreateAndOpenIncludedViewAction.of(createViewRequest);
 	}
-
 }

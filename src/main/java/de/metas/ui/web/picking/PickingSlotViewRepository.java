@@ -6,8 +6,10 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
@@ -15,9 +17,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -53,7 +53,8 @@ public class PickingSlotViewRepository
 	private final LookupDataSource bpartnerLookup;
 	private final LookupDataSource bpartnerLocationLookup;
 
-	public PickingSlotViewRepository()
+	@Autowired
+	public PickingSlotViewRepository(final Adempiere databaseAccess)
 	{
 		warehouseLookup = LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
@@ -83,7 +84,7 @@ public class PickingSlotViewRepository
 				.map(pickingSlotPO -> createPickingSlotRow(pickingSlotPO))
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public Set<Integer> retrieveAllRowIds()
 	{
 		return Services.get(IPickingSlotDAO.class).retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
@@ -92,21 +93,15 @@ public class PickingSlotViewRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-
 	private PickingSlotRow createPickingSlotRow(final I_M_PickingSlot pickingSlotPO)
 	{
-		final DocumentId rowId = DocumentId.of(pickingSlotPO.getM_PickingSlot_ID());
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, rowId);
-		return PickingSlotRow.builder()
-				.documentPath(documentPath)
-				.id(rowId)
-				.type(DefaultRowType.Row)
-				.processed(false)
+		return PickingSlotRow.fromPickingSlotBuilder()
+				.pickingSlotId(pickingSlotPO.getM_PickingSlot_ID())
 				//
-				.name(pickingSlotPO.getPickingSlot())
-				.warehouse(warehouseLookup.findById(pickingSlotPO.getM_Warehouse_ID()))
-				.bpartner(bpartnerLookup.findById(pickingSlotPO.getC_BPartner_ID()))
-				.bpartnerLocation(bpartnerLocationLookup.findById(pickingSlotPO.getC_BPartner_Location_ID()))
+				.pickingSlotName(pickingSlotPO.getPickingSlot())
+				.pickingSlotWarehouse(warehouseLookup.findById(pickingSlotPO.getM_Warehouse_ID()))
+				.pickingSlotBPartner(bpartnerLookup.findById(pickingSlotPO.getC_BPartner_ID()))
+				.pickingSlotBPLocation(bpartnerLocationLookup.findById(pickingSlotPO.getC_BPartner_Location_ID()))
 				//
 				.build();
 	}

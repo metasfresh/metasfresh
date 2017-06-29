@@ -7,13 +7,18 @@ import java.util.stream.Collectors;
 
 import org.adempiere.util.GuavaCollectors;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentBase;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
+import lombok.Value;
 
 /*
  * #%L
@@ -45,14 +50,14 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
  */
 public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 {
-	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows)
+	public static List<JSONViewRow> ofViewRows(final List<? extends IViewRow> rows, final String adLanguage)
 	{
 		return rows.stream()
-				.map(JSONViewRow::ofRow)
+				.map(row -> ofRow(row, adLanguage))
 				.collect(Collectors.toList());
 	}
 
-	public static JSONViewRow ofRow(final IViewRow row)
+	private static JSONViewRow ofRow(final IViewRow row, final String adLanguage)
 	{
 		//
 		// Document view record
@@ -97,7 +102,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 			{
 				jsonRow.includedDocuments = includedDocuments
 						.stream()
-						.map(JSONViewRow::ofRow)
+						.map(includedRow -> ofRow(includedRow, adLanguage))
 						.collect(GuavaCollectors.toImmutableList());
 			}
 		}
@@ -108,12 +113,26 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 		{
 			jsonRow.supportAttributes = true;
 		}
-		
+
 		//
 		// Included views
-		if(row.hasIncludedView())
+		if (row.hasIncludedView())
 		{
 			jsonRow.supportIncludedViews = true;
+			
+			final ViewId includedViewId = row.getIncludedViewId();
+			if(includedViewId != null)
+			{
+				jsonRow.includedView = new JSONIncludedViewId(includedViewId.getWindowId(), includedViewId.getViewId());
+			}
+		}
+
+		//
+		// Single column row
+		if (row.isSingleColumn())
+		{
+			jsonRow.colspan = true;
+			jsonRow.caption = row.getSingleColumnCaption().translate(adLanguage);
 		}
 
 		return jsonRow;
@@ -136,16 +155,36 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean supportAttributes;
 
-	@JsonProperty(value = "supportIncludedViews")
+	@JsonProperty("supportIncludedViews")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean supportIncludedViews;
+	@JsonProperty("includedView")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private JSONIncludedViewId includedView;
 
 	@JsonProperty("includedDocuments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<JSONViewRow> includedDocuments;
 
+	//
+	// Single column row
+	@JsonProperty("colspan")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean colspan;
+	@JsonProperty("caption")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String caption;
+
 	private JSONViewRow(final DocumentId documentId)
 	{
 		super(documentId);
+	}
+	
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@Value
+	private static final class JSONIncludedViewId
+	{
+		private final WindowId windowId;
+		private final String viewId;
 	}
 }

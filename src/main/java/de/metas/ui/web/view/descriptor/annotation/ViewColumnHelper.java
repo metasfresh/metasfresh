@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.reflect.FieldReference;
 import org.reflections.ReflectionUtils;
@@ -23,6 +25,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -58,28 +61,28 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class ViewColumnHelper
 {
-	private static final LoadingCache<Class<?>, ClassViewLayout> layoutsByClass = CacheBuilder.newBuilder()
+	private static final LoadingCache<Class<?>, ClassViewDescriptor> descriptorsByClass = CacheBuilder.newBuilder()
 			.weakKeys()
-			.build(new CacheLoader<Class<?>, ClassViewLayout>()
+			.build(new CacheLoader<Class<?>, ClassViewDescriptor>()
 			{
 				@Override
-				public ClassViewLayout load(final Class<?> dataType) throws Exception
+				public ClassViewDescriptor load(final Class<?> dataType) throws Exception
 				{
-					return createClassViewLayout(dataType);
+					return createClassViewDescriptor(dataType);
 				}
 			});
 
 	public static void cacheReset()
 	{
-		layoutsByClass.invalidateAll();
-		layoutsByClass.cleanUp();
+		descriptorsByClass.invalidateAll();
+		descriptorsByClass.cleanUp();
 	}
 
-	private static ClassViewLayout getClassViewLayout(@NonNull final Class<?> dataType)
+	private static ClassViewDescriptor getDescriptor(@NonNull final Class<?> dataType)
 	{
 		try
 		{
-			return layoutsByClass.get(dataType);
+			return descriptorsByClass.get(dataType);
 		}
 		catch (final ExecutionException e)
 		{
@@ -87,63 +90,62 @@ public final class ViewColumnHelper
 		}
 	}
 
-	public static List<DocumentLayoutElementDescriptor.Builder> getLayoutElementsForClass(final Class<?> dataType)
+	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClass(final Class<?> dataType, @NonNull final JSONViewDataType viewType)
 	{
-		return getClassViewLayout(dataType)
+		return getDescriptor(dataType)
 				.getColumns().stream()
+				.filter(column -> column.isDisplayed(viewType))
+				.sorted(Comparator.comparing(column -> column.getSeqNo(viewType)))
 				.map(column -> createLayoutElement(column))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ClassViewLayout createClassViewLayout(final Class<?> dataType)
+	private static ClassViewDescriptor createClassViewDescriptor(final Class<?> dataType)
 	{
 		@SuppressWarnings("unchecked")
 		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotations(ViewColumn.class));
 
-		final ImmutableList<ClassViewColumnLayout> columns = fields.stream()
-				.sorted(Comparator.comparing(field -> extractSeqNo(field)))
-				.map(field -> createClassViewColumnLayout(field))
+		final ImmutableList<ClassViewColumnDescriptor> columns = fields.stream()
+				.map(field -> createClassViewColumnDescriptor(field))
 				.collect(ImmutableList.toImmutableList());
 		if (columns.isEmpty())
 		{
-			return ClassViewLayout.EMPTY;
+			return ClassViewDescriptor.EMPTY;
 		}
 
-		return ClassViewLayout.builder()
+		return ClassViewDescriptor.builder()
 				.className(dataType.getName())
 				.columns(columns)
 				.build();
 
 	}
-	
-	private static final int extractSeqNo(final Field field)
-	{
-		ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
-		if(viewColumnAnn == null)
-		{
-			return Integer.MAX_VALUE;
-		}
-		int seqNo = viewColumnAnn.seqNo();
-		return seqNo >= 0 ? seqNo : Integer.MAX_VALUE;
-	}
 
-	private static ClassViewColumnLayout createClassViewColumnLayout(final Field field)
+	private static ClassViewColumnDescriptor createClassViewColumnDescriptor(final Field field)
 	{
 		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
-		final String fieldName = field.getName();
-		final String captionKey = Check.isEmpty(viewColumnAnn.captionKey()) ? viewColumnAnn.captionKey() : fieldName;
+		final String fieldName = !Check.isEmpty(viewColumnAnn.fieldName(), true) ? viewColumnAnn.fieldName().trim() : field.getName();
+		final String captionKey = !Check.isEmpty(viewColumnAnn.captionKey()) ? viewColumnAnn.captionKey() : fieldName;
 
-		return ClassViewColumnLayout.builder()
+		final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType = Stream.of(viewColumnAnn.layouts())
+				.map(layoutAnn -> ClassViewColumnLayoutDescriptor.builder()
+						.viewType(layoutAnn.when())
+						.seqNo(layoutAnn.seqNo())
+						.build())
+				.collect(GuavaCollectors.toImmutableMapByKey(ClassViewColumnLayoutDescriptor::getViewType));
+
+		return ClassViewColumnDescriptor.builder()
 				.fieldName(fieldName)
 				.caption(Services.get(IMsgBL.class).translatable(captionKey))
 				.widgetType(viewColumnAnn.widgetType())
 				.fieldReference(FieldReference.of(field))
+				.layoutsByViewType(layoutsByViewType)
 				.build();
 	}
 
-	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnLayout column)
+	private static DocumentLayoutElementDescriptor.Builder createLayoutElement(final ClassViewColumnDescriptor column)
 	{
 		return DocumentLayoutElementDescriptor.builder()
+				.setCaption(column.getCaption())
 				.setWidgetType(column.getWidgetType())
 				.setGridElement()
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
@@ -153,7 +155,7 @@ public final class ViewColumnHelper
 	{
 		final Class<? extends IViewRow> rowClass = row.getClass();
 		final Map<String, Object> result = new LinkedHashMap<>();
-		getClassViewLayout(rowClass)
+		getDescriptor(rowClass)
 				.getColumns()
 				.forEach(column -> {
 					final Object value = extractFieldValueAsJson(row, column);
@@ -166,7 +168,7 @@ public final class ViewColumnHelper
 		return ImmutableMap.copyOf(result);
 	}
 
-	private static final <T extends IViewRow> Object extractFieldValueAsJson(final T row, final ClassViewColumnLayout column)
+	private static final <T extends IViewRow> Object extractFieldValueAsJson(final T row, final ClassViewColumnDescriptor column)
 	{
 		final Field field = column.getFieldReference().getField();
 		if (!field.isAccessible())
@@ -186,26 +188,56 @@ public final class ViewColumnHelper
 
 	@Value
 	@Builder
-	private static final class ClassViewLayout
+	private static final class ClassViewDescriptor
 	{
-		public static final ClassViewLayout EMPTY = builder().build();
+		public static final ClassViewDescriptor EMPTY = builder().build();
 
 		private final String className;
 		@Singular
-		private final ImmutableList<ClassViewColumnLayout> columns;
+		private final ImmutableList<ClassViewColumnDescriptor> columns;
 	}
 
 	@Value
 	@Builder
-	private static final class ClassViewColumnLayout
+	private static final class ClassViewColumnDescriptor
 	{
 		@NonNull
 		private final String fieldName;
+
 		@NonNull
 		private final ITranslatableString caption;
 		@NonNull
 		private final DocumentFieldWidgetType widgetType;
 		@NonNull
 		private final FieldReference fieldReference;
+		@NonNull
+		private final ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;
+
+		public boolean isDisplayed(final JSONViewDataType viewType)
+		{
+			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
+			return layout != null;
+		}
+
+		public int getSeqNo(final JSONViewDataType viewType)
+		{
+			final ClassViewColumnLayoutDescriptor layout = layoutsByViewType.get(viewType);
+			if (layout == null)
+			{
+				return Integer.MAX_VALUE;
+			}
+
+			int seqNo = layout.getSeqNo();
+			return seqNo >= 0 ? seqNo : Integer.MAX_VALUE;
+		}
+	}
+
+	@Value
+	@Builder
+	private static final class ClassViewColumnLayoutDescriptor
+	{
+		@NonNull
+		private JSONViewDataType viewType;
+		private final int seqNo;
 	}
 }

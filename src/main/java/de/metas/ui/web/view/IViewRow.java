@@ -3,6 +3,7 @@ package de.metas.ui.web.view;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -69,5 +70,15 @@ public interface IViewRow
 	// Attributes
 	// @formatter:off
 	boolean hasIncludedView();
+	default ViewId getIncludedViewId() { return null; }
+	// @formatter:on
+
+	//
+	// Single column row
+	// @formatter:off
+	/** @return true if frontend shall display one single column */
+	default boolean isSingleColumn() { return false; }
+	/** @return text to be displayed if {@link #isSingleColumn()} */
+	default ITranslatableString getSingleColumnCaption() { return ITranslatableString.empty(); }
 	// @formatter:on
 }

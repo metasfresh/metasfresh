@@ -192,20 +192,26 @@ public final class CreateViewRequest
 			return this;
 		}
 
+		public Builder setReferencingDocumentPath(final DocumentPath referencingDocumentPath)
+		{
+			setReferencingDocumentPaths(ImmutableSet.of(referencingDocumentPath));
+			return this;
+		}
+
 		private Set<DocumentPath> getReferencingDocumentPaths()
 		{
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 
-		public Builder setStickyFilters(List<DocumentFilter> stickyFilters)
+		public Builder setStickyFilters(final List<DocumentFilter> stickyFilters)
 		{
 			this.stickyFilters = stickyFilters;
 			return this;
 		}
-		
+
 		public Builder addStickyFilters(@NonNull final DocumentFilter stickyFilter)
 		{
-			if(stickyFilters == null)
+			if (stickyFilters == null)
 			{
 				stickyFilters = new ArrayList<>();
 			}
@@ -263,7 +269,7 @@ public final class CreateViewRequest
 
 		public Builder addActions(final ViewActionDescriptorsList actionsToAdd)
 		{
-			this.actions = this.actions.mergeWith(actionsToAdd);
+			actions = actions.mergeWith(actionsToAdd);
 			return this;
 		}
 

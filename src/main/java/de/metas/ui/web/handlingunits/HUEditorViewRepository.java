@@ -320,7 +320,7 @@ public class HUEditorViewRepository
 	private static JSONLookupValue createHUStatusLookupValue(final I_M_HU hu)
 	{
 		final String huStatusKey = hu.getHUStatus();
-		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(IHUEditorRow.HUSTATUS_AD_Reference_ID, huStatusKey);
+		final String huStatusDisplayName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(HUEditorRow.HUSTATUS_AD_Reference_ID, huStatusKey);
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
 	}
 

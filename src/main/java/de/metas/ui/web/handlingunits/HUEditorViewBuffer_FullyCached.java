@@ -64,7 +64,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	private final HUEditorViewRepository huEditorRepo;
 
 	private final ImmutableList<DocumentFilter> stickyFiltersWithoutHUIdsFilter;
-	
+
 	private final HUIdsFilterData huIdsFilterData;
 	private final Supplier<Set<Integer>> huIdsSupplier;
 	private final ExtendedMemorizingSupplier<IndexedHUEditorRows> rowsSupplier = ExtendedMemorizingSupplier.of(() -> retrieveHUEditorRows());
@@ -107,7 +107,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
-		return ImmutableList.<DocumentFilter>builder()
+		return ImmutableList.<DocumentFilter> builder()
 				.add(HUIdsFilterHelper.createFilter(huIdsFilterData.copy()))
 				.addAll(stickyFiltersWithoutHUIdsFilter)
 				.build();
@@ -169,21 +169,10 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 			return null;
 		}
 
-		Comparator<HUEditorRow> comparator = null;
-		for (final DocumentQueryOrderBy orderBy : orderBys)
-		{
-			final Comparator<HUEditorRow> orderByComparator = orderBy.<HUEditorRow> asComparator((row, fieldName) -> row.getFieldValueAsJson(fieldName));
-			if (comparator == null)
-			{
-				comparator = orderByComparator;
-			}
-			else
-			{
-				comparator = comparator.thenComparing(orderByComparator);
-			}
-		}
-
-		return comparator;
+		return orderBys.stream()
+				.map(orderBy -> orderBy.asComparator(HUEditorRow::getFieldValueAsJson))
+				.reduce((cmp1, cmp2) -> cmp1.thenComparing(cmp2))
+				.orElse(null);
 	}
 
 	@Override
@@ -260,7 +249,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
 		return sqlKeyColumnNameFK + " IN " + DB.buildSqlList(rowIdsEffective.toIntSet());
 	}
-	
+
 	//
 	//
 	//

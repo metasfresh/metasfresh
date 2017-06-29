@@ -1,5 +1,6 @@
 package de.metas.ui.web.view;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -9,7 +10,10 @@ import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.EqualsAndHashCode;
@@ -50,54 +54,98 @@ public final class ViewId
 
 	/** @return ViewId from given viewId string; the WindowId will be extracted from viewId string */
 	@JsonCreator
-	public static ViewId ofViewIdString(@NonNull String viewIdStr)
+	public static ViewId ofViewIdString(@NonNull final String viewIdStr)
 	{
 		final WindowId windowId = null; // N/A
 		return ofViewIdString(viewIdStr, windowId);
 	}
 
-	public static ViewId ofViewIdString(@NonNull String viewIdStr, @Nullable WindowId expectedWindowId)
+	public static ViewId ofViewIdString(@NonNull final String viewIdStr, @Nullable final WindowId expectedWindowId)
 	{
-		final WindowId windowId = extractWindowIdFromViewId(viewIdStr);
+		final List<String> parts = SPLITTER.splitToList(viewIdStr);
+		if (parts.size() < 2)
+		{
+			throw new AdempiereException("Invalid viewId: " + viewIdStr);
+		}
+
+		final WindowId windowId = WindowId.fromJson(parts.get(0));
 		if (expectedWindowId != null)
 		{
 			Preconditions.checkArgument(Objects.equals(windowId, expectedWindowId), "Invalid windowId: %s (viewId=%s)", windowId, viewIdStr);
 		}
 
-		return new ViewId(windowId, viewIdStr);
+		return new ViewId(viewIdStr, parts, windowId);
 	}
 
 	public static ViewId random(@NonNull final WindowId windowId)
 	{
 		// TODO: find a way to generate smaller viewIds
-		final String viewIdStr = windowId.toJson() + SEPARATOR_AFTER_WindowId + UUID.randomUUID().toString();
-		return new ViewId(windowId, viewIdStr);
+		final String viewIdPart = toString(UUID.randomUUID());
+		final List<String> parts = ImmutableList.of(windowId.toJson(), viewIdPart);
+		final String viewIdStr = JOINER.join(parts);
+		return new ViewId(viewIdStr, parts, windowId);
 	}
 
-	private static final WindowId extractWindowIdFromViewId(@NonNull final String viewIdStr)
+	private static final String toString(final UUID uuid)
 	{
-		try
-		{
-			final int idx = viewIdStr.indexOf(SEPARATOR_AFTER_WindowId);
-			final String windowIdStr = viewIdStr.substring(0, idx);
-			return WindowId.fromJson(windowIdStr);
-		}
-		catch (Exception ex)
-		{
-			throw new AdempiereException("Invalid viewId: " + viewIdStr, ex);
-		}
+		final long mostSigBits = uuid.getMostSignificantBits();
+		final long leastSigBits = uuid.getLeastSignificantBits();
+
+		// copy/paste from java.util.UUID.toString(), with our changes
+		return (digits(mostSigBits >> 32, 8) + // "-" +
+				digits(mostSigBits >> 16, 4) + // "-" +
+				digits(mostSigBits, 4) + // "-" +
+				digits(leastSigBits >> 48, 4) + // "-" +
+				digits(leastSigBits, 12));
 	}
 
-	private static final String SEPARATOR_AFTER_WindowId = "-";
+	/**
+	 * @author java.util.UUID.digits(long, int)
+	 */
+	private static String digits(long val, int digits)
+	{
+		long hi = 1L << (digits * 4);
+		return Long.toHexString(hi | (val & (hi - 1))).substring(1);
+	}
+
+	/**
+	 * Creates a ViewId from parts.
+	 *
+	 * @param windowId
+	 * @param viewIdPart viewId part (without WindowId!)
+	 * @param otherParts optional other parts
+	 * @return ViewId
+	 */
+	public static ViewId ofParts(@NonNull final WindowId windowId, @NonNull final String viewIdPart, @NonNull final String... otherParts)
+	{
+		final ImmutableList.Builder<String> partsBuilder = ImmutableList.<String> builder()
+				.add(windowId.toJson()) // 0
+				.add(viewIdPart); // 1
+
+		if (otherParts != null && otherParts.length > 0)
+		{
+			partsBuilder.add(otherParts); // 2..
+		}
+
+		final ImmutableList<String> parts = partsBuilder.build();
+		final String viewIdStr = JOINER.join(parts);
+		return new ViewId(viewIdStr, parts, windowId);
+	}
+
+	private static final String SEPARATOR = "-";
+	private static final Splitter SPLITTER = Splitter.on(SEPARATOR).trimResults();
+	private static final Joiner JOINER = Joiner.on(SEPARATOR);
 
 	private final WindowId windowId;
 	private final String viewId;
+	private final List<String> parts;
 
-	private ViewId(@NonNull final WindowId windowId, @NonNull final String viewId)
+	private ViewId(@NonNull final String viewIdStr, @NonNull final List<String> parts, @NonNull final WindowId windowId)
 	{
 		super();
 		this.windowId = windowId;
-		this.viewId = viewId;
+		viewId = viewIdStr;
+		this.parts = parts;
 	}
 
 	public WindowId getWindowId()
@@ -105,6 +153,7 @@ public final class ViewId
 		return windowId;
 	}
 
+	/** @return full viewId string (including WindowId, including other parts etc) */
 	public String getViewId()
 	{
 		return viewId;
@@ -114,5 +163,16 @@ public final class ViewId
 	public String toJson()
 	{
 		return viewId;
+	}
+
+	public String getPart(final int index)
+	{
+		return parts.get(index);
+	}
+
+	/** @return just the viewId part (without the leading WindowId, without other parts etc) */
+	public String getViewIdPart()
+	{
+		return parts.get(1);
 	}
 }

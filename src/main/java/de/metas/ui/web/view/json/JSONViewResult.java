@@ -46,7 +46,7 @@ public final class JSONViewResult implements Serializable
 		if (viewResult.isPageLoaded())
 		{
 			final List<IViewRow> rows = viewResult.getPage();
-			jsonRows = JSONViewRow.ofViewRows(rows);
+			jsonRows = JSONViewRow.ofViewRows(rows, adLanguage);
 		}
 		else
 		{

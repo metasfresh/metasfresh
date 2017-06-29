@@ -23,6 +23,7 @@ import de.metas.ui.web.cache.ETagAware;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
@@ -74,6 +75,7 @@ public class ViewLayout implements ETagAware
 
 	private final boolean hasAttributesSupport;
 	private final boolean hasIncludedViewSupport;
+	private final boolean hasIncludedViewOnSelectSupport;
 	private final String allowNewCaption;
 
 	private final boolean hasTreeSupport;
@@ -110,6 +112,8 @@ public class ViewLayout implements ETagAware
 		treeExpandedDepth = builder.treeExpandedDepth;
 
 		hasIncludedViewSupport = builder.hasIncludedViewSupport;
+		hasIncludedViewOnSelectSupport = builder.hasIncludedViewOnSelectSupport;
+		
 		allowNewCaption = null;
 
 		eTag = ETag.of(nextETagVersionSupplier.getAndIncrement(), extractETagAttributes(filters, allowNewCaption));
@@ -140,7 +144,10 @@ public class ViewLayout implements ETagAware
 		this.hasTreeSupport = hasTreeSupport;
 		this.treeCollapsible = treeCollapsible;
 		this.treeExpandedDepth = treeExpandedDepth;
+		
 		hasIncludedViewSupport = from.hasIncludedViewSupport;
+		hasIncludedViewOnSelectSupport = from.hasIncludedViewOnSelectSupport;
+		
 		this.allowNewCaption = allowNewCaption;
 
 		eTag = from.eTag.overridingAttributes(extractETagAttributes(filters, allowNewCaption));
@@ -265,6 +272,11 @@ public class ViewLayout implements ETagAware
 	{
 		return hasIncludedViewSupport;
 	}
+	
+	public boolean isIncludedViewOnSelectSupport()
+	{
+		return hasIncludedViewOnSelectSupport;
+	}
 
 	public boolean isAllowNew()
 	{
@@ -362,6 +374,7 @@ public class ViewLayout implements ETagAware
 
 		private boolean hasAttributesSupport = false;
 		private boolean hasIncludedViewSupport = false;
+		private boolean hasIncludedViewOnSelectSupport = false;
 
 		private boolean hasTreeSupport = false;
 		private boolean treeCollapsible = false;
@@ -461,9 +474,9 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass)
+		public <T extends IViewRow> Builder addElementsFromViewRowClass(final Class<T> viewRowClass, final JSONViewDataType viewType)
 		{
-			ViewColumnHelper.getLayoutElementsForClass(viewRowClass)
+			ViewColumnHelper.createLayoutElementsForClass(viewRowClass, viewType)
 					.forEach(this::addElement);
 			return this;
 		}
@@ -521,6 +534,12 @@ public class ViewLayout implements ETagAware
 		public Builder setHasIncludedViewSupport(final boolean hasIncludedViewSupport)
 		{
 			this.hasIncludedViewSupport = hasIncludedViewSupport;
+			return this;
+		}
+		
+		public Builder setHasIncludedViewOnSelectSupport(boolean hasIncludedViewOnSelectSupport)
+		{
+			this.hasIncludedViewOnSelectSupport = hasIncludedViewOnSelectSupport;
 			return this;
 		}
 
