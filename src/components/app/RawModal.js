@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import Indicator from './Indicator';
 import {
@@ -101,7 +102,7 @@ class RawModal extends Component {
                                 onClick={this.handleClose}
                                 tabIndex={0}
                             >
-                                Done
+                                {counterpart.translate('modal.actions.done')}
                             </button>
                         </div>
                     </div>
