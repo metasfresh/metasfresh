@@ -5,7 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.apache.tools.ant.filters.StringInputStream;
+import java.io.ByteArrayInputStream;
+
 import org.compiere.util.Env;
 import org.junit.Test;
 
@@ -41,7 +42,7 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertEquals("Invalid TrxType", ESRConstants.ESRTRXTYPE_ReverseBooking, esrImportLine.getESRTrxType());

@@ -27,9 +27,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 
-import org.apache.tools.ant.filters.StringInputStream;
 import org.junit.Test;
 
 import de.metas.payment.esr.ESRTestBase;
@@ -45,7 +45,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		assertThat("Invalid Control Amt",
 				esrImport.getESR_Control_Amount(),
@@ -68,7 +68,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "9990105993109999999999999999999999999990000000920000000000000";
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		assertThat(esrImport.isValid(), is(false));
 		assertThat(esrImport.getDescription(), containsString("ESR_Wrong_Ctrl_Line_Length_[61]"));
@@ -80,7 +80,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "999010599310999999999999999999999999999000000092x00000000000025130118000000000000000000";
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		assertThat("Invalid IsValid", esrImport.isValid(), is(false));
 	}
@@ -91,7 +91,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "99901059931099999999999999999999999999900000009200000000000002x130118000000000000000000";
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		assertThat("Invalid IsValid", esrImport.isValid(), is(false));
 	}
