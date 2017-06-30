@@ -43,4 +43,11 @@ public interface IViewFactory
 		final CreateViewRequest createViewRequest = CreateViewRequest.filterViewBuilder(view, filterViewRequest).build();
 		return createView(createViewRequest);
 	}
+	
+	default IView deleteStickyFilter(final IView view, final String filterId)
+	{
+		final CreateViewRequest createViewRequest = CreateViewRequest.deleteStickyFilterBuilder(view, filterId).build();
+		return createView(createViewRequest);
+	}
+
 }

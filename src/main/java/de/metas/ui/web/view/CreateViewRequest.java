@@ -6,13 +6,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.collections.ListUtils;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
@@ -61,11 +64,24 @@ public final class CreateViewRequest
 
 	public static final Builder filterViewBuilder(@NonNull final IView view, @NonNull final JSONFilterViewRequest filterViewRequest)
 	{
+		final List<JSONDocumentFilter> jsonFilters = filterViewRequest.getFilters();
+
 		return builder(view.getViewId().getWindowId(), view.getViewType())
 				.setParentViewId(view.getParentViewId())
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
 				.setStickyFilters(view.getStickyFilters())
-				.setFilters(filterViewRequest.getFilters())
+				.setFiltersFromJSON(jsonFilters)
+				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
+				.addActions(view.getActions());
+	}
+
+	public static final Builder deleteStickyFilterBuilder(@NonNull final IView view, @NonNull final String stickyFilterIdToDelete)
+	{
+		return builder(view.getViewId().getWindowId(), view.getViewType())
+				.setParentViewId(view.getParentViewId())
+				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
+				.setStickyFilters(view.getStickyFilters())
+				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
 				.addActions(view.getActions());
 	}
@@ -77,7 +93,7 @@ public final class CreateViewRequest
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 	private final List<DocumentFilter> stickyFilters;
-	private final List<JSONDocumentFilter> filters;
+	private final DocumentFiltersList filters;
 	private final Set<Integer> filterOnlyIds;
 
 	private final ViewActionDescriptorsList actions;
@@ -90,9 +106,9 @@ public final class CreateViewRequest
 		parentViewId = builder.getParentViewId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
-		stickyFilters = builder.getStickyFilters();
-		filters = builder.getFilters();
 		filterOnlyIds = builder.getFilterOnlyIds();
+		filters = builder.getFilters();
+		stickyFilters = builder.getStickyFilters();
 
 		actions = builder.getActions();
 	}
@@ -137,6 +153,13 @@ public final class CreateViewRequest
 		return ListUtils.singleElement(getFilterOnlyIds());
 	}
 
+	public List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
+	{
+		return getFilters().getOrUnwrapFilters(descriptors);
+	}
+
+	//
+	//
 	//
 	//
 	//
@@ -148,9 +171,9 @@ public final class CreateViewRequest
 		private ViewId parentViewId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
-		private List<DocumentFilter> stickyFilters;
-		private List<JSONDocumentFilter> filters;
 		private Set<Integer> filterOnlyIds;
+		private List<DocumentFilter> stickyFilters;
+		private DocumentFiltersList filters;
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 
@@ -224,15 +247,21 @@ public final class CreateViewRequest
 			return stickyFilters == null ? ImmutableList.of() : ImmutableList.copyOf(stickyFilters);
 		}
 
-		public Builder setFilters(final List<JSONDocumentFilter> filters)
+		public Builder setFiltersFromJSON(final List<JSONDocumentFilter> jsonFilters)
 		{
-			this.filters = filters;
+			filters = DocumentFiltersList.ofJSONFilters(jsonFilters);
 			return this;
 		}
 
-		private List<JSONDocumentFilter> getFilters()
+		public Builder setFilters(final List<DocumentFilter> filters)
 		{
-			return filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
+			this.filters = DocumentFiltersList.ofFilters(filters);
+			return this;
+		}
+
+		private DocumentFiltersList getFilters()
+		{
+			return filters != null ? filters : DocumentFiltersList.EMPTY;
 		}
 
 		public Builder setFilterOnlyIds(final Collection<Integer> filterOnlyIds)
@@ -276,6 +305,95 @@ public final class CreateViewRequest
 		private ViewActionDescriptorsList getActions()
 		{
 			return actions;
+		}
+	}
+
+	public static final class DocumentFiltersList
+	{
+		private static DocumentFiltersList ofFilters(final List<DocumentFilter> filters)
+		{
+			if (filters == null || filters.isEmpty())
+			{
+				return EMPTY;
+			}
+
+			final List<JSONDocumentFilter> jsonFiltersEffective = null;
+			final List<DocumentFilter> filtersEffective = ImmutableList.copyOf(filters);
+			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
+		}
+
+		private static DocumentFiltersList ofJSONFilters(final List<JSONDocumentFilter> jsonFilters)
+		{
+			if (jsonFilters == null || jsonFilters.isEmpty())
+			{
+				return EMPTY;
+			}
+
+			final List<JSONDocumentFilter> jsonFiltersEffective = ImmutableList.copyOf(jsonFilters);
+			final List<DocumentFilter> filtersEffective = null;
+			return new DocumentFiltersList(jsonFiltersEffective, filtersEffective);
+		}
+
+		private static final DocumentFiltersList EMPTY = new DocumentFiltersList();
+
+		private final List<JSONDocumentFilter> jsonFilters;
+		private final List<DocumentFilter> filters;
+
+		private DocumentFiltersList(final List<JSONDocumentFilter> jsonFilters, final List<DocumentFilter> filters)
+		{
+			this.jsonFilters = jsonFilters;
+			this.filters = filters;
+		}
+
+		/** empty constructor */
+		private DocumentFiltersList()
+		{
+			filters = ImmutableList.of();
+			jsonFilters = null;
+		}
+
+		@Override
+		public String toString()
+		{
+			return MoreObjects.toStringHelper(this).omitNullValues().addValue(jsonFilters).addValue(filters).toString();
+		}
+
+		public boolean isJson()
+		{
+			return jsonFilters != null;
+		}
+
+		public List<JSONDocumentFilter> getJsonFilters()
+		{
+			if (jsonFilters == null)
+			{
+				throw new AdempiereException("Json filters are not available for " + this);
+			}
+			return jsonFilters;
+		}
+
+		public List<DocumentFilter> getFilters()
+		{
+			if (filters == null)
+			{
+				throw new AdempiereException("Filters are not available for " + this);
+			}
+			return filters;
+		}
+
+		private List<DocumentFilter> getOrUnwrapFilters(final DocumentFilterDescriptorsProvider descriptors)
+		{
+			if (filters != null)
+			{
+				return filters;
+			}
+
+			if (jsonFilters == null || jsonFilters.isEmpty())
+			{
+				return ImmutableList.of();
+			}
+
+			return JSONDocumentFilter.unwrapList(jsonFilters, descriptors);
 		}
 	}
 }

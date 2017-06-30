@@ -15,6 +15,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewGroupingBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
@@ -115,8 +116,17 @@ public class SqlViewFactory implements IViewFactory
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 				.setParentViewId(request.getParentViewId())
 				.addStickyFilters(request.getStickyFilters())
-				.addStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()))
-				.setFiltersFromJSON(request.getFilters());
+				.addStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()));
+		
+		final DocumentFiltersList filters = request.getFilters();
+		if(filters.isJson())
+		{
+			viewBuilder.setFiltersFromJSON(filters.getJsonFilters());
+		}
+		else
+		{
+			viewBuilder.setFilters(filters.getFilters());
+		}
 
 		if (!request.getFilterOnlyIds().isEmpty())
 		{

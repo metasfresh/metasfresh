@@ -78,6 +78,8 @@ public interface IViewsRepository
 	IView createView(CreateViewRequest request);
 
 	IView filterView(ViewId viewId, JSONFilterViewRequest jsonRequest);
+	
+	IView deleteStickyFilter(ViewId viewId, String filterId);
 
 	void deleteView(ViewId viewId);
 

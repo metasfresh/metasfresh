@@ -97,7 +97,7 @@ public class ViewsRepository implements IViewsRepository
 			final int no = DB.executeUpdateEx("DELETE FROM " + tableName, ITrx.TRXNAME_NoneNotNull);
 			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed deleting all from {} (Took: {})", tableName, stopwatch, ex);
 		}
@@ -250,6 +250,36 @@ public class ViewsRepository implements IViewsRepository
 			throw new AdempiereException("Failed filtering view")
 					.setParameter("viewId", viewId)
 					.setParameter("request", jsonRequest)
+					.setParameter("factory", factory.toString());
+		}
+
+		//
+		// Add the new view to our internal map
+		// NOTE: avoid adding if the factory returned the same view.
+		if (view != newView)
+		{
+			getViewsStorageFor(newView.getViewId()).put(newView);
+		}
+
+		// Return the newly created view
+		return newView;
+	}
+
+	@Override
+	public IView deleteStickyFilter(final ViewId viewId, final String filterId)
+	{
+		// Get current view
+		final IView view = getView(viewId);
+
+		//
+		// Create the new view
+		final IViewFactory factory = getFactory(view.getViewId().getWindowId(), view.getViewType());
+		final IView newView = factory.deleteStickyFilter(view, filterId);
+		if (newView == null)
+		{
+			throw new AdempiereException("Failed deleting sticky/static filter")
+					.setParameter("viewId", viewId)
+					.setParameter("filterId", filterId)
 					.setParameter("factory", factory.toString());
 		}
 

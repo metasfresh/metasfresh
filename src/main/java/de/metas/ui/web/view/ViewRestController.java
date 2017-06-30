@@ -112,7 +112,7 @@ public class ViewRestController
 		final CreateViewRequest request = CreateViewRequest.builder(windowId, jsonRequest.getViewType())
 				.setReferencingDocumentPaths(jsonRequest.getReferencingDocumentPaths())
 				// .setStickyFilters(stickyFilters) // none
-				.setFilters(jsonRequest.getFilters())
+				.setFiltersFromJSON(jsonRequest.getFilters())
 				.setFilterOnlyIds(jsonRequest.getFilterOnlyIds())
 				.build();
 
@@ -163,6 +163,15 @@ public class ViewRestController
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
+		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
+	}
+	
+	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
+	public JSONViewResult deleteStickyFilter(@PathVariable(PARAM_WindowId) final String windowIdStr, @PathVariable("viewId") final String viewIdStr, @PathVariable("filterId") final String filterId)
+	{
+		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
+
+		final IView newView = viewsRepo.deleteStickyFilter(viewId, filterId);
 		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
 	}
 

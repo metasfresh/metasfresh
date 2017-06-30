@@ -74,6 +74,14 @@ public class PPOrderLinesViewFactory implements IViewFactory
 	}
 
 	@Override
+	public IView deleteStickyFilter(final IView view, final String filterId)
+	{
+		throw new AdempiereException("View does not allow removing sticky/static filter")
+				.setParameter("view", view)
+				.setParameter("filterId", filterId);
+	}
+
+	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType_NOTUSED)
 	{
 		return layouts.getOrLoad(windowId, () -> createViewLayout(windowId));

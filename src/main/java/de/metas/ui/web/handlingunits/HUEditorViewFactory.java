@@ -25,7 +25,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.ImmutableDocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -211,7 +210,7 @@ public class HUEditorViewFactory implements IViewFactory
 		}
 
 		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
-		final List<DocumentFilter> filters = JSONDocumentFilter.unwrapList(request.getFilters(), getSqlViewBinding().getViewFilterDescriptors());
+		final List<DocumentFilter> filters = request.getOrUnwrapFilters(getSqlViewBinding().getViewFilterDescriptors());
 
 		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())

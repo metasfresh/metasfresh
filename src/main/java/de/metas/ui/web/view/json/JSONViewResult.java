@@ -1,8 +1,9 @@
 package de.metas.ui.web.view.json;
 
-import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +11,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.json.JSONStickyDocumentFilter;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
@@ -37,8 +39,8 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public final class JSONViewResult implements Serializable
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+public final class JSONViewResult
 {
 	public static final JSONViewResult of(final ViewResult viewResult, final String adLanguage)
 	{
@@ -54,46 +56,49 @@ public final class JSONViewResult implements Serializable
 		}
 		return new JSONViewResult(viewResult, jsonRows, adLanguage);
 	}
-	
+
 	public static final JSONViewResult of(final ViewResult viewResult, final List<? extends JSONViewRowBase> rows, final String adLanguage)
 	{
 		return new JSONViewResult(viewResult, rows, adLanguage);
 	}
 
-
 	//
 	// View informations
-	@JsonProperty(value = "type")
+	@JsonProperty("type")
 	@Deprecated
 	private final WindowId type;
-	@JsonProperty(value = "windowId")
+	@JsonProperty("windowId")
 	private final WindowId windowId;
 	//
-	@JsonProperty(value = "viewId")
+	@JsonProperty("viewId")
 	private final String viewId;
 
-	@JsonProperty(value = "parentWindowId")
+	@JsonProperty("parentWindowId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final WindowId parentWindowId;
 	//
-	@JsonProperty(value = "parentViewId")
+	@JsonProperty("parentViewId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String parentViewId;
 
 	/** View description (e.g. Manufacturing order 12345). See https://github.com/metasfresh/metasfresh-webui-api/issues/433 */
-	@JsonProperty(value = "description")
+	@JsonProperty("description")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String description;
 
-	@JsonProperty(value = "size")
+	@JsonProperty("size")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Long size;
 
-	@JsonProperty(value = "orderBy")
+	@JsonProperty("orderBy")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONViewOrderBy> orderBy;
 
-	@JsonProperty(value = "filters")
+	@JsonProperty("staticFilters")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONStickyDocumentFilter> staticFilters;
+
+	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilter> filters;
 
@@ -104,15 +109,15 @@ public final class JSONViewResult implements Serializable
 	// * null (excluded from JSON) => frontend will consider the page is not loaded, so it won't update the result on it's side
 	// see https://github.com/metasfresh/metasfresh-webui-frontend/issues/330
 	//
-	@JsonProperty(value = "result")
+	@JsonProperty("result")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<? extends JSONViewRowBase> result;
 
-	@JsonProperty(value = "firstRow")
+	@JsonProperty("firstRow")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer firstRow;
 
-	@JsonProperty(value = "pageLength")
+	@JsonProperty("pageLength")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer pageLength;
 
@@ -143,11 +148,14 @@ public final class JSONViewResult implements Serializable
 		final long size = viewResult.getSize();
 		this.size = size >= 0 ? size : null;
 
-		final List<JSONDocumentFilter> stickyFilters = JSONDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage);
-		final List<JSONDocumentFilter> filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
-		this.filters = ImmutableList.<JSONDocumentFilter> builder()
-				.addAll(filters)
-				.addAll(stickyFilters)
+		staticFilters = JSONStickyDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage);
+
+		// FIXME: after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 is implemented,
+		// we shall NOT add the sticky filters to "filters" list.
+		// filters = JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage);
+		filters = ImmutableList.<JSONDocumentFilter> builder()
+				.addAll(JSONDocumentFilter.ofList(viewResult.getFilters(), adLanguage))
+				.addAll(JSONDocumentFilter.ofStickyFiltersList(viewResult.getStickyFilters(), adLanguage))
 				.build();
 
 		orderBy = JSONViewOrderBy.ofList(viewResult.getOrderBys());
@@ -175,25 +183,25 @@ public final class JSONViewResult implements Serializable
 
 	@JsonCreator
 	private JSONViewResult( //
-			@JsonProperty("windowId") final WindowId windowId //
-			, @JsonProperty("viewId") final String viewId //
+			@JsonProperty("windowId") final WindowId windowId,
+			@JsonProperty("viewId") final String viewId,
 			//
-			, @JsonProperty("parentWindowId") final WindowId parentWindowId //
-			, @JsonProperty("parentViewId") final String parentViewId //
+			@JsonProperty("parentWindowId") final WindowId parentWindowId,
+			@JsonProperty("parentViewId") final String parentViewId,
 			//
-			, @JsonProperty("description") final String description //
+			@JsonProperty("description") final String description,
 			//
-			, @JsonProperty("size") final Long size //
-			, @JsonProperty("filters") final List<JSONDocumentFilter> filters //
-			, @JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy //
+			@JsonProperty("size") final Long size,
+			@JsonProperty("staticFilters") final List<JSONStickyDocumentFilter> staticFilters,
+			@JsonProperty("filters") final List<JSONDocumentFilter> filters,
+			@JsonProperty("orderBy") final List<JSONViewOrderBy> orderBy,
 			//
-			, @JsonProperty("result") final List<JSONViewRowBase> result //
-			, @JsonProperty("firstRow") final Integer firstRow //
-			, @JsonProperty("pageLength") final Integer pageLength //
+			@JsonProperty("result") final List<JSONViewRowBase> result,
+			@JsonProperty("firstRow") final Integer firstRow,
+			@JsonProperty("pageLength") final Integer pageLength,
 			//
-			, @JsonProperty("queryLimit") final Integer queryLimit //
-			, @JsonProperty("queryLimitHit") final Boolean queryLimitHit //
-	)
+			@JsonProperty("queryLimit") final Integer queryLimit,
+			@JsonProperty("queryLimitHit") final Boolean queryLimitHit)
 	{
 		super();
 
@@ -210,6 +218,7 @@ public final class JSONViewResult implements Serializable
 		//
 		this.size = size;
 		this.filters = filters == null ? ImmutableList.of() : filters;
+		this.staticFilters = staticFilters == null ? ImmutableList.of() : staticFilters;
 		this.orderBy = orderBy == null ? ImmutableList.of() : orderBy;
 
 		//

@@ -1,6 +1,5 @@
 package de.metas.ui.web.document.filter.json;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,10 +43,9 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
  * #L%
  */
 
-@SuppressWarnings("serial")
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
 @lombok.Data
-public final class JSONDocumentFilter implements Serializable
+public final class JSONDocumentFilter
 {
 	public static List<DocumentFilter> unwrapList(final List<JSONDocumentFilter> jsonFilters, final DocumentFilterDescriptorsProvider filterDescriptorProvider)
 	{
@@ -172,6 +170,8 @@ public final class JSONDocumentFilter implements Serializable
 		return new JSONDocumentFilter(filterId, filter.getCaption(adLanguage), stickyFilter, jsonParameters);
 	}
 
+	// TODO: delete after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 
+	@Deprecated
 	public static final List<JSONDocumentFilter> ofStickyFiltersList(final List<DocumentFilter> filters, final String adLanguage)
 	{
 		if (filters == null || filters.isEmpty())
@@ -185,6 +185,8 @@ public final class JSONDocumentFilter implements Serializable
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	// TODO: delete after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 
+	@Deprecated
 	private static final JSONDocumentFilter ofStickyFilterOrNull(final DocumentFilter filter, final String adLanguage)
 	{
 		// Don't expose the sticky filter if it does not have a caption,
@@ -210,7 +212,9 @@ public final class JSONDocumentFilter implements Serializable
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String caption;
 
+	// TODO: delete after https://github.com/metasfresh/metasfresh-webui-frontend/issues/948 
 	@JsonProperty("static")
+	@Deprecated
 	private boolean stickyFilter;
 
 	@JsonProperty("parameters")
