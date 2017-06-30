@@ -153,12 +153,13 @@ class DocumentList extends Component {
         ) {
             if(!inBackground){
                 // In case of preventing cached selection restore
-
                 cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
-                    // cachedSelection: undefined
-                })
+                    refreshSelection: true
+                }, () => this.setState({
+                    refreshSelection: false
+                }))
             }else{
                 this.setState({
                     cachedSelection: selected
@@ -183,12 +184,6 @@ class DocumentList extends Component {
                 dispatch(setListIncludedView());
             })
         }
-    }
-
-    resetCachedSelection = () => {
-        this.setState({
-            cachedSelection: undefined
-        })
     }
 
     shouldComponentUpdate(nextProps, nextState) {
@@ -521,7 +516,6 @@ class DocumentList extends Component {
                                 {...{windowType, selectedWindowType, viewId,
                                     refresh, processStatus}}
                                 selected={selectionValid ? selected : undefined}
-                                resetCachedSelection={this.resetCachedSelection}
                                 fetchOnInit={fetchQuickActionsOnInit}
                                 disabled={hasIncluded}
                                 shouldNotUpdate={inBackground && !hasIncluded}
@@ -559,6 +553,7 @@ class DocumentList extends Component {
                                 disableOnClickOutside={clickOutsideLock}
                                 defaultSelected={cachedSelection ?
                                     cachedSelection : selected}
+                                refreshSelection={this.state.refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
                                 {...{isIncluded, disconnectFromState, autofocus,
