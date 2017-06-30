@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
@@ -68,11 +66,11 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	}
 
 	@Override
-	public ITableRecordReference toTableRecordReference(final int id)
+	public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
 	{
 		final String tableName = fetcher.getLookupTableName()
-				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to ITableRecordReference because the fetcher returned null tablename: " + fetcher));
-		return TableRecordReference.of(tableName, id);
+				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to " + DocumentZoomIntoInfo.class + " because the fetcher returned null tablename: " + fetcher));
+		return DocumentZoomIntoInfo.of(tableName, id);
 	}
 
 	@Override
@@ -141,7 +139,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	{
 		return fetcher.getCacheStats();
 	}
-	
+
 	@Override
 	public Optional<WindowId> getZoomIntoWindowId()
 	{

@@ -109,6 +109,11 @@ public class JSONDocumentPath implements Serializable
 				.setRowId(jsonDocumentPath.getRowId())
 				.build();
 	}
+	
+	public static JSONDocumentPath newWindowRecord(@NonNull final WindowId windowId)
+	{
+		return builder().windowId(windowId).documentId(DocumentId.NEW).build();
+	}
 
 	@JsonProperty("windowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)

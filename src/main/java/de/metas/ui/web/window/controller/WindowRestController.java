@@ -2,12 +2,9 @@ package de.metas.ui.web.window.controller;
 
 import java.util.List;
 
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -65,6 +62,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -503,7 +501,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
-		final IPair<ITableRecordReference, WindowId> zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
+		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final IDocumentFieldView field = document.getFieldView(fieldName);
 
 			// Generic ZoomInto button
@@ -530,9 +528,8 @@ public class WindowRestController
 							.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
 				}
 
-				final ITableRecordReference recordRef = TableRecordReference.of(adTableId, recordId);
-				final WindowId windowId = null;
-				return ImmutablePair.of(recordRef, windowId);
+				final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+				return DocumentZoomIntoInfo.of(tableName, recordId);
 			}
 			// Key Field
 			else if (field.isKey())
@@ -541,31 +538,35 @@ public class WindowRestController
 				// (see https://github.com/metasfresh/metasfresh/issues/1687 to understand the use-case)
 				final String tableName = document.getEntityDescriptor().getTableName();
 				final int recordId = document.getDocumentIdAsInt();
-				final ITableRecordReference recordRef = TableRecordReference.of(tableName, recordId);
-				final WindowId windowId = null;
-				return ImmutablePair.of(recordRef, windowId);
+				return DocumentZoomIntoInfo.of(tableName, recordId);
 			}
 			// Regular lookup value
 			else
 			{
-				final ITableRecordReference recordRef = field.getValueAs(ITableRecordReference.class);
-				final WindowId zoomIntoWindowId = field.getZoomIntoWindowId().orElse(null);
-				return ImmutablePair.of(recordRef, zoomIntoWindowId);
+				return field.getZoomIntoInfo();
 			}
 		});
 
-		final ITableRecordReference zoomInfoTableRecordRef = zoomIntoInfo.getLeft();
-		final WindowId zoomIntoWindowId = zoomIntoInfo.getRight();
-		if (zoomInfoTableRecordRef == null)
+		final JSONDocumentPath jsonZoomIntoDocumentPath;
+		if (zoomIntoInfo == null)
 		{
-			throw new EntityNotFoundException("Cannot zoom into empty fields")
+			throw new EntityNotFoundException("ZoomInto not supported")
 					.setParameter("documentPath", documentPath)
 					.setParameter("fieldName", fieldName);
 		}
+		else if (!zoomIntoInfo.isRecordIdPresent())
+		{
+			final WindowId windowId = documentCollection.getWindowId(zoomIntoInfo);
+			jsonZoomIntoDocumentPath = JSONDocumentPath.newWindowRecord(windowId);
+		}
+		else
+		{
+			final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomIntoInfo);
+			jsonZoomIntoDocumentPath = JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath);
+		}
 
-		final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomInfoTableRecordRef, zoomIntoWindowId);
 		return JSONZoomInto.builder()
-				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
+				.documentPath(jsonZoomIntoDocumentPath)
 				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
 				.build();
 	}
@@ -645,7 +646,7 @@ public class WindowRestController
 
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-		
+
 		final DocumentPrint documentPrint = documentCollection.createDocumentPrint(documentPath);
 		final byte[] reportData = documentPrint.getReportData();
 		final String reportContentType = documentPrint.getReportContentType();

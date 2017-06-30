@@ -6,7 +6,6 @@ import java.util.Properties;
 
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 
 import de.metas.process.IADPInstanceDAO;
@@ -25,6 +24,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
+import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 /*
@@ -111,7 +111,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 		{
 
 			@Override
-			public ITableRecordReference toTableRecordReference(final int id)
+			public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
 			{
 				throw new UnsupportedOperationException();
 			}

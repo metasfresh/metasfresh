@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
@@ -47,7 +46,7 @@ public final class NullLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public ITableRecordReference toTableRecordReference(final int id)
+	public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
 	{
 		throw new UnsupportedOperationException();
 	}

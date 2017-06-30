@@ -45,7 +45,7 @@ public abstract class DocumentId implements Serializable
 {
 	private static final transient int NEW_ID = -1;
 	public static final transient String NEW_ID_STRING = "NEW";
-	private static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
+	public static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
 
 	@JsonCreator
 	public static final DocumentId of(final String idStr)

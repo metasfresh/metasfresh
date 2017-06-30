@@ -17,6 +17,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -25,6 +26,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import lombok.NonNull;
 
@@ -268,6 +270,15 @@ import lombok.NonNull;
 		final DocumentFieldWidgetType widgetType = null; // N/A
 		final T value = convertToValueClass(_value, widgetType, returnType);
 		return value;
+	}
+
+	@Override
+	public DocumentZoomIntoInfo getZoomIntoInfo()
+	{
+		final IntegerLookupValue lookupValue = getValueAs(IntegerLookupValue.class);
+		return getLookupDataSource()
+				.getDocumentZoomInto(lookupValue != null ? lookupValue.getIdAsInt() : -1)
+				.overrideWindowIdIfPossible(getZoomIntoWindowId());
 	}
 
 	@Override

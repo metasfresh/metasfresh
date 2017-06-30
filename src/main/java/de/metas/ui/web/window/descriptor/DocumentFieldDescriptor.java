@@ -19,7 +19,6 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
@@ -610,12 +609,6 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
-			else if (ITableRecordReference.class.isAssignableFrom(targetType))
-			{
-				@SuppressWarnings("unchecked")
-				final T valueConv = (T)convertToTableRecordReference(fieldName, value, widgetType, targetType, lookupDataSource);
-				return valueConv;
-			}
 		}
 		catch (final Exception e)
 		{
@@ -627,23 +620,6 @@ public final class DocumentFieldDescriptor implements Serializable
 		throw new AdempiereException("Cannot convert " + fieldName + "'s value '" + value + "' (" + fromType + ") to " + targetType
 				+ "\n LookupDataSource: " + lookupDataSource //
 		);
-	}
-
-	private static final ITableRecordReference convertToTableRecordReference(
-			final String fieldName //
-			, final Object value //
-			, final DocumentFieldWidgetType widgetType //
-			, final Class<?> targetType //
-			, @NonNull final LookupValueByIdSupplier lookupDataSource //
-	)
-	{
-		final IntegerLookupValue lookupValue = convertToValueClass(fieldName, value, widgetType, IntegerLookupValue.class, lookupDataSource);
-		if (lookupValue == null)
-		{
-			return null;
-		}
-
-		return lookupDataSource.toTableRecordReference(lookupValue.getIdAsInt());
 	}
 
 	/* package */List<IDocumentFieldCallout> getCallouts()

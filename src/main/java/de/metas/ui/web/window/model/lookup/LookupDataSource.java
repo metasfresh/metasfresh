@@ -3,7 +3,6 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
 
@@ -61,7 +60,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	List<CCacheStats> getCacheStats();
 	
 	@Override
-	ITableRecordReference toTableRecordReference(final int id);
+	DocumentZoomIntoInfo getDocumentZoomInto(final int id);
 	
 	/** @return optional WindowId to be used when zooming into */
 	Optional<WindowId> getZoomIntoWindowId();

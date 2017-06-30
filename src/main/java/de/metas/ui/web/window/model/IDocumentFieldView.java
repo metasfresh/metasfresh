@@ -9,6 +9,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 
 /*
  * #%L
@@ -80,6 +81,7 @@ public interface IDocumentFieldView
 	Object getValueAsJsonObject(String adLanguage);
 	boolean getValueAsBoolean();
 	int getValueAsInt(final int defaultValueWhenNull);
+	DocumentZoomIntoInfo getZoomIntoInfo();
 	<T> T getValueAs(final Class<T> returnType);
 	/** @return initial value / last saved value */
 	Object getInitialValue();

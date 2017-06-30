@@ -5,8 +5,6 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
 import org.compiere.util.Evaluatee;
@@ -123,11 +121,12 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public ITableRecordReference toTableRecordReference(int id)
+	public DocumentZoomIntoInfo getDocumentZoomInto(int id)
 	{
 		final String tableName = fetcher.getLookupTableName()
-				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to ITableRecordReference because the fetcher returned null tablename: " + fetcher));
-		return TableRecordReference.of(tableName, id);
+				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to "+DocumentZoomIntoInfo.class+" because the fetcher returned null tablename: " + fetcher));
+		
+		return DocumentZoomIntoInfo.of(tableName, id);
 	}
 	
 	@Override
