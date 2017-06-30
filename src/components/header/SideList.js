@@ -7,6 +7,7 @@ import DocumentList from '../app/DocumentList';
 import onClickOutside from 'react-onclickoutside';
 import Tooltips from '../tooltips/Tooltips';
 import keymap from '../../keymap.js';
+import counterpart from 'counterpart';
 
 class SideList extends Component {
     constructor(props) {
@@ -87,9 +88,18 @@ class SideList extends Component {
         } = this.state;
 
         const tabs = [
-            {icon: 'meta-icon-list', title: 'Document list'},
-            {icon: 'meta-icon-share', title: 'Referenced documents'},
-            {icon: 'meta-icon-attachments', title: 'Attachments'}
+            {   icon: 'meta-icon-list',
+                title: counterpart.translate(
+                    'mainScreen.sideList.documentList.tooltip'
+                )},
+            {   icon: 'meta-icon-share',
+                title: counterpart.translate(
+                    'mainScreen.sideList.referencedDocuments.tooltip'
+                )},
+            {   icon: 'meta-icon-attachments',
+                title: counterpart.translate(
+                    'mainScreen.sideList.attachments.tooltip'
+                )}
         ]
 
         return (
