@@ -293,10 +293,8 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				{
 					continue;
 				}
-				
-				
 
-				if (materialItemProduct.getM_Product_ID() != source.getM_Product_ID())// && (!handlingUnitsBL.isLoadingUnit(hu)))
+				if (materialItemProduct.getM_Product_ID() != source.getM_Product_ID())
 				{
 					continue;
 				}
@@ -327,25 +325,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 						}
 					}
 
-					// if (materialItemProduct != null && (materialItemProduct.getM_Product_ID() == source.getM_Product_ID()))// && (!handlingUnitsBL.isLoadingUnit(hu)))
-					// {
-					// final HUpipToInOutLine currentHUPipToOrigin = new HUpipToInOutLine(materialItemProduct, source.getM_InOutLine_ID());
-					// Integer qtyTU = huPIPToInOutLine.get(currentHUPipToOrigin);
-					// if (qtyTU == null)
-					// {
-					// qtyTU = 0;
-					// }
-					//
-					// if (!handlingUnitsBL.isLoadingUnit(hu))
-					// {
-					// huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + qty);
-					//
-					// if (innerCandidate != null)
-					// {
-					// innerCandidate.addSourceIfNotNull(source);
-					// innerCandidate.addQty(qty);
-					// }
-					// }
+					
 					else
 					{
 						// Only applied to customer returns that are build from HUs (non-manual)
@@ -464,12 +444,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	{
 		final int productId = huPackingMaterial.getM_Product_ID();
 		final int locatorId = hu == null ? -1 : hu.getM_Locator_ID();
-		
+
 		return Util.mkKey(
 				productId <= 0 ? -1 : productId,
 				locatorId <= 0 ? -1 : locatorId,
-				materialTrackingId
-				);
+				materialTrackingId);
 	}
 
 	/**
