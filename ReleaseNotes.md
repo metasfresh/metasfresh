@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#1854](https://github.com/metasfresh/metasfresh/issues/1854) Material Receipt Dispo window sequence OrderedQty CU vs. TU
+    * Adjusting the Sequence of QtyReceives and QtyOrdered for CU and TU in Material Receipt Dispo.
   * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
     * Adjusting the Product Planning Window to our current Layout Concept.
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
@@ -23,6 +25,10 @@ Here come the actual release notes:
     * German Translation of the Window Edit Mode Caption. First time used in Unser Dashboard Customizer Action Menue Entry.
   * [#1919](https://github.com/metasfresh/metasfresh/issues/1919) Additional static element Translations
     * New Translations for static window elements in WebUI.
+  * [#1925](https://github.com/metasfresh/metasfresh/issues/1925) New Window for C_Allotment in WebUI
+    * A new Window in WebUI allowing to maintain Allotments uses in Fresh Produce Procurement Contracts.
+  * [#1926](https://github.com/metasfresh/metasfresh/issues/1926) Change Column Reference of C_Allotment_ID to search
+    * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
 
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
@@ -69,8 +75,8 @@ Here come the actual release notes:
     * New Window that allows the maintenance of Flatrate Terms/ Conditions in WebUI.
   * [#1788](https://github.com/metasfresh/metasfresh/issues/1788) New Window for Flatrate Transition in WebUI
     * New Window for Flatrate Transition maintenance.
-  * [#1861](https://github.com/metasfresh/metasfresh/issues/1861) Performance degradation in HUKey.isReadonly()
   * [#1867](https://github.com/metasfresh/metasfresh/issues/1867) restore old ordercheckup jasper files
+    * Restoring old Ordercheckup Reports and adding the new ones into a seperate path for future usage.
   * [#1872](https://github.com/metasfresh/metasfresh/issues/1872) WebUI Default Filter missing in Windows compared to Swing
     * Default Filter Settings for WebUI taken from implicit Filtering in Swing Client.
   * [#1877](https://github.com/metasfresh/metasfresh/issues/1877) Translations de_DE for Handling Unit QuickActions
@@ -78,20 +84,27 @@ Here come the actual release notes:
   * [#1890](https://github.com/metasfresh/metasfresh/issues/1890) Harmonize the Shipment Window to our current Look&Feel concept
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
   * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
-
+    * Now receiving a default Document Type when creating Shipment Documents manually.
 
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
+    * Internal housekeeping Issue, unifying the endpoints for fetching KPI & Target Indicators.
   * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
+    * Improvement of Breadcrumb Navigation, now providing the entry points via API.
   * [#467](https://github.com/metasfresh/metasfresh-webui-api/issues/467) board API: GET board/{boardId}/card?cardIds
+    * New API endpoin that allows to receive Cards for the new generic board window.
   * [#468](https://github.com/metasfresh/metasfresh-webui-api/issues/468) Fix user full name in Avatar
     * Adjusting the Avatar Name. Now showing Firstname Lastname.
   * [#470](https://github.com/metasfresh/metasfresh-webui-api/issues/470) Cache image endpoint
+    * New Endpoint in Rest-API that enables the caching of images.
   * [#474](https://github.com/metasfresh/metasfresh-webui-api/issues/474) Dashboard API: specify position when adding a new KPI/target indicator
+    * New endpoints to specify positions of KPI Cards in User Dashboard.
 
 * metasfresh-webui-frontend
   * [#833](https://github.com/metasfresh/metasfresh-webui-frontend/issues/833) Dashboard Window w/ Swimlane type functionalities
+    * New generic Window Implementation that allows to define Kanbanlike Boards in metasfresh.
   * [#864](https://github.com/metasfresh/metasfresh-webui-frontend/issues/864) Show view sticky/readonly filters
+    * Adding a new Filter Type that allows to show filtered results to the user when using Zoom-To into new Window.
   * [#896](https://github.com/metasfresh/metasfresh-webui-frontend/issues/896) KPIs: show Loading indicator instead of No data
     * Exchanging "No Data" Notification with a Loading Indicator in KPI when data is not available.
   * [#908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/908) URL widget: disable the link button if the URL is not valid
@@ -105,14 +118,24 @@ Here come the actual release notes:
 * metasfresh-app
   * [#1814](https://github.com/metasfresh/metasfresh/issues/1814) Hide Processed flag from all M_InOut/Returns windows (webui)
     * The redundant processed flag is now removed from InOut Windows (Empties return/ receive, Vendor Returns). The information is already given by the Document Status Field.
+  * [#1861](https://github.com/metasfresh/metasfresh/issues/1861) Performance degradation in HUKey.isReadonly()
+    * Fixes a Bug that decreased the performance of HUKey.isReadonly() method over the time.
   * [#1873](https://github.com/metasfresh/metasfresh/issues/1873) Fix control amount and qty in payment data imported from camt.54
+    * Fix for the Import of Sepa camt.54 files accoring to control amount and qty.
   * [#1900](https://github.com/metasfresh/metasfresh/issues/1900) Migration Script for "Select all lines count"
     * Fix of the number delimiter in a message Translation the leads to failing switch of link in frontend for 'Select all x records'.
+  * [#1912](https://github.com/metasfresh/metasfresh/issues/1912) Customer return from HUs coming from Verdichtung POS don't have the right quantities
+    * Fixing a minor Bug with Handling Units created in Compression utility not having the right quicntities when processed in Customer returns.
   * [#1921](https://github.com/metasfresh/metasfresh/issues/1921) Export webui messages from w101 again
+    * Updating the webui messages via migration script.
+  * [#1924](https://github.com/metasfresh/metasfresh/issues/1924) ESR Line AcctDate not set error
+    * Fixing a Bug in Bank Statements that occure because of a missing account date in ESR Lines.
 
 * metasfresh-webui-frontend
   * [#913](https://github.com/metasfresh/metasfresh-webui-frontend/issues/913) Incompatible Sock.js versions
+    * Updating the Sock.js to identical versions in forntend and API.
   * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
+    * Fixes a Bug that prevented to open the new generic Board wndow via menu.
 
 # metasfresh 5.14 (2017-25)
 

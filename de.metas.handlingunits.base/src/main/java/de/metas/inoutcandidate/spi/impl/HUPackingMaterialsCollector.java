@@ -118,9 +118,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private boolean collectIfOwnPackingMaterialsOnly = false;
 
 	/**
-	 * memorize how many TUs were set per source, in case this number is needed later in the code. Also check the aggregated HUs for LU type 
+	 * memorize how many TUs were set per source, in case this number is needed later in the code. Also check the aggregated HUs for LU type
 	 */
 	private boolean isCollectTUNumberPerOrigin = false;
+
+	private boolean isCollectAggregatedHUs = false;
 
 	private Comparator<HUPackingMaterialDocumentLineCandidate> candidatesSortComparator = null;
 
@@ -260,7 +262,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			I_M_HU_PI_Item_Product materialItemProduct = hu.getM_HU_PI_Item_Product();
 
 			// Check if the material item product does have a different packing material, and make a candidate for it too in case it does
-			if (materialItemProduct != null && isCollectTUNumberPerOrigin)
+			if (materialItemProduct != null && isCollectAggregatedHUs)
 			{
 
 				final List<I_M_HU_PackingMaterial> includedPackingMaterials = Services.get(IHUPackingMaterialDAO.class).retrievePackingMaterials(materialItemProduct);
@@ -287,57 +289,71 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				candidate.addSourceIfNotNull(source);
 				candidate.addQty(qty);
 
-				if (isCollectTUNumberPerOrigin)
+				if (materialItemProduct == null || source == null)
 				{
+					continue;
+				}
 
-					if (materialItemProduct != null && (materialItemProduct.getM_Product_ID() == source.getM_Product_ID()))// && (!handlingUnitsBL.isLoadingUnit(hu)))
+				if (materialItemProduct.getM_Product_ID() != source.getM_Product_ID())
+				{
+					continue;
+				}
+
+				final HUpipToInOutLine currentHUPipToOrigin = new HUpipToInOutLine(materialItemProduct, source.getM_InOutLine_ID());
+
+				Integer qtyTU = huPIPToInOutLine.get(currentHUPipToOrigin);
+				if (qtyTU == null)
+				{
+					qtyTU = 0;
+				}
+
+				if (isCollectTUNumberPerOrigin && !handlingUnitsBL.isLoadingUnit(hu))
+				{
+					huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + qty);
+
+				}
+
+				if (isCollectAggregatedHUs)
+				{
+					if (!handlingUnitsBL.isLoadingUnit(hu))
 					{
-						final HUpipToInOutLine currentHUPipToOrigin = new HUpipToInOutLine(materialItemProduct, source.getM_InOutLine_ID());
-						Integer qtyTU = huPIPToInOutLine.get(currentHUPipToOrigin);
-						if (qtyTU == null)
+
+						if (innerCandidate != null)
 						{
-							qtyTU = 0;
+							innerCandidate.addSourceIfNotNull(source);
+							innerCandidate.addQty(qty);
+						}
+					}
+
+					
+					else
+					{
+						// Only applied to customer returns that are build from HUs (non-manual)
+						if (!source.getM_InOut().isSOTrx())
+						{
+							continue;
 						}
 
-						if (!handlingUnitsBL.isLoadingUnit(hu))
+						if (Services.get(IHUInOutBL.class).isCustomerReturn(source.getM_InOut()))
 						{
-							huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + qty);
+							continue;
+						}
+						// check for the qty in the aggregated HU (if exists)
+						final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
+
+						if (huItem != null)
+						{
+							final BigDecimal includedQty = huItem.getQty();
+							huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + includedQty.intValueExact());
 
 							if (innerCandidate != null)
 							{
 								innerCandidate.addSourceIfNotNull(source);
-								innerCandidate.addQty(qty);
+								innerCandidate.addQty(includedQty.intValueExact());
 							}
 						}
-						else
-						{
-							// Only applied to customer returns that are build from HUs (non-manual)
-							if (!source.getM_InOut().isSOTrx())
-							{
-								continue;
-							}
-
-							if (Services.get(IHUInOutBL.class).isCustomerReturn(source.getM_InOut()))
-							{
-								continue;
-							}
-							// check for the qty in the aggregated HU (if exists)
-							final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
-
-							if (huItem != null)
-							{
-								final BigDecimal includedQty = huItem.getQty();
-								huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + includedQty.intValueExact());
-
-								if (innerCandidate != null)
-								{
-									innerCandidate.addSourceIfNotNull(source);
-									innerCandidate.addQty(includedQty.intValueExact());
-								}
-							}
-						}
-
 					}
+
 				}
 
 			}
@@ -707,6 +723,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	public void setisCollectTUNumberPerOrigin(final boolean isCollectTUNumberPerOrigin)
 	{
 		this.isCollectTUNumberPerOrigin = isCollectTUNumberPerOrigin;
+	}
+
+	public void setisCollectAggregatedHUs(final boolean isCollectAggregatedHUs)
+	{
+		this.isCollectAggregatedHUs = isCollectAggregatedHUs;
 	}
 
 	/**
