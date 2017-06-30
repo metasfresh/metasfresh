@@ -130,8 +130,6 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 				return null;
 			}
 			
-			
-				Services.get(IHUInOutBL.class).recreatePackingMaterialLines(inout);
 		
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
