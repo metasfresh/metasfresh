@@ -84,6 +84,7 @@ Here come the actual release notes:
   * [#1890](https://github.com/metasfresh/metasfresh/issues/1890) Harmonize the Shipment Window to our current Look&Feel concept
     * Harmonizing the Look & Feel of the Shipment Window accoring to others. Eliminating the primary Layout chunks.
   * [#1893](https://github.com/metasfresh/metasfresh/issues/1893) Default Doctype for Shipment Window
+    * Now receiving a default Document Type when creating Shipment Documents manually.
 
 * metasfresh-webui-api
   * [#464](https://github.com/metasfresh/metasfresh-webui-api/issues/464) Dashboard API: unify get available kpis/targetIndicators endpoints
