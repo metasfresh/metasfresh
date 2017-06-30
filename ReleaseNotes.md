@@ -120,6 +120,7 @@ Here come the actual release notes:
   * [#1873](https://github.com/metasfresh/metasfresh/issues/1873) Fix control amount and qty in payment data imported from camt.54
   * [#1900](https://github.com/metasfresh/metasfresh/issues/1900) Migration Script for "Select all lines count"
     * Fix of the number delimiter in a message Translation the leads to failing switch of link in frontend for 'Select all x records'.
+  * [#1912](https://github.com/metasfresh/metasfresh/issues/1912) Customer return from HUs coming from Verdichtung POS don't have the right quantities
   * [#1921](https://github.com/metasfresh/metasfresh/issues/1921) Export webui messages from w101 again
   * [#1924](https://github.com/metasfresh/metasfresh/issues/1924) ESR Line AcctDate not set error
 
