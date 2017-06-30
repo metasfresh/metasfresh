@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
-import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardPatchPath;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardItemChangeResult;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.dashboard.json.JSONDashboard;
@@ -175,32 +174,6 @@ public class DashboardRestController
 		// Return newly created item
 		final UserDashboardItem targetIndicatorItem = dashboard.getItemById(widgetType, itemId);
 		return JSONDashboardItem.of(targetIndicatorItem, newJSONOpts());
-	}
-
-	@PatchMapping("/kpis")
-	public void changeKPIsDashboard(@RequestBody final List<JSONPatchEvent<DashboardPatchPath>> events)
-	{
-		changeDashboard(DashboardWidgetType.KPI, events);
-	}
-
-	@PatchMapping("/targetIndicators")
-	public void changeTargetIndicatorsDashboard(@RequestBody final List<JSONPatchEvent<DashboardPatchPath>> events)
-	{
-		changeDashboard(DashboardWidgetType.TargetIndicator, events);
-	}
-
-	private void changeDashboard(final DashboardWidgetType widgetType, final List<JSONPatchEvent<DashboardPatchPath>> events)
-	{
-		userSession.assertLoggedIn();
-
-		userDashboardRepo.changeDashboard(getUserDashboardForWriting(), widgetType, events);
-
-		//
-		// Notify on websocket
-		final UserDashboard dashboard = getUserDashboardForReading();
-		sendEvents(dashboard, JSONDashboardChangedEventsList.builder()
-				.event(JSONDashboardOrderChangedEvent.of(dashboard.getId(), widgetType, dashboard.getItemIds(widgetType)))
-				.build());
 	}
 
 	@GetMapping("/kpis/{itemId}/data")

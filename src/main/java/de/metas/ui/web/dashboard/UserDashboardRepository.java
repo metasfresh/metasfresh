@@ -44,7 +44,6 @@ import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
-import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -289,47 +288,6 @@ public class UserDashboardRepository
 
 		executeChangeActionsAndInvalidate(dashboardId, ImmutableList.of(changeActionRunnable));
 		return result.getValue();
-	}
-
-	public static enum DashboardPatchPath
-	{
-		orderedItemIds
-	};
-
-	public void changeDashboard(@NonNull final UserDashboard userDashboard, @NonNull final DashboardWidgetType widgetType, @NonNull final List<JSONPatchEvent<DashboardPatchPath>> events)
-	{
-		if (events.isEmpty())
-		{
-			throw new AdempiereException("no events");
-		}
-
-		final int dashboardId = userDashboard.getId();
-
-		//
-		// Extract change actions
-		final List<Runnable> changeActions = new ArrayList<>(events.size());
-		for (final JSONPatchEvent<DashboardPatchPath> event : events)
-		{
-			if (!event.isReplace())
-			{
-				throw new AdempiereException("Invalid event operation").setParameter("event", event);
-			}
-
-			final DashboardPatchPath path = event.getPath();
-			if (DashboardPatchPath.orderedItemIds.equals(path))
-			{
-				final List<Integer> orderItemIds = event.getValueAsIntegersList();
-				changeActions.add(() -> changeDashboardItemsOrder(dashboardId, widgetType, orderItemIds));
-			}
-			else
-			{
-				throw new AdempiereException("Unknown path").setParameter("event", event).setParameter("availablePaths", DashboardPatchPath.values());
-			}
-		}
-
-		//
-		// Execute the change actions
-		executeChangeActionsAndInvalidate(dashboardId, changeActions);
 	}
 
 	private void changeDashboardItemsOrder(final int dashboardId, final DashboardWidgetType dashboardWidgetType, final List<Integer> requestOrderedItemIds)
