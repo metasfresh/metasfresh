@@ -69,6 +69,35 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_DocType_ID (int C_DocType_ID);
+
+	/**
+	 * Get Belegart.
+	 * Belegart oder Verarbeitungsvorgaben
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_DocType_ID();
+
+	public org.compiere.model.I_C_DocType getC_DocType();
+
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
+
+    /** Column definition for C_DocType_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_C_DocType>(I_M_HU_Trace.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+    /** Column name C_DocType_ID */
+    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -99,10 +128,35 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDocStatus (java.lang.String DocStatus);
+
+	/**
+	 * Get Belegstatus.
+	 * The current status of the document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDocStatus();
+
+    /** Column definition for DocStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_M_HU_Trace, Object>(I_M_HU_Trace.class, "DocStatus", null);
+    /** Column name DocStatus */
+    public static final String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
 	 * Set Zeitpunkt.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setEventTime (java.sql.Timestamp EventTime);
@@ -111,7 +165,7 @@ public interface I_M_HU_Trace
 	 * Get Zeitpunkt.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getEventTime();
@@ -120,6 +174,29 @@ public interface I_M_HU_Trace
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, Object> COLUMN_EventTime = new org.adempiere.model.ModelColumn<I_M_HU_Trace, Object>(I_M_HU_Trace.class, "EventTime", null);
     /** Column name EventTime */
     public static final String COLUMNNAME_EventTime = "EventTime";
+
+	/**
+	 * Set Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setHUTraceType (java.lang.String HUTraceType);
+
+	/**
+	 * Get Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getHUTraceType();
+
+    /** Column definition for HUTraceType */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, Object> COLUMN_HUTraceType = new org.adempiere.model.ModelColumn<I_M_HU_Trace, Object>(I_M_HU_Trace.class, "HUTraceType", null);
+    /** Column name HUTraceType */
+    public static final String COLUMNNAME_HUTraceType = "HUTraceType";
 
 	/**
 	 * Set Aktiv.
@@ -307,6 +384,33 @@ public interface I_M_HU_Trace
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_M_HU_Trace.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+
+	/**
+	 * Set Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
+
+	/**
+	 * Get Manufacturing Cost Collector.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPP_Cost_Collector_ID();
+
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+
+	public void setPP_Cost_Collector(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
+
+    /** Column definition for PP_Cost_Collector_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.eevolution.model.I_PP_Cost_Collector>(I_M_HU_Trace.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
+    /** Column name PP_Cost_Collector_ID */
+    public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
 	 * Set Produktionsauftrag.

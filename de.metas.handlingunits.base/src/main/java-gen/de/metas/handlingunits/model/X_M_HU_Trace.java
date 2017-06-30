@@ -14,7 +14,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 237124240L;
+	private static final long serialVersionUID = 1082261784L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -22,6 +22,8 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
       super (ctx, M_HU_Trace_ID, trxName);
       /** if (M_HU_Trace_ID == 0)
         {
+			setEventTime (new Timestamp( System.currentTimeMillis() ));
+			setHUTraceType (null);
 			setM_HU_ID (0);
 			setM_HU_Trace_ID (0);
         } */
@@ -42,6 +44,92 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
       return poi;
     }
 
+	@Override
+	public org.compiere.model.I_C_DocType getC_DocType() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class);
+	}
+
+	@Override
+	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DocType_ID, org.compiere.model.I_C_DocType.class, C_DocType);
+	}
+
+	/** Set Belegart.
+		@param C_DocType_ID 
+		Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public void setC_DocType_ID (int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_Value (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+	}
+
+	/** Get Belegart.
+		@return Belegart oder Verarbeitungsvorgaben
+	  */
+	@Override
+	public int getC_DocType_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** 
+	 * DocStatus AD_Reference_ID=131
+	 * Reference name: _Document Status
+	 */
+	public static final int DOCSTATUS_AD_Reference_ID=131;
+	/** Drafted = DR */
+	public static final String DOCSTATUS_Drafted = "DR";
+	/** Completed = CO */
+	public static final String DOCSTATUS_Completed = "CO";
+	/** Approved = AP */
+	public static final String DOCSTATUS_Approved = "AP";
+	/** NotApproved = NA */
+	public static final String DOCSTATUS_NotApproved = "NA";
+	/** Voided = VO */
+	public static final String DOCSTATUS_Voided = "VO";
+	/** Invalid = IN */
+	public static final String DOCSTATUS_Invalid = "IN";
+	/** Reversed = RE */
+	public static final String DOCSTATUS_Reversed = "RE";
+	/** Closed = CL */
+	public static final String DOCSTATUS_Closed = "CL";
+	/** Unknown = ?? */
+	public static final String DOCSTATUS_Unknown = "??";
+	/** InProgress = IP */
+	public static final String DOCSTATUS_InProgress = "IP";
+	/** WaitingPayment = WP */
+	public static final String DOCSTATUS_WaitingPayment = "WP";
+	/** WaitingConfirmation = WC */
+	public static final String DOCSTATUS_WaitingConfirmation = "WC";
+	/** Set Belegstatus.
+		@param DocStatus 
+		The current status of the document
+	  */
+	@Override
+	public void setDocStatus (java.lang.String DocStatus)
+	{
+
+		set_Value (COLUMNNAME_DocStatus, DocStatus);
+	}
+
+	/** Get Belegstatus.
+		@return The current status of the document
+	  */
+	@Override
+	public java.lang.String getDocStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+	}
+
 	/** Set Zeitpunkt.
 		@param EventTime Zeitpunkt	  */
 	@Override
@@ -56,6 +144,42 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public java.sql.Timestamp getEventTime () 
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_EventTime);
+	}
+
+	/** 
+	 * HUTraceType AD_Reference_ID=540729
+	 * Reference name: HUTraceType
+	 */
+	public static final int HUTRACETYPE_AD_Reference_ID=540729;
+	/** MATERIAL_SHIPMENT = MATERIAL_SHIPMENT */
+	public static final String HUTRACETYPE_MATERIAL_SHIPMENT = "MATERIAL_SHIPMENT";
+	/** MATERIAL_RECEIPT = MATERIAL_RECEIPT */
+	public static final String HUTRACETYPE_MATERIAL_RECEIPT = "MATERIAL_RECEIPT";
+	/** MATERIAL_MOVEMENT = MATERIAL_MOVEMENT */
+	public static final String HUTRACETYPE_MATERIAL_MOVEMENT = "MATERIAL_MOVEMENT";
+	/** MATERIAL_PICKING = MATERIAL_PICKING */
+	public static final String HUTRACETYPE_MATERIAL_PICKING = "MATERIAL_PICKING";
+	/** PRODUCTION_ISSUE = PRODUCTION_ISSUE */
+	public static final String HUTRACETYPE_PRODUCTION_ISSUE = "PRODUCTION_ISSUE";
+	/** PRODUCTION_RECEIPT = PRODUCTION_RECEIPT */
+	public static final String HUTRACETYPE_PRODUCTION_RECEIPT = "PRODUCTION_RECEIPT";
+	/** TRANSFORMATION = TRANSFORMATION */
+	public static final String HUTRACETYPE_TRANSFORMATION = "TRANSFORMATION";
+	/** Set Typ.
+		@param HUTraceType Typ	  */
+	@Override
+	public void setHUTraceType (java.lang.String HUTraceType)
+	{
+
+		set_Value (COLUMNNAME_HUTraceType, HUTraceType);
+	}
+
+	/** Get Typ.
+		@return Typ	  */
+	@Override
+	public java.lang.String getHUTraceType () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_HUTraceType);
 	}
 
 	@Override
@@ -251,6 +375,40 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public int getM_ShipmentSchedule_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class);
+	}
+
+	@Override
+	public void setPP_Cost_Collector(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class, PP_Cost_Collector);
+	}
+
+	/** Set Manufacturing Cost Collector.
+		@param PP_Cost_Collector_ID Manufacturing Cost Collector	  */
+	@Override
+	public void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID)
+	{
+		if (PP_Cost_Collector_ID < 1) 
+			set_Value (COLUMNNAME_PP_Cost_Collector_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Cost_Collector_ID, Integer.valueOf(PP_Cost_Collector_ID));
+	}
+
+	/** Get Manufacturing Cost Collector.
+		@return Manufacturing Cost Collector	  */
+	@Override
+	public int getPP_Cost_Collector_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Cost_Collector_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

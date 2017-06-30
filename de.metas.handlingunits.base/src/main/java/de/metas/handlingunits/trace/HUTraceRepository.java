@@ -72,11 +72,11 @@ public class HUTraceRepository
 		save(dbRecord);
 	}
 
-	public List<HUTraceRecord> query(@NonNull final HUTraceSpecification query)
+	public List<HUTraceEvent> query(@NonNull final HUTraceSpecification query)
 	{
 		return queryDbRecord(query)
 				.stream()
-				.map(r -> asHuTraceRecord(r))
+				.map(r -> asHuTraceEvent(r))
 				.collect(Collectors.toList());
 	}
 
@@ -120,9 +120,9 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Movement_ID, query.getMovementId());
 			emptySpec = false;
 		}
-		if (query.getPpOrderId() > 0)
+		if (query.getCostCollectorId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getPpOrderId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getCostCollectorId());
 			emptySpec = false;
 		}
 		if (query.getShipmentScheduleId() > 0)
@@ -203,27 +203,33 @@ public class HUTraceRepository
 		return ImmutableList.copyOf(result);
 	}
 
-	private HUTraceRecord asHuTraceRecord(@NonNull final I_M_HU_Trace dbRecord)
+	private HUTraceEvent asHuTraceEvent(@NonNull final I_M_HU_Trace dbRecord)
 	{
-		return HUTraceRecord.builder()
-				.huId(dbRecord.getM_HU_ID())
+		return HUTraceEvent.builder()
+				.costCollectorId(dbRecord.getPP_Cost_Collector_ID())
+				.docTypeId(dbRecord.getC_DocType_ID())
+				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant())
+				.huId(dbRecord.getM_HU_ID())
 				.huSourceId(dbRecord.getM_HU_Source_ID())
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
-				.ppOrderId(dbRecord.getPP_Order_ID())
 				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
+				.type(HUTraceType.valueOf(dbRecord.getHUTraceType()))
 				.build();
 	}
 
 	private void copyToDbRecord(@NonNull final HUTraceEvent huTraceRecord, @NonNull final I_M_HU_Trace dbRecord)
 	{
-		dbRecord.setM_HU_ID(huTraceRecord.getHuId());
+		dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId());
+		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
+		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
+		dbRecord.setM_HU_ID(huTraceRecord.getHuId());
 		dbRecord.setM_HU_Source_ID(huTraceRecord.getHuSourceId());
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
 		dbRecord.setM_ShipmentSchedule_ID(huTraceRecord.getShipmentScheduleId());
-		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
+		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getCostCollectorId());
 	}
 }

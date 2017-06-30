@@ -1,11 +1,5 @@
 package de.metas.handlingunits.trace;
 
-import java.time.Instant;
-
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -27,23 +21,41 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Data
-@Builder
-public class HUTraceRecord
+
+public enum HUTraceType
 {
-	@NonNull
-	final Integer huId;
+	/**
+	 * Used for records/events related to an outgoing {@code M_InOut}.
+	 */
+	MATERIAL_SHIPMENT,
 
-	@NonNull
-	final Instant eventTime;
+	/**
+	 * Used for records/events related to an incoming {@code M_InOut}.
+	 */
+	MATERIAL_RECEIPT,
 
-	final int inOutId;
+	/**
+	 * Used for records/events related to a {@code M_Movement}.
+	 */
+	MATERIAL_MOVEMENT,
 
-	final int shipmentScheduleId;
+	/**
+	 * Used for records/events related to picking (assignment of HUs to {@code M_Shipment_Schedule}s).
+	 */
+	MATERIAL_PICKING,
 
-	final int movementId;
+	/**
+	 * Used for records/events related to HUs being used in production
+	 */
+	PRODUCTION_ISSUE,
 
-	final int ppOrderId;
-
-	final int huSourceId;
+	/**
+	 * Used for records/events related to HUs coming out of production
+	 */
+	PRODUCTION_RECEIPT,
+	
+	/**
+	 * Used for records/events related to HU-editing.
+	 */
+	TRANSFORMATION
 }

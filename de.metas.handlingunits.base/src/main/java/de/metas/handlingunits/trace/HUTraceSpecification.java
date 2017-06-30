@@ -50,7 +50,7 @@ public class HUTraceSpecification
 	
 	final int movementId;
 	
-	final int ppOrderId;
+	final int costCollectorId;
 	
 	@NonNull
 	RecursionMode recursionMode;

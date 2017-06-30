@@ -1,6 +1,5 @@
 package de.metas.handlingunits.trace;
 
-
 import java.time.Instant;
 
 import lombok.Builder;
@@ -36,17 +35,24 @@ public class HUTraceEvent
 {
 	@NonNull
 	final Integer huId;
-	
+
 	@NonNull
 	final Instant eventTime;
+
+	@NonNull
+	final HUTraceType type;
 	
 	final int inOutId;
-	
+
 	final int shipmentScheduleId;
-	
+
 	final int movementId;
-	
-	final int ppOrderId;
-	
+
+	final int costCollectorId;
+
 	final int huSourceId;
+
+	final String docStatus;
+
+	final int docTypeId;
 }

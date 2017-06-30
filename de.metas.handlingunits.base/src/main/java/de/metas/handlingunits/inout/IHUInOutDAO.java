@@ -33,6 +33,12 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 
 public interface IHUInOutDAO extends ISingletonService
 {
+	/**
+	 * Retrieve the <b>top-level</b> HUs associated with the given {@code inout}'s lines.
+	 * 
+	 * @param inOut
+	 * @return
+	 */
 	List<I_M_HU> retrieveHandlingUnits(I_M_InOut inOut);
 
 	List<I_M_InOutLine> retrievePackingMaterialLines(I_M_InOut inOut);

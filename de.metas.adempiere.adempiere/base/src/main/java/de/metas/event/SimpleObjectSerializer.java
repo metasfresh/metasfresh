@@ -1,4 +1,4 @@
-package de.metas.material.event.impl;
+package de.metas.event;
 
 import java.io.IOException;
 
@@ -7,8 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
-import de.metas.material.event.MaterialEvent;
 
 /*
  * #%L
@@ -32,13 +30,20 @@ import de.metas.material.event.MaterialEvent;
  * #L%
  */
 
-public class MaterialEventSerializer
+/**
+ * Simple json serializer/deserializer that can be used when a whole object is to be send as an {@link Event}'s property.<br>
+ * See the {@code metasfresh-material-event} module for usage examples.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class SimpleObjectSerializer
 {
-	private static final MaterialEventSerializer INSTANCE = new MaterialEventSerializer();
+	private static final SimpleObjectSerializer INSTANCE = new SimpleObjectSerializer();
 
 	private final ObjectMapper objectMapper;
 
-	private MaterialEventSerializer()
+	private SimpleObjectSerializer()
 	{
 		objectMapper = new ObjectMapper();
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -46,12 +51,12 @@ public class MaterialEventSerializer
 		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 	}
 
-	public static MaterialEventSerializer get()
+	public static SimpleObjectSerializer get()
 	{
 		return INSTANCE;
 	}
 
-	public String serialize(final MaterialEvent event)
+	public String serialize(final Object event)
 	{
 		try
 		{
@@ -63,11 +68,11 @@ public class MaterialEventSerializer
 		}
 	}
 
-	public MaterialEvent deserialize(final String eventJson)
+	public <T> T deserialize(final String eventJson, final Class<T> clazz)
 	{
 		try
 		{
-			return objectMapper.readValue(eventJson, MaterialEvent.class);
+			return objectMapper.readValue(eventJson, clazz);
 		}
 		catch (final IOException e)
 		{

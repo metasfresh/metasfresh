@@ -9,3 +9,46 @@
 /* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN EventTime TIMESTAMP WITH TIME ZONE')
 ;
 
+
+-- 2017-06-30T14:56:26.692
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN HUTraceType VARCHAR(20) NOT NULL')
+;
+
+-- 2017-06-30T14:56:34.440
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN DocStatus VARCHAR(2)')
+;
+
+-- 2017-06-30T14:56:42.985
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN C_DocType_ID NUMERIC(10)')
+;
+
+-- 2017-06-30T14:56:43.003
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE M_HU_Trace ADD CONSTRAINT CDocType_MHUTrace FOREIGN KEY (C_DocType_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED
+;
+
+
+-- 2017-06-30T14:56:58.413
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_hu_trace','EventTime','TIMESTAMP WITH TIME ZONE',null,null)
+;
+
+-- 2017-06-30T14:56:58.419
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('m_hu_trace','EventTime',null,'NOT NULL',null)
+;
+
+-- 2017-06-30T14:57:04.787
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN PP_Cost_Collector_ID NUMERIC(10)')
+;
+
+-- 2017-06-30T14:57:04.795
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE M_HU_Trace ADD CONSTRAINT PPCostCollector_MHUTrace FOREIGN KEY (PP_Cost_Collector_ID) REFERENCES public.PP_Cost_Collector DEFERRABLE INITIALLY DEFERRED
+;
+
+ALTER TABLE M_HU_Trace DROP COLUMN IF EXISTS PP_Order_ID;

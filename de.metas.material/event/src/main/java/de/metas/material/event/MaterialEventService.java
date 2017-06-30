@@ -17,10 +17,10 @@ import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.material.event.impl.MaterialEventBus;
-import de.metas.material.event.impl.MaterialEventSerializer;
 import lombok.NonNull;
 
 /*
@@ -62,7 +62,7 @@ public class MaterialEventService
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
 			final String lightWeigthEventStr = event.getProperty(MANUFACTURING_DISPOSITION_EVENT);
-			final MaterialEvent lightWeightEvent = MaterialEventSerializer.get().deserialize(lightWeigthEventStr);
+			final MaterialEvent lightWeightEvent = SimpleObjectSerializer.get().deserialize(lightWeigthEventStr, MaterialEvent.class);
 
 			//
 			// make sure that every record we create has the correct AD_Client_ID and AD_Org_ID
@@ -146,7 +146,7 @@ public class MaterialEventService
 	{
 		Preconditions.checkState(subscribedToEventBus, "The method subscribeToEventBus() was no yet called on this instance; this=%s", this);
 
-		final String eventStr = MaterialEventSerializer.get().serialize(event);
+		final String eventStr = SimpleObjectSerializer.get().serialize(event);
 
 		final Event realEvent = Event.builder()
 				.putProperty(MANUFACTURING_DISPOSITION_EVENT, eventStr)
