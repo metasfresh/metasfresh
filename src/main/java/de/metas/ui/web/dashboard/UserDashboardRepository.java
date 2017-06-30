@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -43,8 +42,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
-import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
-import lombok.Builder;
+import de.metas.ui.web.dashboard.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -549,23 +547,6 @@ public class UserDashboardRepository
 		{
 			super();
 			this.adClientId = adClientId < 0 ? -1 : adClientId;
-		}
-	}
-
-	@Value
-	@Builder
-	public static final class UserDashboardItemChangeResult
-	{
-		private final int dashboardId;
-		private final DashboardWidgetType dashboardWidgetType;
-		private final int itemId;
-
-		@Nullable
-		private ImmutableList<Integer> dashboardOrderedItemIds;
-
-		public boolean isPositionChanged()
-		{
-			return dashboardOrderedItemIds != null && !dashboardOrderedItemIds.isEmpty();
 		}
 	}
 }

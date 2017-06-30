@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
-import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardItemChangeResult;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.dashboard.json.JSONDashboard;
 import de.metas.ui.web.dashboard.json.JSONDashboardChangedEventsList;
