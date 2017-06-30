@@ -84,6 +84,11 @@ final class UserDashboardItemChangeRequest
 				final JSONWhen when = event.getValueAsEnum(JsonUserDashboardItemAddRequest.JSONWhen.class);
 				changeRequestBuilder.when(when);
 			}
+			else if (DashboardItemPatchPath.position.equals(path))
+			{
+				final int position = event.getValueAsInteger(-1);
+				changeRequestBuilder.position(position);
+			}
 			else
 			{
 				throw new AdempiereException("Unknown path").setParameter("event", event).setParameter("availablePaths", Arrays.asList(DashboardItemPatchPath.values()));
@@ -108,11 +113,13 @@ final class UserDashboardItemChangeRequest
 	private final String caption;
 	private final JSONInterval interval;
 	private final JSONWhen when;
+	private final int position;
 
 	public boolean isEmpty()
 	{
 		return Check.isEmpty(caption, true)
 				&& interval == null
-				&& when == null;
+				&& when == null
+				&& position < 0;
 	}
 }

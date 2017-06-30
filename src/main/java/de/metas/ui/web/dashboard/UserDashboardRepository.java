@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,7 +43,9 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
+import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -413,7 +416,7 @@ public class UserDashboardRepository
 		return executeChangeActionAndInvalidateAndReturn(dashboardId, () -> {
 			//
 			// Create dashboard item in database (will be added last).
-			final int itemId = createAndSaveDashboardItem(dashboardId, request);
+			final int itemId = createUserDashboardItemAndSave(dashboardId, request);
 
 			//
 			// Calculate item's position
@@ -437,7 +440,7 @@ public class UserDashboardRepository
 		});
 	}
 
-	private int createAndSaveDashboardItem(final int dashboardId, @NonNull final UserDashboardItemAddRequest request)
+	private int createUserDashboardItemAndSave(final int dashboardId, @NonNull final UserDashboardItemAddRequest request)
 	{
 		//
 		// Get the KPI
@@ -490,17 +493,53 @@ public class UserDashboardRepository
 
 	public static enum DashboardItemPatchPath
 	{
-		caption, interval, when
+		caption, interval, when, position
 	}
 
-	public void changeUserDashboardItem(final UserDashboard dashboard, final UserDashboardItemChangeRequest request)
+	public UserDashboardItemChangeResult changeUserDashboardItem(final UserDashboard dashboard, final UserDashboardItemChangeRequest request)
 	{
-		dashboard.assertItemIdExists(request.getWidgetType(), request.getItemId());
 		final int dashboardId = dashboard.getId();
+		final DashboardWidgetType dashboardWidgetType = request.getWidgetType();
+		final int itemId = request.getItemId();
+
+		dashboard.assertItemIdExists(dashboardWidgetType, itemId);
 
 		//
 		// Execute the change request
-		executeChangeActionAndInvalidate(dashboardId, () -> changeUserDashboardItemAndSave(request));
+		return executeChangeActionAndInvalidateAndReturn(dashboardId, () -> {
+			final UserDashboardItemChangeResultBuilder resultBuilder = UserDashboardItemChangeResult.builder()
+					.dashboardId(dashboardId)
+					.dashboardWidgetType(dashboardWidgetType)
+					.itemId(itemId);
+
+			//
+			// Actually change the item content
+			changeUserDashboardItemAndSave(request);
+
+			//
+			// Change item's position
+			final int position = request.getPosition();
+			if (position >= 0)
+			{
+				final List<Integer> allItemIdsOrdered = new ArrayList<>(retrieveDashboardItemIdsOrdered(dashboardId, dashboardWidgetType));
+
+				if (position == Integer.MAX_VALUE || position > allItemIdsOrdered.size() - 1)
+				{
+					allItemIdsOrdered.remove((Object)itemId);
+					allItemIdsOrdered.add(itemId);
+				}
+				else
+				{
+					allItemIdsOrdered.remove((Object)itemId);
+					allItemIdsOrdered.add(position, itemId);
+				}
+
+				updateUserDashboardItemsOrder(dashboardId, allItemIdsOrdered);
+				resultBuilder.dashboardOrderedItemIds(ImmutableList.copyOf(allItemIdsOrdered));
+			}
+
+			return resultBuilder.build();
+		});
 	}
 
 	private List<Integer> retrieveDashboardItemIdsOrdered(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
@@ -515,7 +554,6 @@ public class UserDashboardRepository
 				//
 				.create()
 				.listIds();
-
 	}
 
 	private final int retrieveLastSeqNo(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
@@ -556,4 +594,20 @@ public class UserDashboardRepository
 		}
 	}
 
+	@Value
+	@Builder
+	public static final class UserDashboardItemChangeResult
+	{
+		private final int dashboardId;
+		private final DashboardWidgetType dashboardWidgetType;
+		private final int itemId;
+
+		@Nullable
+		private ImmutableList<Integer> dashboardOrderedItemIds;
+
+		public boolean isPositionChanged()
+		{
+			return dashboardOrderedItemIds != null && !dashboardOrderedItemIds.isEmpty();
+		}
+	}
 }

@@ -23,9 +23,11 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardPatchPath;
+import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardItemChangeResult;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.dashboard.json.JSONDashboard;
 import de.metas.ui.web.dashboard.json.JSONDashboardChangedEventsList;
+import de.metas.ui.web.dashboard.json.JSONDashboardChangedEventsList.JSONDashboardChangedEventsListBuilder;
 import de.metas.ui.web.dashboard.json.JSONDashboardItem;
 import de.metas.ui.web.dashboard.json.JSONDashboardItemChangedEvent;
 import de.metas.ui.web.dashboard.json.JSONDashboardOrderChangedEvent;
@@ -285,17 +287,27 @@ public class DashboardRestController
 		//
 		// Chage the dashboard item
 		final UserDashboardItemChangeRequest request = UserDashboardItemChangeRequest.of(widgetType, itemId, userSession.getAD_Language(), events);
-		userDashboardRepo.changeUserDashboardItem(getUserDashboardForWriting(), request);
+		final UserDashboardItemChangeResult changeResult = userDashboardRepo.changeUserDashboardItem(getUserDashboardForWriting(), request);
 
 		//
 		// Notify on websocket
 		final UserDashboard dashboard = getUserDashboardForReading();
-		sendEvents(dashboard, JSONDashboardChangedEventsList.builder()
-				.event(JSONDashboardItemChangedEvent.of(dashboard.getId(), itemId))
-				.build());
+		{
+			final JSONDashboardChangedEventsListBuilder eventBuilder = JSONDashboardChangedEventsList.builder()
+					.event(JSONDashboardItemChangedEvent.of(changeResult.getDashboardId(), changeResult.getItemId()));
+			
+			if(changeResult.isPositionChanged())
+			{
+				eventBuilder.event(JSONDashboardOrderChangedEvent.of(changeResult.getDashboardId(), changeResult.getDashboardWidgetType(), changeResult.getDashboardOrderedItemIds()));
+			}
+			
+			sendEvents(dashboard, eventBuilder.build());
+		}
 
 		// Return the changed item
-		final UserDashboardItem item = dashboard.getItemById(DashboardWidgetType.KPI, itemId);
-		return JSONDashboardItem.of(item, newJSONOpts());
+		{
+			final UserDashboardItem item = dashboard.getItemById(widgetType, itemId);
+			return JSONDashboardItem.of(item, newJSONOpts());
+		}
 	}
 }
