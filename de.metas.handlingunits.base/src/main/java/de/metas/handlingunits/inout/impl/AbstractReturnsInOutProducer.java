@@ -67,7 +67,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	private Date _movementDate = null;
 	private boolean _complete = true;
 
-	private I_M_InOut _manualReturnInOut = null;
+	protected I_M_InOut _manualReturnInOut = null;
 
 	/** #643 The order on based on which the empties inout is created (if it was selected) */
 	private I_C_Order _order = null;
@@ -128,7 +128,8 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 				// nothing created
 				return null;
 			}
-
+			
+		
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
 			afterInOutProcessed(inout);

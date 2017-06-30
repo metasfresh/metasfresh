@@ -128,6 +128,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		{
 			collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
+			collector.setisCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
 
 			// we know for sure the huAssignments are for inoutlines
