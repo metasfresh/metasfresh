@@ -101,7 +101,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#833](https://github.com/metasfresh/metasfresh-webui-frontend/issues/833) Dashboard Window w/ Swimlane type functionalities
+    * New generic Window Implementation that allows to define Kanbanlike Boards in metasfresh.
   * [#864](https://github.com/metasfresh/metasfresh-webui-frontend/issues/864) Show view sticky/readonly filters
+    * Adding a new Filter Type that allows to show filtered results to the user when using Zoom-To into new Window.
   * [#896](https://github.com/metasfresh/metasfresh-webui-frontend/issues/896) KPIs: show Loading indicator instead of No data
     * Exchanging "No Data" Notification with a Loading Indicator in KPI when data is not available.
   * [#908](https://github.com/metasfresh/metasfresh-webui-frontend/issues/908) URL widget: disable the link button if the URL is not valid
@@ -118,15 +120,20 @@ Here come the actual release notes:
   * [#1861](https://github.com/metasfresh/metasfresh/issues/1861) Performance degradation in HUKey.isReadonly()
     * Fixes a Bug that decreased the performance of HUKey.isReadonly() method over the time.
   * [#1873](https://github.com/metasfresh/metasfresh/issues/1873) Fix control amount and qty in payment data imported from camt.54
+    * Fix for the Import of Sepa camt.54 files accoring to control amount and qty.
   * [#1900](https://github.com/metasfresh/metasfresh/issues/1900) Migration Script for "Select all lines count"
     * Fix of the number delimiter in a message Translation the leads to failing switch of link in frontend for 'Select all x records'.
   * [#1912](https://github.com/metasfresh/metasfresh/issues/1912) Customer return from HUs coming from Verdichtung POS don't have the right quantities
   * [#1921](https://github.com/metasfresh/metasfresh/issues/1921) Export webui messages from w101 again
+    * Updating the webui messages via migration script.
   * [#1924](https://github.com/metasfresh/metasfresh/issues/1924) ESR Line AcctDate not set error
+    * Fixing a Bug in Bank Statements that occure because of a missing account date in ESR Lines.
 
 * metasfresh-webui-frontend
   * [#913](https://github.com/metasfresh/metasfresh-webui-frontend/issues/913) Incompatible Sock.js versions
+    * Updating the Sock.js to identical versions in forntend and API.
   * [#926](https://github.com/metasfresh/metasfresh-webui-frontend/issues/926) Board window does not open via Sitemap menu
+    * Fixes a Bug that prevented to open the new generic Board wndow via menu.
 
 # metasfresh 5.14 (2017-25)
 
