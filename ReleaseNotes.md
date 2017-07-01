@@ -31,10 +31,12 @@ Here come the actual release notes:
     * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
 
 * metasfresh-webui-api
-  * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
-    * Adding the Key Field to WebUI KPI Translation Window.
-  
+  * [#485](https://github.com/metasfresh/metasfresh-webui-api/issues/485) backend: refactor sticky filters
+  * [#486](https://github.com/metasfresh/metasfresh-webui-api/issues/486) dashboard: support "position" when PATCHing a dashboard item
+  * [#469](https://github.com/metasfresh/metasfresh-webui-api/issues/469) Picking prototype (v2)
+
 * metasfresh-webui-frontend
+  * [#905](https://github.com/metasfresh/metasfresh-webui-frontend/issues/905) Add/ Remove KPI Widget functionality for User Dashboard
   * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
     * Adjustment of the content in the Breadcrumb Navigation, now only showing the leaf entries of the selected Breadcrumb Hierarchy.
   * [#922](https://github.com/metasfresh/metasfresh-webui-frontend/issues/922) Language switch does not update static elements
@@ -47,21 +49,31 @@ Here come the actual release notes:
     * Now showing an uploading/ processing Indicator to the user durcing the upload of a User image. The Indicator is shown when the image will be shown.
   * [#944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/944) Show the metasfresh logo centered when there are no KPIs
     * Centering the metasfresh Logo thats shown when the User/ KPI Dashboard remains empty without added KPI Cards.
+  * [#945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/945) dashboard: react to websocket notifications
+  * [#949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/949) Board: adding a card as last is not user friendly
   * [#950](https://github.com/metasfresh/metasfresh-webui-frontend/issues/950) Dashboard: move the "Open edit mode" button to Actions menu
     * New Action for Dashboard >Edit mode. Allows the user to toggle between Edit and Live Mode of the User/ KPI Dashboard.
-  
+
 ## Fixes
 * metasfresh-app
   * [#1869](https://github.com/metasfresh/metasfresh/issues/1869) Customer Returns for HU more than 1 Document
   * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
   * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
   * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
-  
+
+* metasfresh-webui-api
+  * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
+    * Adding the Key Field to WebUI KPI Translation Window.
+  * [#481](https://github.com/metasfresh/metasfresh-webui-api/issues/481) Sticky empty Filter in modal overlay.
+  * [#482](https://github.com/metasfresh/metasfresh-webui-api/issues/482) No Role Error for new User
+
 * metasfresh-webui-frontend
   * [#921](https://github.com/metasfresh/metasfresh-webui-frontend/issues/921) Browser issue: Window Bookmark Header
     * The jumping linebreak effect for Window headers in Action Menu is now solved in Chrome Browser.
+  * [#923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/923) Packageables window: up/down arrows are working weird
   * [#931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/931) Notifications are not refreshed when the language is changed
     * Now the Notifications are alos shown in the correct language after switching the language in User settings.
+  * [#933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/933) Disable quick actions button while running the action (v2)
   * [#951](https://github.com/metasfresh/metasfresh-webui-frontend/issues/951) Frontend is broken (showstopper)
     * Fixes a Bug that raises exceptions after login and prevented the usage of Action Menu.
 
