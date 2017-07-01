@@ -313,3 +313,213 @@ UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:56:50','
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:57:23','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Dunning Type',Description='Maintain Dunning Types',WEBUI_NameBrowse='Dunning Type' WHERE AD_Menu_ID=540780 AND AD_Language='en_US'
 ;
 
+-- 2017-07-01T20:05:18.954
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:05:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Delivery Days',WEBUI_NameBrowse='Delivery Days' WHERE AD_Menu_ID=540797 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:05:55.288
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:05:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Delivery Days',Description='View and maintain Delivery Days' WHERE AD_Window_ID=540110 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:13:04.702
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:13:04','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Distribution Order',WEBUI_NameBrowse='Distribution Order' WHERE AD_Menu_ID=540829 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:13:27.366
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='Distributionsauftrag',Updated=TO_TIMESTAMP('2017-07-01 20:13:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=53012
+;
+
+-- 2017-07-01T20:13:27.401
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Distribution Order allow create Order inter warehouse to supply a demand ', IsActive='Y', Name='Distributionsauftrag',Updated=TO_TIMESTAMP('2017-07-01 20:13:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=53068
+;
+
+-- 2017-07-01T20:13:47.274
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Distributionsauftrag',Updated=TO_TIMESTAMP('2017-07-01 20:13:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=53055
+;
+
+-- 2017-07-01T20:14:45.383
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:14:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction',WEBUI_NameBrowse='Packing Instruction' WHERE AD_Menu_ID=540830 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:14:58.469
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:14:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction' WHERE AD_Window_ID=540343 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:15:08.144
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:15:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction' WHERE AD_Tab_ID=540822 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:15:31.280
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:15:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction Version',WEBUI_NameBrowse='Packing Instruction Version' WHERE AD_Menu_ID=540831 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:15:48.630
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:15:48','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction Version' WHERE AD_Window_ID=540344 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:16:02.026
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:16:02','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Instruction Version' WHERE AD_Tab_ID=540823 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:16:31.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='Packvorschrift Version',Updated=TO_TIMESTAMP('2017-07-01 20:16:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540344
+;
+
+-- 2017-07-01T20:16:58.834
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:16:58','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Packing Material',WEBUI_NameBrowse='Packing Material' WHERE AD_Menu_ID=540844 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:17:14.079
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:17:14','YYYY-MM-DD HH24:MI:SS'),Name='Packing Material' WHERE AD_Window_ID=540192 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:17:26.570
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:17:26','YYYY-MM-DD HH24:MI:SS'),Name='Packing Material' WHERE AD_Tab_ID=540521 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:18:47.046
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:18:47','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transport Delivery' WHERE AD_Window_ID=540346 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:19:01.327
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:19:01','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transport Delivery' WHERE AD_Tab_ID=540831 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:19:10.391
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:19:10','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transport Delivery',WEBUI_NameBrowse='Transport Delivery' WHERE AD_Menu_ID=540857 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:19:51.156
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:19:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Product Transactions',WEBUI_NameBrowse='Product Transactions' WHERE AD_Menu_ID=540860 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:20:13.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:20:13','YYYY-MM-DD HH24:MI:SS'),Name='Product Transactions',Description='Product Transactions' WHERE AD_Window_ID=223 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:20:39.095
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:20:39','YYYY-MM-DD HH24:MI:SS'),Name='Material Transactions',Description='Material Transactions' WHERE AD_Window_ID=223 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:21:09.989
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Description='Produkt Transaktionen', Name='Produkt Transaktionen',Updated=TO_TIMESTAMP('2017-07-01 20:21:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=223
+;
+
+-- 2017-07-01T20:21:09.999
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Produkt Transaktionen', IsActive='Y', Name='Produkt Transaktionen',Updated=TO_TIMESTAMP('2017-07-01 20:21:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540860
+;
+
+-- 2017-07-01T20:21:10.003
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Produkt Transaktionen', IsActive='Y', Name='Produkt Transaktionen',Updated=TO_TIMESTAMP('2017-07-01 20:21:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=292
+;
+
+-- 2017-07-01T20:21:54.319
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:21:54','YYYY-MM-DD HH24:MI:SS'),Name='Material Transactions',Description='Material Transactions',WEBUI_NameBrowse='Material Transactions' WHERE AD_Menu_ID=540860 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:22:30.499
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:22:30','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transportation Order',WEBUI_NameBrowse='Transportation Order' WHERE AD_Menu_ID=540866 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:22:44.790
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:22:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transportation Order' WHERE AD_Window_ID=540020 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:23:18.147
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:23:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Transportation Delivery' WHERE AD_Tab_ID=540096 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:23:49.425
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:23:49','YYYY-MM-DD HH24:MI:SS'),Name='Distribution Configuration',WEBUI_NameBrowse='Distribution Configuration' WHERE AD_Menu_ID=540821 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:23:51.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:23:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Menu_ID=540821 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:24:10.525
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='Distributions Netzwerk',Updated=TO_TIMESTAMP('2017-07-01 20:24:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=53018
+;
+
+-- 2017-07-01T20:24:10.526
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Distribution Network define the supply relationships', IsActive='Y', Name='Distributions Netzwerk',Updated=TO_TIMESTAMP('2017-07-01 20:24:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540821
+;
+
+-- 2017-07-01T20:24:10.527
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Description='Distribution Network define the supply relationships', IsActive='Y', Name='Distributions Netzwerk',Updated=TO_TIMESTAMP('2017-07-01 20:24:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=53088
+;
+
+-- 2017-07-01T20:24:34.156
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Distributions Netzwerk',Updated=TO_TIMESTAMP('2017-07-01 20:24:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=53071
+;
+
+-- 2017-07-01T20:25:22.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:25:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Empties Receive',WEBUI_NameBrowse='Empties Receive' WHERE AD_Menu_ID=540781 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:25:32.699
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:25:32','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Empties Receive' WHERE AD_Window_ID=540323 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:26:02.381
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Leergut Rücknahme',Updated=TO_TIMESTAMP('2017-07-01 20:26:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540782
+;
+
+-- 2017-07-01T20:26:14.972
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:26:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Empties Receive' WHERE AD_Tab_ID=540782 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:26:52.508
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:26:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Vendor Returns',WEBUI_NameBrowse='Vendor Returns' WHERE AD_Menu_ID=540782 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:27:08.803
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:27:08','YYYY-MM-DD HH24:MI:SS'),Name='Vendor Returns' WHERE AD_Window_ID=53098 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T20:27:19.750
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 20:27:19','YYYY-MM-DD HH24:MI:SS'),Name='Vendor Returns' WHERE AD_Tab_ID=53276 AND AD_Language='en_US'
+;
+
