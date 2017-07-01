@@ -168,3 +168,148 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:37:32
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:37:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Allotment' WHERE AD_Tab_ID=540573 AND AD_Language='en_US'
 ;
 
+-- 2017-07-01T17:50:24.652
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:50:24','YYYY-MM-DD HH24:MI:SS'),Name='Bankaccount',Description='Manage Bankaccounts',WEBUI_NameBrowse='Bankaccount' WHERE AD_Menu_ID=540814 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:50:27.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:50:27','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Menu_ID=540814 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:51:25.946
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:51:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bankaccount',Description='Manage Bankaccounts',Help='This window allows the user to maintain Bankaccounts.' WHERE AD_Window_ID=540337 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:51:42.350
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:51:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bankaccount' WHERE AD_Tab_ID=540812 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:52:18.387
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:52:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bankstatement',Description='Process Bankstatements',WEBUI_NameBrowse='Bankstatement' WHERE AD_Menu_ID=540803 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:52:54.676
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:52:54','YYYY-MM-DD HH24:MI:SS'),Name='Bankstatement',Description='Process Bankstatements',Help='The Process Bankstatements window allows you to reconcile your Bankstatements.  You can either enter the line items from the statement in the Statement Line tab or select the ''Create From'' button to automatically generate the statement from all unreconciled payments to this bank account.  Once you have completed reconciling, select the ''Process Statement'' button to mark the payments as reconciled and update the appropriate GL accounts.' WHERE AD_Window_ID=194 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:53:25.677
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:53:25','YYYY-MM-DD HH24:MI:SS') WHERE AD_Tab_ID=328 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:54:15.349
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:54:15','YYYY-MM-DD HH24:MI:SS'),Name='Bank Statement',Description='Process Bank Statements',Help='The Process Bank Statements window allows you to reconcile your Bank Statements.  You can either enter the line items from the statement in the Statement Line tab or select the ''Create From'' button to automatically generate the Statement from all unreconciled payments to this bank account. Once you have completed reconciling, select the ''Process Statement'' button to mark the payments as reconciled and update the appropriate GL accounts.' WHERE AD_Window_ID=194 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:54:41.408
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:54:41','YYYY-MM-DD HH24:MI:SS'),Name='Bank Statement',Description='Process Bank Statements',WEBUI_NameBrowse='Bank Statement' WHERE AD_Menu_ID=540803 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:55:22.712
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:55:22','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Payment Allocations',Description='Check and remove Payment Allocations',WEBUI_NameBrowse='Payment Allocations' WHERE AD_Menu_ID=540779 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:56:13.104
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:56:13','YYYY-MM-DD HH24:MI:SS'),Name='Reverse Payment Allocation',Description='View and Reverse Payment Allocations',Help='The Reverse Payment Allocation Window allows you to view and reverse a payment allocation' WHERE AD_Window_ID=205 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:58:37.330
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:58:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Accounting Transactions',Description='View Accounting Transactions',WEBUI_NameBrowse='Accounting Transactions' WHERE AD_Menu_ID=540806 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:59:02.738
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:59:02','YYYY-MM-DD HH24:MI:SS'),Name='Accounting Transactions',Description='Query Accounting Transactions',Help='Query the detail Accounting Transactions' WHERE AD_Window_ID=162 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T17:59:24.848
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 17:59:24','YYYY-MM-DD HH24:MI:SS'),Name='Accounting Transactions',Description='View Accounting Transactions Details' WHERE AD_Tab_ID=242 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:00:04.990
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:00:04','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Calendar and Year',Description='Maintain Calendar and Years',WEBUI_NameBrowse='Calendar and Year' WHERE AD_Menu_ID=540881 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:48:06.505
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:48:06','YYYY-MM-DD HH24:MI:SS'),Description='Maintain Calendars, Years and Periods' WHERE AD_Window_ID=117 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:49:26.500
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:49:26','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Calendar Periods',Description='Maintain Calendar Periods',WEBUI_NameBrowse='Calendar Periods' WHERE AD_Menu_ID=540882 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:49:41.361
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:49:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Calendar Periods',Description='Maintain Calendar Periods' WHERE AD_Window_ID=540349 AND AD_Language='de_CH'
+;
+
+-- 2017-07-01T18:49:57.035
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:49:57','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Periods' WHERE AD_Tab_ID=540838 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:50:19.899
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:50:19','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Period Control' WHERE AD_Tab_ID=540839 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:50:47.724
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:50:47','YYYY-MM-DD HH24:MI:SS'),Description='Control the allowed Activity for Periods' WHERE AD_Tab_ID=540839 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:51:52.267
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:51:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Tax Rate',Description='Maintain Tax Rates',WEBUI_NameBrowse='Tax Rate' WHERE AD_Menu_ID=540842 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:53:04.743
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:53:04','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Tax Category',Description='Maintain Tax Categories',WEBUI_NameBrowse='Tax Category' WHERE AD_Menu_ID=540843 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:53:43.608
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:53:43','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Currency',Description='Maintain Currencies',WEBUI_NameBrowse='Currency' WHERE AD_Menu_ID=540812 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:54:46.543
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:54:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Currency Rate',Description='Maintain Currency Rates and Currency Exchange Rates',WEBUI_NameBrowse='Currency Rate' WHERE AD_Menu_ID=540813 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:55:28.065
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:55:28','YYYY-MM-DD HH24:MI:SS'),Description='Maintain Currency Rates for Currency Conversion' WHERE AD_Menu_ID=540813 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:56:40.592
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:56:40','YYYY-MM-DD HH24:MI:SS'),Name='Dunning Type' WHERE AD_Window_ID=159 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:56:50.877
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:56:50','YYYY-MM-DD HH24:MI:SS'),Name='Dunning Type' WHERE AD_Tab_ID=231 AND AD_Language='en_US'
+;
+
+-- 2017-07-01T18:57:23.018
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-01 18:57:23','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Dunning Type',Description='Maintain Dunning Types',WEBUI_NameBrowse='Dunning Type' WHERE AD_Menu_ID=540780 AND AD_Language='en_US'
+;
+
