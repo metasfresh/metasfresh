@@ -104,7 +104,7 @@ Here come the actual release notes:
   * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
     * Improvement of Breadcrumb Navigation, now providing the entry points via API.
   * [#467](https://github.com/metasfresh/metasfresh-webui-api/issues/467) board API: GET board/{boardId}/card?cardIds
-    * New API endpoin that allows to receive Cards for the new generic board window.
+    * New API endpoint that allows to receive Cards for the new generic board window.
   * [#468](https://github.com/metasfresh/metasfresh-webui-api/issues/468) Fix user full name in Avatar
     * Adjusting the Avatar Name. Now showing Firstname Lastname.
   * [#470](https://github.com/metasfresh/metasfresh-webui-api/issues/470) Cache image endpoint
