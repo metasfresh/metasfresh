@@ -448,3 +448,13 @@ UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:31:37
 UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:31:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='KPI Field Translations' WHERE AD_Tab_ID=540837 AND AD_Language='en_US'
 ;
 
+-- 2017-07-02T13:40:16.526
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:40:16','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner Revenue',WEBUI_NameBrowse='Business Partner Revenue' WHERE AD_Menu_ID=540738 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:40:31.919
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:40:31','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Business Partner Revenue' WHERE AD_Process_ID=540561 AND AD_Language='it_CH'
+;
+
