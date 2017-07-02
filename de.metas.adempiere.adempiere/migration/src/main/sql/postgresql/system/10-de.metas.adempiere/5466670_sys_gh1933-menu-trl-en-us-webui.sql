@@ -298,3 +298,103 @@ UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:36:46',
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:37:51','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Resource Type',Description='Create and Maintain Resource Types',WEBUI_NameBrowse='Resource Type' WHERE AD_Menu_ID=540819 AND AD_Language='en_US'
 ;
 
+-- 2017-07-02T12:47:24.368
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:47:24','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Storage Conference Terms',WEBUI_NameBrowse='Storage Conference Terms' WHERE AD_Menu_ID=540889 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:47:37.887
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:47:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Storage Conference Terms' WHERE AD_Window_ID=540230 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:47:45.337
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:47:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Storage Conference Terms' WHERE AD_Tab_ID=540616 AND AD_Language='it_CH'
+;
+
+-- 2017-07-02T12:47:59.600
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:47:59','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Storage Conference Terms Version' WHERE AD_Tab_ID=540617 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:49:06.887
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:49:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Invoice Schedule',Description='Create and Maintain Invoicing Schedules',WEBUI_NameBrowse='Invoice Schedule' WHERE AD_Menu_ID=540825 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:49:37.562
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:49:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Window_ID=540322 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:50:11.934
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:50:11','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Empty Return',Description='Empty Return to Vendors' WHERE AD_Tab_ID=540778 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:50:52.476
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:50:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Empties Return',WEBUI_NameBrowse='Empties Return' WHERE AD_Menu_ID=540783 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:51:12.323
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:51:12','YYYY-MM-DD HH24:MI:SS'),Name='Empties Return' WHERE AD_Window_ID=540322 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:51:23.843
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:51:23','YYYY-MM-DD HH24:MI:SS'),Name='Empties Return' WHERE AD_Tab_ID=540778 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:52:02.294
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET EntityType='D',Updated=TO_TIMESTAMP('2017-07-02 12:52:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540841
+;
+
+-- 2017-07-02T12:52:46.294
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:52:46','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Customer Return',Description='Customer Return',WEBUI_NameBrowse='Customer Return' WHERE AD_Menu_ID=540841 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:53:17.345
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Name='Kommissionier Terminal',Updated=TO_TIMESTAMP('2017-07-02 12:53:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540868
+;
+
+-- 2017-07-02T12:53:27.523
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET Name='Kommissionier Terminal',Updated=TO_TIMESTAMP('2017-07-02 12:53:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540345
+;
+
+-- 2017-07-02T12:54:06.799
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:54:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Picking Terminal (Prototype)',Description='New Picking Terminal (Prototype)' WHERE AD_Window_ID=540345 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:54:18.160
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:54:18','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Tab_ID=540830 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T12:54:40.769
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET Name='Kommissionier Terminal (Prototyp)', WEBUI_NameBrowse='Kommissionier Terminal (Prototyp)',Updated=TO_TIMESTAMP('2017-07-02 12:54:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=540868
+;
+
+-- 2017-07-02T12:55:53.667
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 12:55:53','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Client',Description='Maintain Clients',WEBUI_NameBrowse='Client' WHERE AD_Menu_ID=540838 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:19:38.125
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:19:38','YYYY-MM-DD HH24:MI:SS'),Name='Organization Type' WHERE AD_Tab_ID=588 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:19:55.836
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:19:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organization Type',Description='Maintain Organization Types',WEBUI_NameBrowse='Organization Type' WHERE AD_Menu_ID=540832 AND AD_Language='en_US'
+;
+
