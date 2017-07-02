@@ -398,3 +398,53 @@ UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:19:38','
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:19:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Organization Type',Description='Maintain Organization Types',WEBUI_NameBrowse='Organization Type' WHERE AD_Menu_ID=540832 AND AD_Language='en_US'
 ;
 
+-- 2017-07-02T13:23:48.660
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:23:48','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Picking Terminal (Prototype)',WEBUI_NameBrowse='Picking Terminal (Prototype)' WHERE AD_Menu_ID=540868 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:27:35.245
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:27:35','YYYY-MM-DD HH24:MI:SS'),Name='Organisation Type',Description='Maintain Organisation Types',WEBUI_NameBrowse='Organisation Type' WHERE AD_Menu_ID=540832 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:28:14.781
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:28:14','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Document Type',Description='Maintain Document Types',WEBUI_NameBrowse='Document Type' WHERE AD_Menu_ID=540826 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:28:52.222
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:28:52','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Print Format',Description='Maintain Print Format',WEBUI_NameBrowse='Print Format' WHERE AD_Menu_ID=540827 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:29:35.119
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:29:35','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Document Sequence',Description='Maintain System and Document Sequences',WEBUI_NameBrowse='Document Sequence' WHERE AD_Menu_ID=540828 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:30:04.993
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:30:04','YYYY-MM-DD HH24:MI:SS'),Name='Country, Region and City' WHERE AD_Window_ID=122 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:30:45.624
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:30:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Country, Region and City',Description='Maintain Countries, Regions and Cities',WEBUI_NameBrowse='Country, Region and City' WHERE AD_Menu_ID=540845 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:31:25.673
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:31:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='KPI Field Translations',WEBUI_NameBrowse='KPI Field Translations' WHERE AD_Menu_ID=540865 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:31:37.647
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:31:37','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='KPI Field Translations' WHERE AD_Window_ID=540348 AND AD_Language='en_US'
+;
+
+-- 2017-07-02T13:31:54.587
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-02 13:31:54','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='KPI Field Translations' WHERE AD_Tab_ID=540837 AND AD_Language='en_US'
+;
+
