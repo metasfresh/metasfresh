@@ -69,7 +69,7 @@ class Table extends Component {
     componentDidUpdate(prevProps, prevState) {
         const {
             mainTable, open, rowData, defaultSelected, disconnectFromState,
-            dispatch, type
+            dispatch, type, refreshSelection
         } = this.props;
 
         const {
@@ -97,7 +97,9 @@ class Table extends Component {
 
         if(
             JSON.stringify(prevProps.defaultSelected) !==
-            JSON.stringify(defaultSelected)
+            JSON.stringify(defaultSelected) ||
+            JSON.stringify(prevProps.refreshSelection) !==
+            JSON.stringify(refreshSelection) && refreshSelection
         ){
             this.setState({
                 selected: defaultSelected

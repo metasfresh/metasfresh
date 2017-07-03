@@ -104,7 +104,7 @@
 }
 
 .row-selected {
-    background-color: #d5e3ec !important;
+    background-color: $brand-selected-color !important;
 }
 
 .row-selected.row-not-saved {

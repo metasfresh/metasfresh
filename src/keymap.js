@@ -43,9 +43,15 @@ export default {
         LAST_PAGE: 'end'
     },
     QUICK_ACTIONS: {
-        QUICK_ACTION_POS: mod + '+' + 'u'
+        QUICK_ACTION_POS: mod + '+' + 'u',
+        QUICK_ACTION_TOGGLE: mod + '+' + 'l'
     },
     DOCUMENT_STATUS_CONTEXT: {
         COMPLETE_STATUS: mod + '+' + 'u'
+    },
+    MODAL_CONTEXT: {
+        START: mod + '+' + 's',
+        CLOSE: mod + '+' + 'c',
+        CANCEL: mod + '+' + 'q'
     }
 }
