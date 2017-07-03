@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import Indicator from './Indicator';
 import {
@@ -15,7 +16,6 @@ import keymap from '../../keymap.js';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
-import counterpart from 'counterpart';
 const shortcutManager = new ShortcutManager(keymap);
 
 class RawModal extends Component {
