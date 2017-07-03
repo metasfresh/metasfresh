@@ -99,7 +99,7 @@ class TableItem extends Component {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
             changeListenOnTrue, tabIndex, entity, getSizeClass,
-            handleRightClick, caption
+            handleRightClick, caption, colspan
         } = this.props;
 
         const {
@@ -107,39 +107,47 @@ class TableItem extends Component {
         } = this.state;
 
         // Iterate over layout settings
-        return cols && cols.map((item, index) => {
-            const property = item.fields[0].field;
-            const widgetData =
-                item.fields.map(prop => cells && cells[prop.field] || -1);
-            const {supportZoomInto} = item.fields[0];
 
-            return (
-                <TableCell
-                    {...{getSizeClass, entity, type, docId, rowId, tabId, item,
-                        readonly, widgetData, tabIndex, listenOnKeys }}
-                    key={index}
-                    id={index}
-                    caption={caption}
-                    isEdited={edited === property}
-                    onDoubleClick={(e) =>
-                        this.handleEditProperty(e, property, true)
-                    }
-                    onClickOutside={(e) => {
-                        this.handleEditProperty(e); changeListenOnTrue()}
-                    }
-                    disableOnClickOutside={edited !== property}
-                    onKeyDown = {!mainTable ?
-                        (e) => this.handleKey(e, property) : ''
-                    }
-                    updatedRow={updatedRow || newRow}
-                    updateRow={this.updateRow}
-                    listenOnKeysFalse={this.listenOnKeysFalse}
-                    closeTableField={(e) => this.closeTableField(e)}
-                    handleRightClick={(e) =>
-                        handleRightClick(e, supportZoomInto ? property : null)}
-                />
-            )
-        })
+            if(colspan) {
+                return (
+                    <td colSpan={cols.length}>
+                        {caption}
+                    </td>
+                )
+            } else {
+                return cols && cols.map((item, index) => {
+                    const property = item.fields[0].field;
+                    const widgetData =
+                        item.fields.map(prop => cells && cells[prop.field] || -1);
+                    const {supportZoomInto} = item.fields[0];
+
+                    return (
+                        <TableCell
+                            {...{getSizeClass, entity, type, docId, rowId, tabId, item,
+                                readonly, widgetData, tabIndex, listenOnKeys, caption }}
+                            key={index}
+                            
+                            isEdited={edited === property}
+                            onDoubleClick={(e) =>
+                                this.handleEditProperty(e, property, true)
+                            }
+                            onClickOutside={(e) => {
+                                this.handleEditProperty(e); changeListenOnTrue()}
+                            }
+                            disableOnClickOutside={edited !== property}
+                            onKeyDown = {!mainTable ?
+                                (e) => this.handleKey(e, property) : ''
+                            }
+                            updatedRow={updatedRow || newRow}
+                            updateRow={this.updateRow}
+                            listenOnKeysFalse={this.listenOnKeysFalse}
+                            closeTableField={(e) => this.closeTableField(e)}
+                            handleRightClick={(e) =>
+                                handleRightClick(e, supportZoomInto ? property : null)}
+                        />
+                    )
+                })
+            }
     }
 
     updateRow = () => {
