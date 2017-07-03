@@ -724,6 +724,7 @@ class Table extends Component {
                         handleSelect={this.selectRangeProduct}
                         contextType={item.type}
                         caption={item.caption ? item.caption:''}
+                        colspan={item.colspan}
                         notSaved={
                             item.saveStatus &&
                             !item.saveStatus.saved
