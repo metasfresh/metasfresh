@@ -82,6 +82,8 @@ class QuickActions extends Component {
             return;
         }
 
+        console.log(action);
+
         dispatch(
             openModal(
                 action.caption, action.processId, 'process', null, null, false,

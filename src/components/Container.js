@@ -25,6 +25,8 @@ class Container extends Component {
             modalDescription, editmode, handleEditModeToggle
         } = this.props;
 
+        console.log(includedView);
+
         return (
             <div>
                 {
