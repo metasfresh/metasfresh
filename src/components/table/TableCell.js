@@ -107,7 +107,7 @@ class TableCell extends Component {
             isEdited, widgetData, item, docId, type, rowId, tabId,
             onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
             listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass,
-            handleRightClick
+            handleRightClick, caption, id
         } = this.props;
 
         return (
@@ -145,7 +145,8 @@ class TableCell extends Component {
                         />
                     :
                        <div className="cell-text-wrapper">
-                           {this.fieldToString(
+                           {caption ? id===0?caption:"" :
+                           this.fieldToString(
                                widgetData[0].value, item.widgetType
                            )}
                        </div>

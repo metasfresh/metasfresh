@@ -99,7 +99,7 @@ class TableItem extends Component {
         const {
             type, docId, rowId, tabId, readonly, mainTable, newRow,
             changeListenOnTrue, tabIndex, entity, getSizeClass,
-            handleRightClick
+            handleRightClick, caption
         } = this.props;
 
         const {
@@ -118,6 +118,8 @@ class TableItem extends Component {
                     {...{getSizeClass, entity, type, docId, rowId, tabId, item,
                         readonly, widgetData, tabIndex, listenOnKeys }}
                     key={index}
+                    id={index}
+                    caption={caption}
                     isEdited={edited === property}
                     onDoubleClick={(e) =>
                         this.handleEditProperty(e, property, true)
@@ -255,8 +257,10 @@ class TableItem extends Component {
         const {
             isSelected, fieldsByName, cols, onMouseDown, onDoubleClick, odd,
             indentSupported, indent, contextType, lastChild, processed,
-            includedDocuments, notSaved
+            includedDocuments, notSaved, caption
         } = this.props;
+
+        console.log(caption);
 
         return (
             <tr
@@ -269,7 +273,8 @@ class TableItem extends Component {
                     ((processed && lastChild && !includedDocuments) ?
                         'row-boundary ': ''
                     ) +
-                    (notSaved ? 'row-not-saved ': '')
+                    (notSaved ? 'row-not-saved ': '') +
+                    (caption ? 'item-caption ' : '')
                 }
             >
                 {indentSupported && indent &&

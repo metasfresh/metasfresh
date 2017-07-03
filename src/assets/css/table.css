@@ -40,6 +40,14 @@
     border-right: 1px solid $brand-border-color;
 }
 
+.item-caption {
+    border: 1px solid $brand-border-color;
+}
+
+.table.table-bordered-vertically .item-caption td {
+    border-right: none;
+}
+
 .table-hide-property {
     display: none;
 }
