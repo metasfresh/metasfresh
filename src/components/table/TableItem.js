@@ -260,8 +260,6 @@ class TableItem extends Component {
             includedDocuments, notSaved, caption
         } = this.props;
 
-        console.log(caption);
-
         return (
             <tr
                 onClick={onMouseDown}
