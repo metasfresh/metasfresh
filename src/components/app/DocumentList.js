@@ -156,8 +156,10 @@ class DocumentList extends Component {
                 cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
-                    cachedSelection: undefined
-                })
+                    refreshSelection: true
+                }, () => this.setState({
+                    refreshSelection: false
+                }))
             }else{
                 this.setState({
                     cachedSelection: selected
@@ -551,6 +553,7 @@ class DocumentList extends Component {
                                 disableOnClickOutside={clickOutsideLock}
                                 defaultSelected={cachedSelection ?
                                     cachedSelection : selected}
+                                refreshSelection={this.state.refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
                                 {...{isIncluded, disconnectFromState, autofocus,

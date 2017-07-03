@@ -12,12 +12,20 @@ import {
     deleteView
 } from '../../actions/AppActions';
 
+import keymap from '../../keymap.js';
+import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+import counterpart from 'counterpart';
+const shortcutManager = new ShortcutManager(keymap);
+
 class RawModal extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            scrolled: false
+            scrolled: false,
+            isTooltipShow: false
         }
     }
 
@@ -40,6 +48,16 @@ class RawModal extends Component {
 
         modalContent &&
             modalContent.removeEventListener('scroll', this.handleScroll);
+    }
+
+    toggleTooltip = (visible) => {
+        this.setState({
+            isTooltipShow: visible
+        });
+    }
+
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
     }
 
     handleScroll = (event) => {
@@ -75,7 +93,7 @@ class RawModal extends Component {
         } = this.props;
 
         const {
-            scrolled
+            scrolled, isTooltipShow
         } = this.state;
 
         return (
@@ -101,8 +119,19 @@ class RawModal extends Component {
                                 className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
                                 onClick={this.handleClose}
                                 tabIndex={0}
+                                onMouseEnter={() =>
+                                    this.toggleTooltip(true)
+                                }
+                                onMouseLeave={() => this.toggleTooltip(false)}
                             >
                                 {counterpart.translate('modal.actions.done')}
+                            {isTooltipShow &&
+                                <Tooltips
+                                    name={keymap.MODAL_CONTEXT.CLOSE}
+                                    action={counterpart.translate('modal.actions.done')}
+                                    type={''}
+                                />
+                            }
                             </button>
                         </div>
                     </div>
@@ -113,6 +142,9 @@ class RawModal extends Component {
                     >
                         {children}
                     </div>
+                    <ModalContextShortcuts
+                        close={this.handleClose}
+                    />
                 </div>
             </div>
         )
@@ -122,6 +154,10 @@ class RawModal extends Component {
 const mapStateToProps = state => ({
     modalVisible: state.windowHandler.modal.visible || false
 });
+
+RawModal.childContextTypes = {
+    shortcuts: PropTypes.object.isRequired
+}
 
 RawModal.propTypes = {
     dispatch: PropTypes.func.isRequired,
