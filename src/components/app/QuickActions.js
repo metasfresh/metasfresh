@@ -17,6 +17,7 @@ import QuickActionsDropdown from './QuickActionsDropdown';
 import keymap from '../../keymap.js';
 import QuickActionsContextShortcuts
     from '../shortcuts/QuickActionsContextShortcuts';
+import Tooltips from '../tooltips/Tooltips.js'
 import { ShortcutManager } from 'react-shortcuts';
 const shortcutManager = new ShortcutManager(keymap);
 
@@ -26,7 +27,8 @@ class QuickActions extends Component {
 
         this.state = {
             actions: [],
-            isDropdownOpen: false
+            isDropdownOpen: false,
+            isTooltip: false
         }
 
         const {fetchOnInit} = this.props;
@@ -108,9 +110,15 @@ class QuickActions extends Component {
         })
     }
 
+    toggleTooltip = (visible) => {
+        this.setState({
+            isTooltip: visible
+        })
+    }
+
     render() {
         const {
-            actions, isDropdownOpen
+            actions, isDropdownOpen, isTooltip
         } = this.state;
 
         const {
@@ -145,12 +153,27 @@ class QuickActions extends Component {
                         <div
                             className={
                                 'btn-meta-outline-secondary btn-icon-sm ' +
-                                'btn-inline btn-icon pointer ' +
+                                'btn-inline btn-icon pointer tooltip-parent ' +
                                 (isDropdownOpen ? 'btn-disabled ' : '')
                             }
-                            onClick={() => this.toggleDropdown(!isDropdownOpen)}
+                            onMouseEnter={() => this.toggleTooltip(true)}
+                            onMouseLeave={() => this.toggleTooltip(false)}
+                            onClick={
+                                () => this.toggleDropdown(!isDropdownOpen)
+                            }
                         >
                             <i className="meta-icon-down-1" />
+                            {isTooltip &&
+                                <Tooltips
+                                    name={
+                                        keymap.QUICK_ACTIONS.QUICK_ACTION_TOGGLE
+                                    }
+                                    action={
+                                            'Toggle list'
+                                    }
+                                    type={''}
+                                />
+                            }
                         </div>
 
                         {isDropdownOpen &&
@@ -168,6 +191,7 @@ class QuickActions extends Component {
                         handleClick={() => shouldNotUpdate ?
                             null : this.handleClick(actions[0])
                         }
+                        onClick={() => this.toggleDropdown(!isDropdownOpen)}
                     />
                 </div>
             );

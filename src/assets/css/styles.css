@@ -976,6 +976,10 @@ td.pulse-off input {
     color: $brand-color-secondary;
 }
 
+.quick-actions-item:focus {
+    background-color: $brand-selected-color;
+}
+
 .attributes-selector {
     flex:1;
 
