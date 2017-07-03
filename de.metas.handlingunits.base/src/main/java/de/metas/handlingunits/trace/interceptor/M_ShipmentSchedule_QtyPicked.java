@@ -1,17 +1,11 @@
-package de.metas.handlingunits.trace.model.interceptor;
-
-import java.time.Instant;
+package de.metas.handlingunits.trace.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceRepository;
-import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.handlingunits.trace.HUTraceUtil;
 import lombok.NonNull;
 
 /*
@@ -47,38 +41,5 @@ public class M_ShipmentSchedule_QtyPicked
 		})
 	public void addTraceEvent(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
-
-		// get the top-level HU's ID for our event
-		final int huId;
-		if (shipmentScheduleQtyPicked.getM_LU_HU_ID() > 0)
-		{
-			huId = shipmentScheduleQtyPicked.getM_LU_HU_ID();
-		}
-		else if (shipmentScheduleQtyPicked.getM_TU_HU_ID() > 0)
-		{
-			huId = shipmentScheduleQtyPicked.getM_TU_HU_ID();
-		}
-		else if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
-		{
-			huId = shipmentScheduleQtyPicked.getVHU_ID();
-		}
-		else
-		{
-			huId = -1;
-		}
-
-		if (huId < 0)
-		{
-			return;
-		}
-
-		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.eventTime(Instant.now())
-				.shipmentScheduleId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID())
-				.type(HUTraceType.MATERIAL_PICKING)
-				.huId(huId);
-
-		final HUTraceRepository huTraceRepository = Adempiere.getBean(HUTraceRepository.class);
-		huTraceRepository.addEvent(builder.build());
-	}
+HUTraceUtil.createdAndAddFor(shipmentScheduleQtyPicked);	}
 }

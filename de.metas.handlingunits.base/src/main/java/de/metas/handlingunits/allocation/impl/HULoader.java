@@ -372,7 +372,7 @@ public class HULoader
 
 			//
 			// Iterate each load transaction:
-			// * create it's counterpart unload transaction (taking properties from unloadTrx)
+			// * create it's counterpart 'unloadTrxPartial' by taking properties from 'unloadTrx', but just the part that was actually loaded
 			// * transfer attributes
 			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
 			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());

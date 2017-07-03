@@ -1,18 +1,16 @@
-package de.metas.handlingunits.trace.model.interceptor;
+package de.metas.handlingunits.trace.interceptor;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
-import org.eevolution.api.IPPCostCollectorBL;
 
-import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
-import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.trace.HUTraceUtil;
+import de.metas.inout.IInOutDAO;
 import lombok.NonNull;
 
 /*
@@ -36,8 +34,8 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-@Interceptor(I_PP_Cost_Collector.class)
-public class C_CostCollector
+@Interceptor(I_M_InOut.class)
+public class M_InOut
 {
 
 	@DocValidate(timings =
@@ -50,22 +48,9 @@ public class C_CostCollector
 				ModelValidator.TIMING_AFTER_UNCLOSE,
 				ModelValidator.TIMING_AFTER_VOID
 		}, afterCommit = true)
-	public void addTraceEvent(@NonNull final I_PP_Cost_Collector costCollector)
+	public void addTraceEvent(@NonNull final I_M_InOut inOut)
 	{
-		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.costCollectorId(costCollector.getPP_Order_ID())
-				.docTypeId(costCollector.getC_DocType_ID())
-				.docStatus(costCollector.getDocStatus());
-
-		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
-		if (costCollectorBL.isMaterialIssue(costCollector, true))
-		{
-			builder.type(HUTraceType.PRODUCTION_ISSUE);
-		}
-		else
-		{
-			builder.type(HUTraceType.PRODUCTION_RECEIPT);
-		}
-		HUTraceUtil.createAndAddEvents(builder, Stream.of(costCollector));
+		final List<I_M_InOutLine> iols = Services.get(IInOutDAO.class).retrieveLines(inOut);
+		HUTraceUtil.createdAndAddFor(inOut, iols.stream());
 	}
 }

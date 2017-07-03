@@ -142,13 +142,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * A HU is considered pure virtual when:
 	 * <ul>
 	 * <li>{@link #isVirtual(I_M_HU)}
-	 * <li>and it's parent HU Item ({@link I_M_HU#getM_HU_Item_Parent()}) it's a material line (i.e. {@link #getItemType(I_M_HU_Item)} is {@link X_M_HU_PI_Item#ITEMTYPE_Material})
+	 * <li>and its parent HU Item ({@link I_M_HU#getM_HU_Item_Parent()}) is a material line (i.e. {@link #getItemType(I_M_HU_Item)} is {@link X_M_HU_PI_Item#ITEMTYPE_Material})
 	 * </ul>
 	 *
 	 * e.g.
 	 * <ul>
-	 * <li>a VHU on a palet it's virtual but it's NOT PURE virtual (i.e. it's parent HU Item is an item of type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit})
-	 * <li>a VHU, top level, it's virtual but it's NOT PURE virtual
+	 * <li>a VHU on a palet is virtual but it's NOT PURE virtual (i.e. it's parent HU Item is an item of type {@link X_M_HU_PI_Item#ITEMTYPE_HandlingUnit})
+	 * <li>a VHU, top level, is virtual but it's NOT PURE virtual
 	 * <li>a VHU linked to an material HU Item IS PURE virtual
 	 * </ul>
 	 *

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.trace.model.interceptor;
+package de.metas.handlingunits.trace.interceptor;
 
 import java.util.List;
 
@@ -9,9 +9,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceType;
-import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceUtil;
 import de.metas.interfaces.I_M_Movement;
 import lombok.NonNull;
@@ -53,13 +50,7 @@ public class M_Movement
 		}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_M_Movement movement)
 	{
-		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.movementId(movement.getM_Movement_ID())
-				.docTypeId(movement.getC_DocType_ID())
-				.docStatus(movement.getDocStatus())
-				.type(HUTraceType.MATERIAL_MOVEMENT);
-
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movement);
-		HUTraceUtil.createAndAddEvents(builder, movementLines.stream());
+		HUTraceUtil.createdAndAddFor(movement, movementLines.stream());
 	}
 }

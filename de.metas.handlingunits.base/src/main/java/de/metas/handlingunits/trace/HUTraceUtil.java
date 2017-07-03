@@ -7,9 +7,18 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_MovementLine;
+import org.eevolution.api.IPPCostCollectorBL;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -36,15 +45,134 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 @UtilityClass
+
 public class HUTraceUtil
 {
 
+	public void createdAndAddFor(@NonNull final I_PP_Cost_Collector costCollector)
+	{
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.costCollectorId(costCollector.getPP_Order_ID())
+				.docTypeId(costCollector.getC_DocType_ID())
+				.docStatus(costCollector.getDocStatus());
+
+		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
+		if (costCollectorBL.isMaterialIssue(costCollector, true))
+		{
+			builder.type(HUTraceType.PRODUCTION_ISSUE);
+		}
+		else
+		{
+			builder.type(HUTraceType.PRODUCTION_RECEIPT);
+		}
+		HUTraceUtil.createAndAddEvents(builder, Stream.of(costCollector));
+	}
+
+	public void createdAndAddFor(
+			@NonNull final I_M_InOut inOut,
+			@NonNull final Stream<I_M_InOutLine> iols)
+	{
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.inOutId(inOut.getM_InOut_ID())
+				.docTypeId(inOut.getC_DocType_ID())
+				.docStatus(inOut.getDocStatus());
+
+		final String plusOrMinus = inOut.getMovementType().substring(1);
+		if ("+".equals(plusOrMinus))
+		{
+			builder.type(HUTraceType.MATERIAL_RECEIPT);
+		}
+		else
+		{
+			builder.type(HUTraceType.MATERIAL_SHIPMENT);
+		}
+
+		HUTraceUtil.createAndAddEvents(builder, iols);
+	}
+
+	public void createdAndAddFor(
+			@NonNull final I_M_Movement movement,
+			@NonNull final Stream<I_M_MovementLine> movementLines)
+	{
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.movementId(movement.getM_Movement_ID())
+				.docTypeId(movement.getC_DocType_ID())
+				.docStatus(movement.getDocStatus())
+				.type(HUTraceType.MATERIAL_MOVEMENT);
+
+		HUTraceUtil.createAndAddEvents(builder, movementLines);
+	}
+
+	public static void createdAndAddFor(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
+	{
+		// get the top-level HU's ID for our event
+		final int huId;
+		if (shipmentScheduleQtyPicked.getM_LU_HU_ID() > 0)
+		{
+			huId = shipmentScheduleQtyPicked.getM_LU_HU_ID();
+		}
+		else if (shipmentScheduleQtyPicked.getM_TU_HU_ID() > 0)
+		{
+			huId = shipmentScheduleQtyPicked.getM_TU_HU_ID();
+		}
+		else if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
+		{
+			huId = shipmentScheduleQtyPicked.getVHU_ID();
+		}
+		else
+		{
+			huId = -1;
+		}
+
+		if (huId < 0)
+		{
+			return;
+		}
+
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.eventTime(Instant.now())
+				.shipmentScheduleId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID())
+				.type(HUTraceType.MATERIAL_PICKING)
+				.huId(huId);
+
+		final HUTraceRepository huTraceRepository = getHUTraceRepository();
+		huTraceRepository.addEvent(builder.build());
+	}
+
+	public static void createdAndAddFor(
+			@NonNull final I_M_HU_Trx_Hdr trxHeader, 
+			@NonNull final Stream<I_M_HU_Trx_Line> trxLines)
+	{
+		final Instant eventTime = Instant.now();
+
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.type(HUTraceType.TRANSFORMATION)
+				.eventTime(eventTime);
+
+		final HUTraceRepository huTraceRepository = getHUTraceRepository();
+
+		trxLines
+				.filter(huTrxLine -> huTrxLine.getM_HU_ID() > 0)
+				.filter(huTrxLine -> huTrxLine.getQty().signum() > 0)
+				.filter(huTrxLine -> huTrxLine.getParent_HU_Trx_Line_ID() > 0)
+				.filter(huTrxLine -> huTrxLine.getParent_HU_Trx_Line().getM_HU_ID() > 0)
+				.forEach(huTrxLine ->
+					{
+						final HUTraceEvent huTraceEvent = builder
+								.huId(huTrxLine.getM_HU_ID())
+								.huSourceId(huTrxLine.getParent_HU_Trx_Line().getM_HU_ID())
+								.build();
+
+						huTraceRepository.addEvent(huTraceEvent);
+					});
+	}
+
 	/**
-	 * Takes the given builder and stream of model instances and creates {@link HUTraceEvent}s for the models'
-	 * {@link I_M_HU_Assignment}s' top delve HUs.
+	 * Takes the "mostly complete" builder and stream of model instances and creates {@link HUTraceEvent}s for the models'
+	 * {@link I_M_HU_Assignment}s' top level HUs.
 	 * 
 	 * @param builder a pre fabricated builder. {@code huId}s and {@code eventTime} will be set by this method.
-	 * @param models
+	 * @param models stream of objects that might be associated with HUs (e.g. inout lines).
 	 */
 	public void createAndAddEvents(
 			@NonNull final HUTraceEventBuilder builder,

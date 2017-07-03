@@ -47,6 +47,13 @@ import lombok.NonNull;
 @Service
 public class HUTraceRepository
 {
+	/**
+	 * Persists the given event. 
+	 * If an event with the same {@code huId} and {@code eventTime} was already persisted earlier
+	 * then that record is loaded and updated according to the given {@code huTraceEvent}.
+	 * 
+	 * @param huTraceEvent
+	 */
 	public void addEvent(@NonNull final HUTraceEvent huTraceEvent)
 	{
 		final HUTraceSpecification query = HUTraceSpecification.builder()

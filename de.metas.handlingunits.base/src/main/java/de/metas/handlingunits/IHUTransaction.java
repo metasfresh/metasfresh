@@ -37,7 +37,7 @@ import de.metas.quantity.Quantity;
 /**
  * Transaction Line Candidate. Use the constructor of {@link HUTransaction} to get instances.
  *
- * Based on this object the actual {@link I_M_HU_Trx_Line}s will be created.
+ * Based on this object the actual {@link I_M_HU_Trx_Line}s can be created.
  *
  * @author tsa
  *
