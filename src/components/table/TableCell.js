@@ -107,14 +107,13 @@ class TableCell extends Component {
             isEdited, widgetData, item, docId, type, rowId, tabId,
             onDoubleClick, onKeyDown, readonly, updatedRow, tabIndex, entity,
             listenOnKeys, listenOnKeysFalse, closeTableField, getSizeClass,
-            handleRightClick, caption, colspan
+            handleRightClick
         } = this.props;
 
         return (
             <td
                 tabIndex={tabIndex}
                 ref={(c) => this.cell = c}
-                colSpan={colspan ? 0 : 0}
                 onDoubleClick={!readonly && onDoubleClick}
                 onKeyDown={onKeyDown}
                 onContextMenu={handleRightClick}
@@ -146,8 +145,7 @@ class TableCell extends Component {
                         />
                     :
                        <div className="cell-text-wrapper">
-                           {caption ? 'caption' :
-                           this.fieldToString(
+                           {this.fieldToString(
                                widgetData[0].value, item.widgetType
                            )}
                        </div>
