@@ -512,7 +512,9 @@ class Header extends Component {
                                                         .OPEN_SIDEBAR_MENU_0
                                                 }
                                                 action={
-                                                'mainScreen.sideList.tooltip'
+                                                    counterpart.translate(
+                                                    'mainScreen.sideList.tooltip'
+                                                    )
                                                 }
                                                 type={''}
                                             />
