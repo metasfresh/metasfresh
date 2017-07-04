@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -113,7 +113,7 @@ public class PickingSlotView implements IView
 	@Override
 	public String getTableName()
 	{
-		return I_M_Packageable_V.Table_Name;
+		return I_M_PickingSlot.Table_Name;
 	}
 
 	@Override
