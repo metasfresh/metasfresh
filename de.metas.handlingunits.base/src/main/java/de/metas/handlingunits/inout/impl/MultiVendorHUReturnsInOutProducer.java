@@ -129,6 +129,13 @@ class MultiVendorHUReturnsInOutProducer
 				// Find out the the Vendor BPartner
 				final I_M_InOutLine inoutLine = InterfaceWrapperHelper.loadOutOfTrx(originalReceiptInOutLineId, I_M_InOutLine.class);
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
+				
+				if (inout.isSOTrx())
+				{
+					// do not allow HUs from shipments to get into vendor returns
+					continue;
+				}
+
 				final int bpartnerId = inout.getC_BPartner_ID();
 
 				final I_C_Order order = inout.getC_Order();
@@ -162,7 +169,7 @@ class MultiVendorHUReturnsInOutProducer
 			hu.setIsActive(false);
 			InterfaceWrapperHelper.save(hu);
 		}
-		
+
 		// return the created vendor returns
 		return returnInOuts;
 	}
@@ -190,7 +197,7 @@ class MultiVendorHUReturnsInOutProducer
 		producer.setM_Warehouse(warehouse);
 
 		producer.setMovementDate(getMovementDate());
-		
+
 		producer.setC_Order(originOrder);
 
 		return producer;

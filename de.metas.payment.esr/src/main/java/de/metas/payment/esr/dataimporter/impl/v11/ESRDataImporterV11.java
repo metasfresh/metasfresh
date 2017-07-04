@@ -19,10 +19,10 @@ import org.slf4j.Logger;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.dataimporter.ESRStatement;
-import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
+import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import lombok.NonNull;
 
 /*
@@ -47,6 +47,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Data importer for line-based v11 ESR files.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class ESRDataImporterV11 implements IESRDataImporter
 {
 	public final static String ERR_WRONG_CTRL_LINE_LENGTH = "ESR_Wrong_Ctrl_Line_Length";
@@ -93,8 +99,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 					}
 					if (ESRReceiptLineMatcherUtil.isReceiptLineWithWrongLength(trimmedtextLine))
 					{
-						builder.errorMsg(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_LINE_LENGTH, new Object[]
-							{ trimmedtextLine.length() }));
+						builder.errorMsg(Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_CTRL_LINE_LENGTH, new Object[] { trimmedtextLine.length() }));
 						continue;
 					}
 
@@ -153,7 +158,9 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 				final Date paymentDate = ESRTransactionLineMatcherUtil.extractPaymentDate(currentTextLine);
 				esrTransactionBuilder.paymentDate(paymentDate);
-				
+
+				final Date accountingDate = ESRTransactionLineMatcherUtil.extractAccountingDate(currentTextLine);
+				esrTransactionBuilder.accountingDate(accountingDate);
 			}
 			else
 			{
@@ -163,7 +170,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 		esrTransactionBuilder.transactionKey(currentTextLine);
 		esrTransactionBuilder.errorMsgs(errorsLoggable.getSingleMessages());
-		
+
 		return esrTransactionBuilder.build();
 	}
 }

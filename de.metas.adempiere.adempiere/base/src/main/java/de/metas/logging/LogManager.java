@@ -537,14 +537,12 @@ public final class LogManager
 			System.out.println(" * " + currentLogger.getName() + "(" + System.identityHashCode(currentLogger) + "): " + currentLoggerInfo);
 		};
 		
+		System.out.println("\nDumping all log levels starting from " + logger);
 		forAllLevelsUpToRoot(logger, dumpLevel);
 	}
 
 	public static void forAllLevelsUpToRoot(final Logger logger, final Consumer<Logger> consumer)
 	{
-		System.out.println("\nDumping all log levels starting from " + logger);
-
-
 		Logger currentLogger = logger;
 		String currentLoggerName = currentLogger.getName();
 		while (currentLogger != null)

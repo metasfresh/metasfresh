@@ -14,7 +14,7 @@ public class X_M_HU_Status extends org.compiere.model.PO implements I_M_HU_Statu
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1382994553L;
+	private static final long serialVersionUID = -543718351L;
 
     /** Standard Constructor */
     public X_M_HU_Status (Properties ctx, int M_HU_Status_ID, String trxName)
@@ -22,8 +22,7 @@ public class X_M_HU_Status extends org.compiere.model.PO implements I_M_HU_Statu
       super (ctx, M_HU_Status_ID, trxName);
       /** if (M_HU_Status_ID == 0)
         {
-			setExchangeGebindelagerWhenEmpty (false);
-// N
+			setExchangeGebindelagerWhenEmpty (false); // N
 			setHUStatus (null);
 			setM_HU_Status_ID (0);
 			setName (null);

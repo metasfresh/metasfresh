@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_HU_PackingMaterial
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1971954628L;
+	private static final long serialVersionUID = 1569342263L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (Properties ctx, int M_HU_PackingMaterial_ID, String trxName)
@@ -24,8 +23,7 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
       super (ctx, M_HU_PackingMaterial_ID, trxName);
       /** if (M_HU_PackingMaterial_ID == 0)
         {
-			setIsClosed (false);
-// N
+			setIsClosed (false); // N
 			setM_HU_PackingMaterial_ID (0);
 			setName (null);
         } */

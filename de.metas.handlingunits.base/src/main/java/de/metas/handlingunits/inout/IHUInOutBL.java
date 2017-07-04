@@ -144,11 +144,11 @@ public interface IHUInOutBL extends ISingletonService
 	List<de.metas.handlingunits.model.I_M_InOut> createCustomerReturnInOutForHUs(Collection<I_M_HU> hus);
 
 	/**
-	 * Mark customer return HUs as Active and create movements to QualityIssue warehouse for them
+	 * Create movements to QualityIssue warehouse for the given hus
 	 * 
 	 * @param ctx
 	 * @param husToReturn
 	 */
-	void activateHUsForCustomerReturn(Properties ctx, List<I_M_HU> husToReturn);
+	void moveHUsForCustomerReturn(Properties ctx, List<I_M_HU> husToReturn);
 
 }

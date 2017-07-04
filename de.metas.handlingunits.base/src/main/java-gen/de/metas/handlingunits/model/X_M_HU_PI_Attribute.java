@@ -14,7 +14,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1224383560L;
+	private static final long serialVersionUID = -488667486L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Attribute (Properties ctx, int M_HU_PI_Attribute_ID, String trxName)
@@ -23,17 +23,13 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
       /** if (M_HU_PI_Attribute_ID == 0)
         {
 			setHU_TansferStrategy_JavaClass_ID (0);
-			setIsDisplayed (true);
-// Y
-			setIsReadOnly (false);
-// N
+			setIsDisplayed (true); // Y
+			setIsReadOnly (false); // N
 			setM_Attribute_ID (0);
 			setM_HU_PI_Attribute_ID (0);
 			setM_HU_PI_Version_ID (0);
-			setPropagationType (null);
-// NONE
-			setUseInASI (true);
-// Y
+			setPropagationType (null); // NONE
+			setUseInASI (true); // Y
         } */
     }
 
@@ -186,7 +182,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		return false;
 	}
 
-	/** Set Instanz-Attribut.
+	/** Set Instanz Merkmal.
 		@param IsInstanceAttribute 
 		The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	  */
@@ -196,7 +192,7 @@ public class X_M_HU_PI_Attribute extends org.compiere.model.PO implements I_M_HU
 		set_Value (COLUMNNAME_IsInstanceAttribute, Boolean.valueOf(IsInstanceAttribute));
 	}
 
-	/** Get Instanz-Attribut.
+	/** Get Instanz Merkmal.
 		@return The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	  */
 	@Override

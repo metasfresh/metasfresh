@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for PP_Order_Qty
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1376727325L;
+	private static final long serialVersionUID = -360386190L;
 
     /** Standard Constructor */
     public X_PP_Order_Qty (Properties ctx, int PP_Order_Qty_ID, String trxName)
@@ -31,10 +30,8 @@ public class X_PP_Order_Qty extends org.compiere.model.PO implements I_PP_Order_
 			setMovementDate (new Timestamp( System.currentTimeMillis() ));
 			setPP_Order_ID (0);
 			setPP_Order_Qty_ID (0);
-			setProcessed (false);
-// N
-			setQty (BigDecimal.ZERO);
-// 0
+			setProcessed (false); // N
+			setQty (BigDecimal.ZERO); // 0
         } */
     }
 

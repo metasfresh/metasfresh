@@ -258,6 +258,32 @@ public class POTrlRepository
 	}
 
 	/**
+	 * Particularly updates the translatable column for a given recordId and adLanguage.
+	 * 
+	 * @param trlInfo
+	 * @param recordId
+	 * @param adLanguage
+	 * @param columnName
+	 * @param value
+	 */
+	public void updateTranslation(@NonNull final POTrlInfo trlInfo, final int recordId, @NonNull final String adLanguage, @NonNull final String columnName, final String value)
+	{
+		final String tableName = trlInfo.getTableName();
+		final String keyColumn = trlInfo.getKeyColumnName();
+
+		final StringBuilder sqlSet = new StringBuilder();
+		sqlSet.append(columnName).append("=").append(DB.TO_STRING(value));
+		sqlSet.append(", IsTranslated='Y'");
+
+		final StringBuilder sql = new StringBuilder("UPDATE ").append(tableName).append("_Trl SET ").append(sqlSet)
+				.append(" WHERE ").append(keyColumn).append("=").append(recordId)
+				.append(" AND AD_Language=").append(DB.TO_STRING(adLanguage));
+
+		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		logger.debug("Updated {} translation records for {}/{}/{}", updatedCount, trlInfo, recordId, adLanguage);
+	}
+
+	/**
 	 * Update Trl Tables automatically?
 	 *
 	 * @param TableName table name
@@ -303,7 +329,7 @@ public class POTrlRepository
 		logger.debug("Deleted {} translation records for {}/{}", no, trlInfo, recordId);
 		return no >= 0;
 	}
-	
+
 	public IModelTranslationMap retrieveAll(final POTrlInfo trlInfo, final int recordId)
 	{
 		return POModelTranslationMap.of(trlInfo, recordId);

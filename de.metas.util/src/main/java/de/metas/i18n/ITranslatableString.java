@@ -73,7 +73,11 @@ public interface ITranslatableString
 	{
 		return ImmutableTranslatableString.constant(value);
 	}
-
+	
+	public static ITranslatableString empty()
+	{
+		return ImmutableTranslatableString.empty();
+	}
 
 	public String translate(final String adLanguage);
 

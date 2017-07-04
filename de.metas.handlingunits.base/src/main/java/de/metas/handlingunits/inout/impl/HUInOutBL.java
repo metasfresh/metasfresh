@@ -26,7 +26,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -62,7 +64,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
@@ -260,12 +261,12 @@ public class HUInOutBL implements IHUInOutBL
 				.create();
 	}
 
-	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(final I_M_InOut manualCustomerReturn, final Collection<I_M_HU> hus)
+	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(final I_M_InOut manualCustomerReturn,final Map<Integer, List<I_M_HU>> lineToHus)
 	{
 		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
 
 		return ManualCustomerReturnInOutProducer.newInstance()
-				.addHUsToReturn(hus)
+				.addLineToHUs(lineToHus)
 				.setManualCustomerReturn(manualCustomerReturn)
 				.create();
 	}
@@ -370,27 +371,31 @@ public class HUInOutBL implements IHUInOutBL
 			throw new AdempiereException(" No customer return lines found");
 		}
 
+		final Map<Integer, List<I_M_HU>> lineToHus = new HashMap<>();
 		//
 		// Create HU generator
-		
 
 		List<I_M_HU> hus = new ArrayList<>();
 		for (final I_M_InOutLine customerReturnLine : customerReturnLines)
 		{
 			final CustomerReturnLineHUGenerator huGenerator = CustomerReturnLineHUGenerator.newInstance(ctxAware);
 			huGenerator.addM_InOutLine(customerReturnLine);
-			hus.addAll(huGenerator.generate());
+			
+			final List<I_M_HU> currentHUs = huGenerator.generate();
+			hus.addAll(currentHUs);
+			
+			lineToHus.put(customerReturnLine.getM_InOutLine_ID(), currentHUs);
 		}
 
-		activateHUsForCustomerReturn(ctxAware.getCtx(), hus);
+		moveHUsForCustomerReturn(ctxAware.getCtx(), hus);
 
-		updateManualCustomerReturnInOutForHUs(customerReturn, hus);
+		updateManualCustomerReturnInOutForHUs(customerReturn, lineToHus);
 
 		return hus;
 	}
 
 	@Override
-	public void activateHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
+	public void moveHUsForCustomerReturn(final Properties ctx, final List<I_M_HU> husToReturn)
 	{
 		final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
 
@@ -402,11 +407,6 @@ public class HUInOutBL implements IHUInOutBL
 
 		Services.get(IHUMovementBL.class).moveHUsToWarehouse(husToReturn, qualiytReturnWarehouse);
 
-		for (final I_M_HU hu : husToReturn)
-		{
-			hu.setHUStatus(X_M_HU.HUSTATUS_Active);
-			InterfaceWrapperHelper.save(hu, ITrx.TRXNAME_ThreadInherited);
-		}
 	}
 
 }

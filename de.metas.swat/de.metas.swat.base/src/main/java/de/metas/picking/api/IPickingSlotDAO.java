@@ -45,4 +45,6 @@ public interface IPickingSlotDAO extends ISingletonService
 	List<I_M_PickingSlot> retrivePickingSlotsForBPartners(final Properties ctx, final Collection<Integer> bpartnerIds, final Collection<Integer> bpLocIds);
 
 	List<I_M_PickingSlot> retrivePickingSlotsForBPartner(Properties ctx, int bpartnerId, int bpartnerLocationId);
+
+	List<I_M_PickingSlot> retrievePickingSlotsByIds(Collection<Integer> pickingSlotIds);
 }

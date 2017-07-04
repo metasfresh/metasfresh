@@ -1,10 +1,10 @@
 [![Join the chat at https://gitter.im/metasfresh/metasfresh](https://badges.gitter.im/metasfresh/metasfresh.svg)](https://gitter.im/metasfresh/metasfresh?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh)](http://krihelinator.xyz)
 
-# metasfresh ERP Software
+# metasfresh - Competitive ERP is FREE.
 
 metasfresh is a free and Open Source ERP System for midsize companies from industry and trade.
-The Development is based on requirement implementations of midzsize company projects during the last 8 years, as a friendly fork of the Open Source ERP System ADempiere.
+The Development is based on requirement implementations of midsize company projects during the last 8 years. The metasfresh Project was initially founded in October 2015, as a friendly fork of the Open Source ERP System ADempiere.
 
 Besides having detailed ERP functionality, metasfresh is focused on creating an outstanding User Experience. metasfresh has a 3-tier architecture with Rest-API and a Web User End Frontend developed with ReactJS/ Redux.
 
@@ -28,11 +28,10 @@ If you would like to get in touch with other contributors then just join our cha
 
 * [release notes (in `master` branch)](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md)
 * [open pull requests](https://github.com/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+user%3Ametasfresh)
-* Issuses
+* Issues
   * [in `master` branch but not yet in `release` branch](https://github.com/issues?utf8=?&q=is%3Aissue+user%3Ametasfresh+-label%3Abranch%3Arelease+label%3Abranch%3Amaster+updated%3A>2017-04-01+sort%3Aupdated-desc+)
   * [in `release` branch but not yet closed](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aopen+is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
   * [in `release` branch but with a failed IT](https://github.com/issues?utf8=%E2%9C%93&q=is%3Aissue+user%3Ametasfresh+label%3Abranch%3Arelease+label%3Astatus%3AIT-failed+updated%3A%3E2017-04-01+sort%3Aupdated-desc+)
   
 ## What's new in metasfresh ERP?
 If you are interested in latest improvements or bug fixes of metasfresh ERP, then take a look in our [Release Notes](https://github.com/metasfresh/metasfresh/blob/master/ReleaseNotes.md).
-

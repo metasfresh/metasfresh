@@ -1,8 +1,11 @@
 package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,7 +21,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import com.google.common.base.Preconditions;
@@ -95,13 +97,11 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	private final Set<HUToReturn> _husToReturn = new TreeSet<>(Comparator.comparing(HUToReturn::getM_HU_ID)
 			.thenComparing(HUToReturn::getOriginalReceiptInOutLineId));
 
-	
 	private final Map<HUpipToInOutLine, Integer> huPIPToInOutLines = new TreeMap<>(Comparator.comparing(HUpipToInOutLine::getM_HU_PI_Item_Product_ID)
 			.thenComparing(HUpipToInOutLine::getOriginalInOutLineID));
-	
-	
-	Map<Object, HUPackingMaterialDocumentLineCandidate> pmCandidates = new HashMap<>();
-	
+
+	Map<Object, Collection<HUPackingMaterialDocumentLineCandidate>> pmCandidates = new HashMap<>();
+
 	public CustomerReturnsInOutProducer()
 	{
 		super(Env.getCtx());
@@ -110,14 +110,15 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void createLines()
 	{
-
 		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx());
 
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
+
 			collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
-			
+			collector.setisCollectAggregatedHUs(true);
+
 			final I_M_HU hu = huToReturnInfo.getHu();
 
 			// we know for sure the huAssignments are for inoutlines
@@ -136,33 +137,82 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 					inoutLinesBuilder.addHUProductStorage(productStorage, inOutLine);
 				}
 			}
-			
+
 			final Map<HUpipToInOutLine, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
-			pmCandidates.putAll(key2candidates);
-//			for (final Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
-//			{
-//				final Object entryKey = entry.getKey();
-//
-//				final ArrayKey huArrayKey = Util.mkKey(
-//						entryKey,
-//						hu.getM_HU_ID());
-//
-//				pmCandidates.put(huArrayKey, entry.getValue());
-//			}
+			for (Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
+			{
+				Collection<HUPackingMaterialDocumentLineCandidate> list = pmCandidates.get(entry.getKey());
 
-			huPIPToInOutLines.putAll(huPIPToOriginInOutLinesMap);
+				if (list == null)
+				{
+					// set = new TreeSet<HUPackingMaterialDocumentLineCandidate>(Comparator.comparing(HUPackingMaterialDocumentLineCandidate::getM_Product_ID));
+					// list if customer return from HU
+					if (_manualReturnInOut == null)
+					{
+						list = new ArrayList<HUPackingMaterialDocumentLineCandidate>();
+					}
+
+					// set if manual customer return
+					else
+					{
+						list = new HashSet<>();
+								//new TreeSet<HUPackingMaterialDocumentLineCandidate>(Comparator.comparing(HUPackingMaterialDocumentLineCandidate::getM_Product_ID));
+					}
+					pmCandidates.put(entry.getKey(), list);
+				}
+
+				list.add(entry.getValue());
+			}
+			// pmCandidates.putAll(key2candidates);
+
+			// for (final Object key : pmCandidates.keySet())
+			// {
+			// HUPackingMaterialDocumentLineCandidate huPackingMaterialDocumentLineCandidate = key2candidates.get(key);
+			//
+			// if(huPackingMaterialDocumentLineCandidate != null)
+			// {
+			// huPackingMaterialDocumentLineCandidate.getQty()
+			// }
+			// }
+
+			// huPIPToInOutLines.putAll(huPIPToOriginInOutLinesMap);
+
+			for (final HUpipToInOutLine key : huPIPToOriginInOutLinesMap.keySet())
+			{
+				final int newQtyTU = huPIPToOriginInOutLinesMap.get(key);
+				final Integer existingQtyTU = huPIPToInOutLines.get(key);
+
+				if (existingQtyTU == null)
+				{
+					huPIPToInOutLines.put(key, newQtyTU);
+				}
+
+				else
+				{
+					huPIPToInOutLines.put(key, existingQtyTU + newQtyTU);
+				}
+			}
+			
 		}
 
-		for (final HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates.values())
+		for (final Object key : pmCandidates.keySet())
 		{
-			final I_M_HU_PackingMaterial packingMaterial = huPackingMaterialDAO.retrivePackingMaterialOfProduct(pmCandidate.getM_Product());
+			for (final HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates.get(key))
+			{
+				
+				final I_M_HU_PackingMaterial packingMaterial = huPackingMaterialDAO.retrivePackingMaterialOfProduct(pmCandidate.getM_Product());
 
-			addPackingMaterial(packingMaterial, pmCandidate.getQty().intValueExact());
+				addPackingMaterial(packingMaterial, pmCandidate.getQty().intValueExact());
+			}
 		}
 		// Create the packing material lines that were prepared
 		packingMaterialInoutLinesBuilder.create();
+		
+	
+		
+
 
 		final Map<ArrayKey, I_M_InOutLine> newInOutLinesMap = inoutLinesBuilder.get_inOutLines();
 
@@ -187,8 +237,8 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 					{
 						continue;
 					}
-					
-					final BigDecimal qtyEnteredTU = newInOutLine.getQtyEnteredTU()== null? BigDecimal.ZERO : newInOutLine.getQtyEnteredTU();
+
+					final BigDecimal qtyEnteredTU = newInOutLine.getQtyEnteredTU() == null ? BigDecimal.ZERO : newInOutLine.getQtyEnteredTU();
 					newInOutLine.setQtyEnteredTU(new BigDecimal(qtyTU).add(qtyEnteredTU));
 					newInOutLine.setM_HU_PI_Item_Product(huPipToInOutLine.getHupip());
 				}

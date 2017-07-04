@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.ByteArrayInputStream;
+
 /*
  * #%L
  * de.metas.payment.esr
@@ -33,7 +35,6 @@ import java.math.BigDecimal;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.util.Services;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.X_C_DocType;
@@ -92,7 +93,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		Assert.assertEquals("Invalid IsValid", false, esrImport.isValid());
 	}
@@ -125,7 +126,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
@@ -167,7 +168,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
@@ -208,7 +209,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
@@ -253,7 +254,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(invoice);
 
 		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner(), nullValue()); // guard. we assume that the matcher did not know how to find 'bp'
 
@@ -280,7 +281,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		save(account);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat("Invalid IsValid", esrImportLine.isValid(), is(false));
@@ -307,7 +308,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		System.out.println(esrImportLine.getESRPostParticipantNumber() + "    ->    " + account.getESR_RenderedAccountNo().split("-"));
@@ -337,7 +338,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount(account);
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
@@ -399,7 +400,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// I_ESR_Import esrImport = esrImportLine.getESR_Import();
@@ -442,7 +443,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		// allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
@@ -508,7 +509,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		Assert.assertTrue("Is not manual referenceNO", esrImportLine.isESR_IsManual_ReferenceNo());

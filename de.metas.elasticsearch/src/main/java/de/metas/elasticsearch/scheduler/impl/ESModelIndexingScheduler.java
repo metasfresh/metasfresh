@@ -47,18 +47,18 @@ public class ESModelIndexingScheduler implements IESModelIndexingScheduler
 	@Override
 	public final void addToIndex(final String modelIndexerId, final String modelTableName, final List<Integer> modelIds)
 	{
-		final List<ITableRecordReference> models = TableRecordReference.ofRecordIds(modelTableName, modelIds);
+		final List<TableRecordReference> models = TableRecordReference.ofRecordIds(modelTableName, modelIds);
 		schedule(CLASSNAME_AddToIndexWorkpackageProcessor, modelIndexerId, models);
 	}
 
 	@Override
 	public final void removeToIndex(final String modelIndexerId, final String modelTableName, final List<Integer> modelIds)
 	{
-		final List<ITableRecordReference> models = TableRecordReference.ofRecordIds(modelTableName, modelIds);
+		final List<TableRecordReference> models = TableRecordReference.ofRecordIds(modelTableName, modelIds);
 		schedule(CLASSNAME_RemoveFromIndexWorkpackageProcessor, modelIndexerId, models);
 	}
 
-	private final void schedule(final String workpackageProcessorClassname, final String modelIndexerId, final List<ITableRecordReference> models)
+	private final void schedule(final String workpackageProcessorClassname, final String modelIndexerId, final List<? extends ITableRecordReference> models)
 	{
 		final Properties ctx = Env.getCtx();
 

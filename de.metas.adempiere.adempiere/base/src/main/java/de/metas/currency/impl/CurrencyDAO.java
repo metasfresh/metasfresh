@@ -90,6 +90,11 @@ public class CurrencyDAO implements ICurrencyDAO
 	@Override
 	public String getISO_Code(Properties ctx, int C_Currency_ID)
 	{
+		if(C_Currency_ID <= 0)
+		{
+			return null;
+		}
+		
 		final I_C_Currency currency = retrieveCurrency(ctx, C_Currency_ID);
 		if (currency == null)
 		{

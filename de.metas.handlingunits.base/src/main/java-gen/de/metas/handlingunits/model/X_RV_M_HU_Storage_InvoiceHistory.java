@@ -4,7 +4,6 @@ package de.metas.handlingunits.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_M_HU_Storage_InvoiceHistory
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO impl
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 854822395L;
+	private static final long serialVersionUID = 818468064L;
 
     /** Standard Constructor */
     public X_RV_M_HU_Storage_InvoiceHistory (Properties ctx, int RV_M_HU_Storage_InvoiceHistory_ID, String trxName)
