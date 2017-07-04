@@ -75,4 +75,22 @@ public interface IPrintingQueueSource
 	 * @param item
 	 */
 	void markPrinted(I_C_Printing_Queue item);
+	
+	/**
+	 * count items which needs to be processed
+	 * @return
+	 */
+	int countItems();
+	
+	/**
+	 * get the name of the printing source
+	 * @return
+	 */
+	String getName();
+	
+	/**
+	 * Set a name for the printing source
+	 * @param name
+	 */
+	void setName(String name);
 }

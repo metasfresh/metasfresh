@@ -322,6 +322,40 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	}
 
 	@Override
+	public de.metas.async.model.I_C_Async_Batch getC_Async_Batch() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class);
+	}
+
+	@Override
+	public void setC_Async_Batch(de.metas.async.model.I_C_Async_Batch C_Async_Batch)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class, C_Async_Batch);
+	}
+
+	/** Set Async Batch.
+		@param C_Async_Batch_ID Async Batch	  */
+	@Override
+	public void setC_Async_Batch_ID (int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, Integer.valueOf(C_Async_Batch_ID));
+	}
+
+	/** Get Async Batch.
+		@return Async Batch	  */
+	@Override
+	public int getC_Async_Batch_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Async_Batch_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+	
+	@Override
 	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);

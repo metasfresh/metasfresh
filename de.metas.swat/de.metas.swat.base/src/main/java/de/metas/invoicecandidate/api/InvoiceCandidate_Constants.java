@@ -49,5 +49,12 @@ public class InvoiceCandidate_Constants
 	 * Internal Name for invoice candidate asycn batch
 	 */
 	public static final String C_Async_Batch_InternalName_InvoiceCandidate = "InvoiceCandidate";
+	
+	/**
+	 * Internal Name voiding and recreating async batch
+	 */
+	public static final String C_Async_Batch_InternalName_VoidAndRecreateInvoice = "VoidAndRecreateInvoice";
+	
+	public static final String C_Async_Batch_InternalName_TriggerVoidAndRecreateInvoice = "TriggerVoidAndRecreateInvoice";
 
 }

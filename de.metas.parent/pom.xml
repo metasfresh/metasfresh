@@ -30,7 +30,8 @@
 		<!-- right now 6.2.2 is the latest, but there we suffer from http://community.jaspersoft.com/jasperreports-library/issues/7521 -->
 		<jasperreports.version>6.2.1</jasperreports.version>
 
-		<!-- FRESH-397: jasper 6.2.2 uses itext, poi and zxing with theses versions -->
+		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
+		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't don't -->
 		<itext.version>2.1.7.js5</itext.version>
 		<poi.version>3.12</poi.version>
 		<zxing.version>2.3.0</zxing.version>
@@ -39,6 +40,9 @@
 		<activeMQ.version>5.12.1</activeMQ.version>
 
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+
+		<!-- this is the version uses by elasticsearch:2.4.4 which is turn is used by spring-boot 1.5.3 -->
+		<lucene.version>5.5.2</lucene.version>
 
 		<!--
 			Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base
@@ -92,22 +96,28 @@
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
 				<version>${jasperreports.version}</version>
-				<exclusions>
-					<!-- excluding Lucene dependencies because they are conflicting with
-						org.elasticsearch:elasticsearch -->
-					<exclusion>
-						<groupId>org.apache.lucene</groupId>
-						<artifactId>lucene-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.apache.lucene</groupId>
-						<artifactId>lucene-analyzers-common</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.apache.lucene</groupId>
-						<artifactId>lucene-queryparser</artifactId>
-					</exclusion>
-				</exclusions>
+			</dependency>
+			
+			<!-- manage the versions of lucene because we need to exclude them from jasperreports and then want to explicitly add them -->
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-queryparser</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-analyzers-common</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-core</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-queries</artifactId>
+				<version>${lucene.version}</version>
 			</dependency>
 
 			<dependency>
@@ -257,18 +267,12 @@
 					<artifactId>maven-release-plugin</artifactId>
 					<version>2.3.1</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
 					<version>2.10</version>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.0.0</version>
-				</plugin>
-
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
@@ -517,7 +521,7 @@
 					<attachClasses>true</attachClasses>
 				</configuration>
 			</plugin>
-		
+
 		</plugins>
 	</build>
 

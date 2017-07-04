@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 /*
@@ -38,7 +39,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -226,7 +226,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
 
 		final Properties ctx = Env.getCtx();
-		final String trxName = Trx.createTrxName();;
+		final String trxName = Trx.createTrxName();
 
 		final I_C_BPartner bpartner = bpartner("test-bp");
 
@@ -366,8 +366,8 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final BigDecimal discount_override2After = ic2.getDiscount_Override();
 
 		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
-		assertThat(discount_override1, comparesEqualTo(BigDecimal.ZERO));
-		assertThat(discount_override1After, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount_override1, not(comparesEqualTo(BigDecimal.ZERO)));
+		assertThat(discount_override1After, not(comparesEqualTo(BigDecimal.ZERO)));
 		
 		//
 		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));

@@ -112,6 +112,16 @@ public interface IPrintingDAO extends ISingletonService
 	I_C_Print_Job_Line retrievePrintJobLine(I_C_Print_Job job, int seqNo);
 
 	/**
+	 * count items
+	 * @param ctx
+	 * @param queueQuery
+	 * @param trxName
+	 * @return
+	 */
+	int countItems(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
+
+	
+	/**
 	 * Retrieve the print job details for the given job line. Assumes that there is at least one, never returns an empty list.
 	 * 
 	 * @param jobLine
@@ -262,6 +272,14 @@ public interface IPrintingDAO extends ISingletonService
 	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
+	
+	/**
+	 * retrieve print job lines based on printing queue
+	 * 
+	 * @param printingQueue
+	 * @return
+	 */
+	List<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Printing_Queue printingQueue);
 	
 	/**
 	 * Retrieve <b>the latest</b> printing queue for the given {@code archive}.

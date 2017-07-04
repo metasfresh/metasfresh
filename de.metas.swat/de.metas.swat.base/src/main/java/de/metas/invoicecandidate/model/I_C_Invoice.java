@@ -42,5 +42,14 @@ public interface I_C_Invoice extends de.metas.adempiere.model.I_C_Invoice
 	public void setM_InOut_ID(int M_InOut_ID);
 	public int getM_InOut_ID();
 	public I_M_InOut getM_InOut();
-	// @formatter:o
+	// @formatter:on
+	
+    /** Column name C_Async_Batch_ID */
+    public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+
+	/** Set Async Batch	  */
+	public void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/** Get Async Batch	  */
+	public int getC_Async_Batch_ID();
 }

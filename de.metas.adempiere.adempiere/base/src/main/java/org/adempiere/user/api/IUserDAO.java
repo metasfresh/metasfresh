@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -65,6 +66,8 @@ public interface IUserDAO extends ISingletonService
 	I_AD_User retrieveUser(int adUserId);
 
 	I_AD_User retrieveUserInTrx(int adUserId);
+	
+	I_AD_User retrieveDefaultUser(I_C_BPartner bpartner);
 
 	/** @return user's full name or <code>?</code> if no found */
 	String retrieveUserFullname(int adUserId);
