@@ -147,7 +147,7 @@ class RawWidget extends Component {
             onHide, handleBackdropLock, subentity, subentityId, tabIndex,
             dropdownOpenCallback, autoFocus, fullScreen, widgetType, fields,
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
-            entity, onShow, disabled, caption, viewId, inputValue, listenOnKeys,
+            entity, onShow, disabled, caption, viewId, data, listenOnKeys,
             listenOnKeysFalse, closeTableField, handleZoomInto, attribute,
             allowShowPassword
         } = this.props;
@@ -157,7 +157,7 @@ class RawWidget extends Component {
         // check if it's value from MasterWidget or not
         // (to stabilize parsing changes in masterWidget due to problems with
         // jumping cursor
-        const widgetValue = inputValue ? inputValue : widgetData[0].value;
+        const widgetValue = data ? data : widgetData[0].value;
 
         // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
         const widgetField = filterWidget ?
