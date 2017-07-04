@@ -248,16 +248,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 	stage('Preparation') // for display purposes
 	{
 		// checkout our code
-		checkout([
-			$class: 'GitSCM',
-			branches: [[name: "${env.BRANCH_NAME}"]],
-			doGenerateSubmoduleConfigurations: false,
-			extensions: [
-				[$class: 'CleanCheckout']
-			],
-			submoduleCfg: [],
-			userRemoteConfigs: [[credentialsId: 'github_metas-dev', url: 'https://github.com/metasfresh/metasfresh-parent.git']]
-		]);
+		checkout scm; // i hope this to do all the magic we need
+		sh 'git clean -d --force -x' // clean the workspace
 
 		if(!isRepoExists(MF_MAVEN_REPO_NAME))
 		{
