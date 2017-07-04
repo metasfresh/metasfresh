@@ -26,6 +26,10 @@ Here come the actual release notes:
     * A New Functionality in WebUI Frontend, when zooming-to Fields that are empty and have null value. In theses cases the corresponding Windows open with a "new" action.
 
 * metasfresh-webui-frontend
+  * [#918](https://github.com/metasfresh/metasfresh-webui-frontend/issues/918) Keyboard Shortcuts for Done, Apply, Start and Cancel
+    * New Keyboard Shortcuts added for Done, Apply and Cancel Actions.
+  * [#919](https://github.com/metasfresh/metasfresh-webui-frontend/issues/919) Keyboard shortcut for Quickaction dropdown
+    * New Keyboard Shortcuts added for the Quickaction dropdown.
   * [#941](https://github.com/metasfresh/metasfresh-webui-frontend/issues/941) grid view: show one text for top level rows
     * New Functionality to show grouping Information in Tree View which can be different to the infomraiton in tree nodes/ leafs.
   * [#956](https://github.com/metasfresh/metasfresh-webui-frontend/issues/956) Caption Translation not working for Sidelist Menu
