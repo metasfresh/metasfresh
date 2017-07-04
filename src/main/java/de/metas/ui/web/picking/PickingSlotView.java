@@ -1,15 +1,17 @@
 package de.metas.ui.web.picking;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -23,7 +25,6 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -65,14 +66,14 @@ public class PickingSlotView implements IView
 	private final ViewId viewId;
 	private final ITranslatableString description;
 	private final int shipmentScheduleId;
-	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> rows;
+	private final ExtendedMemorizingSupplier<Map<PickingSlotRowId, PickingSlotRow>> rowsSupplier;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	@Builder
 	private PickingSlotView(@NonNull final ViewId viewId,
 			final ITranslatableString description,
 			final int shipmentScheduleId,
-			final List<PickingSlotRow> rows,
+			final Supplier<List<PickingSlotRow>> rows,
 			final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
 		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");
@@ -80,7 +81,8 @@ public class PickingSlotView implements IView
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.shipmentScheduleId = shipmentScheduleId;
-		this.rows = Maps.uniqueIndex(rows, PickingSlotRow::getPickingSlotRowId);
+//		this.rows = Maps.uniqueIndex(rows, PickingSlotRow::getPickingSlotRowId);
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(()->Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
@@ -123,7 +125,7 @@ public class PickingSlotView implements IView
 	@Override
 	public long size()
 	{
-		return rows.size();
+		return rowsSupplier.get().size();
 	}
 
 	@Override
@@ -146,7 +148,7 @@ public class PickingSlotView implements IView
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<PickingSlotRow> pageRows = rows.values().stream()
+		final List<PickingSlotRow> pageRows = rowsSupplier.get().values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
@@ -160,7 +162,7 @@ public class PickingSlotView implements IView
 		PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
 		
 		final PickingSlotRowId pickingSlotRowId = rowId.toPickingSlotId();
-		final PickingSlotRow pickingSlotRow = rows.get(pickingSlotRowId);
+		final PickingSlotRow pickingSlotRow = rowsSupplier.get().get(pickingSlotRowId);
 		if (pickingSlotRow == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("pickingSlotRowId", pickingSlotRowId);
@@ -256,9 +258,6 @@ public class PickingSlotView implements IView
 	@Override
 	public void invalidateAll()
 	{
-		// TODO
-
-		ViewChangesCollector.getCurrentOrAutoflush()
-				.collectFullyChanged(this);
+		rowsSupplier.forget();
 	}
 }

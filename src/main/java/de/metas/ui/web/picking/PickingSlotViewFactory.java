@@ -77,15 +77,13 @@ public class PickingSlotViewFactory implements IViewFactory
 		final DocumentId pickingRowId = request.getSingleReferencingDocumentPathOrNull().getDocumentId();
 		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
 
-		final List<PickingSlotRow> rows = pickingSlotRepo.retrieveRowsByShipmentScheduleId(shipmentScheduleId);
-
 		final ViewId pickingViewId = request.getParentViewId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
 				.shipmentScheduleId(shipmentScheduleId)
-				.rows(rows)
+				.rows(() -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(shipmentScheduleId))
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}
@@ -93,7 +91,7 @@ public class PickingSlotViewFactory implements IViewFactory
 	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()
 	{
 		// TODO: cache it
-		
+
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final Properties ctx = Env.getCtx();
 

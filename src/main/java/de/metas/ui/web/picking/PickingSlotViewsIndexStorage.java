@@ -11,6 +11,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -118,18 +119,30 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	@Override
 	public PickingSlotView getByIdOrNull(final ViewId pickingSlotViewId)
 	{
+		final boolean create = true;
+		return getOrCreatePickingSlotView(pickingSlotViewId, create);
+	}
+
+	private PickingSlotView getOrCreatePickingSlotView(final ViewId pickingSlotViewId, final boolean create)
+	{
 		final PickingView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
 		final DocumentId pickingSlotRowId = extractRowId(pickingSlotViewId);
-		final PickingSlotView pickingSlotView = pickingView.computePickingSlotViewIfAbsent(pickingSlotRowId, () -> {
-			final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
-			return pickingSlotViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
-					.setParentViewId(pickingView.getViewId())
-					.setReferencingDocumentPath(pickingRow.getDocumentPath())
-					.build());
 
-		});
+		if (create)
+		{
+			return pickingView.computePickingSlotViewIfAbsent(pickingSlotRowId, () -> {
+				final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
+				return pickingSlotViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
+						.setParentViewId(pickingView.getViewId())
+						.setReferencingDocumentPath(pickingRow.getDocumentPath())
+						.build());
 
-		return pickingSlotView;
+			});
+		}
+		else
+		{
+			return pickingView.getPickingSlotViewOrNull(pickingSlotRowId);
+		}
 	}
 
 	@Override
@@ -142,12 +155,16 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	@Override
 	public void invalidateView(ViewId pickingSlotViewId)
 	{
-		final PickingView view = getPickingViewByPickingSlotViewId(pickingSlotViewId);
-		if (view == null)
+		final PickingSlotView pickingSlotView = getOrCreatePickingSlotView(pickingSlotViewId, false/* create */);
+		if (pickingSlotView == null)
 		{
 			return;
 		}
-		view.invalidateAll();
+
+		pickingSlotView.invalidateAll();
+
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(pickingSlotView);
 	}
 
 	@Override
