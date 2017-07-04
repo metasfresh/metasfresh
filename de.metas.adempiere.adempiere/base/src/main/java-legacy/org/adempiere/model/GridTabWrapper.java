@@ -185,11 +185,15 @@ public class GridTabWrapper implements InvocationHandler, IInterfaceWrapper
 	
 	public <T extends PO> T getPO()
 	{
-		// using the grid tab wrapper to load the PO
+		final Properties ctx = getCtx();
 		final GridTab gridTab = getGridTab();
+		return getPO(ctx, gridTab); 
+	}
+	
+	public static <T extends PO> T getPO(final Properties ctx, final GridTab gridTab)
+	{
 		final String tableName = gridTab.get_TableName();
 		final int recordID = gridTab.getKeyID(gridTab.getCurrentRow());
-		final Properties ctx = getCtx();
 		
 		@SuppressWarnings("unchecked")
 		final T po = (T)TableModelLoader.instance.getPO(ctx, tableName, recordID, ITrx.TRXNAME_None);
