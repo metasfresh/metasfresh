@@ -26,6 +26,8 @@ Here come the actual release notes:
     * A New Functionality in WebUI Frontend, when zooming-to Fields that are empty and have null value. In theses cases the corresponding Windows open with a "new" action.
 
 * metasfresh-webui-frontend
+  * [#941](https://github.com/metasfresh/metasfresh-webui-frontend/issues/941) grid view: show one text for top level rows
+    * New Functionality to show grouping Information in Tree View which can be different to the infomraiton in tree nodes/ leafs.
 
 ## Fixes
 * metasfresh-app
