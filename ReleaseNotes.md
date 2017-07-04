@@ -94,7 +94,7 @@ Here come the actual release notes:
   * [#945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/945) dashboard: react to websocket notifications
     * New functionality for User Dashboard, now reacting to websocket Notifications. If the Dashboard it changed on other User Browser then the Dashboard is updated also for other opened Browser Tabs.
   * [#949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/949) Board: adding a card as last is not user friendly
-    * Implrementation of a user friendly behavior when adding Cards to the new Kanban Board.
+    * Implementation of a user friendly behavior when adding Cards to the new Kanban Board.
   * [#950](https://github.com/metasfresh/metasfresh-webui-frontend/issues/950) Dashboard: move the "Open edit mode" button to Actions menu
     * New Action for Dashboard >Edit mode. Allows the user to toggle between Edit and Live Mode of the User/ KPI Dashboard.
   * [#964](https://github.com/metasfresh/metasfresh-webui-frontend/issues/964) again: Editing in the middle of a text field makes the cursor jump to the end
@@ -103,23 +103,31 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#1869](https://github.com/metasfresh/metasfresh/issues/1869) Customer Returns for HU more than 1 Document
+    * Fixes a Bug that created too many Customer return Documents when the initial Handling Unit was already created in a Material Receipt.
   * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
+    * Adjustments done to the new Order Conrol report, now resizing the margins left and right to avoid cutting off information.
   * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
+    * Fixes a minor Bug in Material Receipt automatic Label printing, that occured when the Receipt was already split into a lot of individual Handling Units.
   * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
+    * Fixes an Out of Memory issue that sometime occurred in the Picking Terminal of the Swing Client.
 
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
     * Adding the Key Field to WebUI KPI Translation Window.
   * [#481](https://github.com/metasfresh/metasfresh-webui-api/issues/481) Sticky empty Filter in modal overlay.
+    * Getting rid of the empfty Sticky Filter when opening a modal overlay.
   * [#482](https://github.com/metasfresh/metasfresh-webui-api/issues/482) No Role Error for new User
+    * Fixes a caching Bug that occurred when adding a new User, without a role and trying to login. After the "No Role exists" error occured it was not possible for the user to login anymore.
 
 * metasfresh-webui-frontend
   * [#921](https://github.com/metasfresh/metasfresh-webui-frontend/issues/921) Browser issue: Window Bookmark Header
     * The jumping linebreak effect for Window headers in Action Menu is now solved in Chrome Browser.
   * [#923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/923) Packageables window: up/down arrows are working weird
+    * Fixes the Keyboard Navigaiton in Picking Terminal Window for WebUI.
   * [#931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/931) Notifications are not refreshed when the language is changed
-    * Now the Notifications are alos shown in the correct language after switching the language in User settings.
-  * [#933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/933) Disable quick actions button while running the action (v2)
+    * Now the Notifications are alss shown in the correct language after switching the language in User settings.
+  * [#933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/933) Disable quick action button while running the action (v2)
+    * Disabling the Quick Action Buttons while an action is already running, to avoid multiple starts and inconsistencies.
   * [#951](https://github.com/metasfresh/metasfresh-webui-frontend/issues/951) Frontend is broken (showstopper)
     * Fixes a Bug that raises exceptions after login and prevented the usage of Action Menu.
 
