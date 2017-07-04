@@ -16,6 +16,28 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#1787](https://github.com/metasfresh/metasfresh/issues/1787) New Window for Quality Inspection Conference Results in WebUI
+    * New Window for Quality Insprection Conference (Swiss Produce of Storage Vegetables) maintenance in WebUI.
+  * [#1933](https://github.com/metasfresh/metasfresh/issues/1933) Menu Translations for Language en_US
+    * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
+    
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+
+## Fixes
+* metasfresh-app
+    
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+
+# metasfresh 5.16 (2017-27)
+
+**upcoming release for week 2017-27**
+
+## Features
+* metasfresh-app
   * [#1854](https://github.com/metasfresh/metasfresh/issues/1854) Material Receipt Dispo window sequence OrderedQty CU vs. TU
     * Adjusting the Sequence of QtyReceives and QtyOrdered for CU and TU in Material Receipt Dispo.
   * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
@@ -29,7 +51,7 @@ Here come the actual release notes:
     * A new Window in WebUI allowing to maintain Allotments uses in Fresh Produce Procurement Contracts.
   * [#1926](https://github.com/metasfresh/metasfresh/issues/1926) Change Column Reference of C_Allotment_ID to search
     * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
-
+    
 * metasfresh-webui-api
   * [#485](https://github.com/metasfresh/metasfresh-webui-api/issues/485) backend: refactor sticky filters
   * [#486](https://github.com/metasfresh/metasfresh-webui-api/issues/486) dashboard: support "position" when PATCHing a dashboard item
@@ -79,8 +101,6 @@ Here come the actual release notes:
 
 # metasfresh 5.15 (2017-26)
 
-**upcoming release for week 2017-26**
-
 ## Features
 * metasfresh-app
   * [#1786](https://github.com/metasfresh/metasfresh/issues/1786) New Window for Flatrate Conditions in Webui
@@ -104,7 +124,7 @@ Here come the actual release notes:
   * [#465](https://github.com/metasfresh/metasfresh-webui-api/issues/465) Provide Endpoint w/ entry selections for given Breadcrumb
     * Improvement of Breadcrumb Navigation, now providing the entry points via API.
   * [#467](https://github.com/metasfresh/metasfresh-webui-api/issues/467) board API: GET board/{boardId}/card?cardIds
-    * New API endpoin that allows to receive Cards for the new generic board window.
+    * New API endpoint that allows to receive Cards for the new generic board window.
   * [#468](https://github.com/metasfresh/metasfresh-webui-api/issues/468) Fix user full name in Avatar
     * Adjusting the Avatar Name. Now showing Firstname Lastname.
   * [#470](https://github.com/metasfresh/metasfresh-webui-api/issues/470) Cache image endpoint
