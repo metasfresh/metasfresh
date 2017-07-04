@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -93,7 +92,7 @@ public final class HUEditorRow implements IViewRow
 
 	public static DocumentId rowIdFromM_HU_Storage(final int huId, final int productId)
 	{
-		return DocumentId.ofString(I_M_HU_Storage.Table_Name + "_HU" + huId + "_P" + productId);
+		return DocumentId.ofString("HU" + huId + "_P" + productId);
 	}
 
 	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
