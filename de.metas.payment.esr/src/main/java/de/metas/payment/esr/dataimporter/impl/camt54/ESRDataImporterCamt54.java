@@ -218,7 +218,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 					stmtBuilder.transaction(ESRTransaction.builder()
 							.trxType(trxType)
-							.transactionKey(mkTrxKey(ntry))
+							.transactionKey(mkTrxKey(txDtls))
 							.amount(amountValue)
 							.accountingDate(asTimestamp(ntry.getBookgDt()))
 							.paymentDate(asTimestamp(ntry.getValDt()))
@@ -271,10 +271,10 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 	}
 
-	private String mkTrxKey(@NonNull final ReportEntry8 ntry)
+	private String mkTrxKey(@NonNull final EntryTransaction8 txDtls)
 	{
 		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
-		JAXB.marshal(ntry, transactionKey);
+		JAXB.marshal(txDtls, transactionKey);
 		try
 		{
 			return transactionKey.toString("UTF-8");
