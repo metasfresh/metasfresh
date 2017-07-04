@@ -296,15 +296,20 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public IView getViewIfExists(final ViewId viewId)
-	{
-		return getViewsStorageFor(viewId).getByIdOrNull(viewId);
-	}
-
-	@Override
 	public IView getView(@NonNull final String viewIdStr)
 	{
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final IView view = getViewIfExists(viewId);
+		if (view == null)
+		{
+			throw new EntityNotFoundException("No view found for viewId=" + viewId);
+		}
+		return view;
+	}
+
+	@Override
+	public IView getViewIfExists(final ViewId viewId)
+	{
 		final IView view = getViewsStorageFor(viewId).getByIdOrNull(viewId);
 		if (view == null)
 		{

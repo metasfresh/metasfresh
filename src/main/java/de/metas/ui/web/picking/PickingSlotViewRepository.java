@@ -1,6 +1,5 @@
 package de.metas.ui.web.picking;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -14,10 +13,11 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -54,6 +54,9 @@ public class PickingSlotViewRepository
 	private final LookupDataSource bpartnerLocationLookup;
 
 	@Autowired
+	private PickingHUsRepository pickingHUsRepo;
+
+	@Autowired
 	public PickingSlotViewRepository(final Adempiere databaseAccess)
 	{
 		warehouseLookup = LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
@@ -76,13 +79,44 @@ public class PickingSlotViewRepository
 				.provideForScope(LookupScope.DocumentField));
 	}
 
-	public List<PickingSlotRow> retrieveRowsByIds(final Collection<DocumentId> rowIds)
+	public List<PickingSlotRow> retrieveRowsByShipmentScheduleId(final int shipmentScheduleId)
 	{
-		final Set<Integer> pickingSlotIds = rowIds.stream().map(DocumentId::toInt).collect(ImmutableSet.toImmutableSet());
+		final ListMultimap<Integer, HUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(shipmentScheduleId);
+//		final Set<Integer> pickingSlotIds = huEditorRowsByPickingSlotId.keySet();
+		// FIXME: debugging!!!!
+		final Set<Integer> pickingSlotIds = Services.get(IPickingSlotDAO.class).retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.stream()
+				.map(I_M_PickingSlot::getM_PickingSlot_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
 		return Services.get(IPickingSlotDAO.class).retrievePickingSlotsByIds(pickingSlotIds)
 				.stream()
-				.map(pickingSlotPO -> createPickingSlotRow(pickingSlotPO))
+				.map(pickingSlotPO -> createPickingSlotRow(pickingSlotPO, huEditorRowsByPickingSlotId))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private final PickingSlotRow createHURow(final HUEditorRow from, final int pickingSlotId)
+	{
+		final List<PickingSlotRow> includedHURows = from.getIncludedRows()
+				.stream()
+				.map(includedHUEditorRow -> createHURow(includedHUEditorRow, pickingSlotId))
+				.collect(ImmutableList.toImmutableList());
+
+		return PickingSlotRow.fromHUBuilder()
+				.pickingSlotId(pickingSlotId)
+				.huId(from.getM_HU_ID())
+				//
+				.type(from.getType())
+				.processed(true)
+				//
+				.code(from.getValue())
+				.product(from.getProduct())
+				.packingInfo(from.getPackingInfo())
+				.qtyCU(from.getQtyCU())
+				//
+				.includedHURows(includedHURows)
+				//
+				.build();
 	}
 
 	public Set<Integer> retrieveAllRowIds()
@@ -93,17 +127,34 @@ public class PickingSlotViewRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private PickingSlotRow createPickingSlotRow(final I_M_PickingSlot pickingSlotPO)
+	private PickingSlotRow createPickingSlotRow(final I_M_PickingSlot pickingSlotPO, final ListMultimap<Integer, HUEditorRow> huEditorRowsByPickingSlotId)
 	{
+		final int pickingSlotId = pickingSlotPO.getM_PickingSlot_ID();
+		final List<PickingSlotRow> huRows = huEditorRowsByPickingSlotId.get(pickingSlotId)
+				.stream()
+				.map(huEditorRow -> createHURow(huEditorRow, pickingSlotId))
+				.collect(ImmutableList.toImmutableList());
+
 		return PickingSlotRow.fromPickingSlotBuilder()
-				.pickingSlotId(pickingSlotPO.getM_PickingSlot_ID())
+				.pickingSlotId(pickingSlotId)
 				//
 				.pickingSlotName(pickingSlotPO.getPickingSlot())
 				.pickingSlotWarehouse(warehouseLookup.findById(pickingSlotPO.getM_Warehouse_ID()))
 				.pickingSlotBPartner(bpartnerLookup.findById(pickingSlotPO.getC_BPartner_ID()))
 				.pickingSlotBPLocation(bpartnerLocationLookup.findById(pickingSlotPO.getC_BPartner_Location_ID()))
+				.includedHURows(huRows)
 				//
 				.build();
+	}
+
+	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	{
+		pickingHUsRepo.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+	}
+
+	public void removeHUFromPickingSlot(final int huId, final int pickingSlotId)
+	{
+		pickingHUsRepo.removeHUFromPickingSlot(huId, pickingSlotId);
 	}
 
 }

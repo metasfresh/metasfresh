@@ -1,25 +1,29 @@
 package de.metas.ui.web.picking;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.picking.PickingSlotRow.PickingSlotRowId;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -60,16 +64,24 @@ public class PickingSlotView implements IView
 
 	private final ViewId viewId;
 	private final ITranslatableString description;
-	private final Map<DocumentId, PickingSlotRow> rows;
+	private final int shipmentScheduleId;
+	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> rows;
+	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	@Builder
 	private PickingSlotView(@NonNull final ViewId viewId,
 			final ITranslatableString description,
-			final List<PickingSlotRow> rows)
+			final int shipmentScheduleId,
+			final List<PickingSlotRow> rows,
+			final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
+		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");
+
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
-		this.rows = Maps.uniqueIndex(rows, PickingSlotRow::getId);
+		this.shipmentScheduleId = shipmentScheduleId;
+		this.rows = Maps.uniqueIndex(rows, PickingSlotRow::getPickingSlotRowId);
+		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
 	@Override
@@ -143,14 +155,26 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public PickingSlotRow getById(final DocumentId rowId) throws EntityNotFoundException
+	public PickingSlotRow getById(final DocumentId id) throws EntityNotFoundException
 	{
-		final PickingSlotRow row = rows.get(rowId);
-		if (row == null)
+		PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
+		
+		final PickingSlotRowId pickingSlotRowId = rowId.toPickingSlotId();
+		final PickingSlotRow pickingSlotRow = rows.get(pickingSlotRowId);
+		if (pickingSlotRow == null)
 		{
-			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+			throw new EntityNotFoundException("Row not found").setParameter("pickingSlotRowId", pickingSlotRowId);
 		}
-		return row;
+		
+		if(pickingSlotRowId.equals(rowId))
+		{
+			return pickingSlotRow;
+		}
+		else
+		{
+			return pickingSlotRow.findIncludedRowById(rowId)
+					.orElseThrow(()->new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
+		}
 	}
 
 	@Override
@@ -216,5 +240,25 @@ public class PickingSlotView implements IView
 	{
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return additionalRelatedProcessDescriptors;
+	}
+
+	public int getShipmentScheduleId()
+	{
+		return shipmentScheduleId;
+	}
+
+	@Override
+	public void invalidateAll()
+	{
+		// TODO
+
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 }
