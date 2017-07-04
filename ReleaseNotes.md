@@ -10,9 +10,9 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.16 (2017-27)
+# metasfresh 5.17 (2017-28)
 
-**upcoming release for week 2017-27**
+**upcoming release for week 2017-28**
 
 ## Features
 * metasfresh-app
@@ -22,8 +22,18 @@ Here come the actual release notes:
     * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
     
 * metasfresh-webui-api
+  * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
+    * A New Functionality in WebUI Frontend, when zooming-to Fields that are empty and have null value. In theses cases the corresponding Windows open with a "new" action.
 
 * metasfresh-webui-frontend
+  * [#941](https://github.com/metasfresh/metasfresh-webui-frontend/issues/941) grid view: show one text for top level rows
+    * New Functionality to show grouping Information in Tree View which can be different to the infomraiton in tree nodes/ leafs.
+  * [#956](https://github.com/metasfresh/metasfresh-webui-frontend/issues/956) Caption Translation not working for Sidelist Menu
+    * Now also translating the static element properly for Sidelist menu.
+  * [#957](https://github.com/metasfresh/metasfresh-webui-frontend/issues/957) Sidelist toolips: Remaining translations for static messages not in Frontend
+    * Additional i18n of static elements in WebUI Frontend.
+  * [#959](https://github.com/metasfresh/metasfresh-webui-frontend/issues/959) Modal Overlay not translated although captions exists
+    * Adding the Translation Functionality for statis elements in Modal Overlays.
 
 ## Fixes
 * metasfresh-app
@@ -51,6 +61,7 @@ Here come the actual release notes:
     * A new Window in WebUI allowing to maintain Allotments uses in Fresh Produce Procurement Contracts.
   * [#1926](https://github.com/metasfresh/metasfresh/issues/1926) Change Column Reference of C_Allotment_ID to search
     * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
+  * [#1948](https://github.com/metasfresh/metasfresh/issues/1948) eMail Editor does not open anymore
     
 * metasfresh-webui-api
   * [#485](https://github.com/metasfresh/metasfresh-webui-api/issues/485) backend: refactor sticky filters
@@ -75,7 +86,9 @@ Here come the actual release notes:
   * [#949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/949) Board: adding a card as last is not user friendly
   * [#950](https://github.com/metasfresh/metasfresh-webui-frontend/issues/950) Dashboard: move the "Open edit mode" button to Actions menu
     * New Action for Dashboard >Edit mode. Allows the user to toggle between Edit and Live Mode of the User/ KPI Dashboard.
-
+  * [#964](https://github.com/metasfresh/metasfresh-webui-frontend/issues/964) again: Editing in the middle of a text field makes the cursor jump to the end
+    * thanks [wiadev](https://github.com/wiadev)
+  
 ## Fixes
 * metasfresh-app
   * [#1869](https://github.com/metasfresh/metasfresh/issues/1869) Customer Returns for HU more than 1 Document
