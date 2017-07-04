@@ -83,6 +83,12 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 	<build>
 		<pluginManagement>
 			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>3.0.0</version>
+				</plugin>
+
 				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -114,19 +120,19 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					<artifactId>maven-clean-plugin</artifactId>
 					<version>2.5</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-install-plugin</artifactId>
 					<version>2.4</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-site-plugin</artifactId>
 					<version>3.3</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
@@ -138,7 +144,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 					<artifactId>maven-reactor-plugin</artifactId>
 					<version>1.1</version>
 				</plugin>
-				
+
 				<!-- Add the generic info plus ci build info to the manifests of all jars that we create -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -159,7 +165,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 						</archive>
 					</configuration>
 				</plugin>
-				
+
 				<plugin>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.20</version>
@@ -178,7 +184,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 						</includes>
 					</configuration>
 				</plugin>
-				
+
 				<plugin>
 					<!-- 
 						gh #968: If we run mvn properties:write-project-properties
@@ -216,7 +222,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 						</dependency>
 					</dependencies>
 				</plugin>
-				
+
 				<!--This plugin's configuration is used to store Eclipse m2e settings 
 					only. It has no influence on the Maven build itself. -->
 				<plugin>
@@ -263,7 +269,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -318,7 +324,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 								<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
 
 								<!-- the following are camel/servicemix related dependencies -->
-								<!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
+								<!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile 
 									net.sf.opencsv:opencsv:jar:2.1:compile -->
 								<ignoreClass>au.com.bytecode.*</ignoreClass>
 
@@ -336,13 +342,13 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 								<ignoreClass>repackage.Repackage</ignoreClass>
 								<ignoreClass>repackage.EditBuildScript</ignoreClass>
 
-								<!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
+								<!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile 
 									javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
 								<ignoreClass>javax.servlet.*</ignoreClass>
 							</ignoreClasses>
 
 							<dependencies>
-								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM
+								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM 
 									("JUnit classes in JMockit jar") for background info -->
 								<dependency>
 									<artifactId>jmockit</artifactId>
