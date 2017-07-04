@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
     
 * metasfresh-webui-api
+  * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
+    * A New Functionality in WebUI Frontend, when zooming-to Fields that are empty and have null value. In theses cases the corresponding Windows open with a "new" action.
 
 * metasfresh-webui-frontend
 
