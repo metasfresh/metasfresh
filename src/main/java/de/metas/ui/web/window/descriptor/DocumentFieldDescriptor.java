@@ -438,7 +438,7 @@ public final class DocumentFieldDescriptor implements Serializable
 					return valueConv;
 				}
 			}
-			else if (Integer.class == targetType)
+			else if (Integer.class == targetType || int.class == targetType)
 			{
 				if (value instanceof String)
 				{
@@ -465,6 +465,16 @@ public final class DocumentFieldDescriptor implements Serializable
 					final T valueConv = (T)(Integer)((LookupValue)value).getIdAsInt();
 					return valueConv;
 				}
+				else if (value instanceof Map)
+				{
+					@SuppressWarnings("unchecked")
+					final Map<String, String> map = (Map<String, String>)value;
+					final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
+					@SuppressWarnings("unchecked")
+					final T valueConv = (T)(Integer)lookupValue.getIdAsInt();
+					return valueConv;
+				}
+
 			}
 			else if (BigDecimal.class == targetType)
 			{
