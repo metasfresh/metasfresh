@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-05-30T19:04:51 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/ordercheckup/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
+<!-- 2017-06-26T14:56:50 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/ordercheckup_with_barcode/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.100000000000001"/>
@@ -10,6 +10,14 @@
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -52,7 +60,7 @@
 		<band height="192" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-4" x="-20" y="30" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
+				<reportElement key="subreport-4" x="0" y="30" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -60,7 +68,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="116" width="555" height="75" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
+				<reportElement key="subreport-8" x="0" y="116" width="595" height="75" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -71,10 +79,10 @@
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_description.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup_with_barcode/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="235" y="116" width="319" height="75" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0"/>
+				<reportElement key="subreport-6" x="270" y="128" width="325" height="63" uuid="9fdef315-bd26-44e1-9643-da46f47a98b0"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -93,7 +101,7 @@
 		<band height="116" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $V{PAGE_NUMBER}.intValue() > 1)]]></printWhenExpression>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="-20" y="31" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
+				<reportElement key="subreport-5" x="0" y="31" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac"/>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
@@ -105,7 +113,7 @@
 	<detail>
 		<band height="14" splitType="Stretch">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="0" width="555" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3">
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="14" uuid="f4aecc68-d647-409b-bde5-65f943103dc3">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="ad_language">
@@ -118,7 +126,7 @@
 					<subreportParameterExpression><![CDATA[$P{barcodeURL}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup/report_details.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/ordercheckup_with_barcode/report_details.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
