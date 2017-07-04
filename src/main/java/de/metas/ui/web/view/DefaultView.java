@@ -254,6 +254,14 @@ public class DefaultView implements IView
 
 		logger.debug("View closed: {}", this);
 	}
+	
+	@Override
+	public void invalidateAll()
+	{
+		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
+		cache_rowsById.clear();
+		
+	}
 
 	private final void assertNotClosed()
 	{

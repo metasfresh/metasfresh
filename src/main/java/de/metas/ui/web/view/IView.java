@@ -76,6 +76,11 @@ public interface IView
 
 	boolean isQueryLimitHit();
 
+	/**
+	 * NOTE: don't call this directly it shall be called by API.
+	 */
+	void invalidateAll();
+
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
 	default ViewResult getPageWithRowIdsOnly(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys)

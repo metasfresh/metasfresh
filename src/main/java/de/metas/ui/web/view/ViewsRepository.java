@@ -322,6 +322,12 @@ public class ViewsRepository implements IViewsRepository
 	{
 		getViewsStorageFor(viewId).removeById(viewId);
 	}
+	
+	@Override
+	public void invalidateView(final ViewId viewId)
+	{
+		getViewsStorageFor(viewId).invalidateView(viewId);
+	}
 
 	@Override
 	@Async

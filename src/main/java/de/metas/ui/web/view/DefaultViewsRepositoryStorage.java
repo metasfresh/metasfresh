@@ -75,6 +75,18 @@ import lombok.NonNull;
 	{
 		views.invalidate(viewId.getViewId());
 	}
+	
+	@Override
+	public void invalidateView(final ViewId viewId)
+	{
+		final IView view = getByIdOrNull(viewId);
+		if(view == null)
+		{
+			return;
+		}
+		
+		view.invalidateAll();
+	}
 
 	@Override
 	public Stream<IView> streamAllViews()
