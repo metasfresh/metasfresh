@@ -51,6 +51,7 @@ Here come the actual release notes:
     * A new Window in WebUI allowing to maintain Allotments uses in Fresh Produce Procurement Contracts.
   * [#1926](https://github.com/metasfresh/metasfresh/issues/1926) Change Column Reference of C_Allotment_ID to search
     * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
+  * [#1948](https://github.com/metasfresh/metasfresh/issues/1948) eMail Editor does not open anymore
     
 * metasfresh-webui-api
   * [#485](https://github.com/metasfresh/metasfresh-webui-api/issues/485) backend: refactor sticky filters
