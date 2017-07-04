@@ -458,12 +458,17 @@ class DocumentList extends Component {
         }
     }
 
-    showIncludedViewOnSelect = (showIncludedView) => {
-        this.setState({
+    showIncludedViewOnSelect = (showIncludedView, data) => {
+        const {
+            dispatch
+        } = this.props;
+
+        showIncludedView && this.setState({
             isShowIncluded: showIncludedView ? true : false,
             hasShowIncluded: showIncludedView ? true : false
+        }, ()=> {
+            dispatch(setListIncludedView(data.windowId, data.viewId));
         });
-        console.log(showIncludedView);
     }
 
     render() {

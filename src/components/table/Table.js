@@ -712,7 +712,7 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            showIncludedViewOnSelect(item.supportIncludedViews)
+                            showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
                         }
                         }
                         handleRightClick={(e, fieldName) =>
