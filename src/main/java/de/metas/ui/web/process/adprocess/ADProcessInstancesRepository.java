@@ -128,7 +128,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	@Override
 	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
 	{
-		if (request.getSingleDocumentPath() != null)
+		if (documentsCollection.isValidDocumentPath(request.getSingleDocumentPath()))
 		{
 			// In case we have a single document path, we shall fetch it as use it as evaluation context.
 			// This will make sure that the parameter's default values will be correctly computed
@@ -216,7 +216,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			{
 				recordId = -1;
 			}
-			
+
 			sqlWhereClause = viewDocumentIds.isEmpty() ? null : view.getSqlWhereClause(viewDocumentIds);
 		}
 		//

@@ -419,6 +419,13 @@ public class DocumentCollection
 		return WindowId.of(zoomInto_adWindowId);
 	}
 
+	public boolean isValidDocumentPath(final DocumentPath documentPath)
+	{
+		return documentPath != null
+				&& documentPath.getWindowId().isInt()
+				&& documentPath.getDocumentId().isInt();
+	}
+
 	/**
 	 * Retrieves document path for given ZoomInto info.
 	 *
