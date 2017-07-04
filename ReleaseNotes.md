@@ -20,6 +20,8 @@ Here come the actual release notes:
     * New Window for Quality Insprection Conference (Swiss Produce of Storage Vegetables) maintenance in WebUI.
   * [#1933](https://github.com/metasfresh/metasfresh/issues/1933) Menu Translations for Language en_US
     * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
+  * [#1949](https://github.com/metasfresh/metasfresh/issues/1949) Add Inventory Valuation Report to WebUI menu
+    * Adding the Inventory Valuation Report to WebUI.
     
 * metasfresh-webui-api
   * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
