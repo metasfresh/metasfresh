@@ -28,6 +28,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#941](https://github.com/metasfresh/metasfresh-webui-frontend/issues/941) grid view: show one text for top level rows
     * New Functionality to show grouping Information in Tree View which can be different to the infomraiton in tree nodes/ leafs.
+  * [#956](https://github.com/metasfresh/metasfresh-webui-frontend/issues/956) Caption Translation not working for Sidelist Menu
+    * Now also translating the static element properly for Sidelist menu.
   * [#957](https://github.com/metasfresh/metasfresh-webui-frontend/issues/957) Sidelist toolips: Remaining translations for static messages not in Frontend
     * Additional i18n of static elements in WebUI Frontend.
 
