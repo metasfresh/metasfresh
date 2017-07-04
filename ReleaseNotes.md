@@ -10,9 +10,9 @@ Additional notes:
 
 Here come the actual release notes:
 
-# metasfresh 5.16 (2017-27)
+# metasfresh 5.17 (2017-28)
 
-**upcoming release for week 2017-27**
+**upcoming release for week 2017-28**
 
 ## Features
 * metasfresh-app
