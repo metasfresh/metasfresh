@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -106,6 +107,12 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		@SuppressWarnings("unchecked")
 		final T viewCasted = (T)view;
 		return viewCasted;
+	}
+	
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return view.getAdditionalRelatedProcessDescriptors();
 	}
 	
 	@Override
