@@ -38,7 +38,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		{
 			return;
 		}
-		engine.addModelValidator(new PP_CostCollector(), client);
+		engine.addModelValidator(new PP_Cost_Collector(), client);
 		engine.addModelValidator(new M_HU_Trx_Hdr(), client);
 		engine.addModelValidator(new M_InOut(), client);
 		engine.addModelValidator(new M_Movement(), client);

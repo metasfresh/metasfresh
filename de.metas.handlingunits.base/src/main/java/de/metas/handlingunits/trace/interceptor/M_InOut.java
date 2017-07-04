@@ -37,7 +37,6 @@ import lombok.NonNull;
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
-
 	@DocValidate(timings =
 		{
 				ModelValidator.TIMING_AFTER_CLOSE,

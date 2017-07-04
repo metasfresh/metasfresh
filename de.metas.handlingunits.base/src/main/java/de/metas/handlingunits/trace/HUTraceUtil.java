@@ -1,10 +1,11 @@
 package de.metas.handlingunits.trace;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOut;
@@ -13,7 +14,6 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.eevolution.api.IPPCostCollectorBL;
 
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -54,7 +54,8 @@ public class HUTraceUtil
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.costCollectorId(costCollector.getPP_Order_ID())
 				.docTypeId(costCollector.getC_DocType_ID())
-				.docStatus(costCollector.getDocStatus());
+				.docStatus(costCollector.getDocStatus())
+				.eventTime(costCollector.getMovementDate().toInstant());
 
 		final IPPCostCollectorBL costCollectorBL = Services.get(IPPCostCollectorBL.class);
 		if (costCollectorBL.isMaterialIssue(costCollector, true))
@@ -75,7 +76,8 @@ public class HUTraceUtil
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.inOutId(inOut.getM_InOut_ID())
 				.docTypeId(inOut.getC_DocType_ID())
-				.docStatus(inOut.getDocStatus());
+				.docStatus(inOut.getDocStatus())
+				.eventTime(inOut.getMovementDate().toInstant());
 
 		final String plusOrMinus = inOut.getMovementType().substring(1);
 		if ("+".equals(plusOrMinus))
@@ -98,7 +100,8 @@ public class HUTraceUtil
 				.movementId(movement.getM_Movement_ID())
 				.docTypeId(movement.getC_DocType_ID())
 				.docStatus(movement.getDocStatus())
-				.type(HUTraceType.MATERIAL_MOVEMENT);
+				.type(HUTraceType.MATERIAL_MOVEMENT)
+				.eventTime(movement.getMovementDate().toInstant());
 
 		HUTraceUtil.createAndAddEvents(builder, movementLines);
 	}
@@ -130,7 +133,7 @@ public class HUTraceUtil
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.eventTime(Instant.now())
+				.eventTime(shipmentScheduleQtyPicked.getUpdated().toInstant())
 				.shipmentScheduleId(shipmentScheduleQtyPicked.getM_ShipmentSchedule_ID())
 				.type(HUTraceType.MATERIAL_PICKING)
 				.huId(huId);
@@ -140,14 +143,12 @@ public class HUTraceUtil
 	}
 
 	public static void createdAndAddFor(
-			@NonNull final I_M_HU_Trx_Hdr trxHeader, 
+			@NonNull final I_M_HU_Trx_Hdr trxHeader,
 			@NonNull final Stream<I_M_HU_Trx_Line> trxLines)
 	{
-		final Instant eventTime = Instant.now();
-
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.type(HUTraceType.TRANSFORMATION)
-				.eventTime(eventTime);
+				.eventTime(trxHeader.getUpdated().toInstant());
 
 		final HUTraceRepository huTraceRepository = getHUTraceRepository();
 
@@ -178,25 +179,31 @@ public class HUTraceUtil
 			@NonNull final HUTraceEventBuilder builder,
 			@NonNull final Stream<?> models)
 	{
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		final HUTraceRepository huTraceRepository = getHUTraceRepository();
 
-		final Stream<I_M_HU_Assignment> huAssignments = models
-				.flatMap(model -> huAssignmentDAO.retrieveHUAssignmentsForModel(model).stream());
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final List<Integer> assgnedTopLevelHuIds = huAssignments
+		final Stream<I_M_HU_Assignment> huAssignments = models
+				.flatMap(model ->
+					{
+						return queryBL.createQueryBuilder(I_M_HU_Assignment.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getModelTableId(model))
+								.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, InterfaceWrapperHelper.getId(model))
+								.orderBy().addColumn(I_M_HU_Assignment.COLUMN_M_HU_ID).endOrderBy()
+								.create().stream();
+					});
+
+		final List<Integer> assignedTopLevelHuIds = huAssignments
 				.map(huAssignment -> huAssignment.getM_HU_ID())
 				.sorted()
 				.distinct()
 				.collect(Collectors.toList());
 
-		final Instant eventTime = Instant.now();
-
-		for (final int assgnedTopLevelHuId : assgnedTopLevelHuIds)
+		for (final int assignedTopLevelHuId : assignedTopLevelHuIds)
 		{
 			final HUTraceEvent event = builder
-					.huId(assgnedTopLevelHuId)
-					.eventTime(eventTime)
+					.huId(assignedTopLevelHuId)
 					.build();
 			huTraceRepository.addEvent(event);
 		}

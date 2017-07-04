@@ -45,21 +45,25 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final I_M_HU hu = getRecord(I_M_HU.class);
+		final boolean topLevelOnly = false;
 
 		// write the HU_Assigment related trace
 		{
 			final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-			for (final I_M_InOutLine iol : huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class))
+			final List<I_M_InOutLine> iols = huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class, topLevelOnly);
+			for (final I_M_InOutLine iol : iols)
 			{
 				HUTraceUtil.createdAndAddFor(iol.getM_InOut(), Stream.of(iol));
 			}
 
-			for (final I_M_MovementLine movementLine : huAssignmentDAO.retrieveModelsForHU(hu, I_M_MovementLine.class))
+			final List<I_M_MovementLine> movementLines = huAssignmentDAO.retrieveModelsForHU(hu, I_M_MovementLine.class, topLevelOnly);
+			for (final I_M_MovementLine movementLine : movementLines)
 			{
 				HUTraceUtil.createdAndAddFor(movementLine.getM_Movement(), Stream.of(movementLine));
 			}
 
-			for (final I_PP_Cost_Collector costCollector : huAssignmentDAO.retrieveModelsForHU(hu, I_PP_Cost_Collector.class))
+			final List<I_PP_Cost_Collector> costCollectors = huAssignmentDAO.retrieveModelsForHU(hu, I_PP_Cost_Collector.class, topLevelOnly);
+			for (final I_PP_Cost_Collector costCollector : costCollectors)
 			{
 				HUTraceUtil.createdAndAddFor(costCollector);
 			}

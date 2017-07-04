@@ -1075,7 +1075,9 @@ public class TimeUtil
 		return date == null ? null : new Timestamp(date.getTime());
 	}
 
-	/** @return instant as timestamp or null if the instant is null */
+	/**
+	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
+	 */
 	public static Timestamp asTimestamp(final Instant instant)
 	{
 		if (instant == null)
@@ -1223,5 +1225,4 @@ public class TimeUtil
 		}
 		return dayOfWeek - 1;
 	}
-
 }	// TimeUtil

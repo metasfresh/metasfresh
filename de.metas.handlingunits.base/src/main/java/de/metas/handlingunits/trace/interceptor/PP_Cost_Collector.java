@@ -30,9 +30,8 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_PP_Cost_Collector.class)
-public class PP_CostCollector
+public class PP_Cost_Collector
 {
-
 	@DocValidate(timings =
 		{
 				ModelValidator.TIMING_AFTER_CLOSE,

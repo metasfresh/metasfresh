@@ -146,7 +146,9 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
 
-		//
+		// #484 HU tracing
+		engine.addModelValidator(new de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor(), client);
+		
 		// M_Package integration
 		engine.addModelValidator(new M_ShippingPackage(), client);
 
