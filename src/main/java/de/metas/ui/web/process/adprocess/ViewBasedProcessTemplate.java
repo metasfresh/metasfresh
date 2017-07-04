@@ -47,7 +47,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /**
  * An {@link JavaProcess} implementation template to be used by processes which are called from views.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -97,7 +97,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	}
 
 	@Override
-	protected final void init(IProcessPreconditionsContext context)
+	protected final void init(final IProcessPreconditionsContext context)
 	{
 		super.init(context);
 
@@ -107,7 +107,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	}
 
 	@Override
-	protected void loadParametersFromContext(boolean failIfNotValid)
+	protected void loadParametersFromContext(final boolean failIfNotValid)
 	{
 		super.loadParametersFromContext(failIfNotValid);
 
@@ -138,6 +138,12 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _view;
 	}
 
+	protected final void invalidateView()
+	{
+		final IView view = getView();
+		viewsRepo.invalidateView(view.getViewId());
+	}
+
 	protected final DocumentIdsSelection getSelectedDocumentIds()
 	{
 		Check.assumeNotNull(_selectedDocumentIds, "View loaded");
@@ -151,7 +157,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final DocumentId documentId = selectedDocumentIds.getSingleDocumentId();
 		return getView().getById(documentId);
 	}
-	
+
 	protected static <T extends IViewRow> ProcessPreconditionsResolution checkRowsEligible(final Stream<T> rows, final Predicate<T> isEligible)
 	{
 		final MutableInt countNotEligible = MutableInt.zero();
