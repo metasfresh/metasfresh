@@ -97,12 +97,6 @@ Since we now work with a range, we now declare the dependencies here where range
 			<artifactId>de.metas.edi.esb.camel</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>de.metas.document.archive.esb</groupId>
-			<artifactId>de.metas.document.archive.esb.camel</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
 		<!--
 			gh #968 https://github.com/metasfresh/metasfresh/issues/968
 			We need to declare theses dependencies so that the version:update-property can update the *.version properties
