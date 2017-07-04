@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Now also translating the static element properly for Sidelist menu.
   * [#957](https://github.com/metasfresh/metasfresh-webui-frontend/issues/957) Sidelist toolips: Remaining translations for static messages not in Frontend
     * Additional i18n of static elements in WebUI Frontend.
+  * [#959](https://github.com/metasfresh/metasfresh-webui-frontend/issues/959) Modal Overlay not translated although captions exists
+    * Adding the Translation Functionality for statis elements in Modal Overlays.
 
 ## Fixes
 * metasfresh-app
