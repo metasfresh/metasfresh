@@ -603,10 +603,8 @@ export function getZoomIntoWindow(entity, windowId, docId, tabId, rowId, field){
 
 export function createProcess(processType, viewId, type, ids, tabId, rowId) {
     let pid = null;
-    let processInBackground = 0;
     return (dispatch) => {
         dispatch(setProcessPending());
-        processInBackground++;
 
         return getProcessData(
             processType, viewId, type, ids, tabId, rowId
@@ -616,46 +614,29 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
             pid = response.data.pinstanceId;
 
             if (Object.keys(preparedData).length === 0) {
-                processInBackground++;
                 startProcess(processType, pid).then(response => {
-                    processInBackground>0 && processInBackground--;
-                    if(processInBackground === 0) {
-                        dispatch(setProcessSaved());
-                    }
+                    dispatch(setProcessSaved());
                     dispatch(handleProcessResponse(response, processType, pid));
                 }).catch(err => {
-                    processInBackground>0 && processInBackground--;
-                    if(processInBackground === 0) {
-                        dispatch(setProcessSaved());
-                    }
+                    dispatch(setProcessSaved());
                     throw err;
                 });
                 throw new Error('close_modal');
             }else{
                 dispatch(initDataSuccess(preparedData, 'modal'));
-                processInBackground++;
                 initLayout('process', processType).then(response => {
                     const preparedLayout = Object.assign({}, response.data, {
                         pinstanceId: pid
                     })
-                    processInBackground>0 && processInBackground--;
-                    if(processInBackground === 0) {
-                        dispatch(setProcessSaved());
-                    }
+                    dispatch(setProcessSaved());
                     return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                 }).catch(err => {
-                    processInBackground>0 && processInBackground--;
-                    if(processInBackground === 0) {
-                        dispatch(setProcessSaved());
-                    }
+                    dispatch(setProcessSaved());
                     throw err;
                 });
             }
         }).catch(err => {
-            processInBackground>0 && processInBackground--;
-            if(processInBackground === 0) {
-                dispatch(setProcessSaved());
-            }
+            dispatch(setProcessSaved());
             throw err;
         });
     }
