@@ -14,7 +14,7 @@ public class X_AD_Table_Process extends org.compiere.model.PO implements I_AD_Ta
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -458683545L;
+	private static final long serialVersionUID = -387188529L;
 
     /** Standard Constructor */
     public X_AD_Table_Process (Properties ctx, int AD_Table_Process_ID, String trxName)
@@ -25,10 +25,8 @@ public class X_AD_Table_Process extends org.compiere.model.PO implements I_AD_Ta
 			setAD_Process_ID (0);
 			setAD_Table_ID (0);
 			setEntityType (null);
-			setWEBUI_QuickAction (false);
-// N
-			setWEBUI_QuickAction_Default (false);
-// N
+			setWEBUI_QuickAction (false); // N
+			setWEBUI_QuickAction_Default (false); // N
         } */
     }
 
@@ -116,6 +114,43 @@ public class X_AD_Table_Process extends org.compiere.model.PO implements I_AD_Ta
 	public int getAD_Table_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Window getAD_Window() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
+	}
+
+	@Override
+	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
+	}
+
+	/** Set Fenster.
+		@param AD_Window_ID 
+		Eingabe- oder Anzeige-Fenster
+	  */
+	@Override
+	public void setAD_Window_ID (int AD_Window_ID)
+	{
+		if (AD_Window_ID < 1) 
+			set_Value (COLUMNNAME_AD_Window_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
+	}
+
+	/** Get Fenster.
+		@return Eingabe- oder Anzeige-Fenster
+	  */
+	@Override
+	public int getAD_Window_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
