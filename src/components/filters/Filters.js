@@ -4,7 +4,6 @@ import {push} from 'react-router-redux';
 import counterpart from 'counterpart';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
-import FiltersStatic from './FiltersStatic';
 
 class Filters extends Component {
     constructor(props) {
