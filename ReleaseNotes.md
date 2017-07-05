@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
   * [#1949](https://github.com/metasfresh/metasfresh/issues/1949) Add Inventory Valuation Report to WebUI menu
     * Adding the Inventory Valuation Report to WebUI.
+  * [#1951](https://github.com/metasfresh/metasfresh/issues/1951) Window for Swiss ESR Payment Import in WebUI
+    * New window for the Swiss ESR Payment Import in WebUI.
     
 * metasfresh-webui-api
   * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
