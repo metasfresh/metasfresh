@@ -2,7 +2,9 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
@@ -192,8 +194,11 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 
 	private List<Integer> retrieveHUsToReverse()
 	{
+		// gh #1955: prevent an OutOfMemoryError
+		final IQueryFilter<I_M_HU> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
 		return Services.get(IQueryBL.class).createQueryBuilder(I_M_HU.class, this)
-				.filter(getProcessInfo().getQueryFilter())
+				.filter(processFilter)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.listIds();
