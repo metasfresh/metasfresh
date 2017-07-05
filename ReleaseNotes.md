@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Adding the Inventory Valuation Report to WebUI.
   * [#1951](https://github.com/metasfresh/metasfresh/issues/1951) Window for Swiss ESR Payment Import in WebUI
     * New window for the Swiss ESR Payment Import in WebUI.
+  * [#1954](https://github.com/metasfresh/metasfresh/issues/1954) Different adjustments for Contract Window in WebUI
+    * New Window in WebUI for Contract Maintenance.
     
 * metasfresh-webui-api
   * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
