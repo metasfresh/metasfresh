@@ -1,7 +1,7 @@
 
 -- 2017-07-03T16:51:37.532
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540803,'Y','de.metas.handlingunits.trace.process.M_HU_Trace_CreateForHU','N',TO_TIMESTAMP('2017-07-03 16:51:37','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','N','N','N','N','N','N','Y',0,'NAchverfolgunsdatensätze für HU erstellen','N','Y','Java',TO_TIMESTAMP('2017-07-03 16:51:37','YYYY-MM-DD HH24:MI:SS'),100,'M_HU_Trace_CreateForHU')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsOneInstanceOnly,IsReport,IsServerProcess,IsUseBPartnerLanguage,LockWaitTimeout,Name,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('7',0,0,540803,'Y','de.metas.handlingunits.trace.process.M_HU_Trace_CreateForHU','N',TO_TIMESTAMP('2017-07-03 16:51:37','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','N','N','N','N','N','N','Y',0,'Nachverfolgunsdatensätze für HU erstellen','N','Y','Java',TO_TIMESTAMP('2017-07-03 16:51:37','YYYY-MM-DD HH24:MI:SS'),100,'M_HU_Trace_CreateForHU')
 ;
 
 -- 2017-07-03T16:51:37.539

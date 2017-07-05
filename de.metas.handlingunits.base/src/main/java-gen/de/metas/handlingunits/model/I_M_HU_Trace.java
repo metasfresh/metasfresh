@@ -251,33 +251,6 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Quell-HU.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_HU_Source_ID (int M_HU_Source_ID);
-
-	/**
-	 * Get Quell-HU.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_HU_Source_ID();
-
-	public de.metas.handlingunits.model.I_M_HU getM_HU_Source();
-
-	public void setM_HU_Source(de.metas.handlingunits.model.I_M_HU M_HU_Source);
-
-    /** Column definition for M_HU_Source_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_Source_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Trace.class, "M_HU_Source_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_Source_ID */
-    public static final String COLUMNNAME_M_HU_Source_ID = "M_HU_Source_ID";
-
-	/**
 	 * Set Rückverfolgbarkeit.
 	 *
 	 * <br>Type: ID
@@ -413,33 +386,6 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
-	 * Set Produktionsauftrag.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setPP_Order_ID (int PP_Order_ID);
-
-	/**
-	 * Get Produktionsauftrag.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getPP_Order_ID();
-
-	public org.eevolution.model.I_PP_Order getPP_Order();
-
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
-
-    /** Column definition for PP_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.eevolution.model.I_PP_Order>(I_M_HU_Trace.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_ID */
-    public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
-
-	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *
@@ -468,4 +414,58 @@ public interface I_M_HU_Trace
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_AD_User>(I_M_HU_Trace.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set CU Handling Unit (VHU).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setVHU_ID (int VHU_ID);
+
+	/**
+	 * Get CU Handling Unit (VHU).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getVHU_ID();
+
+	public de.metas.handlingunits.model.I_M_HU getVHU();
+
+	public void setVHU(de.metas.handlingunits.model.I_M_HU VHU);
+
+    /** Column definition for VHU_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.handlingunits.model.I_M_HU> COLUMN_VHU_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Trace.class, "VHU_ID", de.metas.handlingunits.model.I_M_HU.class);
+    /** Column name VHU_ID */
+    public static final String COLUMNNAME_VHU_ID = "VHU_ID";
+
+	/**
+	 * Set Ursprungs-VHU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setVHU_Source_ID (int VHU_Source_ID);
+
+	/**
+	 * Get Ursprungs-VHU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getVHU_Source_ID();
+
+	public de.metas.handlingunits.model.I_M_HU getVHU_Source();
+
+	public void setVHU_Source(de.metas.handlingunits.model.I_M_HU VHU_Source);
+
+    /** Column definition for VHU_Source_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.handlingunits.model.I_M_HU> COLUMN_VHU_Source_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Trace.class, "VHU_Source_ID", de.metas.handlingunits.model.I_M_HU.class);
+    /** Column name VHU_Source_ID */
+    public static final String COLUMNNAME_VHU_Source_ID = "VHU_Source_ID";
 }

@@ -5,11 +5,12 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.trace.HUTraceUtil;
+import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
 import de.metas.inout.IInOutDAO;
 import lombok.NonNull;
 
@@ -50,6 +51,8 @@ public class M_InOut
 	public void addTraceEvent(@NonNull final I_M_InOut inOut)
 	{
 		final List<I_M_InOutLine> iols = Services.get(IInOutDAO.class).retrieveLines(inOut);
-		HUTraceUtil.createdAndAddFor(inOut, iols.stream());
+		
+		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		huTraceEventsCreateAndAdd.createdAndAddFor(inOut, iols);
 	}
 }

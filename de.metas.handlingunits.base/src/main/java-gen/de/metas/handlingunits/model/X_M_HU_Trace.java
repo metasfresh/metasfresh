@@ -14,7 +14,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1082261784L;
+	private static final long serialVersionUID = 301461451L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 			setHUTraceType (null);
 			setM_HU_ID (0);
 			setM_HU_Trace_ID (0);
+			setVHU_ID (0);
         } */
     }
 
@@ -135,7 +136,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	@Override
 	public void setEventTime (java.sql.Timestamp EventTime)
 	{
-		set_Value (COLUMNNAME_EventTime, EventTime);
+		set_ValueNoCheck (COLUMNNAME_EventTime, EventTime);
 	}
 
 	/** Get Zeitpunkt.
@@ -211,40 +212,6 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public int getM_HU_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getM_HU_Source() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_HU_Source_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setM_HU_Source(de.metas.handlingunits.model.I_M_HU M_HU_Source)
-	{
-		set_ValueFromPO(COLUMNNAME_M_HU_Source_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU_Source);
-	}
-
-	/** Set Quell-HU.
-		@param M_HU_Source_ID Quell-HU	  */
-	@Override
-	public void setM_HU_Source_ID (int M_HU_Source_ID)
-	{
-		if (M_HU_Source_ID < 1) 
-			set_Value (COLUMNNAME_M_HU_Source_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_HU_Source_ID, Integer.valueOf(M_HU_Source_ID));
-	}
-
-	/** Get Quell-HU.
-		@return Quell-HU	  */
-	@Override
-	public int getM_HU_Source_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Source_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -415,34 +382,68 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	public de.metas.handlingunits.model.I_M_HU getVHU() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+		return get_ValueAsPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class);
 	}
 
 	@Override
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	public void setVHU(de.metas.handlingunits.model.I_M_HU VHU)
 	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+		set_ValueFromPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class, VHU);
 	}
 
-	/** Set Produktionsauftrag.
-		@param PP_Order_ID Produktionsauftrag	  */
+	/** Set CU Handling Unit (VHU).
+		@param VHU_ID CU Handling Unit (VHU)	  */
 	@Override
-	public void setPP_Order_ID (int PP_Order_ID)
+	public void setVHU_ID (int VHU_ID)
 	{
-		if (PP_Order_ID < 1) 
-			set_Value (COLUMNNAME_PP_Order_ID, null);
+		if (VHU_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_VHU_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_VHU_ID, Integer.valueOf(VHU_ID));
 	}
 
-	/** Get Produktionsauftrag.
-		@return Produktionsauftrag	  */
+	/** Get CU Handling Unit (VHU).
+		@return CU Handling Unit (VHU)	  */
 	@Override
-	public int getPP_Order_ID () 
+	public int getVHU_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_VHU_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getVHU_Source() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_VHU_Source_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setVHU_Source(de.metas.handlingunits.model.I_M_HU VHU_Source)
+	{
+		set_ValueFromPO(COLUMNNAME_VHU_Source_ID, de.metas.handlingunits.model.I_M_HU.class, VHU_Source);
+	}
+
+	/** Set Ursprungs-VHU.
+		@param VHU_Source_ID Ursprungs-VHU	  */
+	@Override
+	public void setVHU_Source_ID (int VHU_Source_ID)
+	{
+		if (VHU_Source_ID < 1) 
+			set_Value (COLUMNNAME_VHU_Source_ID, null);
+		else 
+			set_Value (COLUMNNAME_VHU_Source_ID, Integer.valueOf(VHU_Source_ID));
+	}
+
+	/** Get Ursprungs-VHU.
+		@return Ursprungs-VHU	  */
+	@Override
+	public int getVHU_Source_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_VHU_Source_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

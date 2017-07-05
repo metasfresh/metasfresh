@@ -38,20 +38,23 @@ public class HUTraceSpecification
 		BACKWARD, FORWARD, NONE
 	}
 
-	final int huId;
-
-	final int huSourceId;
-	
-	final Instant eventTime;
-	
-	final int inOutId;
-	
-	final int shipmentScheduleId;
-	
-	final int movementId;
-	
-	final int costCollectorId;
-	
 	@NonNull
 	RecursionMode recursionMode;
+
+	final int vhuId;
+
+	final int topLevelHuId;
+
+	final int vhuSourceId;
+
+	final Instant eventTime;
+
+	final int inOutId;
+
+	final int shipmentScheduleId;
+
+	final int movementId;
+
+	final int costCollectorId;
+
 }

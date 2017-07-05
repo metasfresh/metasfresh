@@ -2,10 +2,11 @@ package de.metas.handlingunits.trace.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.trace.HUTraceUtil;
+import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
 import lombok.NonNull;
 
 /*
@@ -44,6 +45,7 @@ public class PP_Cost_Collector
 		}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_PP_Cost_Collector costCollector)
 	{
-		HUTraceUtil.createdAndAddFor(costCollector);
+		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		huTraceEventsCreateAndAdd.createdAndAddFor(costCollector);
 	}
 }

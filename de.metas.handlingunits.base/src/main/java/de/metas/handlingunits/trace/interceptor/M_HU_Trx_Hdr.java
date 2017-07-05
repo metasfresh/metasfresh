@@ -5,12 +5,13 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.trace.HUTraceUtil;
+import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
 import lombok.NonNull;
 
 /*
@@ -51,8 +52,9 @@ public class M_HU_Trx_Hdr
 		}
 
 		final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
-
 		final List<I_M_HU_Trx_Line> huTrxLines = huTrxDAO.retrieveTrxLines(huTrxHeader);
-		HUTraceUtil.createdAndAddFor(huTrxHeader, huTrxLines.stream());
+		
+		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		huTraceEventsCreateAndAdd.createdAndAddFor(huTrxHeader, huTrxLines.stream());
 	}
 }

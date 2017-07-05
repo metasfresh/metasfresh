@@ -2,10 +2,11 @@ package de.metas.handlingunits.trace.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.trace.HUTraceUtil;
+import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
 import lombok.NonNull;
 
 /*
@@ -41,5 +42,7 @@ public class M_ShipmentSchedule_QtyPicked
 		})
 	public void addTraceEvent(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
-HUTraceUtil.createdAndAddFor(shipmentScheduleQtyPicked);	}
+		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		huTraceEventsCreateAndAdd.createdAndAddFor(shipmentScheduleQtyPicked);
+	}
 }

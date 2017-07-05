@@ -4,8 +4,11 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MovementLine;
+
+import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUTrxDAO;
@@ -14,7 +17,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.trace.HUTraceUtil;
+import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
 import de.metas.process.JavaProcess;
 
 /*
@@ -47,25 +50,27 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 		final I_M_HU hu = getRecord(I_M_HU.class);
 		final boolean topLevelOnly = false;
 
+		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+
 		// write the HU_Assigment related trace
 		{
 			final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 			final List<I_M_InOutLine> iols = huAssignmentDAO.retrieveModelsForHU(hu, I_M_InOutLine.class, topLevelOnly);
 			for (final I_M_InOutLine iol : iols)
 			{
-				HUTraceUtil.createdAndAddFor(iol.getM_InOut(), Stream.of(iol));
+				huTraceEventsCreateAndAdd.createdAndAddFor(iol.getM_InOut(), ImmutableList.of(iol));
 			}
 
 			final List<I_M_MovementLine> movementLines = huAssignmentDAO.retrieveModelsForHU(hu, I_M_MovementLine.class, topLevelOnly);
 			for (final I_M_MovementLine movementLine : movementLines)
 			{
-				HUTraceUtil.createdAndAddFor(movementLine.getM_Movement(), Stream.of(movementLine));
+				huTraceEventsCreateAndAdd.createdAndAddFor(movementLine.getM_Movement(), ImmutableList.of(movementLine));
 			}
 
 			final List<I_PP_Cost_Collector> costCollectors = huAssignmentDAO.retrieveModelsForHU(hu, I_PP_Cost_Collector.class, topLevelOnly);
 			for (final I_PP_Cost_Collector costCollector : costCollectors)
 			{
-				HUTraceUtil.createdAndAddFor(costCollector);
+				huTraceEventsCreateAndAdd.createdAndAddFor(costCollector);
 			}
 		}
 
@@ -73,15 +78,15 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 		final List<I_M_ShipmentSchedule_QtyPicked> schedsQtyPicked = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 		for (final I_M_ShipmentSchedule_QtyPicked schedQtyPicked : schedsQtyPicked)
 		{
-			HUTraceUtil.createdAndAddFor(schedQtyPicked);
+			huTraceEventsCreateAndAdd.createdAndAddFor(schedQtyPicked);
 		}
 
 		final List<I_M_HU_Trx_Line> huTrxLines = Services.get(IHUTrxDAO.class).retrieveReferencingTrxLinesForHU(hu);
-		for(final I_M_HU_Trx_Line huTrxLine:huTrxLines)
+		for (final I_M_HU_Trx_Line huTrxLine : huTrxLines)
 		{
-			HUTraceUtil.createdAndAddFor(huTrxLine.getM_HU_Trx_Hdr(), Stream.of(huTrxLine));
+			huTraceEventsCreateAndAdd.createdAndAddFor(huTrxLine.getM_HU_Trx_Hdr(), Stream.of(huTrxLine));
 		}
-		
+
 		return MSG_OK;
 	}
 

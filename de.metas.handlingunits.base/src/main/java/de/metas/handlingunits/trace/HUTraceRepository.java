@@ -15,12 +15,14 @@ import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -47,36 +49,45 @@ import lombok.NonNull;
 @Service
 public class HUTraceRepository
 {
+	private static final Logger logger = LogManager.getLogger(HUTraceRepository.class);
+
 	/**
-	 * Persists the given event. 
-	 * If an event with the same {@code huId} and {@code eventTime} was already persisted earlier
+	 * Persists the given event.
+	 * If an event with the same {@code vhuId} and {@code eventTime} was already persisted earlier
 	 * then that record is loaded and updated according to the given {@code huTraceEvent}.
 	 * 
 	 * @param huTraceEvent
+	 * @return {@code true} if a new record was inserted, {@code false} if an existing one was updated.
 	 */
-	public void addEvent(@NonNull final HUTraceEvent huTraceEvent)
+	public boolean addEvent(@NonNull final HUTraceEvent huTraceEvent)
 	{
 		final HUTraceSpecification query = HUTraceSpecification.builder()
-				.huId(huTraceEvent.getHuId())
+				.vhuId(huTraceEvent.getVhuId())
 				.eventTime(huTraceEvent.getEventTime())
 				.recursionMode(RecursionMode.NONE)
 				.build();
 
 		final I_M_HU_Trace dbRecord;
 		final List<I_M_HU_Trace> existingDbRecords = queryDbRecord(query);
-		if (existingDbRecords.isEmpty())
+		final boolean inserted = existingDbRecords.isEmpty();
+		if (inserted)
 		{
 			dbRecord = newInstance(I_M_HU_Trace.class);
+			logger.info("Found no existing M_HU_Trace record; creating new one; query={}", query);
 		}
 		else
 		{
 			Check.errorIf(existingDbRecords.size() > 1,
 					"Expected only one M_HU_Trace record for the given query, but found {}; query={}, M_HU_Trace records={}",
 					existingDbRecords.size(), query, existingDbRecords);
+
 			dbRecord = existingDbRecords.get(0);
+			logger.info("Found no exiting M_HU_Trace record; updating it; query={}; record={}", query, dbRecord);
 		}
 		copyToDbRecord(huTraceEvent, dbRecord);
 		save(dbRecord);
+
+		return inserted;
 	}
 
 	public List<HUTraceEvent> query(@NonNull final HUTraceSpecification query)
@@ -107,14 +118,19 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_EventTime, eventTime);
 			emptySpec = false;
 		}
-		if (query.getHuId() > 0)
+		if (query.getVhuId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_ID, query.getHuId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuId());
 			emptySpec = false;
 		}
-		if (query.getHuSourceId() > 0)
+		if (query.getVhuSourceId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Source_ID, query.getHuSourceId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, query.getVhuSourceId());
+			emptySpec = false;
+		}
+		if (query.getTopLevelHuId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_ID, query.getTopLevelHuId());
 			emptySpec = false;
 		}
 		if (query.getInOutId() > 0)
@@ -129,7 +145,7 @@ public class HUTraceRepository
 		}
 		if (query.getCostCollectorId() > 0)
 		{
-			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getCostCollectorId());
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Cost_Collector_ID, query.getCostCollectorId());
 			emptySpec = false;
 		}
 		if (query.getShipmentScheduleId() > 0)
@@ -161,44 +177,44 @@ public class HUTraceRepository
 				break;
 			case BACKWARD:
 				// recurse and add the records whose M_HU_IDs show up as M_HU_Source_IDs in the records we already loaded
-				final List<Integer> huSourceIDs = nonRecursiveList.stream()
-						.map(dbRecord -> dbRecord.getM_HU_Source_ID())
-						.filter(huSourceId -> huSourceId > 0)
+				final List<Integer> vhuSourceIDs = nonRecursiveList.stream()
+						.map(dbRecord -> dbRecord.getVHU_Source_ID())
+						.filter(vhuSourceId -> vhuSourceId > 0)
 						.sorted()
 						.distinct()
 						.collect(Collectors.toList());
-				for (final int huSourceId : huSourceIDs)
+				for (final int vhuSourceId : vhuSourceIDs)
 				{
 					result.addAll(queryDbRecord(HUTraceSpecification.builder()
-							.huId(huSourceId)
+							.vhuId(vhuSourceId)
 							.recursionMode(RecursionMode.BACKWARD)
 							.build()));
 				}
 				break;
 			case FORWARD:
-				final List<Integer> huIDs = nonRecursiveList.stream()
-						.map(dbRecord -> dbRecord.getM_HU_ID())
+				final List<Integer> vhuIDs = nonRecursiveList.stream()
+						.map(dbRecord -> dbRecord.getVHU_ID())
 						.sorted()
 						.distinct()
 						.collect(Collectors.toList());
-				for (final int huId : huIDs)
+				for (final int vhuId : vhuIDs)
 				{
 					// get the records where our M_HU_IDs are the M_HU_Source_IDs
 					final List<I_M_HU_Trace> directFollowupRecords = queryDbRecord(HUTraceSpecification.builder()
-							.huSourceId(huId)
+							.vhuSourceId(vhuId)
 							.recursionMode(RecursionMode.NONE)
 							.build());
-					final List<Integer> directFollowupHuIDs = directFollowupRecords.stream()
-							.map(directFollowupRecord -> directFollowupRecord.getM_HU_ID())
+					final List<Integer> directFollowupVhuIDs = directFollowupRecords.stream()
+							.map(directFollowupRecord -> directFollowupRecord.getVHU_ID())
 							.sorted()
 							.distinct()
 							.collect(Collectors.toList());
 
 					// and now expand on those direct follow ups
-					for (final int directFollowupHuID : directFollowupHuIDs)
+					for (final int directFollowupVhuID : directFollowupVhuIDs)
 					{
 						result.addAll(queryDbRecord(HUTraceSpecification.builder()
-								.huId(directFollowupHuID)
+								.vhuId(directFollowupVhuID)
 								.recursionMode(RecursionMode.FORWARD)
 								.build()));
 					} ;
@@ -217,8 +233,9 @@ public class HUTraceRepository
 				.docTypeId(dbRecord.getC_DocType_ID())
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant())
-				.huId(dbRecord.getM_HU_ID())
-				.huSourceId(dbRecord.getM_HU_Source_ID())
+				.vhuId(dbRecord.getVHU_ID())
+				.topLevelHuId(dbRecord.getM_HU_ID())
+				.vhuSourceId(dbRecord.getVHU_Source_ID())
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
@@ -232,8 +249,9 @@ public class HUTraceRepository
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
-		dbRecord.setM_HU_ID(huTraceRecord.getHuId());
-		dbRecord.setM_HU_Source_ID(huTraceRecord.getHuSourceId());
+		dbRecord.setVHU_ID(huTraceRecord.getVhuId());
+		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId());
+		dbRecord.setVHU_Source_ID(huTraceRecord.getVhuSourceId());
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
 		dbRecord.setM_ShipmentSchedule_ID(huTraceRecord.getShipmentScheduleId());

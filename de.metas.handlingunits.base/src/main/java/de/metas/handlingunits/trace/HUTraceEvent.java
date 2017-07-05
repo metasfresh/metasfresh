@@ -33,9 +33,15 @@ import lombok.experimental.Wither;
 @Wither
 public class HUTraceEvent
 {
+	/**
+	 * The topmost HU as seen from the vhu.
+	 */
 	@NonNull
-	final Integer huId;
+	final Integer topLevelHuId;
 
+	@NonNull
+	final Integer vhuId;
+	
 	@NonNull
 	final Instant eventTime;
 
@@ -50,7 +56,7 @@ public class HUTraceEvent
 
 	final int costCollectorId;
 
-	final int huSourceId;
+	final int vhuSourceId;
 
 	final String docStatus;
 
