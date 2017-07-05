@@ -262,12 +262,7 @@ class DocumentList extends Component {
         const {viewId} = this.state;
 
         deleteStaticFilter(windowType, viewId, filterId).then(response => {
-            this.setState({
-                data: response.data,
-                viewId: response.data.viewId
-            })
-            // console.log(response.data.viewId);
-            // dispatch(push('/window/' + windowType + '/' + response.data.viewId));
+            dispatch(push('/window/' + windowType + '?viewId=' + response.data.viewId));
         });
     }
 
