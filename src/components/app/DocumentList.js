@@ -463,11 +463,11 @@ class DocumentList extends Component {
             dispatch
         } = this.props;
 
-        showIncludedView && this.setState({
+        this.setState({
             isShowIncluded: showIncludedView ? true : false,
             hasShowIncluded: showIncludedView ? true : false
         }, ()=> {
-            dispatch(setListIncludedView(data.windowId, data.viewId));
+            showIncludedView && dispatch(setListIncludedView(data.windowId, data.viewId));
         });
     }
 
