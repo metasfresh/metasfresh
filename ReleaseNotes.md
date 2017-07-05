@@ -112,7 +112,8 @@ Here come the actual release notes:
     * Fixes a minor Bug in Material Receipt automatic Label printing, that occured when the Receipt was already split into a lot of individual Handling Units.
   * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
     * Fixes an Out of Memory issue that sometime occurred in the Picking Terminal of the Swing Client.
-
+  * [#1955](https://github.com/metasfresh/metasfresh/issues/1955) memory issues due to default process filter being "true"
+  
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
     * Adding the Key Field to WebUI KPI Translation Window.

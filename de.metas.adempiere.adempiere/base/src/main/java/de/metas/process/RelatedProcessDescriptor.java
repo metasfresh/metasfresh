@@ -109,7 +109,7 @@ public final class RelatedProcessDescriptor
 
 		public Builder windowId(final int adWindowId)
 		{
-			windowId = adWindowId;
+			windowId = adWindowId > 0 ? adWindowId : 0;
 			return this;
 		}
 
