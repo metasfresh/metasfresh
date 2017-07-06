@@ -404,27 +404,18 @@ export function patch(
         let responsed = false;
 
         dispatch(indicatorState('pending'));
-        let time = 0
-        let timeoutLoop = () => {
-            setTimeout(function() {
-                time = 999;
-                if (responsed) {
-                    dispatch(indicatorState('saved'));
-                } else {
-                    timeoutLoop();
-                }
-            }, time);
-        }
-        timeoutLoop();
 
         return patchRequest(
             entity, windowType, id, tabId, rowId, property, value, null, null,
             isAdvanced
         ).then(response => {
             responsed = true;
+
             dispatch(mapDataToState(
                 response.data, isModal, rowId, id, windowType, isAdvanced
             ));
+
+            dispatch(indicatorState('saved'));
         }).catch(() => {
             getData(
                 entity, windowType, id, tabId, rowId, null, null, isAdvanced
