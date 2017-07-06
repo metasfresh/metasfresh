@@ -17,8 +17,13 @@ export function sendEmail(emailId){
 
 export function addAttachment(emailId, file){
     console.log(file);
-    return axios.post(config.API_URL + '/mail/' + emailId + '/field/attachments', {
-        "emailId": emailId,
-        "file": file
-    });
+    let data = new FormData();
+
+    data.append('file', file);
+
+    return axios.post(config.API_URL + '/mail/' + emailId + '/field/attachments', data);
+}
+
+export function getEmail(emailId){
+    return axios.get(config.API_URL + '/mail/' + emailId);
 }

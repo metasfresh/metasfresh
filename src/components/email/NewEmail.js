@@ -15,7 +15,8 @@ import {
 
 import {
     createEmail,
-    sendEmail
+    sendEmail,
+    getEmail
 } from '../../actions/EmailActions';
 
 class NewEmail extends Component {
@@ -39,6 +40,16 @@ class NewEmail extends Component {
         }).catch(err => {
             handleCloseEmail();
         })
+    }
+
+    getEmail = (emailId) => {
+        getEmail(emailId).then(res => {
+            this.setState({
+                init: true,
+                ...res.data,
+                cached: res.data
+            })
+        });
     }
     
     change = (prop, value) => {
@@ -129,7 +140,9 @@ class NewEmail extends Component {
                         />
                     </div>
                     <div className="panel-email-footer">
-                        <Attachments {...{attachments, emailId}} />
+                        <Attachments
+                            getEmail={this.getEmail}
+                            {...{attachments, emailId}} />
                         <button
                             onClick={this.send}
                             className="btn btn-meta-success btn-sm btn-submit"

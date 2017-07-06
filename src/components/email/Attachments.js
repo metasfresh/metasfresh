@@ -12,8 +12,10 @@ class Attachments extends Component {
     }
 
     addAttachment=(e)=> {
-        const{emailId} = this.props;
-        addAttachment(emailId, e.target.files[0]);
+        const{emailId, getEmail} = this.props;
+        addAttachment(emailId, e.target.files[0]).then(res=>{
+            getEmail(emailId);
+        });
         console.log('Selected file:', e.target.files[0]);
     }
 
@@ -41,7 +43,6 @@ class Attachments extends Component {
                     <span 
                         className="add-attachment"
                     >
-                    
                     <form>
                         <i className="meta-icon-attachments"/>
                         <FileInput name="myImage"
@@ -50,8 +51,6 @@ class Attachments extends Component {
                             onChange={this.addAttachment}
                         />
                     </form>
-                        
-                        
                     </span>
                 </div>
             </div>
