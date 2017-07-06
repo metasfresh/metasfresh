@@ -317,6 +317,7 @@ class TablePagination extends Component {
                         }
                         handleNextPage={() => handleChangePage('up')}
                         handlePrevPage={() => handleChangePage('down')}
+                        pages={pages}
                     />
                 }
             </div>
