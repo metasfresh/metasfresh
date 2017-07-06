@@ -22,6 +22,10 @@ Here come the actual release notes:
     * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
   * [#1949](https://github.com/metasfresh/metasfresh/issues/1949) Add Inventory Valuation Report to WebUI menu
     * Adding the Inventory Valuation Report to WebUI.
+  * [#1951](https://github.com/metasfresh/metasfresh/issues/1951) Window for Swiss ESR Payment Import in WebUI
+    * New window for the Swiss ESR Payment Import in WebUI.
+  * [#1954](https://github.com/metasfresh/metasfresh/issues/1954) Different adjustments for Contract Window in WebUI
+    * New Window in WebUI for Contract Maintenance.
     
 * metasfresh-webui-api
   * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
@@ -47,6 +51,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#971](https://github.com/metasfresh/metasfresh-webui-frontend/issues/971) Page Up and Page Down load all data even if there is only one page
+    * Thanks [robertup](https://github.com/robertup)
 
 # metasfresh 5.16 (2017-27)
 
@@ -112,7 +118,8 @@ Here come the actual release notes:
     * Fixes a minor Bug in Material Receipt automatic Label printing, that occured when the Receipt was already split into a lot of individual Handling Units.
   * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
     * Fixes an Out of Memory issue that sometime occurred in the Picking Terminal of the Swing Client.
-
+  * [#1955](https://github.com/metasfresh/metasfresh/issues/1955) memory issues due to default process filter being "true"
+  
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
     * Adding the Key Field to WebUI KPI Translation Window.
