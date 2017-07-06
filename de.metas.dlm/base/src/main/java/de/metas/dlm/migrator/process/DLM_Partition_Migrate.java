@@ -2,7 +2,9 @@ package de.metas.dlm.migrator.process;
 
 import java.util.Iterator;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
@@ -57,12 +59,15 @@ public class DLM_Partition_Migrate extends JavaProcess
 
 		final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 
+		// gh #1955: prevent an OutOfMemoryError
+		final IQueryFilter<I_DLM_Partition> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
 		final Iterator<I_DLM_Partition> partitionsToMigrate = queryBL.createQueryBuilder(I_DLM_Partition.class, this)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_DLM_Partition.COLUMN_Target_DLM_Level, null)
 				.addNotEqualsFilter(I_DLM_Partition.COLUMN_Target_DLM_Level, IMigratorService.DLM_Level_NOT_SET)
 				.addNotEqualsFilter(I_DLM_Partition.COLUMN_Target_DLM_Level, ModelColumnNameValue.forColumn(I_DLM_Partition.COLUMN_Current_DLM_Level))
-				.filter(getProcessInfo().getQueryFilter())
+				.filter(processFilter)
 
 				.orderBy().addColumn(I_DLM_Partition.COLUMNNAME_DLM_Partition_ID).endOrderBy()
 				.create()
