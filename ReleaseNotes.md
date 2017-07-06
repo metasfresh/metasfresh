@@ -51,6 +51,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#971](https://github.com/metasfresh/metasfresh-webui-frontend/issues/971) Page Up and Page Down load all data even if there is only one page
+    * Thanks [robertup](https://github.com/robertup)
 
 # metasfresh 5.16 (2017-27)
 
