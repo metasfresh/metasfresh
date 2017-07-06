@@ -170,7 +170,7 @@ class Subheader extends Component {
                 onClick={() => {handleEmail(); closeSubheader()}}
             >
                 <i className="meta-icon-message" />
-                Email
+                {counterpart.translate('window.email.caption')}
             </div>
         ]
 

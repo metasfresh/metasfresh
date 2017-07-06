@@ -11,7 +11,7 @@
 .panel-email-header {
     display: flex;
     flex-flow: row wrap;
-    height: 50px;
+    min-height: 50px;
     align-items: center;
     justify-content: space-between;
     padding-left: 20px;
@@ -76,6 +76,15 @@
     position: absolute;
     bottom: 100%;
     left: 0;
+}
+
+.add-attachment > form > div {
+    display: inline-block;
+}
+
+.attachment-input:last-child {
+    z-index: 0 !important;
+    border: none;
 }
 
 @media (max-width: $breakpoint-md){

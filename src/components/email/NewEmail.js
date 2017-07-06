@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {connect} from 'react-redux';
+import counterpart from 'counterpart';
 
 import Attachments from './Attachments';
 import AutocompleteTo from './AutocompleteTo';
@@ -74,8 +75,10 @@ class NewEmail extends Component {
     render() {
         const {handleCloseEmail, windowId, docId} = this.props;
         const {
-            suggestions, tags, init, attachments, emailId, subject, message
+            suggestions, tags, init, attachments, emailId, subject, message, to
         } = this.state;
+
+        console.log(this.state);
         
         if(!init) return false;
         
@@ -84,7 +87,7 @@ class NewEmail extends Component {
                 <div className="panel panel-modal panel-email panel-modal-primary">
                     <div className="panel-email-header-wrapper">
                         <div className="panel-email-header panel-email-header-top">
-                            New message
+                            {counterpart.translate('window.email.new')}
                             <div
                                 className="input-icon input-icon-lg"
                                 onClick={handleCloseEmail}
@@ -95,15 +98,15 @@ class NewEmail extends Component {
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span>To:</span>
+                                <span>{counterpart.translate('window.email.to')}:</span>
                                 <AutocompleteTo
-                                    {...{windowId, docId, emailId}}
+                                    {...{windowId, docId, emailId, to}}
                                 />
                             </div>
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span>Topic:</span>
+                                <span>{counterpart.translate('window.email.topic')}:</span>
                                 <input
                                     className="email-input email-input-msg"
                                     type="text"
@@ -126,12 +129,12 @@ class NewEmail extends Component {
                         />
                     </div>
                     <div className="panel-email-footer">
-                        <Attachments {...{attachments}} />
+                        <Attachments {...{attachments, emailId}} />
                         <button
                             onClick={this.send}
                             className="btn btn-meta-success btn-sm btn-submit"
                         >
-                            Send
+                            {counterpart.translate('window.email.send')}
                         </button>
                     </div>
                 </div>
