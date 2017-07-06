@@ -20,12 +20,22 @@ Here come the actual release notes:
     * New Window for Quality Insprection Conference (Swiss Produce of Storage Vegetables) maintenance in WebUI.
   * [#1933](https://github.com/metasfresh/metasfresh/issues/1933) Menu Translations for Language en_US
     * Translations for all Menu entries and window Names for WebUI Menu for Language en_US.
+  * [#1949](https://github.com/metasfresh/metasfresh/issues/1949) Add Inventory Valuation Report to WebUI menu
+    * Adding the Inventory Valuation Report to WebUI.
+  * [#1951](https://github.com/metasfresh/metasfresh/issues/1951) Window for Swiss ESR Payment Import in WebUI
+    * New window for the Swiss ESR Payment Import in WebUI.
+  * [#1954](https://github.com/metasfresh/metasfresh/issues/1954) Different adjustments for Contract Window in WebUI
+    * New Window in WebUI for Contract Maintenance.
     
 * metasfresh-webui-api
   * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
     * A New Functionality in WebUI Frontend, when zooming-to Fields that are empty and have null value. In theses cases the corresponding Windows open with a "new" action.
 
 * metasfresh-webui-frontend
+  * [#918](https://github.com/metasfresh/metasfresh-webui-frontend/issues/918) Keyboard Shortcuts for Done, Apply, Start and Cancel
+    * New Keyboard Shortcuts added for Done, Apply and Cancel Actions.
+  * [#919](https://github.com/metasfresh/metasfresh-webui-frontend/issues/919) Keyboard shortcut for Quickaction dropdown
+    * New Keyboard Shortcuts added for the Quickaction dropdown.
   * [#941](https://github.com/metasfresh/metasfresh-webui-frontend/issues/941) grid view: show one text for top level rows
     * New Functionality to show grouping Information in Tree View which can be different to the infomraiton in tree nodes/ leafs.
   * [#956](https://github.com/metasfresh/metasfresh-webui-frontend/issues/956) Caption Translation not working for Sidelist Menu
@@ -53,6 +63,7 @@ Here come the actual release notes:
   * [#1896](https://github.com/metasfresh/metasfresh/issues/1896) Overhaul the Product Planning window and subtabs
     * Adjusting the Product Planning Window to our current Layout Concept.
   * [#1903](https://github.com/metasfresh/metasfresh/issues/1903) Support camt.054.001.04 explicitly
+    * Adding the Support of Sepa camt.054 import for Swiss ESR Payments which will replace v11 Forman in Beginning of 2018.
   * [#1909](https://github.com/metasfresh/metasfresh/issues/1909) Translate Open/ Close Edit Mode for Windows
     * German Translation of the Window Edit Mode Caption. First time used in Unser Dashboard Customizer Action Menue Entry.
   * [#1919](https://github.com/metasfresh/metasfresh/issues/1919) Additional static element Translations
@@ -65,11 +76,15 @@ Here come the actual release notes:
     
 * metasfresh-webui-api
   * [#485](https://github.com/metasfresh/metasfresh-webui-api/issues/485) backend: refactor sticky filters
+    * Refactoring of sticky Filters in webUI API, allowing to set the active Filters more precicely.
   * [#486](https://github.com/metasfresh/metasfresh-webui-api/issues/486) dashboard: support "position" when PATCHing a dashboard item
+    * Additional support for Dasboard KPI now allowing to set the precise position when moving the KPI Widgets.
   * [#469](https://github.com/metasfresh/metasfresh-webui-api/issues/469) Picking prototype (v2)
+    * First increment of the Picking Window. Still Prototype at the moment, not to be used in live environments yet.
 
 * metasfresh-webui-frontend
   * [#905](https://github.com/metasfresh/metasfresh-webui-frontend/issues/905) Add/ Remove KPI Widget functionality for User Dashboard
+    * New Frontend Functionality to add and remove KPI widgets in the User Dashboard.
   * [#920](https://github.com/metasfresh/metasfresh-webui-frontend/issues/920) Improvement of Breadcrumb Navigation Dropdown entries
     * Adjustment of the content in the Breadcrumb Navigation, now only showing the leaf entries of the selected Breadcrumb Hierarchy.
   * [#922](https://github.com/metasfresh/metasfresh-webui-frontend/issues/922) Language switch does not update static elements
@@ -81,9 +96,11 @@ Here come the actual release notes:
   * [#935](https://github.com/metasfresh/metasfresh-webui-frontend/issues/935) Image widget: show uploading indicator
     * Now showing an uploading/ processing Indicator to the user durcing the upload of a User image. The Indicator is shown when the image will be shown.
   * [#944](https://github.com/metasfresh/metasfresh-webui-frontend/issues/944) Show the metasfresh logo centered when there are no KPIs
-    * Centering the metasfresh Logo thats shown when the User/ KPI Dashboard remains empty without added KPI Cards.
+    * Centering the metasfresh Logo that's shown when the User/ KPI Dashboard remains empty without added KPI Cards.
   * [#945](https://github.com/metasfresh/metasfresh-webui-frontend/issues/945) dashboard: react to websocket notifications
+    * New functionality for User Dashboard, now reacting to websocket Notifications. If the Dashboard it changed on other User Browser then the Dashboard is updated also for other opened Browser Tabs.
   * [#949](https://github.com/metasfresh/metasfresh-webui-frontend/issues/949) Board: adding a card as last is not user friendly
+    * Implementation of a user friendly behavior when adding Cards to the new Kanban Board.
   * [#950](https://github.com/metasfresh/metasfresh-webui-frontend/issues/950) Dashboard: move the "Open edit mode" button to Actions menu
     * New Action for Dashboard >Edit mode. Allows the user to toggle between Edit and Live Mode of the User/ KPI Dashboard.
   * [#964](https://github.com/metasfresh/metasfresh-webui-frontend/issues/964) again: Editing in the middle of a text field makes the cursor jump to the end
@@ -92,23 +109,32 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#1869](https://github.com/metasfresh/metasfresh/issues/1869) Customer Returns for HU more than 1 Document
+    * Fixes a Bug that created too many Customer return Documents when the initial Handling Unit was already created in a Material Receipt.
   * [#1875](https://github.com/metasfresh/metasfresh/issues/1875) New Order Control Report cut off left/ cut off right
+    * Adjustments done to the new Order Conrol report, now resizing the margins left and right to avoid cutting off information.
   * [#1905](https://github.com/metasfresh/metasfresh/issues/1905) "Wareneingangsetikett LU (Jasper)" prints >200 pages
+    * Fixes a minor Bug in Material Receipt automatic Label printing, that occured when the Receipt was already split into a lot of individual Handling Units.
   * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
-
+    * Fixes an Out of Memory issue that sometime occurred in the Picking Terminal of the Swing Client.
+  * [#1955](https://github.com/metasfresh/metasfresh/issues/1955) memory issues due to default process filter being "true"
+  
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
     * Adding the Key Field to WebUI KPI Translation Window.
   * [#481](https://github.com/metasfresh/metasfresh-webui-api/issues/481) Sticky empty Filter in modal overlay.
+    * Getting rid of the empfty Sticky Filter when opening a modal overlay.
   * [#482](https://github.com/metasfresh/metasfresh-webui-api/issues/482) No Role Error for new User
+    * Fixes a caching Bug that occurred when adding a new User, without a role and trying to login. After the "No Role exists" error occured it was not possible for the user to login anymore.
 
 * metasfresh-webui-frontend
   * [#921](https://github.com/metasfresh/metasfresh-webui-frontend/issues/921) Browser issue: Window Bookmark Header
     * The jumping linebreak effect for Window headers in Action Menu is now solved in Chrome Browser.
   * [#923](https://github.com/metasfresh/metasfresh-webui-frontend/issues/923) Packageables window: up/down arrows are working weird
+    * Fixes the Keyboard Navigaiton in Picking Terminal Window for WebUI.
   * [#931](https://github.com/metasfresh/metasfresh-webui-frontend/issues/931) Notifications are not refreshed when the language is changed
-    * Now the Notifications are alos shown in the correct language after switching the language in User settings.
-  * [#933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/933) Disable quick actions button while running the action (v2)
+    * Now the Notifications are alss shown in the correct language after switching the language in User settings.
+  * [#933](https://github.com/metasfresh/metasfresh-webui-frontend/issues/933) Disable quick action button while running the action (v2)
+    * Disabling the Quick Action Buttons while an action is already running, to avoid multiple starts and inconsistencies.
   * [#951](https://github.com/metasfresh/metasfresh-webui-frontend/issues/951) Frontend is broken (showstopper)
     * Fixes a Bug that raises exceptions after login and prevented the usage of Action Menu.
 
