@@ -55,6 +55,6 @@ public class M_HU_Trx_Hdr
 		final List<I_M_HU_Trx_Line> huTrxLines = huTrxDAO.retrieveTrxLines(huTrxHeader);
 		
 		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
-		huTraceEventsCreateAndAdd.createdAndAddFor(huTrxHeader, huTrxLines.stream());
+		huTraceEventsCreateAndAdd.createAndAddFor(huTrxHeader, huTrxLines.stream());
 	}
 }

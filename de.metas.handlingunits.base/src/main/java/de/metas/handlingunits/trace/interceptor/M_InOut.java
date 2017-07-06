@@ -53,6 +53,6 @@ public class M_InOut
 		final List<I_M_InOutLine> iols = Services.get(IInOutDAO.class).retrieveLines(inOut);
 		
 		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
-		huTraceEventsCreateAndAdd.createdAndAddFor(inOut, iols);
+		huTraceEventsCreateAndAdd.createAndAddFor(inOut, iols);
 	}
 }

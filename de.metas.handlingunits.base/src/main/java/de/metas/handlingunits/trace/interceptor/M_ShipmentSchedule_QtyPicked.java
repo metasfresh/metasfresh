@@ -43,6 +43,6 @@ public class M_ShipmentSchedule_QtyPicked
 	public void addTraceEvent(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
 		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
-		huTraceEventsCreateAndAdd.createdAndAddFor(shipmentScheduleQtyPicked);
+		huTraceEventsCreateAndAdd.createAndAddFor(shipmentScheduleQtyPicked);
 	}
 }

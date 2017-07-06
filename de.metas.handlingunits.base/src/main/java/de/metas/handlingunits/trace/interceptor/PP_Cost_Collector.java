@@ -46,6 +46,6 @@ public class PP_Cost_Collector
 	public void addTraceEvent(@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
-		huTraceEventsCreateAndAdd.createdAndAddFor(costCollector);
+		huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
 	}
 }

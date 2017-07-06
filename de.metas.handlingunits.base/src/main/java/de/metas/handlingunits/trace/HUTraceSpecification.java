@@ -28,6 +28,19 @@ import lombok.experimental.Wither;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * Used to pass to {@link HUTraceRepository#query(HUTraceSpecification)} to retrieve {@link HUTraceEvent}s.
+ * 
+ * This class has the properties that {@link HUTraceEvent} has, but the following differences:
+ * <ul>
+ * <li>none of those properties is mandatory, all may be {@code null}
+ * <li>there is the mandatory {@link RecursionMode}
+ * </ul>
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Data
 @Builder
 @Wither
@@ -41,13 +54,17 @@ public class HUTraceSpecification
 	@NonNull
 	RecursionMode recursionMode;
 
+	final HUTraceType type;
+
+	final Instant eventTime;
+
 	final int vhuId;
 
+	final String vhuStatus;
+	
 	final int topLevelHuId;
 
 	final int vhuSourceId;
-
-	final Instant eventTime;
 
 	final int inOutId;
 
@@ -56,5 +73,12 @@ public class HUTraceSpecification
 	final int movementId;
 
 	final int costCollectorId;
+	
+	final int ppOrderId;
+	
+	final String docStatus;
 
+	final int docTypeId;
+	
+	final int huTrxLineId;
 }

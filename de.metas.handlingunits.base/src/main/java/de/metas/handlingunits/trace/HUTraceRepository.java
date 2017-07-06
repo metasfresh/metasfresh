@@ -53,19 +53,15 @@ public class HUTraceRepository
 
 	/**
 	 * Persists the given event.
-	 * If an event with the same {@code vhuId} and {@code eventTime} was already persisted earlier
-	 * then that record is loaded and updated according to the given {@code huTraceEvent}.
+	 * If an event with the same properties was already persisted earlier
+	 * then that record is loaded and logger, but nothing more is done.
 	 * 
 	 * @param huTraceEvent
 	 * @return {@code true} if a new record was inserted, {@code false} if an existing one was updated.
 	 */
 	public boolean addEvent(@NonNull final HUTraceEvent huTraceEvent)
 	{
-		final HUTraceSpecification query = HUTraceSpecification.builder()
-				.vhuId(huTraceEvent.getVhuId())
-				.eventTime(huTraceEvent.getEventTime())
-				.recursionMode(RecursionMode.NONE)
-				.build();
+		final HUTraceSpecification query = huTraceEvent.asQuery();
 
 		final I_M_HU_Trace dbRecord;
 		final List<I_M_HU_Trace> existingDbRecords = queryDbRecord(query);
@@ -74,6 +70,9 @@ public class HUTraceRepository
 		{
 			dbRecord = newInstance(I_M_HU_Trace.class);
 			logger.info("Found no existing M_HU_Trace record; creating new one; query={}", query);
+
+			copyToDbRecord(huTraceEvent, dbRecord);
+			save(dbRecord);
 		}
 		else
 		{
@@ -82,10 +81,8 @@ public class HUTraceRepository
 					existingDbRecords.size(), query, existingDbRecords);
 
 			dbRecord = existingDbRecords.get(0);
-			logger.info("Found no exiting M_HU_Trace record; updating it; query={}; record={}", query, dbRecord);
+			logger.info("Found exiting M_HU_Trace record; nothing to do; query={}; record={}", query, dbRecord);
 		}
-		copyToDbRecord(huTraceEvent, dbRecord);
-		save(dbRecord);
 
 		return inserted;
 	}
@@ -123,6 +120,11 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuId());
 			emptySpec = false;
 		}
+		if (!Check.isEmpty(query.getVhuStatus()))
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHUStatus, query.getVhuStatus());
+			emptySpec = false;
+		}
 		if (query.getVhuSourceId() > 0)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_Source_ID, query.getVhuSourceId());
@@ -148,9 +150,29 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Cost_Collector_ID, query.getCostCollectorId());
 			emptySpec = false;
 		}
+		if (query.getPpOrderId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_PP_Order_ID, query.getPpOrderId());
+			emptySpec = false;
+		}
 		if (query.getShipmentScheduleId() > 0)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_ShipmentSchedule_ID, query.getShipmentScheduleId());
+			emptySpec = false;
+		}
+		if (query.getDocTypeId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId());
+			emptySpec = false;
+		}
+		if (!Check.isEmpty(query.getDocStatus()))
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_DocStatus, query.getDocStatus());
+			emptySpec = false;
+		}
+		if (query.getHuTrxLineId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 			emptySpec = false;
 		}
 
@@ -167,7 +189,7 @@ public class HUTraceRepository
 		// use the tree set to make sure we have no duplicates
 		final Set<I_M_HU_Trace> result = new TreeSet<I_M_HU_Trace>(ModelByIdComparator.instance);
 
-		// no matter which recursion mode, we can always add the recrods we already have
+		// no matter which recursion mode, we can always add the records we already have
 		result.addAll(nonRecursiveList);
 
 		switch (query.getRecursionMode())
@@ -230,10 +252,13 @@ public class HUTraceRepository
 	{
 		return HUTraceEvent.builder()
 				.costCollectorId(dbRecord.getPP_Cost_Collector_ID())
+				.ppOrderId(dbRecord.getPP_Order_ID())
 				.docTypeId(dbRecord.getC_DocType_ID())
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant())
 				.vhuId(dbRecord.getVHU_ID())
+				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
+				.vhuStatus(dbRecord.getVHUStatus())
 				.topLevelHuId(dbRecord.getM_HU_ID())
 				.vhuSourceId(dbRecord.getVHU_Source_ID())
 				.inOutId(dbRecord.getM_InOut_ID())
@@ -243,18 +268,23 @@ public class HUTraceRepository
 				.build();
 	}
 
-	private void copyToDbRecord(@NonNull final HUTraceEvent huTraceRecord, @NonNull final I_M_HU_Trace dbRecord)
+	private void copyToDbRecord(
+			@NonNull final HUTraceEvent huTraceRecord,
+			@NonNull final I_M_HU_Trace dbRecord)
 	{
 		dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId());
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
 		dbRecord.setVHU_ID(huTraceRecord.getVhuId());
+		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
+		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
 		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId());
 		dbRecord.setVHU_Source_ID(huTraceRecord.getVhuSourceId());
 		dbRecord.setM_InOut_ID(huTraceRecord.getInOutId());
 		dbRecord.setM_Movement_ID(huTraceRecord.getMovementId());
 		dbRecord.setM_ShipmentSchedule_ID(huTraceRecord.getShipmentScheduleId());
 		dbRecord.setPP_Cost_Collector_ID(huTraceRecord.getCostCollectorId());
+		dbRecord.setPP_Order_ID(huTraceRecord.getPpOrderId());
 	}
 }

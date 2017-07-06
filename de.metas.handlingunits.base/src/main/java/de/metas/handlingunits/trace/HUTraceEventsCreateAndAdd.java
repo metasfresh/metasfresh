@@ -1,7 +1,9 @@
 package de.metas.handlingunits.trace;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -66,11 +68,18 @@ public class HUTraceEventsCreateAndAdd
 
 	}
 
-	public void createdAndAddFor(
+	/**
+	 * Creates one event for the given cost collector and adds it to the {@link HUTraceRepository}.<br>
+	 * The event has no source VHU ID, even in case of a 1:1 PP_Order.
+	 * 
+	 * @param costCollector
+	 */
+	public void createAndAddFor(
 			@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.costCollectorId(costCollector.getPP_Order_ID())
+				.ppOrderId(costCollector.getPP_Order_ID())
 				.docTypeId(costCollector.getC_DocType_ID())
 				.docStatus(costCollector.getDocStatus())
 				.eventTime(costCollector.getMovementDate().toInstant());
@@ -87,7 +96,7 @@ public class HUTraceEventsCreateAndAdd
 		createAndAddEvents(builder, ImmutableList.of(costCollector));
 	}
 
-	public void createdAndAddFor(
+	public void createAndAddFor(
 			@NonNull final I_M_InOut inOut,
 			@NonNull final List<I_M_InOutLine> iols)
 	{
@@ -110,7 +119,7 @@ public class HUTraceEventsCreateAndAdd
 		createAndAddEvents(builder, iols);
 	}
 
-	public void createdAndAddFor(
+	public void createAndAddFor(
 			@NonNull final I_M_Movement movement,
 			@NonNull final List<I_M_MovementLine> movementLines)
 	{
@@ -124,7 +133,7 @@ public class HUTraceEventsCreateAndAdd
 		createAndAddEvents(builder, movementLines);
 	}
 
-	public void createdAndAddFor(
+	public void createAndAddFor(
 			@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
@@ -153,18 +162,18 @@ public class HUTraceEventsCreateAndAdd
 		builder.topLevelHuId(topLevelHuId);
 
 		// the one or more VHU that are assigned
-		final List<Integer> vhuIds;
+		final List<I_M_HU> vhus;
 		if (shipmentScheduleQtyPicked.getVHU_ID() > 0)
 		{
-			vhuIds = ImmutableList.of(shipmentScheduleQtyPicked.getVHU_ID());
+			vhus = ImmutableList.of(shipmentScheduleQtyPicked.getVHU());
 		}
 		else if (shipmentScheduleQtyPicked.getM_TU_HU_ID() > 0)
 		{
-			vhuIds = retrieveVhuIds(shipmentScheduleQtyPicked.getM_TU_HU());
+			vhus = retrieveVhus(shipmentScheduleQtyPicked.getM_TU_HU());
 		}
 		else if (shipmentScheduleQtyPicked.getM_LU_HU_ID() > 0)
 		{
-			vhuIds = retrieveVhuIds(shipmentScheduleQtyPicked.getM_LU_HU());
+			vhus = retrieveVhus(shipmentScheduleQtyPicked.getM_LU_HU());
 		}
 		else
 		{
@@ -172,9 +181,11 @@ public class HUTraceEventsCreateAndAdd
 			return;
 		}
 
-		for (final int vhuId : vhuIds)
+		for (final I_M_HU vhu : vhus)
 		{
-			builder.vhuId(vhuId);
+			builder.vhuId(vhu.getM_HU_ID())
+					.vhuStatus(vhu.getHUStatus());
+
 			huTraceRepository.addEvent(builder.build());
 		}
 	}
@@ -190,7 +201,7 @@ public class HUTraceEventsCreateAndAdd
 	 * @param trxHeader
 	 * @param trxLines
 	 */
-	public void createdAndAddFor(
+	public Map<Boolean, List<HUTraceEvent>> createAndAddFor(
 			@NonNull final I_M_HU_Trx_Hdr trxHeader,
 			@NonNull final Stream<I_M_HU_Trx_Line> trxLines)
 	{
@@ -208,37 +219,51 @@ public class HUTraceEventsCreateAndAdd
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
-		final Function<I_M_HU_Trx_Line, List<Integer>> getVhuIds = huTrxLine ->
+		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine ->
 			{
 				if (huTrxLine.getVHU_Item_ID() > 0)
 				{
-					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU_ID());
+					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
 				}
 				else
 				{
-					return retrieveVhuIds(huTrxLine.getM_HU());
+					return retrieveVhus(huTrxLine.getM_HU());
 				}
 			};
+
+		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
+		result.put(true, new ArrayList<>());
+		result.put(false, new ArrayList<>());
 
 		// iterate the lines and create an every per vhuId and sourceVhuId
 		for (final I_M_HU_Trx_Line trxLine : trxLinesToUse)
 		{
+			builder.huTrxLineId(trxLine.getM_HU_Trx_Line_ID());
+
 			final int topLevelHuId = retrieveTopLevelHuId(trxLine.getM_HU());
 			builder.topLevelHuId(topLevelHuId);
 
-			final List<Integer> vhuIds = getVhuIds.apply(trxLine);
-			for (final int vhuId : vhuIds)
+			final List<I_M_HU> vhus = getVhus.apply(trxLine);
+			for (final I_M_HU vhu : vhus)
 			{
-				builder.vhuId(vhuId);
+				builder.vhuStatus(trxLine.getHUStatus()) // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
+						.vhuId(vhu.getM_HU_ID());
 
-				final List<Integer> sourceVhuIds = getVhuIds.apply(trxLine.getParent_HU_Trx_Line());
-				for (final int soureVhuId : sourceVhuIds)
+				final List<I_M_HU> sourceVhus = getVhus.apply(trxLine.getParent_HU_Trx_Line());
+				for (final I_M_HU sourceVhu : sourceVhus)
 				{
-					builder.vhuSourceId(soureVhuId);
-					huTraceRepository.addEvent(builder.build());
+					if (sourceVhu.getM_HU_ID() != vhu.getM_HU_ID())
+					{
+						builder.vhuSourceId(sourceVhu.getM_HU_ID());
+					}
+					final HUTraceEvent event = builder.build();
+
+					final boolean eventWasInserted = huTraceRepository.addEvent(event);
+					result.get(eventWasInserted).add(event);
 				}
 			}
-		} ;
+		}
+		return result;
 	}
 
 	/**
@@ -273,36 +298,37 @@ public class HUTraceEventsCreateAndAdd
 				builder.topLevelHuId(topLevelHuId);
 				builder.eventTime(huAssignment.getUpdated().toInstant());
 
-				final List<Integer> vhuIds;
+				final List<I_M_HU> vhus;
 				if (huAssignment.getVHU_ID() > 0)
 				{
-					vhuIds = ImmutableList.of(huAssignment.getVHU_ID());
+					vhus = ImmutableList.of(huAssignment.getVHU());
 				}
 				else if (huAssignment.getM_TU_HU_ID() > 0)
 				{
-					vhuIds = retrieveVhuIds(huAssignment.getM_TU_HU());
+					vhus = retrieveVhus(huAssignment.getM_TU_HU());
 				}
 				else if (huAssignment.getM_LU_HU_ID() > 0)
 				{
-					vhuIds = retrieveVhuIds(huAssignment.getM_LU_HU());
+					vhus = retrieveVhus(huAssignment.getM_LU_HU());
 				}
 				else
 				{
-					vhuIds = retrieveVhuIds(huAssignment.getM_HU());
+					vhus = retrieveVhus(huAssignment.getM_HU());
 				}
 
-				for (final int vhuId : vhuIds)
+				for (final I_M_HU vhu : vhus)
 				{
-					builder.vhuId(vhuId);
+					builder.vhuId(vhu.getM_HU_ID());
+					builder.vhuStatus(vhu.getHUStatus());
 					huTraceRepository.addEvent(builder.build());
 				}
 			}
 		}
 	}
 
-	private List<Integer> retrieveVhuIds(@NonNull final I_M_HU hu)
+	private List<I_M_HU> retrieveVhus(@NonNull final I_M_HU hu)
 	{
-		final List<Integer> vhuIds = new ArrayList<>();
+		final List<I_M_HU> vhus = new ArrayList<>();
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		new HUIterator().setEnableStorageIteration(false)
@@ -312,13 +338,13 @@ public class HUTraceEventsCreateAndAdd
 					{
 						if (handlingUnitsBL.isVirtual(currentHu))
 						{
-							vhuIds.add(currentHu.getM_HU_ID());
+							vhus.add(currentHu);
 						}
 						return Result.CONTINUE;
 					}
 				}).iterate(hu);
 
-		return vhuIds;
+		return vhus;
 	}
 
 	private int retrieveTopLevelHuId(@NonNull final I_M_HU hu)

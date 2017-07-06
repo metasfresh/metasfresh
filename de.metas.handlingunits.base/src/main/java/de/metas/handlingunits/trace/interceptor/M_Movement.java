@@ -54,6 +54,6 @@ public class M_Movement
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movement);
 		
 		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
-		huTraceEventsCreateAndAdd.createdAndAddFor(movement, movementLines);
+		huTraceEventsCreateAndAdd.createAndAddFor(movement, movementLines);
 	}
 }

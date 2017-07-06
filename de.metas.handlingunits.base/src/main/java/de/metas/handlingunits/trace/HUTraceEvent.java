@@ -2,6 +2,7 @@ package de.metas.handlingunits.trace;
 
 import java.time.Instant;
 
+import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -33,21 +34,26 @@ import lombok.experimental.Wither;
 @Wither
 public class HUTraceEvent
 {
+	@NonNull
+	final HUTraceType type;
+
+	@NonNull
+	final Instant eventTime;
+
+	@NonNull
+	final Integer vhuId;
+
+	@NonNull
+	final String vhuStatus;
+	
 	/**
 	 * The topmost HU as seen from the vhu.
 	 */
 	@NonNull
 	final Integer topLevelHuId;
 
-	@NonNull
-	final Integer vhuId;
-	
-	@NonNull
-	final Instant eventTime;
+	final int vhuSourceId;
 
-	@NonNull
-	final HUTraceType type;
-	
 	final int inOutId;
 
 	final int shipmentScheduleId;
@@ -56,9 +62,30 @@ public class HUTraceEvent
 
 	final int costCollectorId;
 
-	final int vhuSourceId;
-
+	final int ppOrderId;
+	
 	final String docStatus;
 
 	final int docTypeId;
+
+	final int huTrxLineId;
+	
+	public HUTraceSpecification asQuery()
+	{
+		return new HUTraceSpecification(RecursionMode.NONE,
+				type,
+				eventTime,
+				vhuId,
+				vhuStatus,
+				topLevelHuId,
+				vhuSourceId,
+				inOutId,
+				shipmentScheduleId,
+				movementId,
+				costCollectorId,
+				ppOrderId,
+				docStatus,
+				docTypeId,
+				huTrxLineId);
+	}
 }

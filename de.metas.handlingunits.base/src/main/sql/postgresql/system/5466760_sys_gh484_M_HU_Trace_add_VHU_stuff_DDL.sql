@@ -40,6 +40,37 @@ ALTER TABLE M_HU_Trace ADD CONSTRAINT VHUSource_MHUTrace FOREIGN KEY (VHU_Source
 ;
 
 
+
+-- 2017-07-06T10:29:40.284
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN VHUStatus VARCHAR(2) NOT NULL')
+;
+
+-- 2017-07-06T10:30:07.714
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN M_HU_Trx_Line_ID NUMERIC(10)')
+;
+
+-- 2017-07-06T10:30:07.726
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE M_HU_Trace ADD CONSTRAINT MHUTrxLine_MHUTrace FOREIGN KEY (M_HU_Trx_Line_ID) REFERENCES public.M_HU_Trx_Line DEFERRABLE INITIALLY DEFERRED
+;
+
+
+
+-- 2017-07-06T11:35:36.097
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('m_hu_trace','ALTER TABLE public.M_HU_Trace ADD COLUMN PP_Order_ID NUMERIC(10)')
+;
+
+-- 2017-07-06T11:35:36.125
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE M_HU_Trace ADD CONSTRAINT PPOrder_MHUTrace FOREIGN KEY (PP_Order_ID) REFERENCES public.PP_Order DEFERRABLE INITIALLY DEFERRED
+;
+
+
+
+
 CREATE INDEX IF NOT EXISTS m_hu_trace_vhu_id
    ON m_hu_trace (vhu_id ASC NULLS LAST);
 
@@ -51,6 +82,6 @@ CREATE INDEX IF NOT EXISTS m_hu_trace_vhu_source_id
 
 CREATE INDEX IF NOT EXISTS m_hu_trace_m_inout_id
    ON m_hu_trace (m_inout_id ASC NULLS LAST);
-   
-CREATE INDEX IF NOT EXISTS m_hu_trace_pp_cost_collector_id
-   ON m_hu_trace (pp_cost_collector_id ASC NULLS LAST);
+
+CREATE INDEX IF NOT EXISTS m_hu_trace_pp_order_id
+   ON m_hu_trace (pp_order_id ASC NULLS LAST);

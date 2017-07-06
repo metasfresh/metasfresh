@@ -14,7 +14,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 301461451L;
+	private static final long serialVersionUID = -1826449882L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -27,6 +27,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 			setM_HU_ID (0);
 			setM_HU_Trace_ID (0);
 			setVHU_ID (0);
+			setVHUStatus (null);
         } */
     }
 
@@ -240,6 +241,40 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
+	public de.metas.handlingunits.model.I_M_HU_Trx_Line getM_HU_Trx_Line() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_Trx_Line_ID, de.metas.handlingunits.model.I_M_HU_Trx_Line.class);
+	}
+
+	@Override
+	public void setM_HU_Trx_Line(de.metas.handlingunits.model.I_M_HU_Trx_Line M_HU_Trx_Line)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_Trx_Line_ID, de.metas.handlingunits.model.I_M_HU_Trx_Line.class, M_HU_Trx_Line);
+	}
+
+	/** Set HU-Transaktionszeile.
+		@param M_HU_Trx_Line_ID HU-Transaktionszeile	  */
+	@Override
+	public void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID)
+	{
+		if (M_HU_Trx_Line_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Line_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Line_ID, Integer.valueOf(M_HU_Trx_Line_ID));
+	}
+
+	/** Get HU-Transaktionszeile.
+		@return HU-Transaktionszeile	  */
+	@Override
+	public int getM_HU_Trx_Line_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Trx_Line_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
@@ -382,6 +417,40 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	/** Set Produktionsauftrag.
+		@param PP_Order_ID Produktionsauftrag	  */
+	@Override
+	public void setPP_Order_ID (int PP_Order_ID)
+	{
+		if (PP_Order_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+	}
+
+	/** Get Produktionsauftrag.
+		@return Produktionsauftrag	  */
+	@Override
+	public int getPP_Order_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.handlingunits.model.I_M_HU getVHU() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class);
@@ -447,5 +516,37 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * VHUStatus AD_Reference_ID=540478
+	 * Reference name: HUStatus
+	 */
+	public static final int VHUSTATUS_AD_Reference_ID=540478;
+	/** Planning = P */
+	public static final String VHUSTATUS_Planning = "P";
+	/** Active = A */
+	public static final String VHUSTATUS_Active = "A";
+	/** Destroyed = D */
+	public static final String VHUSTATUS_Destroyed = "D";
+	/** Picked = S */
+	public static final String VHUSTATUS_Picked = "S";
+	/** Shipped = E */
+	public static final String VHUSTATUS_Shipped = "E";
+	/** Set CU (VHU) Gebindestatus.
+		@param VHUStatus CU (VHU) Gebindestatus	  */
+	@Override
+	public void setVHUStatus (java.lang.String VHUStatus)
+	{
+
+		set_ValueNoCheck (COLUMNNAME_VHUStatus, VHUStatus);
+	}
+
+	/** Get CU (VHU) Gebindestatus.
+		@return CU (VHU) Gebindestatus	  */
+	@Override
+	public java.lang.String getVHUStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_VHUStatus);
 	}
 }
