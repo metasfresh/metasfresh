@@ -252,14 +252,16 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        const rowSelected = document.getElementsByClassName('row-selected');
-        if(rowSelected.length > 0){
-            if(typeof idFocused == 'number'){
-                rowSelected[0].children[idFocused].focus();
-            }
-            if(typeof idFocusedDown == 'number'){
-                rowSelected[rowSelected.length-1]
-                    .children[idFocusedDown].focus();
+        if (this.table) {
+            const rowSelected = this.table.getElementsByClassName('row-selected');
+            if(rowSelected.length > 0){
+                if(typeof idFocused == 'number'){
+                    rowSelected[0].children[idFocused].focus();
+                }
+                if(typeof idFocusedDown == 'number'){
+                    rowSelected[rowSelected.length-1]
+                        .children[idFocusedDown].focus();
+                }
             }
         }
     }
