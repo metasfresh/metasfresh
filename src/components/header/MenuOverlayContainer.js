@@ -24,7 +24,6 @@ class MenuOverlayContainer extends Component {
             back, handleMenuOverlay, openModal, showBookmarks, updateData,
             transparentBookmarks, onKeyDown
         } = this.props;
-
         return (
             <div
                 tabIndex={0}
@@ -55,7 +54,7 @@ class MenuOverlayContainer extends Component {
                     />
                 }
 
-                {children && children.map((subitem, subindex) =>
+                {children && (children.length > 0) && children.map((subitem, subindex) =>
                     subitem.children && printChildren ?
                         <MenuOverlayContainer
                             key={subindex}
