@@ -11,17 +11,26 @@ class Attachments extends Component {
         super(props);
     }
 
+    componentDidUpdate(prevProps){
+        const {attachments} = this.props;
+        if(prevProps !== attachments) {
+            this.clearFile();
+        }
+    }
+
     addAttachment=(e)=> {
         const{emailId, getEmail} = this.props;
         addAttachment(emailId, e.target.files[0]).then(res=>{
             getEmail(emailId);
         });
-        console.log('Selected file:', e.target.files[0]);
+    }
+
+    clearFile=()=>{
+        document.getElementsByClassName('attachment-input')[1].value="";
     }
 
     render() {
         const {attachments} = this.props;
-        console.log(attachments);
         return (
             <div className="email-attachments-wrapper">
                 {attachments && attachments.map((item, index) => {
@@ -34,7 +43,7 @@ class Attachments extends Component {
                                 {item[Object.keys(item)[0]] }
                             </div>
                             <div className="input-icon input-icon-lg">
-                                <i className="meta-icon-close-1"/>
+                                {/*<i className="meta-icon-close-1"/>*/}
                             </div>
                         </div>
                     )

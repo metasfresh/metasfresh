@@ -78,6 +78,11 @@
     left: 0;
 }
 
+.add-attachment {
+    display: inline-block;
+    cursor: pointer;
+}
+
 .add-attachment > form > div {
     display: inline-block;
 }
@@ -85,6 +90,39 @@
 .attachment-input:last-child {
     z-index: 0 !important;
     border: none;
+}
+
+.attachment-input {
+    cursor: pointer;
+}
+
+.add-attachment input[type="file"] {
+    cursor: pointer;
+    font-size: 0px;
+    height: 20px;
+}
+
+.add-attachment:hover .attachment-input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  text-decoration: underline;
+}
+.add-attachment:hover .attachment-input::-moz-placeholder { /* Firefox 19+ */
+  text-decoration: underline;
+}
+.add-attachment:hover .attachment-input:-ms-input-placeholder { /* IE 10+ */
+  text-decoration: underline;
+}
+.add-attachment:hover .attachment-input:-moz-placeholder { /* Firefox 18- */
+  text-decoration: underline;
+}
+
+.email-label {
+    min-width: 50px;
+    font-weight: bold;
+}
+
+.icon-email {
+    cursor: pointer;
+    color: $brand-super-light-color;
 }
 
 @media (max-width: $breakpoint-md){

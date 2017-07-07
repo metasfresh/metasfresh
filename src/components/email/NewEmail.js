@@ -88,8 +88,6 @@ class NewEmail extends Component {
         const {
             suggestions, tags, init, attachments, emailId, subject, message, to
         } = this.state;
-
-        console.log(this.state);
         
         if(!init) return false;
         
@@ -100,7 +98,7 @@ class NewEmail extends Component {
                         <div className="panel-email-header panel-email-header-top">
                             {counterpart.translate('window.email.new')}
                             <div
-                                className="input-icon input-icon-lg"
+                                className="input-icon input-icon-lg icon-email"
                                 onClick={handleCloseEmail}
                             >
                                 <i className="meta-icon-close-1"/>
@@ -109,7 +107,7 @@ class NewEmail extends Component {
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span>{counterpart.translate('window.email.to')}:</span>
+                                <span className="email-label">{counterpart.translate('window.email.to')}:</span>
                                 <AutocompleteTo
                                     {...{windowId, docId, emailId, to}}
                                 />
@@ -117,7 +115,7 @@ class NewEmail extends Component {
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span>{counterpart.translate('window.email.topic')}:</span>
+                                <span className="email-label">{counterpart.translate('window.email.topic')}:</span>
                                 <input
                                     className="email-input email-input-msg"
                                     type="text"

@@ -141,6 +141,18 @@ class Subheader extends Component {
                 key={1}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
+                onClick={() => {handleEmail(); closeSubheader()}}
+            >
+                <i className="meta-icon-message" />
+                {counterpart.translate('window.email.caption')}
+                <span className="tooltip-inline">
+                    {keymap.GLOBAL_CONTEXT.OPEN_EMAIL}
+                </span>
+            </div>,
+            <div
+                key={2}
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
                 onClick={() => {
                     handlePrint(windowType, dataId, docNo); closeSubheader()
                 }}
@@ -162,15 +174,6 @@ class Subheader extends Component {
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.DELETE_DOCUMENT}
                 </span>
-            </div>,
-            <div
-                key={4}
-                className="subheader-item js-subheader-item"
-                tabIndex={0}
-                onClick={() => {handleEmail(); closeSubheader()}}
-            >
-                <i className="meta-icon-message" />
-                {counterpart.translate('window.email.caption')}
             </div>
         ]
 

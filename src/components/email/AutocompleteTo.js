@@ -87,7 +87,7 @@ class AutocompleteTo extends Component {
                 className="tagsinput"
                 renderInput={this.autocompleteRenderInput}
                 inputProps={{
-                    placeholder: counterpart.translate('window.email.addemails'),
+                    placeholder: "",
                     className: 'email-input'
                 }}
                 value={tags}

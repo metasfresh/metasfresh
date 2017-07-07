@@ -16,7 +16,6 @@ export function sendEmail(emailId){
 }
 
 export function addAttachment(emailId, file){
-    console.log(file);
     let data = new FormData();
 
     data.append('file', file);

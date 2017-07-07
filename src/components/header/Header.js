@@ -600,6 +600,7 @@ class Header extends Component {
                             windowType, dataId, docNoData.value
                         ) : ''
                     }
+                    handleEmail={this.handleEmail}
                     handleDelete={dataId ? this.handleDelete: ''}
                     redirect={windowType ?
                         () => this.redirect('/window/'+ windowType +'/new') : ''
