@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#1874](https://github.com/metasfresh/metasfresh/issues/1874) Material Receipt multiselect Close Lines
 
 * metasfresh-webui-api
 
