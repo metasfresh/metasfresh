@@ -73,6 +73,7 @@ public final class PickingSlotRow implements IViewRow
 	private final boolean pickingSlotRow;
 	private final int pickingSlotId;
 	private final ITranslatableString pickingSlotCaption;
+	private final LookupValue pickingSlotWarehouse;
 
 	//
 	// HU
@@ -138,6 +139,7 @@ public final class PickingSlotRow implements IViewRow
 		pickingSlotRow = true;
 		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
+		this.pickingSlotWarehouse = pickingSlotWarehouse;
 
 		//
 		// Included rows
@@ -193,6 +195,7 @@ public final class PickingSlotRow implements IViewRow
 		pickingSlotRow = false;
 		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = null;
+		pickingSlotWarehouse = null;
 
 		//
 		// Included rows
@@ -325,6 +328,11 @@ public final class PickingSlotRow implements IViewRow
 	public boolean isHURow()
 	{
 		return !isPickingSlotRow();
+	}
+	
+	public int getPickingSlotWarehouseId()
+	{
+		return pickingSlotWarehouse != null ? pickingSlotWarehouse.getIdAsInt() : -1;
 	}
 
 	//
