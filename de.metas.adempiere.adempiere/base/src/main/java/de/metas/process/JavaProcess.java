@@ -141,13 +141,12 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		final boolean overrideCurrentInstance = false;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
 	}
-	
+
 	public static final IAutoCloseable temporaryChangeCurrentInstanceOverriding(final Object instance)
 	{
 		final boolean overrideCurrentInstance = true;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
 	}
-
 
 	private static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance, final boolean overrideCurrentInstance)
 	{
@@ -219,7 +218,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
 	{
 		Check.assume(this == currentInstance(), "This process shall be the current active instance: {}", this);
-		
+
 		// Initialize process instance state from given process instance info.
 		init(pi);
 
@@ -332,7 +331,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		// Load annotated parameters
 		loadParametersFromContext(false);
 	}
-	
+
 	/**
 	 * Initialize this process from given preconditions context.
 	 * 
@@ -343,7 +342,7 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	@OverridingMethodsMustInvokeSuper
 	protected void init(final IProcessPreconditionsContext context)
 	{
-		// nothing at this level 
+		// nothing at this level
 	}
 
 	/**
@@ -371,11 +370,12 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		//
 		// Iterate all process class info parameters and try to update the corresponding field
 		final IRangeAwareParams source = pi.getParameterAsIParams();
-		parameterInfos.forEach(paramInfo -> {
-			final ArrayKey fieldKey = paramInfo.getFieldKey();
-			final Field processField = processFields.get(fieldKey);
-			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-		});
+		parameterInfos.forEach(paramInfo ->
+			{
+				final ArrayKey fieldKey = paramInfo.getFieldKey();
+				final Field processField = processFields.get(fieldKey);
+				paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
+			});
 	}
 
 	/**
@@ -407,10 +407,11 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		//
 		// Iterate all process class info parameters and try to update the corresponding field
 		final boolean failIfNotValid = false;
-		parameterInfos.forEach(paramInfo -> {
-			final Field processField = processFields.get(paramInfo.getFieldKey());
-			paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
-		});
+		parameterInfos.forEach(paramInfo ->
+			{
+				final Field processField = processFields.get(paramInfo.getFieldKey());
+				paramInfo.loadParameterValue(this, processField, source, failIfNotValid);
+			});
 
 	}
 
@@ -628,7 +629,8 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * <p>
 	 * Here you would implement process preparation business logic (e.g. parameters retrieval).
 	 * <p>
-	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.
+	 * If you want to run this method out of transaction, please annotate it with {@link RunOutOfTrx}. By default, this method is executed in transaction.<br>
+	 * <b>Important:</b> This method is also run out of transaction of only the {@link #doIt()} method is annotated like this.
 	 *
 	 * @throws ProcessCanceledException in case there is a cancel request on prepare
 	 * @throws RuntimeException in case of any failure

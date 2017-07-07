@@ -1,13 +1,25 @@
 package de.metas.inoutcandidate.process;
 
-import org.adempiere.util.Services;
+import java.util.Iterator;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Services;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.util.TrxRunnable;
+
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.RunOutOfTrx;
+import lombok.NonNull;
 
 /**
  * Close receipt schedule line.
@@ -20,33 +32,71 @@ import de.metas.process.IProcessPreconditionsContext;
  */
 public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrecondition
 {
+	private static final String MSG_RECEIPT_SCHEDULES_ALL_CLOSED = "M_ReceiptSchedule_Close.ReceiptSchedulesAllClosed";
+	private static final String MSG_SKIP_CLOSED_1P = "M_ReceiptSchedule_Close.SkipClosed_1P";
+
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if(!context.isSingleSelection())
+		if (context.isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
-		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
 
-		// Make sure receipt schedule is open
-		if (receiptScheduleBL.isClosed(receiptSchedule))
+		// Make sure at least one receipt schedule is open
+		final boolean someSchedsAreStillOpen = context.getSelectedModels(I_M_ReceiptSchedule.class).stream()
+				.anyMatch(receiptSchedule -> !receiptScheduleBL.isClosed(receiptSchedule));
+
+		if (!someSchedsAreStillOpen)
 		{
-			return ProcessPreconditionsResolution.reject("already closed");
+			return ProcessPreconditionsResolution.reject(MSG_RECEIPT_SCHEDULES_ALL_CLOSED);
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final I_M_ReceiptSchedule receiptSchedule = getRecord(I_M_ReceiptSchedule.class);
-		receiptScheduleBL.close(receiptSchedule);
+		final IQueryFilter<I_M_ReceiptSchedule> selectedSchedsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		return MSG_OK;
+		final Iterator<I_M_ReceiptSchedule> scheds = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(selectedSchedsFilter)
+				.create()
+				.iterate(I_M_ReceiptSchedule.class);
+
+		int counter = 0;
+		for (final I_M_ReceiptSchedule receiptSchedule : IteratorUtils.asIterable(scheds))
+		{
+			if (receiptScheduleBL.isClosed(receiptSchedule))
+			{
+				addLog(msgBL.getMsg(getCtx(), MSG_SKIP_CLOSED_1P, new Object[] { receiptSchedule.getM_ReceiptSchedule_ID() }));
+				continue;
+			}
+			closeInTrx(receiptSchedule);
+			counter++;
+		}
+
+		return "@Processed@: " + counter;
+	}
+
+	private void closeInTrx(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		Services.get(ITrxManager.class)
+				.run(new TrxRunnable()
+				{
+					@Override
+					public void run(String localTrxName) throws Exception
+					{
+						InterfaceWrapperHelper.setThreadInheritedTrxName(receiptSchedule);
+						receiptScheduleBL.close(receiptSchedule);
+					}
+				});
 	}
 }
