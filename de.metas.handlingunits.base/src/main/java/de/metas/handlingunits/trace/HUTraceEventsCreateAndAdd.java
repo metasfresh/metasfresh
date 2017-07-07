@@ -78,7 +78,7 @@ public class HUTraceEventsCreateAndAdd
 			@NonNull final I_PP_Cost_Collector costCollector)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.costCollectorId(costCollector.getPP_Order_ID())
+				.costCollectorId(costCollector.getPP_Cost_Collector_ID())
 				.ppOrderId(costCollector.getPP_Order_ID())
 				.docTypeId(costCollector.getC_DocType_ID())
 				.docStatus(costCollector.getDocStatus())
@@ -212,6 +212,7 @@ public class HUTraceEventsCreateAndAdd
 		// filter for the trx lines we actually want to create events from
 		final List<I_M_HU_Trx_Line> trxLinesToUse = trxLines
 				.filter(huTrxLine -> huTrxLine.getM_HU_ID() > 0)
+				.filter(huTrxLine -> huTrxLine.getAD_Table_ID() <= 0) // we only care for "standalone" HU-transactions. for the others, we have other means to trace them  
 				.filter(huTrxLine -> huTrxLine.getQty().signum() > 0)
 				.filter(huTrxLine -> huTrxLine.getParent_HU_Trx_Line_ID() > 0)
 				.filter(huTrxLine -> huTrxLine.getParent_HU_Trx_Line().getM_HU_ID() > 0)
@@ -254,6 +255,7 @@ public class HUTraceEventsCreateAndAdd
 				{
 					if (sourceVhu.getM_HU_ID() != vhu.getM_HU_ID())
 					{
+						// the source-HU might be the same if e.g. only the status was changed
 						builder.vhuSourceId(sourceVhu.getM_HU_ID());
 					}
 					final HUTraceEvent event = builder.build();

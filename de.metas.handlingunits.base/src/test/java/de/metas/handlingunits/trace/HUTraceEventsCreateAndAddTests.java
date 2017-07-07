@@ -49,12 +49,9 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class HUTraceUtilTests
+public class HUTraceEventsCreateAndAddTests
 {
 	private HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd;
-
-	// @Injectable
-	// private HUTraceRepository huTraceRepository;
 
 	@Before
 	public void init()
