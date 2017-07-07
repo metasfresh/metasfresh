@@ -10,6 +10,26 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.18 (2017-29)
+
+**upcoming release for week 2017-29**
+
+## Features
+* metasfresh-app
+
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+
+
+## Fixes
+* metasfresh-app
+
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+  * [#979](https://github.com/metasfresh/metasfresh-webui-frontend/issues/979) Use the Provided Endpoint w/ entry selections for given Breadcrumb
+
 # metasfresh 5.17 (2017-28)
 
 **upcoming release for week 2017-28**
