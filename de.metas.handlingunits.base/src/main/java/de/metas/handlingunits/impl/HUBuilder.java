@@ -128,9 +128,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setM_HU_Item_Parent(final I_M_HU_Item parentItem)
+	public final IHUBuilder setM_HU_Item_Parent(final I_M_HU_Item parentItem)
 	{
 		_parentItem = parentItem;
+		return this;
 	}
 
 	@Override
@@ -146,9 +147,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piip)
+	public IHUBuilder setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piip)
 	{
 		_piip = piip;
+		return this;
 	}
 
 	@Override
@@ -165,10 +167,11 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setHUStatus(final String huStatus)
+	public IHUBuilder setHUStatus(final String huStatus)
 	{
 		Check.assumeNotEmpty(huStatus, "huStatus not empty");
 		_huStatus = huStatus;
+		return this;
 	}
 
 	@Override
@@ -178,12 +181,12 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final IHUBuilder setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		if (lutuConfiguration == null)
 		{
 			_lutuConfiguration = null;
-			return;
+			return this;
 		}
 
 		if (lutuConfiguration.getM_HU_LUTU_Configuration_ID() <= 0)
@@ -197,6 +200,8 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		}
 
 		_lutuConfiguration = lutuConfiguration;
+		
+		return this;
 	}
 
 	@Override
