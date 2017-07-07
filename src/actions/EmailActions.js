@@ -26,3 +26,7 @@ export function addAttachment(emailId, file){
 export function getEmail(emailId){
     return axios.get(config.API_URL + '/mail/' + emailId);
 }
+
+export function getTemplates(){
+    return axios.get(config.API_URL + '/mail/templates');
+}

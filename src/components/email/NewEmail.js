@@ -16,8 +16,11 @@ import {
 import {
     createEmail,
     sendEmail,
-    getEmail
+    getEmail,
+    getTemplates
 } from '../../actions/EmailActions';
+
+import RawList from '../widget/List/RawList'
 
 class NewEmail extends Component {
     constructor(props){
@@ -25,7 +28,14 @@ class NewEmail extends Component {
 
         this.state = {
             init: false,
-            cached: {}
+            cached: {},
+            templates: [{
+                caption: "test 1"
+            },{
+                caption: "test 2"
+            }, {
+                caption: "test 3"
+            }]
         }
     }
     
@@ -37,6 +47,7 @@ class NewEmail extends Component {
                 ...res.data,
                 cached: res.data
             })
+            this.getTemplates();
         }).catch(err => {
             handleCloseEmail();
         })
@@ -50,6 +61,14 @@ class NewEmail extends Component {
                 cached: res.data
             })
         });
+    }
+
+    getTemplates = () => {
+        // getTemplates().then(res => {
+        //     this.setState({
+        //         templates: res.values
+        //     })
+        // });
     }
     
     change = (prop, value) => {
@@ -83,10 +102,15 @@ class NewEmail extends Component {
         });
     }
 
+    handleTemplate=(option)=> {
+        console.log(option);
+    }
+
     render() {
         const {handleCloseEmail, windowId, docId} = this.props;
         const {
-            suggestions, tags, init, attachments, emailId, subject, message, to
+            suggestions, tags, init, attachments, emailId, subject, message, to,
+            templates
         } = this.state;
         
         if(!init) return false;
@@ -97,6 +121,15 @@ class NewEmail extends Component {
                     <div className="panel-email-header-wrapper">
                         <div className="panel-email-header panel-email-header-top">
                             {counterpart.translate('window.email.new')}
+                            <div className="email-templates">
+                                <RawList
+                                    rank="primary"
+                                    list={templates}
+                                    onSelect={option => this.handleTemplate(option)}
+                                    selected={0}
+                                />
+                            </div>
+                            
                             <div
                                 className="input-icon input-icon-lg icon-email"
                                 onClick={handleCloseEmail}
