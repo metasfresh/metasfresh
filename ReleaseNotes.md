@@ -56,8 +56,6 @@ Here come the actual release notes:
 
 # metasfresh 5.16 (2017-27)
 
-**upcoming release for week 2017-27**
-
 ## Features
 * metasfresh-app
   * [#1854](https://github.com/metasfresh/metasfresh/issues/1854) Material Receipt Dispo window sequence OrderedQty CU vs. TU
@@ -75,6 +73,7 @@ Here come the actual release notes:
   * [#1926](https://github.com/metasfresh/metasfresh/issues/1926) Change Column Reference of C_Allotment_ID to search
     * Adjusting the Column Reference of C_Allotment_ID to Search and autocomplete allowing a better searchability for the user with a large amount of selection entries.
   * [#1948](https://github.com/metasfresh/metasfresh/issues/1948) eMail Editor does not open anymore
+    * Fix for the eMail editor that did not open in swing client anymore via Mail icon.
     
 * metasfresh-webui-api
   * [#485](https://github.com/metasfresh/metasfresh-webui-api/issues/485) backend: refactor sticky filters
@@ -119,6 +118,7 @@ Here come the actual release notes:
   * [#1911](https://github.com/metasfresh/metasfresh/issues/1911) memory issue related to swing-client picking terminal
     * Fixes an Out of Memory issue that sometime occurred in the Picking Terminal of the Swing Client.
   * [#1955](https://github.com/metasfresh/metasfresh/issues/1955) memory issues due to default process filter being "true"
+    * Fixes an Out ofd memory issues that occured in a few processes due to default process parameter.
   
 * metasfresh-webui-api
   * [#449](https://github.com/metasfresh/metasfresh-webui-api/issues/449) Key Field Missing in KPI Field Translation Window
