@@ -68,7 +68,6 @@ import lombok.NonNull;
  * #L%
  */
 
-
 /**
  * Creates an {@link ESRStatement} from camt.54-XML data.
  * This implementation assumes the incoming XML to comply with the version <b><code>camt.054.001.06</code></b>.
@@ -150,80 +149,84 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			{
 				return stmtBuilder.ctrlAmount(BigDecimal.ZERO).ctrlQty(BigDecimal.ZERO).build();
 			}
-			final ReportEntry8 ntry = ntfctn.getNtry().get(0);
 
-			final BigDecimal ctrAmount = ntry.getAmt().getValue();
+			BigDecimal ctrAmount = BigDecimal.ZERO;
+			BigDecimal ctrlQty = BigDecimal.ZERO;
 
-			if (ntry.getNtryDtls().isEmpty())
+			for (final ReportEntry8 ntry : ntfctn.getNtry()) // gh #1947: there can be many ntry records
 			{
-				return stmtBuilder.ctrlAmount(ctrAmount).ctrlQty(BigDecimal.ZERO).build();
-			}
-			final EntryDetails7 ntryDtl = ntry.getNtryDtls().get(0);
+				ctrAmount = ctrAmount.add(ntry.getAmt().getValue());
 
-			final BigDecimal ctrlQty = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-
-			for (final EntryTransaction8 txDtls : ntryDtl.getTxDtls())
-			{
-				// get the esr reference string out of the XML tree
-				final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
-						.map(strd -> strd.getCdtrRefInf())
-
-						// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
-						.filter(cdtrRefInf -> cdtrRefInf != null
-								&& cdtrRefInf.getTp() != null
-								&& cdtrRefInf.getTp().getCdOrPrtry() != null
-								&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
-
-						.map(cdtrRefInf -> cdtrRefInf.getRef())
-						.findFirst();
-				Check.errorUnless(esrReferenceNumberString.isPresent(), "Missing ESR creditor reference");
-
-				final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
-				final BigDecimal amountValue;
-
-				// verify that the currency is consistent
-				// TODO: this does not really belong into the loader! move it to the matcher code.
-				if (header.getC_BP_BankAccount_ID() > 0)
+				if (ntry.getNtryDtls().isEmpty())
 				{
-					final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
-					Check.errorUnless(headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()),
-							"Currency {} of C_BP_BankAccount does not match the currency {} of the current xml ntry; C_BP_BankAccount={}",
-							headerCurrencyISO, transactionDetailAmt.getCcy(), header.getC_BP_BankAccount());
+					return stmtBuilder.ctrlAmount(ctrAmount).ctrlQty(BigDecimal.ZERO).build();
 				}
-				// credit-or-debit indicator
-				final String trxType;
-				if (txDtls.getCdtDbtInd() == CreditDebitCode.CRDT)
+				final EntryDetails7 ntryDtl = ntry.getNtryDtls().get(0);
+
+				ctrlQty = ctrlQty.add(new BigDecimal(ntryDtl.getBtch().getNbOfTxs()));
+
+				for (final EntryTransaction8 txDtls : ntryDtl.getTxDtls())
 				{
-					if (ntry.isRvslInd() != null && ntry.isRvslInd())
+					// get the esr reference string out of the XML tree
+					final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
+							.map(strd -> strd.getCdtrRefInf())
+
+							// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
+							.filter(cdtrRefInf -> cdtrRefInf != null
+									&& cdtrRefInf.getTp() != null
+									&& cdtrRefInf.getTp().getCdOrPrtry() != null
+									&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
+
+							.map(cdtrRefInf -> cdtrRefInf.getRef())
+							.findFirst();
+					Check.errorUnless(esrReferenceNumberString.isPresent(), "Missing ESR creditor reference");
+
+					final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
+					final BigDecimal amountValue;
+
+					// verify that the currency is consistent
+					// TODO: this does not really belong into the loader! move it to the matcher code.
+					if (header.getC_BP_BankAccount_ID() > 0)
 					{
-						trxType = ESRConstants.ESRTRXTYPE_ReverseBooking;
-						amountValue = transactionDetailAmt.getValue().negate();
+						final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
+						Check.errorUnless(headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()),
+								"Currency {} of C_BP_BankAccount does not match the currency {} of the current xml ntry; C_BP_BankAccount={}",
+								headerCurrencyISO, transactionDetailAmt.getCcy(), header.getC_BP_BankAccount());
+					}
+					// credit-or-debit indicator
+					final String trxType;
+					if (txDtls.getCdtDbtInd() == CreditDebitCode.CRDT)
+					{
+						if (ntry.isRvslInd() != null && ntry.isRvslInd())
+						{
+							trxType = ESRConstants.ESRTRXTYPE_ReverseBooking;
+							amountValue = transactionDetailAmt.getValue().negate();
+						}
+						else
+						{
+							trxType = ESRConstants.ESRTRXTYPE_CreditMemo;
+							amountValue = transactionDetailAmt.getValue();
+						}
 					}
 					else
 					{
-						trxType = ESRConstants.ESRTRXTYPE_CreditMemo;
-						amountValue = transactionDetailAmt.getValue();
+						// we get charged; currently not supported
+						Check.errorIf(true, "Unsupported cdtDbtInd={}", ntry.getCdtDbtInd());
+						trxType = "???";
+						amountValue = null;
 					}
-				}
-				else
-				{
-					// we get charged; currently not supported
-					Check.errorIf(true, "Unsupported cdtDbtInd={}", ntry.getCdtDbtInd());
-					trxType = "???";
-					amountValue = null;
-				}
 
-				stmtBuilder.transaction(ESRTransaction.builder()
-						.trxType(trxType)
-						.transactionKey(mkTrxKey(ntry))
-						.amount(amountValue)
-						.accountingDate(asTimestamp(ntry.getBookgDt()))
-						.paymentDate(asTimestamp(ntry.getValDt()))
-						.esrParticipantNo(ntry.getNtryRef())
-						.esrReferenceNumber(esrReferenceNumberString.get())
-						.build());
-			}
-
+					stmtBuilder.transaction(ESRTransaction.builder()
+							.trxType(trxType)
+							.transactionKey(mkTrxKey(txDtls))
+							.amount(amountValue)
+							.accountingDate(asTimestamp(ntry.getBookgDt()))
+							.paymentDate(asTimestamp(ntry.getValDt()))
+							.esrParticipantNo(ntry.getNtryRef())
+							.esrReferenceNumber(esrReferenceNumberString.get())
+							.build());
+				}
+			} // for ntry
 			return stmtBuilder
 					.ctrlAmount(ctrAmount)
 					.ctrlQty(ctrlQty)
@@ -268,10 +271,10 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 	}
 
-	private String mkTrxKey(@NonNull final ReportEntry8 ntry)
+	private String mkTrxKey(@NonNull final EntryTransaction8 txDtls)
 	{
 		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
-		JAXB.marshal(ntry, transactionKey);
+		JAXB.marshal(txDtls, transactionKey);
 		try
 		{
 			return transactionKey.toString("UTF-8");

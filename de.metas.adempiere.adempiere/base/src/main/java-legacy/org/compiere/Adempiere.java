@@ -174,7 +174,6 @@ public class Adempiere
 			throw new IllegalStateException("springApplicationContext not configured yet");
 		}
 
-		System.out.println("Trying to fetch " + requiredType);
 		return springApplicationContext.getBean(requiredType);
 	}
 

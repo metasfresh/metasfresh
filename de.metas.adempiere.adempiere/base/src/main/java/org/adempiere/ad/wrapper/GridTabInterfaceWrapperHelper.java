@@ -248,6 +248,12 @@ public class GridTabInterfaceWrapperHelper extends AbstractInterfaceWrapperHelpe
 		{
 			return null;
 		}
+		
+		if(model instanceof GridTab)
+		{
+			final GridTab gridTab = (GridTab)model;
+			return GridTabWrapper.getPO(Env.getCtx(), gridTab);
+		}
 
 		final GridTabWrapper wrapper = GridTabWrapper.getWrapper(model);
 		if (wrapper == null)

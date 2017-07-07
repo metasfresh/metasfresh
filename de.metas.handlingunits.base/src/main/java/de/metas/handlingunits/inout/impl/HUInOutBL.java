@@ -26,7 +26,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -259,12 +261,12 @@ public class HUInOutBL implements IHUInOutBL
 				.create();
 	}
 
-	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(final I_M_InOut manualCustomerReturn, final Collection<I_M_HU> hus)
+	public List<I_M_InOut> updateManualCustomerReturnInOutForHUs(final I_M_InOut manualCustomerReturn,final Map<Integer, List<I_M_HU>> lineToHus)
 	{
 		Check.assume(isCustomerReturn(manualCustomerReturn), " {0} not a customer return", manualCustomerReturn);
 
 		return ManualCustomerReturnInOutProducer.newInstance()
-				.addHUsToReturn(hus)
+				.addLineToHUs(lineToHus)
 				.setManualCustomerReturn(manualCustomerReturn)
 				.create();
 	}
@@ -369,6 +371,7 @@ public class HUInOutBL implements IHUInOutBL
 			throw new AdempiereException(" No customer return lines found");
 		}
 
+		final Map<Integer, List<I_M_HU>> lineToHus = new HashMap<>();
 		//
 		// Create HU generator
 
@@ -377,12 +380,16 @@ public class HUInOutBL implements IHUInOutBL
 		{
 			final CustomerReturnLineHUGenerator huGenerator = CustomerReturnLineHUGenerator.newInstance(ctxAware);
 			huGenerator.addM_InOutLine(customerReturnLine);
-			hus.addAll(huGenerator.generate());
+			
+			final List<I_M_HU> currentHUs = huGenerator.generate();
+			hus.addAll(currentHUs);
+			
+			lineToHus.put(customerReturnLine.getM_InOutLine_ID(), currentHUs);
 		}
 
 		moveHUsForCustomerReturn(ctxAware.getCtx(), hus);
 
-		updateManualCustomerReturnInOutForHUs(customerReturn, hus);
+		updateManualCustomerReturnInOutForHUs(customerReturn, lineToHus);
 
 		return hus;
 	}

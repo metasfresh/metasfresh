@@ -2,8 +2,10 @@ package de.metas.dlm.coordinator.process;
 
 import java.util.Iterator;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
@@ -68,11 +70,14 @@ public class DLM_Partition_Inspect extends JavaProcess
 				.addEqualsFilter(I_DLM_Partition.COLUMN_DateNextInspection, null)
 				.addCompareFilter(I_DLM_Partition.COLUMN_DateNextInspection, Operator.LESS_OR_EQUAL, SystemTime.asTimestamp());
 
+		// gh #1955: prevent an OutOfMemoryError
+		final IQueryFilter<I_DLM_Partition> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
 		final Iterator<I_DLM_Partition> partitionsToInspect = queryBL
 				.createQueryBuilder(I_DLM_Partition.class, this)
 				.addOnlyActiveRecordsFilter()
 				.filter(dateNextInspectionFilter)
-				.filter(getProcessInfo().getQueryFilter())
+				.filter(processFilter)
 
 				.orderBy().addColumn(I_DLM_Partition.COLUMN_DLM_Partition_ID).endOrderBy()
 				.create()
