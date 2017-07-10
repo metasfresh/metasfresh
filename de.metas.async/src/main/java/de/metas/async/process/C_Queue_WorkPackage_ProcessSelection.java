@@ -2,6 +2,7 @@ package de.metas.async.process;
 
 import java.util.Iterator;
 
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -65,11 +66,14 @@ public class C_Queue_WorkPackage_ProcessSelection extends JavaProcess
 		// acquire one overall lock for all the workpackages that we are going to process
 		final String lockName = "AD_PInstance_ID=" + getAD_PInstance_ID() + "_" + C_Queue_WorkPackage_ProcessSelection.class.getSimpleName();
 
+		// gh #1955: prevent an OutOfMemoryError
+		final IQueryFilter<I_C_Queue_WorkPackage> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
 		final ILockCommand logCommand = lockManager.lock()
 				.setAutoCleanup(true)
 				.setOwner(LockOwner.forOwnerName(lockName)) // don't use LockOwner.NONE; we need the owner for lockManager.getLockedByFilter
 				.setFailIfAlreadyLocked(false)
-				.setSetRecordsByFilter(I_C_Queue_WorkPackage.class, getProcessInfo().getQueryFilter());
+				.setSetRecordsByFilter(I_C_Queue_WorkPackage.class, processFilter);
 
 		try (final ILockAutoCloseable lock = logCommand.acquire().asAutoCloseable())
 		{

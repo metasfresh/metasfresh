@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.process;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -28,7 +30,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -54,7 +55,7 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		IQueryBuilder<I_M_ShipmentSchedule> queryBuilderForShipmentScheduleSelection = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter);
 
 		final Iterator<I_M_ShipmentSchedule> schedulesToUpdateIterator = queryBuilderForShipmentScheduleSelection
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, Env.ZERO)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, BigDecimal.ZERO)
 				.create()
 				.iterate(I_M_ShipmentSchedule.class);
 
