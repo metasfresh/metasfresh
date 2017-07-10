@@ -33,6 +33,7 @@ class ModalContextShortcuts extends Component {
             isolate = { true }
             preventDefault = { true }
             stopPropagation = { true }
+            alwaysFireHandler = { true }
         />
         )
     }
