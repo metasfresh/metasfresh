@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Check;
@@ -203,34 +201,51 @@ public class HUTraceEventsCreateAndAdd
 	 */
 	public Map<Boolean, List<HUTraceEvent>> createAndAddFor(
 			@NonNull final I_M_HU_Trx_Hdr trxHeader,
-			@NonNull final Stream<I_M_HU_Trx_Line> trxLines)
+			@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.type(HUTraceType.TRANSFORMATION)
 				.eventTime(trxHeader.getUpdated().toInstant());
 
 		// filter for the trx lines we actually want to create events from
-		final List<I_M_HU_Trx_Line> trxLinesToUse = trxLines
-				.filter(huTrxLine -> huTrxLine.getM_HU_ID() > 0)
-				.filter(huTrxLine -> huTrxLine.getAD_Table_ID() <= 0) // we only care for "standalone" HU-transactions. for the others, we have other means to trace them  
-				.filter(huTrxLine -> huTrxLine.getQty().signum() > 0)
-				.filter(huTrxLine -> huTrxLine.getParent_HU_Trx_Line_ID() > 0)
-				.filter(huTrxLine -> huTrxLine.getParent_HU_Trx_Line().getM_HU_ID() > 0)
-				.collect(Collectors.toList());
+		final List<I_M_HU_Trx_Line> trxLinesToUse = new ArrayList<>();
+		for (final I_M_HU_Trx_Line trxLine : trxLines)
+		{
+			if (trxLine.getM_HU_ID() <= 0)
+			{
+				continue;
+			}
+			if (trxLine.getAD_Table_ID() > 0)
+			{
+				continue; // we only care for "standalone" HU-transactions. for the others, we have other means to trace them
+			}
+			if (trxLine.getQty().signum() <= 0)
+			{
+				continue;
+			}
+			if (trxLine.getParent_HU_Trx_Line_ID() <= 0)
+			{
+				continue;
+			}
+			if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
+			{
+				continue;
+			}
+			trxLinesToUse.add(trxLine);
+		}
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
-		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine ->
+		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine -> {
+			if (huTrxLine.getVHU_Item_ID() > 0)
 			{
-				if (huTrxLine.getVHU_Item_ID() > 0)
-				{
-					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
-				}
-				else
-				{
-					return retrieveVhus(huTrxLine.getM_HU());
-				}
-			};
+				return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
+			}
+			else
+			{
+				return retrieveVhus(huTrxLine.getM_HU());
+			}
+		};
 
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());

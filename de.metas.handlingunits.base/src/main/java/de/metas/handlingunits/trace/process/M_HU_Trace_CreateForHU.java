@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -109,7 +108,7 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 		{
 			addLog("Checking for M_HU_Trx_Line={}", huTrxLine);
 
-			final Map<Boolean, List<HUTraceEvent>> createdEvents = huTraceEventsCreateAndAdd.createAndAddFor(huTrxLine.getM_HU_Trx_Hdr(), Stream.of(huTrxLine));
+			final Map<Boolean, List<HUTraceEvent>> createdEvents = huTraceEventsCreateAndAdd.createAndAddFor(huTrxLine.getM_HU_Trx_Hdr(), ImmutableList.of(huTrxLine));
 			final List<HUTraceEvent> newlyInsertedEvents = createdEvents.get(true);
 			for (final HUTraceEvent newlyInsertedEvent : newlyInsertedEvents)
 			{
