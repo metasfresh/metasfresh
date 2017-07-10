@@ -242,10 +242,10 @@ public class HUTraceEventsCreateAndAdd
 			{
 				continue;
 			}
-//			if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
-//			{
-//				continue;
-//			}
+			// if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
+			// {
+			// continue;
+			// }
 			trxLinesToUse.add(trxLine);
 		}
 
@@ -256,9 +256,13 @@ public class HUTraceEventsCreateAndAdd
 			{
 				return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
 			}
-			else
+			else if (huTrxLine.getM_HU_ID() > 0)
 			{
 				return retrieveVhus(huTrxLine.getM_HU());
+			}
+			else
+			{
+				return ImmutableList.of();
 			}
 		};
 

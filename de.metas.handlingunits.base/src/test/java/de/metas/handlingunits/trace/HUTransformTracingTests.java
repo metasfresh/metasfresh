@@ -7,9 +7,12 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
 import de.metas.handlingunits.model.I_M_HU_Trace;
@@ -38,6 +41,10 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 
 public class HUTransformTracingTests
 {
+	/** Watches the current tests and dumps the database to console in case of failure */
+	@Rule
+	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+	
 	private HUTransformServiceTests huTransformServiceTests;
 	private HUTraceRepository huTraceRepository;
 
@@ -64,7 +71,7 @@ public class HUTransformTracingTests
 	{
 		huTransformServiceTests.test_CUToExistingTU_create_mixed_TU_completeCU();
 
-		List<I_M_HU_Trace> allTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+		final List<I_M_HU_Trace> allTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.create().list();
 		assertThat(allTraceRecords.isEmpty(), is(false));
 	}
