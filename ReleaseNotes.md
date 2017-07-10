@@ -21,6 +21,8 @@ Here come the actual release notes:
     * Adding improvements to Greeting Window in Form of 2-column Layout and Translations.
   * [#1939](https://github.com/metasfresh/metasfresh/issues/1939) Adjust the Business Partner Relations Window
     * New Window to allow Business Partner Relations maintenance in WebUI.
+  * [#1944](https://github.com/metasfresh/metasfresh/issues/1944) Request Type Window adjustments
+    * Minor Adjustments to Request Type Window in WebUI, renaming Fields, adding Translations, Layout improvement in GridView.
 
 * metasfresh-webui-api
 
