@@ -8,6 +8,7 @@ import QuickActions from './QuickActions';
 import BlankPage from '../BlankPage';
 import Table from '../table/Table';
 import Filters from '../filters/Filters';
+import FiltersStatic from '../filters/FiltersStatic';
 import SelectionAttributes from './SelectionAttributes';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 
@@ -35,7 +36,8 @@ import {
 import {
     createViewRequest,
     browseViewRequest,
-    filterViewRequest
+    filterViewRequest,
+    deleteStaticFilter
 } from '../../actions/AppActions';
 
 class DocumentList extends Component {
@@ -255,10 +257,13 @@ class DocumentList extends Component {
         })
     }
     
-    clearStaticFilters = () => {
-        const {dispatch, windowType, viewId} = this.props;
+    clearStaticFilters = (filterId) => {
+        const {dispatch, windowType} = this.props;
+        const {viewId} = this.state;
 
-        dispatch(push('/window/' + windowType));
+        deleteStaticFilter(windowType, viewId, filterId).then(response => {
+            dispatch(push('/window/' + windowType + '?viewId=' + response.data.viewId));
+        });
     }
 
     // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -509,7 +514,11 @@ class DocumentList extends Component {
                                     filterData={layout.filters}
                                     filtersActive={filters}
                                     updateDocList={this.handleFilterChange}
-                                    clearStaticFilters={this.clearStaticFilters}
+                                />}
+                                {data.staticFilters && <FiltersStatic
+                                    {...{windowType, viewId}}
+                                    data={data.staticFilters}
+                                    clearFilters={this.clearStaticFilters}
                                 />}
                             </div>
                             <QuickActions

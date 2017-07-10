@@ -76,6 +76,15 @@ export function filterViewRequest(windowType, viewId, filters){
     });
 }
 
+export function deleteStaticFilter(windowId, viewId, filterId) {
+    return axios.delete(
+        config.API_URL +
+        '/documentView/' + windowId +
+        '/' + viewId +
+        '/staticFilter/' + filterId
+    );
+}
+
 export function loginRequest(username, password){
     return axios.post(
         config.API_URL +

@@ -4,7 +4,6 @@ import {push} from 'react-router-redux';
 import counterpart from 'counterpart';
 import FiltersFrequent from './FiltersFrequent';
 import FiltersNotFrequent from './FiltersNotFrequent';
-import FiltersStatic from './FiltersStatic';
 
 class Filters extends Component {
     constructor(props) {
@@ -118,7 +117,7 @@ class Filters extends Component {
     // RENDERING FILTERS -------------------------------------------------------
 
     render() {
-        const {filterData, windowType, viewId, clearStaticFilters} = this.props;
+        const {filterData, windowType, viewId} = this.props;
         const {
             frequentFilters, notFrequentFilters, staticFilters
         } = this.sortFilters(filterData);
@@ -158,16 +157,6 @@ class Filters extends Component {
                             dropdownToggled={this.dropdownToggled}
                         />
                     }
-                    {
-                        //TODO: temporary solution to refactor.
-                        // Structure data/layout corrupted.
-                    }
-                    {filter && filter.static && (
-                        <FiltersStatic
-                            data={[filter]}
-                            clearFilters={clearStaticFilters}
-                        />
-                    )}
                 </div>
             </div>
         )

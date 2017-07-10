@@ -17,7 +17,7 @@ class FiltersStatic extends Component {
                                     'btn btn-meta-disabled ' +
                                     'btn-distance btn-sm'
                                 }
-                                onClick={clearFilters}
+                                onClick={() => clearFilters(item.id)}
                             >
                                 <i
                                     className="meta-icon-trash"
