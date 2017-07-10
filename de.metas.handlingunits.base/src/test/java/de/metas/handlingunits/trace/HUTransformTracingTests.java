@@ -39,7 +39,8 @@ import de.metas.handlingunits.model.I_M_HU_Trace;
 public class HUTransformTracingTests
 {
 	private HUTransformServiceTests huTransformServiceTests;
-private HUTraceRepository huTraceRepository;
+	private HUTraceRepository huTraceRepository;
+
 	@Before
 	public void init()
 	{
@@ -49,18 +50,22 @@ private HUTraceRepository huTraceRepository;
 		huTransformServiceTests.init(); // this init invocation inits and resets everything
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		modelInterceptorRegistry.addModelInterceptor(new de.metas.handlingunits.trace.interceptor.M_HU_Trx_Hdr(new HUTraceEventsCreateAndAdd(huTraceRepository)));
+		modelInterceptorRegistry.addModelInterceptor(new de.metas.handlingunits.trace.interceptor.M_HU_Trx_Hdr(
+				new HUTraceEventsCreateAndAdd(huTraceRepository)));
 	}
 
 	/**
-	 * Call {@link HUTransformServiceTests#test_CUToExistingTU_create_mixed_TU_completeCU()} and then verifies the tracong info
+	 * Call
+	 * {@link HUTransformServiceTests#test_CUToExistingTU_create_mixed_TU_completeCU()}
+	 * and then verifies the tracing info
 	 */
 	@Test
 	public void test_CUToExistingTU_create_mixed_TU_completeCU()
 	{
 		huTransformServiceTests.test_CUToExistingTU_create_mixed_TU_completeCU();
 
-		List<I_M_HU_Trace> allTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class).create().list();
+		List<I_M_HU_Trace> allTraceRecords = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+				.create().list();
 		assertThat(allTraceRecords.isEmpty(), is(false));
 	}
 }

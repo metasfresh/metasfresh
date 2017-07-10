@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -18,6 +19,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -57,6 +59,15 @@ import lombok.NonNull;
 @Service
 public class HUTraceEventsCreateAndAdd
 {
+
+	/**
+	 * The method {@link #createAndAddFor(I_M_HU_Trx_Hdr, List)} will ignore hu transaction lines that reference one of these tables, because there is already dedicated code to handles events around those tables.
+	 */
+	private static final Set<String> TABLE_NAMES_IGNORED_FOR_TRANSFORMATION_TRACING = ImmutableSet.of(
+			I_M_InOutLine.Table_Name,
+			I_M_MovementLine.Table_Name,
+			I_PP_Cost_Collector.Table_Name,
+			I_M_ShipmentSchedule_QtyPicked.Table_Name);
 
 	private final HUTraceRepository huTraceRepository;
 
@@ -211,13 +222,17 @@ public class HUTraceEventsCreateAndAdd
 		final List<I_M_HU_Trx_Line> trxLinesToUse = new ArrayList<>();
 		for (final I_M_HU_Trx_Line trxLine : trxLines)
 		{
-			if (trxLine.getM_HU_ID() <= 0)
+			if (trxLine.getM_HU_ID() <= 0 && trxLine.getVHU_Item_ID() <= 0)
 			{
 				continue;
 			}
 			if (trxLine.getAD_Table_ID() > 0)
 			{
-				continue; // we only care for "standalone" HU-transactions. for the others, we have other means to trace them
+				final String tableName = trxLine.getAD_Table().getTableName();
+				if (TABLE_NAMES_IGNORED_FOR_TRANSFORMATION_TRACING.contains(tableName))
+				{
+					continue; // we only care for "standalone" HU-transactions. for the others, we have other means to trace them
+				}
 			}
 			if (trxLine.getQty().signum() <= 0)
 			{
@@ -227,10 +242,10 @@ public class HUTraceEventsCreateAndAdd
 			{
 				continue;
 			}
-			if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
-			{
-				continue;
-			}
+//			if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
+//			{
+//				continue;
+//			}
 			trxLinesToUse.add(trxLine);
 		}
 
