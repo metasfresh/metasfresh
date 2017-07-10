@@ -22,9 +22,10 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
 
-
 ## Fixes
 * metasfresh-app
+  * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
+    * Fix for MatchInv Accounting of non service Products
 
 * metasfresh-webui-api
 
@@ -69,6 +70,7 @@ Here come the actual release notes:
   * [#1947](https://github.com/metasfresh/metasfresh/issues/1947) camt54 import does not support multiple Ntrys
   * [#1953](https://github.com/metasfresh/metasfresh/issues/1953) Support multiple email recipients
   * [#1961](https://github.com/metasfresh/metasfresh/issues/1961) AD_BoilerPlate variables not resolved in Email editor
+  * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
 
 * metasfresh-webui-api
 
