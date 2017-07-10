@@ -809,7 +809,7 @@ public class HUTransformServiceTests
 	 * <ul>
 	 * <li>create a standalone CU with 2kg tomatoes and add it to a new TU
 	 * <li>create a standalone CU with 3kg salad
-	 * <li><move 1.6kg of the salad to the TU
+	 * <li>move 1.6kg of the salad to the TU
 	 * </ul>
 	 *
 	 * @task https://github.com/metasfresh/metasfresh-webui/issues/237 Transform CU on existing TU not working
