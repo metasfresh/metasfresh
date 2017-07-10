@@ -10,7 +10,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.interfaces.I_M_Movement;
 import lombok.NonNull;
 
@@ -36,7 +36,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_Movement.class)
-public class M_Movement
+/* package */ class M_Movement
 {
 
 	@DocValidate(timings =
@@ -53,7 +53,7 @@ public class M_Movement
 	{
 		final List<I_M_MovementLine> movementLines = Services.get(IMovementDAO.class).retrieveLines(movement);
 		
-		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 		huTraceEventsCreateAndAdd.createAndAddFor(movement, movementLines);
 	}
 }

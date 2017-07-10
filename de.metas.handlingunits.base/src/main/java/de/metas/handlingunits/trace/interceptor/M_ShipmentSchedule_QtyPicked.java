@@ -6,7 +6,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import lombok.NonNull;
 
 /*
@@ -31,7 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
-public class M_ShipmentSchedule_QtyPicked
+/* package */ class M_ShipmentSchedule_QtyPicked
 {
 
 	@ModelChange(timings =
@@ -42,7 +42,7 @@ public class M_ShipmentSchedule_QtyPicked
 		})
 	public void addTraceEvent(@NonNull final I_M_ShipmentSchedule_QtyPicked shipmentScheduleQtyPicked)
 	{
-		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 		huTraceEventsCreateAndAdd.createAndAddFor(shipmentScheduleQtyPicked);
 	}
 }

@@ -18,7 +18,7 @@ import org.compiere.model.I_M_MovementLine;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.handlingunits.IHUTrxDAO;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -26,7 +26,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.process.JavaProcess;
 import lombok.NonNull;
 
@@ -68,7 +68,7 @@ public class M_HU_Trace_CreateForHU extends JavaProcess
 	{
 		addLog("Writing trace records hu={}", hu);
 
-		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 
 		// write the HU_Assigment related trace
 		{

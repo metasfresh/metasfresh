@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.hutransaction.impl;
 
 /*
  * #%L
@@ -36,8 +36,8 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 
 import de.metas.handlingunits.HUConstants;
-import de.metas.handlingunits.IHUTrxDAO;
-import de.metas.handlingunits.IHUTrxQuery;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
+import de.metas.handlingunits.hutransaction.IHUTrxQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;

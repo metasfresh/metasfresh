@@ -29,6 +29,7 @@ import org.adempiere.model.IContextAware;
 
 import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 

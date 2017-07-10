@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1826449882L;
+	private static final long serialVersionUID = -1131954781L;
 
     /** Standard Constructor */
     public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
@@ -26,6 +27,8 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 			setHUTraceType (null);
 			setM_HU_ID (0);
 			setM_HU_Trace_ID (0);
+			setM_Product_ID (0);
+			setQty (BigDecimal.ZERO);
 			setVHU_ID (0);
 			setVHUStatus (null);
         } */
@@ -165,8 +168,10 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String HUTRACETYPE_PRODUCTION_ISSUE = "PRODUCTION_ISSUE";
 	/** PRODUCTION_RECEIPT = PRODUCTION_RECEIPT */
 	public static final String HUTRACETYPE_PRODUCTION_RECEIPT = "PRODUCTION_RECEIPT";
-	/** TRANSFORMATION = TRANSFORMATION */
-	public static final String HUTRACETYPE_TRANSFORMATION = "TRANSFORMATION";
+	/** TRANSFORM_LOAD = TRANSFORM_LOAD */
+	public static final String HUTRACETYPE_TRANSFORM_LOAD = "TRANSFORM_LOAD";
+	/** TRANSFORM_PARENT = TRANSFORM_PARENT */
+	public static final String HUTRACETYPE_TRANSFORM_PARENT = "TRANSFORM_PARENT";
 	/** Set Typ.
 		@param HUTraceType Typ	  */
 	@Override
@@ -349,6 +354,43 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
 	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule() throws RuntimeException
 	{
 		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
@@ -448,6 +490,28 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Menge.
+		@param Qty 
+		Menge
+	  */
+	@Override
+	public void setQty (java.math.BigDecimal Qty)
+	{
+		set_ValueNoCheck (COLUMNNAME_Qty, Qty);
+	}
+
+	/** Get Menge.
+		@return Menge
+	  */
+	@Override
+	public java.math.BigDecimal getQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	@Override

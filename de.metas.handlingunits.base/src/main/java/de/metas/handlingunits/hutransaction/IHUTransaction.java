@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.hutransaction;
 
 /*
  * #%L
@@ -28,7 +28,7 @@ import java.util.Date;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;

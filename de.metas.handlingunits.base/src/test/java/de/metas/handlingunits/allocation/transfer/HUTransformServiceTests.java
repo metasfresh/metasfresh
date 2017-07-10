@@ -67,13 +67,14 @@ public class HUTransformServiceTests
 	 * This dataPoint shall enable us to test with both values of {@code isOwnPackingMaterials}.
 	 */
 	@DataPoints("isOwnPackingMaterials")
-	public static boolean[] isOwnPackingMaterials = { true, false };
+	public static boolean[] isOwnPackingMaterials =
+		{ true, false };
 
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
-	
+
 	@Before
 	public void init()
 	{
@@ -470,7 +471,7 @@ public class HUTransformServiceTests
 	{
 		// Make sure the standard CU-TU capacity it's not 13Kg
 		assertThat(data.piLU_Item_IFCO.getQty(), not(comparesEqualTo(BigDecimal.valueOf(13))));
-		
+
 		// Create an LU with 10TUs with 13Kg each.
 		final I_M_HU lu = mkAggregateCUToSplit("130", 13);
 
@@ -490,7 +491,6 @@ public class HUTransformServiceTests
 			assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 			assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("13.000")));
 		}
-
 
 	}
 
@@ -895,9 +895,8 @@ public class HUTransformServiceTests
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
 		data.helper.load(lutuProducer, data.helper.pTomato, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
-
 		assertThat(createdTUs.size(), is(1));
-
+		
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.get(0));
 		assertThat(createdCUs.size(), is(1));
 

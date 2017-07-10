@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.hutransaction.impl;
 
 import java.util.ArrayList;
 
@@ -44,10 +44,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionProcessor;
-import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -60,6 +56,11 @@ import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
+import de.metas.handlingunits.impl.CompositeHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
@@ -328,7 +329,7 @@ public class HUTrxBL implements IHUTrxBL
 			handlingUnitsBL.destroyIfEmptyStorage(huContext, parentHUOld);
 		}
 	}
-
+	
 	@Override
 	public void extractHUFromParentIfNeeded(final I_M_HU hu)
 	{

@@ -17,8 +17,9 @@ import org.junit.Test;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.IHUTrxDAO;
 import de.metas.handlingunits.expectations.HUsExpectation;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
+import de.metas.handlingunits.hutransaction.impl.HUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;

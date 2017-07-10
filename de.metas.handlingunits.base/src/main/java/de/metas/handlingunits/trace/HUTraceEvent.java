@@ -1,5 +1,6 @@
 package de.metas.handlingunits.trace;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
@@ -43,9 +44,14 @@ public class HUTraceEvent
 	@NonNull
 	final Integer vhuId;
 
+	final int productId;
+
+	@NonNull
+	final BigDecimal qty;
+
 	@NonNull
 	final String vhuStatus;
-	
+
 	/**
 	 * The topmost HU as seen from the vhu.
 	 */
@@ -63,19 +69,24 @@ public class HUTraceEvent
 	final int costCollectorId;
 
 	final int ppOrderId;
-	
+
 	final String docStatus;
 
-	final int docTypeId;
+	/**
+	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
+	 */
+	final Integer docTypeId;
 
 	final int huTrxLineId;
-	
+
 	public HUTraceSpecification asQuery()
 	{
 		return new HUTraceSpecification(RecursionMode.NONE,
 				type,
 				eventTime,
 				vhuId,
+				productId,
+				qty,
 				vhuStatus,
 				topLevelHuId,
 				vhuSourceId,

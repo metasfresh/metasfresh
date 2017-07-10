@@ -24,7 +24,7 @@ package de.metas.handlingunits.attribute.spi;
 
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransactionProcessor;
+import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 

@@ -117,6 +117,7 @@ import de.metas.handlingunits.attribute.strategy.impl.NullAggregationStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.NullSplitterStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttributeTransferStrategy;
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CachedHUAndItemsDAO;
 import de.metas.handlingunits.impl.HUPIItemProductDAO;
 import de.metas.handlingunits.impl.HandlingUnitsDAO;

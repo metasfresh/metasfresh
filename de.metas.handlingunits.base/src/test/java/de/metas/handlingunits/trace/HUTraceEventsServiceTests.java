@@ -2,18 +2,22 @@ package de.metas.handlingunits.trace;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.adempiere.util.time.TimeSource;
+import org.compiere.model.I_M_Product;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,8 +28,11 @@ import de.metas.adempiere.model.I_AD_User;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.logging.LogManager;
+import mockit.Expectations;
+import mockit.Injectable;
 
 /*
  * #%L
@@ -49,15 +56,18 @@ import de.metas.logging.LogManager;
  * #L%
  */
 
-public class HUTraceEventsCreateAndAddTests
+public class HUTraceEventsServiceTests
 {
-	private HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd;
+	private HUTraceEventsService huTraceEventsCreateAndAdd;
+
+	@Injectable
+	private HUAccessService huAccessService;
 
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		huTraceEventsCreateAndAdd = new HUTraceEventsCreateAndAdd(new HUTraceRepository());
+		huTraceEventsCreateAndAdd = new HUTraceEventsService(new HUTraceRepository(), huAccessService);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
 	}
@@ -78,17 +88,37 @@ public class HUTraceEventsCreateAndAddTests
 		user1.setName("we-just-need-some-record-as-a-reference");
 		save(user2);
 
-		final I_M_HU luHu11;
-		final I_M_HU luHu12;
-		final I_M_HU luHu21;
-		final I_M_HU luHu22;
+		final I_M_HU luHu11 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU vhu11 = saveFluend(newInstance(I_M_HU.class)); 
+		vhu11.setHUStatus(X_M_HU.HUSTATUS_Active);
+		
+		final I_M_Product prod11 = saveFluend(newInstance(I_M_Product.class));
+		final BigDecimal qty11 = BigDecimal.valueOf(11);
+		
+		final I_M_HU luHu12 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU vhu12 = saveFluend(newInstance(I_M_HU.class));
+		vhu12.setHUStatus(X_M_HU.HUSTATUS_Active);
+		
+		final I_M_Product prod12 = saveFluend(newInstance(I_M_Product.class));
+		final BigDecimal qty12 = BigDecimal.valueOf(12);
+		
+		final I_M_HU luHu21 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU vhu21 = saveFluend(newInstance(I_M_HU.class));
+		vhu21.setHUStatus(X_M_HU.HUSTATUS_Active);
+		
+		final I_M_Product prod21 = saveFluend(newInstance(I_M_Product.class));
+		final BigDecimal qty21 = BigDecimal.valueOf(21);
+		
+		final I_M_HU luHu22 = saveFluend(newInstance(I_M_HU.class));
+		final I_M_HU vhu22 = saveFluend(newInstance(I_M_HU.class));
+		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
+		
+		final I_M_Product prod22 = saveFluend(newInstance(I_M_Product.class));
+		final BigDecimal qty22 = BigDecimal.valueOf(22);
+
 		{
 			final TableRecordReference ref1 = TableRecordReference.of(user1);
-
-			luHu11 = newInstance(I_M_HU.class);
-			save(luHu11);
-			final I_M_HU vhu11 = newInstance(I_M_HU.class);
-			save(vhu11);
+			
 			final I_M_HU_Assignment huAssignment11 = newInstance(I_M_HU_Assignment.class);
 			huAssignment11.setM_HU_ID(luHu11.getM_HU_ID());
 			huAssignment11.setVHU(vhu11);
@@ -96,10 +126,6 @@ public class HUTraceEventsCreateAndAddTests
 			huAssignment11.setRecord_ID(ref1.getRecord_ID());
 			save(huAssignment11);
 
-			luHu12 = newInstance(I_M_HU.class);
-			save(luHu12);
-			final I_M_HU vhu12 = newInstance(I_M_HU.class);
-			save(vhu12);
 			final I_M_HU_Assignment huAssignment12 = newInstance(I_M_HU_Assignment.class);
 			huAssignment12.setM_HU_ID(luHu12.getM_HU_ID());
 			huAssignment12.setVHU(vhu12);
@@ -109,10 +135,6 @@ public class HUTraceEventsCreateAndAddTests
 
 			final TableRecordReference ref2 = TableRecordReference.of(user2);
 
-			luHu21 = newInstance(I_M_HU.class);
-			save(luHu21);
-			final I_M_HU vhu21 = newInstance(I_M_HU.class);
-			save(vhu21);
 			final I_M_HU_Assignment huAssignment21 = newInstance(I_M_HU_Assignment.class);
 			huAssignment21.setM_HU_ID(luHu21.getM_HU_ID());
 			huAssignment21.setVHU(vhu21);
@@ -120,10 +142,6 @@ public class HUTraceEventsCreateAndAddTests
 			huAssignment21.setRecord_ID(ref2.getRecord_ID());
 			save(huAssignment21);
 
-			luHu22 = newInstance(I_M_HU.class);
-			save(luHu22);
-			final I_M_HU vhu22 = newInstance(I_M_HU.class);
-			save(vhu22);
 			final I_M_HU_Assignment huAssignment22 = newInstance(I_M_HU_Assignment.class);
 			huAssignment22.setM_HU_ID(luHu22.getM_HU_ID());
 			huAssignment22.setVHU(vhu22);
@@ -132,22 +150,42 @@ public class HUTraceEventsCreateAndAddTests
 			save(huAssignment22);
 
 			// create a 5th assignment that references user2 but has the same HU-ID *and* updated time! as huAssignment22
+			// @formatter:off
 			SystemTime.setTimeSource(new TimeSource()
 			{
-				@Override
-				public long millis()
-				{
-					return huAssignment22.getUpdated().getTime();
-				}
+				@Override public long millis() { return huAssignment22.getUpdated().getTime(); }
 			});
+			// @formatter:on
 			final I_M_HU_Assignment huAssignment22double = newInstance(I_M_HU_Assignment.class);
 			huAssignment22double.setM_HU_ID(luHu22.getM_HU_ID());
 			huAssignment22double.setVHU(vhu22);
 			huAssignment22double.setAD_Table_ID(ref1.getAD_Table_ID());
 			huAssignment22double.setRecord_ID(ref1.getRecord_ID());
 			save(huAssignment22double);
-			
+
 			SystemTime.resetTimeSource();
+
+			// set up the mocked huAccessService
+			// @formatter:off
+			new Expectations()
+			{{
+				huAccessService.retrieveHuAssignments(user1);
+				result = ImmutableList.of(huAssignment11, huAssignment12);
+				huAccessService.retrieveHuAssignments(user2);
+				result = ImmutableList.of(huAssignment21, huAssignment22, huAssignment22double);
+				
+				// the LU HUs are already top level HUs themselves, so the method shall return their IDs
+				huAccessService.retrieveTopLevelHuId(luHu11); result = luHu11.getM_HU_ID();
+				huAccessService.retrieveTopLevelHuId(luHu12); result = luHu12.getM_HU_ID();
+				huAccessService.retrieveTopLevelHuId(luHu21); result = luHu21.getM_HU_ID();
+				huAccessService.retrieveTopLevelHuId(luHu22); result = luHu22.getM_HU_ID();
+				
+				huAccessService.retrieveProductAndQty(vhu11); result = ImmutablePair.of(prod11, qty11);
+				huAccessService.retrieveProductAndQty(vhu12); result = ImmutablePair.of(prod12, qty12);
+				huAccessService.retrieveProductAndQty(vhu21); result = ImmutablePair.of(prod21, qty21);
+				huAccessService.retrieveProductAndQty(vhu22); result = ImmutablePair.of(prod22, qty22);
+			}};
+			// @formatter:on
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
@@ -164,5 +202,11 @@ public class HUTraceEventsCreateAndAddTests
 		assertThat(allDBRecords.get(1).getM_HU_ID(), is(luHu12.getM_HU_ID()));
 		assertThat(allDBRecords.get(2).getM_HU_ID(), is(luHu21.getM_HU_ID()));
 		assertThat(allDBRecords.get(3).getM_HU_ID(), is(luHu22.getM_HU_ID()));
+	}
+	
+	private static <T> T saveFluend(final T model)
+	{
+		save(model);
+		return model;
 	}
 }

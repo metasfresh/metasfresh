@@ -10,7 +10,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.inout.IInOutDAO;
 import lombok.NonNull;
 
@@ -36,7 +36,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_M_InOut.class)
-public class M_InOut
+/* package */ class M_InOut
 {
 	@DocValidate(timings =
 		{
@@ -52,7 +52,7 @@ public class M_InOut
 	{
 		final List<I_M_InOutLine> iols = Services.get(IInOutDAO.class).retrieveLines(inOut);
 		
-		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 		huTraceEventsCreateAndAdd.createAndAddFor(inOut, iols);
 	}
 }

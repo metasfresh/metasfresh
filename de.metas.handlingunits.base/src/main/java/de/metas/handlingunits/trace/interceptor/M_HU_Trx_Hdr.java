@@ -2,19 +2,15 @@ package de.metas.handlingunits.trace.interceptor;
 
 import java.util.List;
 
-
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.util.Services;
-import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.handlingunits.IHUTrxDAO;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import lombok.NonNull;
 
 /*
@@ -40,31 +36,13 @@ import lombok.NonNull;
  */
 
 @Interceptor(I_M_HU_Trx_Hdr.class)
-public class M_HU_Trx_Hdr
+/* package */  final class M_HU_Trx_Hdr
 {
-
-	private final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd;
-
-	public M_HU_Trx_Hdr()
-	{
-		huTraceEventsCreateAndAdd = null; // will take the value from spring
-	}
-
-	/**
-	 * To be used in testing.
-	 * 
-	 * @param huTraceEventsCreateAndAdd
-	 */
-	@VisibleForTesting
-	public M_HU_Trx_Hdr(@NonNull final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd)
-	{
-		this.huTraceEventsCreateAndAdd = huTraceEventsCreateAndAdd;
-	}
-
-	@ModelChange(timings = {
-			ModelValidator.TYPE_AFTER_CHANGE,
-			ModelValidator.TYPE_AFTER_NEW
-	}, ifColumnsChanged = I_M_HU_Trx_Hdr.COLUMNNAME_Processed, afterCommit = true)
+	@ModelChange(timings =
+		{
+				ModelValidator.TYPE_AFTER_CHANGE,
+				ModelValidator.TYPE_AFTER_NEW
+		}, ifColumnsChanged = I_M_HU_Trx_Hdr.COLUMNNAME_Processed, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_M_HU_Trx_Hdr huTrxHeader)
 	{
 		if (!huTrxHeader.isProcessed())
@@ -75,18 +53,7 @@ public class M_HU_Trx_Hdr
 		final IHUTrxDAO huTrxDAO = Services.get(IHUTrxDAO.class);
 		final List<I_M_HU_Trx_Line> huTrxLines = huTrxDAO.retrieveTrxLines(huTrxHeader);
 
-		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = getHuTraceEventsCreateAndAdd();
-		huTraceEventsCreateAndAdd.createAndAddFor(huTrxHeader, huTrxLines);
+		final HUTraceEventsService huTraceEventsService = HUTraceModuleInterceptor.INSTANCE.getHUTraceEventsService();
+		huTraceEventsService.createAndAddFor(huTrxHeader, huTrxLines);
 	}
-
-	
-	private HUTraceEventsCreateAndAdd getHuTraceEventsCreateAndAdd()
-	{
-		if (this.huTraceEventsCreateAndAdd != null)
-		{
-			return huTraceEventsCreateAndAdd;
-		}
-		return Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
-	}
-
 }

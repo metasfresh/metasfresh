@@ -1,8 +1,10 @@
 package de.metas.handlingunits.trace;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.experimental.Wither;
@@ -52,7 +54,8 @@ public class HUTraceSpecification
 	}
 
 	@NonNull
-	RecursionMode recursionMode;
+	@Default
+	RecursionMode recursionMode = RecursionMode.NONE;
 
 	final HUTraceType type;
 
@@ -60,8 +63,12 @@ public class HUTraceSpecification
 
 	final int vhuId;
 
+	final int productId;
+
+	final BigDecimal qty;
+
 	final String vhuStatus;
-	
+
 	final int topLevelHuId;
 
 	final int vhuSourceId;
@@ -73,12 +80,15 @@ public class HUTraceSpecification
 	final int movementId;
 
 	final int costCollectorId;
-	
+
 	final int ppOrderId;
-	
+
 	final String docStatus;
 
-	final int docTypeId;
-	
+	/**
+	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
+	 */
+	final Integer docTypeId;
+
 	final int huTrxLineId;
 }

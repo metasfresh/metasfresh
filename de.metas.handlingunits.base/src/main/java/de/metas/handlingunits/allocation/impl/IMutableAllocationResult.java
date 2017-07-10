@@ -25,10 +25,10 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 
 /**
  * Implementors of this interface are altered by the allocation BL as the allocation takes place.<br>

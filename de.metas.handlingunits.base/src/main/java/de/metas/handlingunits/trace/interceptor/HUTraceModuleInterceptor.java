@@ -4,7 +4,17 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
+
+import com.google.common.annotations.VisibleForTesting;
+
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.trace.HUTraceEventsService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,6 +40,13 @@ import org.compiere.model.I_AD_Client;
 
 public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 {
+	public static final HUTraceModuleInterceptor INSTANCE = new HUTraceModuleInterceptor();
+	private HUTraceEventsService huTraceEventsService;
+
+	private HUTraceModuleInterceptor()
+	{
+	}
+
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -43,5 +60,46 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_InOut(), client);
 		engine.addModelValidator(new M_Movement(), client);
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
+	}
+
+	/**
+	 * Registers glue code so that {@link HUTraceEventsService#createAndForHuParentChanged(I_M_HU, I_M_HU_Item)} is invoked when an HU parent relation is changed.
+	 * <p>
+	 * Note that I also considered creating appropriate HU transactions for that event, but it turned out to be pretty hard,<br>
+	 * and this is another case where as it turns out I actually don't really need those HU transactions.
+	 */
+	protected void onAfterInit()
+	{
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+		huTrxBL.addListener(new IHUTrxListener()
+		{
+			@Override
+			public void huParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
+			{
+				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
+				huTraceEventService.createAndForHuParentChanged(hu, parentHUItemOld);
+			}
+		});
+	}
+
+	/**
+	 * Allow the {@link HUTraceEventsService} to be set from outside. Goal: allow testing without the need to fire up the spring-boot test runner.
+	 * 
+	 * @param huTraceEventsService
+	 */
+	@VisibleForTesting
+	public void setHUTraceEventsService(@NonNull final HUTraceEventsService huTraceEventsService)
+	{
+		this.huTraceEventsService = huTraceEventsService;
+	}
+
+	/* package */ HUTraceEventsService getHUTraceEventsService()
+	{
+		if (huTraceEventsService != null)
+		{
+			return huTraceEventsService;
+		}
+		return Adempiere.getBean(HUTraceEventsService.class);
 	}
 }

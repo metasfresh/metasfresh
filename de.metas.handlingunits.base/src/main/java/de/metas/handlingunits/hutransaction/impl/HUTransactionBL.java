@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.hutransaction.impl;
 
 /*
  * #%L
@@ -25,11 +25,11 @@ package de.metas.handlingunits.impl;
 
 import org.adempiere.util.Services;
 
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;

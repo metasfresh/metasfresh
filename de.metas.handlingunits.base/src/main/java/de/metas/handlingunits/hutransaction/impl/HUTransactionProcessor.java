@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.hutransaction.impl;
 
 /*
  * #%L
@@ -39,14 +39,14 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTransactionProcessor;
-import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeProcessor;
 import de.metas.handlingunits.attribute.impl.HUTransactionAttributeProcessor;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionProcessor;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;

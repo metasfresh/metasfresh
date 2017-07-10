@@ -43,11 +43,11 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;

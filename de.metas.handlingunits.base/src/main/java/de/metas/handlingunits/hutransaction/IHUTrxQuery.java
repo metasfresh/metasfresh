@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.hutransaction;
 
 /*
  * #%L
@@ -23,19 +23,34 @@ package de.metas.handlingunits;
  */
 
 
-import java.util.List;
-
-import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-
-public interface IHUTransactionProcessor
+public interface IHUTrxQuery
 {
-	/**
-	 * Create and <b>process</b> given allocation result.
-	 *
-	 * @param result
-	 */
-	void createTrx(final IAllocationResult result);
 
-	void reverseTrxLines(final List<I_M_HU_Trx_Line> trxLines);
+	void setParent_M_HU_Trx_Line_ID(int parent_M_HU_Trx_Line_ID);
+
+	int getParent_M_HU_Trx_Line_ID();
+
+	void setExclude_M_HU_Trx_Line_ID(int exclude_M_HU_Trx_Line_ID);
+
+	int getExclude_M_HU_Trx_Line_ID();
+
+	void setM_HU_Trx_Hdr_ID(int m_HU_Trx_Hdr_ID);
+
+	int getM_HU_Trx_Hdr_ID();
+
+	void setM_HU_Item_ID(int Ref_HU_Item_ID);
+
+	int getM_HU_Item_ID();
+
+	void setAD_Table_ID(int aD_Table_ID);
+
+	int getAD_Table_ID();
+
+	void setRecord_ID(int record_ID);
+
+	int getRecord_ID();
+	
+	void setM_HU_ID(int m_hu_ID);
+	
+	int getM_HU_ID();
 }

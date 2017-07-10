@@ -32,9 +32,9 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 
 /**
  * Allocation result that be created as an empty one and then can be altered by the code which dioes the allocating.

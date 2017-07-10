@@ -14,8 +14,6 @@ import org.compiere.model.I_M_Attribute;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -27,6 +25,8 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.attribute.IWeightable;
 import de.metas.handlingunits.attribute.IWeightableFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;

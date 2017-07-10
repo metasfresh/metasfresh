@@ -36,8 +36,8 @@ import org.compiere.model.I_M_Transaction;
 
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUCapacityDefinition;
-import de.metas.handlingunits.IHUTrxDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 
 public class MTransactionProductStorage extends AbstractProductStorage

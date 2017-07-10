@@ -6,7 +6,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.ModelValidator;
 
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.trace.HUTraceEventsCreateAndAdd;
+import de.metas.handlingunits.trace.HUTraceEventsService;
 import lombok.NonNull;
 
 /*
@@ -31,7 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 @Interceptor(I_PP_Cost_Collector.class)
-public class PP_Cost_Collector
+/* package */ class PP_Cost_Collector
 {
 	@DocValidate(timings =
 		{
@@ -45,7 +45,7 @@ public class PP_Cost_Collector
 		}, afterCommit = true)
 	public void addTraceEvent(@NonNull final I_PP_Cost_Collector costCollector)
 	{
-		final HUTraceEventsCreateAndAdd huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsCreateAndAdd.class);
+		final HUTraceEventsService huTraceEventsCreateAndAdd = Adempiere.getBean(HUTraceEventsService.class);
 		huTraceEventsCreateAndAdd.createAndAddFor(costCollector);
 	}
 }

@@ -359,6 +359,35 @@ public interface I_M_HU_Trace
     public static final String COLUMNNAME_M_Movement_ID = "M_Movement_ID";
 
 	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.compiere.model.I_M_Product>(I_M_HU_Trace.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
 	 * Set Lieferdisposition.
 	 *
 	 * <br>Type: Search
@@ -438,6 +467,31 @@ public interface I_M_HU_Trace
     public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trace, org.eevolution.model.I_PP_Order>(I_M_HU_Trace.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
     /** Column name PP_Order_ID */
     public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+
+	/**
+	 * Set Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQty (java.math.BigDecimal Qty);
+
+	/**
+	 * Get Menge.
+	 * Menge
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQty();
+
+    /** Column definition for Qty */
+    public static final org.adempiere.model.ModelColumn<I_M_HU_Trace, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_HU_Trace, Object>(I_M_HU_Trace.class, "Qty", null);
+    /** Column name Qty */
+    public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Get Aktualisiert.

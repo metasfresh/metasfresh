@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.hutransaction;
 
 /*
  * #%L
@@ -35,6 +35,7 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;

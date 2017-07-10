@@ -37,11 +37,11 @@ import org.adempiere.util.time.SystemTime;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;

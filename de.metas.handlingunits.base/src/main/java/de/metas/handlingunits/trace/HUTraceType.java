@@ -55,7 +55,12 @@ public enum HUTraceType
 	PRODUCTION_RECEIPT,
 	
 	/**
-	 * Used for records/events related to HU-editing.
+	 * Used for records/events related HU-loading (e.g. split of qtys from an aggregate HU).
 	 */
-	TRANSFORMATION
+	TRANSFORM_LOAD,
+	
+	/**
+	 * Used for records/events related zo changes in the parent HU relation.
+	 */
+	TRANSFORM_PARENT
 }

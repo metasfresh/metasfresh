@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.hutransaction;
 
 /*
  * #%L
@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.adempiere.util.lang.IReference;
 
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.impl.CompositeHUTrxListener;
@@ -81,10 +82,10 @@ public interface IHUTrxListener
 	 * This default implementation does nothing.
 	 * 
 	 * @param hu handling unit (never null)
-	 * @param parentHUItemOld
+	 * @param parentHUItemOld (might be null)
 	 */
 	// TODO: we shall have a proper transaction for this case
-	default void huParentChanged(final I_M_HU hu, I_M_HU_Item parentHUItemOld)
+	default void huParentChanged(final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 	{
 		// nothing
 	}

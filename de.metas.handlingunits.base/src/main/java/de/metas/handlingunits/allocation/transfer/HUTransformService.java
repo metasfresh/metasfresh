@@ -26,7 +26,6 @@ import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -43,6 +42,7 @@ import de.metas.handlingunits.document.IHUDocument;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -663,9 +663,16 @@ public class HUTransformService
 		return extractedTUs;
 	}
 
+	/**
+	 * 
+	 * @param childHU
+	 * @param parentItem may be {@code null} if the childHU in question is removed from it's parent HU.
+	 * @param beforeParentChange
+	 * @param afterParentChange
+	 */
 	private void setParent(
 			@NonNull final I_M_HU childHU, 
-			@NonNull final I_M_HU_Item parentItem, 
+			final I_M_HU_Item parentItem,
 			@NonNull final Consumer<IHUContext> beforeParentChange, 
 			@NonNull final Consumer<IHUContext> afterParentChange)
 	{

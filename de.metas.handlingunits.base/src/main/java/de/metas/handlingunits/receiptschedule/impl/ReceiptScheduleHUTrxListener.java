@@ -30,10 +30,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -44,7 +44,7 @@ import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 
 /**
  *
- * Added to the system via {@link IHUTrxBL#addListener(de.metas.handlingunits.IHUTrxListener)}.
+ * Added to the system via {@link IHUTrxBL#addListener(de.metas.handlingunits.hutransaction.IHUTrxListener)}.
  *
  * NOTE: can be accessed only via {@link #instance} to make sure we are not registering it twice.
  *

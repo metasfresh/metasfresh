@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.hutransaction.impl;
 
 /*
  * #%L
@@ -33,9 +33,9 @@ import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.logging.LogManager;

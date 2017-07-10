@@ -1,5 +1,6 @@
 package de.metas.handlingunits.trace;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
+import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -120,6 +122,16 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHU_ID, query.getVhuId());
 			emptySpec = false;
 		}
+		if (query.getProductId() > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_Product_ID, query.getProductId());
+			emptySpec = false;
+		}
+		if (query.getQty() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_Qty, query.getQty());
+			emptySpec = false;
+		}
 		if (!Check.isEmpty(query.getVhuStatus()))
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_VHUStatus, query.getVhuStatus());
@@ -160,7 +172,7 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_ShipmentSchedule_ID, query.getShipmentScheduleId());
 			emptySpec = false;
 		}
-		if (query.getDocTypeId() > 0)
+		if (query.getDocTypeId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_C_DocType_ID, query.getDocTypeId());
 			emptySpec = false;
@@ -250,13 +262,14 @@ public class HUTraceRepository
 
 	private HUTraceEvent asHuTraceEvent(@NonNull final I_M_HU_Trace dbRecord)
 	{
-		return HUTraceEvent.builder()
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.costCollectorId(dbRecord.getPP_Cost_Collector_ID())
 				.ppOrderId(dbRecord.getPP_Order_ID())
-				.docTypeId(dbRecord.getC_DocType_ID())
 				.docStatus(dbRecord.getDocStatus())
 				.eventTime(dbRecord.getEventTime().toInstant())
 				.vhuId(dbRecord.getVHU_ID())
+				.productId(dbRecord.getM_Product_ID())
+				.qty(dbRecord.getQty())
 				.huTrxLineId(dbRecord.getM_HU_Trx_Line_ID())
 				.vhuStatus(dbRecord.getVHUStatus())
 				.topLevelHuId(dbRecord.getM_HU_ID())
@@ -264,19 +277,30 @@ public class HUTraceRepository
 				.inOutId(dbRecord.getM_InOut_ID())
 				.movementId(dbRecord.getM_Movement_ID())
 				.shipmentScheduleId(dbRecord.getM_ShipmentSchedule_ID())
-				.type(HUTraceType.valueOf(dbRecord.getHUTraceType()))
-				.build();
+				.type(HUTraceType.valueOf(dbRecord.getHUTraceType()));
+
+		if (!isNull(dbRecord, I_M_HU_Trace.COLUMNNAME_C_DocType_ID))
+		{
+			builder.docTypeId(dbRecord.getC_DocType_ID()); // note that zero means "new", and not "nothing" or null
+		}
+
+		return builder.build();
 	}
 
 	private void copyToDbRecord(
 			@NonNull final HUTraceEvent huTraceRecord,
 			@NonNull final I_M_HU_Trace dbRecord)
 	{
-		dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId());
+		if (huTraceRecord.getDocTypeId() != null)
+		{
+			dbRecord.setC_DocType_ID(huTraceRecord.getDocTypeId()); // note that zero means "new", and not "nothing" or null
+		}
 		dbRecord.setDocStatus(huTraceRecord.getDocStatus());
 		dbRecord.setEventTime(TimeUtil.asTimestamp(huTraceRecord.getEventTime()));
 		dbRecord.setHUTraceType(huTraceRecord.getType().toString());
 		dbRecord.setVHU_ID(huTraceRecord.getVhuId());
+		dbRecord.setM_Product_ID(huTraceRecord.getProductId());
+		dbRecord.setQty(huTraceRecord.getQty());
 		dbRecord.setVHUStatus(huTraceRecord.getVhuStatus());
 		dbRecord.setM_HU_Trx_Line_ID(huTraceRecord.getHuTrxLineId());
 		dbRecord.setM_HU_ID(huTraceRecord.getTopLevelHuId());

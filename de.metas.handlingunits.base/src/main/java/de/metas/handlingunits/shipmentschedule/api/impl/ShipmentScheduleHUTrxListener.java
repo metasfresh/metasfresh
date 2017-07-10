@@ -30,10 +30,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IHUTrxListener;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;

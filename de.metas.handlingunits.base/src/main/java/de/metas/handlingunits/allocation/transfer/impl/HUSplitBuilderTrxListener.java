@@ -23,8 +23,8 @@ package de.metas.handlingunits.allocation.transfer.impl;
  */
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTrxListener;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 
 /**
  * This listener is added to a {@link IHUContext} before a split or merge or sth similar is executed. 
