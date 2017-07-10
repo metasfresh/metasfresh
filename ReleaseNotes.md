@@ -17,6 +17,8 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#1874](https://github.com/metasfresh/metasfresh/issues/1874) Material Receipt multiselect Close Lines
+  * [#1938](https://github.com/metasfresh/metasfresh/issues/1938) Adjust Window Greeting in WebUI
+    * Adding improvements to Greeting Window in Form of 2-column Layout and Translations.
 
 * metasfresh-webui-api
 
