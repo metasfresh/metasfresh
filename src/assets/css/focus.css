@@ -25,3 +25,12 @@ button:focus {
 .btn-device:focus {
     border: 1px solid $brand-font-color;
 }
+
+.btn.active.focus, 
+.btn.active:focus, 
+.btn.focus, 
+.btn:active.focus, 
+.btn:active:focus, 
+.btn:focus {
+    outline: 0;
+}
