@@ -128,7 +128,6 @@ class LoginForm extends Component {
 
     render() {
         const {roleSelect, roles, err, role, pending} = this.state;
-        console.log(roles);
         return (
             <div
                 className="login-form panel panel-spaced-lg panel-shadowed panel-primary"

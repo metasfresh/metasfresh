@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import TagsInput from 'react-tagsinput';
 import 'react-tagsinput/react-tagsinput.css';
 import Autosuggest from 'react-autosuggest';
-import counterpart from 'counterpart';
 
 import {
     autocompleteRequest
@@ -11,14 +10,14 @@ import {
 class AutocompleteTo extends Component {
     constructor(props) {
         super(props);
-        
+
         this.state = {
             suggestions: [],
-            tags: this.getTags(props.to)
+            tags: this.getTags()
         }
     }
 
-    getTags=(tags)=>{
+    getTags=()=>{
         const {to} = this.props;
         let tagsUpdated=[];
 
@@ -27,11 +26,11 @@ class AutocompleteTo extends Component {
         });
         return tagsUpdated;
     }
-    
+
     handleChange = (tags) => {
         this.setState({tags});
     }
-    
+
     suggestionsFetch = ({value}) => {
         const {emailId} = this.props;
         autocompleteRequest(
@@ -46,12 +45,11 @@ class AutocompleteTo extends Component {
 
     autocompleteRenderInput = ({addTag, ...props}) => {
         const {suggestions} = this.state;
-        const {windowId, docId, emailId} = this.props;
 
-        const handleOnChange = (e, {newValue, method}) => {
+        const handleOnChange = (e, {method}) => {
             if (method === 'enter') {
                 e.preventDefault();
-            } else {     
+            } else {
                 props.onChange(e);
             }
         }
@@ -87,7 +85,7 @@ class AutocompleteTo extends Component {
                 className="tagsinput"
                 renderInput={this.autocompleteRenderInput}
                 inputProps={{
-                    placeholder: "",
+                    placeholder: '',
                     className: 'email-input'
                 }}
                 value={tags}

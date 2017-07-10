@@ -3,9 +3,9 @@ import axios from 'axios';
 export function createEmail(windowId, documentId){
     return axios.post(
         config.API_URL + '/mail', {
-            "documentPath": {
-                "documentId": documentId,
-                "windowId": windowId
+            'documentPath': {
+                'documentId': documentId,
+                'windowId': windowId
             }
         }
     );
@@ -20,7 +20,9 @@ export function addAttachment(emailId, file){
 
     data.append('file', file);
 
-    return axios.post(config.API_URL + '/mail/' + emailId + '/field/attachments', data);
+    return axios.post(
+        config.API_URL + '/mail/' + emailId +'/field/attachments', data
+    );
 }
 
 export function getEmail(emailId){

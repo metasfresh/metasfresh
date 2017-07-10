@@ -29,18 +29,13 @@ class NewEmail extends Component {
         this.state = {
             init: false,
             cached: {},
-            templates: [{
-                caption: "test 1"
-            },{
-                caption: "test 2"
-            }, {
-                caption: "test 3"
-            }]
+            templates: [],
+            template: {}
         }
     }
-    
+
     componentWillMount = () => {
-        const {dispatch, windowId, docId, handleCloseEmail} = this.props;
+        const {windowId, docId, handleCloseEmail} = this.props;
         createEmail(windowId, docId).then(res => {
             this.setState({
                 init: true,
@@ -48,7 +43,7 @@ class NewEmail extends Component {
                 cached: res.data
             })
             this.getTemplates();
-        }).catch(err => {
+        }).catch(() => {
             handleCloseEmail();
         })
     }
@@ -64,24 +59,24 @@ class NewEmail extends Component {
     }
 
     getTemplates = () => {
-        // getTemplates().then(res => {
-        //     this.setState({
-        //         templates: res.values
-        //     })
-        // });
+        getTemplates().then(res => {
+            this.setState({
+                templates: res.data.values
+            })
+        });
     }
-    
+
     change = (prop, value) => {
         this.setState({
             [prop]: value
         })
     }
-    
+
     patch = (prop, value) => {
         const {emailId} = this.state;
-        
+
         if(this.state.cached[prop] === value) return;
-        
+
         patchRequest('mail', emailId, null, null, null, prop, value)
             .then(res => {
                 this.setState({
@@ -90,7 +85,7 @@ class NewEmail extends Component {
                 })
             })
     }
-    
+
     send = () => {
         const {emailId} = this.state;
         const {handleCloseEmail, dispatch} = this.props;
@@ -103,33 +98,46 @@ class NewEmail extends Component {
     }
 
     handleTemplate=(option)=> {
-        console.log(option);
+        const {emailId, template} = this.state;
+        if(template === option) return;
+
+        patchRequest('mail', emailId, null, null, null, 'templateId', option)
+            .then(res => {
+               this.setState({
+                   ...res.data,
+                    template: option
+                });
+            })
     }
 
     render() {
         const {handleCloseEmail, windowId, docId} = this.props;
         const {
-            suggestions, tags, init, attachments, emailId, subject, message, to,
-            templates
+            init, attachments, emailId, subject, message, to,
+            templates, template
         } = this.state;
-        
+
         if(!init) return false;
-        
+
         return (
             <div className="screen-freeze">
                 <div className="panel panel-modal panel-email panel-modal-primary">
                     <div className="panel-email-header-wrapper">
                         <div className="panel-email-header panel-email-header-top">
-                            {counterpart.translate('window.email.new')}
+                            <span className="email-headline">
+                                {counterpart.translate('window.email.new')}
+                            </span>
                             <div className="email-templates">
-                                <RawList
+                                {templates.length>0 && <RawList
                                     rank="primary"
                                     list={templates}
-                                    onSelect={option => this.handleTemplate(option)}
-                                    selected={0}
-                                />
+                                    onSelect={
+                                        option => this.handleTemplate(option)
+                                    }
+                                    selected={template}
+                                />}
                             </div>
-                            
+
                             <div
                                 className="input-icon input-icon-lg icon-email"
                                 onClick={handleCloseEmail}
@@ -140,7 +148,9 @@ class NewEmail extends Component {
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span className="email-label">{counterpart.translate('window.email.to')}:</span>
+                                <span className="email-label">
+                                    {counterpart.translate('window.email.to')}:
+                                </span>
                                 <AutocompleteTo
                                     {...{windowId, docId, emailId, to}}
                                 />
@@ -148,13 +158,15 @@ class NewEmail extends Component {
                         </div>
                         <div className="panel-email-header panel-email-bright">
                             <div className="panel-email-data-wrapper">
-                                <span className="email-label">{counterpart.translate('window.email.topic')}:</span>
+                                <span className="email-label">
+                                    {counterpart.translate('window.email.topic')}:
+                                </span>
                                 <input
                                     className="email-input email-input-msg"
                                     type="text"
                                     onChange={e =>
                                         this.change('subject', e.target.value)}
-                                    value={subject}
+                                    value={subject ? subject : ''}
                                     onBlur={
                                         () => this.patch('subject', subject)
                                     }
@@ -164,7 +176,7 @@ class NewEmail extends Component {
                     </div>
                     <div className="panel-email-body">
                         <textarea
-                            value={message}
+                            value={message ? message : ''}
                             onChange={e =>
                                 this.change('message', e.target.value)}
                             onBlur={() => this.patch('message', message)}

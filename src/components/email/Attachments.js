@@ -20,13 +20,13 @@ class Attachments extends Component {
 
     addAttachment=(e)=> {
         const{emailId, getEmail} = this.props;
-        addAttachment(emailId, e.target.files[0]).then(res=>{
+        addAttachment(emailId, e.target.files[0]).then(()=>{
             getEmail(emailId);
         });
     }
 
     clearFile=()=>{
-        document.getElementsByClassName('attachment-input')[1].value="";
+        document.getElementsByClassName('attachment-input')[1].value='';
     }
 
     render() {
@@ -35,7 +35,7 @@ class Attachments extends Component {
             <div className="email-attachments-wrapper">
                 {attachments && attachments.map((item, index) => {
                     return(
-                        <div 
+                        <div
                             className="attachment"
                             key={index}
                         >
@@ -49,13 +49,17 @@ class Attachments extends Component {
                     )
                 })}
                 <div>
-                    <span 
+                    <span
                         className="add-attachment"
                     >
                     <form>
                         <i className="meta-icon-attachments"/>
                         <FileInput name="myImage"
-                            placeholder={counterpart.translate('window.email.addattachment')}
+                            placeholder={
+                                counterpart.translate(
+                                    'window.email.addattachment'
+                                )
+                            }
                             className="attachment-input"
                             onChange={this.addAttachment}
                         />
