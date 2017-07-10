@@ -113,23 +113,23 @@
     cursor: pointer;
 }
 
-.add-attachment input[type="file"] {
+.add-attachment input[type='file'] {
     cursor: pointer;
-    font-size: 0px;
+    font-size: 0;
     height: 20px;
 }
 
 .add-attachment:hover .attachment-input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
-  text-decoration: underline;
+    text-decoration: underline;
 }
 .add-attachment:hover .attachment-input::-moz-placeholder { /* Firefox 19+ */
-  text-decoration: underline;
+    text-decoration: underline;
 }
 .add-attachment:hover .attachment-input:-ms-input-placeholder { /* IE 10+ */
-  text-decoration: underline;
+    text-decoration: underline;
 }
 .add-attachment:hover .attachment-input:-moz-placeholder { /* Firefox 18- */
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 .email-label {
