@@ -14,9 +14,11 @@ class TableItem extends Component {
         };
     }
 
-    handleEditProperty = (e, property, callback) => {
+    handleEditProperty = (e, property, callback, item) => {
         const { activeCell } = this.state;
         const elem = document.activeElement;
+
+        // console.log(item);
 
         if(activeCell !== elem && !elem.className.includes('js-input-field')) {
             this.setState({
@@ -24,14 +26,26 @@ class TableItem extends Component {
             })
         }
 
-        this.editProperty(e, property, callback);
+        // if(property) {
+        //     console.log('class: ' + elem.className);
+        // } else {
+        //     console.log('click outside');
+        // }
+        
+
+        this.editProperty(e, property, callback, item);
     }
 
-    editProperty = (e, property, callback) => {
+    editProperty = (e, property, callback, item) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
+        console.log('!cell-disabled: ' + !document.activeElement.className.includes('cell-disabled')+ " " + (item ? !item.readonly : 'true'));
+        console.log('cell-readonly: ' + document.activeElement.className.includes('cell-readonly') + " flase");
         if(
-            !document.activeElement.className.includes('cell-disabled') ||
-            document.activeElement.className.includes('cell-readonly')
+            // !document.activeElement.className.includes('cell-disabled') ||
+            // document.activeElement.className.includes('cell-readonly')
+
+            (item ? !item.readonly : true) || false
+
         ) {
             this.setState({
                 edited: property
@@ -120,7 +134,7 @@ class TableItem extends Component {
                     key={index}
                     isEdited={edited === property}
                     onDoubleClick={(e) =>
-                        this.handleEditProperty(e, property, true)
+                        this.handleEditProperty(e, property, true, widgetData[0])
                     }
                     onClickOutside={(e) => {
                         this.handleEditProperty(e); changeListenOnTrue()}
