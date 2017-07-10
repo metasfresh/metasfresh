@@ -24,6 +24,8 @@ Here come the actual release notes:
     * New Window to allow Business Partner Relations maintenance in WebUI.
   * [#1944](https://github.com/metasfresh/metasfresh/issues/1944) Request Type Window adjustments
     * Minor Adjustments to Request Type Window in WebUI, renaming Fields, adding Translations, Layout improvement in GridView.
+  * [#1969](https://github.com/metasfresh/metasfresh/issues/1969) Adjustment on Average Purchase Prices Function
+    * Enhancement for the Average Purchase Price Function, now returning additional Information like DocumentNo and Receiptdate if available.
 
 * metasfresh-webui-api
 
