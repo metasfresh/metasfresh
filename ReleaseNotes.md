@@ -22,9 +22,10 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
 
-
 ## Fixes
 * metasfresh-app
+  * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
+    * Fix for MatchInv Accounting of non service Products
 
 * metasfresh-webui-api
 
