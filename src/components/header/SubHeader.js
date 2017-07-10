@@ -118,7 +118,7 @@ class Subheader extends Component {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
             handleDelete, docNo, redirect, breadcrumb, siteName, editmode,
-            handleEditModeToggle
+            handleEditModeToggle, handleEmail
         } = this.props;
 
         const docLinks = dataId && [
@@ -139,6 +139,18 @@ class Subheader extends Component {
             </div>,
             <div
                 key={1}
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
+                onClick={() => {handleEmail(); closeSubheader()}}
+            >
+                <i className="meta-icon-message" />
+                {counterpart.translate('window.email.caption')}
+                <span className="tooltip-inline">
+                    {keymap.GLOBAL_CONTEXT.OPEN_EMAIL}
+                </span>
+            </div>,
+            <div
+                key={2}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => {
