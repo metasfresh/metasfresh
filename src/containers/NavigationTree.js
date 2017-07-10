@@ -36,30 +36,37 @@ class NavigationTree extends Component {
         document.getElementById('search-input').focus();
     }
 
-    getData = (callback) => {
-        rootRequest().then(response => {
-            this.setState(Object.assign({}, this.state, {
-                rootResults: response.data,
-                queriedResults: response.data.children,
-                query: ''
-            }), () => {
-                callback();
-            })
-        }).catch((err) => {
-            if(err.response && err.response.status === 404) {
+    getData = (callback, doNotResetState) => {
+        const {query} = this.state;
+
+        if(doNotResetState && query){
+            this.queryRequest(query);
+        } else {
+            rootRequest().then(response => {
                 this.setState(Object.assign({}, this.state, {
-                    queriedResults: [],
-                    rootResults: {},
+                    rootResults: response.data,
+                    queriedResults: response.data.children,
                     query: ''
                 }), () => {
                     callback();
                 })
-            }
-        });
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.setState(Object.assign({}, this.state, {
+                        queriedResults: [],
+                        rootResults: {},
+                        query: ''
+                    }), () => {
+                        callback();
+                    })
+                }
+            });
+        }
     }
 
+
     updateData = () => {
-        this.getData();
+        this.getData(false, true);
     }
 
     openModal = (windowType, type, caption, isAdvanced) => {
@@ -74,23 +81,27 @@ class NavigationTree extends Component {
                 query: e.target.value
             });
 
-            queryPathsRequest(e.target.value, '', true)
-                .then(response => {
-                    this.setState({
-                        queriedResults: response.data.children
-                    })
-                }).catch((err) => {
-                    if(err.response && err.response.status === 404) {
-                        this.setState({
-                            queriedResults: [],
-                            rootResults: {}
-                        })
-                    }
-                });
+            this.queryRequest(e.target.value);
+
         }else{
             this.getData(this.clearValue);
         }
+    }
 
+    queryRequest = (value) => {
+        queryPathsRequest(value, '', true)
+            .then(response => {
+                this.setState({
+                    queriedResults: response.data.children
+                })
+            }).catch((err) => {
+                if(err.response && err.response.status === 404) {
+                    this.setState({
+                        queriedResults: [],
+                        rootResults: {}
+                    })
+                }
+            });
     }
 
     clearValue = () => {
