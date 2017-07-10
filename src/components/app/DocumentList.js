@@ -60,7 +60,10 @@ class DocumentList extends Component {
             clickOutsideLock: false,
             refresh: null,
 
-            cachedSelection: null
+            cachedSelection: null,
+
+            isShowIncluded: false,
+            hasShowIncluded: false
         }
         this.fetchLayoutAndData();
     }
@@ -462,10 +465,23 @@ class DocumentList extends Component {
         }
     }
 
+    showIncludedViewOnSelect = (showIncludedView, data) => {
+        const {
+            dispatch
+        } = this.props;
+
+        this.setState({
+            isShowIncluded: showIncludedView ? true : false,
+            hasShowIncluded: showIncludedView ? true : false
+        }, ()=> {
+            showIncludedView && dispatch(setListIncludedView(data.windowId, data.viewId));
+        });
+    }
+
     render() {
         const {
             layout, data, viewId, clickOutsideLock, refresh, page, filters,
-            cachedSelection
+            cachedSelection, isShowIncluded, hasShowIncluded
         } = this.state;
 
         const {
@@ -490,8 +506,8 @@ class DocumentList extends Component {
                 <div
                     className={
                         'document-list-wrapper ' +
-                        (isIncluded ? 'document-list-included ' : '') +
-                        (hasIncluded ? 'document-list-has-included ' : '')
+                        (isShowIncluded || isIncluded ? 'document-list-included ' : '') +
+                        (hasShowIncluded || hasIncluded ? 'document-list-has-included ' : '')
                     }
                 >
                         {!readonly && <div
@@ -565,6 +581,7 @@ class DocumentList extends Component {
                                 refreshSelection={this.state.refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
+                                showIncludedViewOnSelect={this.showIncludedViewOnSelect}
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
