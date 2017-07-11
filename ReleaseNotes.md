@@ -68,6 +68,7 @@ Here come the actual release notes:
   * [#1947](https://github.com/metasfresh/metasfresh/issues/1947) camt54 import does not support multiple Ntrys
   * [#1953](https://github.com/metasfresh/metasfresh/issues/1953) Support multiple email recipients
   * [#1961](https://github.com/metasfresh/metasfresh/issues/1961) AD_BoilerPlate variables not resolved in Email editor
+  * [#1975](https://github.com/metasfresh/metasfresh/issues/1975) new LU is created as planning in production
 
 * metasfresh-webui-api
 
