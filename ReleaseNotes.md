@@ -45,6 +45,15 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#979](https://github.com/metasfresh/metasfresh-webui-frontend/issues/979) Use the Provided Endpoint w/ entry selections for given Breadcrumb
 
+##Fixes
+* metasfresh-app
+
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+  * [#987](https://github.com/metasfresh/metasfresh-webui-frontend/issues/987) Blue Border in modal overlay when Button pressed
+    * Fixes a Stylesheet Issue that caused a blue border around Buttons and Tooltips when hovering.
+
 # metasfresh 5.17 (2017-28)
 
 **upcoming release for week 2017-28**
