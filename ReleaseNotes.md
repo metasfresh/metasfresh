@@ -24,6 +24,8 @@ Here come the actual release notes:
     * New Window to allow Business Partner Relations maintenance in WebUI.
   * [#1941](https://github.com/metasfresh/metasfresh/issues/1941) Subtab Layout for Window Outbound Document
     * Adjustment of the DocOutbound Window. Layout changes for Log Subtab, adding Translations and renaming Fields.
+  * [#1942](https://github.com/metasfresh/metasfresh/issues/1942) Payment Terms Window in WebUI
+    * Adjustment of Payment Terms Window with harmonized Layout. Adding Translations for en_US.
   * [#1944](https://github.com/metasfresh/metasfresh/issues/1944) Request Type Window adjustments
     * Minor Adjustments to Request Type Window in WebUI, renaming Fields, adding Translations, Layout improvement in GridView.
   * [#1969](https://github.com/metasfresh/metasfresh/issues/1969) Adjustment on Average Purchase Prices Function
