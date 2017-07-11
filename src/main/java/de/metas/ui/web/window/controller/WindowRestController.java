@@ -572,15 +572,29 @@ public class WindowRestController
 	}
 
 	@GetMapping("/{windowId}/{documentId}/actions")
+	public JSONDocumentActionsList getDocumentActions(@PathVariable("windowId") final String windowIdStr, @PathVariable("documentId") final String documentId)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
+		return getDocumentActions(documentPath);
+	}
+
+	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
 	public JSONDocumentActionsList getDocumentActions(
-			@PathVariable("windowId") final String windowIdStr //
-			, @PathVariable("documentId") final String documentId //
-	)
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String tabIdStr,
+			@PathVariable("rowId") final String rowIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
+		return getDocumentActions(documentPath);
+	}
+
+	private JSONDocumentActionsList getDocumentActions(final DocumentPath documentPath)
 	{
 		userSession.assertLoggedIn();
 
-		final WindowId windowId = WindowId.fromJson(windowIdStr);
-		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentId);
 		final IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 		return documentCollection.forDocumentReadonly(documentPath, changesCollector, document -> {
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.of(document);
@@ -590,6 +604,7 @@ public class WindowRestController
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
 	}
+
 
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/references")
 	public JSONDocumentReferencesGroup getDocumentReferences(
