@@ -7,7 +7,8 @@ class DocumentListContextShortcuts extends Component {
     }
     handleShortcuts = (action, event) => {
         const {
-            handleAdvancedEdit, handleOpenNewTab, handleDelete, getAllLeafs
+            handleAdvancedEdit, handleOpenNewTab, handleDelete, getAllLeafs,
+            handleIndent
         } = this.props;
 
         switch (action) {
@@ -16,23 +17,29 @@ class DocumentListContextShortcuts extends Component {
             if(handleOpenNewTab) {
             handleOpenNewTab();
             }
-            break
+            break;
         case 'REMOVE_SELECTED':
             event.preventDefault();
             if(handleDelete){
             handleDelete();
             }
-            break
+            break;
         case 'ADVANCED_EDIT':
             event.preventDefault();
             if(handleAdvancedEdit){
             handleAdvancedEdit();
             }
-            break
+            break;
         case 'SELECT_ALL_LEAFS':
             event.preventDefault();
             getAllLeafs();
-            break
+            break;
+        case 'EXPAND_INDENT':
+            handleIndent(true);
+            break;
+        case 'COLLAPSE_INDENT':
+            handleIndent(false);
+            break;
         }
     }
 

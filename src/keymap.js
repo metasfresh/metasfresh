@@ -30,7 +30,9 @@ export default {
         REMOVE_SELECTED: mod + '+' + 'y',
         ADVANCED_EDIT: mod + '+' + 'a',
         //===================  POS  ======================
-        SELECT_ALL_LEAFS: mod + '+' + 's'
+        SELECT_ALL_LEAFS: mod + '+' + 's',
+        EXPAND_INDENT: '+',
+        COLLAPSE_INDENT: '-'
 
     },
     TABLE_CONTEXT: {

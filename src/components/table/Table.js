@@ -682,6 +682,31 @@ class Table extends Component {
         })
     }
 
+    handleShortcutIndent = (expand) => {
+        const {selected, rows, collapsedParentsRows} = this.state;
+        const {keyProperty} = this.props;
+
+        let node = "";
+        let isCollapsed = "";
+        selected.length === 1 && rows.map((item)=>{
+            if(item.id === selected[0]){
+                if(item.includedDocuments){
+                    node = item;
+                    isCollapsed = collapsedParentsRows.indexOf(item[keyProperty]) > -1;
+                }
+            }
+        });
+        
+        if(node){
+            if(isCollapsed && expand) {
+                this.handleRowCollapse(node, expand);
+            } else if(!isCollapsed && !expand) {
+                this.handleRowCollapse(node, expand);
+            } 
+        }
+        
+    }
+
     renderTableBody = () => {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
@@ -914,6 +939,8 @@ class Table extends Component {
                         () => this.handleDelete() : ''
                     }
                     getAllLeafs={this.getAllLeafs}
+
+                    handleIndent = {this.handleShortcutIndent}
                 />
 
                 {!readonly &&
