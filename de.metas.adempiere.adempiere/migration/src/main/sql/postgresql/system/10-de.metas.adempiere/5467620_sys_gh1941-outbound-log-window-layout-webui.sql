@@ -248,3 +248,38 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-07-11 17:45:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543652
 ;
 
+-- 2017-07-11T17:51:39.658
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:51:39','YYYY-MM-DD HH24:MI:SS'),Name='Active',Description='',Help='' WHERE AD_Field_ID=551418 AND AD_Language='en_US'
+;
+
+-- 2017-07-11T17:52:34.493
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:52:34','YYYY-MM-DD HH24:MI:SS'),Name='eMail counter' WHERE AD_Field_ID=551352 AND AD_Language='en_US'
+;
+
+-- 2017-07-11T17:53:29.837
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:53:29','YYYY-MM-DD HH24:MI:SS'),Name='Via EDI' WHERE AD_Field_ID=555168 AND AD_Language='en_US'
+;
+
+-- 2017-07-11T17:54:07.030
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:54:07','YYYY-MM-DD HH24:MI:SS'),Name='Print counter' WHERE AD_Field_ID=551351 AND AD_Language='en_US'
+;
+
+-- 2017-07-11T17:54:16.340
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:54:16','YYYY-MM-DD HH24:MI:SS'),Name='PDF counter' WHERE AD_Field_ID=551737 AND AD_Language='en_US'
+;
+
+-- 2017-07-11T17:55:54.485
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:55:54','YYYY-MM-DD HH24:MI:SS'),Name='Last printed' WHERE AD_Field_ID=551362 AND AD_Language='en_US'
+;
+
+-- 2017-07-11T17:56:14.202
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-11 17:56:14','YYYY-MM-DD HH24:MI:SS'),Name='Last eMailed' WHERE AD_Field_ID=551363 AND AD_Language='en_US'
+;
+
