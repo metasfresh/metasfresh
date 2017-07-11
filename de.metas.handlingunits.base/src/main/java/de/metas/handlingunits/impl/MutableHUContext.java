@@ -45,6 +45,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import lombok.NonNull;
 
 /* package */class MutableHUContext implements IMutableHUContext
 {
@@ -137,7 +138,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 		huContextCopy.setHUStorageFactory(getHUStorageFactory());
 		huContextCopy.setHUAttributeStorageFactory(getHUAttributeStorageFactory());
 		huContextCopy.setDate(getDate());
-		huContextCopy._destroyedHUPackingMaterialsCollector = _destroyedHUPackingMaterialsCollector;
+		huContextCopy.setHUPackingMaterialsCollector(_destroyedHUPackingMaterialsCollector);
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
 
 		return huContextCopy;
@@ -247,6 +248,13 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 	{
 
 		return _destroyedHUPackingMaterialsCollector;
+	}
+
+	@Override
+	public IMutableHUContext setHUPackingMaterialsCollector(@NonNull final IHUPackingMaterialsCollector<I_M_InOutLine> huPackingMaterialsCollector)
+	{
+		this._destroyedHUPackingMaterialsCollector = huPackingMaterialsCollector;
+		return this;
 	}
 
 	@Override
