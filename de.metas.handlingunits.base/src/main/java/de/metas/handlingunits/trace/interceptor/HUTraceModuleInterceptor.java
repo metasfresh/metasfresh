@@ -1,9 +1,12 @@
 package de.metas.handlingunits.trace.interceptor;
 
+import java.util.List;
+
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.IReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 
@@ -13,6 +16,8 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
+import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import lombok.NonNull;
 
@@ -56,7 +61,6 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 			return;
 		}
 		engine.addModelValidator(new PP_Cost_Collector(), client);
-		engine.addModelValidator(new M_HU_Trx_Hdr(), client);
 		engine.addModelValidator(new M_InOut(), client);
 		engine.addModelValidator(new M_Movement(), client);
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
@@ -79,6 +83,13 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 			{
 				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
 				huTraceEventService.createAndForHuParentChanged(hu, parentHUItemOld);
+			}
+			
+			@Override
+			public void afterTrxProcessed(@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef, @NonNull final List<I_M_HU_Trx_Line> trxLines)
+			{
+				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
+				huTraceEventService.createAndAddFor(trxHdrRef.getValue(), trxLines);
 			}
 		});
 	}

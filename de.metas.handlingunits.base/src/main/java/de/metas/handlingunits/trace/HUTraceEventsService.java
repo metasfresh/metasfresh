@@ -251,7 +251,7 @@ public class HUTraceEventsService
 			}
 			if (trxLine.getQty().signum() <= 0)
 			{
-				continue;
+				continue; // for values less than zero, we will get the respective record via its > zero pendant
 			}
 			if (trxLine.getParent_HU_Trx_Line_ID() <= 0)
 			{
@@ -291,27 +291,51 @@ public class HUTraceEventsService
 		{
 			builder.huTrxLineId(trxLine.getM_HU_Trx_Line_ID());
 
-			final int topLevelHuId = huAccessService.retrieveTopLevelHuId(trxLine.getM_HU());
-			builder.topLevelHuId(topLevelHuId);
-
 			final List<I_M_HU> vhus = getVhus.apply(trxLine);
 			for (final I_M_HU vhu : vhus)
 			{
-				builderSetVhuProductAndQty(builder, vhu)
+				final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+				if (!productAndQty.isPresent())
+				{
+					continue;
+				}
+
+				builder
+						.vhuId(vhu.getM_HU_ID())
+						.topLevelHuId(huAccessService.retrieveTopLevelHuId(vhu))
+						.productId(productAndQty.get().getLeft().getM_Product_ID())
+						.qty(productAndQty.get().getRight())
 						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
 
-				final List<I_M_HU> sourceVhus = getVhus.apply(trxLine.getParent_HU_Trx_Line());
+				final I_M_HU_Trx_Line sourceTrxLine = trxLine.getParent_HU_Trx_Line();
+				final List<I_M_HU> sourceVhus = getVhus.apply(sourceTrxLine);
 				for (final I_M_HU sourceVhu : sourceVhus)
 				{
-					if (sourceVhu.getM_HU_ID() != vhu.getM_HU_ID())
-					{
-						// the source-HU might be the same if e.g. only the status was changed
-						builder.vhuSourceId(sourceVhu.getM_HU_ID());
-					}
-					final HUTraceEvent event = builder.build();
+					builder.vhuSourceId(sourceVhu.getM_HU_ID());
 
-					final boolean eventWasInserted = huTraceRepository.addEvent(event);
-					result.get(eventWasInserted).add(event);
+					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
+					{
+						continue; // the source-HU might be the same if e.g. only the status was changed
+					}
+
+					// create a trace record for the split's "destination"
+					final HUTraceEvent splitDestEvent = builder.build();
+
+					// create a trace record for the split's "source"
+					final HUTraceEvent splitSourceEvent = builder
+							.huTrxLineId(sourceTrxLine.getM_HU_Trx_Line_ID())
+							.vhuId(sourceVhu.getM_HU_ID())
+							.topLevelHuId(huAccessService.retrieveTopLevelHuId(sourceVhu))
+							.vhuSourceId(0)
+							.qty(productAndQty.get().getRight().negate())
+							.build();
+
+					// add the source before the destination because I think it's nicer if it has the lower ID
+					final boolean sourceEventWasInserted = huTraceRepository.addEvent(splitSourceEvent);
+					result.get(sourceEventWasInserted).add(splitSourceEvent);
+
+					final boolean eventWasInserted = huTraceRepository.addEvent(splitDestEvent);
+					result.get(eventWasInserted).add(splitDestEvent);
 				}
 			}
 		}
@@ -321,8 +345,8 @@ public class HUTraceEventsService
 	public void createAndForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 	{
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.eventTime(Instant.now())
-				.type(HUTraceType.TRANSFORM_PARENT);
+				.type(HUTraceType.TRANSFORM_PARENT)
+				.eventTime(Instant.now());
 
 		final List<I_M_HU> vhus = huAccessService.retrieveVhus(hu);
 		final int newTopLevelHuId = huAccessService.retrieveTopLevelHuId(hu);

@@ -15,10 +15,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.model.util.ModelByIdComparator;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.Adempiere;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.model.I_M_HU_Trace;
@@ -89,6 +91,13 @@ public class HUTraceRepository
 		return inserted;
 	}
 
+	/**
+	 * Return records according to the given specification. If the specification is "empty", i.e. if it specifies no conditions, then return an empty list to prevent an {@code OutOfMemoryError}.
+	 * 
+	 * @param query
+	 * @return
+	 * @see HUTraceSpecification
+	 */
 	public List<HUTraceEvent> query(@NonNull final HUTraceSpecification query)
 	{
 		return queryDbRecord(query)
@@ -98,12 +107,24 @@ public class HUTraceRepository
 	}
 
 	/**
-	 * Return records according to the given specification. If the specification is "empty", i.e. if it specifies no conditions, then return an empty list to prevent an {@code OutOfMemoryError}.
+	 * Return all records; this makes absolutely no sense in production; Intended to be used only use for testing.
 	 * 
-	 * @param query
 	 * @return
-	 * @see HUTraceSpecification
 	 */
+	@VisibleForTesting
+	/* package */ List<HUTraceEvent> queryAll()
+	{
+		Check.errorUnless(Adempiere.isUnitTestMode(), "The method queryAll() shall only be invoked from test code");
+		
+		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
+				.orderBy().addColumn(I_M_HU_Trace.COLUMN_M_HU_Trace_ID).endOrderBy();
+
+		return queryBuilder.create()
+				.stream()
+				.map(r -> asHuTraceEvent(r))
+				.collect(Collectors.toList());
+	}
+
 	private List<I_M_HU_Trace> queryDbRecord(@NonNull final HUTraceSpecification query)
 	{
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)

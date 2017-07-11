@@ -53,6 +53,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.storage.IHUItemStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import lombok.NonNull;
 
 public class HUTransactionProcessor implements IHUTransactionProcessor
 {
@@ -147,11 +148,10 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 	 * @param trxHdrRef
 	 * @param trxLines
 	 */
-	private final void processTrx(final IReference<I_M_HU_Trx_Hdr> trxHdrRef, final List<I_M_HU_Trx_Line> trxLines)
+	private final void processTrx(
+			@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef, 
+			@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
-		Check.assumeNotNull(trxHdrRef, "trxHdrRef not null");
-		Check.assumeNotNull(trxLines, "trxLines not null");
-
 		//
 		// If no lines, there nothing to do
 		if (trxLines.isEmpty())
