@@ -66,12 +66,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -81,7 +81,7 @@ import lombok.NonNull;
 /**
  * This class contains business logic run by clients when they transform HUs.
  * Use {@link #get(Properties)} or {@link #get(IHUContext)} to obtain an instance.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh-webui/issues/181
  *
@@ -105,7 +105,7 @@ public class HUTransferService
 
 	/**
 	 * When running unit tests, then use this method to get your instance. Pass the HUTestHelper's getHUContext() result to it, to avoid transactional trouble.
-	 * 
+	 *
 	 * @param ctx
 	 * @return
 	 */
@@ -116,7 +116,7 @@ public class HUTransferService
 
 	/**
 	 * Uses {@link IHUContextFactory#createMutableHUContext(Properties, String)} with the given {@code ctx} and returns a new {@link HUTransferService} instance with that huContext.
-	 * 
+	 *
 	 * @param ctx
 	 * @return
 	 */
@@ -130,7 +130,7 @@ public class HUTransferService
 	 * Optional; the given list contains references that can be turned into {@link IHUDocument} using the {@link IHUDocumentFactoryService}.
 	 * They may be assigned to HUs that are given as parameters to this service's methods.
 	 * It's required to use this method if the service works on HUs that are assigned to other records such as {@link I_M_ReceiptSchedule}s, because otherwise. those assignements are not updated correctly.
-	 * 
+	 *
 	 * @param referencedObjects
 	 * @return
 	 */
@@ -191,7 +191,7 @@ public class HUTransferService
 
 	/**
 	 * Takes a quantity out of a TU <b>or</b> to splits one CU into two.
-	 * 
+	 *
 	 * @param cuHU the currently selected source CU line
 	 * @param qtyCU the CU-quantity to take out or split
 	 */
@@ -258,7 +258,7 @@ public class HUTransferService
 	 * <b>Important:</b> the user is allowed to exceed the TU capacity which was configured in metasfresh! No new TUs will be created.<br>
 	 * That's because if a user manages to squeeze something into a box in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
-	 * 
+	 *
 	 * @param sourceCuHU the source CU to be split or joined
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param targetTuHU the target TU
@@ -358,7 +358,7 @@ public class HUTransferService
 	}
 
 	/**
-	 * 
+	 *
 	 * @param luHU
 	 * @param tuHU
 	 * @param cuHU if {@code null}, then all cuHus of the given tuHU are iterated.
@@ -418,7 +418,7 @@ public class HUTransferService
 	 * That's because if a user manages to jenga another box onto a loaded pallet in reality, it is mandatory that he/she can do the same in metasfresh, no matter what the master data says.
 	 * <p>
 	 * <b>Also, please note that an aggregate TU is "de-aggregated" before it is added to the LU.</b>
-	 * 
+	 *
 	 * @param sourceTuHU the source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
 	 * @param qtyTU the number of TUs to join or split one the target LU
 	 * @param luHU the target LU
@@ -481,7 +481,7 @@ public class HUTransferService
 	/**
 	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
-	 * 
+	 *
 	 * @param cuHU the currently selected source CU line
 	 * @param qtyCU the CU-quantity to join or split
 	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
@@ -523,7 +523,7 @@ public class HUTransferService
 	/**
 	 * Takes a TU off a LU or splits one TU into two. This also has the effect of "de-aggregating" the given {@code sourceTuHU}.<br>
 	 * The resulting TUs will always have the same PI as the source TU.
-	 * 
+	 *
 	 * @param sourceTuHU he source TU to process. Can be an aggregated HU and therefore represent many homogeneous TUs
 	 * @param qtyTU the number of TUs to take off or split
 	 * @param isOwnPackingMaterials
@@ -562,7 +562,7 @@ public class HUTransferService
 
 	/**
 	 * Extract a given amount of TUs from an LU or TU/AggregatedTU.
-	 * 
+	 *
 	 * @param sourceHU LU/TU from where the TUs shall be extracted
 	 * @param qtyTU how many TUs to extract
 	 * @param isOwnPackingMaterials
@@ -587,7 +587,7 @@ public class HUTransferService
 
 	/**
 	 * Extract a given amount of TUs from an LU.
-	 * 
+	 *
 	 * @param sourceLU LU from where the TUs shall be extracted
 	 * @param qtyTU how many TUs to extract
 	 * @param isOwnPackingMaterials
@@ -683,19 +683,18 @@ public class HUTransferService
 	/**
 	 * Creates a new LU and joins or splits a source TU to it. If the user goes with the full quantity of the (aggregate) source TU(s), and if if all fits on one LU, then the source remains unchanged and is only joined.<br>
 	 * Otherwise, the source is split and distributed over many LUs.
-	 * 
+	 *
 	 * @param sourceTuHU the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
 	 * @param qtyTU the number of TUs to join or split onto the destination LU(s).
 	 * @param luPIItem the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> tuToNewLUs(
-			final I_M_HU sourceTuHU, final BigDecimal qtyTU, final I_M_HU_PI_Item luPIItem, final boolean isOwnPackingMaterials)
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final BigDecimal qtyTU,
+			@NonNull final I_M_HU_PI_Item luPIItem,
+			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
-		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
-		Preconditions.checkNotNull(luPIItem, "Param 'luPI' may not be null");
-
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
 				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)
@@ -709,6 +708,7 @@ public class HUTransferService
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
 					.setM_Locator(sourceTuHU.getM_Locator())
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
+					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.create(luPIItem.getM_HU_PI_Version());
 
 			// get or create the new parent item
@@ -746,13 +746,13 @@ public class HUTransferService
 							updateAllocation(newParentLu, sourceTuHU, null, null, false, localHuContext);
 						});
 
-			// update the haItemOfLU if needed
+			// update the huItemOfLU if needed
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				final I_M_HU_Item haItemOfLU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
-				haItemOfLU.setQty(oldParentItemOfSourceTuHU.getQty());
-				haItemOfLU.setM_HU_PI_Item(oldParentItemOfSourceTuHU.getM_HU_PI_Item());
-				InterfaceWrapperHelper.save(haItemOfLU);
+				final I_M_HU_Item huItemOfLU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
+				huItemOfLU.setQty(oldParentItemOfSourceTuHU.getQty());
+				huItemOfLU.setM_HU_PI_Item(oldParentItemOfSourceTuHU.getM_HU_PI_Item());
+				InterfaceWrapperHelper.save(huItemOfLU);
 			}
 
 			return ImmutableList.of(newLuHU);
@@ -770,7 +770,11 @@ public class HUTransferService
 	 * @param luPIItem may be {@code null}. If null, then the resulting top level HU will be a TU
 	 * @param isOwnPackingMaterials
 	 */
-	private List<I_M_HU> tuToTopLevelHUs(final I_M_HU sourceTuHU, final BigDecimal qtyTU, final I_M_HU_PI_Item luPIItem, final boolean isOwnPackingMaterials)
+	private List<I_M_HU> tuToTopLevelHUs(
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final BigDecimal qtyTU,
+			final I_M_HU_PI_Item luPIItem,
+			final boolean isOwnPackingMaterials)
 	{
 		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
