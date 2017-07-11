@@ -30,9 +30,7 @@ class TableItem extends Component {
     editProperty = (e, property, callback, item) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
 
-        if(
-            (item ? !item.readonly : true)
-        ) {
+        if( item ? !item.readonly : true ) {
             this.setState({
                 edited: property
             }, ()=>{
