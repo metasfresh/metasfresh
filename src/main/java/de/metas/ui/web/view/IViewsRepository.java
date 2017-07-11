@@ -83,6 +83,8 @@ public interface IViewsRepository
 
 	void deleteView(ViewId viewId);
 
+	void invalidateView(ViewId viewId);
+
 	List<IView> getViews();
 
 	/**
@@ -94,5 +96,4 @@ public interface IViewsRepository
 	{
 		notifyRecordsChanged(ImmutableSet.of(TableRecordReference.of(tableName, recordId)));
 	}
-
 }

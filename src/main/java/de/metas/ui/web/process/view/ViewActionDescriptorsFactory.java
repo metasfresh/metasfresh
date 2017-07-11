@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.MutableInt;
+import org.compiere.Adempiere;
 import org.compiere.util.CCache;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
@@ -202,11 +203,18 @@ public class ViewActionDescriptorsFactory
 		{
 			return (view, processParameters, selectedDocumentIds) -> view;
 		}
+
 		//
-		// Unknown
+		// Primitive type => not supported
+		else if (parameterType.isPrimitive())
+		{
+			throw new IllegalArgumentException("Action method's primitive parameter " + parameterType + " is not supported for parameterName: " + parameterName);
+		}
+		//
+		// Try getting the bean from spring context
 		else
 		{
-			throw new IllegalArgumentException("Action method's parameter " + parameterType + " is not supported for parameterName: " + parameterName);
+			return (view, processParameters, selectedDocumentIds) -> Adempiere.getBean(parameterType);
 		}
 	}
 

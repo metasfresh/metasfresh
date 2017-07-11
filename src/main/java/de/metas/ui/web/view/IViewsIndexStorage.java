@@ -51,4 +51,6 @@ public interface IViewsIndexStorage
 
 	Stream<IView> streamAllViews();
 
+	void invalidateView(ViewId viewId);
+
 }

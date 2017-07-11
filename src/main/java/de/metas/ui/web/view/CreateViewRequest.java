@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -77,10 +78,19 @@ public final class CreateViewRequest
 
 	public static final Builder deleteStickyFilterBuilder(@NonNull final IView view, @NonNull final String stickyFilterIdToDelete)
 	{
+		final List<DocumentFilter> stickyFilters = view.getStickyFilters()
+				.stream()
+				.filter(stickyFilter -> !Objects.equals(stickyFilter.getFilterId(), stickyFilterIdToDelete))
+				.collect(ImmutableList.toImmutableList());
+
+		// FIXME: instead of removing all referencing document paths (to prevent creating sticky filters from them),
+		// we shall remove only those is are related to "stickyFilterIdToDelete". 
+		final Set<DocumentPath> referencingDocumentPaths = ImmutableSet.of(); // view.getReferencingDocumentPaths();
+		
 		return builder(view.getViewId().getWindowId(), view.getViewType())
 				.setParentViewId(view.getParentViewId())
-				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
-				.setStickyFilters(view.getStickyFilters())
+				.setReferencingDocumentPaths(referencingDocumentPaths)
+				.setStickyFilters(stickyFilters)
 				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
 				.addActions(view.getActions());

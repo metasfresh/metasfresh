@@ -24,7 +24,6 @@ import com.google.common.cache.CacheBuilder;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
@@ -32,6 +31,7 @@ import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.process.WebuiPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.session.UserSession;
@@ -119,7 +119,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@Override
-	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final IProcessPreconditionsContext preconditionsContext)
+	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(final WebuiPreconditionsContext preconditionsContext)
 	{
 		final IUserRolePermissions userRolePermissions = userSession.getUserRolePermissions();
 		return processDescriptorFactory.streamDocumentRelatedProcesses(preconditionsContext, userRolePermissions);
@@ -128,7 +128,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	@Override
 	public IProcessInstanceController createNewProcessInstance(final CreateProcessInstanceRequest request, final IDocumentChangesCollector changesCollector)
 	{
-		if (request.getSingleDocumentPath() != null)
+		if (documentsCollection.isValidDocumentPath(request.getSingleDocumentPath()))
 		{
 			// In case we have a single document path, we shall fetch it as use it as evaluation context.
 			// This will make sure that the parameter's default values will be correctly computed
@@ -216,7 +216,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			{
 				recordId = -1;
 			}
-			
+
 			sqlWhereClause = viewDocumentIds.isEmpty() ? null : view.getSqlWhereClause(viewDocumentIds);
 		}
 		//

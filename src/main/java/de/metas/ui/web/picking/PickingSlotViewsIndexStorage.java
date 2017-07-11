@@ -3,12 +3,16 @@ package de.metas.ui.web.picking;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.view.event.ViewChangesCollector;
+import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
@@ -50,6 +54,9 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	// We have a setter which will be called when this instance will be registered.
 	private IViewsRepository viewsRepository;
 
+	@Autowired
+	private PickingSlotViewFactory pickingSlotViewFactory;
+
 	@Override
 	public void setViewsRepository(@NonNull final IViewsRepository viewsRepository)
 	{
@@ -72,7 +79,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	public void put(final IView pickingSlotView)
 	{
 		final ViewId pickingSlotViewId = pickingSlotView.getViewId();
-		final PickingView pickingView = getPickingViewBySlotId(pickingSlotViewId);
+		final PickingView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
 
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
 
@@ -102,7 +109,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 		return DocumentId.of(rowIdStr);
 	}
 
-	private PickingView getPickingViewBySlotId(final ViewId pickingSlotViewId)
+	private PickingView getPickingViewByPickingSlotViewId(final ViewId pickingSlotViewId)
 	{
 		final ViewId pickingViewId = extractPickingViewId(pickingSlotViewId);
 		final PickingView view = PickingView.cast(getViewsRepository().getView(pickingViewId));
@@ -112,15 +119,52 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	@Override
 	public PickingSlotView getByIdOrNull(final ViewId pickingSlotViewId)
 	{
-		final DocumentId rowId = extractRowId(pickingSlotViewId);
-		return getPickingViewBySlotId(pickingSlotViewId).getPickingSlotViewOrNull(rowId);
+		final boolean create = true;
+		return getOrCreatePickingSlotView(pickingSlotViewId, create);
+	}
+
+	private PickingSlotView getOrCreatePickingSlotView(final ViewId pickingSlotViewId, final boolean create)
+	{
+		final PickingView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
+		final DocumentId pickingSlotRowId = extractRowId(pickingSlotViewId);
+
+		if (create)
+		{
+			return pickingView.computePickingSlotViewIfAbsent(pickingSlotRowId, () -> {
+				final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
+				return pickingSlotViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
+						.setParentViewId(pickingView.getViewId())
+						.setReferencingDocumentPath(pickingRow.getDocumentPath())
+						.build());
+
+			});
+		}
+		else
+		{
+			return pickingView.getPickingSlotViewOrNull(pickingSlotRowId);
+		}
 	}
 
 	@Override
 	public void removeById(final ViewId pickingSlotViewId)
 	{
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
-		getPickingViewBySlotId(pickingSlotViewId).removePickingSlotView(rowId);
+		getPickingViewByPickingSlotViewId(pickingSlotViewId).removePickingSlotView(rowId);
+	}
+
+	@Override
+	public void invalidateView(ViewId pickingSlotViewId)
+	{
+		final PickingSlotView pickingSlotView = getOrCreatePickingSlotView(pickingSlotViewId, false/* create */);
+		if (pickingSlotView == null)
+		{
+			return;
+		}
+
+		pickingSlotView.invalidateAll();
+
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(pickingSlotView);
 	}
 
 	@Override

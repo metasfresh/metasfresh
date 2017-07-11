@@ -34,8 +34,10 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 public @interface ViewActionParam
 {
 	String caption();
-	
-	DocumentFieldWidgetType widgetType();
-	
+
 	boolean mandatory() default true;
+
+	DocumentFieldWidgetType widgetType();
+
+	String sqlLookupTableName() default "";
 }

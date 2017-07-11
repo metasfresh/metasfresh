@@ -1,6 +1,11 @@
 package de.metas.ui.web.process;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.RelatedProcessDescriptor;
 
 /*
  * #%L
@@ -26,5 +31,8 @@ import de.metas.process.IProcessPreconditionsContext;
 
 public interface WebuiPreconditionsContext extends IProcessPreconditionsContext
 {
-
+	default List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return ImmutableList.of();
+	}
 }

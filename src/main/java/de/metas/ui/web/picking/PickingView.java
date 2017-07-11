@@ -4,14 +4,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -60,6 +59,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Picking editor view
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PickingView implements IView
 {
 	public static PickingView cast(final IView view)
@@ -70,7 +75,7 @@ public class PickingView implements IView
 	private final ViewId viewId;
 	private final ITranslatableString description;
 	private final Map<DocumentId, PickingRow> rows;
-	
+
 	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
 
 	@Builder
@@ -128,6 +133,13 @@ public class PickingView implements IView
 	@Override
 	public void close()
 	{
+	}
+	
+	@Override
+	public void invalidateAll()
+	{
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
@@ -239,43 +251,36 @@ public class PickingView implements IView
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
 	{
 		pickingSlotsViewByRowId.put(rowId, pickingSlotView);
 	}
-	
+
 	/* package */ void removePickingSlotView(@NonNull final DocumentId rowId)
 	{
 		pickingSlotsViewByRowId.remove(rowId);
 	}
-	
+
 	/* package */ PickingSlotView getPickingSlotViewOrNull(@NonNull final DocumentId rowId)
 	{
 		return pickingSlotsViewByRowId.get(rowId);
 	}
-
-
+	
+	/* package */ PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
+	{
+		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
+	}
 
 	@ViewAction(caption = "picking slots", defaultAction = true)
-	public CreateAndOpenIncludedViewAction openPickingSlots(final PickingView pickingView, final DocumentIdsSelection selectedRowIds)
+	public CreateAndOpenIncludedViewAction openPickingSlots(final DocumentIdsSelection selectedRowIds)
 	{
-		if (!selectedRowIds.isSingleDocumentId())
-		{
-			throw new AdempiereException("Not a single selection");
-		}
-
-		// TODO: fetch the picking slots eligible for selected picking row
 		final DocumentId pickingRowId = selectedRowIds.getSingleDocumentId();
-		final PickingRow pickingRow = pickingView.getById(pickingRowId);
-
-		final PickingSlotViewRepository pickingSlotRepo = Adempiere.getBean(PickingSlotViewRepository.class);
-		final Set<Integer> pickingSlotRowIds = pickingSlotRepo.retrieveAllRowIds();
+		final PickingRow pickingRow = getById(pickingRowId);
 
 		final CreateViewRequest createViewRequest = CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
 				.setParentViewId(viewId)
 				.setReferencingDocumentPath(pickingRow.getDocumentPath())
-				.setFilterOnlyIds(pickingSlotRowIds)
 				.build();
 		return CreateAndOpenIncludedViewAction.of(createViewRequest);
 	}

@@ -83,9 +83,8 @@ public class PickingViewRepository
 				.stream(I_M_Packageable_V.class)
 				.map(packageable -> createPickingRow(viewId, packageable))
 				.collect(ImmutableList.toImmutableList());
-
 	}
-
+	
 	private PickingRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
 		final DocumentId rowId = DocumentId.of(packageable.getM_ShipmentSchedule_ID());

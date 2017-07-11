@@ -125,6 +125,19 @@ public final class WindowId
 		}
 	}
 
+	public boolean isInt()
+	{
+		try
+		{
+			toInt();
+			return true;
+		}
+		catch (Exception ex)
+		{
+			return false;
+		}
+	}
+
 	public DocumentId toDocumentId()
 	{
 		return DocumentId.of(value);

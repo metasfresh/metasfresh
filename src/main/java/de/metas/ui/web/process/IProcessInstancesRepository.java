@@ -3,7 +3,6 @@ package de.metas.ui.web.process;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import de.metas.process.IProcessPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -53,7 +52,7 @@ public interface IProcessInstancesRepository
 	ProcessDescriptor getProcessDescriptor(ProcessId processId);
 
 	/** @return related process descriptors which are available to be called for given <code>preconditionsContext</code> */
-	Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(IProcessPreconditionsContext preconditionsContext);
+	Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(WebuiPreconditionsContext preconditionsContext);
 
 	/**
 	 * Creates a new process instance for given request.

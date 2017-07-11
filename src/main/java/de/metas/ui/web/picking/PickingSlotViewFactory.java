@@ -2,13 +2,19 @@ package de.metas.ui.web.picking;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
+import java.util.Properties;
 
+import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.process.IADProcessDAO;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
+import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -55,6 +61,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				.setWindowId(PickingConstants.WINDOWID_PickingSlotView)
 				.setCaption("Picking slots")
 				.addElementsFromViewRowClass(PickingSlotRow.class, viewDataType)
+				.setHasTreeSupport(true)
 				.build();
 	}
 
@@ -67,16 +74,38 @@ public class PickingSlotViewFactory implements IViewFactory
 	@Override
 	public PickingSlotView createView(final CreateViewRequest request)
 	{
-		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		final List<PickingSlotRow> rows = pickingSlotRepo.retrieveRowsByIds(rowIds);
+		final DocumentId pickingRowId = request.getSingleReferencingDocumentPathOrNull().getDocumentId();
+		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
 
 		final ViewId pickingViewId = request.getParentViewId();
-		final DocumentId pickingRowId = request.getSingleReferencingDocumentPathOrNull().getDocumentId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
-				.rows(rows)
+				.shipmentScheduleId(shipmentScheduleId)
+				.rows(() -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(shipmentScheduleId))
+				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
+	}
+
+	private List<RelatedProcessDescriptor> createAdditionalRelatedProcessDescriptors()
+	{
+		// TODO: cache it
+
+		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+		final Properties ctx = Env.getCtx();
+
+		return ImmutableList.of(
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build());
 	}
 }
