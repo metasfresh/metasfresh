@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -90,7 +90,6 @@ public class HULoader
 
 	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
 	{
-		// this.huContext = huContext;
 		this.source = source;
 		this.destination = destination;
 	}
@@ -143,7 +142,7 @@ public class HULoader
 	 * If this setter is called with {@code true}, then the loader will load into the destination whatever was unloaded from the source, no matter what the destination's capacity is.
 	 * <p>
 	 * The default if this setter is not called is {@code false}.
-	 * 
+	 *
 	 * @param forceLoad
 	 */
 	public HULoader setForceLoad(final boolean forceLoad)
@@ -368,7 +367,7 @@ public class HULoader
 				// source.unloadCancel(unloadResult, unloadTrx, loadResult.getQtyToAllocate());
 			}
 
-			final List<IHUTransaction> trxs = new ArrayList<IHUTransaction>();
+			final List<IHUTransaction> trxs = new ArrayList<>();
 
 			//
 			// Iterate each load transaction:
@@ -605,7 +604,7 @@ public class HULoader
 
 	/**
 	 * Advises the {@link HULoader} to skip transferring the attributes.
-	 * 
+	 *
 	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
 	 */
 	public HULoader setSkipAttributesTransfer(final boolean skipAttributesTransfer)

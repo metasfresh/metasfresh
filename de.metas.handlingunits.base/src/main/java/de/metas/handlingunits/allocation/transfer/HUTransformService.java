@@ -720,12 +720,11 @@ public class HUTransformService
 	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> tuToNewLUs(
-			final I_M_HU sourceTuHU, final BigDecimal qtyTU, final I_M_HU_PI_Item luPIItem, final boolean isOwnPackingMaterials)
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final BigDecimal qtyTU,
+			@NonNull final I_M_HU_PI_Item luPIItem,
+			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
-		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
-		Preconditions.checkNotNull(luPIItem, "Param 'luPI' may not be null");
-
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0 // the complete sourceTuHU shall be processed
 				&& getMaximumQtyTU(sourceTuHU).compareTo(luPIItem.getQty()) <= 0 // the complete sourceTuHU fits onto one pallet
 		)
@@ -739,6 +738,7 @@ public class HUTransformService
 					.setC_BPartner_Location_ID(sourceTuHU.getC_BPartner_Location_ID())
 					.setM_Locator(sourceTuHU.getM_Locator())
 					.setHUPlanningReceiptOwnerPM(isOwnPackingMaterials)
+					.setHUStatus(sourceTuHU.getHUStatus()) // gh #1975: when creating a new parent-LU inherit the source's status
 					.create(luPIItem.getM_HU_PI_Version());
 
 			// get or create the new parent item
@@ -778,13 +778,13 @@ public class HUTransformService
 							updateAllocation(newParentLu, sourceTuHU, null, null, false, localHuContext);
 						});
 
-			// update the haItemOfLU if needed
+			// update the huItemOfLU if needed
 			if (handlingUnitsBL.isAggregateHU(sourceTuHU))
 			{
-				final I_M_HU_Item haItemOfLU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
-				haItemOfLU.setQty(oldParentItemOfSourceTuHU.getQty());
-				haItemOfLU.setM_HU_PI_Item(oldParentItemOfSourceTuHU.getM_HU_PI_Item());
-				InterfaceWrapperHelper.save(haItemOfLU);
+				final I_M_HU_Item huItemOfLU = handlingUnitsDAO.retrieveItems(newLuHU).get(0);
+				huItemOfLU.setQty(oldParentItemOfSourceTuHU.getQty());
+				huItemOfLU.setM_HU_PI_Item(oldParentItemOfSourceTuHU.getM_HU_PI_Item());
+				InterfaceWrapperHelper.save(huItemOfLU);
 			}
 
 			return ImmutableList.of(newLuHU);
@@ -802,7 +802,11 @@ public class HUTransformService
 	 * @param luPIItem may be {@code null}. If null, then the resulting top level HU will be a TU
 	 * @param isOwnPackingMaterials
 	 */
-	private List<I_M_HU> tuToTopLevelHUs(final I_M_HU sourceTuHU, final BigDecimal qtyTU, final I_M_HU_PI_Item luPIItem, final boolean isOwnPackingMaterials)
+	private List<I_M_HU> tuToTopLevelHUs(
+			@NonNull final I_M_HU sourceTuHU,
+			@NonNull final BigDecimal qtyTU,
+			final I_M_HU_PI_Item luPIItem,
+			final boolean isOwnPackingMaterials)
 	{
 		Preconditions.checkNotNull(sourceTuHU, "Param 'tuHU' may not be null");
 		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
@@ -25,9 +26,13 @@ import org.junit.runner.RunWith;
 import org.w3c.dom.Node;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationLoadTests;
@@ -35,9 +40,13 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Status;
+import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.interfaces.I_M_Warehouse;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -75,10 +84,15 @@ public class HUTransformServiceTests
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
 
+	@Mocked
+	IHUPackingMaterialsCollector<I_M_InOutLine> noopPackingMaterialsCollector;
+
 	@Before
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
+		data.helper.setContextPackingMaterialsCollector(noopPackingMaterialsCollector);
+
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	}
@@ -151,9 +165,13 @@ public class HUTransformServiceTests
 			assertThat(createdTUs.size(), is(1));
 			sourceTU = createdTUs.get(0);
 
+			handlingUnitsBL.setHUStatus(data.helper.getHUContext(), sourceTU, X_M_HU.HUSTATUS_Active);
+			new M_HU().updateChildren(sourceTU);
+			save(sourceTU);
+
 			// guard: verify that we have on IFCO with a two-tomato-CU in it
 			final Node sourceTUBeforeSplitXML = HUXmlConverter.toXml(sourceTU);
-			assertThat(sourceTUBeforeSplitXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+			assertThat(sourceTUBeforeSplitXML, hasXPath("HU-TU_IFCO/@HUStatus", is("A")));
 			assertThat(sourceTUBeforeSplitXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
 			assertThat(sourceTUBeforeSplitXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
 
@@ -170,16 +188,16 @@ public class HUTransformServiceTests
 		assertThat(newCUs.size(), is(1));
 
 		final Node sourceTUXML = HUXmlConverter.toXml(sourceTU);
-		assertThat(sourceTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+		assertThat(sourceTUXML, hasXPath("HU-TU_IFCO/@HUStatus", is("A")));
 		assertThat(sourceTUXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='P'])", is("1")));
+		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='A'])", is("1")));
 		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		final Node newCUXML = HUXmlConverter.toXml(newCUs.get(0));
 		assertThat(newCUXML, not(hasXPath("HU-VirtualPI/M_HU_Item_Parent_ID"))); // verify that there is no parent HU
-		assertThat(newCUXML, hasXPath("count(HU-VirtualPI[@HUStatus='P'])", is("1")));
+		assertThat(newCUXML, hasXPath("count(HU-VirtualPI[@HUStatus='A'])", is("1")));
 		assertThat(newCUXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_ID)", is(Integer.toString(bpartner.getC_BPartner_ID())))); // verify that the bpartner is propagated
 		assertThat(newCUXML, hasXPath("string(HU-VirtualPI/@C_BPartner_Location_ID)", is(Integer.toString(bPartnerLocation.getC_BPartner_Location_ID())))); // verify that the bpartner location is propagated
@@ -201,13 +219,13 @@ public class HUTransformServiceTests
 		// data.helper.commitAndDumpHU(cuToSplit);
 
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='P'])", is("1")));
+		assertThat(cuToSplitXML, hasXPath("HU-VirtualPI/@HUStatus", is("A")));
 		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
 
-		assertThat(newTUXML, hasXPath("count(HU-TU_Bag[@HUStatus='P'])", is("1")));
-		assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+		assertThat(newTUXML, hasXPath("HU-TU_Bag/@HUStatus", is("A")));
+		assertThat(newTUXML, hasXPath("HU-TU_Bag/@HUPlanningReceiptOwnerPM", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(newTUXML, hasXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 
@@ -222,6 +240,8 @@ public class HUTransformServiceTests
 			@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
 	{
 		final I_M_HU cuToSplit = mkAggregateCUToSplit("80");
+		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU().getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		// invoke the method under test
 		final List<I_M_HU> newTUs = HUTransformService.get(data.helper.getHUContext())
@@ -229,24 +249,22 @@ public class HUTransformServiceTests
 
 		assertThat(newTUs.size(), is(1));
 
-		// data.helper.commitAndDumpHU(cuToSplit);
-
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI[@HUStatus='P'])", is("1")));
-		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
+		assertThat(cuToSplitXML, hasXPath("HU-VirtualPI/@HUStatus", is("A")));
+		assertThat(cuToSplitXML, hasXPath("HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("40.000")));
 
 		final I_M_HU parentOfCUToSplit = cuToSplit.getM_HU_Item_Parent().getM_HU();
-		// data.helper.commitAndDumpHU(parentOfCUToSplit);
+
 		// the source TU now needs to contain one haggregate HU that represent the remaining "untouched" IFCO with a quantity of 40 and a new "real" IFCO with a qunatity of 39.
 		final Node parentOfCUToSplitXML = HUXmlConverter.toXml(parentOfCUToSplit);
-		assertThat(parentOfCUToSplitXML, hasXPath("count(HU-LU_Palet[@HUStatus='P'])", is("1")));
+		assertThat(parentOfCUToSplitXML, hasXPath("HU-LU_Palet/@HUStatus", is("A"))); // gh #1975: the newly created parent needs to have the child's HU status
 		assertThat(parentOfCUToSplitXML, hasXPath("count(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @Qty='79.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(parentOfCUToSplitXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='39.000' and @C_UOM_Name='Kg'])", is("1")));
 		assertThat(parentOfCUToSplitXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA']/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
 
-		assertThat(newTUXML, hasXPath("count(HU-TU_Bag[@HUStatus='P'])", is("1")));
+		assertThat(newTUXML, hasXPath("HU-TU_Bag/@HUStatus", is("A")));
 		assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(newTUXML, hasXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='1.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
@@ -271,7 +289,7 @@ public class HUTransformServiceTests
 
 		final Node newTUXML = HUXmlConverter.toXml(newTUs.get(0));
 
-		assertThat(newTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+		assertThat(newTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='A'])", is("1")));
 		assertThat(newTUXML, hasXPath("string(HU-TU_IFCO/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 		assertThat(newTUXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='2.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
@@ -304,7 +322,7 @@ public class HUTransformServiceTests
 		{
 			final Node newTUXML = HUXmlConverter.toXml(newTU);
 
-			assertThat(newTUXML, hasXPath("count(HU-TU_Bag[@HUStatus='P'])", is("1")));
+			assertThat(newTUXML, hasXPath("count(HU-TU_Bag[@HUStatus='A'])", is("1")));
 			assertThat(newTUXML, hasXPath("string(HU-TU_Bag/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 			assertThat(newTUXML, hasXPath("count(HU-TU_Bag/Storage[@M_Product_Value='Tomato' and @Qty='8.000' and @C_UOM_Name='Kg'])", is("1")));
 		}
@@ -324,7 +342,7 @@ public class HUTransformServiceTests
 
 		final Node existingTUBeforeXML = HUXmlConverter.toXml(existingTU);
 		assertThat(existingTUBeforeXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
-		assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+		assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO[@HUStatus='A'])", is("1")));
 		assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		// prepare the CU to split
@@ -337,17 +355,17 @@ public class HUTransformServiceTests
 		// the cu we split from is *not* destroyed but was attached to the parent TU
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(existingTU.getM_HU_ID()));
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("P")));
+		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
 		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
 
 		final Node existingTUXML = HUXmlConverter.toXml(existingTU);
 		assertThat(existingTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
-		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='A'])", is("1")));
 		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='40.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 
 	/**
-	 * Like {@link #testSplitRealCU_To_ExistingRealTU()}, but the existing already contains 30kg (with a capacity of 40kg). Then add another 20kg. shall work.
+	 * Like {@link #testSplitRealCU_To_ExistingRealTU()}, but the existing TU already contains 30kg (with a capacity of 40kg). Then add another 20kg. shall work.
 	 */
 	@Test
 	public void testRealCU_To_ExistingRealTU_overfill()
@@ -365,7 +383,7 @@ public class HUTransformServiceTests
 
 			final Node existingTUBeforeXML = HUXmlConverter.toXml(existingTU);
 			assertThat(existingTUBeforeXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
-			assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+			assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO[@HUStatus='A'])", is("1")));
 			assertThat(existingTUBeforeXML, hasXPath("count(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @Qty='30.000' and @C_UOM_Name='Kg'])", is("1")));
 		}
 		// prepare the CU to split
@@ -380,13 +398,13 @@ public class HUTransformServiceTests
 		// existingTU now contains 30 + 20 = 50kg, despite its capacity is just 40kg according to the master data.
 		final Node existingTUXML = HUXmlConverter.toXml(existingTU);
 		assertThat(existingTUXML, not(hasXPath("HU-TU_IFCO/M_HU_Item_Parent_ID"))); // verify that there is still no parent HU
-		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='P'])", is("1")));
+		assertThat(existingTUXML, hasXPath("count(HU-TU_IFCO[@HUStatus='A'])", is("1")));
 		assertThat(existingTUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("50.000")));
 
 		// the cu we split from is *not* destroyed, but it was attached as-is to the existingTU
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(existingTU.getM_HU_ID()));
 		final Node cuToSplitXML = HUXmlConverter.toXml(cuToSplit);
-		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("P")));
+		assertThat(cuToSplitXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
 		assertThat(cuToSplitXML, hasXPath("count(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @Qty='20.000' and @C_UOM_Name='Kg'])", is("1")));
 	}
 
@@ -396,7 +414,7 @@ public class HUTransformServiceTests
 		final I_M_HU existingTU = mkAggregateCUToSplit("80");
 
 		final Node existingTUBeforeXML = HUXmlConverter.toXml(existingTU);
-		assertThat(existingTUBeforeXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("P")));
+		assertThat(existingTUBeforeXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
 		assertThat(existingTUBeforeXML, hasXPath("string(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("80.000")));
 
 		final I_M_HU cuToSplit = mkRealStandAloneCUToSplit("20");
@@ -412,7 +430,7 @@ public class HUTransformServiceTests
 
 		// the existing TU to which we wanted to add stuff is unchanged, but it now has a "real-TU" sibling
 		final Node existingTUXML = HUXmlConverter.toXml(existingTU);
-		assertThat(existingTUXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("P")));
+		assertThat(existingTUXML, hasXPath("string(HU-VirtualPI/@HUStatus)", is("A")));
 		assertThat(existingTUXML, hasXPath("string(HU-VirtualPI/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("80.000")));
 
 		final I_M_HU fullTargetHU = existingTU.getM_HU_Item_Parent().getM_HU();
@@ -573,6 +591,7 @@ public class HUTransformServiceTests
 	{
 		final I_M_HU tuToSplit = mkAggregateCUToSplit("80");
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(true)); // guard; make sure it's aggregate
+		assertThat(tuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransformService.get(data.helper.getHUContext())
@@ -581,19 +600,21 @@ public class HUTransformServiceTests
 						data.piLU_Item_IFCO,
 						isOwnPackingMaterials);
 		assertThat(newLUs.size(), is(1)); // we transfered 80kg, the target TUs are still IFCOs one IFCO still holds 40kg, one LU holds 5 IFCOS, so we expect one LU to suffice
-		// data.helper.commitAndDumpHU(newLUs.get(0));
+
 
 		final Node luXML = HUXmlConverter.toXml(newLUs.get(0));
 		assertThat(luXML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
-		assertThat(luXML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
-		assertThat(luXML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("80.000")));
+		assertThat(luXML, hasXPath("HU-LU_Palet/@HUStatus", is("A"))); // gh #1975
+		assertThat(luXML, hasXPath("HU-LU_Palet/@HUPlanningReceiptOwnerPM", is(Boolean.toString(isOwnPackingMaterials))));
+		assertThat(luXML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("80.000")));
 
 		// the pallet's included aggregate HU is 'tuToSplit'
-		assertThat(luXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_HU_ID)", is(Integer.toString(tuToSplit.getM_HU_ID()))));
-		assertThat(luXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@M_HU_PI_Item_ID)", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
+		assertThat(luXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUStatus", is("A"))); // gh #1975
+		assertThat(luXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@M_HU_ID", is(Integer.toString(tuToSplit.getM_HU_ID()))));
+		assertThat(luXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/@M_HU_PI_Item_ID", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
 
 		assertThat(luXML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2'])", is("1")));
-		assertThat(luXML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA' and @Qty='2']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("80.000")));
+		assertThat(luXML, hasXPath("HU-LU_Palet/Item[@ItemType='HA' and @Qty='2']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("80.000")));
 	}
 
 	@Theory
@@ -602,6 +623,7 @@ public class HUTransformServiceTests
 	{
 		final I_M_HU tuToSplit = mkAggregateCUToSplit("240"); // 6 TUs
 		assertThat(handlingUnitsBL.isAggregateHU(tuToSplit), is(true)); // guard; make sure it's aggregate
+		assertThat(tuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransformService.get(data.helper.getHUContext())
@@ -609,25 +631,31 @@ public class HUTransformServiceTests
 						new BigDecimal("6"), // tuQty=6;
 						data.piLU_Item_IFCO,
 						isOwnPackingMaterials);
-		// data.helper.commitAndDumpHUs(newLUs);
+
 		assertThat(newLUs.size(), is(2)); // we have 6 TUs in the source; one pallet can old 5 IFCOS, to we expect two pallets.
 		{
 			final Node lu1XML = HUXmlConverter.toXml(newLUs.get(0));
+
+			assertThat(lu1XML, hasXPath("HU-LU_Palet/@HUStatus", is("A"))); // gh #1975
 			assertThat(lu1XML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
-			assertThat(lu1XML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
+			assertThat(lu1XML, hasXPath("HU-LU_Palet/@HUPlanningReceiptOwnerPM", is(Boolean.toString(isOwnPackingMaterials))));
 
-			assertThat(lu1XML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA']/@M_HU_PI_Item_ID)", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
-
-			assertThat(lu1XML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("200.000")));
+			assertThat(lu1XML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/@M_HU_PI_Item_ID", is(Integer.toString(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()))));
+			assertThat(lu1XML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUStatus", is("A"))); // gh #1975
+			assertThat(lu1XML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("200.000")));
 			assertThat(lu1XML, hasXPath("count(HU-LU_Palet/Item[@ItemType='HA' and @Qty='5'])", is("1")));
-			assertThat(lu1XML, hasXPath("string(HU-LU_Palet/Item[@ItemType='HA' and @Qty='5']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("200.000")));
+			assertThat(lu1XML, hasXPath("HU-LU_Palet/Item[@ItemType='HA' and @Qty='5']/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("200.000")));
 		}
 		{
 			final Node lu2XML = HUXmlConverter.toXml(newLUs.get(1));
-			assertThat(lu2XML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
-			assertThat(lu2XML, hasXPath("string(HU-LU_Palet/@HUPlanningReceiptOwnerPM)", is(Boolean.toString(isOwnPackingMaterials))));
 
-			assertThat(lu2XML, hasXPath("string(HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("40.000")));
+			assertThat(lu2XML, hasXPath("HU-LU_Palet/@HUStatus", is("A"))); // gh #1975
+			assertThat(lu2XML, not(hasXPath("HU-LU_Palet/M_HU_Item_Parent_ID"))); // verify that the LU has no parent HU
+			assertThat(lu2XML, hasXPath("HU-LU_Palet/@HUPlanningReceiptOwnerPM", is(Boolean.toString(isOwnPackingMaterials))));
+
+			assertThat(lu2XML, hasXPath("HU-LU_Palet/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty", is("40.000")));
+
+			assertThat(lu2XML, hasXPath("HU-LU_Palet/Item[@ItemType='HA']/HU-VirtualPI/@HUStatus", is("A"))); // gh #1975
 		}
 	}
 
@@ -682,7 +710,7 @@ public class HUTransformServiceTests
 				.tuToNewLUs(tuToSplit, BigDecimal.ONE, data.piLU_Item_IFCO, isOwnPackingMaterials);
 		assertThat(oldLUs.size(), is(1)); // guard
 		assertThat(tuToSplit.getM_HU_Item_Parent().getM_HU_ID(), is(oldLUs.get(0).getM_HU_ID()));
-		assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Planning));
+		assertThat(oldLUs.get(0).getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		// invoke the method under test
 		final List<I_M_HU> newLUs = HUTransformService.get(data.helper.getHUContext())
@@ -818,11 +846,16 @@ public class HUTransformServiceTests
 	public void test_CUToExistingTU_create_mixed_TU_partialCU()
 	{
 		final I_M_HU cu1 = mkRealCUWithTUToSplit("2");
+		assertThat(cu1.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+
 		final I_M_HU existingTU = handlingUnitsDAO.retrieveParent(cu1);
+		assertThat(existingTU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
 		data.helper.load(producer, data.helper.pSalad, new BigDecimal("3"), data.helper.uomKg);
 		final I_M_HU cu2 = producer.getCreatedHUs().get(0);
+		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), cu2, X_M_HU.HUSTATUS_Active);
+		save(cu2);
 
 		// invoke the method under test.
 		HUTransformService.get(data.helper.getHUContext())
@@ -830,8 +863,8 @@ public class HUTransformServiceTests
 
 		// secondCU is still there, with the remaining 1.4kg
 		final Node secondCUXML = HUXmlConverter.toXml(cu2);
-		assertThat(secondCUXML, hasXPath("string(HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/@HUStatus)", is("P")));
-		assertThat(secondCUXML, hasXPath("string(HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("1.400")));
+		assertThat(secondCUXML, hasXPath("HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/@HUStatus", is("A")));
+		assertThat(secondCUXML, hasXPath("HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty", is("1.400")));
 
 		final Node existingLUXML = HUXmlConverter.toXml(existingTU);
 		assertThat(existingLUXML, hasXPath("string(HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty)", is("2.000")));
@@ -874,15 +907,33 @@ public class HUTransformServiceTests
 		assertThat(tuWithMixedCUsXML, hasXPath("string(HU-TU_IFCO/Item[@ItemType='MI']/HU-VirtualPI[@M_HU_ID=" + cu2.getM_HU_ID() + "]/Storage[@M_Product_Value='Salad' and @C_UOM_Name='Kg']/@Qty)", is("4.000")));
 	}
 
+	/**
+	 * Makes a stand alone CU with the given quantity and status "active".
+	 *
+	 * @param strCuQty
+	 * @return
+	 */
 	private I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
 	{
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
-		data.helper.load(producer, data.helper.pTomato, new BigDecimal(strCuQty), data.helper.uomKg);
+
+		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
+				.producer(producer)
+				.cuProduct(data.helper.pTomato)
+				.loadCuQty(new BigDecimal(strCuQty))
+				.loadCuUOM(data.helper.uomKg)
+				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
+				.build();
+
+		data.helper.load(loadRequest);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
 		assertThat(createdCUs.size(), is(1));
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
+		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
+		save(cuToSplit);
+
 		return cuToSplit;
 	}
 
@@ -897,7 +948,12 @@ public class HUTransformServiceTests
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 		
-		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTUs.get(0));
+		final I_M_HU createdTU = createdTUs.get(0);
+		handlingUnitsBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
+		new M_HU().updateChildren(createdTU);
+		save(createdTU);
+
+		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
 		assertThat(createdCUs.size(), is(1));
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
@@ -917,6 +973,13 @@ public class HUTransformServiceTests
 		return mkAggregateCUToSplit(totalQtyCUStr, qtyCUsPerTU);
 	}
 
+	/**
+	 * Creates an LU with one aggregate HU. Both the LU's and aggregate HU's status is "active".
+	 *
+	 * @param totalQtyCUStr
+	 * @param qtyCUsPerTU
+	 * @return
+	 */
 	private I_M_HU mkAggregateCUToSplit(final String totalQtyCUStr, final int qtyCUsPerTU)
 	{
 		final I_M_Product cuProduct = data.helper.pTomato;
@@ -935,11 +998,27 @@ public class HUTransformServiceTests
 			lutuProducer.addTUCapacity(cuProduct, BigDecimal.valueOf(qtyCUsPerTU), cuUOM);
 		}
 
-		data.helper.load(lutuProducer, cuProduct, totalQtyCU, cuUOM);
+		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
+				.producer(lutuProducer)
+				.cuProduct(cuProduct)
+				.loadCuQty(totalQtyCU)
+				.loadCuUOM(cuUOM)
+				.huPackingMaterialsCollector(noopPackingMaterialsCollector)
+				.build();
+
+		data.helper.load(loadRequest);
 		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
 
 		assertThat(createdLUs.size(), is(1));
 		// data.helper.commitAndDumpHU(createdLUs.get(0));
+
+		final I_M_HU createdLU = createdLUs.get(0);
+		final IMutableHUContext huContext = data.helper.createMutableHUContextOutOfTransaction();
+		handlingUnitsBL.setHUStatus(huContext, createdLU, X_M_HU_Status.HUSTATUS_Active);
+		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+
+		new M_HU().updateChildren(createdLU);
+		save(createdLU);
 
 		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
 		assertThat(createdAggregateHUs.size(), is(1));
@@ -947,6 +1026,7 @@ public class HUTransformServiceTests
 		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit), is(true));
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(data.piLU_Item_IFCO.getM_HU_PI_Item_ID()));
+		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		return cuToSplit;
 	}
