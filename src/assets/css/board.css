@@ -70,7 +70,7 @@
     right: 0;
     width:25%;
     height: calc(100% - 55px);
-    z-index: 999;
+    z-index: 99;
     background-color: $brand-bright-color;
     overflow-y: auto;
 }
