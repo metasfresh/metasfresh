@@ -30,51 +30,78 @@ class MenuOverlayContainer extends Component {
                 onKeyDown={onKeyDown}
                 className={
                     'menu-overlay-node-container js-menu-container ' +
-                    (deep ? 'menu-overlay-node-spaced ' :
-                        'menu-overlay-expanded-link-spaced js-menu-main-container')
+                    (deep ? 'menu-overlay-node-spaced ' : 'menu-overlay-expanded-link-spaced js-menu-main-container')
                 }>
-                {type === 'group' &&
+
+                {(type === 'group') && (
                     <span
                         className={
                             'menu-overlay-header ' +
-                            (!printChildren ?
-                                'menu-overlay-header-spaced ' : ' ') +
-                            (!deep ? 'menu-overlay-header-main' : ' ')
+                            (!printChildren ? 'menu-overlay-header-spaced ' : '') +
+                            (!deep ? 'menu-overlay-header-main' : '')
                         }
                         >{caption}</span>
-                }
-                {type !== 'group' &&
+                )}
+
+                {type !== 'group' && (
                     <MenuOverlayItem
                         printChildren={false}
-                        {...{showBookmarks, openModal, handleMenuOverlay,
-                            handlePath, back, handleNewRedirect, handleRedirect,
-                            handleClickOnFolder, type, caption, elementId,
-                            updateData, transparentBookmarks
+                        {...{
+                            showBookmarks,
+                            openModal,
+                            handlePath,
+                            back,
+                            type,
+                            caption,
+                            elementId,
+                            updateData,
+                            transparentBookmarks,
+                            handleMenuOverlay,
+                            handleNewRedirect,
+                            handleRedirect,
+                            handleClickOnFolder
                         }}
                     />
-                }
+                )}
 
                 {children && (children.length > 0) && children.map((subitem, subindex) =>
-                    subitem.children && printChildren ?
-                        <MenuOverlayContainer
-                            key={subindex}
-                            printChildren={true}
-                            deep={true}
-                            {...subitem}
-                            {...{showBookmarks, openModal, handleNewRedirect,
-                                handleRedirect, handleClickOnFolder, updateData,
-                                transparentBookmarks
-                            }}
-                        /> :
-                        <MenuOverlayItem
-                            key={subindex}
-                            {...subitem}
-                            {...{showBookmarks, handleMenuOverlay, openModal,
-                                back, printChildren, handlePath, updateData,
-                                handleNewRedirect, handleRedirect,
-                                handleClickOnFolder, transparentBookmarks
-                            }}
-                        />
+                    (subitem.children && printChildren) ?
+                        (
+                            <MenuOverlayContainer
+                                key={subindex}
+                                printChildren={true}
+                                deep={true}
+                                {...subitem}
+                                {...{
+                                    showBookmarks,
+                                    openModal,
+                                    updateData,
+                                    transparentBookmarks,
+                                    handleNewRedirect,
+                                    handleRedirect,
+                                    handleClickOnFolder
+                                }}
+                            />
+                        ) :
+                        (
+                            <MenuOverlayItem
+                                key={subindex}
+                                {...subitem}
+                                {...{
+                                    showBookmarks,
+                                    openModal,
+                                    back,
+                                    printChildren,
+                                    handlePath,
+                                    updateData,
+                                    transparentBookmarks,
+                                    handleMenuOverlay,
+                                    handleNewRedirect,
+                                    handleRedirect,
+                                    handleClickOnFolder
+                                }}
+                            />
+                        )
                 )}
             </div>
         )

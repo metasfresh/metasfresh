@@ -176,6 +176,7 @@ class NavigationTree extends Component {
                 <div className="search-wrapper">
                     <div className="input-flex input-primary">
                         <i className="input-icon meta-icon-preview"/>
+
                         <DebounceInput
                             debounceTimeout={250}
                             type="text" id="search-input"
@@ -183,39 +184,42 @@ class NavigationTree extends Component {
                             placeholder={counterpart.translate(
                                 'window.type.placeholder'
                             )}
-                            onChange={e => this.handleQuery(e) }
-                            onKeyDown={(e) =>
-                                this.handleKeyDown(e)}
+                            onChange={this.handleQuery}
+                            onKeyDown={this.handleKeyDown}
                         />
-                        {query && <i
-                            className="input-icon meta-icon-close-alt pointer"
-                            onClick={e => this.handleClear(e) }
-                            />}
+
+                        {query && (
+                            <i
+                                className="input-icon meta-icon-close-alt pointer"
+                                onClick={this.handleClear}
+                            />
+                        )}
                     </div>
                 </div>
-                <p
-                    className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced"
-                    >
+
+                <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">
                     {rootResults.caption}
                 </p>
+
                 <div className="column-wrapper">
                     {queriedResults && queriedResults.map((subitem, subindex) =>
                         <MenuOverlayContainer
                             key={subindex}
                             printChildren={true}
                             showBookmarks={true}
+                            openModal={this.openModal}
+                            updateData={this.updateData}
+                            onKeyDown={this.handleKeyDown}
                             handleClickOnFolder={this.handleDeeper}
                             handleRedirect={this.handleRedirect}
                             handleNewRedirect={this.handleNewRedirect}
-                            openModal={this.openModal}
-                            updateData={this.updateData}
-                            onKeyDown={(e) => this.handleKeyDown(e)}
                             {...subitem}
                         />
                     )}
-                    { queriedResults.length === 0 && query != '' &&
+
+                    {(queriedResults.length === 0) && (query !== '') && (
                         <span>There are no results</span>
-                    }
+                    )}
                 </div>
             </div>
         )
