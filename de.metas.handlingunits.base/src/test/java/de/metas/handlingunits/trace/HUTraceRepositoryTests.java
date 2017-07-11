@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,6 +17,7 @@ import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
 import de.metas.event.SimpleObjectSerializer;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceSpecification.RecursionMode;
 
@@ -46,6 +48,12 @@ public class HUTraceRepositoryTests
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
+
+	private final HUTraceEventBuilder commonEventBuilder = HUTraceEvent.builder()
+			.vhuStatus(X_M_HU.HUSTATUS_Active)
+			.qty(BigDecimal.valueOf(100))
+			.productId(23)
+			.type(HUTraceType.TRANSFORM_LOAD);
 
 	private HUTraceRepository huTraceRepository;
 
@@ -83,7 +91,12 @@ public class HUTraceRepositoryTests
 		huTraceRepository.addEvent(HUTraceEvent.builder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
-				.vhuId(12).type(HUTraceType.TRANSFORM_LOAD).build());
+				.productId(23)
+				.qty(BigDecimal.TEN)
+				.vhuStatus(X_M_HU.HUSTATUS_Active)
+				.vhuId(12)
+				.type(HUTraceType.TRANSFORM_LOAD)
+				.build());
 
 		final HUTraceSpecification query = HUTraceSpecification.builder()
 				.vhuId(12)
@@ -98,7 +111,12 @@ public class HUTraceRepositoryTests
 		huTraceRepository.addEvent(HUTraceEvent.builder()
 				.eventTime(eventTime)
 				.topLevelHuId(2)
-				.vhuId(12).type(HUTraceType.TRANSFORM_LOAD).build());
+				.productId(23)
+				.qty(BigDecimal.TEN)
+				.vhuStatus(X_M_HU.HUSTATUS_Active)
+				.vhuId(12)
+				.type(HUTraceType.TRANSFORM_LOAD)
+				.build());
 
 		final List<HUTraceEvent> result2 = huTraceRepository.query(query);
 		assertThat(result2.size(), is(1)); // still just one..
@@ -112,11 +130,11 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		huTraceRepository.addEvent(HUTraceEvent.builder()
+		huTraceRepository.addEvent(commonEventBuilder
 				.eventTime(eventTime)
 				.topLevelHuId(2)
 				.vhuId(12)
-				.vhuSourceId(13).type(HUTraceType.TRANSFORM_LOAD)
+				.vhuSourceId(13)
 				.build());
 
 		final HUTraceSpecification query = HUTraceSpecification.builder()
@@ -140,18 +158,18 @@ public class HUTraceRepositoryTests
 	{
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEvent event1 = HUTraceEvent.builder()
+		final HUTraceEvent event1 = commonEventBuilder
 				.eventTime(eventTime)
 				.topLevelHuId(2)
-				.vhuId(12).type(HUTraceType.TRANSFORM_LOAD)
+				.vhuId(12)
 				.build();
 		huTraceRepository.addEvent(event1);
 
-		final HUTraceEvent event2 = HUTraceEvent.builder()
+		final HUTraceEvent event2 = commonEventBuilder
 				.eventTime(eventTime)
 				.topLevelHuId(3)
 				.vhuId(13)
-				.vhuSourceId(14).type(HUTraceType.TRANSFORM_LOAD)
+				.vhuSourceId(14)
 				.build();
 		huTraceRepository.addEvent(event2);
 
@@ -335,9 +353,8 @@ public class HUTraceRepositoryTests
 
 		final Instant eventTime = Instant.now();
 
-		final HUTraceEventBuilder eventBefore = HUTraceEvent.builder()
+		final HUTraceEventBuilder eventBefore = commonEventBuilder
 				.eventTime(eventTime)
-				.type(HUTraceType.TRANSFORM_LOAD)
 				.topLevelHuId(4)
 				.vhuId(14);
 
@@ -348,11 +365,10 @@ public class HUTraceRepositoryTests
 		result.add(eventBefore.eventTime(eventTime.plusSeconds(4)).shipmentScheduleId(54).build());
 		// eventBefore is the first of three and therefore has no sourceHuId
 
-		final HUTraceEventBuilder eventMiddle = HUTraceEvent.builder()
+		final HUTraceEventBuilder eventMiddle = commonEventBuilder
 				.eventTime(eventTime.plusSeconds(5))
 				.topLevelHuId(5)
-				.vhuId(15)
-				.type(HUTraceType.TRANSFORM_LOAD);
+				.vhuId(15);
 
 		result.add(eventMiddle.build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(6)).inOutId(25).build());
@@ -361,11 +377,10 @@ public class HUTraceRepositoryTests
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(9)).shipmentScheduleId(55).build());
 		result.add(eventMiddle.eventTime(eventTime.plusSeconds(10)).vhuSourceId(14).build()); // this event is the middle one of three and has the M_HU_ID of 'eventBefore' as its source
 
-		final HUTraceEventBuilder eventAfter = HUTraceEvent.builder()
+		final HUTraceEventBuilder eventAfter = commonEventBuilder
 				.eventTime(eventTime.plusSeconds(11))
 				.topLevelHuId(6)
-				.vhuId(16)
-				.type(HUTraceType.TRANSFORM_LOAD);
+				.vhuId(16);
 
 		result.add(eventAfter.build());
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(12)).inOutId(26).build());
@@ -375,7 +390,7 @@ public class HUTraceRepositoryTests
 		result.add(eventAfter.eventTime(eventTime.plusSeconds(16)).vhuSourceId(15).build()); // this event is the last of three and has the M_HU_ID of 'eventMiddle' as its source
 
 		result.forEach(e -> huTraceRepository.addEvent(e));
-		
+
 		return result;
 	}
 }

@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -180,10 +181,10 @@ public class HUTraceEventsServiceTests
 				huAccessService.retrieveTopLevelHuId(luHu21); result = luHu21.getM_HU_ID();
 				huAccessService.retrieveTopLevelHuId(luHu22); result = luHu22.getM_HU_ID();
 				
-				huAccessService.retrieveProductAndQty(vhu11); result = ImmutablePair.of(prod11, qty11);
-				huAccessService.retrieveProductAndQty(vhu12); result = ImmutablePair.of(prod12, qty12);
-				huAccessService.retrieveProductAndQty(vhu21); result = ImmutablePair.of(prod21, qty21);
-				huAccessService.retrieveProductAndQty(vhu22); result = ImmutablePair.of(prod22, qty22);
+				huAccessService.retrieveProductAndQty(vhu11); result = Optional.of(ImmutablePair.of(prod11, qty11));
+				huAccessService.retrieveProductAndQty(vhu12); result = Optional.of(ImmutablePair.of(prod12, qty12));
+				huAccessService.retrieveProductAndQty(vhu21); result = Optional.of(ImmutablePair.of(prod21, qty21));
+				huAccessService.retrieveProductAndQty(vhu22); result = Optional.of(ImmutablePair.of(prod22, qty22));
 			}};
 			// @formatter:on
 		}
