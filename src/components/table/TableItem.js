@@ -18,34 +18,20 @@ class TableItem extends Component {
         const { activeCell } = this.state;
         const elem = document.activeElement;
 
-        // console.log(item);
-
         if(activeCell !== elem && !elem.className.includes('js-input-field')) {
             this.setState({
                 activeCell: elem
             })
         }
-
-        // if(property) {
-        //     console.log('class: ' + elem.className);
-        // } else {
-        //     console.log('click outside');
-        // }
         
-
         this.editProperty(e, property, callback, item);
     }
 
     editProperty = (e, property, callback, item) => {
         const { changeListenOnTrue, changeListenOnFalse } = this.props;
-        console.log('!cell-disabled: ' + !document.activeElement.className.includes('cell-disabled')+ " " + (item ? !item.readonly : 'true'));
-        console.log('cell-readonly: ' + document.activeElement.className.includes('cell-readonly') + " flase");
+
         if(
-            // !document.activeElement.className.includes('cell-disabled') ||
-            // document.activeElement.className.includes('cell-readonly')
-
-            (item ? !item.readonly : true) || false
-
+            (item ? !item.readonly : true)
         ) {
             this.setState({
                 edited: property
