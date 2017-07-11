@@ -12,7 +12,8 @@ import {
     pathRequest,
     getWindowBreadcrumb,
     flattenLastElem,
-    getRootBreadcrumb
+    getRootBreadcrumb,
+    breadcrumbRequest
 } from '../../actions/MenuActions';
 
 class MenuOverlay extends Component {
@@ -28,11 +29,25 @@ class MenuOverlay extends Component {
     }
 
     componentDidMount = () => {
-        getRootBreadcrumb().then(response => {
-            this.setState({
-                data: response
+
+
+        const {
+            nodeId
+        } = this.props;
+        if(nodeId == 0){
+            getRootBreadcrumb().then(response => {
+                this.setState({
+                    data: response
+                })
             })
-        })
+        }else {
+            breadcrumbRequest(nodeId).then(response => {
+                this.setState({
+                    data: response.data
+                })
+            })
+        }
+
     }
 
     handleClickOutside = (e) => this.props.onClickOutside(e);
@@ -193,7 +208,7 @@ class MenuOverlay extends Component {
                     handleMenuOverlay={handleMenuOverlay}
                     openModal={openModal}
                     subNavigation={true}
-                    children={nodeData.children.filter(item => !item.children)}
+                    children={nodeData}
                     type={nodeData.type}
                 />
             </div>
@@ -385,7 +400,8 @@ class MenuOverlay extends Component {
         const {
             nodeId, node, handleMenuOverlay, openModal
         } = this.props;
-        const nodeData = nodeId == '0' ? data : node.children;
+        const nodeData = data.length ? data : (node && node.children ? node.children : node );
+
         return (
             <div
                 className="menu-overlay menu-overlay-primary"

@@ -40,6 +40,10 @@
     border-right: 1px solid $brand-border-color;
 }
 
+.table.table-bordered-vertically .item-caption td {
+    border-right: none;
+}
+
 .table-hide-property {
     display: none;
 }
@@ -100,7 +104,7 @@
 }
 
 .row-selected {
-    background-color: #d5e3ec !important;
+    background-color: $brand-selected-color !important;
 }
 
 .row-selected.row-not-saved {

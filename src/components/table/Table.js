@@ -69,7 +69,7 @@ class Table extends Component {
     componentDidUpdate(prevProps, prevState) {
         const {
             mainTable, open, rowData, defaultSelected, disconnectFromState,
-            dispatch, type
+            dispatch, type, refreshSelection
         } = this.props;
 
         const {
@@ -97,7 +97,9 @@ class Table extends Component {
 
         if(
             JSON.stringify(prevProps.defaultSelected) !==
-            JSON.stringify(defaultSelected)
+            JSON.stringify(defaultSelected) ||
+            JSON.stringify(prevProps.refreshSelection) !==
+            JSON.stringify(refreshSelection) && refreshSelection
         ){
             this.setState({
                 selected: defaultSelected
@@ -250,14 +252,16 @@ class Table extends Component {
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
-        const rowSelected = document.getElementsByClassName('row-selected');
-        if(rowSelected.length > 0){
-            if(typeof idFocused == 'number'){
-                rowSelected[0].children[idFocused].focus();
-            }
-            if(typeof idFocusedDown == 'number'){
-                rowSelected[rowSelected.length-1]
-                    .children[idFocusedDown].focus();
+        if (this.table) {
+            const rowSelected = this.table.getElementsByClassName('row-selected');
+            if(rowSelected.length > 0){
+                if(typeof idFocused == 'number'){
+                    rowSelected[0].children[idFocused].focus();
+                }
+                if(typeof idFocusedDown == 'number'){
+                    rowSelected[rowSelected.length-1]
+                        .children[idFocusedDown].focus();
+                }
             }
         }
     }
@@ -723,6 +727,8 @@ class Table extends Component {
                         }
                         handleSelect={this.selectRangeProduct}
                         contextType={item.type}
+                        caption={item.caption ? item.caption:''}
+                        colspan={item.colspan}
                         notSaved={
                             item.saveStatus &&
                             !item.saveStatus.saved

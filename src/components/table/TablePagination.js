@@ -209,8 +209,13 @@ class TablePagination extends Component {
         return (
             <div className="hidden-sm-down">
                 <div>{selected.length > 0 ?
-                        (selected[0] === 'all' ? size : selected.length) +
-                        ' items selected'
+                        counterpart.translate(
+                            'view.itemsSelected.caption',
+                            {
+                                size: (selected[0] === 'all' ? size :
+                                selected.length)
+                            }
+                        )
                         : counterpart.translate('view.noItemSelected.caption')
                      }
                  </div>
@@ -312,6 +317,7 @@ class TablePagination extends Component {
                         }
                         handleNextPage={() => handleChangePage('up')}
                         handlePrevPage={() => handleChangePage('down')}
+                        pages={pages}
                     />
                 }
             </div>

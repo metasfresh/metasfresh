@@ -6,12 +6,16 @@ class QuickActionsContextShortcuts extends Component {
         super(props);
     }
     handleShortcuts = (action, event) => {
-        const {handleClick} = this.props;
+        const {handleClick, onClick} = this.props;
 
         switch (action) {
         case 'QUICK_ACTION_POS':
             event.preventDefault();
             handleClick();
+            break
+        case 'QUICK_ACTION_TOGGLE':
+            event.preventDefault();
+            onClick();
             break
         }
     }

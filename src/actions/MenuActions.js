@@ -47,6 +47,12 @@ export function rootRequest(limit, depth = 0, onlyFavorites) {
         (onlyFavorites ? '&favorites=true' : '')
     );
 }
+export function breadcrumbRequest(nodeId) {
+    return axios.get(
+        config.API_URL +
+        '/menu/node/' + nodeId + '/breadcrumbMenu'
+    );
+}
 
 // END OF REQUESTS
 
@@ -82,7 +88,7 @@ export function getWindowBreadcrumb(id){
                 for(let i = 0; i < pathData.length; i++){
                     const node = pathData[i];
 
-                    nodePathsRequest(node.nodeId, 10).then(item => {
+                    breadcrumbRequest(node.nodeId).then(item => {
                         node.children = item.data;
                         req += 1;
 
