@@ -37,9 +37,7 @@ import de.metas.handlingunits.model.X_M_HU_Status;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
 import de.metas.interfaces.I_M_Warehouse;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
+
 
 /*
  * #%L
@@ -363,8 +361,9 @@ public class HUTransformTestsBase
 	 * @author metas-dev <dev@metasfresh.com>
 	 *
 	 */
-	@Data
-	@Builder
+	// need to fully qualify the lombok classes, not sure why; if I don't then it works with eclipse, but not with javac (lombok 1.16.16)
+	@lombok.Data
+	@lombok.Builder
 	public static final class TestHUs
 	{
 		private final I_M_HU input;
@@ -380,7 +379,7 @@ public class HUTransformTestsBase
 	 * @param hu
 	 * @return
 	 */
-	public I_M_HU retrieveParent(@NonNull final I_M_HU hu)
+	public I_M_HU retrieveParent(@lombok.NonNull final I_M_HU hu)
 	{
 		return handlingUnitsDAO.retrieveParent(hu);
 	}
@@ -393,7 +392,7 @@ public class HUTransformTestsBase
 	 * @param parentHU
 	 * @return
 	 */
-	public List<I_M_HU> retrieveIncludedHUs(@NonNull final I_M_HU parentHU)
+	public List<I_M_HU> retrieveIncludedHUs(@lombok.NonNull final I_M_HU parentHU)
 	{
 		return handlingUnitsDAO.retrieveIncludedHUs(parentHU);
 	}
@@ -403,7 +402,7 @@ public class HUTransformTestsBase
 	 * Our {@link IHandlingUnitsDAO} has some stuff with caching etc going on, so when working with HUs created by this class,<br>
 	 * I recommend to use this delegating methods rather than obtaining your own instance of {@link IHandlingUnitsDAO}.
 	 */
-	public I_M_HU_Item retrieveParentItem(@NonNull final I_M_HU hu)
+	public I_M_HU_Item retrieveParentItem(@lombok.NonNull final I_M_HU hu)
 	{
 		return handlingUnitsDAO.retrieveParentItem(hu);
 	}
