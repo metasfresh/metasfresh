@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.collections.IteratorUtils;
 
@@ -193,6 +194,12 @@ public class PlainDunningDAO extends AbstractDunningDAO
 			counter++;
 		}
 		return counter;
+	}
+	
+	@Override
+	public List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName)
+	{
+		throw new AdempiereException("Operation not supported");
 	}
 
 }

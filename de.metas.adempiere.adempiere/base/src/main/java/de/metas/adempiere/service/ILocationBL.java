@@ -115,4 +115,6 @@ public interface ILocationBL extends ISingletonService
 	 * @return new duplicated location
 	 */
 	I_C_Location duplicate(org.compiere.model.I_C_Location location);
+	
+	List<I_C_Postal> retrievePostals(Properties ctx, String countryCode, String city, String postal, String trxName);
 }

@@ -174,4 +174,6 @@ public interface IDunningDAO extends ISingletonService
 	Iterator<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSourcesToWriteOff(IDunningContext dunningContext);
 
 	int deleteNotProcessedCandidates(IDunningContext context, I_C_DunningLevel dunningLevel);
+	
+	List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName);
 }

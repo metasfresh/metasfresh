@@ -123,4 +123,6 @@ public interface IDunningBL extends ISingletonService
 	 * @return true if candidate is expired.
 	 */
 	boolean isExpired(I_C_Dunning_Candidate candidate, Timestamp dunningGraceDate);
+	
+	I_C_Dunning_Candidate getLastLevelCandidate(List<I_C_Dunning_Candidate> candidates);
 }
