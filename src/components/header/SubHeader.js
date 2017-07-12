@@ -179,7 +179,7 @@ class Subheader extends Component {
 
         const currentNode = breadcrumb &&
             breadcrumb[breadcrumb.length - 1] &&
-            breadcrumb[breadcrumb.length - 1].children;
+            breadcrumb[breadcrumb.length - 1];
 
         return (
             <div
