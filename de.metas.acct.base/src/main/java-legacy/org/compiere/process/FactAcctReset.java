@@ -28,11 +28,11 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MCash;
 import org.compiere.model.MInOut;
-import org.compiere.model.MInventory;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MJournal;
 import org.compiere.model.MMovement;
@@ -48,8 +48,8 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_HR_Process;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	Accounting Fact Reset
@@ -237,7 +237,7 @@ public class FactAcctReset extends JavaProcess
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialMovement + "'";
 		else if (AD_Table_ID == MRequisition.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_PurchaseRequisition + "'";
-		else if (AD_Table_ID == MInventory.Table_ID)
+		else if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_M_Inventory.class))
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory + "'";
 		else if (AD_Table_ID == X_M_Production.Table_ID)
 			docBaseType = "= '" + X_C_DocType.DOCBASETYPE_MaterialProduction + "'";
