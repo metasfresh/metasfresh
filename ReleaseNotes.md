@@ -19,6 +19,8 @@ Here come the actual release notes:
   * [#1604](https://github.com/metasfresh/metasfresh/issues/1604) Enhance Material disposal (garbage)
   * [#1874](https://github.com/metasfresh/metasfresh/issues/1874) Material Receipt multiselect Close Lines
     * New Functionality in Material Receipt, allowing the user to close multiple lines at once.
+  * [#1929](https://github.com/metasfresh/metasfresh/issues/1929) Translate & export webui messages
+    * Migrating the latest messages for static webUI elements.
   * [#1938](https://github.com/metasfresh/metasfresh/issues/1938) Adjust Window Greeting in WebUI
     * Adding improvements to Greeting Window in Form of 2-column Layout and Translations.
   * [#1939](https://github.com/metasfresh/metasfresh/issues/1939) Adjust the Business Partner Relations Window
