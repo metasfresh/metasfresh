@@ -109,7 +109,7 @@ public class M_Inventory_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve inventory line handlers
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventory);
-		final List<IInvoiceCandidateHandler> inventoryLineHandlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, org.compiere.model.I_M_InventoryLine.Table_Name);
+		final List<IInvoiceCandidateHandler> inventoryLineHandlers = Services.get(IInvoiceCandidateHandlerBL.class).retrieveImplementationsForTable(ctx, I_M_InventoryLine.Table_Name);
 
 		for (final IInvoiceCandidateHandler handler : inventoryLineHandlers)
 		{
