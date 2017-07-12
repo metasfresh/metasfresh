@@ -24,6 +24,7 @@ package org.adempiere.user.api.impl;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
@@ -50,6 +51,8 @@ import org.compiere.model.X_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
+
+import com.google.common.base.Splitter;
 
 import de.metas.adempiere.model.I_AD_Client;
 import de.metas.email.EMail;
@@ -429,8 +432,26 @@ public class UserBL implements IUserBL
 	@Override
 	public boolean isEMailValid(final I_AD_User user)
 	{
-		final ITranslatableString errmsg = checkEMailValid(user.getEMail());
-		return errmsg == null;
+		// NOTE: even though AD_User.EMail is supposed to contain only one EMail and not ";" separated emails,
+		// it seems that some of the users are already using like that.
+		// For them we provide here this workaround which basically validates each of the email addresses,
+		// and considers the AD_User.EMail valid only if all of them are valid.
+		// see https://github.com/metasfresh/metasfresh/issues/1953
+		
+		final String emailsListStr = user.getEMail();
+		if (Check.isEmpty(emailsListStr, true))
+		{
+			return false;
+		}
+
+		final List<String> emails = Splitter.on(";").trimResults().omitEmptyStrings().splitToList(emailsListStr);
+		if (emails.isEmpty())
+		{
+			return false;
+		}
+
+		final boolean haveInvalidEMails = emails.stream().anyMatch(email -> checkEMailValid(email) != null);
+		return !haveInvalidEMails;
 	}	//	isEMailValid
 
 	private static ITranslatableString checkEMailValid(final String email)
@@ -469,7 +490,6 @@ public class UserBL implements IUserBL
 				return errmsg;
 			}
 		}
-
 
 		// STMP user/password (if SMTP authorization is required)
 		if (Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())

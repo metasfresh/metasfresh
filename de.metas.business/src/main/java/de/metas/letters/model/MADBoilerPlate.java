@@ -814,6 +814,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		final BoilerPlateContext.Builder attributesBuilder = BoilerPlateContext.builder();
 		attributesBuilder.setWindowNo(sourceDocument != null ? sourceDocument.getWindowNo() : Env.WINDOW_MAIN);
+		attributesBuilder.setSourceDocument(sourceDocument);
 
 		final I_AD_User salesRep = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), Env.getAD_User_ID(Env.getCtx()));
 		if (salesRep != null)
@@ -844,7 +845,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		if (C_BPartner_ID > 0)
 		{
 			attributesBuilder.setC_BPartner_ID(C_BPartner_ID);
-			
+
 			final MBPartner bp = MBPartner.get(ctx, C_BPartner_ID);
 			if (email == null)
 			{
@@ -1102,7 +1103,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				{
 					return EMPTY;
 				}
-				
+
 				return new BoilerPlateContext(ImmutableMap.copyOf(attributes));
 			}
 

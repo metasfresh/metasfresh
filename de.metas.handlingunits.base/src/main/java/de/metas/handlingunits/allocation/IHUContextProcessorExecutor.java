@@ -1,7 +1,9 @@
 package de.metas.handlingunits.allocation;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
+import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 
 import com.google.common.base.Preconditions;
@@ -33,6 +35,7 @@ import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
+import lombok.NonNull;
 
 /**
  * Executor responsible for running {@link IHUContextProcessor}. Use one of the methods in {@link IHUTrxBL} to get an instance.
@@ -65,7 +68,7 @@ public interface IHUContextProcessorExecutor
 	 * @param processor
 	 * @see #run(IHUContextProcessor)
 	 */
-	default void run(final Consumer<IHUContext> processor)
+	default void run(@NonNull final Consumer<IHUContext> processor)
 	{
 		Preconditions.checkNotNull(processor, "processor is null");
 		run(new IHUContextProcessor()
@@ -77,6 +80,16 @@ public interface IHUContextProcessorExecutor
 				return NULL_RESULT;
 			}
 		});
+	}
+	
+	default <T> T call(@NonNull final Function<IHUContext, T> callable)
+	{
+		final Mutable<T> resultHolder = new Mutable<>();
+		run(huContext -> {
+			T result = callable.apply(huContext);
+			resultHolder.setValue(result);
+		});
+		return resultHolder.getValue();
 	}
 
 	/**
