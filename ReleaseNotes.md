@@ -16,6 +16,7 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#1604](https://github.com/metasfresh/metasfresh/issues/1604) Enhance Material disposal (garbage)
   * [#1874](https://github.com/metasfresh/metasfresh/issues/1874) Material Receipt multiselect Close Lines
     * New Functionality in Material Receipt, allowing the user to close multiple lines at once.
   * [#1938](https://github.com/metasfresh/metasfresh/issues/1938) Adjust Window Greeting in WebUI
