@@ -19,6 +19,8 @@ package org.compiere.acct;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Inventory;
 import org.compiere.model.MAccount;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
@@ -175,7 +177,7 @@ public class Doc_Inventory extends Doc
 			if (m_DocStatus.equals(MInventory.DOCSTATUS_Reversed) && m_Reversal_ID !=0 && line.getReversalLine_ID() != 0)
 			{
 				//	Set AmtAcctDr from Original Phys.Inventory
-				if (!dr.updateReverseLine (MInventory.Table_ID, 
+				if (!dr.updateReverseLine (InterfaceWrapperHelper.getTableId(I_M_Inventory.class), 
 						m_Reversal_ID, line.getReversalLine_ID(),Env.ONE))
 				{
 					throw newPostingException()
@@ -202,7 +204,7 @@ public class Doc_Inventory extends Doc
 			if (m_DocStatus.equals(MInventory.DOCSTATUS_Reversed) && m_Reversal_ID !=0 && line.getReversalLine_ID() != 0)
 			{
 				//	Set AmtAcctCr from Original Phys.Inventory
-				if (!cr.updateReverseLine (MInventory.Table_ID, 
+				if (!cr.updateReverseLine (InterfaceWrapperHelper.getTableId(I_M_Inventory.class), 
 						m_Reversal_ID, line.getReversalLine_ID(),Env.ONE))
 				{
 					throw newPostingException()
