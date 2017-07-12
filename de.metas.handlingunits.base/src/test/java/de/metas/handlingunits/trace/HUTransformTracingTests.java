@@ -10,14 +10,18 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestWatcher;
 
+import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
+import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
+import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import mockit.Mocked;
 
 /*
  * #%L
@@ -40,7 +44,16 @@ import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-public class HUTransformTracingTests extends HUTransformServiceTests
+
+/**
+ * Leans on {@link HUTransformTestsBase} and verifies that the correct {@link HUTraceEvent}s were created.
+ * To test additional use cases, move the respective testing code from {@link HUTransformServiceTests} to {@link HUTransformTestsBase}.
+ * 
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class HUTransformTracingTests
 {
 	/** Watches the current tests and dumps the database to console in case of failure */
 	@Rule
@@ -49,10 +62,15 @@ public class HUTransformTracingTests extends HUTransformServiceTests
 	// private HUTransformServiceTests huTransformServiceTests;
 	private HUTraceRepository huTraceRepository;
 
+	private HUTransformTestsBase testsBase;
+
+	@Mocked
+	private IHUPackingMaterialsCollector<I_M_InOutLine> noopPackingMaterialsCollector;
+
 	@Before
 	public void init()
 	{
-		super.init();
+		testsBase = new HUTransformTestsBase(noopPackingMaterialsCollector);
 
 		huTraceRepository = new HUTraceRepository();
 		final HUTraceEventsService huTraceEventsService = new HUTraceEventsService(huTraceRepository, new HUAccessService());
@@ -67,7 +85,7 @@ public class HUTransformTracingTests extends HUTransformServiceTests
 	@Test
 	public void testCU_To_NewCU_1Tomato()
 	{
-		final TestHUs result = super.testCU_To_NewCU_1Tomato_DoIt();
+		final TestHUs result = testsBase.testCU_To_NewCU_1Tomato_DoIt();
 
 		final List<HUTraceEvent> traceEvents = huTraceRepository.queryAll();
 		assertThat(traceEvents.size(), is(2));
@@ -101,7 +119,7 @@ public class HUTransformTracingTests extends HUTransformServiceTests
 	@Test
 	public void testCU_To_NewCU_MaxValueParent()
 	{
-		final TestHUs result = super.testCU_To_NewCU_MaxValueParent_DoIt();
+		final TestHUs result = testsBase.testCU_To_NewCU_MaxValueParent_DoIt();
 
 		final I_M_HU parentTU = result.getInititalParent();
 		final I_M_HU cuToSplit = result.getInput();
@@ -135,11 +153,11 @@ public class HUTransformTracingTests extends HUTransformServiceTests
 						.build()));
 	}
 
-	@Override
+	@Test
 	public void testCU_To_NewCU_MaxValueNoParent()
 	{
-		super.testCU_To_NewCU_MaxValueNoParent_DoIt();
-		
+		testsBase.testCU_To_NewCU_MaxValueNoParent_DoIt();
+
 		assertThat(huTraceRepository.queryAll().isEmpty(), is(true));
 	}
 
@@ -149,162 +167,10 @@ public class HUTransformTracingTests extends HUTransformServiceTests
 	@Test
 	public void testAggregateCU_To_NewTUs_1Tomato()
 	{
-		final TestHUs testHUs = super.testAggregateCU_To_NewTUs_1Tomato_DoIt(false);
-		
+		testsBase.testAggregateCU_To_NewTUs_1Tomato_DoIt(false);
+
 		final List<HUTraceEvent> huTraceEvents = huTraceRepository.queryAll();
 		assertThat(huTraceEvents.size(), is(4));
-	}
-
-	@Override
-	@Ignore
-	public void testRealCU_To_NewTUs_1Tomato_TU_Capacity_40(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testRealCU_To_NewTUs_1Tomato_TU_Capacity_40(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testRealCU_To_NewTUs_40Tomatoes_TU_Capacity_8(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testRealCU_To_NewTUs_40Tomatoes_TU_Capacity_8(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testRealCU_To_ExistingRealTU()
-	{
-		// TODO Auto-generated method stub
-		super.testRealCU_To_ExistingRealTU();
-	}
-
-	@Override
-	@Ignore
-	public void testRealCU_To_ExistingRealTU_overfill()
-	{
-		// TODO Auto-generated method stub
-		super.testRealCU_To_ExistingRealTU_overfill();
-	}
-
-	@Override
-	@Ignore
-	public void testRealCU_To_ExistingAggregateTU()
-	{
-		// TODO Auto-generated method stub
-		super.testRealCU_To_ExistingAggregateTU();
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateTU_To_NewTUs_MaxValueParent()
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateTU_To_NewTUs_MaxValueParent();
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateTU_To_NewTUs(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateTU_To_NewTUs(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void test_TakeOutTUsFromCustomLU(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.test_TakeOutTUsFromCustomLU(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testRealTU_To_NewTUs_MaxValue()
-	{
-		// TODO Auto-generated method stub
-		super.testRealTU_To_NewTUs_MaxValue();
-	}
-
-	@Override
-	@Ignore
-	public void testRealTU_To_NewTUs(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testRealTU_To_NewTUs(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateTU_To_OneNewLU(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateTU_To_OneNewLU(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateTU_To_MultipleNewLUs(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateTU_To_MultipleNewLUs(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testRealStandaloneTU_To_NewLU(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testRealStandaloneTU_To_NewLU(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testRealTUwithLU_To_NewLU(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testRealTUwithLU_To_NewLU(isOwnPackingMaterials);
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateTU_to_existingLU_withRealTU()
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateTU_to_existingLU_withRealTU();
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateTU_To_existingLU_withAggregateTU()
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateTU_To_existingLU_withAggregateTU();
-	}
-
-	@Override
-	@Ignore
-	public void test_CUToExistingTU_create_mixed_TU_partialCU()
-	{
-		// TODO Auto-generated method stub
-		super.test_CUToExistingTU_create_mixed_TU_partialCU();
-	}
-
-	@Override
-	@Ignore
-	public void test_CUToExistingTU_create_mixed_TU_completeCU()
-	{
-		// TODO Auto-generated method stub
-		super.test_CUToExistingTU_create_mixed_TU_completeCU();
-	}
-
-	@Override
-	@Ignore
-	public void testAggregateSingleLUFullyLoaded_non_int(boolean isOwnPackingMaterials)
-	{
-		// TODO Auto-generated method stub
-		super.testAggregateSingleLUFullyLoaded_non_int(isOwnPackingMaterials);
 	}
 
 }
