@@ -140,5 +140,56 @@ public class PlainAllocationDAO extends AllocationDAO
 		}
 
 		return sum;
-	}	
+	}
+	
+	@Override
+	public BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice, String trxName)
+	{
+		
+		return retrieveWriteoffAmt(invoice, trxName, new TypedAccessor<BigDecimal>()
+		{
+
+			@Override
+			public BigDecimal getValue(Object o)
+			{
+				final I_C_AllocationLine line = (I_C_AllocationLine)o;
+				final BigDecimal lineWriteOff = line.getWriteOffAmt();
+				return lineWriteOff;
+			}
+		});
+		
+	}
+	
+	private BigDecimal retrieveWriteoffAmt(final org.compiere.model.I_C_Invoice invoice, final String trxName, final TypedAccessor<BigDecimal> amountAccessor)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+
+		BigDecimal sum = BigDecimal.ZERO;
+		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
+		{
+			final I_C_AllocationHdr ah = line.getC_AllocationHdr();
+			final BigDecimal lineWriteOff = amountAccessor.getValue(line);
+
+			if ((null != ah) && (ah.getC_Currency_ID() != invoice.getC_Currency_ID()))
+			{
+				final BigDecimal lineWriteOffConv = Services.get(ICurrencyBL.class).convert(ctx,
+						lineWriteOff, // Amt
+						ah.getC_Currency_ID(), // CurFrom_ID
+						invoice.getC_Currency_ID(), // CurTo_ID
+						ah.getDateTrx(), // ConvDate
+						invoice.getC_ConversionType_ID(),
+						line.getAD_Client_ID(), line.getAD_Org_ID());
+
+				sum = sum.add(lineWriteOffConv);
+			}
+			else
+			{
+				sum = sum.add(lineWriteOff);
+			}
+		}
+
+		return sum;
+	}
+	
+	
 }
