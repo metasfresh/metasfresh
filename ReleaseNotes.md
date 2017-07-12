@@ -34,6 +34,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#919](https://github.com/metasfresh/metasfresh-webui-frontend/issues/919) Keyboard shortcut for Quickaction dropdown
+    * New Shortcut added for the Quickaction Dropdown Menu, allowing a better keyboard navigation.
   * [#973](https://github.com/metasfresh/metasfresh-webui-frontend/issues/973) Disable/ Enable on quick actions do not happen smoothly
     * Now having a smooth transition of action button content when starting an action, avoiding a flickering effect.
 
