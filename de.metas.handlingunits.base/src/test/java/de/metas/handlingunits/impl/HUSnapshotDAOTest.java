@@ -41,9 +41,13 @@ import org.compiere.util.TrxRunnableAdapter;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HandlingUnitsConfiguration;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -58,6 +62,8 @@ import de.metas.handlingunits.snapshot.impl.HUSnapshotDAO;
 import de.metas.handlingunits.util.TraceUtils;
 import de.metas.interfaces.I_M_Warehouse;
 
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes= HandlingUnitsConfiguration.class)
 public class HUSnapshotDAOTest extends AbstractHUTest
 {
 	private HUSnapshotDAO huSnapshotDAO;
