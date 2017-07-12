@@ -177,12 +177,16 @@ class QuickActions extends Component {
                             className={
                                 'btn-meta-outline-secondary btn-icon-sm ' +
                                 'btn-inline btn-icon pointer tooltip-parent ' +
-                                (isDropdownOpen ? 'btn-disabled ' : '')
+                                ((isDropdownOpen || disabledDuringProcessing) ? 'btn-disabled ' : '')
                             }
                             onMouseEnter={() => this.toggleTooltip(true)}
                             onMouseLeave={() => this.toggleTooltip(false)}
                             onClick={
-                                () => this.toggleDropdown(!isDropdownOpen)
+                                () => {
+                                    if (!disabledDuringProcessing) {
+                                        this.toggleDropdown(!isDropdownOpen)
+                                    }
+                                }
                             }
                         >
                             <i className="meta-icon-down-1" />
