@@ -1,11 +1,15 @@
 package de.metas.ui.web.picking;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +19,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.IAllocationDestination;
+import de.metas.handlingunits.allocation.IAllocationRequest;
+import de.metas.handlingunits.allocation.IAllocationSource;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -49,12 +66,14 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 @Component
 public class PickingSlotViewRepository
 {
-	private final LookupDataSource warehouseLookup;
-	private final LookupDataSource bpartnerLookup;
-	private final LookupDataSource bpartnerLocationLookup;
+	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	@Autowired
 	private PickingHUsRepository pickingHUsRepo;
+
+	private final LookupDataSource warehouseLookup;
+	private final LookupDataSource bpartnerLookup;
+	private final LookupDataSource bpartnerLocationLookup;
 
 	@Autowired
 	public PickingSlotViewRepository(final Adempiere databaseAccess)
@@ -82,7 +101,7 @@ public class PickingSlotViewRepository
 	public List<PickingSlotRow> retrieveRowsByShipmentScheduleId(final int shipmentScheduleId)
 	{
 		final ListMultimap<Integer, HUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(shipmentScheduleId);
-//		final Set<Integer> pickingSlotIds = huEditorRowsByPickingSlotId.keySet();
+		// final Set<Integer> pickingSlotIds = huEditorRowsByPickingSlotId.keySet();
 		// FIXME: debugging!!!!
 		final Set<Integer> pickingSlotIds = Services.get(IPickingSlotDAO.class).retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.stream()
@@ -155,6 +174,42 @@ public class PickingSlotViewRepository
 	public void removeHUFromPickingSlot(final int huId, final int pickingSlotId)
 	{
 		pickingHUsRepo.removeHUFromPickingSlot(huId, pickingSlotId);
+	}
+
+	public void addQtyToHU(final BigDecimal qtyCU, final int huId, final int shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		I_M_Product product = shipmentSchedule.getM_Product();
+
+		// TODO
+		IAllocationSource source = null; // TODO
+
+		// Destination: HU
+		final IAllocationDestination destination;
+		{
+			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			if (X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			{
+				throw new AdempiereException("not a planning HU").setParameter("hu", hu);
+			}
+			destination = HUListAllocationSourceDestination.of(hu);
+		}
+
+		// Request
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx());
+		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(product)
+				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getC_UOM(shipmentSchedule)))
+				.setDateAsToday()
+				.setFromReferencedModel(shipmentSchedule)
+				.setForceQtyAllocation(true)
+				.create();
+
+		HULoader.of(source, destination)
+				.setAllowPartialLoads(false)
+				.setAllowPartialUnloads(false)
+				.load(request);
 	}
 
 }

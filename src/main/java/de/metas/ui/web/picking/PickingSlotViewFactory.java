@@ -14,6 +14,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
+import de.metas.ui.web.picking.process.WEBUI_Picking_NewEmptyHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -96,6 +97,12 @@ public class PickingSlotViewFactory implements IViewFactory
 		final Properties ctx = Env.getCtx();
 
 		return ImmutableList.of(
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_NewEmptyHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
 						.anyTable().anyWindow()

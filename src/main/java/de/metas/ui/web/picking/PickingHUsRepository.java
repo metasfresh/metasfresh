@@ -81,21 +81,34 @@ import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 		InterfaceWrapperHelper.save(pickingCandidatePO);
 	}
 
+	public I_M_Picking_Candidate getCreateCandidate(final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	{
+		I_M_Picking_Candidate pickingCandidatePO = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.firstOnly(I_M_Picking_Candidate.class);
+		if (pickingCandidatePO == null)
+		{
+			pickingCandidatePO = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
+			pickingCandidatePO.setM_ShipmentSchedule_ID(shipmentScheduleId);
+			pickingCandidatePO.setM_PickingSlot_ID(pickingSlotId);
+			pickingCandidatePO.setM_HU_ID(huId);
+			InterfaceWrapperHelper.save(pickingCandidatePO);
+		}
+
+		return pickingCandidatePO;
+	}
+
 	public void removeHUFromPickingSlot(final int huId, final int pickingSlotId)
 	{
-		final I_M_Picking_Candidate pickingCandidatePO = Services.get(IQueryBL.class)
+		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
-				.firstOnly(I_M_Picking_Candidate.class);
-
-		if (pickingCandidatePO == null)
-		{
-			// was already removed => do nothing
-			return;
-		}
-
-		InterfaceWrapperHelper.delete(pickingCandidatePO);
+				.delete();
 	}
 }
