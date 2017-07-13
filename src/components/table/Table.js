@@ -268,8 +268,11 @@ class Table extends Component {
 
     handleClickOutside = (event) => {
         const { showIncludedViewOnSelect } = this.props;
-        if(event.target.parentNode !== document &&
-            !event.target.parentNode.className.includes('notification')) {
+        if(
+            event.target.parentNode !== document &&
+            (event.target.parentNode &&
+            !event.target.parentNode.className.includes('notification'))
+        ) {
             const item = event.path;
             if(item) {
                 for(let i = 0; i < item.length; i++){
