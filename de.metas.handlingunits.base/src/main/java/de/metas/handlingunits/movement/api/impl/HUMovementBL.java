@@ -30,9 +30,6 @@ import lombok.NonNull;
 
 public class HUMovementBL implements IHUMovementBL
 {
-	private I_M_Warehouse _directMoveWarehouse = null;
-	private boolean _directMoveWarehouseLoaded = false;
-
 	@Override
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
 	{
@@ -65,14 +62,6 @@ public class HUMovementBL implements IHUMovementBL
 	@Override
 	public I_M_Warehouse getDirectMove_Warehouse(final Properties ctx, final boolean throwEx)
 	{
-		if (_directMoveWarehouseLoaded)
-		{
-			return _directMoveWarehouse;
-		}
-
-		// Flag as loaded because we don't want to check it again
-		_directMoveWarehouseLoaded = true;
-
 		//
 		// Get the M_Warehouse_ID
 		final int directMoveWarehouseId = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_DirectMove_Warehouse_ID,
@@ -80,11 +69,9 @@ public class HUMovementBL implements IHUMovementBL
 				Env.getAD_Client_ID(ctx), // AD_Client_ID
 				Env.getAD_Org_ID(ctx) // AD_Org_ID
 		);
+		
 		if (directMoveWarehouseId <= 0)
 		{
-			_directMoveWarehouse = null;
-			_directMoveWarehouseLoaded = true;
-
 			if (throwEx)
 			{
 				Check.errorIf(true, "Missing AD_SysConfig record with Name = {} for AD_Client_ID={} and AD_Org_ID={}",
@@ -93,18 +80,18 @@ public class HUMovementBL implements IHUMovementBL
 			return null;
 		}
 
-		//
-		// Load the warehouse
-		_directMoveWarehouse = InterfaceWrapperHelper.create(ctx, directMoveWarehouseId, I_M_Warehouse.class, ITrx.TRXNAME_None);
-		if (_directMoveWarehouse != null && _directMoveWarehouse.getM_Warehouse_ID() <= 0)
+		// Load the warehouse (we assume the table level caching is enabled for warehouse)
+		final I_M_Warehouse directMoveWarehouse = InterfaceWrapperHelper.create(ctx, directMoveWarehouseId, I_M_Warehouse.class, ITrx.TRXNAME_None);
+		if (directMoveWarehouse != null && directMoveWarehouse.getM_Warehouse_ID() <= 0)
 		{
-			_directMoveWarehouse = null;
+			if(throwEx)
+			{
+				throw new AdempiereException("No warehouse found for ID="+directMoveWarehouseId+". Check sysconfig "+SYSCONFIG_DirectMove_Warehouse_ID);
+			}
+			return null;
 		}
-		_directMoveWarehouseLoaded = true;
-
-		//
-		// Return loaded warehouse (or null)
-		return _directMoveWarehouse;
+		
+		return directMoveWarehouse;
 	}
 
 	@Override
