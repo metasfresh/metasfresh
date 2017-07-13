@@ -3,6 +3,9 @@ import axios from 'axios';
 
 // REQUESTS
 
+let breadcrumbsCache = {};
+let breadcrumbsRequested = false;
+
 export function pathRequest(nodeId) {
     return axios.get(
         config.API_URL +
@@ -78,33 +81,50 @@ export function getRootBreadcrumb() {
 
 export function getWindowBreadcrumb(id){
     return dispatch => {
-        elementPathRequest('window', id).then(response => {
-            let req = 0;
-            let pathData = flattenOneLine(response.data);
+        if (!breadcrumbsRequested) {
+            breadcrumbsRequested = true;
+            elementPathRequest('window', id).then(response => {
+                let req = 0;
+                let pathData = flattenOneLine(response.data);
 
-            // promise to get all of the breadcrumb menu options
-            let breadcrumbProcess = new Promise((resolve) => {
+                // promise to get all of the breadcrumb menu options
+                let breadcrumbProcess = new Promise((resolve) => {
 
-                for(let i = 0; i < pathData.length; i++){
-                    const node = pathData[i];
+                    for(let i = 0; i < pathData.length; i++){
+                        const node = pathData[i];
+                        let nodeId = node.nodeId;
 
-                    breadcrumbRequest(node.nodeId).then(item => {
-                        node.children = item.data;
-                        req += 1;
+                        if (typeof breadcrumbsCache[nodeId] !== 'undefined') {
+                            node.children = breadcrumbsCache[nodeId];
+                            req += 1;
 
-                        if(req === pathData.length){
-                            resolve(pathData);
+                            if(req === pathData.length){
+                                resolve(pathData);
+                            }
                         }
-                    })
-                }
-            });
+                        else {
+                            breadcrumbRequest(nodeId).then(item => {
+                                node.children = item.data;
+                                req += 1;
+                                breadcrumbsCache[nodeId] = item.data;
 
-            return breadcrumbProcess;
-        }).then((item) => {
-            dispatch(setBreadcrumb(item.reverse()));
-        }).catch(() => {
-            dispatch(setBreadcrumb([]));
-        });
+                                if(req === pathData.length){
+                                    resolve(pathData);
+                                }
+                            })
+                        }
+                    }
+                });
+
+                return breadcrumbProcess;
+            }).then((item) => {
+                dispatch(setBreadcrumb(item.reverse()));
+                breadcrumbsRequested = false;
+            }).catch(() => {
+                dispatch(setBreadcrumb([]));
+                breadcrumbsRequested = false;
+            });
+        }
     }
 }
 
