@@ -49,8 +49,7 @@ export default {
         COMPLETE_STATUS: mod + '+' + 'u'
     },
     MODAL_CONTEXT: {
-        START: mod + '+' + 's',
-        CLOSE: mod + '+' + 'c',
-        CANCEL: mod + '+' + 'q'
+        APPLY: mod + '+' + 'enter',
+        CANCEL: 'esc'
     }
 }

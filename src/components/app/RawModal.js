@@ -126,7 +126,7 @@ class RawModal extends Component {
                                 {counterpart.translate('modal.actions.done')}
                             {isTooltipShow &&
                                 <Tooltips
-                                    name={keymap.MODAL_CONTEXT.CLOSE}
+                                    name={keymap.MODAL_CONTEXT.APPLY}
                                     action={counterpart.translate('modal.actions.done')}
                                     type={''}
                                 />
@@ -142,7 +142,7 @@ class RawModal extends Component {
                         {children}
                     </div>
                     <ModalContextShortcuts
-                        close={this.handleClose}
+                        apply={this.handleClose}
                     />
                 </div>
             </div>
