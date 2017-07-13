@@ -29,7 +29,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.trace_report(
 		io_bp_value character varying, 
 		io_bp_name character varying, 
 		io_qty numeric, 
-		io_uom character varying
+		io_uom character varying,
+		isPOfromSO character varying
 		) 
 AS
 $$
@@ -54,7 +55,8 @@ SELECT
 	a.io_bp_value,
 	a.io_bp_name,
 	SUM(a.io_qty),
-	a.io_uom
+	a.io_uom,
+	'N' AS isPOfromSO
 FROM (
 SELECT distinct
 	o.DateOrdered,
@@ -209,7 +211,8 @@ select
 	c_bp.value as io_bp_value,
 	c_bp.name as io_bp_name,
 	c_ol.qtyentered as io_qty,
-	c_uom.uomsymbol as io_uom
+	c_uom.uomsymbol as io_uom,
+	'Y' AS isPOfromSO
 
 	
 from C_Order o
