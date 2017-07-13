@@ -1244,7 +1244,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 
 		throw new AdempiereException("Refreshing object when it has changes is not allowed."
-				+ "\nIf you relly want to allow this in your tests, then try setting " + POJOWrapper.class.getName() + ".setAllowRefreshingChangedModels(true)."
+				+ "\nIf you really want to allow this in your tests, then try setting " + POJOWrapper.class.getName() + ".setAllowRefreshingChangedModels(true)."
 				+ "\nModel: " + this
 				+ "\n" + changedColumns);
 	}
