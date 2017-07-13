@@ -39,7 +39,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -158,6 +157,12 @@ public class InventoryAllocationDestination implements IAllocationDestination
 					throw new AdempiereException("Document type {0} is not suitable for material disposal" , new Object[]{inout.getC_DocType()});
 				
 				}
+				
+				// #1604: skip inoutlines for other products
+				if(inOutLine.getM_Product_ID() != request.getProduct().getM_Product_ID())
+				{
+					continue;
+				}
 
 				// create the inventory line based on the info from inoutline and request
 				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, topLevelParent, request);
@@ -173,6 +178,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				InterfaceWrapperHelper.save(inventoryLine, trxName);
 
 				result.substractAllocatedQty(qtySource);
+				
 				final IHUTransaction trx = new HUTransaction(
 						inventoryLine, // Reference model
 						null, // HU item
