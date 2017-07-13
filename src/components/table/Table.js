@@ -283,7 +283,7 @@ class Table extends Component {
             }
 
             this.deselectAllProducts();
-            showIncludedViewOnSelect(false);
+            showIncludedViewOnSelect && showIncludedViewOnSelect(false);
         }
     }
 
