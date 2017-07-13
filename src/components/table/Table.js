@@ -686,7 +686,7 @@ class Table extends Component {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported, collapsible,
-            showIncludedViewOnSelect
+            showIncludedViewOnSelect, supportIncludedViewOnSelect
         } = this.props;
 
         const {
@@ -716,7 +716,7 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
+                            supportIncludedViewOnSelect && showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
                         }
                         }
                         handleRightClick={(e, fieldName) =>

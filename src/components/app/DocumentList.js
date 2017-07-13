@@ -582,6 +582,7 @@ class DocumentList extends Component {
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
                                 showIncludedViewOnSelect={this.showIncludedViewOnSelect}
+                                supportIncludedViewOnSelect={layout.supportIncludedViewOnSelect}
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
