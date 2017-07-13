@@ -253,7 +253,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		{
 			rolePermissions.addPermissionIfCondition(role.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
 		}
-		rolePermissions.addPermissionIfCondition(role.isAllowedInvoicingPriority(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
+		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
 		rolePermissions.addPermissionIfCondition(role.isAllowedTrlBox(), IUserRolePermissions.PERMISSION_TrlBox);
 		rolePermissions.addPermissionIfCondition(role.isAllowedMigrationScripts() , IUserRolePermissions.PERMISSION_MigrationScripts);
 
