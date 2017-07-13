@@ -19,6 +19,8 @@ Here come the actual release notes:
   * [#1604](https://github.com/metasfresh/metasfresh/issues/1604) Enhance Material disposal (garbage)
   * [#1874](https://github.com/metasfresh/metasfresh/issues/1874) Material Receipt multiselect Close Lines
     * New Functionality in Material Receipt, allowing the user to close multiple lines at once.
+  * [#1929](https://github.com/metasfresh/metasfresh/issues/1929) Translate & export webui messages
+    * Migrating the latest messages for static webUI elements.
   * [#1938](https://github.com/metasfresh/metasfresh/issues/1938) Adjust Window Greeting in WebUI
     * Adding improvements to Greeting Window in Form of 2-column Layout and Translations.
   * [#1939](https://github.com/metasfresh/metasfresh/issues/1939) Adjust the Business Partner Relations Window
@@ -27,10 +29,15 @@ Here come the actual release notes:
     * Adjustment of the DocOutbound Window. Layout changes for Log Subtab, adding Translations and renaming Fields.
   * [#1942](https://github.com/metasfresh/metasfresh/issues/1942) Payment Terms Window in WebUI
     * Adjustment of Payment Terms Window with harmonized Layout. Adding Translations for en_US.
+  * [#1940](https://github.com/metasfresh/metasfresh/issues/1940) Subtabs Layout for Business Partner Window
+    * Refining the Business Partner Window Subtabs to Current Layout concept. Adding Translations and Renaming Fields.
   * [#1944](https://github.com/metasfresh/metasfresh/issues/1944) Request Type Window adjustments
     * Minor Adjustments to Request Type Window in WebUI, renaming Fields, adding Translations, Layout improvement in GridView.
+  * [#1967](https://github.com/metasfresh/metasfresh/issues/1967) show dropship in trace report
   * [#1969](https://github.com/metasfresh/metasfresh/issues/1969) Adjustment on Average Purchase Prices Function
     * Enhancement for the Average Purchase Price Function, now returning additional Information like DocumentNo and Receiptdate if available.
+  * [#1986](https://github.com/metasfresh/metasfresh/issues/1986) Internal Use Action for Handling Unit Editor WebUI
+    * New Action in Handling Unit Editor to allow Internal Use for Handling Units.
 
 * metasfresh-webui-api
 
@@ -49,15 +56,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#979](https://github.com/metasfresh/metasfresh-webui-frontend/issues/979) Use the Provided Endpoint w/ entry selections for given Breadcrumb
-
-##Fixes
-* metasfresh-app
-
-* metasfresh-webui-api
-
-* metasfresh-webui-frontend
   * [#987](https://github.com/metasfresh/metasfresh-webui-frontend/issues/987) Blue Border in modal overlay when Button pressed
     * Fixes a Stylesheet Issue that caused a blue border around Buttons and Tooltips when hovering.
+  * [#1008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1008) Breadcrumb Navigation broken for Document List
 
 # metasfresh 5.17 (2017-28)
 
