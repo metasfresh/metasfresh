@@ -176,7 +176,7 @@
     overflow: hidden;
     display: inline-block;
     width: calc(100% - 2rem);
-    line-height: 1.1rem;
+    vertical-align: middle;
 }
 
 .subheader-column {
@@ -268,6 +268,7 @@
     padding: .75rem 1.25rem;
     color: $brand-color-primary;
     font-size: 1.1rem;
+    min-height: 51px;
 }
 .subheader-row {
     display: flex;
