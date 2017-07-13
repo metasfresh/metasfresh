@@ -45,7 +45,10 @@ import lombok.NonNull;
 
 public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 {
+	private static final String SYSCONFIG_ENABLED = "de.metas.handlingunits.trace.interceptor.enabled";
+
 	public static final HUTraceModuleInterceptor INSTANCE = new HUTraceModuleInterceptor();
+
 	private HUTraceEventsService huTraceEventsService;
 
 	private HUTraceModuleInterceptor()
@@ -54,12 +57,11 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 
 	protected void registerInterceptors(final IModelValidationEngine engine, final I_AD_Client client)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final boolean enabled = sysConfigBL.getBooleanValue("de.metas.handlingunits.trace.interceptor.enabled", false);
-		if (!enabled)
+		if (!isEnabled())
 		{
 			return;
 		}
+
 		engine.addModelValidator(new PP_Cost_Collector(), client);
 		engine.addModelValidator(new M_InOut(), client);
 		engine.addModelValidator(new M_Movement(), client);
@@ -74,8 +76,12 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 	 */
 	protected void onAfterInit()
 	{
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		if (!isEnabled())
+		{
+			return;
+		}
 
+		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.addListener(new IHUTrxListener()
 		{
 			@Override
@@ -84,7 +90,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
 				huTraceEventService.createAndForHuParentChanged(hu, parentHUItemOld);
 			}
-			
+
 			@Override
 			public void afterTrxProcessed(@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef, @NonNull final List<I_M_HU_Trx_Line> trxLines)
 			{
@@ -105,12 +111,19 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		this.huTraceEventsService = huTraceEventsService;
 	}
 
-	/* package */ HUTraceEventsService getHUTraceEventsService()
+	private HUTraceEventsService getHUTraceEventsService()
 	{
 		if (huTraceEventsService != null)
 		{
 			return huTraceEventsService;
 		}
 		return Adempiere.getBean(HUTraceEventsService.class);
+	}
+
+	private boolean isEnabled()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_ENABLED, false);
+		return enabled;
 	}
 }
