@@ -3,7 +3,6 @@ import axios from 'axios';
 
 // REQUESTS
 
-let breadcrumbsCache = {};
 let breadcrumbsRequested = false;
 
 export function pathRequest(nodeId) {
@@ -94,25 +93,14 @@ export function getWindowBreadcrumb(id){
                         const node = pathData[i];
                         let nodeId = node.nodeId;
 
-                        if (typeof breadcrumbsCache[nodeId] !== 'undefined') {
-                            node.children = breadcrumbsCache[nodeId];
+                        breadcrumbRequest(nodeId).then(item => {
+                            node.children = item.data;
                             req += 1;
 
                             if(req === pathData.length){
                                 resolve(pathData);
                             }
-                        }
-                        else {
-                            breadcrumbRequest(nodeId).then(item => {
-                                node.children = item.data;
-                                req += 1;
-                                breadcrumbsCache[nodeId] = item.data;
-
-                                if(req === pathData.length){
-                                    resolve(pathData);
-                                }
-                            })
-                        }
+                        })
                     }
                 });
 
