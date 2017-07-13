@@ -6,20 +6,16 @@ class ModalContextShortcuts extends Component {
         super(props);
     }
     handleShortcuts = (action, event) => {
-        const {start, close, cancel} = this.props;
+        const {apply, cancel} = this.props;
 
         switch (action) {
-            case 'START':
+            case 'APPLY':
                 event.preventDefault();
-                start();
-                break;
-            case 'CLOSE':
-                event.preventDefault();
-                close();
+                apply && apply();
                 break;
             case 'CANCEL':
                 event.preventDefault();
-                cancel();
+                cancel && cancel();
                 break;
         }
     }
