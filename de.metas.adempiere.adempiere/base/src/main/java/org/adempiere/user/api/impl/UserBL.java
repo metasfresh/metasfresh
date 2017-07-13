@@ -51,8 +51,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import com.google.common.base.Splitter;
-
 import de.metas.adempiere.model.I_AD_Client;
 import de.metas.email.EMail;
 import de.metas.email.IMailBL;
@@ -425,12 +423,7 @@ public class UserBL implements IUserBL
 		// see https://github.com/metasfresh/metasfresh/issues/1953
 		
 		final String emailsListStr = user.getEMail();
-		if (Check.isEmpty(emailsListStr, true))
-		{
-			return false;
-		}
-
-		final List<String> emails = Splitter.on(";").trimResults().omitEmptyStrings().splitToList(emailsListStr);
+		final List<String> emails = EMail.toEMailsList(emailsListStr);
 		if (emails.isEmpty())
 		{
 			return false;
