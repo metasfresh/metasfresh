@@ -1,7 +1,6 @@
 package org.adempiere.ad.wrapper;
 
 import static org.adempiere.model.InterfaceWrapperHelper.hasChanges;
-import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 /*
  * #%L

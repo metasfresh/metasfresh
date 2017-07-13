@@ -36,48 +36,48 @@ import lombok.experimental.Wither;
 public class HUTraceEvent
 {
 	@NonNull
-	final HUTraceType type;
+	private final HUTraceType type;
 
 	@NonNull
-	final Instant eventTime;
+	private final Instant eventTime;
 
 	@NonNull
-	final Integer vhuId;
+	private final Integer vhuId;
 
-	final int productId;
-
-	@NonNull
-	final BigDecimal qty;
+	private final int productId;
 
 	@NonNull
-	final String vhuStatus;
+	private final BigDecimal qty;
+
+	@NonNull
+	private final String vhuStatus;
 
 	/**
 	 * The topmost HU as seen from the vhu.
 	 */
 	@NonNull
-	final Integer topLevelHuId;
+	private final Integer topLevelHuId;
 
-	final int vhuSourceId;
+	private final int vhuSourceId;
 
-	final int inOutId;
+	private final int inOutId;
 
-	final int shipmentScheduleId;
+	private final int shipmentScheduleId;
 
-	final int movementId;
+	private final int movementId;
 
-	final int costCollectorId;
+	private final int costCollectorId;
 
-	final int ppOrderId;
+	private final int ppOrderId;
 
-	final String docStatus;
+	private final String docStatus;
 
 	/**
 	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
 	 */
-	final Integer docTypeId;
+	private final Integer docTypeId;
 
-	final int huTrxLineId;
+	private final int huTrxLineId;
 
 	public HUTraceSpecification asQuery()
 	{

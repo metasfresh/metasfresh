@@ -133,8 +133,8 @@ public class HUTransformTracingTests
 		final HUTraceEventBuilder common = HUTraceEvent.builder()
 				.vhuId(cuToSplit.getM_HU_ID())
 				.vhuStatus(cuToSplit.getHUStatus())
-				.eventTime(tuTraceEvents.get(0).eventTime)
-				.productId(tuTraceEvents.get(0).productId)
+				.eventTime(tuTraceEvents.get(0).getEventTime())
+				.productId(tuTraceEvents.get(0).getProductId())
 				.type(HUTraceType.TRANSFORM_PARENT);
 
 		assertThat(tuTraceEvents.get(0),

@@ -233,36 +233,7 @@ public class HUTraceEventsService
 				.type(HUTraceType.TRANSFORM_LOAD)
 				.eventTime(trxHeader.getUpdated().toInstant());
 
-		// filter for the trx lines we actually want to create events from
-		final List<I_M_HU_Trx_Line> trxLinesToUse = new ArrayList<>();
-		for (final I_M_HU_Trx_Line trxLine : trxLines)
-		{
-			if (trxLine.getM_HU_ID() <= 0 && trxLine.getVHU_Item_ID() <= 0)
-			{
-				continue;
-			}
-			if (trxLine.getAD_Table_ID() > 0)
-			{
-				final String tableName = trxLine.getAD_Table().getTableName();
-				if (TABLE_NAMES_IGNORED_FOR_TRANSFORMATION_TRACING.contains(tableName))
-				{
-					continue; // we only care for "standalone" HU-transactions. for the others, we have other means to trace them
-				}
-			}
-			if (trxLine.getQty().signum() <= 0)
-			{
-				continue; // for values less than zero, we will get the respective record via its > zero pendant
-			}
-			if (trxLine.getParent_HU_Trx_Line_ID() <= 0)
-			{
-				continue;
-			}
-			// if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
-			// {
-			// continue;
-			// }
-			trxLinesToUse.add(trxLine);
-		}
+		final List<I_M_HU_Trx_Line> trxLinesToUse = filterTrxLinesToUse(trxLines);
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
@@ -340,6 +311,41 @@ public class HUTraceEventsService
 			}
 		}
 		return result;
+	}
+
+	private List<I_M_HU_Trx_Line> filterTrxLinesToUse(final List<I_M_HU_Trx_Line> trxLines)
+	{
+		// filter for the trx lines we actually want to create events from
+		final List<I_M_HU_Trx_Line> trxLinesToUse = new ArrayList<>();
+		for (final I_M_HU_Trx_Line trxLine : trxLines)
+		{
+			if (trxLine.getM_HU_ID() <= 0 && trxLine.getVHU_Item_ID() <= 0)
+			{
+				continue;
+			}
+			if (trxLine.getAD_Table_ID() > 0)
+			{
+				final String tableName = trxLine.getAD_Table().getTableName();
+				if (TABLE_NAMES_IGNORED_FOR_TRANSFORMATION_TRACING.contains(tableName))
+				{
+					continue; // we only care for "standalone" HU-transactions. for the others, we have other means to trace them
+				}
+			}
+			if (trxLine.getQty().signum() <= 0)
+			{
+				continue; // for values less than zero, we will get the respective record via its > zero pendant
+			}
+			if (trxLine.getParent_HU_Trx_Line_ID() <= 0)
+			{
+				continue;
+			}
+			// if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
+			// {
+			// continue;
+			// }
+			trxLinesToUse.add(trxLine);
+		}
+		return trxLinesToUse;
 	}
 
 	public void createAndForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)

@@ -130,6 +130,84 @@ public class HUTraceRepository
 		final IQueryBuilder<I_M_HU_Trace> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Trace.class)
 				.addOnlyActiveRecordsFilter();
 
+		final boolean emptySpec = configureQueryBuilder(query, queryBuilder);
+		if (emptySpec)
+		{
+			return ImmutableList.of();
+		}
+
+		final List<I_M_HU_Trace> nonRecursiveList = queryBuilder
+				.orderBy().addColumn(I_M_HU_Trace.COLUMN_EventTime).endOrderBy()
+				.create()
+				.list();
+
+		// use the tree set to make sure we have no duplicates
+		final Set<I_M_HU_Trace> result = new TreeSet<I_M_HU_Trace>(ModelByIdComparator.instance);
+
+		// no matter which recursion mode, we can always add the records we already have
+		result.addAll(nonRecursiveList);
+
+		switch (query.getRecursionMode())
+		{
+			case NONE:
+				// nothing else to be done
+				break;
+			case BACKWARD:
+				// recurse and add the records whose M_HU_IDs show up as M_HU_Source_IDs in the records we already loaded
+				final List<Integer> vhuSourceIDs = nonRecursiveList.stream()
+						.map(dbRecord -> dbRecord.getVHU_Source_ID())
+						.filter(vhuSourceId -> vhuSourceId > 0)
+						.sorted()
+						.distinct()
+						.collect(Collectors.toList());
+				for (final int vhuSourceId : vhuSourceIDs)
+				{
+					result.addAll(queryDbRecord(HUTraceSpecification.builder()
+							.vhuId(vhuSourceId)
+							.recursionMode(RecursionMode.BACKWARD)
+							.build()));
+				}
+				break;
+			case FORWARD:
+				final List<Integer> vhuIDs = nonRecursiveList.stream()
+						.map(dbRecord -> dbRecord.getVHU_ID())
+						.sorted()
+						.distinct()
+						.collect(Collectors.toList());
+				for (final int vhuId : vhuIDs)
+				{
+					// get the records where our M_HU_IDs are the M_HU_Source_IDs
+					final List<I_M_HU_Trace> directFollowupRecords = queryDbRecord(HUTraceSpecification.builder()
+							.vhuSourceId(vhuId)
+							.recursionMode(RecursionMode.NONE)
+							.build());
+					final List<Integer> directFollowupVhuIDs = directFollowupRecords.stream()
+							.map(directFollowupRecord -> directFollowupRecord.getVHU_ID())
+							.sorted()
+							.distinct()
+							.collect(Collectors.toList());
+
+					// and now expand on those direct follow ups
+					for (final int directFollowupVhuID : directFollowupVhuIDs)
+					{
+						result.addAll(queryDbRecord(HUTraceSpecification.builder()
+								.vhuId(directFollowupVhuID)
+								.recursionMode(RecursionMode.FORWARD)
+								.build()));
+					}
+				}
+				break;
+			default:
+				break;
+		}
+
+		return ImmutableList.copyOf(result);
+	}
+
+	private boolean configureQueryBuilder(
+			@NonNull final HUTraceSpecification query, 
+			@NonNull final IQueryBuilder<I_M_HU_Trace> queryBuilder)
+	{
 		boolean emptySpec = true;
 
 		if (query.getEventTime() != null)
@@ -208,77 +286,7 @@ public class HUTraceRepository
 			queryBuilder.addEqualsFilter(I_M_HU_Trace.COLUMN_M_HU_Trx_Line_ID, query.getHuTrxLineId());
 			emptySpec = false;
 		}
-
-		if (emptySpec)
-		{
-			return ImmutableList.of();
-		}
-
-		final List<I_M_HU_Trace> nonRecursiveList = queryBuilder
-				.orderBy().addColumn(I_M_HU_Trace.COLUMN_EventTime).endOrderBy()
-				.create()
-				.list();
-
-		// use the tree set to make sure we have no duplicates
-		final Set<I_M_HU_Trace> result = new TreeSet<I_M_HU_Trace>(ModelByIdComparator.instance);
-
-		// no matter which recursion mode, we can always add the records we already have
-		result.addAll(nonRecursiveList);
-
-		switch (query.getRecursionMode())
-		{
-			case NONE:
-				// nothing else to be done
-				break;
-			case BACKWARD:
-				// recurse and add the records whose M_HU_IDs show up as M_HU_Source_IDs in the records we already loaded
-				final List<Integer> vhuSourceIDs = nonRecursiveList.stream()
-						.map(dbRecord -> dbRecord.getVHU_Source_ID())
-						.filter(vhuSourceId -> vhuSourceId > 0)
-						.sorted()
-						.distinct()
-						.collect(Collectors.toList());
-				for (final int vhuSourceId : vhuSourceIDs)
-				{
-					result.addAll(queryDbRecord(HUTraceSpecification.builder()
-							.vhuId(vhuSourceId)
-							.recursionMode(RecursionMode.BACKWARD)
-							.build()));
-				}
-				break;
-			case FORWARD:
-				final List<Integer> vhuIDs = nonRecursiveList.stream()
-						.map(dbRecord -> dbRecord.getVHU_ID())
-						.sorted()
-						.distinct()
-						.collect(Collectors.toList());
-				for (final int vhuId : vhuIDs)
-				{
-					// get the records where our M_HU_IDs are the M_HU_Source_IDs
-					final List<I_M_HU_Trace> directFollowupRecords = queryDbRecord(HUTraceSpecification.builder()
-							.vhuSourceId(vhuId)
-							.recursionMode(RecursionMode.NONE)
-							.build());
-					final List<Integer> directFollowupVhuIDs = directFollowupRecords.stream()
-							.map(directFollowupRecord -> directFollowupRecord.getVHU_ID())
-							.sorted()
-							.distinct()
-							.collect(Collectors.toList());
-
-					// and now expand on those direct follow ups
-					for (final int directFollowupVhuID : directFollowupVhuIDs)
-					{
-						result.addAll(queryDbRecord(HUTraceSpecification.builder()
-								.vhuId(directFollowupVhuID)
-								.recursionMode(RecursionMode.FORWARD)
-								.build()));
-					} ;
-				} ;
-			default:
-				break;
-		}
-
-		return ImmutableList.copyOf(result);
+		return emptySpec;
 	}
 
 	private HUTraceEvent asHuTraceEvent(@NonNull final I_M_HU_Trace dbRecord)

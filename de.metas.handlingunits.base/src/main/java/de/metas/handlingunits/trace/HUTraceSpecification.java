@@ -55,40 +55,40 @@ public class HUTraceSpecification
 
 	@NonNull
 	@Default
-	RecursionMode recursionMode = RecursionMode.NONE;
+	private RecursionMode recursionMode = RecursionMode.NONE;
 
-	final HUTraceType type;
+	private final HUTraceType type;
 
-	final Instant eventTime;
+	private final Instant eventTime;
 
-	final int vhuId;
+	private final int vhuId;
 
-	final int productId;
+	private final int productId;
 
-	final BigDecimal qty;
+	private final BigDecimal qty;
 
-	final String vhuStatus;
+	private final String vhuStatus;
 
-	final int topLevelHuId;
+	private final int topLevelHuId;
 
-	final int vhuSourceId;
+	private final int vhuSourceId;
 
-	final int inOutId;
+	private final int inOutId;
 
-	final int shipmentScheduleId;
+	private final int shipmentScheduleId;
 
-	final int movementId;
+	private final int movementId;
 
-	final int costCollectorId;
+	private final int costCollectorId;
 
-	final int ppOrderId;
+	private final int ppOrderId;
 
-	final String docStatus;
+	private final String docStatus;
 
 	/**
 	 * Needs to be {@code null} if not set, because {@code C_DocType_ID=0} means "new".
 	 */
-	final Integer docTypeId;
+	private final Integer docTypeId;
 
-	final int huTrxLineId;
+	private final int huTrxLineId;
 }
