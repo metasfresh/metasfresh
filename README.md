@@ -12,7 +12,10 @@
 > cp src/config.js.dist src/config.js
 
 ## Dev environment
-- First make sure you have installed all of dependencies by:
+
+- install npm and node.js
+
+- make sure you have all dependencies by:
 > npm install
 
 - Then remember of creating config:
