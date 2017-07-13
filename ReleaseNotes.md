@@ -35,6 +35,8 @@ Here come the actual release notes:
     * Minor Adjustments to Request Type Window in WebUI, renaming Fields, adding Translations, Layout improvement in GridView.
   * [#1969](https://github.com/metasfresh/metasfresh/issues/1969) Adjustment on Average Purchase Prices Function
     * Enhancement for the Average Purchase Price Function, now returning additional Information like DocumentNo and Receiptdate if available.
+  * [#1986](https://github.com/metasfresh/metasfresh/issues/1986) Internal Use Action for Handling Unit Editor WebUI
+    * New Action in Handling Unit Editor to allow Internal Use for Handling Units.
 
 * metasfresh-webui-api
 
