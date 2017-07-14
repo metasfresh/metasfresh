@@ -107,7 +107,7 @@ Here come the actual release notes:
   * [#1961](https://github.com/metasfresh/metasfresh/issues/1961) AD_BoilerPlate variables not resolved in Email editor
     * Fixes the Boilerplate usage in eMail Editor that was broken due to a refactoring for the eMail Editor in WebUI.
   * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
-    * Fixies the posting of Match Invoices with Material Receipt that lead to an error in minor cases.
+    * Fixes the posting of Match Invoices with Material Receipts that lead to an error in minor cases.
   * [#1975](https://github.com/metasfresh/metasfresh/issues/1975) new LU is created as planning in production
     * Improvement of newly created Handling Units as Logistic Unit, leaving the status of the LU as "planned" when created from Action Receipt in Manufacturing Workflow.
 
