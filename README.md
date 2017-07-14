@@ -104,7 +104,7 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
 - RawModal
     - DocumentList
 
-## For webui-app developers
+## For webui-api developers
 
 If you are developing against the [metasfresh-webui-api](https://github.com/metasfresh/metasfresh-webui-api), 
 you might want to run the webui-frontend without locally installing node and npm.
