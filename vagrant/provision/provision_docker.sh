@@ -59,6 +59,15 @@ chmod +x /usr/local/bin/docker-compose
 # thanks to https://askubuntu.com/a/739861
 #usermod -aG docker ubuntu
 
-echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo "Done installing docker & docker-compose"
-echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+# commenting out docker machine now..idk yet what to do with it...
+#echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+#echo "Installing docker-machine"
+#echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+#curl -L https://github.com/docker/machine/releases/download/v0.12.1/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine 
+#chmod +x /tmp/docker-machine 
+#sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "Done installing docker and docker-compose"
+#echo "Done installing docker, docker-compose and docker-machine"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
