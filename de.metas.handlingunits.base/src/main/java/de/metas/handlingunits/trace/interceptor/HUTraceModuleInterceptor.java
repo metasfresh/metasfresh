@@ -9,6 +9,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
+import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -45,7 +46,7 @@ import lombok.NonNull;
 
 public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final String SYSCONFIG_ENABLED = "de.metas.handlingunits.trace.interceptor.enabled";
+	public static final String SYSCONFIG_ENABLED = "de.metas.handlingunits.trace.interceptor.enabled";
 
 	public static final HUTraceModuleInterceptor INSTANCE = new HUTraceModuleInterceptor();
 
@@ -120,10 +121,17 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		return Adempiere.getBean(HUTraceEventsService.class);
 	}
 
-	private boolean isEnabled()
+	/**
+	 * Uses {@link ISysConfigBL} to check if tracing shall be enabled. Note that the default value is false, 
+	 * because we don't want this to fire in <i>"unit"</i> tests by default.
+	 * If you want to test against this feature, you can explicitly enable it for your test.
+	 * 
+	 * @return
+	 */
+	public boolean isEnabled()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_ENABLED, false);
+		final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_ENABLED, false, Env.getAD_Client_ID(Env.getCtx()), Env.getAD_Org_ID(Env.getCtx()));
 		return enabled;
 	}
 }

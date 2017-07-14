@@ -1,5 +1,7 @@
 package de.metas.handlingunits.trace;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -9,6 +11,8 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
+import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +25,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
 import mockit.Mocked;
 
 /*
@@ -72,14 +77,19 @@ public class HUTransformTracingTests
 	{
 		testsBase = new HUTransformTestsBase(noopPackingMaterialsCollector);
 
+		// with this, we can avoid having to start the spring context
 		huTraceRepository = new HUTraceRepository();
 		final HUTraceEventsService huTraceEventsService = new HUTraceEventsService(huTraceRepository, new HUAccessService());
-		de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor.INSTANCE.setHUTraceEventsService(huTraceEventsService);
+		HUTraceModuleInterceptor.INSTANCE.setHUTraceEventsService(huTraceEventsService);
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
 		// this also invokes onAfterInit() which registers our IHUTrxListener
-		modelInterceptorRegistry.addModelInterceptor(de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor.INSTANCE);
+		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
+		sysConfig.setName(HUTraceModuleInterceptor.SYSCONFIG_ENABLED);
+		sysConfig.setValue(StringUtils.toBooleanString(true));
+		save(sysConfig);
+		modelInterceptorRegistry.addModelInterceptor(HUTraceModuleInterceptor.INSTANCE);
 	}
 
 	@Test
