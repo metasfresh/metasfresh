@@ -91,8 +91,20 @@ public class HUAccessService
 		return vhus;
 	}
 
+	/**
+	 * 
+	 * @param hu
+	 * @return the {@code M_HU_ID} of the given {@code hu}'s topmost parent (or grandparent etc),
+	 *         <b>or</b>{@code -1} if the given {@code hu} is not "physical" (see {@link IHandlingUnitsBL#isPhysicalHU(String)}).
+	 */
 	public int retrieveTopLevelHuId(@NonNull final I_M_HU hu)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isPhysicalHU(hu.getHUStatus()))
+		{
+			return -1;
+		}
+
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		I_M_HU parent = hu;
