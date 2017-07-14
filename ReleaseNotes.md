@@ -65,8 +65,6 @@ Here come the actual release notes:
 
 # metasfresh 5.17 (2017-28)
 
-**upcoming release for week 2017-28**
-
 ## Features
 * metasfresh-app
   * [#1787](https://github.com/metasfresh/metasfresh/issues/1787) New Window for Quality Inspection Conference Results in WebUI
@@ -82,6 +80,7 @@ Here come the actual release notes:
   * [#1954](https://github.com/metasfresh/metasfresh/issues/1954) Different adjustments for Contract Window in WebUI
     * New Window in WebUI for Contract Maintenance.
   * [#1960](https://github.com/metasfresh/metasfresh/issues/1960) Add window asynchronous workpackage queue to webui
+    * New Window in WebUI for Async Workpackage maintainence.
 
 * metasfresh-webui-api
   * [#401](https://github.com/metasfresh/metasfresh-webui-api/issues/401) Support Zooming to NULL values
@@ -102,12 +101,15 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#1947](https://github.com/metasfresh/metasfresh/issues/1947) camt54 import does not support multiple Ntrys
+    * Fix for swiss ESR Payment importer from Sepa camt54. Now allowing to import files with more than 1 ntry node and letting the Importer iterate them.
   * [#1953](https://github.com/metasfresh/metasfresh/issues/1953) Support multiple email recipients
+    * Fixes a Bug that prevented the initial setting of multiple receipients in eMail editor, when opening from a document window.
   * [#1961](https://github.com/metasfresh/metasfresh/issues/1961) AD_BoilerPlate variables not resolved in Email editor
+    * Fixes the Boilerplate usage in eMail Editor that was broken due to a refactoring for the eMail Editor in WebUI.
   * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
+    * Fixies the posting of Match Invoices with Material Receipt that lead to an error in minor cases.
   * [#1975](https://github.com/metasfresh/metasfresh/issues/1975) new LU is created as planning in production
-
-* metasfresh-webui-api
+    * Improvement of newly created Handling Units as Logistic Unit, leaving the status of the LU as "planned" when created from Action Receipt in Manufacturing Workflow.
 
 * metasfresh-webui-frontend
   * [#956](https://github.com/metasfresh/metasfresh-webui-frontend/issues/956) Caption Translation not working for Sidelist Menu
@@ -119,6 +121,7 @@ Here come the actual release notes:
   * [#971](https://github.com/metasfresh/metasfresh-webui-frontend/issues/971) Page Up and Page Down load all data even if there is only one page
     * Thanks [robertup](https://github.com/robertup)
   * [#968](https://github.com/metasfresh/metasfresh-webui-frontend/issues/968) Navigation with arrows in modal windows gets to the background lines
+    * Adjustment of the behavior in navigation when using the arrow keys to navigate through modal overlay Grid View in the new Picking Prototype.
 
 # metasfresh 5.16 (2017-27)
 
