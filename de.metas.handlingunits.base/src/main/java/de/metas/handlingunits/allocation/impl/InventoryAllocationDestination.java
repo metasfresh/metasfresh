@@ -158,7 +158,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				
 				}
 				
-				// #1604: skip inoutlines for other products
+				// #1604: skip inoutlines for other products; request.getProduct() is not null, see AllocationRequest constructor
 				if(inOutLine.getM_Product_ID() != request.getProduct().getM_Product_ID())
 				{
 					continue;
