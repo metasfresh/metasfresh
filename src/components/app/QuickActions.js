@@ -50,7 +50,7 @@ class QuickActions extends Component {
     componentDidUpdate = (prevProps) => {
         const {
             selected, refresh, shouldNotUpdate, viewId, selectedWindowType,
-            windowType
+            windowType, inBackground
         } = this.props;
 
         if(shouldNotUpdate){
@@ -59,6 +59,13 @@ class QuickActions extends Component {
 
         if(selectedWindowType && (selectedWindowType !== windowType)){
             return;
+        }
+
+        if (inBackground === true && (prevProps.inBackground === false)) {
+            // gained focus after modal closed
+            this.setState({
+                loading: false
+            });
         }
 
         if(

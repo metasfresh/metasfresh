@@ -544,6 +544,7 @@ class DocumentList extends Component {
                                 fetchOnInit={fetchQuickActionsOnInit}
                                 disabled={hasIncluded}
                                 shouldNotUpdate={inBackground && !hasIncluded}
+                                inBackground={disablePaginationShortcuts}
                             />
                         </div>}
                         <div className="document-list-body">
