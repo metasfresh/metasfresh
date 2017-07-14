@@ -3,11 +3,11 @@
 # without the need to locally install npm and node.
 # Maybe in future also the CI pipeline might use it.
 #
-# To build it, run something like
-# docker build --file ./docker/Dockerfile-dev --build-arg API_URL=http://$(hostname):8080 --tag metasfresh-webui-frontend-dev1 .
+# To build it, go to this repo's base dir and run something like
+# docker build --file ./docker/Dockerfile-dev --build-arg API_URL=http://$(hostname):8080 --tag metasfresh-webui-frontend-dev .
 #
 # To run it, run something like
-# docker run --name metasfresh-webui-frontend -p 3000:3000 metasfresh-webui-frontend-dev1
+# docker run --name metasfresh-webui-frontend -p 3000:3000 -d metasfresh-webui-frontend-dev
 #
 # About `--build-arg API_URL=http://$(hostname):8080`:
 # The API-URL for the webui-frontend to connect with is baked into the docker image's config.js file at build time.
