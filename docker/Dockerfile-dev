@@ -1,0 +1,47 @@
+#
+# this docker file that shall allow API developers to run the metasfresh-webui-frontend in a container,
+# without the need to locally install npm and node.
+# Maybe in future also the CI pipeline might use it.
+#
+# To build it, run something like
+# docker build --file ./docker/Dockerfile-dev --build-arg API_URL=http://$(hostname):8080 --tag metasfresh-webui-frontend-dev1 .
+#
+# To run it, run something like
+# docker run --name metasfresh-webui-frontend -p 3000:3000 metasfresh-webui-frontend-dev1
+#
+# About `--build-arg API_URL=http://$(hostname):8080`:
+# The API-URL for the webui-frontend to connect with is baked into the docker image's config.js file at build time.
+# The value `http://$(hostname):8080` assumes that you run the webui-api on port 8080 on the same host that the docker image is build on.
+#
+# Also see https://github.com/metasfresh/metasfresh-webui-frontend/issues/1013
+#
+
+FROM node:6-onbuild
+
+ARG API_URL=localhost
+
+ENV DOCKER true
+ENV API_URL=$API_URL
+
+RUN npm install webpack -g
+
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+# Copy app source to Docker
+COPY . /usr/src/app/
+
+# Install node_packages
+RUN npm install
+
+# Use default config with "hardcoded API URL
+# RUN cp ./config.js.dist ./config.js
+
+# create a config with API URL taken from $API_URL
+RUN docker/config_from_env.sh > config.js
+
+RUN echo "We will run with the following config.js file:" && cat config.js
+
+EXPOSE 3000
+
