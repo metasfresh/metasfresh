@@ -1,0 +1,13 @@
+#
+# we will copy this file to /etc/systemd/system/docker-tcp.socket to make docker available on a TCP socket on port 4243
+# thx to
+# https://stackoverflow.com/documentation/docker/3935/docker-engine-api#t=201707141850020254931
+#
+
+[Unit]
+Description=Docker Socket for the API  
+[Socket]
+ListenStream=4243  
+Service=docker.service  
+[Install]
+WantedBy=sockets.target 

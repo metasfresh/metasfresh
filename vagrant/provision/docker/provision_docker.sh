@@ -57,15 +57,20 @@ chmod +x /usr/local/bin/docker-compose
 
 # Allow ubuntu to run docker commands without prepending "sudo"
 # thanks to https://askubuntu.com/a/739861
-#usermod -aG docker ubuntu
+usermod -aG docker ubuntu
 
-# commenting out docker machine now..idk yet what to do with it...
-#echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-#echo "Installing docker-machine"
-#echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-#curl -L https://github.com/docker/machine/releases/download/v0.12.1/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine 
-#chmod +x /tmp/docker-machine 
-#sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "Enabling docker remote API on port 4243"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+# enable docker to run with the tcp remote API
+# thx to https://stackoverflow.com/documentation/docker/3935/docker-engine-api#t=201707141850020254931
+cp -v /vagrant/provision/docker/docker-tcp.socket /etc/systemd/system/docker-tcp.socket
+systemctl enable docker-tcp.socket
+systemctl enable docker.socket
+systemctl stop docker
+systemctl start docker-tcp.socket
+systemctl start docker
+
 
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "Done installing docker and docker-compose"

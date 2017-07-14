@@ -8,6 +8,8 @@ Currently, that instance will contain metasfresh-admin, metasfresh-db and an ELK
 
 When the instance runs, it can be accessed as follows:
 
+* docker: http://localhost:4243
+  * known to work with [eclipse docker tooling](https://wiki.eclipse.org/Linux_Tools_Project/Docker_Tooling/User_Guide)
 * metasfresh-admin: http://localhost:9091
 * metasfresh-db: localhost:5433
 * kibana: http://localhost:5601
