@@ -63,7 +63,6 @@ Here come the actual release notes:
     * Fix for MatchInv Accounting of non service Products
 
 * metasfresh-webui-api
-  * [#498](https://github.com/metasfresh/metasfresh-webui-api/issues/498) Return HUs to Customer action is not working
 
 * metasfresh-webui-frontend
   * [#891](https://github.com/metasfresh/metasfresh-webui-frontend/issues/891) Blocked cells
