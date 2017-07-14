@@ -36,6 +36,8 @@ Here come the actual release notes:
   * [#1967](https://github.com/metasfresh/metasfresh/issues/1967) show dropship in trace report
   * [#1969](https://github.com/metasfresh/metasfresh/issues/1969) Adjustment on Average Purchase Prices Function
     * Enhancement for the Average Purchase Price Function, now returning additional Information like DocumentNo and Receiptdate if available.
+  * [#1981](https://github.com/metasfresh/metasfresh/issues/1981) Add Docstatus to Grid View in Empties Receive
+    * Enhancing the presented Information in the Grid View of Empties WIndows (Return & Receive).
   * [#1986](https://github.com/metasfresh/metasfresh/issues/1986) Internal Use Action for Handling Unit Editor WebUI
     * New Action in Handling Unit Editor to allow Internal Use for Handling Units.
 
