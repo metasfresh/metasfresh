@@ -25,14 +25,18 @@ import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
+import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.picking.model.I_M_Picking_Candidate;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -176,25 +180,39 @@ public class PickingSlotViewRepository
 		pickingHUsRepo.removeHUFromPickingSlot(huId, pickingSlotId);
 	}
 
-	public void addQtyToHU(final BigDecimal qtyCU, final int huId, final int shipmentScheduleId)
+	public void addQtyToHU(final BigDecimal qtyCU, final int huId, final int pickingSlotId, final int shipmentScheduleId)
 	{
+		if(qtyCU.signum() <= 0)
+		{
+			throw new AdempiereException("@Invalid@ @QtyCU@");
+		}
+		
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		I_M_Product product = shipmentSchedule.getM_Product();
 
-		// TODO
-		IAllocationSource source = null; // TODO
+		//
+		// Source
+		final IAllocationSource source;
+		{
+			final I_M_Picking_Candidate candidate = pickingHUsRepo.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
+			
+			final IProductStorage storage = new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
+			source = new GenericAllocationSourceDestination(storage, candidate);
+		}
 
+		//
 		// Destination: HU
 		final IAllocationDestination destination;
 		{
 			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-			if (X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
 			{
 				throw new AdempiereException("not a planning HU").setParameter("hu", hu);
 			}
 			destination = HUListAllocationSourceDestination.of(hu);
 		}
 
+		//
 		// Request
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx());
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
@@ -206,6 +224,8 @@ public class PickingSlotViewRepository
 				.setForceQtyAllocation(true)
 				.create();
 
+		//
+		// Load QtyCU to HU(destination)
 		HULoader.of(source, destination)
 				.setAllowPartialLoads(false)
 				.setAllowPartialUnloads(false)

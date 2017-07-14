@@ -20,6 +20,7 @@ import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
@@ -142,6 +143,16 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		final IView view = getView();
 		viewsRepo.invalidateView(view.getViewId());
+	}
+
+	protected final void invalidateParentView()
+	{
+		final IView view = getView();
+		final ViewId parentViewId = view.getParentViewId();
+		if (parentViewId != null)
+		{
+			viewsRepo.invalidateView(parentViewId);
+		}
 	}
 
 	protected final DocumentIdsSelection getSelectedDocumentIds()
