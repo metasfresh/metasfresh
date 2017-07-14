@@ -180,6 +180,10 @@ public class HUTraceEventsService
 		{
 			return; // none of the 3 HU fields is set; nothing to do
 		}
+		if (topLevelHuId <= 0)
+		{
+			return; // there is no top level HU with the correct status; this means that the HU is still in the planning status. 
+		}
 		builder.topLevelHuId(topLevelHuId);
 
 		// the one or more VHU that are assigned
@@ -237,21 +241,20 @@ public class HUTraceEventsService
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
-		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine ->
+		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine -> {
+			if (huTrxLine.getVHU_Item_ID() > 0)
 			{
-				if (huTrxLine.getVHU_Item_ID() > 0)
-				{
-					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
-				}
-				else if (huTrxLine.getM_HU_ID() > 0)
-				{
-					return huAccessService.retrieveVhus(huTrxLine.getM_HU());
-				}
-				else
-				{
-					return ImmutableList.of();
-				}
-			};
+				return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
+			}
+			else if (huTrxLine.getM_HU_ID() > 0)
+			{
+				return huAccessService.retrieveVhus(huTrxLine.getM_HU());
+			}
+			else
+			{
+				return ImmutableList.of();
+			}
+		};
 
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());
