@@ -14,6 +14,7 @@ import org.compiere.model.I_AD_Table;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.event.SimpleObjectSerializer;
 import de.metas.material.event.EventDescr;
 import de.metas.material.event.MaterialDescriptor;
 import de.metas.material.event.MaterialEvent;
@@ -74,8 +75,8 @@ public class ManufactoringEventSerializerTests
 				.build();
 		assertThat(evt.getMaterialDescr().getQty(), comparesEqualTo(BigDecimal.TEN)); // guard
 
-		final String serializedEvt = MaterialEventSerializer.get().serialize(evt);
-		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(evt);
+		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
 		assertThat(deserializedEvt, is(evt));
 	}
@@ -86,9 +87,9 @@ public class ManufactoringEventSerializerTests
 
 		final TransactionEvent evt = createSampleTransactionEvent();
 
-		final String serializedEvt = MaterialEventSerializer.get().serialize(evt);
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(evt);
 
-		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
+		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 		assertThat(deserializedEvt instanceof TransactionEvent, is(true));
 		assertThat(((TransactionEvent)deserializedEvt)
 				.getMaterialDescr()
@@ -152,9 +153,9 @@ public class ManufactoringEventSerializerTests
 						.build())
 				.build();
 
-		final String serializedEvt = MaterialEventSerializer.get().serialize(event);
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(event);
 
-		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
+		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
 		assertThat(deserializedEvt, is(event));
 	}
@@ -195,9 +196,9 @@ public class ManufactoringEventSerializerTests
 						.build())
 				.build();
 
-		final String serializedEvt = MaterialEventSerializer.get().serialize(event);
+		final String serializedEvt = SimpleObjectSerializer.get().serialize(event);
 
-		final MaterialEvent deserializedEvt = MaterialEventSerializer.get().deserialize(serializedEvt);
+		final MaterialEvent deserializedEvt = SimpleObjectSerializer.get().deserialize(serializedEvt, MaterialEvent.class);
 
 		assertThat(deserializedEvt, is(event));
 	}

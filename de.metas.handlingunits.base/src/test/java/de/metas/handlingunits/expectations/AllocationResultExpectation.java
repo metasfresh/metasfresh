@@ -29,8 +29,8 @@ import java.util.List;
 
 import org.junit.Assert;
 
-import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
 
 public class AllocationResultExpectation extends AbstractHUExpectation<Object>
 {

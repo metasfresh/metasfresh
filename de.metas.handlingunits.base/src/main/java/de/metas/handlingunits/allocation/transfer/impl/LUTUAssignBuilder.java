@@ -44,8 +44,6 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
@@ -62,7 +60,9 @@ import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequest
 import de.metas.handlingunits.document.IHUDocumentLine;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.exceptions.NoCompatibleHUItemParentFoundException;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;

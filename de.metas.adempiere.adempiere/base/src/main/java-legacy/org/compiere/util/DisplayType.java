@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
 import org.slf4j.Logger;
 
 import de.metas.i18n.Language;
@@ -711,78 +712,26 @@ public final class DisplayType
 	}
 
 	/**
-	 * Convert given object to ADempiere's boolean value.
-	 * 
-	 * @param value
-	 * @param defaultValue
-	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li><code>defaultValue</code> if value is null or other
-	 *         </ul>
+	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */
 	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
 	{
-		if (value == null)
-		{
-			return defaultValue;
-		}
-		else if (value instanceof Boolean)
-		{
-			return (Boolean)value;
-		}
-		else
-		{
-			final String valueStr = value.toString();
-			if ("true".equalsIgnoreCase(valueStr)
-					|| "Y".equalsIgnoreCase(valueStr))
-			{
-				return Boolean.TRUE;
-			}
-			else if ("false".equalsIgnoreCase(valueStr)
-					|| "N".equalsIgnoreCase(valueStr))
-			{
-				return Boolean.FALSE;
-			}
-			else
-			{
-				return defaultValue;
-			}
-		}
+		return StringUtils.toBoolean(value, defaultValue);
 	}
 
 	/**
-	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
-	 * 
-	 * @param value
-	 * @return <ul>
-	 *         <li>true if value is boolean true, "true" or "Y"
-	 *         <li>false if value is boolean false, "false" or "N"
-	 *         <li>false if value is null or other
-	 *         </ul>
+	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */
 	public static final boolean toBoolean(final Object value)
 	{
-		final Boolean defaultValue = Boolean.FALSE;
-		return toBoolean(value, defaultValue);
+		return StringUtils.toBoolean(value);
 	}
 
 	/**
-	 * Converts given boolean value to ADempiere's string representation of it
-	 * 
-	 * @param value
-	 * @return <ul>
-	 *         <li><code>null</code> if value is null
-	 *         <li>"Y" if value is true
-	 *         <li>"N" if value is false
-	 *         </ul>
+	 * Delegates to {@link StringUtils#toBooleanString(Boolean)}.
 	 */
 	public static final String toBooleanString(final Boolean value)
 	{
-		if (value == null)
-		{
-			return null;
-		}
-		return value ? "Y" : "N";
+		return StringUtils.toBooleanString(value);
 	}
 }	//	DisplayType

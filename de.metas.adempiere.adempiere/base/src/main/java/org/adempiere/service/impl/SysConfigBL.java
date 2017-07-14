@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.Env;
@@ -106,32 +107,14 @@ public class SysConfigBL implements ISysConfigBL
 		return defaultValue;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see de.metas.adempiere.service.impl.ISysConfigBL#getBooleanValue(java.lang.String, boolean)
+	/**
+	 * Gets the string value for the given {@code name} and uses {@link StringUtils#toBoolean(Object, Boolean)} to convert the string value to a boolean. 
 	 */
 	@Override
 	public boolean getBooleanValue(final String Name, final boolean defaultValue)
 	{
 		final String s = getValue(Name);
-		if (s == null || s.length() == 0)
-		{
-			return defaultValue;
-		}
-
-		if ("Y".equalsIgnoreCase(s))
-		{
-			return true;
-		}
-		else if ("N".equalsIgnoreCase(s))
-		{
-			return false;
-		}
-		else
-		{
-			return Boolean.valueOf(s).booleanValue();
-		}
+		return StringUtils.toBoolean(s, defaultValue);
 	}
 
 	/*

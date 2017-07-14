@@ -391,7 +391,7 @@ public interface I_M_HU_Assignment
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Virtual Handling Unit (VHU).
+	 * Set CU Handling Unit (VHU).
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -400,7 +400,7 @@ public interface I_M_HU_Assignment
 	public void setVHU_ID (int VHU_ID);
 
 	/**
-	 * Get Virtual Handling Unit (VHU).
+	 * Get CU Handling Unit (VHU).
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

@@ -26,11 +26,14 @@ import java.util.List;
 
 import org.compiere.model.I_M_Product;
 
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 
 /**
- * Factory for HU related quantities.
+ * Factory for HU related quantities.<br>
+ * Use {@link IHandlingUnitsBL#getStorageFactory()}, unless you have a {@link IHUContext} to get it from.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

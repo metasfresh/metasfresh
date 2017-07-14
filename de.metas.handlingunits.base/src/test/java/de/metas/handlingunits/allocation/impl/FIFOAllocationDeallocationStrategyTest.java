@@ -43,7 +43,7 @@ import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.expectations.AllocationResultExpectation;
 import de.metas.handlingunits.expectations.HUExpectation;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;

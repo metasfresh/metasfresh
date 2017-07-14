@@ -22,7 +22,7 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;

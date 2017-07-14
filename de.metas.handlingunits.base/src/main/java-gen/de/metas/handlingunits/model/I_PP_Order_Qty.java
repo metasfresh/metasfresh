@@ -238,7 +238,7 @@ public interface I_PP_Order_Qty
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
+	 * Set Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -248,7 +248,7 @@ public interface I_PP_Order_Qty
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
+	 * Get Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date

@@ -31,10 +31,10 @@ import com.google.common.base.Preconditions;
  */
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import lombok.NonNull;
 
 /**

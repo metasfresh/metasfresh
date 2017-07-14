@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.adempiere.util.lang.IReference;
 
-import de.metas.handlingunits.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
