@@ -14,7 +14,7 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.allocation.transfer.HUTransferService;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -175,7 +175,7 @@ public final class PPOrderHUsToIssueActions
 
 		final I_M_HU sourceLUorTU = row.getM_HU();
 
-		final List<I_M_HU> extractedTUs = HUTransferService.get(Env.getCtx())
+		final List<I_M_HU> extractedTUs = HUTransformService.get(Env.getCtx())
 				.huExtractTUs(sourceLUorTU, qtyTUs, sourceLUorTU.isHUPlanningReceiptOwnerPM());
 		if (extractedTUs.isEmpty())
 		{
