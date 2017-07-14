@@ -268,6 +268,11 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 								def app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
 								app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 								app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+								if(MF_UPSTREAM_BRANCH=='release')
+								{
+									echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
+									app.push mkDockerTag('latest');
+								}
 							}
             }
 		}
