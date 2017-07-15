@@ -20,10 +20,11 @@ left join ad_column c on f.ad_column_id = c.ad_column_id
 left join ad_tab t on uie.ad_tab_id = t.ad_tab_id
 left join ad_window w on t.ad_window_id = w.ad_window_id
 where true
+-- 11 Integer
 -- 15 Date
 -- 29 Quantity
 and c.ad_reference_id in
-(15, 29)
+(11, 15, 29)
 );
 
 -- Update the widget widths of specific Column Names
@@ -40,6 +41,7 @@ where true
 and c.columnname in (
 'C_Order_ID'
 ,'C_UOM_ID'
+,'C_UOM_To_ID'
 ,'DocumentNo'
 ,'DocStatus'
 ,'C_Invoice_Candidate_HeaderAggregation_ID'
@@ -48,7 +50,10 @@ and c.columnname in (
 ,'Line'
 ,'POReference'
 ,'ReferenceNo'
+,'Price_UOM_ID'
+,'UOMSymbol'
 ,'Value'
+,'X12DE355'
 )
 );
 
@@ -84,6 +89,7 @@ where true
 and c.columnname in (
 'AD_Org_ID'
 ,'AD_Client_ID'
+,'AD_Language'
 ,'C_DocType_ID'
 ,'C_DocTypeTarget_ID'
 ,'M_Product_Category_ID'
@@ -92,7 +98,7 @@ and c.columnname in (
 
 
 --
--- Set Widget Size L
+-- Widget Size L
 --
 -- Update the widget widths of specific Column Names
 update ad_ui_element
@@ -116,5 +122,12 @@ and c.columnname in (
 ,'Shipper_BPartner_ID'
 ,'SubProducer_BPartner_ID'
 ,'M_Product_ID'
+,'Name'
+,'Name2'
+,'Firstname'
+,'Lastname'
+,'ProductName'
+,'Companyname'
+,'CompanyName'
 )
 );
