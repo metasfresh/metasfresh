@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Ranaming of Language Names, avoiding them to get too long because of Country Name. Now added the 2-digit iso country code instead.
   * [#1996](https://github.com/metasfresh/metasfresh/issues/1996) Take out all AD_Client_ID from GridView in WebUI
     * Rearranging GridView in general, taking out the client column from there to free space for other more important columns. Harmonizing oever all GridViews.
+  * [#2001](https://github.com/metasfresh/metasfresh/issues/2001) Add AD_Org_ID to all default Filters
+    * Including the Organisation and other fields to all generic filter selections. Removing long text fields from filters.
 
 * metasfresh-webui-api
 
