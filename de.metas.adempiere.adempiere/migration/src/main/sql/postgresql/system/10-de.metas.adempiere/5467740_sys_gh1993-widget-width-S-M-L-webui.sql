@@ -39,18 +39,23 @@ left join ad_tab t on uie.ad_tab_id = t.ad_tab_id
 left join ad_window w on t.ad_window_id = w.ad_window_id
 where true
 and c.columnname in (
-'C_Order_ID'
+'BOMUse'
+,'C_Order_ID'
 ,'C_UOM_ID'
 ,'C_UOM_To_ID'
 ,'DocumentNo'
 ,'DocStatus'
+,'C_Currency_ID'
+,'C_Currency_ID_To'
 ,'C_Invoice_Candidate_HeaderAggregation_ID'
 ,'C_Invoice_Candidate_HeaderAggregation_Override_ID'
 ,'C_Invoice_Candidate_HeaderAggregation_Effective_ID'
 ,'Line'
 ,'POReference'
 ,'ReferenceNo'
+,'R_Status_ID'
 ,'Price_UOM_ID'
+,'ProductType'
 ,'UOMSymbol'
 ,'Value'
 ,'X12DE355'
@@ -58,7 +63,7 @@ and c.columnname in (
 );
 
 --
--- Set Widget Size M
+-- Widget Size M
 --
 -- Update the widget widths of specific column Reference_ID
 update ad_ui_element
@@ -93,6 +98,7 @@ and c.columnname in (
 ,'C_DocType_ID'
 ,'C_DocTypeTarget_ID'
 ,'M_Product_Category_ID'
+,'SalesRep_ID'
 )
 );
 
@@ -121,6 +127,7 @@ and c.columnname in (
 ,'Pay_BPartner_ID'
 ,'Shipper_BPartner_ID'
 ,'SubProducer_BPartner_ID'
+,'M_AttributeSetInstance_ID'
 ,'M_Product_ID'
 ,'Name'
 ,'Name2'
