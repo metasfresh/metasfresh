@@ -18,7 +18,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#1993](https://github.com/metasfresh/metasfresh/issues/1993) Set default Widget width for certain Columns
     * Refining and Harmonizing the Widget width of columns in GridView for those, where generic width according to their widget type does not match to the user requirement or field content. 
-  * [#1995[(https://github.com/metasfresh/metasfresh/issues/1995) Language Names too Long
+  * [#1995](https://github.com/metasfresh/metasfresh/issues/1995) Language Names too Long
     * Ranaming of Language Names, avoiding them to get too long because of Country Name. Now added the 2-digit iso country code instead.
   * [#1996](https://github.com/metasfresh/metasfresh/issues/1996) Take out all AD_Client_ID from GridView in WebUI
     * Rearranging GridView in general, taking out the client column from there to free space for other more important columns. Harmonizing oever all GridViews.
@@ -41,7 +41,9 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#484](https://github.com/metasfresh/metasfresh/issues/484) HU traceability (backend)
+    * First Backend Implementation of the new Retraceability Functionality allowing the user to backtrack where sepecific components came from and went to.
   * [#1604](https://github.com/metasfresh/metasfresh/issues/1604) Enhance Material disposal (garbage)
+    * Further Improvements of the Material disposal functionality.
   * [#1874](https://github.com/metasfresh/metasfresh/issues/1874) Material Receipt multiselect Close Lines
     * New Functionality in Material Receipt, allowing the user to close multiple lines at once.
   * [#1929](https://github.com/metasfresh/metasfresh/issues/1929) Translate & export webui messages
@@ -55,11 +57,13 @@ Here come the actual release notes:
   * [#1941](https://github.com/metasfresh/metasfresh/issues/1941) Subtab Layout for Window Outbound Document
     * Adjustment of the DocOutbound Window. Layout changes for Log Subtab, adding Translations and renaming Fields.
   * [#1942](https://github.com/metasfresh/metasfresh/issues/1942) Payment Terms Window in WebUI
-      * Adjustment of Payment Terms Window with harmonized Layout. Adding Translations for en_US.
+    * Adjustment of Payment Terms Window with harmonized Layout. Adding Translations for en_US.
   * [#1943](https://github.com/metasfresh/metasfresh/issues/1943) Window Business Partner Group Advanced Edit
+    * Improvement of the advanced edit mode in Business Partner Group window in WebUI.
   * [#1944](https://github.com/metasfresh/metasfresh/issues/1944) Request Type Window adjustments
     * Minor Adjustments to Request Type Window in WebUI, renaming Fields, adding Translations, Layout improvement in GridView.
   * [#1967](https://github.com/metasfresh/metasfresh/issues/1967) show dropship in trace report
+    * Adding dropship references to vendor/ customer trace report
   * [#1969](https://github.com/metasfresh/metasfresh/issues/1969) Adjustment on Average Purchase Prices Function
     * Enhancement for the Average Purchase Price Function, now returning additional Information like DocumentNo and Receiptdate if available.
   * [#1981](https://github.com/metasfresh/metasfresh/issues/1981) Add Docstatus to Grid View in Empties Receive
@@ -69,7 +73,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#495](https://github.com/metasfresh/metasfresh-webui-api/issues/495) API: Functionality to add Actions for Subtab Data
+    * Provides the API Endpoints for actions uses in included subtabs. Shall be made available in Frontend via action menu as soon a subtab record is selected.
   * [#501](https://github.com/metasfresh/metasfresh-webui-api/issues/501) Picking prototype (v4)
+    * Next iteration of the picking terminal prototype in WebUI.
 
 * metasfresh-webui-frontend
   * [#836](https://github.com/metasfresh/metasfresh-webui-frontend/issues/836) Outbound eMail functionality
