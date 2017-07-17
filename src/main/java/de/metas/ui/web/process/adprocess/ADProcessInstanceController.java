@@ -39,6 +39,7 @@ import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.ProcessInstanceResult;
+import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenViewAction;
@@ -304,7 +305,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				final RecordsToOpen recordsToOpen = processExecutionResult.getRecordsToOpen();
 
 				//
-				// Result: report
+				// Open report
 				if (reportTempFile != null)
 				{
 					resultBuilder.setAction(OpenReportAction.builder()
@@ -314,7 +315,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 							.build());
 				}
 				//
-				// View
+				// Open view
 				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 				{
 					final CreateViewRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
@@ -324,7 +325,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 							.build());
 				}
 				//
-				// Single document
+				// Open included view
+				else if (processExecutionResult.getWebuiIncludedViewIdToOpen() != null)
+				{
+					resultBuilder.setAction(OpenIncludedViewAction.builder()
+							.viewId(ViewId.ofViewIdString(processExecutionResult.getWebuiIncludedViewIdToOpen()))
+							.build());
+				}
+				//
+				// Open single document
 				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocument)
 				{
 					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
@@ -334,7 +343,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 							.build());
 				}
 				//
-				// Single document
+				// Open single document
 				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocumentModal)
 				{
 					final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
