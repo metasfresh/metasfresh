@@ -224,3 +224,10 @@
 .meta-icon-link:before {
   content: '\37';
 }
+.meta-icon-mail-alt:before {
+  content: '\38';
+}
+.meta-icon-mail:before {
+  content: '\39';
+}
+
