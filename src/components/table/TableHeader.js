@@ -23,7 +23,7 @@ class TableHeader extends Component {
                     deselect();
                 }}
             >
-                <span className="th-caption">{caption}</span>
+                <span title={caption} className="th-caption">{caption}</span>
                 <span
                     className={sorting.name && sorting.asc ?
                         'sort rotate-90 sort-ico' :
