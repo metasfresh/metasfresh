@@ -16,6 +16,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddQtyToHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_NewEmptyHU;
+import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -104,11 +105,18 @@ public class PickingSlotViewFactory implements IViewFactory
 						.webuiQuickAction(true)
 						.build(),
 
+				// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_OpenHUsToPick.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
 
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
