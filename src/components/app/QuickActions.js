@@ -50,15 +50,14 @@ class QuickActions extends Component {
     componentDidUpdate = (prevProps) => {
         const {
             selected, refresh, shouldNotUpdate, viewId, selectedWindowType,
-            windowType, inBackground
+            windowType, inBackground, inModal
         } = this.props;
 
-        if(shouldNotUpdate){
-            return;
-        }
-
-        if(selectedWindowType && (selectedWindowType !== windowType)){
-            return;
+        if (inModal === false && (prevProps.inModal === true)) {
+            // gained focus after sub-modal closed
+            this.setState({
+                loading: false
+            });
         }
 
         if (inBackground === true && (prevProps.inBackground === false)) {
@@ -66,6 +65,14 @@ class QuickActions extends Component {
             this.setState({
                 loading: false
             });
+        }
+
+        if(shouldNotUpdate){
+            return;
+        }
+
+        if(selectedWindowType && (selectedWindowType !== windowType)){
+            return;
         }
 
         if(
@@ -141,14 +148,14 @@ class QuickActions extends Component {
 
     render() {
         const {
-            actions, isDropdownOpen, isTooltip
+            actions, isDropdownOpen, isTooltip, loading
         } = this.state;
 
         const {
             shouldNotUpdate, processStatus, disabled
         } = this.props;
 
-        const disabledDuringProcessing = (processStatus === "pending") || this.state.loading;
+        const disabledDuringProcessing = (processStatus === 'pending') || loading;
 
         if(actions.length){
             return (
