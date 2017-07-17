@@ -271,17 +271,4 @@ public class PickingView implements IView
 	{
 		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
 	}
-
-	@ViewAction(caption = "picking slots", defaultAction = true)
-	public CreateAndOpenIncludedViewAction openPickingSlots(final DocumentIdsSelection selectedRowIds)
-	{
-		final DocumentId pickingRowId = selectedRowIds.getSingleDocumentId();
-		final PickingRow pickingRow = getById(pickingRowId);
-
-		final CreateViewRequest createViewRequest = CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
-				.setParentViewId(viewId)
-				.setReferencingDocumentPath(pickingRow.getDocumentPath())
-				.build();
-		return CreateAndOpenIncludedViewAction.of(createViewRequest);
-	}
 }
