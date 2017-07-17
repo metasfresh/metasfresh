@@ -19,6 +19,7 @@ import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IPPCostCollectorBL;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
@@ -33,6 +34,7 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 
 /*
@@ -67,6 +69,8 @@ import lombok.NonNull;
 @Service
 public class HUTraceEventsService
 {
+
+	private static final Logger logger = LogManager.getLogger(HUTraceEventsService.class);
 
 	/**
 	 * The method {@link #createAndAddFor(I_M_HU_Trx_Hdr, List)} will ignore hu transaction lines that reference one of these tables, because there is already dedicated code to handles events around those tables.
@@ -182,7 +186,7 @@ public class HUTraceEventsService
 		}
 		if (topLevelHuId <= 0)
 		{
-			return; // there is no top level HU with the correct status; this means that the HU is still in the planning status. 
+			return; // there is no top level HU with the correct status; this means that the HU is still in the planning status.
 		}
 		builder.topLevelHuId(topLevelHuId);
 
@@ -342,17 +346,26 @@ public class HUTraceEventsService
 			{
 				continue;
 			}
-			// if (trxLine.getParent_HU_Trx_Line().getM_HU_ID() <= 0)
-			// {
-			// continue;
-			// }
 			trxLinesToUse.add(trxLine);
 		}
 		return trxLinesToUse;
 	}
 
+	/**
+	 * Creates two trace records for the given {@code hu} which is moved from one parent to another parent (source or target parent might also be null).
+	 * 
+	 * @param hu
+	 * @param parentHUItemOld
+	 */
 	public void createAndForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		if (!handlingUnitsBL.isPhysicalHU(hu.getHUStatus()))
+		{
+			logger.info("Param hu has status={}; nothing to do; hu={}", hu.getHUStatus(), hu);
+			return;
+		}
+
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
 				.type(HUTraceType.TRANSFORM_PARENT)
 				.eventTime(Instant.now());
@@ -376,6 +389,7 @@ public class HUTraceEventsService
 			final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 			if (!productAndQty.isPresent())
 			{
+				logger.info("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
 				continue;
 			}
 
@@ -389,27 +403,6 @@ public class HUTraceEventsService
 			builder.topLevelHuId(newTopLevelHuId)
 					.qty(productAndQty.get().getRight());
 			huTraceRepository.addEvent(builder.build());
-		}
-	}
-
-	public void createAndAddFor(@NonNull final I_M_HU hu)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		if (!handlingUnitsBL.isPhysicalHU(hu.getHUStatus()))
-		{
-			return;
-		}
-
-		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.type(HUTraceType.TRANSFORM_PARENT)
-				.eventTime(hu.getUpdated().toInstant())
-				.topLevelHuId(huAccessService.retrieveTopLevelHuId(hu));
-
-		final List<I_M_HU> vhus = huAccessService.retrieveVhus(hu);
-		for (final I_M_HU vhu : vhus)
-		{
-			final HUTraceEvent event = builderSetVhuProductAndQty(builder, vhu).build();
-			huTraceRepository.addEvent(event);
 		}
 	}
 
