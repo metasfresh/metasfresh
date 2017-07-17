@@ -300,21 +300,6 @@ public class HUEditorView implements IView
 		{
 			invalidateAll();
 		}
-		
-		
-	}
-
-	public void addHUAndInvalidate(final I_M_HU hu)
-	{
-		if (hu == null || hu.getM_HU_ID() <= 0)
-		{
-			return;
-		}
-
-		if (rowsBuffer.addHUIds(ImmutableSet.of(hu.getM_HU_ID())))
-		{
-			invalidateAll();
-		}
 	}
 
 	public void removesHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
