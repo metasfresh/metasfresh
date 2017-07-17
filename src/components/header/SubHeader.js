@@ -143,7 +143,7 @@ class Subheader extends Component {
                 tabIndex={0}
                 onClick={() => {handleEmail(); closeSubheader()}}
             >
-                <i className="meta-icon-message" />
+                <i className="meta-icon-mail" />
                 {counterpart.translate('window.email.caption')}
                 <span className="tooltip-inline">
                     {keymap.GLOBAL_CONTEXT.OPEN_EMAIL}
