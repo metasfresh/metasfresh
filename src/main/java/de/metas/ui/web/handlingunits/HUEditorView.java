@@ -304,10 +304,8 @@ public class HUEditorView implements IView
 
 	public void removesHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
 	{
-		if (rowsBuffer.removeHUIds(extractHUIds(husToRemove)))
-		{
-			invalidateAll();
-		}
+		final Set<Integer> huIdsToRemove = extractHUIds(husToRemove);
+		removesHUIdsAndInvalidate(huIdsToRemove);
 	}
 	
 	public void removesHUIdsAndInvalidate(final Collection<Integer> huIdsToRemove)
