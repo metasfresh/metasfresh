@@ -268,8 +268,11 @@ class Table extends Component {
 
     handleClickOutside = (event) => {
         const { showIncludedViewOnSelect } = this.props;
-        if(event.target.parentNode !== document &&
-            !event.target.parentNode.className.includes('notification')) {
+        if(
+            event.target.parentNode !== document &&
+            (event.target.parentNode &&
+            !event.target.parentNode.className.includes('notification'))
+        ) {
             const item = event.path;
             if(item) {
                 for(let i = 0; i < item.length; i++){
@@ -283,7 +286,7 @@ class Table extends Component {
             }
 
             this.deselectAllProducts();
-            showIncludedViewOnSelect(false);
+            showIncludedViewOnSelect && showIncludedViewOnSelect(false);
         }
     }
 
@@ -686,7 +689,7 @@ class Table extends Component {
         const {
             tabid, cols, type, docId, readonly, keyProperty, onDoubleClick,
             mainTable, newRow, tabIndex, entity, indentSupported, collapsible,
-            showIncludedViewOnSelect
+            showIncludedViewOnSelect, supportIncludedViewOnSelect
         } = this.props;
 
         const {
@@ -716,7 +719,7 @@ class Table extends Component {
                         }
                         onMouseDown={(e) => {
                             this.handleClick(e, item[keyProperty]);
-                            showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
+                            supportIncludedViewOnSelect && showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
                         }
                         }
                         handleRightClick={(e, fieldName) =>

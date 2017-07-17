@@ -100,6 +100,7 @@ class Container extends Component {
                                      selectedWindowType={selectedWindowType}
                                      setModalTitle={setModalTitle}
                                      setModalDescription={setModalDescription}
+                                     fetchQuickActionsOnInit={true}
                                      modalDescription={this.modalDescription}
                                      isModal={true}
                                      processStatus={processStatus}

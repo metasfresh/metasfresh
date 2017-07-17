@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import counterpart from 'counterpart';
 
-import {updateBreadcrumb} from '../../actions/MenuActions';
+import {updateBreadcrumb, elementPathRequest} from '../../actions/MenuActions';
 
 import Actions from './Actions';
 

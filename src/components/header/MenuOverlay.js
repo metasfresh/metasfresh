@@ -41,11 +41,18 @@ class MenuOverlay extends Component {
                 })
             })
         }else {
-            breadcrumbRequest(nodeId).then(response => {
+            if (this.props.node) {
                 this.setState({
-                    data: response.data
+                    data: this.props.node
                 })
-            })
+            }
+            else {
+                breadcrumbRequest(nodeId).then(response => {
+                    this.setState({
+                        data: response.data
+                    })
+                })
+            }
         }
 
     }

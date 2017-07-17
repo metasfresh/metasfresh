@@ -1263,6 +1263,7 @@ td.pulse-off input {
     font-size: .9em;
     color: $brand-icon-off;
     padding: .3rem .2rem .2rem 0;
+    vertical-align: middle;
 }
 
 .btn-bookmark-icon.active {

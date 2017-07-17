@@ -4,7 +4,9 @@
 [![Join the chat at https://gitter.im/metasfresh/metasfresh-webui-frontend](https://badges.gitter.im/metasfresh/metasfresh-webui-frontend.svg)](https://gitter.im/metasfresh/metasfresh-webui-frontend?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Krihelimeter](http://krihelinator.xyz/badge/metasfresh/metasfresh-webui-frontend)](http://krihelinator.xyz)
 
-## Init
+## For webui-frontend developers
+
+### Init
 - Install dependencies
 > npm install
 
@@ -12,8 +14,11 @@
 - Create config. In that case run:
 > cp src/config.js.dist src/config.js
 
-## Dev environment
-- First make sure you have installed all of dependencies by:
+### Dev environment
+
+- install npm and node.js
+
+- make sure you have all dependencies by:
 > npm install
 
 - Then remember of creating config:
@@ -22,14 +27,14 @@
 - Then you should run node server by:
 > npm start
 
-## Build
+### Build
 In case of static version building execute (you are going need Webpack installed globally):
 > webpack --config webpack.prod.js
 
 And after that we need `config.js` in `dist` folder
 > cp /config.js.dist /dist/
 
-## Contribution
+### Contribution
 
 Remember to ensure before contribution that your IDE supports `.editorconfig` file,
 and if needed fix your file before commit changes.
@@ -41,11 +46,11 @@ Also remember to respect our code-schema rules. All of them are listed in __esli
 
 (first one is also autofixing when possible)
 
-## Notice: CI/CD legacy
+### Notice: CI/CD legacy
 
 Submodule meta-frontend-ansible.git and .gitlab-ci.yml file are legacy of CI/CD.
 
-## Dictionary
+### Dictionary
 
 Project has a generic structure. Name of components and their containers should be strictly defined and keep for better understanding.
 
@@ -69,7 +74,7 @@ __MenuOverlay__ - These are components that float over __Header__ and contain na
 
 __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is a side by side table in __DocumentList__.
 
-## Schema
+### Schema
 - MasterWindow
     - Container
     - Window
@@ -99,3 +104,14 @@ __SelectionAttributes__ - It is a panel that might contain __Widgets__ and it is
     - Process
 - RawModal
     - DocumentList
+
+## For webui-api developers
+
+If you are developing against the [metasfresh-webui-api](https://github.com/metasfresh/metasfresh-webui-api), 
+you might want to run the webui-frontend without locally installing node and npm.
+If you have a docker host, you can do so by checking out this repository and then following the instructions in the docker file `docker/Dockerfile-env`.
+
+Thanks to issue [#1013](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1013) and [Seweryn Zeman](https://github.com/cadavre).
+
+
+
