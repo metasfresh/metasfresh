@@ -69,12 +69,19 @@ class Table extends Component {
     componentDidUpdate(prevProps, prevState) {
         const {
             mainTable, open, rowData, defaultSelected, disconnectFromState,
-            dispatch, type, refreshSelection
+            dispatch, type, refreshSelection, supportIncludedViewOnSelect,
+            showIncludedViewOnSelect
         } = this.props;
 
         const {
-            selected
+            selected, rows
         } = this.state;
+
+        if((JSON.stringify(prevState.rows) !==
+            JSON.stringify(rows))){
+                this.showSelectedIncludedView(selected);
+        }
+        
 
         if(mainTable && open){
             this.table.focus();
@@ -105,6 +112,16 @@ class Table extends Component {
                 selected: defaultSelected
             })
         }
+    }
+
+    showSelectedIncludedView = (selected) => {
+        const {showIncludedViewOnSelect, supportIncludedViewOnSelect} = this.props;
+        const {rows} = this.state;
+        selected.length === 1 && supportIncludedViewOnSelect && rows.map(item=>{
+            if(item.id === selected[0]){
+                showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
+            }
+        });
     }
 
     getChildContext = () => {
@@ -332,7 +349,8 @@ class Table extends Component {
 
                 if(!selectRange) {
                     this.selectOneProduct(
-                        array[currentId + 1], false, idFocused
+                        array[currentId + 1], false, idFocused,
+                        this.showSelectedIncludedView([array[currentId + 1]])
                     );
                 } else {
                     this.selectProduct(
@@ -357,8 +375,10 @@ class Table extends Component {
 
                 if(!selectRange) {
                     this.selectOneProduct(
-                        array[currentId - 1], idFocused, false
+                        array[currentId - 1], idFocused, false,
+                        this.showSelectedIncludedView([array[currentId - 1]])
                     );
+                    
                 } else {
                     this.selectProduct(
                         array[currentId - 1], idFocused, false
