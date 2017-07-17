@@ -1,14 +1,21 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
 import RawWidget from '../widget/RawWidget';
 import OverlayField from '../app/OverlayField';
+import counterpart from 'counterpart';
+import keymap from '../../keymap.js';
+import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
+import { ShortcutManager } from 'react-shortcuts';
+import Tooltips from '../tooltips/Tooltips.js';
+const shortcutManager = new ShortcutManager(keymap);
 
 class FiltersItem extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            filter: props.data
+            filter: props.data,
+            isTooltipShow: false
         }
 
     }
@@ -51,6 +58,10 @@ class FiltersItem extends Component {
                 );
             })
         }
+    }
+
+    getChildContext = () => {
+        return { shortcuts: shortcutManager }
     }
 
     setValue = (property, value, id, valueTo) => {
@@ -115,6 +126,12 @@ class FiltersItem extends Component {
         returnBackToDropdown && returnBackToDropdown();
     }
 
+    toggleTooltip = (visible) => {
+        this.setState({
+            isTooltipShow: visible
+        });
+    }
+
     render() {
         const {
             data, notValidFields, isActive, windowType, onShow, onHide, viewId,
@@ -122,7 +139,7 @@ class FiltersItem extends Component {
         } = this.props;
 
         const {
-            filter
+            filter, isTooltipShow
         } = this.state;
 
         return (
@@ -140,7 +157,7 @@ class FiltersItem extends Component {
                         {...{windowType, onShow, onHide, viewId}}
                     /> :
                     <div className="filter-menu filter-widget">
-                        <div>Active filter:
+                        <div>{counterpart.translate('window.activeFilter.caption')}:
                             <span className="filter-active">
                                 {data.caption}
                             </span>
@@ -149,7 +166,7 @@ class FiltersItem extends Component {
                                     className="filter-clear"
                                     onClick={() => this.handleClear()}
                                 >
-                                    Clear filter
+                                    {counterpart.translate('window.clearFilter.caption')}
                                     <i className="meta-icon-trash" />
                             </span>
                         }
@@ -181,7 +198,7 @@ class FiltersItem extends Component {
                         <div className="col-sm-12 text-xs-right">
                             {notValidFields &&
                                 <div className="input-error">
-                                    Mandatory filters are not filled!
+                                    {counterpart.translate('window.noMandatory.caption')}
                                 </div>
                             }
                         </div>
@@ -190,15 +207,32 @@ class FiltersItem extends Component {
                         <button
                             className="applyBtn btn btn-sm btn-success"
                             onClick={this.handleApply}
+                            onMouseEnter={() =>
+                                this.toggleTooltip(true)
+                            }
+                            onMouseLeave={() => this.toggleTooltip(false)}
                         >
-                            Apply
+                            {counterpart.translate('window.apply.caption')}
+                            {isTooltipShow &&
+                                <Tooltips
+                                    name={keymap.MODAL_CONTEXT.APPLY}
+                                    action={counterpart.translate('window.apply.caption')}
+                                    type={''}
+                                />
+                            }
                         </button>
                     </div>
                 </div>
-
                 }
+                <ModalContextShortcuts
+                    apply={this.handleApply}
+                />
             </div>
     )}
+}
+
+FiltersItem.childContextTypes = {
+    shortcuts: PropTypes.object.isRequired
 }
 
 export default FiltersItem
