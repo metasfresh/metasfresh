@@ -88,7 +88,7 @@ export function getWindowBreadcrumb(id){
                 for(let i = 0; i < pathData.length; i++){
                     const node = pathData[i];
 
-                    breadcrumbRequest(node.nodeId).then(item => {
+                    nodePathsRequest(node.nodeId, 10).then(item => {
                         node.children = item.data;
                         req += 1;
 
