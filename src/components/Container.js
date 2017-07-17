@@ -109,6 +109,7 @@ class Container extends Component {
                                          includedView.windowType &&
                                             includedView.viewId
                                      }
+                                     inModal={modal.visible}
                                  >
                                  </DocumentList>
                                  {includedView.windowType &&
@@ -120,6 +121,8 @@ class Container extends Component {
                                          windowType={includedView.windowType}
                                          defaultViewId={includedView.viewId}
                                          isIncluded={true}
+                                         processStatus={processStatus}
+                                         inModal={modal.visible}
                                      />
                                  }
                             </div>

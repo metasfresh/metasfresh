@@ -103,6 +103,7 @@ class DocList extends Component {
                      selectedWindowType={selectedWindowType}
                      selected={selected}
                      inBackground={rawModal.visible}
+                     inModal={modal.visible}
                      fetchQuickActionsOnInit={true}
                      processStatus={processStatus}
                      disablePaginationShortcuts=
