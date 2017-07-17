@@ -26,6 +26,8 @@ import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -399,7 +401,7 @@ public class WEBUI_M_HU_Transform
 				.tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
 		// Notify
-		getView().invalidateAll();
+		getView().removesHUIdsAndInvalidate(ImmutableSet.of(tuRow.getM_HU_ID()));
 	}
 
 	/**
@@ -419,6 +421,8 @@ public class WEBUI_M_HU_Transform
 				.tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
 
 		// Notify
+		// TODO check and remove the tuRow
+		getView().removesHUIdsAndInvalidate(ImmutableSet.of(tuRow.getM_HU_ID()));
 		getView().addHUsAndInvalidate(createdHUs);
 	}
 
