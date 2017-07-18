@@ -35,6 +35,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
+  * [#2013](https://github.com/metasfresh/metasfresh/issues/2013) Broken Included Tabs to be redone
+    * Fixes a broken Included Tab in the Manufacturing Order Window
 
 * metasfresh-webui-api
 
