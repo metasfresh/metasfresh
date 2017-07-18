@@ -119,8 +119,6 @@ class Lookup extends Component {
             localClearing, fireDropdownList
         } = this.state;
 
-        console.log(readonly);
-
         return (
             <div
                 ref={(c) => this.dropdown = c}
