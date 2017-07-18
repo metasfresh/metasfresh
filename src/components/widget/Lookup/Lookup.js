@@ -119,6 +119,8 @@ class Lookup extends Component {
             localClearing, fireDropdownList
         } = this.state;
 
+        console.log(readonly);
+
         return (
             <div
                 ref={(c) => this.dropdown = c}
@@ -135,7 +137,8 @@ class Lookup extends Component {
                         (
                             (!validStatus.valid && !validStatus.initialValue)
                         )
-                    ) ? ' input-error ' : '')
+                    ) ? ' input-error ' : '') +
+                    (readonly ? ' lookup-wrapper-disabled ' : ' ')
                 }
             >
 
@@ -179,7 +182,7 @@ class Lookup extends Component {
                                 className={
                                     'raw-lookup-wrapper ' +
                                     'raw-lookup-wrapper-bcg ' +
-                                    (disabled ? 'raw-lookup-disabled':'')
+                                    (disabled || readonly ? 'raw-lookup-disabled':'')
                                     }
                                 key={index}>
                                     <List
@@ -214,8 +217,10 @@ class Lookup extends Component {
                 <div
                     className="input-icon input-icon-lg raw-lookup-wrapper"
                     onClick={this.openDropdownList}
-                >
-                    <i className="meta-icon-preview" />
+                >   
+                    { !readonly &&
+                        <i className="meta-icon-preview" />
+                    }
                 </div> :
                 <div className="input-icon input-icon-lg raw-lookup-wrapper">
                     {!readonly && <i
