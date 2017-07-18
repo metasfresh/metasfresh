@@ -8,6 +8,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -36,7 +37,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * #L%
  */
 
-public class WEBUI_M_Packageable_StartPicking extends ViewBasedProcessTemplate
+public class WEBUI_M_Packageable_StartPicking extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
