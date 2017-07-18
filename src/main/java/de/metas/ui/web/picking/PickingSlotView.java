@@ -81,8 +81,7 @@ public class PickingSlotView implements IView
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.shipmentScheduleId = shipmentScheduleId;
-//		this.rows = Maps.uniqueIndex(rows, PickingSlotRow::getPickingSlotRowId);
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(()->Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
@@ -160,22 +159,22 @@ public class PickingSlotView implements IView
 	public PickingSlotRow getById(final DocumentId id) throws EntityNotFoundException
 	{
 		PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
-		
+
 		final PickingSlotRowId pickingSlotRowId = rowId.toPickingSlotId();
 		final PickingSlotRow pickingSlotRow = rowsSupplier.get().get(pickingSlotRowId);
 		if (pickingSlotRow == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("pickingSlotRowId", pickingSlotRowId);
 		}
-		
-		if(pickingSlotRowId.equals(rowId))
+
+		if (pickingSlotRowId.equals(rowId))
 		{
 			return pickingSlotRow;
 		}
 		else
 		{
 			return pickingSlotRow.findIncludedRowById(rowId)
-					.orElseThrow(()->new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
+					.orElseThrow(() -> new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
 		}
 	}
 
@@ -234,7 +233,14 @@ public class PickingSlotView implements IView
 	@Override
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
-		return rowIds.stream().map(this::getById);
+		if (rowIds.isAll())
+		{
+			return rowsSupplier.get().values().stream();
+		}
+		else
+		{
+			return rowIds.stream().map(this::getById);
+		}
 	}
 
 	@Override
