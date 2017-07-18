@@ -60,7 +60,7 @@ class Breadcrumb extends Component {
             handleMenuOverlay, windowType
         } = this.props;
 
-        const noChildNodes = menu && menu.children && (menu.children.length === 0);
+        const noChildNodes = menu && ((menu.type === 'window') || (menu.children && (menu.children.length === 0)));
 
         if(menu && (menu.elementId || noChildNodes)) {
             (windowType) && this.linkToPage(windowType);
