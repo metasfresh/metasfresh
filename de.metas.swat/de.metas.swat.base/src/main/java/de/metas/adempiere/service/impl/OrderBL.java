@@ -921,7 +921,7 @@ public class OrderBL implements IOrderBL
 		final de.metas.order.model.I_C_Order fOrder = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		
 		final List<org.compiere.model.I_C_Order> queryiedOrders = aggregateOnOrder.aggregate();
-		if (!queryiedOrders.isEmpty())
+		if (queryiedOrders.isEmpty())
 		{
 			// gh #1855: cover the case that the order has no lines or just packing lines.
 			fOrder.setQtyInvoiced(BigDecimal.ZERO);
