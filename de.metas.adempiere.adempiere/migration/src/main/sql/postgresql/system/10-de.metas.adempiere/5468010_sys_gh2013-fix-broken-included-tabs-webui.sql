@@ -576,3 +576,48 @@ UPDATE AD_UI_Element SET SeqNo=160,Updated=TO_TIMESTAMP('2017-07-18 18:22:37','Y
 UPDATE AD_UI_Element SET SeqNo=170,Updated=TO_TIMESTAMP('2017-07-18 18:22:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546597
 ;
 
+-- 2017-07-18T18:44:37.365
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-07-18 18:44:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542873
+;
+
+-- 2017-07-18T18:44:37.366
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-07-18 18:44:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542906
+;
+
+-- 2017-07-18T18:44:37.368
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2017-07-18 18:44:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542896
+;
+
+-- 2017-07-18T18:44:37.369
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2017-07-18 18:44:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=542875
+;
+
+-- 2017-07-18T18:51:29.894
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='BOM Menge',Updated=TO_TIMESTAMP('2017-07-18 18:51:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53763
+;
+
+-- 2017-07-18T18:51:58.446
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Menge in %',Updated=TO_TIMESTAMP('2017-07-18 18:51:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53764
+;
+
+-- 2017-07-18T18:52:40.460
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Varianten Gruppe',Updated=TO_TIMESTAMP('2017-07-18 18:52:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=553985
+;
+
+-- 2017-07-18T18:53:59.367
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Eingabe Methode',Updated=TO_TIMESTAMP('2017-07-18 18:53:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53768
+;
+
+-- 2017-07-18T18:57:29.724
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mengeneinheit',Updated=TO_TIMESTAMP('2017-07-18 18:57:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53765
+;
+
