@@ -17,12 +17,19 @@ class Subheader extends Component {
         super(props);
 
         this.state = {
-            pdfSrc: null
+            pdfSrc: null,
+            elementPath: ''
         }
     }
 
     componentDidMount() {
         document.getElementsByClassName('js-subheader-column')[0].focus();
+
+        elementPathRequest('window', this.props.windowType).then(response => {
+            this.setState({
+                elementPath: response.data
+            });
+        });
     }
 
     handleKeyDown = (e) => {
@@ -121,6 +128,10 @@ class Subheader extends Component {
             handleEditModeToggle, handleEmail
         } = this.props;
 
+        const {
+            elementPath
+        } = this.state;
+
         const docLinks = dataId && [
             <div
                 key={0}
@@ -177,9 +188,8 @@ class Subheader extends Component {
             </div>
         ]
 
-        const currentNode = breadcrumb &&
-            breadcrumb[breadcrumb.length - 1] &&
-            breadcrumb[breadcrumb.length - 1].children;
+        const currentNode = elementPath &&
+                elementPath.children[elementPath.children.length-1];
 
         return (
             <div
@@ -195,8 +205,12 @@ class Subheader extends Component {
                         transparentBookmarks={!!siteName}
                         updateData={this.handleUpdateBreadcrumb}
                     >
-                        <span className="subheader-title">
-                            {currentNode ? currentNode.caption : siteName}
+                        <span 
+                            title={
+                                currentNode ? currentNode.caption : siteName
+                            }
+                            className="subheader-title">
+                                {currentNode ? currentNode.caption : siteName}
                         </span>
                     </BookmarkButton>
                 </div>
