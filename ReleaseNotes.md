@@ -26,6 +26,8 @@ Here come the actual release notes:
     * Including the Organisation and other fields to all generic filter selections. Removing long text fields from filters.
   * [#2007](https://github.com/metasfresh/metasfresh/issues/2007) Feedback WebUI CRM
     * Adjustments to various CRM windows. Adding missing Fields, Optimizing Column widths.
+  * [#2009](https://github.com/metasfresh/metasfresh/issues/2009) Feedback WebUI Prices
+    * Further Layout Adjustments to Pricelist and Product Price window in WebUI.
 
 * metasfresh-webui-api
 
