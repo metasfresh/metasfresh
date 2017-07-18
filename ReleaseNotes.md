@@ -45,6 +45,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1009](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1009) Window Name missing in Action Menu
     * Fixes a Bug not showing the Window Name in Action Menu nor the possibility to set a Bookmark for the window.
+  * [#1030](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1030) Directly display quick actions for the first row of a modal window
+    * Bugfix for the Quickaction behavior in modal overlay when opened and first row is initially selected.
 
 # metasfresh 5.18 (2017-29)
 
