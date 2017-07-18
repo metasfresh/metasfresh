@@ -66,6 +66,7 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 		final int shipmentScheduleId = getView().getShipmentScheduleId();
 
 		// TODO: refactor together with the Swing UI version of retrieving the huIds
+		// see de.metas.fresh.picking.terminal.FreshProductKey.findAvailableHUs(boolean)
 		final IHUQueryBuilder huIdsToAvailableToPickQuery = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.setHUStatus(X_M_HU.HUSTATUS_Active)

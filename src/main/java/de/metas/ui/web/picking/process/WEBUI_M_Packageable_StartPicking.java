@@ -37,6 +37,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 public class WEBUI_M_Packageable_StartPicking extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Override
