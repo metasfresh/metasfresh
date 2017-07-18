@@ -1,15 +1,29 @@
 package de.metas.ui.web.picking.process;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.IHUPickingSlotBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
  * #%L
@@ -41,38 +55,61 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
-@Deprecated
-public class WEBUI_Picking_AddHUToPickingSlot extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Picking_M_Picking_Candidate_Process
+		extends ViewBasedProcessTemplate
+		implements IProcessPrecondition
 {
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
-	@Param(parameterName = "M_HU_ID", mandatory = true)
-	private int p_M_HU_ID;
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (!getSelectedDocumentIds().isSingleDocumentId())
+		if (getSelectedDocumentIds().isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getShipmentScheduleId();
-		pickingSlotRepo.addHUToPickingSlot(p_M_HU_ID, pickingSlotId, shipmentScheduleId);
-
-		invalidateView();
-
+		processForPickingSlot();
 		return MSG_OK;
+	}
+
+	private void processForPickingSlot()
+	{
+		getSelectedDocumentIds();
+		final List<PickingSlotRow> pickingSlotRows = getView().streamByIds(DocumentIdsSelection.ALL)
+				.map(row -> PickingSlotRow.cast(row))
+				.collect(Collectors.toList());
+		
+		final List<PickingSlotRow> rowsToSetProcessed= new ArrayList<>();
+		
+		//final List<PickingSlotRow> allRows = pickingSlotRepo.retrieveRowsByShipmentScheduleId(getView().getShipmentScheduleId());
+		// TODO check if i have all the rows, or "just" the top level rows
+		for (final PickingSlotRow row : pickingSlotRows)
+		{
+			if (!row.isHURow())
+			{
+				continue;
+			}
+			// check if the row was already processed
+			
+			final I_M_PickingSlot pickingSlot = load(row.getPickingSlotId(), I_M_PickingSlot.class);
+			final I_M_HU hu = load(row.getHuId(), I_M_HU.class);
+			
+			huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
+			rowsToSetProcessed.add(row);
+		}
+		pickingSlotRepo.setRowsProcessed(rowsToSetProcessed);
+
+		getView().invalidateAll();
 	}
 
 	@Override
@@ -86,4 +123,5 @@ public class WEBUI_Picking_AddHUToPickingSlot extends ViewBasedProcessTemplate i
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
+
 }

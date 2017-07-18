@@ -8,10 +8,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -35,8 +37,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-public class WEBUI_M_Packageable_StartPicking extends ViewBasedProcessTemplate
+public class WEBUI_M_Packageable_StartPicking extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

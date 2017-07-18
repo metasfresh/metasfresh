@@ -40,7 +40,7 @@ public interface IProcessInstancesRepository
 {
 	/**
 	 * Gets the handler type.
-	 * The handler type shall be unique accross all {@link IProcessInstancesRepository} implementations.
+	 * The handler type shall be unique across all {@link IProcessInstancesRepository} implementations.
 	 * 
 	 * @return handler type
 	 */

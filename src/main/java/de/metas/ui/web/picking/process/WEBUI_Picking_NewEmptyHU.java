@@ -19,6 +19,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
+import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import lombok.NonNull;
@@ -45,6 +46,14 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * 
+ * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
+ * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class WEBUI_Picking_NewEmptyHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired

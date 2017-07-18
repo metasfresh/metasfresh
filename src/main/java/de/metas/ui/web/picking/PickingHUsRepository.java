@@ -3,6 +3,7 @@ package de.metas.ui.web.picking;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
@@ -17,6 +18,7 @@ import de.metas.picking.model.I_M_Picking_Candidate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -54,6 +56,11 @@ import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 				.build();
 	}
 
+	/**
+	 * 
+	 * @param shipmentScheduleId
+	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows
+	 */
 	public ListMultimap<Integer, HUEditorRow> retrieveHUsIndexedByPickingSlotId(final int shipmentScheduleId)
 	{
 		final Map<Integer, Integer> huId2pickingSlotId = Services.get(IQueryBL.class)
@@ -110,5 +117,24 @@ import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.delete();
+	}
+
+	public void setCandidatesProcessed(@NonNull final List<Integer> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
+				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Processed, true);
+
+		queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.updateDirectly(updater);
 	}
 }

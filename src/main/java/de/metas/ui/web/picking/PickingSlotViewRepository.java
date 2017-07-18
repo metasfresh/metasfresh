@@ -3,6 +3,7 @@ package de.metas.ui.web.picking;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,6 +45,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -180,7 +182,11 @@ public class PickingSlotViewRepository
 		pickingHUsRepo.removeHUFromPickingSlot(huId, pickingSlotId);
 	}
 
-	public void addQtyToHU(final BigDecimal qtyCU, final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	public void addQtyToHU(
+			@NonNull final BigDecimal qtyCU,
+			final int huId, 
+			final int pickingSlotId, 
+			final int shipmentScheduleId)
 	{
 		if(qtyCU.signum() <= 0)
 		{
@@ -190,12 +196,12 @@ public class PickingSlotViewRepository
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		I_M_Product product = shipmentSchedule.getM_Product();
 
+		final I_M_Picking_Candidate candidate = pickingHUsRepo.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
+
 		//
 		// Source
 		final IAllocationSource source;
 		{
-			final I_M_Picking_Candidate candidate = pickingHUsRepo.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
-			
 			final IProductStorage storage = new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
 			source = new GenericAllocationSourceDestination(storage, candidate);
 		}
@@ -220,7 +226,7 @@ public class PickingSlotViewRepository
 				.setProduct(product)
 				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getC_UOM(shipmentSchedule)))
 				.setDateAsToday()
-				.setFromReferencedModel(shipmentSchedule)
+				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the HU_trx_Candidate
 				.setForceQtyAllocation(true)
 				.create();
 
@@ -228,8 +234,14 @@ public class PickingSlotViewRepository
 		// Load QtyCU to HU(destination)
 		HULoader.of(source, destination)
 				.setAllowPartialLoads(false)
-				.setAllowPartialUnloads(false)
+				.setAllowPartialUnloads(true) // allow the picking staff to pick more than the shipment schedule's quantity to deliver.
 				.load(request);
+	}
+
+	public void setRowsProcessed(@NonNull final List<PickingSlotRow> rows)
+	{
+		final List<Integer> huIds = rows.stream().filter(row -> row.isHURow()).map(row->row.getHuId()).collect(Collectors.toList());
+		pickingHUsRepo.setCandidatesProcessed(huIds);
 	}
 
 }

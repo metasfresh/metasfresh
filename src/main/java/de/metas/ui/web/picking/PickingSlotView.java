@@ -1,13 +1,17 @@
 package de.metas.ui.web.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Preconditions;
@@ -15,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
@@ -250,9 +255,23 @@ public class PickingSlotView implements IView
 		return additionalRelatedProcessDescriptors;
 	}
 
+	/**
+	 * 
+	 * @return never returns a value {@code <= 0} (see constructor code).
+	 */
 	public int getShipmentScheduleId()
 	{
 		return shipmentScheduleId;
+	}
+	
+	/**
+	 * 
+	 * @return never returns {@code null} (see constructor code).
+	 */
+	public I_M_ShipmentSchedule getShipmentSchedule()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = create(Env.getCtx(), shipmentScheduleId, I_M_ShipmentSchedule.class, ITrx.TRXNAME_ThreadInherited);
+		return shipmentSchedule;
 	}
 
 	@Override

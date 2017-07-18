@@ -15,6 +15,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddQtyToHU;
+import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_NewEmptyHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
@@ -107,7 +108,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 				// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
@@ -119,13 +120,19 @@ public class PickingSlotViewFactory implements IViewFactory
 
 
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
 
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddQtyToHU.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddQtyToHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Process.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build());

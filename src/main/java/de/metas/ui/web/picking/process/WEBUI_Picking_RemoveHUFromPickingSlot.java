@@ -6,6 +6,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
+import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
@@ -22,15 +23,23 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * 
+ * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
+ * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
@@ -43,9 +52,9 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		
+
 		final PickingSlotRow huRow = getSingleSelectedRow();
-		if(!huRow.isHURow())
+		if (!huRow.isHURow())
 		{
 			return ProcessPreconditionsResolution.reject("select an HU");
 		}
