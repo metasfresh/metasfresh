@@ -712,6 +712,10 @@ input:checked + .input-slider:before {
     padding: .1rem .50rem;
 }
 
+.lookup-wrapper-disabled {
+    pointer-events: none;
+}
+
 .raw-lookup-disabled .input-dropdown-container {
     cursor: not-allowed;
 }
