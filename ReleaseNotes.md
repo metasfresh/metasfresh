@@ -28,6 +28,8 @@ Here come the actual release notes:
     * Adjustments to various CRM windows. Adding missing Fields, Optimizing Column widths.
   * [#2009](https://github.com/metasfresh/metasfresh/issues/2009) Feedback WebUI Prices
     * Further Layout Adjustments to Pricelist and Product Price window in WebUI.
+  * [#2015](https://github.com/metasfresh/metasfresh/issues/2015) Create Window Price List Schema in WebUI
+    * Adjusting the Layout for Price List Schema Window in WebUI
 
 * metasfresh-webui-api
 
