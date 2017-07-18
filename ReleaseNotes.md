@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Further Layout Adjustments to Pricelist and Product Price window in WebUI.
   * [#2015](https://github.com/metasfresh/metasfresh/issues/2015) Create Window Price List Schema in WebUI
     * Adjusting the Layout for Price List Schema Window in WebUI
+  * [#2017](https://github.com/metasfresh/metasfresh/issues/2017) Create Window Pricing Rule in WebUI
+    * Adding the 2-column Layout for The Pricing Rule Window in WebUI.
 
 * metasfresh-webui-api
 
