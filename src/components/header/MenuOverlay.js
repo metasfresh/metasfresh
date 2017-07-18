@@ -30,18 +30,19 @@ class MenuOverlay extends Component {
 
     componentDidMount = () => {
 
-
         const {
             nodeId
         } = this.props;
-        if(nodeId == 0){
+
+        if (nodeId == 0){
             getRootBreadcrumb().then(response => {
                 this.setState({
                     data: response
                 })
             })
-        }else {
-            if (this.props.node) {
+        }
+        else {
+            if (this.props.node && this.props.node.children) {
                 this.setState({
                     data: this.props.node
                 })

@@ -4,6 +4,7 @@ import axios from 'axios';
 // REQUESTS
 
 let breadcrumbsRequested = false;
+let breadcrumbsId = null;
 
 export function pathRequest(nodeId) {
     return axios.get(
@@ -80,36 +81,21 @@ export function getRootBreadcrumb() {
 
 export function getWindowBreadcrumb(id){
     return dispatch => {
-        if (!breadcrumbsRequested) {
+        if (!breadcrumbsRequested && (breadcrumbsId !== id)) {
             breadcrumbsRequested = true;
+
             elementPathRequest('window', id).then(response => {
-                let req = 0;
                 let pathData = flattenOneLine(response.data);
-
-                // promise to get all of the breadcrumb menu options
-                let breadcrumbProcess = new Promise((resolve) => {
-
-                    for(let i = 0; i < pathData.length; i++){
-                        const node = pathData[i];
-                        let nodeId = node.nodeId;
-
-                        breadcrumbRequest(nodeId).then(item => {
-                            node.children = item.data;
-                            req += 1;
-
-                            if(req === pathData.length){
-                                resolve(pathData);
-                            }
-                        })
-                    }
-                });
-
-                return breadcrumbProcess;
+                return pathData;
             }).then((item) => {
                 dispatch(setBreadcrumb(item.reverse()));
+
+                breadcrumbsId = id;
                 breadcrumbsRequested = false;
             }).catch(() => {
                 dispatch(setBreadcrumb([]));
+
+                breadcrumbsId = null;
                 breadcrumbsRequested = false;
             });
         }
@@ -151,7 +137,8 @@ export function flattenOneLine(node) {
     }
     result.push({
         nodeId: node.nodeId,
-        caption: node.caption
+        caption: node.caption,
+        type: node.type
     });
     return result;
 }
