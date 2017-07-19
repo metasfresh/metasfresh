@@ -161,7 +161,8 @@ class DocumentList extends Component {
                 cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
-                    refreshSelection: true
+                    refreshSelection: true,
+                    cachedSelection: null
                 }, () => this.setState({
                     refreshSelection: false
                 }))
