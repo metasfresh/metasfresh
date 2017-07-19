@@ -62,6 +62,8 @@ export default class App extends Component {
                 store.dispatch(setProcessSaved());
                 logoutSuccess(this.auth);
                 store.dispatch(push('/login?redirect=true'));
+            }else if(error.response.status == 503){
+                store.dispatch(noConnection(true));
             }else if(error.response.status != 404){
                 if(localStorage.isLogged){
                     const errorMessenger = (code) => {
