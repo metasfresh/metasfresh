@@ -56,15 +56,26 @@ export function deleteView(
 
 export function createViewRequest(
     windowType, viewType, pageLength, filters, refDocType = null,
-    refDocId = null
+    refDocId = null, refTabId = null, refRowIds = null
 ){
+    let referencing = null;
+
+    if (refDocType && refDocId) {
+        referencing = {
+            'documentType': refDocType,
+            'documentId': refDocId
+        };
+
+        if (refTabId && refRowIds) {
+            referencing.tabId = refTabId;
+            referencing.rowIds = refRowIds;
+        }
+    }
+
     return axios.post(config.API_URL + '/documentView/' + windowType, {
         'documentType': windowType,
         'viewType': viewType,
-        'referencing': (refDocType && refDocId) ? {
-            'documentType': refDocType,
-            'documentId': refDocId
-        }: null,
+        'referencing': referencing,
         'filters': filters
     });
 }
