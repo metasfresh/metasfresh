@@ -36,6 +36,8 @@ Here come the actual release notes:
     * New Window for System Configuration in WebUI.
   * [#2027](https://github.com/metasfresh/metasfresh/issues/2027) Fine Tuning of Window Bankaccount in WebUI
     * Various Adjustments to the Bankaccount Window in WebUI.
+  * [#2028](https://github.com/metasfresh/metasfresh/issues/2028) New Window for Validcombination in WebUI
+    * New Window in WebUI thats allows the user to maintain the valid Account Combinations.
 
 * metasfresh-webui-api
 
