@@ -7,10 +7,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Product;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -24,22 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
-import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -81,8 +63,6 @@ import lombok.NonNull;
 public class PickingSlotViewRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingSlotViewRepository.class);
-
-	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private final PickingHUsRepository pickingHUsRepo;
 
@@ -278,56 +258,7 @@ public class PickingSlotViewRepository
 			final int pickingSlotId,
 			final int shipmentScheduleId)
 	{
-		if (qtyCU.signum() <= 0)
-		{
-			throw new AdempiereException("@Invalid@ @QtyCU@");
-		}
-
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		I_M_Product product = shipmentSchedule.getM_Product();
-
-		final I_M_Picking_Candidate candidate = pickingHUsRepo.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
-
-		//
-		// Source
-		final IAllocationSource source;
-		{
-			final IProductStorage storage = new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
-			source = new GenericAllocationSourceDestination(storage, candidate);
-		}
-
-		//
-		// Destination: HU
-		final IAllocationDestination destination;
-		{
-			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-			if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
-			{
-				throw new AdempiereException("not a planning HU").setParameter("hu", hu);
-			}
-			destination = HUListAllocationSourceDestination.of(hu);
-		}
-
-		//
-		// Request
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx());
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
-				.setHUContext(huContext)
-				.setProduct(product)
-				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getC_UOM(shipmentSchedule)))
-				.setDateAsToday()
-				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the HU_trx_Candidate
-				.setForceQtyAllocation(true)
-				.create();
-
-		//
-		// Load QtyCU to HU(destination)
-		final IAllocationResult loadResult = HULoader.of(source, destination)
-				.setAllowPartialLoads(false)
-				.setAllowPartialUnloads(true) // allow the picking staff to pick more than the shipment schedule's quantity to deliver.
-				.load(request);
-		logger.debug("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
-		return Quantity.of(loadResult.getQtyToAllocate(), request.getC_UOM());
+		return pickingHUsRepo.addQtyToHU(qtyCU, huId, pickingSlotId, shipmentScheduleId);
 	}
 
 	public void setRowsProcessed(@NonNull final List<PickingSlotRow> rows)
