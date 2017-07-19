@@ -68,12 +68,14 @@ class TableContextMenu extends Component {
 
     handleReferenceClick = (refType, filter) => {
         const {
-            dispatch, type, docId
+            dispatch, type, docId, tabId, selected
         } = this.props;
         dispatch(setFilter(filter, refType));
         window.open('/window/' + refType +
             '?refType=' + type +
-            '&refId=' + docId,
+            '&refId=' + docId +
+            '&refTabId=' + tabId +
+            '&refRowIds=' + JSON.stringify(selected || []),
             '_blank');
     }
 

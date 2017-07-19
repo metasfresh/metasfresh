@@ -326,13 +326,13 @@ class DocumentList extends Component {
 
     createView = () => {
         const {
-            windowType, type, refType, refId
+            windowType, type, refType, refId, refTabId, refRowIds
         } = this.props;
 
         const {page, sort, filters} = this.state;
 
         createViewRequest(
-            windowType, type, this.pageLength, filters, refType, refId
+            windowType, type, this.pageLength, filters, refType, refId, refTabId, refRowIds
         ).then(response => {
             this.mounted && this.setState({
                 data: response.data,
