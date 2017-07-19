@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
-package de.metas.picking.model;
+package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -106364295L;
+	private static final long serialVersionUID = 258210568L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -25,6 +26,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 			setM_Picking_Candidate_ID (0);
 			setM_PickingSlot_ID (0);
 			setM_ShipmentSchedule_ID (0);
+			setQtyPicked (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -43,17 +45,54 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
       return poi;
     }
 
-//	@Override
-//	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
-//	{
-//		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-//	}
-//
-//	@Override
-//	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
-//	{
-//		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
-//	}
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getM_HU() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
+	}
 
 	/** Set Handling Units.
 		@param M_HU_ID Handling Units	  */
@@ -165,5 +204,50 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Verarbeitet.
+		@param Processed 
+		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public void setProcessed (boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+	}
+
+	/** Get Verarbeitet.
+		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
+	  */
+	@Override
+	public boolean isProcessed () 
+	{
+		Object oo = get_Value(COLUMNNAME_Processed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Qty Picked.
+		@param QtyPicked Qty Picked	  */
+	@Override
+	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	{
+		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
+	}
+
+	/** Get Qty Picked.
+		@return Qty Picked	  */
+	@Override
+	public java.math.BigDecimal getQtyPicked () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 }

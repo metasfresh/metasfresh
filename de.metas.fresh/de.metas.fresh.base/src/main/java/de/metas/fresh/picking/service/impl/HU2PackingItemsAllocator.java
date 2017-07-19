@@ -106,9 +106,10 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return huContext;
 	}
 
-	public void setPackingContext(final IPackingContext packingContext)
+	public HU2PackingItemsAllocator setPackingContext(final IPackingContext packingContext)
 	{
 		this._packingContext = packingContext;
+		return this;
 	}
 
 	private IPackingContext getPackingContext()
@@ -117,9 +118,10 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return _packingContext;
 	}
 
-	public void setItemToPack(final IFreshPackingItem itemToPack)
+	public HU2PackingItemsAllocator setItemToPack(final IFreshPackingItem itemToPack)
 	{
 		this._itemToPack = itemToPack;
+		return this;
 	}
 
 	private IFreshPackingItem getItemToPack()
