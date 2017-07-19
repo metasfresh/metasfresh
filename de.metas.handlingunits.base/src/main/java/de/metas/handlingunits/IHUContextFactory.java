@@ -27,7 +27,9 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
+import org.compiere.util.Env;
 
 public interface IHUContextFactory extends ISingletonService
 {
@@ -45,10 +47,15 @@ public interface IHUContextFactory extends ISingletonService
 	/**
 	 *
 	 * @param ctx
-	 * @return mutable HU context
+	 * @return mutable HU context (out of transaction)
 	 * @see #createMutableHUContextForProcessing(IContextAware)
 	 */
 	IMutableHUContext createMutableHUContextForProcessing(Properties ctx);
+
+	default IMutableHUContext createMutableHUContextForProcessing()
+	{
+		return createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
+	}
 
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> (may not be <code>null</code>) and <code>trxName</code> = {@link ITrx#TRXNAME_None}.
@@ -66,6 +73,11 @@ public interface IHUContextFactory extends ISingletonService
 	 * @return mutable HU context
 	 */
 	IMutableHUContext createMutableHUContext(Properties ctx, String trxName);
+
+	default IMutableHUContext createMutableHUContext()
+	{
+		return createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+	}
 
 	/**
 	 * @param contextProvider
