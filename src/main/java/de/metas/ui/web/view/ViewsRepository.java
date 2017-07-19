@@ -13,6 +13,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -78,6 +79,15 @@ public class ViewsRepository implements IViewsRepository
 
 	private final ConcurrentHashMap<WindowId, IViewsIndexStorage> viewsIndexStorages = new ConcurrentHashMap<>();
 	private final IViewsIndexStorage defaultViewsIndexStorage = new DefaultViewsRepositoryStorage();
+
+	/**
+	 * 
+	 * @param neededForDBAccess not used in here, but we need to cause spring to initialize it <b>before</b> this component can be initialized.
+	 *            So, if you clean this up, please make sure that the webui-API still starts up ^^.
+	 */
+	public ViewsRepository(@NonNull final Adempiere neededForDBAccess)
+	{
+	}
 
 	@PostConstruct
 	private void truncateTempTablesIfAllowed()
@@ -327,7 +337,7 @@ public class ViewsRepository implements IViewsRepository
 	{
 		getViewsStorageFor(viewId).removeById(viewId);
 	}
-	
+
 	@Override
 	public void invalidateView(final ViewId viewId)
 	{

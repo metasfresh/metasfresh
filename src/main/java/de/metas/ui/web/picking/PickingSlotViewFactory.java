@@ -3,6 +3,7 @@ package de.metas.ui.web.picking;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
@@ -15,6 +16,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddQtyToHU;
+import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Processed;
 import de.metas.ui.web.picking.process.WEBUI_Picking_NewEmptyHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
@@ -26,6 +28,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -74,8 +77,11 @@ public class PickingSlotViewFactory implements IViewFactory
 		return getViewLayout(windowId, viewDataType).getFilters();
 	}
 
+	/**
+	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
+	 */
 	@Override
-	public PickingSlotView createView(final CreateViewRequest request)
+	public PickingSlotView createView(@NonNull final CreateViewRequest request)
 	{
 		final DocumentId pickingRowId = request.getSingleReferencingDocumentPathOrNull().getDocumentId();
 		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
@@ -83,10 +89,16 @@ public class PickingSlotViewFactory implements IViewFactory
 		final ViewId pickingViewId = request.getParentViewId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
+
+		// notice for noobs such as me: this is executed each time the view is revalidated. and it's not executed when this createView method runs
+		final Supplier<List<PickingSlotRow>> rowsSupplier = 
+				() -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(query);
+
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
 				.shipmentScheduleId(shipmentScheduleId)
-				.rows(() -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(shipmentScheduleId))
+				.rows(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();
 	}
@@ -107,25 +119,30 @@ public class PickingSlotViewFactory implements IViewFactory
 
 				// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_OpenHUsToPick.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
-
-
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_OpenHUsToPick.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
 
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_AddQtyToHU.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddQtyToHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Processed.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build());

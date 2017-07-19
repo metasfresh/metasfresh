@@ -60,6 +60,11 @@ import de.metas.ui.web.window.datatypes.PanelLayoutType;
 @Target({ ElementType.METHOD })
 public @interface ViewAction
 {
+	/**
+	 * AD_Message.Value or the caption text
+	 * 
+	 * @return
+	 */
 	String caption();
 
 	String description() default "";

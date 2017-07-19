@@ -65,7 +65,7 @@ public final class DocumentIdsSelection
 
 		return new DocumentIdsSelection(false, ImmutableSet.copyOf(documentIds));
 	}
-	
+
 	public static DocumentIdsSelection fromNullable(final DocumentId documentId)
 	{
 		return documentId != null ? new DocumentIdsSelection(false, ImmutableSet.of(documentId)) : EMPTY;
@@ -131,16 +131,21 @@ public final class DocumentIdsSelection
 	{
 		final Supplier<Set<DocumentId>> supplier = LinkedHashSet::new;
 		final BiConsumer<Set<DocumentId>, DocumentId> accumulator = (accum, documentId) -> accum.add(documentId);
-		final BinaryOperator<Set<DocumentId>> combiner = (l, r) -> {
-			l.addAll(r);
-			return l;
-		};
+		final BinaryOperator<Set<DocumentId>> combiner = (l, r) ->
+			{
+				l.addAll(r);
+				return l;
+			};
 		final Function<Set<DocumentId>, DocumentIdsSelection> finisher = DocumentIdsSelection::of;
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
 	public static final DocumentIdsSelection EMPTY = new DocumentIdsSelection(false, ImmutableSet.of());
 
+	/**
+	 * Use this constant to get "all", but note that most methods implemented in this class, such as {@link #stream()}, {@link #forEach(Consumer)} are not supported.
+	 * See issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/509">#509</a> for more details.
+	 */
 	public static final DocumentIdsSelection ALL = new DocumentIdsSelection(true, ImmutableSet.of());
 	private static final String ALL_String = "all";
 	private static final ImmutableSet<String> ALL_StringSet = ImmutableSet.of(ALL_String);

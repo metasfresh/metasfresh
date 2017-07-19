@@ -156,6 +156,14 @@
 		</dependency>
 
 		<!-- Test dependencies -->
+		<!--  remember, jmockit needs to be before junit in the classpath -->
+		<dependency>
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<version>1.33</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>

@@ -9,6 +9,8 @@ import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -48,24 +50,27 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 @Component
 public class PickingViewRepository
 {
-	private final LookupDataSource warehouseLookup;
-	private final LookupDataSource productLookup;
+	private final Supplier<LookupDataSource> warehouseLookup;
+	private final Supplier<LookupDataSource> productLookup;
 
 	public PickingViewRepository()
 	{
-		warehouseLookup = LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+		// creating those LookupDataSources requires DB access. so to allow this component to be initialized early during startup 
+		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers
+
+		warehouseLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setColumnName(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()
-				.provideForScope(LookupScope.DocumentField));
+				.provideForScope(LookupScope.DocumentField)));
 
-		productLookup = LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+		productLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
 				.setColumnName(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()
-				.provideForScope(LookupScope.DocumentField));
+				.provideForScope(LookupScope.DocumentField)));
 	}
 
 	public List<PickingRow> retrieveRowsByIds(final ViewId viewId, final Collection<DocumentId> rowIds)
@@ -84,7 +89,7 @@ public class PickingViewRepository
 				.map(packageable -> createPickingRow(viewId, packageable))
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	private PickingRow createPickingRow(final ViewId viewId, final I_M_Packageable_V packageable)
 	{
 		final DocumentId rowId = DocumentId.of(packageable.getM_ShipmentSchedule_ID());
@@ -96,8 +101,8 @@ public class PickingViewRepository
 				.type(DefaultRowType.Row)
 				.processed(false)
 				//
-				.warehouse(warehouseLookup.findById(packageable.getM_Warehouse_ID()))
-				.product(productLookup.findById(packageable.getM_Product_ID()))
+				.warehouse(warehouseLookup.get().findById(packageable.getM_Warehouse_ID()))
+				.product(productLookup.get().findById(packageable.getM_Product_ID()))
 				.deliveryDate(packageable.getDeliveryDate())
 				.preparationDate(packageable.getPreparationDate())
 				.qtyToDeliver(packageable.getQtyToDeliver())

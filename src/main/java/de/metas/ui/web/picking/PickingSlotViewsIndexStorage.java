@@ -42,7 +42,7 @@ import lombok.NonNull;
 /**
  * {@link PickingSlotView}s index storage.
  * 
- * It's not actually a storage. It just forwards all calls to {@link PickingView} where the {@link PickingSlotView}s are storaged, one per each row.
+ * It's not actually a storage. It just forwards all calls to {@link PickingView} where the {@link PickingSlotView}s are stored, one per each row.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *

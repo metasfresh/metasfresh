@@ -1,32 +1,25 @@
 package de.metas.ui.web.picking.process;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.IAllocationDestination;
-import de.metas.handlingunits.allocation.IAllocationRequest;
-import de.metas.handlingunits.allocation.IAllocationSource;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
+import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -50,12 +43,24 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
-public class WEBUI_Picking_AddQtyToHU extends ViewBasedProcessTemplate implements IProcessPrecondition
+/**
+ * 
+ * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
+ * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class WEBUI_Picking_AddQtyToHU
+		extends ViewBasedProcessTemplate
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	private static final String PARAM_QTY_CU = "QtyCU";
+
 	@Autowired
 	private PickingSlotViewRepository pickingSlotRepo;
 
-	@Param(parameterName = "QtyCU", mandatory = true)
+	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	private BigDecimal qtyCU;
 
 	@Override
@@ -72,6 +77,13 @@ public class WEBUI_Picking_AddQtyToHU extends ViewBasedProcessTemplate implement
 			return ProcessPreconditionsResolution.reject("select HU");
 		}
 
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
+		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(shipmentSchedule);
+		if (!Objects.equals(X_M_ShipmentSchedule.DELIVERYRULE_Force, deliveryRule))
+		{
+			return ProcessPreconditionsResolution.reject("deliveryRule must be 'force'");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -82,7 +94,7 @@ public class WEBUI_Picking_AddQtyToHU extends ViewBasedProcessTemplate implement
 		final int huId = pickingSlotRow.getHuId();
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = getView().getShipmentScheduleId();
-		
+
 		pickingSlotRepo.addQtyToHU(qtyCU, huId, pickingSlotId, shipmentScheduleId);
 
 		invalidateView();
@@ -101,6 +113,21 @@ public class WEBUI_Picking_AddQtyToHU extends ViewBasedProcessTemplate implement
 	protected PickingSlotRow getSingleSelectedRow()
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
+	}
+
+	/**
+	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
+	 */
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		if (!Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+		return shipmentSchedule.getQtyToDeliver();
 	}
 
 }
