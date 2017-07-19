@@ -57,7 +57,7 @@ import lombok.NonNull;
 public class WEBUI_Picking_NewEmptyHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
-	private PickingSlotViewRepository pickingSlotRepo;
+	private PickingSlotViewRepository pickingSlotViewRepo;
 
 	@Param(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product huPIItemProduct;
@@ -85,7 +85,7 @@ public class WEBUI_Picking_NewEmptyHU extends ViewBasedProcessTemplate implement
 		// Add the TU to picking slot (as candidate)
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = getView().getShipmentScheduleId();
-		pickingSlotRepo.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+		pickingSlotViewRepo.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
 
 		invalidateView();
 

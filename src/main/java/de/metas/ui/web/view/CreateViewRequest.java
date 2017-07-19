@@ -107,7 +107,7 @@ public final class CreateViewRequest
 	private final Set<Integer> filterOnlyIds;
 
 	private final ViewActionDescriptorsList actions;
-
+	
 	private CreateViewRequest(final Builder builder)
 	{
 		windowId = builder.getWindowId();

@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -7,14 +9,11 @@ import java.util.Set;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -99,11 +98,11 @@ public class HUEditorViewRepository
 		return sqlViewBinding;
 	}
 
-	public List<HUEditorRow> retrieveHUEditorRows(final Set<Integer> huIds)
+	public List<HUEditorRow> retrieveHUEditorRows(@NonNull final Set<Integer> huIds)
 	{
 		return retrieveTopLevelHUs(huIds)
 				.stream()
-				.map(hu -> createHUEditorRow(hu, true))
+				.map(hu -> createHUEditorRow(hu, true)) // topLevelHU = true
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -122,11 +121,11 @@ public class HUEditorViewRepository
 
 		// TODO: check if the huId is part of our collection
 
-		final I_M_HU hu = InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_None);
-		return createHUEditorRow(hu, true);
+		final I_M_HU hu = loadOutOfTrx(huId, I_M_HU.class);
+		return createHUEditorRow(hu, true); // topLevel=true
 	}
 
-	private static List<I_M_HU> retrieveTopLevelHUs(final Collection<Integer> huIds)
+	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<Integer> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -149,7 +148,9 @@ public class HUEditorViewRepository
 				.list();
 	}
 
-	private HUEditorRow createHUEditorRow(final I_M_HU hu, final boolean topLevel)
+	private HUEditorRow createHUEditorRow(
+			@NonNull final I_M_HU hu,
+			final boolean topLevel)
 	{
 		final boolean aggregatedTU = Services.get(IHandlingUnitsBL.class).isAggregateHU(hu);
 
@@ -262,7 +263,12 @@ public class HUEditorViewRepository
 		}
 	}
 
-	private final boolean extractProcessed(final I_M_HU hu)
+	/**
+	 * Note (ts): I experimented with injecting this logic from outside, in the form of a {@link java.util.function.Function},<br>
+	 * but it would have made the whole thing much more complex<br>
+	 * <b>If</b> you want to refactor this code, please make sure that it does not get more complicated to debug it.
+	 */
+	private final boolean extractProcessed(@NonNull final I_M_HU hu)
 	{
 		//
 		// Receipt schedule => consider the HU as processed if is not Planning (FIXME HARDCODED)
