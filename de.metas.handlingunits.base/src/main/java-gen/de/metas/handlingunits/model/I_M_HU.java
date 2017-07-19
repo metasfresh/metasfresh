@@ -127,29 +127,6 @@ public interface I_M_HU
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set TUs Count.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCompressed_TUsCount (int Compressed_TUsCount);
-
-	/**
-	 * Get TUs Count.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCompressed_TUsCount();
-
-    /** Column definition for Compressed_TUsCount */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_Compressed_TUsCount = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "Compressed_TUsCount", null);
-    /** Column name Compressed_TUsCount */
-    public static final String COLUMNNAME_Compressed_TUsCount = "Compressed_TUsCount";
-
-	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -278,29 +255,6 @@ public interface I_M_HU
     public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsChildHU = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "IsChildHU", null);
     /** Column name IsChildHU */
     public static final String COLUMNNAME_IsChildHU = "IsChildHU";
-
-	/**
-	 * Set Compressed VHU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsCompressedVHU (boolean IsCompressedVHU);
-
-	/**
-	 * Get Compressed VHU.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isCompressedVHU();
-
-    /** Column definition for IsCompressedVHU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU, Object> COLUMN_IsCompressedVHU = new org.adempiere.model.ModelColumn<I_M_HU, Object>(I_M_HU.class, "IsCompressedVHU", null);
-    /** Column name IsCompressedVHU */
-    public static final String COLUMNNAME_IsCompressedVHU = "IsCompressedVHU";
 
 	/**
 	 * Set Gesperrt.
