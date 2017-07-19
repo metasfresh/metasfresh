@@ -34,6 +34,8 @@ Here come the actual release notes:
     * Adding the 2-column Layout for The Pricing Rule Window in WebUI.
   * [#2020](https://github.com/metasfresh/metasfresh/issues/2020) Add System Configuration Window to WebUI
     * New Window for System Configuration in WebUI.
+  * [#2027](https://github.com/metasfresh/metasfresh/issues/2027) Fine Tuning of Window Bankaccount in WebUI
+    * Various Adjustments to the Bankaccount Window in WebUI.
 
 * metasfresh-webui-api
 
