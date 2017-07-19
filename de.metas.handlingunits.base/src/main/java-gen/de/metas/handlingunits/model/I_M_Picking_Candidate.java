@@ -1,4 +1,4 @@
-package de.metas.picking.model;
+package de.metas.handlingunits.model;
 
 
 /** Generated Interface for M_Picking_Candidate
@@ -67,6 +67,35 @@ public interface I_M_Picking_Candidate
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_AD_Org>(I_M_Picking_Candidate.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, org.compiere.model.I_C_UOM>(I_M_Picking_Candidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Get Erstellt.
@@ -141,12 +170,12 @@ public interface I_M_Picking_Candidate
 	 */
 	public int getM_HU_ID();
 
-//	public de.metas.handlingunits.model.I_M_HU getM_HU();
-//
-//	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
-//
-//    /** Column definition for M_HU_ID */
-//    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU>(I_M_Picking_Candidate.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	public de.metas.handlingunits.model.I_M_HU getM_HU();
+
+	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+
+    /** Column definition for M_HU_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, de.metas.handlingunits.model.I_M_HU>(I_M_Picking_Candidate.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
     /** Column name M_HU_ID */
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
@@ -251,6 +280,29 @@ public interface I_M_Picking_Candidate
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Qty Picked.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPicked (java.math.BigDecimal QtyPicked);
+
+	/**
+	 * Get Qty Picked.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPicked();
+
+    /** Column definition for QtyPicked */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_QtyPicked = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "QtyPicked", null);
+    /** Column name QtyPicked */
+    public static final String COLUMNNAME_QtyPicked = "QtyPicked";
 
 	/**
 	 * Get Aktualisiert.
