@@ -29,6 +29,8 @@ import org.compiere.model.I_C_UOM;
 
 import org.compiere.model.I_M_Product;
 
+import de.metas.quantity.Quantity;
+
 /**
  * Conversion context
  *
@@ -55,6 +57,12 @@ public interface IUOMConversionContext
 	default BigDecimal convertQty(final BigDecimal qty, final I_C_UOM uomFrom, final I_C_UOM uomTo)
 	{
 		return Services.get(IUOMConversionBL.class).convertQty(this, qty, uomFrom, uomTo);
+	}
+
+	default Quantity convertQty(final Quantity qty, final I_C_UOM uomTo)
+	{
+		final BigDecimal qtyConv = convertQty(qty.getQty(), qty.getUOM(), uomTo);
+		return new Quantity(qtyConv, uomTo, qty.getQty(), qty.getUOM());
 	}
 
 	/**
