@@ -70,7 +70,7 @@ class Table extends Component {
         const {
             mainTable, open, rowData, defaultSelected, disconnectFromState,
             dispatch, type, refreshSelection, supportIncludedViewOnSelect,
-            showIncludedViewOnSelect
+            showIncludedViewOnSelect, viewId
         } = this.props;
 
         const {
@@ -110,6 +110,15 @@ class Table extends Component {
         ){
             this.setState({
                 selected: defaultSelected
+            })
+        }
+
+        if(
+            JSON.stringify(prevProps.viewId) !==
+            JSON.stringify(viewId)
+        ){
+            this.setState({
+                selected: []
             })
         }
     }

@@ -161,8 +161,7 @@ class DocumentList extends Component {
                 cachedSelection && !disconnectFromState &&
                     dispatch(selectTableItems(cachedSelection, windowType))
                 this.setState({
-                    refreshSelection: true,
-                    cachedSelection: null
+                    refreshSelection: true
                 }, () => this.setState({
                     refreshSelection: false
                 }))
@@ -482,7 +481,7 @@ class DocumentList extends Component {
     render() {
         const {
             layout, data, viewId, clickOutsideLock, refresh, page, filters,
-            cachedSelection, isShowIncluded, hasShowIncluded
+            cachedSelection, isShowIncluded, hasShowIncluded, refreshSelection
         } = this.state;
 
         const {
@@ -582,7 +581,7 @@ class DocumentList extends Component {
                                 disableOnClickOutside={clickOutsideLock}
                                 defaultSelected={cachedSelection ?
                                     cachedSelection : selected}
-                                refreshSelection={this.state.refreshSelection}
+                                refreshSelection={refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
                                 showIncludedViewOnSelect={this.showIncludedViewOnSelect}
