@@ -34,6 +34,12 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * #L%
  */
 
+/**
+ * You can obtain an instance via {@link FreshPackingItemHelper#create(java.util.Map)}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IFreshPackingItem extends IPackingItem
 {
 	@Override

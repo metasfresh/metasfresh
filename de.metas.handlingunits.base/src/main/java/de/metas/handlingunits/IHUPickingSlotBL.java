@@ -102,7 +102,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	void removeFromPickingSlotQueue(I_M_HU hu);
 
 	/**
-	 * Removes the given <code>hu</code> all of it's children (recursivelly) from any picking slot (current picking slot HU or in picking slot queue).
+	 * Removes the given <code>hu</code> all of it's children (recursively) from any picking slot (current picking slot HU or in picking slot queue).
 	 *
 	 * @param hu
 	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU)

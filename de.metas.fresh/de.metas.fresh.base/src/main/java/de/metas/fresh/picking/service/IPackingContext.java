@@ -13,15 +13,14 @@ package de.metas.fresh.picking.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -41,10 +40,21 @@ public interface IPackingContext
 
 	PackingItemsMap getPackingItemsMap();
 
-	void setPackingItemsMap(final PackingItemsMap packingItems);
+	/**
+	 * Set the map used to keep track of that is packed where while the packing takes place.
+	 * 
+	 * @param packingItems
+	 */
+	void setPackingItemsMap(PackingItemsMap packingItems);
 
 	int getPackingItemsMapKey();
 
-	void setPackingItemsMapKey(final int packingItemsMapKey);
+	/**
+	 * Sets the key for {@link PackingItemsMap} under which those items are stored that are "packed".
+	 * Apparently, using a {@code M_PickingSlot_ID} is a good idea, while using {@link PackingItemsMap#KEY_UnpackedItems} is probably a bad idea.
+	 * 
+	 * @param packingItemsMapKey
+	 */
+	void setPackingItemsMapKey(int packingItemsMapKey);
 
 }
