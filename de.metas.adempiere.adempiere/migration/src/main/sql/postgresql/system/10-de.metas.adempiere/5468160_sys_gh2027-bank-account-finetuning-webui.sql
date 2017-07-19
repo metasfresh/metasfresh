@@ -320,12 +320,12 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 -- 2017-07-19T18:39:29.853
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558324,0,540812,540871,546699,TO_TIMESTAMP('2017-07-19 18:39:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','G¸ltig Bis Monat',50,0,0,TO_TIMESTAMP('2017-07-19 18:39:29','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558324,0,540812,540871,546699,TO_TIMESTAMP('2017-07-19 18:39:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','G√ºltig Bis Monat',50,0,0,TO_TIMESTAMP('2017-07-19 18:39:29','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-07-19T18:39:42.559
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558325,0,540812,540871,546700,TO_TIMESTAMP('2017-07-19 18:39:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','G¸ltig Bis Jahr',60,0,0,TO_TIMESTAMP('2017-07-19 18:39:42','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,558325,0,540812,540871,546700,TO_TIMESTAMP('2017-07-19 18:39:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','G√ºltig Bis Jahr',60,0,0,TO_TIMESTAMP('2017-07-19 18:39:42','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2017-07-19T18:40:23.481
@@ -425,32 +425,32 @@ UPDATE AD_UI_Section SET Name='Erweitert', Value='extended',Updated=TO_TIMESTAMP
 
 -- 2017-07-19T18:45:57.344
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Element SET Name='ESR Empf‰nger', PrintName='ESR Empf‰nger',Updated=TO_TIMESTAMP('2017-07-19 18:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541924
+UPDATE AD_Element SET Name='ESR Empf√§nger', PrintName='ESR Empf√§nger',Updated=TO_TIMESTAMP('2017-07-19 18:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=541924
 ;
 
 -- 2017-07-19T18:45:57.351
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET ColumnName='ESR_RenderedReceiver', Name='ESR Empf‰nger', Description=NULL, Help=NULL WHERE AD_Element_ID=541924
+UPDATE AD_Column SET ColumnName='ESR_RenderedReceiver', Name='ESR Empf√§nger', Description=NULL, Help=NULL WHERE AD_Element_ID=541924
 ;
 
 -- 2017-07-19T18:45:57.376
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='ESR_RenderedReceiver', Name='ESR Empf‰nger', Description=NULL, Help=NULL, AD_Element_ID=541924 WHERE UPPER(ColumnName)='ESR_RENDEREDRECEIVER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+UPDATE AD_Process_Para SET ColumnName='ESR_RenderedReceiver', Name='ESR Empf√§nger', Description=NULL, Help=NULL, AD_Element_ID=541924 WHERE UPPER(ColumnName)='ESR_RENDEREDRECEIVER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
 -- 2017-07-19T18:45:57.378
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Para SET ColumnName='ESR_RenderedReceiver', Name='ESR Empf‰nger', Description=NULL, Help=NULL WHERE AD_Element_ID=541924 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName='ESR_RenderedReceiver', Name='ESR Empf√§nger', Description=NULL, Help=NULL WHERE AD_Element_ID=541924 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2017-07-19T18:45:57.379
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='ESR Empf‰nger', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541924) AND IsCentrallyMaintained='Y'
+UPDATE AD_Field SET Name='ESR Empf√§nger', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=541924) AND IsCentrallyMaintained='Y'
 ;
 
 -- 2017-07-19T18:45:57.393
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_PrintFormatItem pi SET PrintName='ESR Empf‰nger', Name='ESR Empf‰nger' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=541924)
+UPDATE AD_PrintFormatItem pi SET PrintName='ESR Empf√§nger', Name='ESR Empf√§nger' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=541924)
 ;
 
 -- 2017-07-19T18:46:22.644
