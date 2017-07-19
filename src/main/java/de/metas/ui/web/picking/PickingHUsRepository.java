@@ -17,8 +17,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.picking.model.I_M_Picking_Candidate;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;

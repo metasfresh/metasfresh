@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.picking.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;

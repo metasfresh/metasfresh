@@ -21,8 +21,8 @@ package de.metas.ui.web.picking;
  * #L%
  */
 
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.picking.model.I_M_Picking_Candidate;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
