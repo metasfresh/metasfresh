@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Adjusting the Layout for Price List Schema Window in WebUI
   * [#2017](https://github.com/metasfresh/metasfresh/issues/2017) Create Window Pricing Rule in WebUI
     * Adding the 2-column Layout for The Pricing Rule Window in WebUI.
+  * [#2020](https://github.com/metasfresh/metasfresh/issues/2020) Add System Configuration Window to WebUI
+    * New Window for System Configuration in WebUI.
 
 * metasfresh-webui-api
 
