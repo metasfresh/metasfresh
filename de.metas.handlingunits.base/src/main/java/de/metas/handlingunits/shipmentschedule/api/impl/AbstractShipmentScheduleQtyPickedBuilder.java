@@ -31,6 +31,7 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
@@ -109,7 +110,12 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 */
 	protected abstract IHUContext createHUContextInitial();
 
-	public final void setFromHUs(final Collection<I_M_HU> fromHUs)
+	/**
+	 * 
+	 * @param fromHUs the HUs to assign to the shipment schedule. The all need be !out of transaction", i.e. have {@link InterfaceWrapperHelper#getTrxName(Object)} {@code ==} {@link ITrx#TRXNAME_None} 
+	 * @return
+	 */
+	public final AbstractShipmentScheduleQtyPickedBuilder setFromHUs(final Collection<I_M_HU> fromHUs)
 	{
 		assertConfigurable();
 
@@ -121,6 +127,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		{
 			_fromHUs = new ArrayList<>(fromHUs);
 		}
+		return this;
 	}
 
 	protected final List<I_M_HU> getFromHUs()
