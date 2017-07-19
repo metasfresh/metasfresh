@@ -87,3 +87,4 @@ frontend
 instanceof
 pallet
 transactional
+enum
