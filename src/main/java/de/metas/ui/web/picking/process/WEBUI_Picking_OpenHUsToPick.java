@@ -1,23 +1,25 @@
 package de.metas.ui.web.picking.process;
 
 import org.adempiere.util.Services;
+import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.pporder.PPOrderHUsToIssueActions;
-import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 
 /*
@@ -47,6 +49,8 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 	@Autowired
 	private IViewsRepository viewsRepo;
 
+	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -62,22 +66,26 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 	protected String doIt()
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getShipmentScheduleId();
+		final ViewId pickingSlotViewId = getView().getViewId();
+		// final int pickingSlotId = pickingSlotRow.getPickingSlotId();
+		// final int shipmentScheduleId = getView().getShipmentScheduleId();
 
 		// TODO: refactor together with the Swing UI version of retrieving the huIds
 		// see de.metas.fresh.picking.terminal.FreshProductKey.findAvailableHUs(boolean)
 		final IHUQueryBuilder huIdsToAvailableToPickQuery = Services.get(IHandlingUnitsDAO.class)
 				.createHUQueryBuilder()
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
-				.onlyNotLocked()
-		;
+				.onlyNotLocked();
 
 		final IView husToPickView = viewsRepo.createView(CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
-				.setParentViewId(getView().getViewId())
-				// TODO: provide somehow the pickingSlotId and shipmentScheduleId (required to actually pick the HU)
+				.setParentViewId(pickingSlotViewId)
+				.setParentRowId(pickingSlotRow.getId())
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huIdsToAvailableToPickQuery))
 				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
+				.addAdditionalRelatedProcessDescriptor(RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
+						.webuiQuickAction(true)
+						.build())
 				.build());
 
 		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());
