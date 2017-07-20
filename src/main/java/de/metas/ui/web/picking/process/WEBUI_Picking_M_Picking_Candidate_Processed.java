@@ -29,7 +29,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -92,18 +91,22 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isHURow())
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
 		}
 
-		final List<PickingSlotRow> unprocessedRows = retrieveUnprocessedRows();
-		if (unprocessedRows.isEmpty())
+		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
 		{
-			final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText("WEBUI_Picking_No_Unprocessed_Records");
-			return ProcessPreconditionsResolution.reject(reason);
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_PickSomething"));
+		}
+
+		if (pickingSlotRow.isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_No_Unprocessed_Records"));
 		}
 
 		return ProcessPreconditionsResolution.accept();

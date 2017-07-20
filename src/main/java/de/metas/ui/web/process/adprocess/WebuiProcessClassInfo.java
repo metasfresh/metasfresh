@@ -238,7 +238,10 @@ final class WebuiProcessClassInfo
 		return GuavaCollectors.entry(ann.parameterName(), lookupDescriptorProvider);
 	}
 
-	private static final LookupValuesList retriveLookupValues(final Method method, final List<Function<LookupDataSourceContext, Object>> parameterValueProviders, final LookupDataSourceContext evalCtx)
+	private static final LookupValuesList retriveLookupValues(
+			final Method method, 
+			final List<Function<LookupDataSourceContext, Object>> parameterValueProviders, 
+			final LookupDataSourceContext evalCtx)
 	{
 		Check.assumeNotNull(method, "Parameter method is not null");
 		final JavaProcess processClassInstance = JavaProcess.currentInstance();

@@ -69,7 +69,7 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
-	
+
 	@Param(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product huPIItemProduct;
 
@@ -137,13 +137,27 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 	@Override
 	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
-		if (!Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			return DEFAULT_VALUE_NOTAVAILABLE;
+			final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+			return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
+		}
+		else if (Objects.equals(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
+		{
+			// if i return and in or IntegerLookupValue, i get
+			// org.adempiere.exceptions.AdempiereException: No active process found in this thread
+			final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+			return shipmentSchedule.getM_HU_PI_Item_Product_ID();
+			//final I_M_HU_PI_Item_Product huPIItemProduct = shipmentSchedule.getM_HU_PI_Item_Product();
+			//final IntegerLookupValue lookupValue = IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
+			
+			// if i return LookupValuesList, i get
+			// Cannot convert M_HU_PI_Item_Product_ID's value 'LookupValuesList{values=[IntegerLookupValue{id=2004054, displayName=constant{value=IFCO 6416 x 12.50 kg}}]}' (class de.metas.ui.web.window.datatypes.LookupValuesList) to class de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue 
+			//return LookupValuesList.fromNullable(lookupValue);
+			//return lookupValue;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
-		return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
+		return DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 	private static final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)

@@ -434,4 +434,9 @@ public final class PickingSlotRow implements IViewRow
 		}
 
 	}
+
+	public BigDecimal getHuQtyCU()
+	{
+		return huQtyCU;
+	}
 }

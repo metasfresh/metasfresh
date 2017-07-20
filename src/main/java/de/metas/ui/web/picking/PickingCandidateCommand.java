@@ -167,8 +167,8 @@ public class PickingCandidateCommand
 		//
 		// Load QtyCU to HU(destination)
 		final IAllocationResult loadResult = HULoader.of(source, destination)
-				.setAllowPartialLoads(false)
-				.setAllowPartialUnloads(true) // allow the picking staff to pick more than the shipment schedule's quantity to deliver.
+				.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
+				.setAllowPartialUnloads(true) // don't fail if the the picking staff attempted to to pick more than the shipment schedule's quantity to deliver.
 				.load(request);
 		logger.debug("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
 
