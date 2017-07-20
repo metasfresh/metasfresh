@@ -43,6 +43,7 @@ import org.adempiere.util.Services;
 import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.async.api.IQueueDAO;
@@ -324,5 +325,17 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	public IQueryOrderBy getQueueOrderBy()
 	{
 		return queueOrderByComparator;
+	}
+	
+	@Override
+	public boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	{
+		final String packageProcessorClassname = packageProcessorClass.getCanonicalName();
+		Check.assumeNotEmpty(packageProcessorClassname, "packageProcessorClassname is not empty");
+
+		return retrieveWorkpackageProcessorsMap(Env.getCtx())
+				.values()
+				.stream()
+				.anyMatch(packageProcessor -> packageProcessorClassname.equals(packageProcessor.getClassname()));
 	}
 }
