@@ -187,7 +187,9 @@ public final class CreateViewRequest
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 
-		private Builder(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewType)
+		private Builder(
+				@NonNull final WindowId windowId, 
+				@NonNull final JSONViewDataType viewType)
 		{
 			this.windowId = windowId;
 			this.viewType = viewType;

@@ -1,13 +1,15 @@
 package de.metas.ui.web.picking.process;
 
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.picking.PickingSlotViewFactory;
-import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -43,8 +45,8 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
-	private PickingSlotViewRepository pickingSlotRepo;
-
+	private PickingCandidateCommand pickingCandidateCommand;
+	
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -53,10 +55,11 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final PickingSlotRow huRow = getSingleSelectedRow();
-		if (!huRow.isHURow())
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isHURow())
 		{
-			return ProcessPreconditionsResolution.reject("select an HU");
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -68,7 +71,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 		final PickingSlotRow huRow = getSingleSelectedRow();
 		final int huId = huRow.getHuId();
 		final int pickingSlotId = huRow.getPickingSlotId();
-		pickingSlotRepo.removeHUFromPickingSlot(huId, pickingSlotId);
+		pickingCandidateCommand.removeHUFromPickingSlot(huId, pickingSlotId);
 
 		invalidateView();
 

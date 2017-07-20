@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -21,9 +22,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.ProcessInstanceResult.CreateAndOpenIncludedViewAction;
-import de.metas.ui.web.process.view.ViewAction;
-import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
@@ -67,6 +65,8 @@ import lombok.NonNull;
  */
 public class PickingView implements IView
 {
+	private final PickingCandidateCommand pickingCandidateCommand;
+	
 	public static PickingView cast(final IView view)
 	{
 		return (PickingView)view;
@@ -80,12 +80,14 @@ public class PickingView implements IView
 
 	@Builder
 	private PickingView(@NonNull final ViewId viewId,
-			final ITranslatableString description,
-			final List<PickingRow> rows)
+			@NonNull final ITranslatableString description,
+			@NonNull final List<PickingRow> rows,
+			@NonNull final PickingCandidateCommand pickingCandidateCommand)
 	{
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.rows = Maps.uniqueIndex(rows, PickingRow::getId);
+		this.pickingCandidateCommand = pickingCandidateCommand;
 	}
 
 	@Override
@@ -133,13 +135,20 @@ public class PickingView implements IView
 	@Override
 	public void close()
 	{
+		final List<Integer> shipmentScheduleIds = rows
+				.values().stream()
+				.map(row -> row.getShipmentScheduleId())
+				.collect(Collectors.toList());
+
+		pickingCandidateCommand.setCandidatesClosed(shipmentScheduleIds);
 	}
-	
+
+	/**
+	 * Does nothing.
+	 */
 	@Override
 	public void invalidateAll()
 	{
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -179,43 +188,57 @@ public class PickingView implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Just throws an {@link UnsupportedOperationException}.
+	 */
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
-		// TODO Auto-generated method stub
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns {@code null}.
+	 */
 	@Override
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * Returns {@code false}.
+	 */
 	@Override
 	public boolean hasAttributesSupport()
 	{
@@ -245,11 +268,12 @@ public class PickingView implements IView
 		return rowIds.stream().map(this::getById);
 	}
 
+	/**
+	 * Does nothing
+	 */
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
@@ -266,7 +290,7 @@ public class PickingView implements IView
 	{
 		return pickingSlotsViewByRowId.get(rowId);
 	}
-	
+
 	/* package */ PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
 	{
 		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());

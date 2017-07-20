@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -22,7 +24,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -131,15 +134,24 @@ public class PickingSlotViewRepository
 	// ..ad least for checkPreconditionsApplicable()
 	public List<PickingSlotRow> retrieveRowsByShipmentScheduleId(@NonNull final PickingSlotRepoQuery query)
 	{
-		final ListMultimap<Integer, PickingSlotHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(query);
-		// final Set<Integer> pickingSlotIds = huEditorRowsByPickingSlotId.keySet();
-		// FIXME: debugging!!!!
+		// retrieve the M_PickingSlots that are available for the given shipmentSchedule's partner and location.
+		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(query.getShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
+		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule);
+
 		final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-		final Set<Integer> pickingSlotIds = pickingSlotDAO.retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+
+		final Set<Integer> pickingSlotIds = pickingSlotDAO
+				.retrivePickingSlotsForBPartner(Env.getCtx(), bpartnerId, bpartnerLocationId)
 				.stream()
 				.map(I_M_PickingSlot::getM_PickingSlot_ID)
 				.collect(ImmutableSet.toImmutableSet());
 
+		// retrieve HURows (if any)
+		final ListMultimap<Integer, PickingSlotHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(query);
+		
 		final Predicate<? super I_M_PickingSlot> predicate = pickingSlotPO ->
 			{
 				if (query.getPickingCandidates() == PickingCandidate.DONT_CARE)
@@ -233,38 +245,4 @@ public class PickingSlotViewRepository
 				//
 				.build();
 	}
-
-	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
-	{
-		pickingHUsRepo.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
-	}
-
-	public void removeHUFromPickingSlot(final int huId, final int pickingSlotId)
-	{
-		pickingHUsRepo.removeHUFromPickingSlot(huId, pickingSlotId);
-	}
-
-	/**
-	 * 
-	 * @param qtyCU
-	 * @param huId
-	 * @param pickingSlotId
-	 * @param shipmentScheduleId
-	 * @return the quantity that was effectively added. As determined by {@link ShipmentScheduleQtyPickedProductStorage}, we can only add the quantity that is still open according to the underlyiung shipment schedule.
-	 */
-	public Quantity addQtyToHU(
-			@NonNull final BigDecimal qtyCU,
-			final int huId,
-			final int pickingSlotId,
-			final int shipmentScheduleId)
-	{
-		return pickingHUsRepo.addQtyToHU(qtyCU, huId, pickingSlotId, shipmentScheduleId);
-	}
-
-	public void setRowsProcessed(@NonNull final List<PickingSlotRow> rows)
-	{
-		final List<Integer> huIds = rows.stream().filter(row -> row.isHURow()).map(row -> row.getHuId()).collect(Collectors.toList());
-		pickingHUsRepo.setCandidatesProcessed(huIds);
-	}
-
 }

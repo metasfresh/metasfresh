@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.ITranslatableString;
@@ -20,6 +18,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,14 +42,31 @@ import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
  * #L%
  */
 
-@ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+@ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes =
+	{ JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PickingViewFactory implements IViewFactory
 {
-	@Autowired
-	private PickingViewRepository pickingViewRepo;
+	private final PickingViewRepository pickingViewRepo;
+	
+	private final PickingCandidateCommand pickingCandidateCommand;
+
+	/**
+	 * 
+	 * @param pickingViewRepo
+	 * @param pickingCandidateCommand when a new view is created, this stateless instance is given to that view
+	 */
+	public PickingViewFactory(
+			@NonNull final PickingViewRepository pickingViewRepo,
+			@NonNull final PickingCandidateCommand pickingCandidateCommand)
+	{
+		this.pickingViewRepo = pickingViewRepo;
+		this.pickingCandidateCommand = pickingCandidateCommand;
+	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType)
 	{
 		// TODO: cache it
 
@@ -71,13 +87,18 @@ public class PickingViewFactory implements IViewFactory
 	}
 
 	@Override
-	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(final WindowId windowId, final JSONViewDataType viewDataType)
+	public Collection<DocumentFilterDescriptor> getViewFilterDescriptors(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType)
 	{
 		return getViewLayout(windowId, viewDataType).getFilters();
 	}
 
+	/**
+	 * @param request its {@code windowId} has to me {@link PickingConstants#WINDOWID_PickingView}
+	 */
 	@Override
-	public IView createView(final CreateViewRequest request)
+	public IView createView(@NonNull final CreateViewRequest request)
 	{
 		final WindowId windowId = request.getWindowId();
 		if (!PickingConstants.WINDOWID_PickingView.equals(windowId))
@@ -86,7 +107,7 @@ public class PickingViewFactory implements IViewFactory
 		}
 
 		final ViewId viewId = ViewId.random(PickingConstants.WINDOWID_PickingView);
-		
+
 		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
 		final List<PickingRow> rows = pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
 
@@ -94,6 +115,7 @@ public class PickingViewFactory implements IViewFactory
 				.viewId(viewId)
 				.description(ITranslatableString.empty())
 				.rows(rows)
+				.pickingCandidateCommand(pickingCandidateCommand)
 				.build();
 	}
 

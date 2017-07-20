@@ -1,5 +1,9 @@
 package de.metas.ui.web.picking.process;
 
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Properties;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -13,15 +17,21 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.picking.PickingSlotViewFactory;
-import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.NonNull;
 
 /*
@@ -54,13 +64,18 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_NewEmptyHU extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired
-	private PickingSlotViewRepository pickingSlotViewRepo;
-
+	private PickingCandidateCommand pickingCandidateCommand;
+	
 	@Param(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product huPIItemProduct;
+
+	private static final String PARAM_QTY_CU = "QtyCU";
+	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
+	private BigDecimal qtyCU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -85,11 +100,50 @@ public class WEBUI_Picking_NewEmptyHU extends ViewBasedProcessTemplate implement
 		// Add the TU to picking slot (as candidate)
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = getView().getShipmentScheduleId();
-		pickingSlotViewRepo.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+		pickingCandidateCommand.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+
+		// add the qty
+		if (qtyCU.signum() > 0)
+		{
+			pickingCandidateCommand.addQtyToHU(qtyCU, hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
+		}
+
+		invalidateView();
+		invalidateParentView();
 
 		invalidateView();
 
 		return MSG_OK;
+	}
+
+	/**
+	 * 
+	 * @return a list of PI item products that match the selected shipment schedule's product and partner, sorted by name.
+	 */
+	@ProcessParamLookupValuesProvider(parameterName = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
+	private LookupValuesList getM_HU_PI_Item_Products()
+	{
+		final Properties ctx = getCtx();
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+
+		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
+				shipmentSchedule.getM_Product(),
+				shipmentSchedule.getC_BPartner());
+	}
+
+	/**
+	 * Returns the {@code qtyToDeliver} value of the currently selected shipment schedule, or {@code null}.
+	 */
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		if (!Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+		return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 	}
 
 	private static final I_M_Locator getPickingSlotLocator(final PickingSlotRow pickingSlotRow)
