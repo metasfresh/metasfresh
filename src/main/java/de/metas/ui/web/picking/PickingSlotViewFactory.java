@@ -97,6 +97,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
+				.parentViewId(pickingViewId)
 				.shipmentScheduleId(shipmentScheduleId)
 				.rows(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())

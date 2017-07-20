@@ -69,6 +69,7 @@ public class PickingSlotView implements IView
 	}
 
 	private final ViewId viewId;
+	private final ViewId parentViewId;
 	private final ITranslatableString description;
 	private final int shipmentScheduleId;
 	private final ExtendedMemorizingSupplier<Map<PickingSlotRowId, PickingSlotRow>> rowsSupplier;
@@ -76,6 +77,7 @@ public class PickingSlotView implements IView
 
 	@Builder
 	private PickingSlotView(@NonNull final ViewId viewId,
+			final ViewId parentViewId,
 			final ITranslatableString description,
 			final int shipmentScheduleId,
 			final Supplier<List<PickingSlotRow>> rows,
@@ -84,6 +86,7 @@ public class PickingSlotView implements IView
 		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");
 
 		this.viewId = viewId;
+		this.parentViewId = parentViewId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
@@ -123,7 +126,7 @@ public class PickingSlotView implements IView
 	@Override
 	public ViewId getParentViewId()
 	{
-		return null;
+		return parentViewId;
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package de.metas.ui.web.picking;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,14 +87,14 @@ public class PickingViewFactory implements IViewFactory
 		}
 
 		final ViewId viewId = ViewId.random(PickingConstants.WINDOWID_PickingView);
-		
+
 		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		final List<PickingRow> rows = pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
+		final Supplier<List<PickingRow>> rowsSupplier = () -> pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
 
 		return PickingView.builder()
 				.viewId(viewId)
 				.description(ITranslatableString.empty())
-				.rows(rows)
+				.rowsSupplier(rowsSupplier)
 				.build();
 	}
 
