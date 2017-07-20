@@ -107,6 +107,7 @@ public class PickingViewRepository
 				.preparationDate(packageable.getPreparationDate())
 				.qtyToDeliver(packageable.getQtyToDeliver())
 				.shipmentScheduleId(packageable.getM_ShipmentSchedule_ID())
+				.qtyPickedPlanned(packageable.getQtyPickedPlanned())
 				//
 				.build();
 	}

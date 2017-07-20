@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
@@ -26,6 +27,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -74,19 +76,19 @@ public class PickingView implements IView
 
 	private final ViewId viewId;
 	private final ITranslatableString description;
-	private final Map<DocumentId, PickingRow> rows;
+	private final ExtendedMemorizingSupplier<Map<DocumentId, PickingRow>> rowsSupplier;
 
 	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
 
 	@Builder
 	private PickingView(@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final List<PickingRow> rows,
+			@NonNull final Supplier<List<PickingRow>> rowsSupplier,
 			@NonNull final PickingCandidateCommand pickingCandidateCommand)
 	{
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
-		this.rows = Maps.uniqueIndex(rows, PickingRow::getId);
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PickingRow::getId));
 		this.pickingCandidateCommand = pickingCandidateCommand;
 	}
 
@@ -126,10 +128,15 @@ public class PickingView implements IView
 		return null;
 	}
 
+	private final Map<DocumentId, PickingRow> getRows()
+	{
+		return rowsSupplier.get();
+	}
+
 	@Override
 	public long size()
 	{
-		return rows.size();
+		return getRows().size();
 	}
 
 	@Override
@@ -143,12 +150,13 @@ public class PickingView implements IView
 		pickingCandidateCommand.setCandidatesClosed(shipmentScheduleIds);
 	}
 
-	/**
-	 * Does nothing.
-	 */
 	@Override
 	public void invalidateAll()
 	{
+		rowsSupplier.forget();
+		
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 
 	@Override
@@ -166,7 +174,7 @@ public class PickingView implements IView
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<PickingRow> pageRows = rows.values().stream()
+		final List<PickingRow> pageRows = getRows().values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
@@ -177,7 +185,7 @@ public class PickingView implements IView
 	@Override
 	public PickingRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PickingRow row = rows.get(rowId);
+		final PickingRow row = getRows().get(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
