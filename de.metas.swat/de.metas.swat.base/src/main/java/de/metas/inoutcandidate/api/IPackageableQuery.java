@@ -29,10 +29,6 @@ public interface IPackageableQuery
 
 	int getWarehouseId();
 
-	void setDisplayNonDeliverableItems(boolean displayNonDeliverableItems);
-
-	boolean isDisplayNonDeliverableItems();
-
 	void setIsDisplayTodayEntriesOnly(boolean isDisplayTodayEntriesOnly);
 
 	boolean isDisplayTodayEntriesOnly();

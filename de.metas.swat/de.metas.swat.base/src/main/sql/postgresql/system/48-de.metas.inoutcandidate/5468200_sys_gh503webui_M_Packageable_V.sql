@@ -53,7 +53,7 @@ SELECT
 			)), 0)
 		from M_Picking_Candidate pc
 		where pc.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID
-		and pc.Processed='N'
+			and pc.Status='IP' -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
 	) as QtyPickedPlanned
 	
 	--
@@ -71,6 +71,7 @@ LEFT JOIN C_DocType dt ON (dt.C_DocType_ID=o.C_DocType_ID)
 LEFT JOIN M_Product prod ON (prod.M_Product_ID=s.M_Product_ID)
 WHERE
 	true
+	AND s.QtyToDeliver > 0
 	AND NOT EXISTS (SELECT 1 FROM M_ShipmentSchedule_ShipmentRun sr WHERE sr.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID)
 	AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
 ;

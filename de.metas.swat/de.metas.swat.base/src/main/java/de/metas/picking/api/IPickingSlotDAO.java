@@ -13,15 +13,14 @@ package de.metas.picking.api;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Collection;
 import java.util.List;
@@ -44,6 +43,14 @@ public interface IPickingSlotDAO extends ISingletonService
 
 	List<I_M_PickingSlot> retrivePickingSlotsForBPartners(final Properties ctx, final Collection<Integer> bpartnerIds, final Collection<Integer> bpLocIds);
 
+	/**
+	 * Retrieve all {@link I_M_PickingSlot}s and filter them using {@link IPickingSlotBL#isAvailableForBPartnerAndLocation(I_M_PickingSlot, int, int)} using the given parameters.
+	 * 
+	 * @param ctx
+	 * @param bpartnerId
+	 * @param bpartnerLocationId
+	 * @return
+	 */
 	List<I_M_PickingSlot> retrivePickingSlotsForBPartner(Properties ctx, int bpartnerId, int bpartnerLocationId);
 
 	List<I_M_PickingSlot> retrievePickingSlotsByIds(Collection<Integer> pickingSlotIds);
