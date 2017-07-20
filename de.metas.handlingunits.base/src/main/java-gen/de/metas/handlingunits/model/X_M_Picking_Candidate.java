@@ -15,7 +15,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 258210568L;
+	private static final long serialVersionUID = -1486863828L;
 
     /** Standard Constructor */
     public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
@@ -26,6 +26,7 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 			setM_Picking_Candidate_ID (0);
 			setM_PickingSlot_ID (0);
 			setM_ShipmentSchedule_ID (0);
+			setStatus (null); // IP
 			setQtyPicked (BigDecimal.ZERO); // 0
         } */
     }
@@ -206,40 +207,42 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 		return ii.intValue();
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/** 
+	 * Status AD_Reference_ID=540734
+	 * Reference name: M_Picking_Candidate_Status
+	 */
+	public static final int STATUS_AD_Reference_ID=540734;
+	/** CL = CL */
+	public static final String STATUS_CL = "CL";
+	/** IP = IP */
+	public static final String STATUS_IP = "IP";
+	/** PR = PR */
+	public static final String STATUS_PR = "PR";
+	/** Set Status.
+		@param Status Status	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setStatus (java.lang.String Status)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+
+		set_Value (COLUMNNAME_Status, Status);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
+	/** Get Status.
+		@return Status	  */
 	@Override
-	public boolean isProcessed () 
+	public java.lang.String getStatus () 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_Status);
 	}
-
+	
 	/** Set Qty Picked.
-		@param QtyPicked Qty Picked	  */
+	@param QtyPicked Qty Picked	  */
 	@Override
 	public void setQtyPicked (java.math.BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
-
+	
 	/** Get Qty Picked.
 		@return Qty Picked	  */
 	@Override
