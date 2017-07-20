@@ -114,6 +114,10 @@ public class ProcessExecutionResult
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private RecordsToOpen recordsToOpen = null;
 
+	/** Included viewId to be opened (WEBUI) after this process was successfully executed */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String webuiIncludedViewIdToOpen = null;
+
 	public ProcessExecutionResult()
 	{
 		super();
@@ -130,6 +134,9 @@ public class ProcessExecutionResult
 				.add("printFormat", printFormat)
 				.add("logs.size", logs == null ? 0 : logs.size())
 				.add("AD_PInstance_ID", AD_PInstance_ID)
+				.add("recordToSelectAfterExecution", recordToSelectAfterExecution)
+				.add("recordsToOpen", recordsToOpen)
+				.add("webuiIncludedViewIdToOpen", webuiIncludedViewIdToOpen)
 				.toString();
 	}
 
@@ -348,6 +355,21 @@ public class ProcessExecutionResult
 		return recordsToOpen;
 	}
 
+	/**
+	 * Sets webui's included view to be opened if the process was successfully executed.
+	 * 
+	 * @param webuiIncludedViewIdToOpen
+	 */
+	public void setWebuiIncludedViewIdToOpen(String webuiIncludedViewIdToOpen)
+	{
+		this.webuiIncludedViewIdToOpen = webuiIncludedViewIdToOpen;
+	}
+
+	public String getWebuiIncludedViewIdToOpen()
+	{
+		return webuiIncludedViewIdToOpen;
+	}
+
 	public void setPrintFormat(final MPrintFormat printFormat)
 	{
 		this.printFormat = printFormat;
@@ -478,7 +500,7 @@ public class ProcessExecutionResult
 			{
 				logs = new ArrayList<>(Services.get(IADPInstanceDAO.class).retrieveProcessInfoLogs(getAD_PInstance_ID()));
 			}
-			catch(final Exception ex)
+			catch (final Exception ex)
 			{
 				// Don't fail log lines failed loading because most of the APIs rely on this.
 				// In case we would propagate the exception we would face:
@@ -609,10 +631,17 @@ public class ProcessExecutionResult
 
 		recordToSelectAfterExecution = otherResult.recordToSelectAfterExecution;
 		recordsToOpen = otherResult.recordsToOpen;
+		webuiIncludedViewIdToOpen = otherResult.webuiIncludedViewIdToOpen;
 	}
 
+	//
+	//
+	//
+	//
+	//
+
 	@Immutable
-	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	public static final class RecordsToOpen
 	{
 		@JsonProperty("records")
@@ -625,11 +654,9 @@ public class ProcessExecutionResult
 
 		public static enum OpenTarget
 		{
-			SingleDocument,
-			SingleDocumentModal,
-			GridView,
+			SingleDocument, SingleDocumentModal, GridView,
 		}
-		
+
 		@JsonProperty("target")
 		private final OpenTarget target;
 
@@ -642,7 +669,7 @@ public class ProcessExecutionResult
 		{
 			super();
 			Check.assumeNotEmpty(records, "records is not empty");
-			
+
 			this.records = ImmutableList.copyOf(records);
 			this.adWindowId = adWindowId > 0 ? adWindowId : null;
 			this.target = target;
@@ -690,7 +717,7 @@ public class ProcessExecutionResult
 		{
 			return records;
 		}
-		
+
 		public TableRecordReference getSingleRecord()
 		{
 			return records.get(0);

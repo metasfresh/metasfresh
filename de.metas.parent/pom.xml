@@ -619,9 +619,7 @@
 							That version didn't support the way, we configured it and failed with an
 							error message. This shall not happen again. -->
 						<requirePluginVersions>
-							<message>!! We need to have the plugin version under control to
-								avoid build failures due to maven releasing a new plugin version
-								!!</message>
+							<message>!! We need to have the plugin version under control to	avoid build failures due to maven releasing a new plugin version !!</message>
 							<banLatest>true</banLatest>
 							<banRelease>true</banRelease>
 							<banSnapshots>true</banSnapshots>
@@ -732,7 +730,16 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.2</version>
+			</plugin>
+
 		</plugins>
+
 	</build>
 
 	<profiles>

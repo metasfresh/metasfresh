@@ -49,6 +49,14 @@ public class ADProcessDAO implements IADProcessDAO
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
 
 	@Override
+	public int retriveProcessIdByClass(final Properties ctx, final Class<?> processClass)
+	{
+		final int processId = retriveProcessIdByClassIfUnique(ctx, processClass);
+		Check.errorIf(processId <= 0, "Could not retrieve a singe AD_Process_ID for processClass={}", processClass);
+		return processId;
+	}
+
+	@Override
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
 	{
 		final String processClassname = processClass.getName();

@@ -24,6 +24,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
 import mockit.Mocked;
@@ -123,7 +124,7 @@ public class HUTransformTracingTests
 
 	/**
 	 * Calls {@link HUTransformServiceTests#testCU_To_NewCU_MaxValueParent()} and then verifies the tracing info.
-	 * there shall be two tracing events; one shall have the old TU as {@code topLevelHuId} the other one the now-standalone CU.
+	 * There shall be two tracing events; one shall have the old TU as {@code topLevelHuId} the other one the now-standalone CU.
 	 * 
 	 */
 	@Test
@@ -132,7 +133,9 @@ public class HUTransformTracingTests
 		final TestHUs result = testsBase.testCU_To_NewCU_MaxValueParent_DoIt();
 
 		final I_M_HU parentTU = result.getInititalParent();
+		assertThat(parentTU.getHUStatus(), is(X_M_HU.HUSTATUS_Active)); // guard
 		final I_M_HU cuToSplit = result.getInput();
+		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active)); // guard
 
 		// retrieve the events that were added to the repo and make sure they are as expected
 
