@@ -250,6 +250,35 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get Maßeinheit.
+	 * Maßeinheit
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+	public org.compiere.model.I_C_UOM getC_UOM();
+
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
+
+    /** Column definition for C_UOM_ID */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.compiere.model.I_C_UOM>(I_M_Packageable_V.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *
@@ -484,7 +513,7 @@ public interface I_M_Packageable_V
 	/**
 	 * Set Lieferdisposition.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: ID
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -493,18 +522,14 @@ public interface I_M_Packageable_V
 	/**
 	 * Get Lieferdisposition.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: ID
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public int getM_ShipmentSchedule_ID();
 
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule();
-
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule);
-
     /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, de.metas.inoutcandidate.model.I_M_ShipmentSchedule> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, de.metas.inoutcandidate.model.I_M_ShipmentSchedule>(I_M_Packageable_V.class, "M_ShipmentSchedule_ID", de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "M_ShipmentSchedule_ID", null);
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
@@ -663,6 +688,29 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "ProductName", null);
     /** Column name ProductName */
     public static final String COLUMNNAME_ProductName = "ProductName";
+
+	/**
+	 * Set Qty picked (planned).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setQtyPickedPlanned (java.math.BigDecimal QtyPickedPlanned);
+
+	/**
+	 * Get Qty picked (planned).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getQtyPickedPlanned();
+
+    /** Column definition for QtyPickedPlanned */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_QtyPickedPlanned = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "QtyPickedPlanned", null);
+    /** Column name QtyPickedPlanned */
+    public static final String COLUMNNAME_QtyPickedPlanned = "QtyPickedPlanned";
 
 	/**
 	 * Set Ausliefermenge.
