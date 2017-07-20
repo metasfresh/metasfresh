@@ -62,6 +62,8 @@ public interface IView
 	 */
 	ViewId getParentViewId();
 
+	DocumentId getParentRowId();
+
 	/** @return true if this is an included view */
 	default boolean isIncludedView()
 	{

@@ -214,12 +214,14 @@ public class HUEditorViewFactory implements IViewFactory
 
 		return HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
+				.setParentRowId(request.getParentRowId())
 				.setWindowId(windowId)
 				.setViewType(request.getViewType())
 				.setStickyFilters(stickyFilters)
 				.setFilters(filters)
 				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())
+				.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
 				.build();
 	}
 

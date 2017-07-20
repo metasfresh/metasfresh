@@ -83,12 +83,12 @@ public class PickingSlotViewFactory implements IViewFactory
 	@Override
 	public PickingSlotView createView(@NonNull final CreateViewRequest request)
 	{
-		final DocumentId pickingRowId = request.getSingleReferencingDocumentPathOrNull().getDocumentId();
-		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
-
 		final ViewId pickingViewId = request.getParentViewId();
+		final DocumentId pickingRowId = request.getParentRowId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 
+		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
+		
 		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
 		// notice for noobs such as me: this is executed each time the view is revalidated. and it's not executed when this createView method runs
@@ -98,6 +98,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
 				.parentViewId(pickingViewId)
+				.parentRowId(pickingRowId)
 				.shipmentScheduleId(shipmentScheduleId)
 				.rows(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())

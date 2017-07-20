@@ -74,6 +74,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	private final ViewId parentViewId;
+	private final DocumentId parentRowId;
 
 	private final ViewId viewId;
 	private final JSONViewDataType viewType;
@@ -85,16 +86,18 @@ public class PPOrderLinesView implements IView
 	private final ExtendedMemorizingSupplier<PPOrderLinesViewData> dataSupplier;
 
 	@Builder
-	private PPOrderLinesView( //
-			final ViewId parentViewId //
-			, @NonNull final ViewId viewId //
-			, @NonNull final JSONViewDataType viewType //
-			, final Set<DocumentPath> referencingDocumentPaths //
-			, final int ppOrderId //
-			, final ASIViewRowAttributesProvider asiAttributesProvider //
+	private PPOrderLinesView(
+			final ViewId parentViewId,
+			final DocumentId parentRowId,
+			@NonNull final ViewId viewId,
+			@NonNull final JSONViewDataType viewType,
+			final Set<DocumentPath> referencingDocumentPaths,
+			final int ppOrderId,
+			final ASIViewRowAttributesProvider asiAttributesProvider
 	)
 	{
 		this.parentViewId = parentViewId; // might be null
+		this.parentRowId = parentRowId; // might be null
 		this.viewId = viewId;
 		this.viewType = viewType;
 		this.referencingDocumentPaths = referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
@@ -136,6 +139,12 @@ public class PPOrderLinesView implements IView
 	public ViewId getParentViewId()
 	{
 		return parentViewId;
+	}
+	
+	@Override
+	public DocumentId getParentRowId()
+	{
+		return parentRowId;
 	}
 
 	@Override
@@ -275,6 +284,7 @@ public class PPOrderLinesView implements IView
 		// TODO: notifyRecordsChanged: identify the sub-trees which could be affected and invalidate only those
 	}
 
+	@Override
 	public void invalidateAll()
 	{
 		invalidateAllNoNotify();
