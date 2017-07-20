@@ -7,9 +7,9 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
@@ -41,7 +41,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
-	private PickingSlotViewRepository pickingSlotRepo;
+	private PickingCandidateCommand pickingCandidateCommand;
 	@Autowired
 	private IViewsRepository viewsRepo;
 
@@ -78,7 +78,7 @@ public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate imple
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = pickingSlotsView.getShipmentScheduleId();
 
-		pickingSlotRepo.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
+		pickingCandidateCommand.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
 
 		invalidateView(pickingSlotsView.getViewId()); // picking slots view
 		invalidateView(pickingSlotsView.getParentViewId()); // picking view
