@@ -142,7 +142,7 @@ public class PickingView implements IView
 	@Override
 	public void close()
 	{
-		final List<Integer> shipmentScheduleIds = rows
+		final List<Integer> shipmentScheduleIds = getRows()
 				.values().stream()
 				.map(row -> row.getShipmentScheduleId())
 				.collect(Collectors.toList());
