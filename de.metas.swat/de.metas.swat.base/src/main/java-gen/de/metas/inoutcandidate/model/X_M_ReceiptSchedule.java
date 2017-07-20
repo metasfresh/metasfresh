@@ -4,7 +4,6 @@ package de.metas.inoutcandidate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ReceiptSchedule
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 253169369L;
+	private static final long serialVersionUID = 678568494L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule (Properties ctx, int M_ReceiptSchedule_ID, String trxName)
@@ -29,17 +28,13 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 			setC_DocType_ID (0);
 			setDeliveryRule (null);
 			setDeliveryViaRule (null);
-			setIsBPartnerAddress_Override (false);
-// N
-			setIsPackagingMaterial (false);
-// N
+			setIsBPartnerAddress_Override (false); // N
+			setIsPackagingMaterial (false); // N
 			setM_Product_ID (0);
 			setM_ReceiptSchedule_ID (0);
 			setM_Warehouse_ID (0);
-			setProcessed (false);
-// N
-			setQtyMovedWithIssues (BigDecimal.ZERO);
-// 0
+			setProcessed (false); // N
+			setQtyMovedWithIssues (BigDecimal.ZERO); // 0
         } */
     }
 
@@ -945,7 +940,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Datum.
+	/** Set Bewegungsdatum.
 		@param MovementDate 
 		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
@@ -955,7 +950,7 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungs-Datum.
+	/** Get Bewegungsdatum.
 		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override

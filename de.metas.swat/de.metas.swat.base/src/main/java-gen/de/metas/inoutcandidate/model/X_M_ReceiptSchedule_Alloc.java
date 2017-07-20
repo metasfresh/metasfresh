@@ -4,7 +4,6 @@ package de.metas.inoutcandidate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ReceiptSchedule_Alloc
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 895140231L;
+	private static final long serialVersionUID = 1325249708L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule_Alloc (Properties ctx, int M_ReceiptSchedule_Alloc_ID, String trxName)
@@ -26,8 +25,7 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
         {
 			setM_ReceiptSchedule_Alloc_ID (0);
 			setM_ReceiptSchedule_ID (0);
-			setQtyWithIssues (BigDecimal.ZERO);
-// 0
+			setQtyWithIssues (BigDecimal.ZERO); // 0
         } */
     }
 
