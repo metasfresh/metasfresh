@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -74,6 +75,7 @@ public class HUEditorView implements IView
 	}
 
 	private final ViewId parentViewId;
+	private final DocumentId parentRowId;
 
 	private final ViewId viewId;
 	private final JSONViewDataType viewType;
@@ -81,6 +83,8 @@ public class HUEditorView implements IView
 	private final Set<DocumentPath> referencingDocumentPaths;
 
 	private final ViewActionDescriptorsList actions;
+	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+
 	private final HUEditorViewBuffer rowsBuffer;
 	private final HUEditorRowAttributesProvider huAttributesProvider;
 
@@ -90,6 +94,7 @@ public class HUEditorView implements IView
 	private HUEditorView(final Builder builder)
 	{
 		parentViewId = builder.getParentViewId();
+		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 
 		final List<DocumentFilter> stickyFilters = builder.getStickyFilters();
@@ -122,7 +127,8 @@ public class HUEditorView implements IView
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
-		actions = builder.actions;
+		actions = builder.getActions();
+		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
 	}
 
 	private static final HUEditorViewBuffer createRowsBuffer( //
@@ -148,6 +154,12 @@ public class HUEditorView implements IView
 	public ViewId getParentViewId()
 	{
 		return parentViewId;
+	}
+	
+	@Override
+	public DocumentId getParentRowId()
+	{
+		return parentRowId;
 	}
 
 	@Override
@@ -212,6 +224,12 @@ public class HUEditorView implements IView
 	public ViewActionDescriptorsList getActions()
 	{
 		return actions;
+	}
+
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+	{
+		return additionalRelatedProcessDescriptors;
 	}
 
 	@Override
@@ -280,6 +298,7 @@ public class HUEditorView implements IView
 		return referencingDocumentPaths;
 	}
 
+	@Override
 	public void invalidateAll()
 	{
 		invalidateAllNoNotify();
@@ -307,7 +326,7 @@ public class HUEditorView implements IView
 		final Set<Integer> huIdsToRemove = extractHUIds(husToRemove);
 		removesHUIdsAndInvalidate(huIdsToRemove);
 	}
-	
+
 	public void removesHUIdsAndInvalidate(final Collection<Integer> huIdsToRemove)
 	{
 		if (rowsBuffer.removeHUIds(huIdsToRemove))
@@ -315,7 +334,6 @@ public class HUEditorView implements IView
 			invalidateAll();
 		}
 	}
-
 
 	private static final Set<Integer> extractHUIds(final Collection<I_M_HU> hus)
 	{
@@ -386,8 +404,6 @@ public class HUEditorView implements IView
 		return InterfaceWrapperHelper.createList(hus, modelClass);
 	}
 
-	
-
 	//
 	//
 	//
@@ -396,6 +412,7 @@ public class HUEditorView implements IView
 	{
 		private final SqlViewBinding sqlViewBinding;
 		private ViewId parentViewId;
+		private DocumentId parentRowId;
 		private WindowId windowId;
 		private JSONViewDataType viewType;
 
@@ -403,6 +420,7 @@ public class HUEditorView implements IView
 		private Set<DocumentPath> referencingDocumentPaths;
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
+		private List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = null;
 
 		private List<DocumentFilter> stickyFilters;
 		private List<DocumentFilter> filters;
@@ -431,6 +449,17 @@ public class HUEditorView implements IView
 		private ViewId getParentViewId()
 		{
 			return parentViewId;
+		}
+
+		public Builder setParentRowId(final DocumentId parentRowId)
+		{
+			this.parentRowId = parentRowId;
+			return this;
+		}
+		
+		private DocumentId getParentRowId()
+		{
+			return parentRowId;
 		}
 
 		public Builder setWindowId(final WindowId windowId)
@@ -476,6 +505,22 @@ public class HUEditorView implements IView
 		{
 			this.actions = actions;
 			return this;
+		}
+
+		private ViewActionDescriptorsList getActions()
+		{
+			return actions;
+		}
+
+		public Builder setAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
+		{
+			this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors;
+			return this;
+		}
+
+		private ImmutableList<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+		{
+			return additionalRelatedProcessDescriptors != null && !additionalRelatedProcessDescriptors.isEmpty() ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 		}
 
 		public Builder setStickyFilters(final List<DocumentFilter> stickyFilters)

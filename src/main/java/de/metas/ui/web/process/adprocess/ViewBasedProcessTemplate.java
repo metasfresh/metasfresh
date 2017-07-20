@@ -23,6 +23,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -138,11 +139,16 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		Check.assumeNotNull(_view, "View loaded");
 		return _view;
 	}
+	
+	protected final void invalidateView(@NonNull final ViewId viewId)
+	{
+		viewsRepo.invalidateView(viewId);
+	}
 
 	protected final void invalidateView()
 	{
 		final IView view = getView();
-		viewsRepo.invalidateView(view.getViewId());
+		invalidateView(view.getViewId());
 	}
 
 	protected final void invalidateParentView()
@@ -151,7 +157,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final ViewId parentViewId = view.getParentViewId();
 		if (parentViewId != null)
 		{
-			viewsRepo.invalidateView(parentViewId);
+			invalidateView(parentViewId);
 		}
 	}
 

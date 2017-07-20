@@ -57,6 +57,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 
 		return PPOrderLinesView.builder()
 				.parentViewId(request.getParentViewId())
+				.parentRowId(request.getParentRowId())
 				.viewId(viewId)
 				.viewType(request.getViewType())
 				.referencingDocumentPaths(request.getReferencingDocumentPaths())

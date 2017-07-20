@@ -115,6 +115,7 @@ public class SqlViewFactory implements IViewFactory
 				.setViewType(request.getViewType())
 				.setReferencingDocumentPaths(request.getReferencingDocumentPaths())
 				.setParentViewId(request.getParentViewId())
+				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
 				.addStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()));
 		

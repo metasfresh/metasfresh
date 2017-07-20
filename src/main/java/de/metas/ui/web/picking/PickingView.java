@@ -127,6 +127,12 @@ public class PickingView implements IView
 	{
 		return null;
 	}
+	
+	@Override
+	public DocumentId getParentRowId()
+	{
+		return null;
+	}
 
 	private final Map<DocumentId, PickingRow> getRows()
 	{

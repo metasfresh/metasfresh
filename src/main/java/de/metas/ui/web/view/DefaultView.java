@@ -79,6 +79,7 @@ public class DefaultView implements IView
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final ViewId parentViewId;
+	private final DocumentId parentRowId;
 	private final JSONViewDataType viewType;
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
@@ -106,6 +107,7 @@ public class DefaultView implements IView
 	{
 		viewDataRepository = builder.getViewDataRepository();
 		parentViewId = builder.getParentViewId();
+		parentRowId = builder.getParentRowId();
 		viewType = builder.getViewType();
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 
@@ -160,6 +162,12 @@ public class DefaultView implements IView
 	public ViewId getParentViewId()
 	{
 		return parentViewId;
+	}
+	
+	@Override
+	public DocumentId getParentRowId()
+	{
+		return parentRowId;
 	}
 
 	@Override
@@ -434,6 +442,7 @@ public class DefaultView implements IView
 		private JSONViewDataType viewType;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private ViewId parentViewId;
+		private DocumentId parentRowId;
 		private final IViewDataRepository viewDataRepository;
 
 		private List<DocumentFilter> _stickyFilters;
@@ -453,6 +462,17 @@ public class DefaultView implements IView
 		{
 			this.parentViewId = parentViewId;
 			return this;
+		}
+		
+		public Builder setParentRowId(DocumentId parentRowId)
+		{
+			this.parentRowId = parentRowId;
+			return this;
+		}
+		
+		private DocumentId getParentRowId()
+		{
+			return parentRowId;
 		}
 
 		public Builder setWindowId(final WindowId windowId)

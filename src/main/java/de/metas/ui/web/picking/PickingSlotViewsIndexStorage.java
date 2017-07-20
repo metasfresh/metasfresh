@@ -134,7 +134,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 				final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
 				return pickingSlotViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
 						.setParentViewId(pickingView.getViewId())
-						.setReferencingDocumentPath(pickingRow.getDocumentPath())
+						.setParentRowId(pickingRow.getId())
 						.build());
 
 			});
