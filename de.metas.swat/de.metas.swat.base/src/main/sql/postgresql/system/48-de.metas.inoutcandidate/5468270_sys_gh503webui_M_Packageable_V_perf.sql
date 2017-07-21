@@ -1,3 +1,4 @@
+
 DROP VIEW IF EXISTS M_Packageable_V;
 
 CREATE OR REPLACE VIEW M_Packageable_V AS
@@ -75,3 +76,10 @@ WHERE
 	AND NOT EXISTS (SELECT 1 FROM M_ShipmentSchedule_ShipmentRun sr WHERE sr.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID)
 	AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
 ;
+
+
+CREATE INDEX IF NOT EXISTS m_shipmentschedule_qtytodeliver
+  ON m_shipmentschedule
+  USING btree
+  (qtytodeliver);
+ COMMENT ON INDEX m_shipmentschedule_qtytodeliver IS 'This index is crucial for the performance of the view public.M_Packageable_V';

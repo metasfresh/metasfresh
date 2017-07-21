@@ -35,10 +35,13 @@ Here come the actual release notes:
     * Adding the 2-column Layout for The Pricing Rule Window in WebUI.
   * [#2020](https://github.com/metasfresh/metasfresh/issues/2020) Add System Configuration Window to WebUI
     * New Window for System Configuration in WebUI.
+  * [#2022](https://github.com/metasfresh/metasfresh/issues/2022) Create Window Textvariablen in WebUI
+  * [#2023](https://github.com/metasfresh/metasfresh/issues/2023) Create Window Textbausteinein WebUI
   * [#2027](https://github.com/metasfresh/metasfresh/issues/2027) Fine Tuning of Window Bankaccount in WebUI
     * Various Adjustments to the Bankaccount Window in WebUI.
   * [#2028](https://github.com/metasfresh/metasfresh/issues/2028) New Window for Validcombination in WebUI
     * New Window in WebUI thats allows the user to maintain the valid Account Combinations.
+  * [#2038](https://github.com/metasfresh/metasfresh/issues/2038) Adjusted Business Partner Window for Small Companies
 
 * metasfresh-webui-api
   * [#506](https://github.com/metasfresh/metasfresh-webui-api/issues/506) view: accept included referencing documents when creating a new view
@@ -53,6 +56,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
+  * [#2005](https://github.com/metasfresh/metasfresh/issues/2005) invoiced and delivered status in order
   * [#2013](https://github.com/metasfresh/metasfresh/issues/2013) Broken Included Tabs to be redone
     * Fixes a broken Included Tab in the Manufacturing Order Window
 

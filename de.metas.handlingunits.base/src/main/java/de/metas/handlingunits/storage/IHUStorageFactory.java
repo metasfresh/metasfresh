@@ -47,13 +47,14 @@ public interface IHUStorageFactory
 	IHUStorageDAO getHUStorageDAO();
 
 	/**
-	 * Iterates all <code>hus</code> and collects the {@link IHUProductStorage} storages from them.
+	 * Iterate all <code>hus</code> and collect the {@link IHUProductStorage} storages from them.
 	 *
-	 * NOTE: this method will collect the product storages directly from given HUs. It will not navigate them to collect the product storages from possible included HUs.
+	 * NOTE: Collect the product storages directly from given HUs. Don't navigate them to collect the product storages from possible included HUs.
+	 * 
 	 *
 	 * @param hus
 	 * @param product
-	 * @return product storages
+	 * @return product storages; never return {@code null}. Only return items for existing storages. E.g. if none of the given {@code hus} has a storage, return an empty list.
 	 */
 	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, I_M_Product product);
 }

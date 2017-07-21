@@ -256,30 +256,28 @@ public interface I_M_Picking_Candidate
     /** Column name M_ShipmentSchedule_ID */
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
-	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+    /**
+	 * Set Status.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	public void setStatus (java.lang.String Status);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Status.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Type: List
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	public java.lang.String getStatus();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+    /** Column definition for Status */
+    public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "Status", null);
+    /** Column name Status */
+    public static final String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Set Qty Picked.
@@ -303,7 +301,7 @@ public interface I_M_Picking_Candidate
     public static final org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object> COLUMN_QtyPicked = new org.adempiere.model.ModelColumn<I_M_Picking_Candidate, Object>(I_M_Picking_Candidate.class, "QtyPicked", null);
     /** Column name QtyPicked */
     public static final String COLUMNNAME_QtyPicked = "QtyPicked";
-
+    
 	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
