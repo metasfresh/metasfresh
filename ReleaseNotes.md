@@ -41,6 +41,7 @@ Here come the actual release notes:
     * Various Adjustments to the Bankaccount Window in WebUI.
   * [#2028](https://github.com/metasfresh/metasfresh/issues/2028) New Window for Validcombination in WebUI
     * New Window in WebUI thats allows the user to maintain the valid Account Combinations.
+  * [#2038](https://github.com/metasfresh/metasfresh/issues/2038) Adjusted Business Partner Window for Small Companies
 
 * metasfresh-webui-api
   * [#506](https://github.com/metasfresh/metasfresh-webui-api/issues/506) view: accept included referencing documents when creating a new view
