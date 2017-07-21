@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -66,6 +67,8 @@ import lombok.NonNull;
  */
 public class PickingView implements IView
 {
+	private final PickingCandidateCommand pickingCandidateCommand;
+	
 	public static PickingView cast(final IView view)
 	{
 		return (PickingView)view;
@@ -79,12 +82,14 @@ public class PickingView implements IView
 
 	@Builder
 	private PickingView(@NonNull final ViewId viewId,
-			final ITranslatableString description,
-			final Supplier<List<PickingRow>> rowsSupplier)
+			@NonNull final ITranslatableString description,
+			@NonNull final Supplier<List<PickingRow>> rowsSupplier,
+			@NonNull final PickingCandidateCommand pickingCandidateCommand)
 	{
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PickingRow::getId));
+		this.pickingCandidateCommand = pickingCandidateCommand;
 	}
 
 	@Override
@@ -143,6 +148,12 @@ public class PickingView implements IView
 	@Override
 	public void close()
 	{
+		final List<Integer> shipmentScheduleIds = getRows()
+				.values().stream()
+				.map(row -> row.getShipmentScheduleId())
+				.collect(Collectors.toList());
+
+		pickingCandidateCommand.setCandidatesClosed(shipmentScheduleIds);
 	}
 
 	@Override
@@ -191,43 +202,57 @@ public class PickingView implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Just throws an {@link UnsupportedOperationException}.
+	 */
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
-		// TODO Auto-generated method stub
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns {@code null}.
+	 */
 	@Override
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * Returns {@code false}.
+	 */
 	@Override
 	public boolean hasAttributesSupport()
 	{
@@ -257,11 +282,12 @@ public class PickingView implements IView
 		return rowIds.stream().map(this::getById);
 	}
 
+	/**
+	 * Does nothing
+	 */
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)

@@ -87,6 +87,8 @@ public final class PickingRow implements IViewRow
 	})
 	private final java.util.Date preparationDate;
 	
+	private final int shipmentScheduleId;
+	
 	private final ViewId includedViewId;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
@@ -104,7 +106,8 @@ public final class PickingRow implements IViewRow
 			final BigDecimal qtyToDeliver,
 			final BigDecimal qtyPickedPlanned,
 			final Date deliveryDate,
-			final Date preparationDate)
+			final Date preparationDate,
+			final int shipmentScheduleId)
 	{
 		this.id = id;
 		this.viewId = viewId;
@@ -118,7 +121,8 @@ public final class PickingRow implements IViewRow
 		this.qtyPickedPlanned = qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
 		this.deliveryDate = deliveryDate;
 		this.preparationDate = preparationDate;
-		
+		this.shipmentScheduleId = shipmentScheduleId;
+
 		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
 	}
 
@@ -184,5 +188,10 @@ public final class PickingRow implements IViewRow
 	public ViewId getIncludedViewId()
 	{
 		return includedViewId;
+	}
+
+	public int getShipmentScheduleId()
+	{
+		return shipmentScheduleId;
 	}
 }

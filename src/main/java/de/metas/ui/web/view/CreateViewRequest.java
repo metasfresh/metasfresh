@@ -185,7 +185,9 @@ public final class CreateViewRequest
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
 
-		private Builder(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewType)
+		private Builder(
+				@NonNull final WindowId windowId, 
+				@NonNull final JSONViewDataType viewType)
 		{
 			this.windowId = windowId;
 			this.viewType = viewType;

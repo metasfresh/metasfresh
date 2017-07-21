@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
@@ -28,10 +29,10 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRepoQuery;
 import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.picking.PickingSlotRow;
@@ -77,21 +78,35 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 	@Autowired
 	private PickingSlotViewRepository pickingSlotViewRepo;
 
+	@Autowired
+	private PickingCandidateCommand pickingCandidateCommand;
+
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		if (getSelectedDocumentIds().isEmpty())
+		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final List<PickingSlotRow> unprocessedRows = retrieveUnprocessedRows();
-		if (unprocessedRows.isEmpty())
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isHURow())
 		{
-			final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText("WEBUI_Picking_No_Unprocessed_Records");
-			return ProcessPreconditionsResolution.reject(reason);
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
+		}
+
+		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_PickSomething"));
+		}
+
+		if (pickingSlotRow.isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_No_Unprocessed_Records"));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -164,7 +179,9 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 
 			huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
 		}
-		pickingSlotViewRepo.setRowsProcessed(rowsToProcess);
+
+		final List<Integer> huIds = rowsToProcess.stream().map(r -> r.getHuId()).collect(Collectors.toList());
+		pickingCandidateCommand.setCandidatesProcessed(huIds);
 
 		getView().invalidateAll();
 	}

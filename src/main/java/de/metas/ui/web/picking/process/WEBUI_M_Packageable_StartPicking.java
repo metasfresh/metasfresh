@@ -13,7 +13,6 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
