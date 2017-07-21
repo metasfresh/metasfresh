@@ -14,7 +14,6 @@ import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.pporder.PPOrderHUsToIssueActions;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -81,7 +80,6 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 				.setParentViewId(pickingSlotViewId)
 				.setParentRowId(pickingSlotRow.getId())
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huIdsToAvailableToPickQuery))
-				.addActionsFromUtilityClass(PPOrderHUsToIssueActions.class)
 				.addAdditionalRelatedProcessDescriptor(RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
 						.webuiQuickAction(true)
