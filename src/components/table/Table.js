@@ -61,7 +61,7 @@ class Table extends Component {
     componentDidMount(){
         const {rows} = this.state;
         
-        this.getIndentData(true); //selecting firts table elem
+        this.getIndentData(true); //selecting first table elem while getting indent data
 
         const {autofocus} = this.props;
 
