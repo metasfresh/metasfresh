@@ -10,12 +10,31 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.20 (2017-31)
+
+**upcoming release for week 2017-30**
+
+## Features
+* metasfresh-app
+
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+
+## Fixes
+* metasfresh-app
+
+* metasfresh-webui-api
+
+* metasfresh-webui-frontend
+
 # metasfresh 5.19 (2017-30)
 
 **upcoming release for week 2017-30**
 
 ## Features
 * metasfresh-app
+  * [#525](https://github.com/metasfresh/metasfresh/issues/525) Retraceability Transparency for Product Lifecycle
   * [#1993](https://github.com/metasfresh/metasfresh/issues/1993) Set default Widget width for certain Columns
     * Refining and Harmonizing the Widget width of columns in GridView for those, where generic width according to their widget type does not match to the user requirement or field content.
   * [#1995](https://github.com/metasfresh/metasfresh/issues/1995) Language Names too Long
@@ -45,6 +64,8 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#506](https://github.com/metasfresh/metasfresh-webui-api/issues/506) view: accept included referencing documents when creating a new view
+  * [#509](https://github.com/metasfresh/metasfresh-webui-api/issues/509) DocumentIdsSelection.stream() and other methods shall work with "ALL"
+    * General clarification and a fix for the concrete problem
 
 * metasfresh-webui-frontend
   * [#999](https://github.com/metasfresh/metasfresh-webui-frontend/issues/999) grid view: use keyboard + and - to expand/collapse included rows
