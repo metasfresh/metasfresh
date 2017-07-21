@@ -3,10 +3,12 @@ package de.metas.process;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import lombok.NonNull;
@@ -35,6 +37,16 @@ import lombok.NonNull;
 
 public final class ProcessPreconditionsResolution
 {
+	/**
+	 * {@code AD_Message} value that is used by {@link #rejectBecauseNotSingleSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
+	 */
+	public static final String MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = "ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed";
+	
+	/**
+	 * {@code AD_Message} value that is used by {@link #rejectBecauseNoSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
+	 */
+	public static final String MSG_NO_ROWS_SELECTED = "ProcessPreconditionsResolution_NoRowsSelected";
+
 	public static final ProcessPreconditionsResolution accept()
 	{
 		return ACCEPTED;
@@ -102,7 +114,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNoSelection()
 	{
 		final boolean accepted = false;
-		final ITranslatableString reason = ImmutableTranslatableString.constant("no rows selected"); // TODO: trl
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -110,7 +122,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
 	{
 		final boolean accepted = false;
-		final ITranslatableString reason = ImmutableTranslatableString.constant("only one row shall be selected"); // TODO: trl
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED); 
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}

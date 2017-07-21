@@ -82,7 +82,6 @@ public class PackingMd extends MvcMdGenForm
 
 	//
 	// Search filters
-	private boolean isDisplayNonDeliverableItems = false;
 	private int warehouseId;
 	private List<Integer> bpartnerIds;
 	private Date deliveryDate = null;
@@ -161,22 +160,6 @@ public class PackingMd extends MvcMdGenForm
 	public void setRequeryNeeded()
 	{
 		_requeryNeeded = true;
-	}
-
-	public boolean isDisplayNonDeliverableItems()
-	{
-		return isDisplayNonDeliverableItems;
-	}
-
-	public void setDisplayNonDeliverableItems(final boolean isDisplayNonDeliverableItems)
-	{
-		if (this.isDisplayNonDeliverableItems == isDisplayNonDeliverableItems)
-		{
-			// nothing changed
-			return;
-		}
-		this.isDisplayNonDeliverableItems = isDisplayNonDeliverableItems;
-		setRequeryNeeded();
 	}
 
 	public int getM_Warehouse_ID()
@@ -616,7 +599,6 @@ public class PackingMd extends MvcMdGenForm
 	private IPackageableQuery createPackageableQuery()
 	{
 		final IPackageableQuery query = packagingDAO.createPackageableQuery();
-		query.setDisplayNonDeliverableItems(isDisplayNonDeliverableItems());
 		query.setWarehouseId(getM_Warehouse_ID());
 		query.setIsDisplayTodayEntriesOnly(isDisplayTodayEntriesOnly());
 
@@ -783,7 +765,7 @@ public class PackingMd extends MvcMdGenForm
 		//
 		// Filter by DeliveryDate
 		final Date deliveryDate = getDeliveryDate();
-		if (!isDisplayNonDeliverableItems() && deliveryDate != null)
+		if (deliveryDate != null)
 		{
 			final Timestamp deliveryDateDay = TimeUtil.trunc(deliveryDate, TimeUtil.TRUNC_DAY);
 			final Timestamp packageableDeliveryDateDay = TimeUtil.trunc(packageableItem.getDeliveryDate(), TimeUtil.TRUNC_DAY);

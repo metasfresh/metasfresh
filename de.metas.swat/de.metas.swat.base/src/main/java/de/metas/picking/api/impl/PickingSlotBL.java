@@ -68,10 +68,7 @@ public class PickingSlotBL implements IPickingSlotBL
 		{
 			if (bpartnerId <= 0)
 			{
-				// no particular partner was requested
-				// (i.e. M_HU_PI_Item_Product does not have a BP set)
-				// so we accept it
-				return true;
+				// no particular partner was requested, (i.e. M_HU_PI_Item_Product does not have a BP set), accept it
 			}
 			else if (bpartnerId == pickingSlotBPartnerId)
 			{
@@ -122,9 +119,7 @@ public class PickingSlotBL implements IPickingSlotBL
 		{
 			if (bpartnerLocationId <= 0)
 			{
-				// no particular location was requested
-				// so we accept it
-				return true;
+				// no particular location was requested, accept it
 			}
 			else if (bpartnerLocationId == pickingSlotBPartnerLocationId)
 			{
