@@ -1,29 +1,10 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for AD_Element
  *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
  */
+@SuppressWarnings("javadoc")
 public interface I_AD_Element 
 {
 
@@ -31,224 +12,442 @@ public interface I_AD_Element
     public static final String Table_Name = "AD_Element";
 
     /** AD_Table_ID=276 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System 
+    /** AccessLevel = 4 - System
      */
-    BigDecimal accessLevel = BigDecimal.valueOf(4);
+//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
 
     /** Load Meta Data */
 
+	/**
+	 * Get Mandant.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Client_ID();
+
+	public org.compiere.model.I_AD_Client getAD_Client();
+
+    /** Column definition for AD_Client_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_Client>(I_AD_Element.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
     /** Column name AD_Client_ID */
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set System-Element.
+	 * System Element enables the central maintenance of column description and help.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Element_ID (int AD_Element_ID);
 
+	/**
+	 * Get System-Element.
+	 * System Element enables the central maintenance of column description and help.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Element_ID();
+
+    /** Column definition for AD_Element_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_AD_Element_ID = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "AD_Element_ID", null);
     /** Column name AD_Element_ID */
     public static final String COLUMNNAME_AD_Element_ID = "AD_Element_ID";
 
-	/** Set System Element.
-	  * System Element enables the central maintenance of column description and help.
-	  */
-	public void setAD_Element_ID (int AD_Element_ID);
+	/**
+	 * Set Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get System Element.
-	  * System Element enables the central maintenance of column description and help.
-	  */
-	public int getAD_Element_ID();
+	/**
+	 * Get Sektion.
+	 * Organisatorische Einheit des Mandanten
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_Org_ID();
 
+	public org.compiere.model.I_AD_Org getAD_Org();
+
+	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
+
+    /** Column definition for AD_Org_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_Org>(I_AD_Element.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Spaltenname.
+	 * Name of the column in the database
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setColumnName (java.lang.String ColumnName);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Spaltenname.
+	 * Name of the column in the database
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getColumnName();
 
+    /** Column definition for ColumnName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_ColumnName = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "ColumnName", null);
     /** Column name ColumnName */
     public static final String COLUMNNAME_ColumnName = "ColumnName";
 
-	/** Set DB Column Name.
-	  * Name of the column in the database
-	  */
-	public void setColumnName (String ColumnName);
+	/**
+	 * Get Erstellt.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCreated();
 
-	/** Get DB Column Name.
-	  * Name of the column in the database
-	  */
-	public String getColumnName();
-
+    /** Column definition for Created */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "Created", null);
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Erstellt durch.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCreatedBy();
 
+    /** Column definition for CreatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_User>(I_AD_Element.class, "CreatedBy", org.compiere.model.I_AD_User.class);
     /** Column name CreatedBy */
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDescription (java.lang.String Description);
 
+	/**
+	 * Get Beschreibung.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDescription();
+
+    /** Column definition for Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "Description", null);
     /** Column name Description */
     public static final String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setEntityType (java.lang.String EntityType);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+ Determines ownership and synchronization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getEntityType();
 
+    /** Column definition for EntityType */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "EntityType", null);
     /** Column name EntityType */
     public static final String COLUMNNAME_EntityType = "EntityType";
 
-	/** Set Entity Type.
-	  * Dictionary Entity Type;
- Determines ownership and synchronization
-	  */
-	public void setEntityType (String EntityType);
+	/**
+	 * Set Kommentar/Hilfe.
+	 * Comment or Hint
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setHelp (java.lang.String Help);
 
-	/** Get Entity Type.
-	  * Dictionary Entity Type;
- Determines ownership and synchronization
-	  */
-	public String getEntityType();
+	/**
+	 * Get Kommentar/Hilfe.
+	 * Comment or Hint
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getHelp();
 
+    /** Column definition for Help */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "Help", null);
     /** Column name Help */
     public static final String COLUMNNAME_Help = "Help";
 
-	/** Set Comment/Help.
-	  * Comment or Hint
-	  */
-	public void setHelp (String Help);
+	/**
+	 * Set Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsActive (boolean IsActive);
 
-	/** Get Comment/Help.
-	  * Comment or Hint
-	  */
-	public String getHelp();
+	/**
+	 * Get Aktiv.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isActive();
 
+    /** Column definition for IsActive */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "IsActive", null);
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setName (java.lang.String Name);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Name.
+	 * Alphanumeric identifier of the entity
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getName();
 
+    /** Column definition for Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set PO Description.
+	 * Description in PO Screens
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_Description (java.lang.String PO_Description);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get PO Description.
+	 * Description in PO Screens
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPO_Description();
 
+    /** Column definition for PO_Description */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_PO_Description = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "PO_Description", null);
     /** Column name PO_Description */
     public static final String COLUMNNAME_PO_Description = "PO_Description";
 
-	/** Set PO Description.
-	  * Description in PO Screens
-	  */
-	public void setPO_Description (String PO_Description);
+	/**
+	 * Set PO Help.
+	 * Help for PO Screens
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_Help (java.lang.String PO_Help);
 
-	/** Get PO Description.
-	  * Description in PO Screens
-	  */
-	public String getPO_Description();
+	/**
+	 * Get PO Help.
+	 * Help for PO Screens
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPO_Help();
 
+    /** Column definition for PO_Help */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_PO_Help = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "PO_Help", null);
     /** Column name PO_Help */
     public static final String COLUMNNAME_PO_Help = "PO_Help";
 
-	/** Set PO Help.
-	  * Help for PO Screens
-	  */
-	public void setPO_Help (String PO_Help);
+	/**
+	 * Set PO Name.
+	 * Name on PO Screens
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_Name (java.lang.String PO_Name);
 
-	/** Get PO Help.
-	  * Help for PO Screens
-	  */
-	public String getPO_Help();
+	/**
+	 * Get PO Name.
+	 * Name on PO Screens
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPO_Name();
 
+    /** Column definition for PO_Name */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_PO_Name = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "PO_Name", null);
     /** Column name PO_Name */
     public static final String COLUMNNAME_PO_Name = "PO_Name";
 
-	/** Set PO Name.
-	  * Name on PO Screens
-	  */
-	public void setPO_Name (String PO_Name);
+	/**
+	 * Set PO Print name.
+	 * Print name on PO Screens/Reports
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPO_PrintName (java.lang.String PO_PrintName);
 
-	/** Get PO Name.
-	  * Name on PO Screens
-	  */
-	public String getPO_Name();
+	/**
+	 * Get PO Print name.
+	 * Print name on PO Screens/Reports
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPO_PrintName();
 
+    /** Column definition for PO_PrintName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_PO_PrintName = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "PO_PrintName", null);
     /** Column name PO_PrintName */
     public static final String COLUMNNAME_PO_PrintName = "PO_PrintName";
 
-	/** Set PO Print name.
-	  * Print name on PO Screens/Reports
-	  */
-	public void setPO_PrintName (String PO_PrintName);
+	/**
+	 * Set Drucktext.
+	 * The label text to be printed on a document or correspondence.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPrintName (java.lang.String PrintName);
 
-	/** Get PO Print name.
-	  * Print name on PO Screens/Reports
-	  */
-	public String getPO_PrintName();
+	/**
+	 * Get Drucktext.
+	 * The label text to be printed on a document or correspondence.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPrintName();
 
+    /** Column definition for PrintName */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_PrintName = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "PrintName", null);
     /** Column name PrintName */
     public static final String COLUMNNAME_PrintName = "PrintName";
 
-	/** Set Print Text.
-	  * The label text to be printed on a document or correspondence.
-	  */
-	public void setPrintName (String PrintName);
+	/**
+	 * Get Aktualisiert.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getUpdated();
 
-	/** Get Print Text.
-	  * The label text to be printed on a document or correspondence.
-	  */
-	public String getPrintName();
-
+    /** Column definition for Updated */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "Updated", null);
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Aktualisiert durch.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getUpdatedBy();
 
+    /** Column definition for UpdatedBy */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_Element, org.compiere.model.I_AD_User>(I_AD_Element.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	/**
+	 * Set Widget size.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setWidgetSize (java.lang.String WidgetSize);
+
+	/**
+	 * Get Widget size.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getWidgetSize();
+
+    /** Column definition for WidgetSize */
+    public static final org.adempiere.model.ModelColumn<I_AD_Element, Object> COLUMN_WidgetSize = new org.adempiere.model.ModelColumn<I_AD_Element, Object>(I_AD_Element.class, "WidgetSize", null);
+    /** Column name WidgetSize */
+    public static final String COLUMNNAME_WidgetSize = "WidgetSize";
 }
