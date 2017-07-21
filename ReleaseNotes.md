@@ -76,8 +76,6 @@ Here come the actual release notes:
 
 # metasfresh 5.18 (2017-29)
 
-**upcoming release for week 2017-29**
-
 ## Features
 * metasfresh-app
   * [#484](https://github.com/metasfresh/metasfresh/issues/484) HU traceability (backend)
@@ -136,20 +134,27 @@ Here come the actual release notes:
   * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
     * Fix for MatchInv Accounting of non service Products
 
-* metasfresh-webui-api
-
 * metasfresh-webui-frontend
   * [#891](https://github.com/metasfresh/metasfresh-webui-frontend/issues/891) Blocked cells
+    * Improvement of metasfresh Browser compatibility. Here adjusting the behavior of blocked cells when using Edge Browser.
   * [#948](https://github.com/metasfresh/metasfresh-webui-frontend/issues/948) Define refactoring plan for filters model
+    * Improvement of Filtering model in metasfresh.
   * [#966](https://github.com/metasfresh/metasfresh-webui-frontend/issues/966) sitemap: menu item incorrectly flagged as favorite in search result
+    * Fix for the User Bookmark menu, fixing a minor case that showed the a menu item incorrectly as favorite.
   * [#978](https://github.com/metasfresh/metasfresh-webui-frontend/issues/978) Make Avatar and Notifications accessible in Edit mode
+    * Fixes the Avatar and Notifications menu in action windows line Picking Terminal and others.
   * [#979](https://github.com/metasfresh/metasfresh-webui-frontend/issues/979) Use the Provided Endpoint w/ entry selections for given Breadcrumb
+    * Refactoring/ Fixing the Breadcrumb menu usage.
   * [#987](https://github.com/metasfresh/metasfresh-webui-frontend/issues/987) Blue Border in modal overlay when Button pressed
     * Fixes a Stylesheet Issue that caused a blue border around Buttons and Tooltips when hovering.
   * [#998](https://github.com/metasfresh/metasfresh-webui-frontend/issues/998) Picking: quick actions button not shown
+    * Fix for the Action Buttons in new Picking Terminal Window, that were not displayed.
   * [#1008](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1008) Breadcrumb Navigation broken for Document List
+    * Fix for the breadcrumb menu that was not shown anymore in Document List.
   * [#1010](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1010) Action menu Window Name
+    * Now showing the Window Name in the Action Menu dropdown List again.
   * [#1011](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1011) Checking/ unchecking flags in included tabs lead to errors in console
+    * Housekeeping Issue, now eliminating console errors that popped up when checking/ unchecking flags.
 
 # metasfresh 5.17 (2017-28)
 
