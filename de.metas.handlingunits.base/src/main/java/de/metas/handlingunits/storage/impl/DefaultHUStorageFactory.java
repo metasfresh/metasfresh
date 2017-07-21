@@ -88,7 +88,7 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	{
 		final List<IHUProductStorage> productStorages = hus.stream()
 				.map(hu -> getStorage(hu))
-				.map(huStorage -> huStorage.getProductStorage(product))
+				.map(huStorage -> huStorage.getProductStorageOrNull(product))
 				.filter(productStorage -> productStorage != null)
 				.collect(Collectors.toList());
 
