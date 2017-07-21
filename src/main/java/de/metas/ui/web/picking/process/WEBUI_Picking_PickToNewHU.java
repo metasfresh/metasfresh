@@ -146,15 +146,16 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		{
 			// if i return and in or IntegerLookupValue, i get
 			// org.adempiere.exceptions.AdempiereException: No active process found in this thread
-			final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
-			return shipmentSchedule.getM_HU_PI_Item_Product_ID();
-			//final I_M_HU_PI_Item_Product huPIItemProduct = shipmentSchedule.getM_HU_PI_Item_Product();
-			//final IntegerLookupValue lookupValue = IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
-			
+			// final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+			// return shipmentSchedule.getM_HU_PI_Item_Product_ID();
+
+			// final I_M_HU_PI_Item_Product huPIItemProduct = shipmentSchedule.getM_HU_PI_Item_Product();
+			// final IntegerLookupValue lookupValue = IntegerLookupValue.of(huPIItemProduct.getM_HU_PI_Item_Product_ID(), huPIItemProduct.getName());
+
 			// if i return LookupValuesList, i get
-			// Cannot convert M_HU_PI_Item_Product_ID's value 'LookupValuesList{values=[IntegerLookupValue{id=2004054, displayName=constant{value=IFCO 6416 x 12.50 kg}}]}' (class de.metas.ui.web.window.datatypes.LookupValuesList) to class de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue 
-			//return LookupValuesList.fromNullable(lookupValue);
-			//return lookupValue;
+			// Cannot convert M_HU_PI_Item_Product_ID's value 'LookupValuesList{values=[IntegerLookupValue{id=2004054, displayName=constant{value=IFCO 6416 x 12.50 kg}}]}' (class de.metas.ui.web.window.datatypes.LookupValuesList) to class de.metas.ui.web.window.datatypes.LookupValue$IntegerLookupValue
+			// return LookupValuesList.fromNullable(lookupValue);
+			// return lookupValue;
 		}
 
 		return DEFAULT_VALUE_NOTAVAILABLE;
