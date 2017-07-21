@@ -76,8 +76,6 @@ Here come the actual release notes:
 
 # metasfresh 5.18 (2017-29)
 
-**upcoming release for week 2017-29**
-
 ## Features
 * metasfresh-app
   * [#484](https://github.com/metasfresh/metasfresh/issues/484) HU traceability (backend)
@@ -135,8 +133,6 @@ Here come the actual release notes:
 * metasfresh-app
   * [#1970](https://github.com/metasfresh/metasfresh/issues/1970) MatchInv not posting properly
     * Fix for MatchInv Accounting of non service Products
-
-* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#891](https://github.com/metasfresh/metasfresh-webui-frontend/issues/891) Blocked cells
