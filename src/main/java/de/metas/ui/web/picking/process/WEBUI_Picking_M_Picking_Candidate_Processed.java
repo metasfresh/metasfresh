@@ -4,12 +4,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -25,6 +25,7 @@ import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -33,12 +34,9 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRepoQuery;
-import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.picking.PickingSlotViewFactory;
-import de.metas.ui.web.picking.PickingSlotViewRepository;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -64,6 +62,13 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  */
 
 /**
+ * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
+ * Processing means that
+ * <ul>
+ * <li>the HU is changed from status "planned" or "active" to "picked"</li>
+ * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
+ * <li>The HU is added to its picking slot's picking-slot-queue</li>
+ * </ul>
  * 
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
@@ -75,9 +80,6 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
-	@Autowired
-	private PickingSlotViewRepository pickingSlotViewRepo;
-
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
@@ -98,6 +100,11 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
 		}
+		if(pickingSlotRow.getIncludedRows().isEmpty())
+		{
+			// we want a toplevel HU..this is kindof dirty, but should work in this context
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
+		}
 
 		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
 		{
@@ -115,86 +122,60 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 	@Override
 	protected String doIt() throws Exception
 	{
-		processForPickingSlot();
-		return MSG_OK;
-	}
-
-	private void processForPickingSlot()
-	{
-		final List<PickingSlotRow> pickingSlotRows = retrieveUnprocessedRows();
-
-		final List<PickingSlotRow> rowsToProcess = new ArrayList<>();
-
-		// final List<PickingSlotRow> allRows = pickingSlotRepo.retrieveRowsByShipmentScheduleId(getView().getShipmentScheduleId());
-		// TODO check if i have all the rows, or "just" the top level rows
-		for (final PickingSlotRow pickingSlotRow : pickingSlotRows)
-		{
-			if (!pickingSlotRow.isPickingSlotRow())
-			{
-				continue;
-			}
-
-			rowsToProcess.addAll(pickingSlotRow.getIncludedRows());
-		}
+		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		final IPackingService packingService = Services.get(IPackingService.class);
 
-		for (final PickingSlotRow rowToProcess : rowsToProcess)
+		final I_M_PickingSlot pickingSlot = load(rowToProcess.getPickingSlotId(), I_M_PickingSlot.class);
+		final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
+
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
+		final I_M_Product product = shipmentSchedule.getM_Product();
+
+		BigDecimal qty = BigDecimal.ZERO;
+		final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(ImmutableList.of(hu), product);
+		for (final IHUProductStorage storage : huProductStorages)
 		{
-			// TODO remove this comment check if the row was already processed
-			final I_M_PickingSlot pickingSlot = load(rowToProcess.getPickingSlotId(), I_M_PickingSlot.class);
-			final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
-
-			final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
-			final I_M_Product product = shipmentSchedule.getM_Product();
-
-			BigDecimal qty = BigDecimal.ZERO;
-			final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(ImmutableList.of(hu), product);
-			for (final IHUProductStorage storage : huProductStorages)
-			{
-				qty = qty.add(storage.getQty(product.getC_UOM()));
-			}
-			if (qty.signum() <= 0)
-			{
-				Loggables.get().addLog("The current HU has no quantity of the current product; hu={}; product={}", hu, product);
-				break;
-			}
-
-			final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
-
-			final PackingItemsMap packingItemsMap = new PackingItemsMap();
-			packingItemsMap.addUnpackedItem(itemToPack);
-
-			final IPackingContext packingContext = packingService.createPackingContext(getCtx());
-			packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-			packingContext.setPackingItemsMapKey(pickingSlot.getM_PickingSlot_ID());
-
-			// Allocate given HUs to "itemToPack"
-			new HU2PackingItemsAllocator()
-					.setItemToPack(itemToPack)
-					.setPackingContext(packingContext)
-					.setFromHUs(ImmutableList.of(hu))
-					.allocate();
-
-			huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
+			qty = qty.add(storage.getQty(product.getC_UOM()));
 		}
 
-		final List<Integer> huIds = rowsToProcess.stream().map(r -> r.getHuId()).collect(Collectors.toList());
-		pickingCandidateCommand.setCandidatesProcessed(huIds);
+		if (qty.signum() <= 0)
+		{
+			// should not happen due to our checkPreconditionsApplicable(), but happened in other processes, sometimes..we just were unable to reproduce
+			final String msg = StringUtils.formatMessage("The current HU has no quantity of the current product; hu={}; product={}", hu, product);
+			Loggables.get().addLog(msg);
+			throw new AdempiereException(msg);
+		}
 
-		getView().invalidateAll();
-	}
+		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
 
-	private List<PickingSlotRow> retrieveUnprocessedRows()
-	{
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.builder()
-				.shipmentScheduleId(getView().getShipmentScheduleId())
-				.pickingCandidates(PickingCandidate.ONLY_UNPROCESSED)
-				.build();
+		final PackingItemsMap packingItemsMap = new PackingItemsMap();
+		packingItemsMap.addUnpackedItem(itemToPack);
 
-		final List<PickingSlotRow> unprocessedRows = pickingSlotViewRepo.retrieveRowsByShipmentScheduleId(query);
-		return unprocessedRows;
+		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
+		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
+		packingContext.setPackingItemsMapKey(pickingSlot.getM_PickingSlot_ID());
+
+		// Allocate given HUs to "itemToPack"
+		new HU2PackingItemsAllocator()
+				.setItemToPack(itemToPack)
+				.setPackingContext(packingContext)
+				.setFromHUs(ImmutableList.of(hu))
+				.allocate();
+
+		huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
+
+		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
+
+		//getView().invalidateAll();
+		
+		invalidateView();
+		invalidateParentView();
+
+		//invalidateView();
+		
+		return MSG_OK;
 	}
 
 	@Override

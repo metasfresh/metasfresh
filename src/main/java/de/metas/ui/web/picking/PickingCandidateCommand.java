@@ -153,7 +153,7 @@ public class PickingCandidateCommand
 		//
 		// Request
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		
+
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx());
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
@@ -233,6 +233,17 @@ public class PickingCandidateCommand
 		InterfaceWrapperHelper.save(candidate);
 	}
 
+	/**
+	 * For the given {@code huIds}, this method selects the {@link I_M_Picking_Candidate}s that reference those HUs
+	 * and have {@code status == 'IP'} (in progress) and updates them to {@code status='PR'} (processed).
+	 * No model interceptors etc will be fired.
+	 * <p>
+	 * Note: no model interceptors etc are fired when this method is called.
+	 * 
+	 * @param huIds
+	 * 
+	 * @return the number of updated {@link I_M_Picking_Candidate}s
+	 */
 	public int setCandidatesProcessed(@NonNull final List<Integer> huIds)
 	{
 		if (huIds.isEmpty())
@@ -242,16 +253,27 @@ public class PickingCandidateCommand
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
-				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_IP);
+				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR);
 
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_IP)
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huIds)
 				.create()
 				.updateDirectly(updater);
 	}
 
+	/**
+	 * For the given {@code huIds}, this method selects the {@link I_M_Picking_Candidate}s that reference those HUs
+	 * and have {@code status == 'PR'} (processed) and updates them to {@code status='CL'} (closed).<br>
+	 * Closed candidates are not shown in the webui's picking view.
+	 * <p>
+	 * Note: no model interceptors etc are fired when this method is called.
+	 * 
+	 * @param huIds
+	 * 
+	 * @return the number of updated {@link I_M_Picking_Candidate}s
+	 */
 	public void setCandidatesClosed(@NonNull final List<Integer> shipmentScheduleIds)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
