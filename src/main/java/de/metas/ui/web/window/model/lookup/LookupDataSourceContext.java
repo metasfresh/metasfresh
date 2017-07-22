@@ -148,6 +148,17 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return get_ValueAsString(PARAM_Filter.getName());
 	}
 	
+	public String getFilterOrIfAny(final String whenAnyFilter)
+	{
+		final String filterStr = getFilter();
+		if(filterStr == FILTER_Any)
+		{
+			return whenAnyFilter;
+		}
+		return filterStr;
+	}
+
+	
 	public LookupValueFilterPredicate getFilterPredicate()
 	{
 		final String filterStr = getFilter();
