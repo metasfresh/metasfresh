@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.compiere.model.I_C_UOM;
@@ -98,6 +99,11 @@ public final class HUEditorRow implements IViewRow
 	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
 	{
 		return DocumentIdsSelection.of(rowIds).toIntSet();
+	}
+
+	public static int rowIdToM_HU_ID(@NonNull final DocumentId rowId)
+	{
+		return rowId.toIntOrThrow(() -> new AdempiereException("Cannot convert rowId=" + rowId + " to huId"));
 	}
 
 	static final int HUSTATUS_AD_Reference_ID = X_M_HU.HUSTATUS_AD_Reference_ID;
