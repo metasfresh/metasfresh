@@ -727,10 +727,16 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 */
 	protected final ProcessInfo getProcessInfo()
 	{
-		if (_processInfo == null)
+		final ProcessInfo processInfo = getProcessInfoOrNull();
+		if (processInfo == null)
 		{
 			throw new AdempiereException("ProcessInfo not configured for " + this);
 		}
+		return processInfo;
+	}
+
+	private final ProcessInfo getProcessInfoOrNull()
+	{
 		return _processInfo;
 	}
 
@@ -738,7 +744,14 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		return getProcessInfo().getResult();
 	}
+	
+	protected final ProcessExecutionResult getResultOrNull()
+	{
+		final ProcessInfo processInfo = getProcessInfoOrNull();
+		return processInfo != null ? processInfo.getResult() : null;
+	}
 
+	
 	/**
 	 * @return context; never returns <code>null</code>
 	 */
