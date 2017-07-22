@@ -14,6 +14,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Column;
@@ -405,6 +406,10 @@ public class AD_Window_CreateUIElements extends JavaProcess
 
 			uiElement.setIsDisplayed_SideList(false);
 			uiElement.setSeqNo_SideList(0);
+			
+			// #1019 set the widget size in the UI element if it was set in the original element
+			final I_AD_Element element = adField.getAD_Column().getAD_Element();
+			uiElement.setWidgetSize(element.getWidgetSize());
 
 			return uiElement;
 		}

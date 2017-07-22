@@ -53,7 +53,9 @@ SELECT
 			)), 0)
 		from M_Picking_Candidate pc
 		where pc.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID
-			and pc.Status='IP' -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
+			 -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
+			 -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
+			and pc.Status='IP'
 	) as QtyPickedPlanned
 	
 	--
