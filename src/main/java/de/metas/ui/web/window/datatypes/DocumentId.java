@@ -169,6 +169,19 @@ public abstract class DocumentId implements Serializable
 	{
 		return isInt() ? toInt() : fallbackValue;
 	}
+	
+	public <X extends Throwable> int toIntOrThrow(@NonNull final Supplier<? extends X> exceptionSupplier) throws X
+	{
+		if(isInt())
+		{
+			return toInt();
+		}
+		else
+		{
+			throw exceptionSupplier.get();
+		}
+	}
+
 
 	private static final class IntDocumentId extends DocumentId
 	{
