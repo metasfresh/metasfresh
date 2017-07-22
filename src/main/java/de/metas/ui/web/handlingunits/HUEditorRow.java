@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -15,6 +16,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
@@ -498,6 +500,27 @@ public final class HUEditorRow implements IViewRow
 	public LookupValue toLookupValue()
 	{
 		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
+	}
+	
+	/**
+	 * @param stringFilter
+	 * @param adLanguage AD_Language (used to get the right row's string representation)
+	 * @return true if the row is matching the string filter
+	 */
+	public boolean matchesStringFilter(final String stringFilter)
+	{
+		if (Check.isEmpty(stringFilter, true))
+		{
+			return true;
+		}
+
+		final String rowDisplayName = getSummary();
+
+		final Function<String, String> normalizer = s -> StringUtils.stripDiacritics(s.trim()).toLowerCase();
+		final String rowDisplayNameNorm = normalizer.apply(rowDisplayName);
+		final String stringFilterNorm = normalizer.apply(stringFilter);
+
+		return rowDisplayNameNorm.contains(stringFilterNorm);
 	}
 
 	//
