@@ -338,3 +338,28 @@ UPDATE AD_Field SET Name='Belegart',Updated=TO_TIMESTAMP('2017-07-22 16:16:26','
 UPDATE AD_Field SET Name='Status',Updated=TO_TIMESTAMP('2017-07-22 16:23:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=2778
 ;
 
+-- 2017-07-22T16:38:53.430
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-22 16:38:53','YYYY-MM-DD HH24:MI:SS'),Name='Status' WHERE AD_Field_ID=2778 AND AD_Language='en_US'
+;
+
+-- 2017-07-22T16:39:11.036
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-22 16:39:11','YYYY-MM-DD HH24:MI:SS'),Name='Document Type' WHERE AD_Field_ID=2954 AND AD_Language='en_US'
+;
+
+-- 2017-07-22T16:39:35.879
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-22 16:39:35','YYYY-MM-DD HH24:MI:SS'),Name='Date' WHERE AD_Field_ID=2958 AND AD_Language='en_US'
+;
+
+-- 2017-07-22T16:40:13.997
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-22 16:40:13','YYYY-MM-DD HH24:MI:SS'),Name='No.' WHERE AD_Field_ID=2779 AND AD_Language='en_US'
+;
+
+-- 2017-07-22T16:40:38.191
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-07-22 16:40:38','YYYY-MM-DD HH24:MI:SS'),Name='Reference' WHERE AD_Field_ID=2962 AND AD_Language='en_US'
+;
+
