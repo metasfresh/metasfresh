@@ -18,6 +18,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -103,6 +104,11 @@ public class HUTransformService
 		this.huContext = ctx;
 	}
 
+	public static HUTransformService get()
+	{
+		return get(Env.getCtx());
+	}
+
 	/**
 	 * When running unit tests, then use this method to get your instance. Pass the HUTestHelper's getHUContext() result to it, to avoid transactional trouble.
 	 * 
@@ -125,7 +131,7 @@ public class HUTransformService
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return get(huContextFactory.createMutableHUContext(ctx));
 	}
-
+	
 	/**
 	 * Optional; the given list contains references that can be turned into {@link IHUDocument} using the {@link IHUDocumentFactoryService}.
 	 * They may be assigned to HUs that are given as parameters to this service's methods.
