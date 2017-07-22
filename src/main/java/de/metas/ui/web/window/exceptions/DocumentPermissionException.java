@@ -37,7 +37,9 @@ public class DocumentPermissionException extends AdempiereException
 	public static enum DocumentPermission
 	{
 		WindowAccess,
+		/** Document view access */
 		View,
+		/** Document update access */
 		Update,
 	};
 
