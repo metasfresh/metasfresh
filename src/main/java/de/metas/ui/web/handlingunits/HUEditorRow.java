@@ -327,6 +327,17 @@ public final class HUEditorRow implements IViewRow
 		}
 		return InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
 	}
+	
+	public boolean isHUPlanningReceiptOwnerPM()
+	{
+		// TODO: cache it or better it shall be provided when the row is created
+		final I_M_HU hu = getM_HU();
+		if(hu == null)
+		{
+			return false;
+		}
+		return hu.isHUPlanningReceiptOwnerPM();
+	}
 
 	public String getValue()
 	{
