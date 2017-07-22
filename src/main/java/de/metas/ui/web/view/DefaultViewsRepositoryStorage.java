@@ -74,6 +74,7 @@ import lombok.NonNull;
 	public void removeById(@NonNull final ViewId viewId)
 	{
 		views.invalidate(viewId);
+		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
 	
 	@Override
