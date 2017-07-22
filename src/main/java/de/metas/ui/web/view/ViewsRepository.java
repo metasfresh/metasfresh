@@ -97,6 +97,10 @@ public class ViewsRepository implements IViewsRepository
 			truncateTable(I_T_WEBUI_ViewSelection.Table_Name);
 			truncateTable(I_T_WEBUI_ViewSelectionLine.Table_Name);
 		}
+		else
+		{
+			logger.info("Skip truncating selection tables on startup because not configured");
+		}
 	}
 
 	private static void truncateTable(final String tableName)
@@ -138,7 +142,6 @@ public class ViewsRepository implements IViewsRepository
 				logger.info("Registered {} for windowId={}, viewType={}", factory, windowId, viewTypes);
 			}
 		}
-
 	}
 
 	private final IViewFactory getFactory(final WindowId windowId, final JSONViewDataType viewType)
@@ -163,6 +166,9 @@ public class ViewsRepository implements IViewsRepository
 		return ArrayKey.of(windowId, viewType);
 	}
 
+	/**
+	 * @param viewsIndexStorages view index storages discovered in spring context
+	 */
 	@Autowired
 	private void registerViewsIndexStorages(final Collection<IViewsIndexStorage> viewsIndexStorages)
 	{
@@ -210,7 +216,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
 	{
-		DocumentPermissionsHelper.assertWindowAccess(windowId, null, UserSession.getCurrentPermissions());
+		final String viewId = null; // N/A
+		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
 		return factory.getViewLayout(windowId, viewDataType)
@@ -229,6 +236,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public IView createView(final CreateViewRequest request)
 	{
+		logger.trace("Creating new view from {}", request);
+		
 		final WindowId windowId = request.getWindowId();
 		final JSONViewDataType viewType = request.getViewType();
 		final IViewFactory factory = getFactory(windowId, viewType);
@@ -241,6 +250,7 @@ public class ViewsRepository implements IViewsRepository
 		}
 
 		getViewsStorageFor(view.getViewId()).put(view);
+		logger.trace("Created view {}", view);
 
 		return view;
 	}
@@ -248,6 +258,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public IView filterView(final ViewId viewId, final JSONFilterViewRequest jsonRequest)
 	{
+		logger.trace("Creating filtered view from {} using {}", viewId, jsonRequest);
+		
 		// Get current view
 		final IView view = getView(viewId);
 
@@ -269,6 +281,11 @@ public class ViewsRepository implements IViewsRepository
 		if (view != newView)
 		{
 			getViewsStorageFor(newView.getViewId()).put(newView);
+			logger.trace("Created filtered view {}", newView);
+		}
+		else
+		{
+			logger.trace("Filtered view is the same as the ordiginal. Returning the original {}", view);
 		}
 
 		// Return the newly created view
@@ -278,6 +295,8 @@ public class ViewsRepository implements IViewsRepository
 	@Override
 	public IView deleteStickyFilter(final ViewId viewId, final String filterId)
 	{
+		logger.trace("Deleting sticky filter {} from {}", filterId, viewId);
+		
 		// Get current view
 		final IView view = getView(viewId);
 
@@ -299,6 +318,11 @@ public class ViewsRepository implements IViewsRepository
 		if (view != newView)
 		{
 			getViewsStorageFor(newView.getViewId()).put(newView);
+			logger.trace("Sticky filter deleted. Returning new view {}", newView);
+		}
+		else
+		{
+			logger.trace("Sticky filter NOT deleted. Returning current view {}", view);
 		}
 
 		// Return the newly created view
@@ -336,12 +360,14 @@ public class ViewsRepository implements IViewsRepository
 	public void deleteView(final ViewId viewId)
 	{
 		getViewsStorageFor(viewId).removeById(viewId);
+		logger.trace("Removed view {}", viewId);
 	}
 
 	@Override
 	public void invalidateView(final ViewId viewId)
 	{
 		getViewsStorageFor(viewId).invalidateView(viewId);
+		logger.trace("Invalided view {}", viewId);
 	}
 
 	@Override
@@ -350,6 +376,7 @@ public class ViewsRepository implements IViewsRepository
 	{
 		if (recordRefs.isEmpty())
 		{
+			logger.trace("No changed records provided. Skip notifying views.");
 			return;
 		}
 
@@ -360,10 +387,6 @@ public class ViewsRepository implements IViewsRepository
 					notifiedCount.incrementAndGet();
 				});
 
-		if (logger.isDebugEnabled())
-		{
-			logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
-		}
-
+		logger.debug("Notified {} views about changed records: {}", notifiedCount, recordRefs);
 	}
 }
