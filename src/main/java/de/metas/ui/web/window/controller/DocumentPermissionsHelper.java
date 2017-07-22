@@ -1,5 +1,7 @@
 package de.metas.ui.web.window.controller;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.permissions.ElementPermission;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -57,30 +59,39 @@ public class DocumentPermissionsHelper
 
 			final Boolean readWriteAccess = null; // none
 			Services.get(IRolePermLoggingBL.class).logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
-			
+
 			throw ex;
 		}
 
 		return windowPermission;
 	}
 
-	public static void assertWindowAccess(final WindowId windowId, final String windowName, final IUserRolePermissions permissions)
+	/**
+	 * Asserts view access
+	 * 
+	 * @param windowId
+	 * @param viewId optional viewId, used only for error reporting
+	 * @param permissions
+	 */
+	public static void assertViewAccess(final WindowId windowId, @Nullable final String viewId, final IUserRolePermissions permissions)
 	{
 		final int adWindowId = windowId.toIntOr(-1);
-		if(adWindowId < 0)
+		if (adWindowId < 0)
 		{
 			// cannot apply window access if the WindowId is not integer.
 			// usually those are special window placeholders.
 			return; // accept it
 		}
-		
+
+		//
+		// Check AD_Window_ID access
 		final ElementPermission windowPermission = permissions.checkWindowPermission(adWindowId);
 		if (!windowPermission.hasReadAccess())
 		{
 			final AdempiereException ex = DocumentPermissionException.of(DocumentPermission.WindowAccess, "@NoAccess@")
-					.setParameter("Role", permissions.getName())
-					.setParameter("ViewId", windowName)
-					.setParameter("AD_Window_ID", adWindowId);
+					.setParameter("roleName", permissions.getName())
+					.setParameter("view", viewId)
+					.setParameter("windowId", adWindowId);
 
 			final Boolean readWriteAccess = null; // none
 			Services.get(IRolePermLoggingBL.class).logWindowAccess(permissions.getAD_Role_ID(), adWindowId, readWriteAccess, ex.getLocalizedMessage());
@@ -96,15 +107,14 @@ public class DocumentPermissionsHelper
 		{
 			return; // OK
 		}
-		
+
 		// Check if we have window read permission
 		final WindowId windowId = document.getDocumentPath().getWindowId();
 		final int windowIdInt = windowId.toIntOr(-1);
-		if(windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasReadAccess())
+		if (windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasReadAccess())
 		{
 			throw DocumentPermissionException.of(DocumentPermission.View, "no window read permission");
 		}
-		
 
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
@@ -136,13 +146,13 @@ public class DocumentPermissionsHelper
 			throw DocumentPermissionException.of(DocumentPermission.Update, errmsg);
 		}
 	}
-	
+
 	public static boolean canEdit(final Document document, final IUserRolePermissions permissions)
 	{
 		final String errmsg = checkCanEdit(document, permissions);
 		return errmsg == null;
 	}
-	
+
 	private static String checkCanEdit(@NonNull final Document document, @NonNull final IUserRolePermissions permissions)
 	{
 		// In case document type is not Window, return OK because we cannot validate
@@ -151,15 +161,15 @@ public class DocumentPermissionsHelper
 		{
 			return null; // OK
 		}
-		
+
 		// Check if we have window write permission
 		final WindowId windowId = documentPath.getWindowId();
 		final int windowIdInt = windowId.toIntOr(-1);
-		if(windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasWriteAccess())
+		if (windowIdInt > 0 && !permissions.checkWindowPermission(windowIdInt).hasWriteAccess())
 		{
 			return "no window edit permission";
 		}
-		
+
 		final String tableName = document.getEntityDescriptor().getTableNameOrNull();
 		if (tableName == null)
 		{
@@ -167,7 +177,7 @@ public class DocumentPermissionsHelper
 			return null; // OK
 		}
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		
+
 		int adClientId = document.getAD_Client_ID();
 		int adOrgId = document.getAD_Org_ID();
 		final int recordId = document.getDocumentId().toIntOr(-1);

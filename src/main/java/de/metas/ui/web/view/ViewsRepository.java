@@ -350,8 +350,7 @@ public class ViewsRepository implements IViewsRepository
 			throw new EntityNotFoundException("No view found for viewId=" + viewId);
 		}
 
-		final String windowName = viewId.getViewId(); // used only for error reporting
-		DocumentPermissionsHelper.assertWindowAccess(viewId.getWindowId(), windowName, UserSession.getCurrentPermissions());
+		DocumentPermissionsHelper.assertViewAccess(viewId.getWindowId(), viewId.getViewId(), UserSession.getCurrentPermissions());
 
 		return view;
 	}
