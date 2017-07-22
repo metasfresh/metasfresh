@@ -76,16 +76,16 @@ import lombok.NonNull;
 		views.invalidate(viewId);
 		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
-	
+
 	@Override
 	public void invalidateView(final ViewId viewId)
 	{
 		final IView view = getByIdOrNull(viewId);
-		if(view == null)
+		if (view == null)
 		{
 			return;
 		}
-		
+
 		view.invalidateAll();
 	}
 
