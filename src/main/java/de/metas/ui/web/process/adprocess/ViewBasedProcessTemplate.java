@@ -1,12 +1,8 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.function.Predicate;
-import java.util.stream.Stream;
-
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.util.Check;
-import org.adempiere.util.lang.MutableInt;
 import org.compiere.Adempiere;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -14,8 +10,8 @@ import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
@@ -125,6 +121,17 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	{
 		_view = view;
 		_selectedDocumentIds = selectedDocumentIds;
+
+		// Update result from view
+		// Do this only when view is not null to avoid reseting previous set info (shall not happen)
+		final ProcessExecutionResult result = getResultOrNull();
+		if (result != null) // might be null when preconditions are checked (for example)
+		{
+			if (view != null)
+			{
+				result.setWebuiViewId(view.getViewId().getViewId());
+			}
+		}
 	}
 
 	protected final <T extends IView> T getView(final Class<T> type)
@@ -139,7 +146,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		Check.assumeNotNull(_view, "View loaded");
 		return _view;
 	}
-	
+
 	protected final void invalidateView(@NonNull final ViewId viewId)
 	{
 		viewsRepo.invalidateView(viewId);
@@ -173,26 +180,5 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
 		final DocumentId documentId = selectedDocumentIds.getSingleDocumentId();
 		return getView().getById(documentId);
-	}
-
-	protected static <T extends IViewRow> ProcessPreconditionsResolution checkRowsEligible(final Stream<T> rows, final Predicate<T> isEligible)
-	{
-		final MutableInt countNotEligible = MutableInt.zero();
-
-		final long countAll = rows
-				.map(HUEditorRow::cast)
-				.peek(row -> countNotEligible.incrementIf(!row.isCU()))
-				.count();
-		if (countAll <= 0)
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		if (countNotEligible.isGreaterThanZero())
-		{
-			return ProcessPreconditionsResolution.reject(countNotEligible + " not CU(s) selected");
-		}
-
-		return ProcessPreconditionsResolution.accept();
 	}
 }

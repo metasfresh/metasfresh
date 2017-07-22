@@ -145,7 +145,7 @@ public final class PPOrderHUsToIssueActions
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
 				.createIssues(hus);
 
-		husView.removesHUsAndInvalidate(hus);
+		husView.removeHUsAndInvalidate(hus);
 		ppOrderView.invalidateAll();
 	}
 

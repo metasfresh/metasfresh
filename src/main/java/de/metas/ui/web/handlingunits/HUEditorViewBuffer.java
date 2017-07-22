@@ -2,14 +2,19 @@ package de.metas.ui.web.handlingunits;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -59,6 +64,42 @@ interface HUEditorViewBuffer
 
 	/** @return top level rows and included rows recursive stream */
 	Stream<HUEditorRow> streamAllRecursive() throws UnsupportedOperationException;
+	
+	/** @return top level rows and included rows recursive stream which are matching the given query */
+	default Stream<HUEditorRow> streamAllRecursive(@NonNull final HUEditorRowQuery query)
+	{
+		Stream<HUEditorRow> result = streamAllRecursive();
+
+		// Filter by row type
+		final HUEditorRowType rowType = query.getRowType();
+		if (rowType != null)
+		{
+			result = result.filter(row -> Objects.equals(row.getType(), rowType));
+		}
+
+		// Filter by string filter
+		final String stringFilter = query.getStringFilter();
+		if (!Check.isEmpty(stringFilter, true))
+		{
+			result = result.filter(row -> row.matchesStringFilter(stringFilter));
+		}
+
+		// Exclude M_HU_IDs
+		final ImmutableSet<Integer> excludeHUIds = query.getExcludeHUIds();
+		if(!excludeHUIds.isEmpty())
+		{
+			result = result.filter(row -> !excludeHUIds.contains(row.getM_HU_ID()));
+		}
+
+		return result;
+	}
+	
+	/** @return true if there is any top level or included row which is matching given query */
+	default boolean matchesAnyRowRecursive(final HUEditorRowQuery query)
+	{
+		return streamAllRecursive(query).findAny().isPresent();
+	}
+
 
 	/**
 	 * Stream all rows (including children) which match any of given <code>rowIds</code>.

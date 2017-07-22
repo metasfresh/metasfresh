@@ -318,7 +318,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 				// Open view
 				else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.GridView)
 				{
-					final CreateViewRequest viewRequest = createViewRequest(processExecutor.getProcessInfo(), recordsToOpen);
+					final Set<DocumentPath> referencingDocumentPaths = extractReferencingDocumentPaths(processExecutor.getProcessInfo());
+					final String parentViewIdStr = processExecutionResult.getWebuiViewId();
+					final ViewId parentViewId = parentViewIdStr != null ? ViewId.ofViewIdString(parentViewIdStr) : null;
+					final CreateViewRequest viewRequest = createViewRequest(recordsToOpen, referencingDocumentPaths, parentViewId);
+					
 					final IView view = viewsRepo.createView(viewRequest);
 					resultBuilder.setAction(OpenViewAction.builder()
 							.viewId(view.getViewId())
@@ -394,7 +398,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return reportFile;
 	}
 
-	private static final CreateViewRequest createViewRequest(final ProcessInfo processInfo, final RecordsToOpen recordsToOpen)
+	private static final CreateViewRequest createViewRequest(final RecordsToOpen recordsToOpen, final Set<DocumentPath> referencingDocumentPaths, final ViewId parentViewId)
 	{
 		final List<TableRecordReference> recordRefs = recordsToOpen.getRecords();
 		if (recordRefs.isEmpty())
@@ -428,7 +432,8 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			logger.warn("More than one views to be created found for {}. Creating only the first view.", recordRefs);
 		}
 		final CreateViewRequest viewRequest = viewRequestBuilders.values().iterator().next()
-				.setReferencingDocumentPaths(extractReferencingDocumentPaths(processInfo))
+				.setReferencingDocumentPaths(referencingDocumentPaths)
+				.setParentViewId(parentViewId)
 				.build();
 		return viewRequest;
 	}

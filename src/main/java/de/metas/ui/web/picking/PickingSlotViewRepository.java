@@ -2,11 +2,9 @@ package de.metas.ui.web.picking;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
@@ -23,13 +21,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
-import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
-import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.PickingHUsRepository.PickingSlotHUEditorRow;
 import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;

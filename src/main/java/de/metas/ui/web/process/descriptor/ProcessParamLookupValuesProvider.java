@@ -11,6 +11,7 @@ import de.metas.process.JavaProcess;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 
 /*
@@ -64,6 +65,8 @@ public @interface ProcessParamLookupValuesProvider
 
 	/** true if we will provide {@link IntegerLookupValue}s, else {@link StringLookupValue}s are assumed */
 	boolean numericKey();
+	
+	LookupSource lookupSource() default LookupSource.list;
 
 	/** optional lookup table name; needed for zoom into */
 	String lookupTableName() default "";

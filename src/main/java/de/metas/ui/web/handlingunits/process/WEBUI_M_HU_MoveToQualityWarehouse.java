@@ -81,7 +81,7 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 		// On refresh we expect the HUs we moved, to not be present here anymore.
 		if (movementResult != null)
 		{
-			getView().removesHUsAndInvalidate(movementResult.getHusMoved());
+			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
 		}
 	}
 }

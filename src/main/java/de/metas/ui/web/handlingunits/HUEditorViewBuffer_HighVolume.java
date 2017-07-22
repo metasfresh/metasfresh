@@ -238,18 +238,18 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final Set<Integer> huIds = HUEditorRow.rowIdsToM_HU_IDs(rowIdToLoad2index.keySet());
 			huEditorRepo.retrieveHUEditorRows(huIds)
 					.forEach(row -> {
-							final DocumentId rowId = row.getId();
-							final Integer idx = rowIdToLoad2index.remove(rowId);
-							if (idx == null)
-							{
-								// wtf?! we got some more then we requested?!?
-								return;
-							}
+						final DocumentId rowId = row.getId();
+						final Integer idx = rowIdToLoad2index.remove(rowId);
+						if (idx == null)
+						{
+							// wtf?! we got some more then we requested?!?
+							return;
+						}
 
-							rows[idx] = row;
+						rows[idx] = row;
 
-							cache_huRowsById.put(rowId, row);
-						});
+						cache_huRowsById.put(rowId, row);
+					});
 		}
 
 		return Stream.of(rows)
@@ -329,9 +329,8 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	@Override
 	public HUEditorRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final int huId = rowId.toInt();
 		// FIXME: fails if not top level ...
-		return huEditorRepo.retrieveForHUId(huId);
+		return cache_huRowsById.getOrLoad(rowId, () -> huEditorRepo.retrieveForHUId(HUEditorRow.rowIdToM_HU_ID(rowId)));
 	}
 
 	@Override

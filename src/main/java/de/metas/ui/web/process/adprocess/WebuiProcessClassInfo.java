@@ -227,10 +227,11 @@ final class WebuiProcessClassInfo
 				.collect(ImmutableList.toImmutableList());
 
 		final Method methodToInvoke = method; // FIXME: holding a hard reference to method may introduce ClassLoader memory leaks
-
+		
 		final LookupDescriptor lookupDescriptor = ListLookupDescriptor.builder()
 				.setLookupTableName(ann.lookupTableName())
 				.setDependsOnFieldNames(ann.dependsOn())
+				.setLookupSourceType(ann.lookupSource())
 				.setLookupValues(ann.numericKey(), evalCtx -> retriveLookupValues(methodToInvoke, parameterValueProviders, evalCtx))
 				.build();
 

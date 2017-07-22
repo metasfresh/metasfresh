@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -13,6 +14,7 @@ import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -21,6 +23,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -68,11 +71,22 @@ import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescrip
 @ViewFactory(windowId = WEBUI_HU_Constants.WEBUI_HU_Window_ID_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class HUEditorViewFactory implements IViewFactory
 {
+	private static final transient Logger logger = LogManager.getLogger(HUEditorViewFactory.class);
+
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
+	private final List<HUEditorViewCustomizer> viewCustomizers;
 
 	private final transient CCache<Integer, SqlViewBinding> sqlViewBindingCache = CCache.newCache("SqlViewBinding", 1, 0);
 	private final transient CCache<ArrayKey, ViewLayout> layouts = CCache.newLRUCache("HUEditorViewFactory#Layouts", 10, 0);
+
+	@Autowired
+	private HUEditorViewFactory(final List<HUEditorViewCustomizer> viewCustomizers)
+	{
+		this.viewCustomizers = viewCustomizers;
+
+		logger.info("Initialized with customizers: {}", viewCustomizers);
+	}
 
 	private SqlViewBinding getSqlViewBinding()
 	{
@@ -212,7 +226,7 @@ public class HUEditorViewFactory implements IViewFactory
 		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
 		final List<DocumentFilter> filters = request.getOrUnwrapFilters(getSqlViewBinding().getViewFilterDescriptors());
 
-		return HUEditorView.builder(getSqlViewBinding())
+		final HUEditorView.Builder huViewBuilder = HUEditorView.builder(getSqlViewBinding())
 				.setParentViewId(request.getParentViewId())
 				.setParentRowId(request.getParentRowId())
 				.setWindowId(windowId)
@@ -221,8 +235,17 @@ public class HUEditorViewFactory implements IViewFactory
 				.setFilters(filters)
 				.setReferencingDocumentPaths(referencingTableName, referencingDocumentPaths)
 				.setActions(request.getActions())
-				.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors())
-				.build();
+				.setAdditionalRelatedProcessDescriptors(request.getAdditionalRelatedProcessDescriptors());
+
+		//
+		// Call view customizers
+		viewCustomizers.stream()
+				// Only the matching ones:
+				.filter(viewCustomizer -> Objects.equals(viewCustomizer.getReferencingTableNameToMatch(), huViewBuilder.getReferencingTableName()))
+				// Call each of them:
+				.forEach(viewCustomizer -> viewCustomizer.beforeCreate(huViewBuilder));
+
+		return huViewBuilder.build();
 	}
 
 	private static List<DocumentFilter> extractStickyFilters(final List<DocumentFilter> requestStickyFilters, final Set<Integer> huIds)

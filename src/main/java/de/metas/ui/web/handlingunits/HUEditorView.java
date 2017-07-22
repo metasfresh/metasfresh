@@ -1,6 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -80,6 +83,7 @@ public class HUEditorView implements IView
 	private final ViewId viewId;
 	private final JSONViewDataType viewType;
 
+	private final String referencingTableName;
 	private final Set<DocumentPath> referencingDocumentPaths;
 
 	private final ViewActionDescriptorsList actions;
@@ -90,6 +94,8 @@ public class HUEditorView implements IView
 
 	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final ImmutableList<DocumentFilter> filters;
+	
+	private final ImmutableMap<String, Object> parameters;
 
 	private HUEditorView(final Builder builder)
 	{
@@ -107,6 +113,7 @@ public class HUEditorView implements IView
 
 		//
 		// Build the repository
+		referencingTableName = builder.getReferencingTableName();
 		final HUEditorViewRepository huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(builder.getWindowId())
 				.referencingTableName(builder.getReferencingTableName())
@@ -129,6 +136,8 @@ public class HUEditorView implements IView
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
+		
+		parameters = builder.getParameters();
 	}
 
 	private static final HUEditorViewBuffer createRowsBuffer( //
@@ -155,7 +164,7 @@ public class HUEditorView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -231,6 +240,12 @@ public class HUEditorView implements IView
 	{
 		return additionalRelatedProcessDescriptors;
 	}
+	
+	public boolean getParameterAsBoolean(final String name, final boolean defaultValue)
+	{
+		final Boolean value = (Boolean)parameters.get(name);
+		return value != null ? value.booleanValue() : defaultValue;
+	}
 
 	@Override
 	public HUEditorRow getById(final DocumentId rowId) throws EntityNotFoundException
@@ -239,9 +254,9 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public List<HUEditorRow> getByIds(final DocumentIdsSelection rowId)
+	public List<HUEditorRow> getByIds(final DocumentIdsSelection rowIds)
 	{
-		return streamByIds(rowId).collect(ImmutableList.toImmutableList());
+		return streamByIds(rowIds).collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -292,6 +307,11 @@ public class HUEditorView implements IView
 		return true;
 	}
 
+	public String getReferencingTableName()
+	{
+		return referencingTableName;
+	}
+
 	@Override
 	public Set<DocumentPath> getReferencingDocumentPaths()
 	{
@@ -315,24 +335,39 @@ public class HUEditorView implements IView
 
 	public void addHUsAndInvalidate(final Collection<I_M_HU> husToAdd)
 	{
-		if (rowsBuffer.addHUIds(extractHUIds(husToAdd)))
+		addHUIdsAndInvalidate(extractHUIds(husToAdd));
+	}
+
+	public void addHUIdsAndInvalidate(final Collection<Integer> huIdsToAdd)
+	{
+		if (addHUIds(huIdsToAdd))
 		{
 			invalidateAll();
 		}
 	}
 
-	public void removesHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
+	public boolean addHUIds(final Collection<Integer> huIdsToAdd)
+	{
+		return rowsBuffer.addHUIds(huIdsToAdd);
+	}
+
+	public void removeHUsAndInvalidate(final Collection<I_M_HU> husToRemove)
 	{
 		final Set<Integer> huIdsToRemove = extractHUIds(husToRemove);
-		removesHUIdsAndInvalidate(huIdsToRemove);
+		removeHUIdsAndInvalidate(huIdsToRemove);
 	}
 
-	public void removesHUIdsAndInvalidate(final Collection<Integer> huIdsToRemove)
+	public void removeHUIdsAndInvalidate(final Collection<Integer> huIdsToRemove)
 	{
-		if (rowsBuffer.removeHUIds(huIdsToRemove))
+		if (removeHUIds(huIdsToRemove))
 		{
 			invalidateAll();
 		}
+	}
+
+	public boolean removeHUIds(final Collection<Integer> huIdsToRemove)
+	{
+		return rowsBuffer.removeHUIds(huIdsToRemove);
 	}
 
 	private static final Set<Integer> extractHUIds(final Collection<I_M_HU> hus)
@@ -383,6 +418,18 @@ public class HUEditorView implements IView
 		return rowsBuffer.streamAllRecursive();
 	}
 
+	/** @return top level rows and included rows recursive stream which are matching the given query */
+	public Stream<HUEditorRow> streamAllRecursive(final HUEditorRowQuery query)
+	{
+		return rowsBuffer.streamAllRecursive(query);
+	}
+
+	/** @return true if there is any top level or included row which is matching given query */
+	public boolean matchesAnyRowRecursive(final HUEditorRowQuery query)
+	{
+		return rowsBuffer.matchesAnyRowRecursive(query);
+	}
+
 	@Override
 	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
@@ -407,6 +454,8 @@ public class HUEditorView implements IView
 	//
 	//
 	//
+	//
+	//
 
 	public static final class Builder
 	{
@@ -424,6 +473,8 @@ public class HUEditorView implements IView
 
 		private List<DocumentFilter> stickyFilters;
 		private List<DocumentFilter> filters;
+
+		private LinkedHashMap<String, Object> parameters;
 
 		private Builder(@NonNull final SqlViewBinding sqlViewBinding)
 		{
@@ -456,7 +507,7 @@ public class HUEditorView implements IView
 			this.parentRowId = parentRowId;
 			return this;
 		}
-		
+
 		private DocumentId getParentRowId()
 		{
 			return parentRowId;
@@ -491,7 +542,7 @@ public class HUEditorView implements IView
 			return this;
 		}
 
-		private String getReferencingTableName()
+		public String getReferencingTableName()
 		{
 			return referencingTableName;
 		}
@@ -514,7 +565,26 @@ public class HUEditorView implements IView
 
 		public Builder setAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 		{
-			this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors;
+			if (additionalRelatedProcessDescriptors == null || additionalRelatedProcessDescriptors.isEmpty())
+			{
+				this.additionalRelatedProcessDescriptors = null;
+			}
+			else
+			{
+				this.additionalRelatedProcessDescriptors = new ArrayList<>(additionalRelatedProcessDescriptors);
+			}
+
+			return this;
+		}
+
+		public Builder addAdditionalRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor descriptor)
+		{
+			if (this.additionalRelatedProcessDescriptors == null)
+			{
+				additionalRelatedProcessDescriptors = new ArrayList<>();
+			}
+			additionalRelatedProcessDescriptors.add(descriptor);
+
 			return this;
 		}
 
@@ -543,6 +613,32 @@ public class HUEditorView implements IView
 		private List<DocumentFilter> getFilters()
 		{
 			return filters != null ? filters : ImmutableList.of();
+		}
+
+		public Builder setParameter(final String name, final Object value)
+		{
+			if (value == null)
+			{
+				if (parameters != null)
+				{
+					parameters.remove(name);
+				}
+			}
+			else
+			{
+				if (parameters == null)
+				{
+					parameters = new LinkedHashMap<>();
+					parameters.put(name, value);
+				}
+			}
+			
+			return this;
+		}
+		
+		private ImmutableMap<String, Object> getParameters()
+		{
+			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
 		}
 
 	}

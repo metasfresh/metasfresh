@@ -83,6 +83,9 @@ public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate imple
 		invalidateView(pickingSlotsView.getViewId()); // picking slots view
 		invalidateView(pickingSlotsView.getParentViewId()); // picking view
 
+		// After this process finished successfully go back to picking slots view
+		getResult().setWebuiIncludedViewIdToOpen(pickingSlotsView.getViewId().getViewId());
+
 		return MSG_OK;
 	}
 
