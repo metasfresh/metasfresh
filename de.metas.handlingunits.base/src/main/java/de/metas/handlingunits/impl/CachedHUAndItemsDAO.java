@@ -324,6 +324,12 @@ public class CachedHUAndItemsDAO extends AbstractHUAndItemsDAO
 	{
 		return db.retrieveParent(hu);
 	}
+	
+	@Override
+	public int retrieveParentId(final I_M_HU hu)
+	{
+		return db.retrieveParentId(hu);
+	}
 
 	@Override
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
