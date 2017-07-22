@@ -237,13 +237,6 @@ public class BoardRestController
 		return request.build();
 	}
 
-	@GetMapping("/{boardId}/newCardsView")
-	@Deprecated
-	public JSONViewResult createNewCardsView_DEPRECATED(@PathVariable("boardId") final int boardId)
-	{
-		return createNewCardsView(boardId);
-	}
-
 	@PostMapping("/{boardId}/newCardsView")
 	public JSONViewResult createNewCardsView(@PathVariable("boardId") final int boardId)
 	{
