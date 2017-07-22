@@ -120,6 +120,12 @@ public class CachedIfInTransactionHUAndItemsDAO implements IHUAndItemsDAO
 	{
 		return getDelegate(hu).retrieveParent(hu);
 	}
+	
+	@Override
+	public int retrieveParentId(final I_M_HU hu)
+	{
+		return getDelegate(hu).retrieveParentId(hu);
+	}
 
 	@Override
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
