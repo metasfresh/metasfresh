@@ -65,6 +65,7 @@ class DocumentList extends Component {
             isShowIncluded: false,
             hasShowIncluded: false
         }
+
         this.fetchLayoutAndData();
     }
 
@@ -186,7 +187,9 @@ class DocumentList extends Component {
             this.setState({
                 cachedSelection: null
             }, () => {
-                dispatch(setListIncludedView());
+                if (includedView.windowType === 'pickingSlot') {
+                    dispatch(setListIncludedView());
+                }
             })
         }
     }
@@ -370,7 +373,7 @@ class DocumentList extends Component {
         setNotFound && setNotFound(false);
         dispatch(indicatorState('pending'));
 
-        if(updateUri){
+        if (updateUri) {
             id && updateUri('viewId', id);
             page && updateUri('page', page);
             sortingQuery && updateUri('sort', sortingQuery);
@@ -378,17 +381,31 @@ class DocumentList extends Component {
 
         return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
-        ).then(response => {
-            dispatch(indicatorState('saved'));
+        ).then( (response) => {
+            let selectionState = {};
+            let forceSelection = false;
+            if (
+                ((this.props.type === 'includedView') || this.props.isIncluded) &&
+                response.data && response.data.result && (response.data.result.length > 0)
+            ) {
+                selectionState.cachedSelection = null;
+                forceSelection = true;
+            }
 
-            this.mounted && this.setState(Object.assign({}, {
-                data: response.data,
-                filters: response.data.filters
-            }, refresh && {
-                refresh: Date.now()
-            }), () => {
-                this.connectWS(response.data.viewId);
-            })
+            this.mounted && this.setState(
+                Object.assign({}, {
+                    data: response.data,
+                    filters: response.data.filters
+                }, selectionState),
+                () => {
+                    if (forceSelection) {
+                        dispatch(selectTableItems([ response.data.result[0].id ], windowType))
+                    }
+                    this.connectWS(response.data.viewId);
+                }
+            );
+
+            dispatch(indicatorState('saved'));
         });
     }
 
@@ -539,9 +556,14 @@ class DocumentList extends Component {
                                 />}
                             </div>
                             <QuickActions
-                                {...{windowType, selectedWindowType, viewId,
-                                    refresh, processStatus}}
-                                selected={selectionValid ? selected : undefined}
+                                {...{
+                                    selectedWindowType,
+                                    refresh,
+                                    processStatus
+                                }}
+                                selected={selected}
+                                viewId={viewId}
+                                windowType={windowType}
                                 fetchOnInit={fetchQuickActionsOnInit}
                                 disabled={hasIncluded}
                                 shouldNotUpdate={inBackground && !hasIncluded}
