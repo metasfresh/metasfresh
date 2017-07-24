@@ -10,6 +10,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -278,15 +280,20 @@ public class PickingCandidateCommand
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		// note that we only closed "processed" candidates. what's still open shall stay open.
-		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
-				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_CL);
 
-		queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.create()
-				.updateDirectly(updater);
+				.create();
+		
+		
+		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+		huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
+		
+		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
+				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_CL);
+		query.updateDirectly(updater);
+		// note that we only closed "processed" candidates. what's still open shall stay open.
 	}
 }

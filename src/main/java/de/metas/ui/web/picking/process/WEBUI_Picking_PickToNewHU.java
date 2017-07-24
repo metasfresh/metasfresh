@@ -111,8 +111,6 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		invalidateView();
 		invalidateParentView();
 
-		invalidateView();
-
 		return MSG_OK;
 	}
 

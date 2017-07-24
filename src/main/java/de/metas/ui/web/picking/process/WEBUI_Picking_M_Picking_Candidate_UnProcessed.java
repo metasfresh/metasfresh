@@ -62,12 +62,11 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  */
 
 /**
- * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
- * Processing means that
+ * Un-processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
+ * unprocessing means that
  * <ul>
- * <li>the HU is changed from status "planned" or "active" to "picked"</li>
- * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
- * <li>The HU is added to its picking slot's picking-slot-queue</li>
+ * <li>the HU is changed from status "picked" to "active" (even if it was only "planned" before the candidate was processed!)</li>
+ * <li>the HU is de-associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
  * </ul>
  * 
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
@@ -76,12 +75,14 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_M_Picking_Candidate_Processed
+public class WEBUI_Picking_M_Picking_Candidate_UnProcessed
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
+
+	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -162,10 +163,16 @@ public class WEBUI_Picking_M_Picking_Candidate_Processed
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();
 
+		huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
+
 		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
+
+		//getView().invalidateAll();
 		
 		invalidateView();
 		invalidateParentView();
+
+		//invalidateView();
 		
 		return MSG_OK;
 	}
