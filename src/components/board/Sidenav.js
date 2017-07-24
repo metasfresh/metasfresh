@@ -12,17 +12,23 @@ class Sidenav extends Component {
         super(props);
 
         this.state = {
-            view: {}
+            view: {},
+            loading: false
         }
     }
 
     componentWillMount = () => {
         const {boardId, viewId, setViewId} = this.props;
 
+        this.setState({
+            loading: true
+        });
+
         if(viewId){
             getView(boardId, viewId, 0).then(res =>
                 this.setState({
-                    view: res.data
+                    view: res.data,
+                    loading: false
                 })
             );
         }else{
@@ -30,7 +36,8 @@ class Sidenav extends Component {
                 setViewId(res.data.viewId);
                 getView(boardId, res.data.viewId, 0).then(res =>
                     this.setState({
-                        view: res.data
+                        view: res.data,
+                        loading: false
                     })
                 );
             });
@@ -41,11 +48,16 @@ class Sidenav extends Component {
     loadMore = (page) => {
         const {boardId, viewId} = this.props;
 
+        this.setState({
+            loading: true
+        });
+
         getView(boardId, viewId, page).then(res =>
             this.setState(prev => update(prev, {
                 view: {
                     result: {$push: res.data.result}
-                }
+                },
+                loading: {$set: false}
             }))
         );
     }
@@ -56,7 +68,8 @@ class Sidenav extends Component {
     }
 
     render() {
-        const {view} = this.state;
+        const {view, loading} = this.state;
+
         return (
             <div
                 className="board-sidenav overlay-shadow"
@@ -65,7 +78,7 @@ class Sidenav extends Component {
                    pageStart={0}
                    loadMore={this.loadMore}
                    initialLoad={false}
-                   loader={<Loader />}
+                   loader={loading ? <Loader /> : <div></div>}
                    hasMore={view.result && view.size >= view.result.length}
                    useWindow={false}
                 >
