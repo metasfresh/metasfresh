@@ -5,24 +5,33 @@ import Card from './Card';
 import Loader from '../app/Loader';
 import update from 'immutability-helper';
 
-import {getView, createView} from '../../actions/BoardActions';
+import {getView, createView, getLayout} from '../../actions/BoardActions';
 
 class Sidenav extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            view: {}
+            view: {},
+            emptyText: "",
+            emptyHint: "",
+            loading: false
+
         }
     }
 
     componentWillMount = () => {
         const {boardId, viewId, setViewId} = this.props;
 
+        this.setState({
+            loading: true
+        });
+
         if(viewId){
             getView(boardId, viewId, 0).then(res =>
                 this.setState({
-                    view: res.data
+                    view: res.data,
+                    loading: false
                 })
             );
         }else{
@@ -30,7 +39,8 @@ class Sidenav extends Component {
                 setViewId(res.data.viewId);
                 getView(boardId, res.data.viewId, 0).then(res =>
                     this.setState({
-                        view: res.data
+                        view: res.data,
+                        loading: false
                     })
                 );
             });
@@ -38,14 +48,29 @@ class Sidenav extends Component {
 
     }
 
+    componentDidMount = () => {
+        const {boardId} = this.props;
+        getLayout(boardId).then(res =>
+            this.setState({
+                emptyText: res.data.emptyResultText,
+                emptyHint: res.data.emptyResultHint
+            })
+        );
+    }
+
     loadMore = (page) => {
         const {boardId, viewId} = this.props;
+
+        this.setState({
+            loading: true
+        });
 
         getView(boardId, viewId, page).then(res =>
             this.setState(prev => update(prev, {
                 view: {
                     result: {$push: res.data.result}
-                }
+                },
+                loading: {$set: false}
             }))
         );
     }
@@ -56,7 +81,8 @@ class Sidenav extends Component {
     }
 
     render() {
-        const {view} = this.state;
+        const {view, emptyText, emptyHint, loading} = this.state;
+
         return (
             <div
                 className="board-sidenav overlay-shadow"
@@ -65,7 +91,7 @@ class Sidenav extends Component {
                    pageStart={0}
                    loadMore={this.loadMore}
                    initialLoad={false}
-                   loader={<Loader />}
+                   loader={loading ? <Loader /> : <div></div>}
                    hasMore={view.result && view.size >= view.result.length}
                    useWindow={false}
                 >
@@ -80,6 +106,12 @@ class Sidenav extends Component {
                               {...card}
                            />
                         ))}
+                        {view.result && view.result.length === 0 &&
+                            <div className="empty-text">
+                                {emptyText}
+                                {emptyHint ? '. ' + emptyHint  : ''}
+                            </div>
+                        }
                     </div>
                 </InfiniteScroll>
             </div>
