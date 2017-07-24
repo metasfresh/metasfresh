@@ -5,14 +5,16 @@ import Card from './Card';
 import Loader from '../app/Loader';
 import update from 'immutability-helper';
 
-import {getView, createView} from '../../actions/BoardActions';
+import {getView, createView, getLayout} from '../../actions/BoardActions';
 
 class Sidenav extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            view: {}
+            view: {},
+            emptyText: "",
+            emptyHint: ""
         }
     }
 
@@ -38,6 +40,16 @@ class Sidenav extends Component {
 
     }
 
+    componentDidMount = () => {
+        const {boardId} = this.props;
+        getLayout(boardId).then(res =>
+            this.setState({
+                emptyText: res.data.emptyResultText,
+                emptyHint: res.data.emptyResultHint
+            })
+        );
+    }
+
     loadMore = (page) => {
         const {boardId, viewId} = this.props;
 
@@ -56,7 +68,8 @@ class Sidenav extends Component {
     }
 
     render() {
-        const {view} = this.state;
+        const {view, emptyText, emptyHint} = this.state;
+
         return (
             <div
                 className="board-sidenav overlay-shadow"
@@ -80,6 +93,12 @@ class Sidenav extends Component {
                               {...card}
                            />
                         ))}
+                        {view.result && view.result.length === 0 &&
+                            <div className="empty-text">
+                                {emptyText}
+                                {emptyHint ? '. ' + emptyHint  : ''}
+                            </div>
+                        }
                     </div>
                 </InfiniteScroll>
             </div>
