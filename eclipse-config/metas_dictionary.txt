@@ -88,3 +88,4 @@ instanceof
 pallet
 transactional
 enum
+stateless
