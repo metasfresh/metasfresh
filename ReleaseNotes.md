@@ -20,6 +20,8 @@ Here come the actual release notes:
     * Finetuning for the Sales Invoice Window to adjust the Layout to meet our current Look And Feel concept.
   * [#2032](https://github.com/metasfresh/metasfresh/issues/2032) Layout for Handling Unit Editor Window in WebUI
     * Refined Layout for the Detail Views in Handling Unit Editor Window of WebUI.
+  * [#2058](https://github.com/metasfresh/metasfresh/issues/2058) Change AD_Table_ID Identifier to Name only
+    * Changing the Identifier for AD_Table from TableName + Name to Name only. This allows a better readability for the user.
 
 * metasfresh-webui-api
 
