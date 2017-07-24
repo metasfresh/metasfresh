@@ -68,7 +68,8 @@ public class PickingHUsRepositoryTests
 			{
 					X_M_Picking_Candidate.STATUS_IP,
 					X_M_Picking_Candidate.STATUS_PR,
-					X_M_Picking_Candidate.STATUS_CL };
+					X_M_Picking_Candidate.STATUS_CL
+			};
 	}
 
 	@Before
@@ -100,16 +101,28 @@ public class PickingHUsRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		// @formatter:off
-		new Expectations() {{ huEditorViewRepository.retrieveHUEditorRows(ImmutableSet.of(M_HU_ID)); result = huEditorRow; }};
-		// @formatter:on
+		if(!X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
+		{
+			// @formatter:off
+			new Expectations() {{ huEditorViewRepository.retrieveHUEditorRows(ImmutableSet.of(M_HU_ID)); result = huEditorRow; }};
+			// @formatter:on
+		}
 
 		final PickingHUsRepository pickingHUsRepository = new PickingHUsRepository(huEditorViewRepository);
 		final ListMultimap<Integer, PickingSlotHUEditorRow> result = pickingHUsRepository.retrieveHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
-		assertThat(result.size(), is(1));
-		assertThat(result.get(M_PICKINGSLOT_ID).size(), is(1));
 
-		final boolean expectedProcessed = !X_M_Picking_Candidate.STATUS_IP.equals(pickingCandidateStatus);
-		assertThat(result.get(M_PICKINGSLOT_ID).get(0), is(new PickingSlotHUEditorRow(huEditorRow, expectedProcessed)));
+		if (X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
+		{
+			// if 'pickingCandidate' is "closed", then nothing shall be returned
+			assertThat(result.size(), is(0));
+		}
+		else
+		{
+			assertThat(result.size(), is(1));
+			assertThat(result.get(M_PICKINGSLOT_ID).size(), is(1));
+
+			final boolean expectedProcessed = !X_M_Picking_Candidate.STATUS_IP.equals(pickingCandidateStatus);
+			assertThat(result.get(M_PICKINGSLOT_ID).get(0), is(new PickingSlotHUEditorRow(huEditorRow, expectedProcessed)));
+		}
 	}
 }
