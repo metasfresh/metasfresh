@@ -10,8 +10,8 @@ When the instance runs, it can be accessed as follows:
 
 * docker: http://localhost:4243
   * known to work with [eclipse docker tooling](https://wiki.eclipse.org/Linux_Tools_Project/Docker_Tooling/User_Guide)
-* metasfresh-admin: http://localhost:9091
-* metasfresh-db: localhost:5433
+* metasfresh-admin: http://localhost:9090
+* metasfresh-db: localhost:5432
 * kibana: http://localhost:5601
 * logstash: tcp://localhost:5000
 * ssh localhost:2222 (but also see the section about which shell to use)

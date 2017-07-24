@@ -37,10 +37,9 @@ Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", id: "kibana-http", guest: 5601 , host: 5601 , host_ip: "127.0.0.1"
 
   # Port forwardings for metasfresh services that might run within this instance
-  # To avoid possible port commissions, I increased the port numbers by one
-  config.vm.network "forwarded_port", id: "metasfresh-db", guest: 5432 , host: 5433 , host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", id: "metasfresh-admin", guest: 9090 , host: 9091 , host_ip: "127.0.0.1"
-  config.vm.network "forwarded_port", id: "metasfresh-webui-frontend", guest: 3000 , host: 3001 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "metasfresh-db", guest: 5432 , host: 5432 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "metasfresh-admin", guest: 9090 , host: 9090 , host_ip: "127.0.0.1"
+  config.vm.network "forwarded_port", id: "metasfresh-webui-frontend", guest: 3000 , host: 3000 , host_ip: "127.0.0.1"
 
   config.vm.network "forwarded_port", id: "docker remote API", guest: 4243 , host: 4243 , host_ip: "127.0.0.1"
 
