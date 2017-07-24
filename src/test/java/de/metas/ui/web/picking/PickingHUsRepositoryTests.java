@@ -101,9 +101,12 @@ public class PickingHUsRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		// @formatter:off
-		new Expectations() {{ huEditorViewRepository.retrieveHUEditorRows(ImmutableSet.of(M_HU_ID)); result = huEditorRow; }};
-		// @formatter:on
+		if(!X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
+		{
+			// @formatter:off
+			new Expectations() {{ huEditorViewRepository.retrieveHUEditorRows(ImmutableSet.of(M_HU_ID)); result = huEditorRow; }};
+			// @formatter:on
+		}
 
 		final PickingHUsRepository pickingHUsRepository = new PickingHUsRepository(huEditorViewRepository);
 		final ListMultimap<Integer, PickingSlotHUEditorRow> result = pickingHUsRepository.retrieveHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
