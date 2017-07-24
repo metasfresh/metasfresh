@@ -113,6 +113,13 @@ public class ProcessExecutionResult
 	/** Records to be opened (UI) after this process was successfully executed */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private RecordsToOpen recordsToOpen = null;
+	
+	//
+	// Webui related
+	//
+	/** Included viewId to be opened (WEBUI) after this process was successfully executed */
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String webuiViewId = null;
 
 	/** Included viewId to be opened (WEBUI) after this process was successfully executed */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -353,6 +360,21 @@ public class ProcessExecutionResult
 	public RecordsToOpen getRecordsToOpen()
 	{
 		return recordsToOpen;
+	}
+	
+	/**
+	 * Sets webui's viewId on which this process was executed.
+	 * 
+	 * @param webuiIncludedViewIdToOpen
+	 */
+	public void setWebuiViewId(String webuiViewId)
+	{
+		this.webuiViewId = webuiViewId;
+	}
+	
+	public String getWebuiViewId()
+	{
+		return webuiViewId;
 	}
 
 	/**
