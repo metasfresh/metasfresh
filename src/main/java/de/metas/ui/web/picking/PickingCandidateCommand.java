@@ -266,8 +266,9 @@ public class PickingCandidateCommand
 	}
 
 	/**
-	 * For the given {@code huIds}, this method selects the {@link I_M_Picking_Candidate}s that reference those HUs
-	 * and have {@code status == 'PR'} (processed) and updates them to {@code status='CL'} (closed).<br>
+	 * For the given {@code shipmentScheduleIds}, this method selects the {@link I_M_Picking_Candidate}s that reference those HUs
+	 * and have {@code status == 'PR'} (processed) and updates them to {@code status='CL'} (closed)<br>
+	 * <b>and</b> adds the respective candidates to the picking slot queue.<br>
 	 * Closed candidates are not shown in the webui's picking view.
 	 * <p>
 	 * Note: no model interceptors etc are fired when this method is called.
@@ -280,20 +281,23 @@ public class PickingCandidateCommand
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-
 		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create();
-		
-		
-		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
-		
+
 		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
 				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_CL);
 		query.updateDirectly(updater);
 		// note that we only closed "processed" candidates. what's still open shall stay open.
+
+		final List<I_M_Picking_Candidate> pickingCandidates = query.list();
+		for (final I_M_Picking_Candidate pickingCandidate : pickingCandidates)
+		{
+			final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+			huPickingSlotBL.addToPickingSlotQueue(pickingCandidate.getM_PickingSlot(), pickingCandidate.getM_HU());
+		}
+
 	}
 }
