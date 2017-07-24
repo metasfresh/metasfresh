@@ -1191,6 +1191,7 @@ td.pulse-off input {
 .avatar {
     width: 46px;
     height: 46px;
+    object-fit: cover;
 }
 
 .avatar-sm {
