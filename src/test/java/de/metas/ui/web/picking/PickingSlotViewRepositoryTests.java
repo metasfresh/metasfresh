@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
@@ -64,10 +65,13 @@ public class PickingSlotViewRepositoryTests
 	@Test
 	public void testRetrieveRowsByShipmentScheduleId_No_HUs_show_all()
 	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		save(shipmentSchedule);
+
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		save(pickingSlot);
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(123);
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 		// @formatter:off
 		// return an empty list
@@ -85,10 +89,16 @@ public class PickingSlotViewRepositoryTests
 	@Test
 	public void testRetrieveRowsByShipmentScheduleId_No_HUs_show_none()
 	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		save(shipmentSchedule);
+
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		save(pickingSlot);
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.builder().shipmentScheduleId(123).pickingCandidates(PickingCandidate.ONLY_PROCESSED).build();
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.builder()
+				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
+				.pickingCandidates(PickingCandidate.ONLY_PROCESSED)
+				.build();
 
 		// @formatter:off return an empty list
 		new Expectations() {{ pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(query); result = ImmutableListMultimap.of(); }};
@@ -105,13 +115,15 @@ public class PickingSlotViewRepositoryTests
 	@Test
 	public void testRetrieveRowsByShipmentScheduleId_One_TU_with_CU()
 	{
+		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
+		save(shipmentSchedule);
+		
 		final I_M_PickingSlot pickingSlot = newInstance(I_M_PickingSlot.class);
 		save(pickingSlot);
 
-		final int shipmentScheduleId = 123;
 		final boolean pickingSlotRowProcessed = false;
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
+		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentSchedule.getM_ShipmentSchedule_ID());
 
 		final ListMultimap<Integer, PickingSlotHUEditorRow> husIndexedByPickingSlotId = ImmutableListMultimap.of(
 				pickingSlot.getM_PickingSlot_ID(),
