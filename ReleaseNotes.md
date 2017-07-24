@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#1994](https://github.com/metasfresh/metasfresh/issues/1994) Adjust Sales Invoice Window
     * Finetuning for the Sales Invoice Window to adjust the Layout to meet our current Look And Feel concept.
+  * [#2032](https://github.com/metasfresh/metasfresh/issues/2032) Layout for Handling Unit Editor Window in WebUI
+    * Refined Layout for the Detail Views in Handling Unit Editor Window of WebUI.
 
 * metasfresh-webui-api
 
