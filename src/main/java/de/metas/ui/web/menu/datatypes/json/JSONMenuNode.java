@@ -149,7 +149,7 @@ public final class JSONMenuNode implements Serializable
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
-		elementId = node.getElementId();
+		elementId = node.getElementId() != null ? node.getElementId().toJson() : null;
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
 		favorite = menuNodeFavoriteProvider.isFavorite(node);
 
@@ -182,7 +182,7 @@ public final class JSONMenuNode implements Serializable
 		caption = node.getCaption();
 		captionBreadcrumb = node.getCaptionBreadcrumb();
 		type = JSONMenuNodeType.fromNullable(node.getType());
-		elementId = node.getElementId();
+		elementId = node.getElementId() != null ? node.getElementId().toJson() : null;
 		children = jsonChildNode == null ? ImmutableList.of() : ImmutableList.of(jsonChildNode);
 		matched = node.isMatchedByFilter() ? Boolean.TRUE : null;
 		this.favorite = favorite;

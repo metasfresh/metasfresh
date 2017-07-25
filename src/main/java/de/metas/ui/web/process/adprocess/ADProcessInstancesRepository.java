@@ -12,6 +12,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -205,15 +206,25 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			final IView view = viewsRepo.getView(viewId);
 			final DocumentIdsSelection viewDocumentIds = request.getViewDocumentIds();
 			viewSelectedIdsAsStr = viewDocumentIds.toCommaSeparatedString();
-			tableName = view.getTableName();
 
 			if (viewDocumentIds.isSingleDocumentId())
 			{
 				final DocumentId viewSingleDocumentId = viewDocumentIds.getSingleDocumentId();
-				recordId = viewSingleDocumentId.toIntOr(-1);
+				final TableRecordReference recordRef = view.getTableRecordReferenceOrNull(viewSingleDocumentId);
+				if(recordRef != null)
+				{
+					tableName = recordRef.getTableName();
+					recordId = recordRef.getRecord_ID();
+				}
+				else
+				{
+					tableName = view.getTableName();
+					recordId = -1;
+				}
 			}
 			else
 			{
+				tableName = view.getTableName();
 				recordId = -1;
 			}
 

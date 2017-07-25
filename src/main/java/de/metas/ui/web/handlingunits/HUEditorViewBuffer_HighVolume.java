@@ -18,12 +18,15 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.GuavaCollectors;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -33,6 +36,7 @@ import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.view.descriptor.SqlViewSelectionQueryBuilder;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -96,13 +100,17 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFilters, filters));
 		final ViewRowIdsOrderedSelection defaultSelection = viewSelectionFactory.createOrderedSelection(viewEvalCtx, windowId, filtersAll, viewBinding.getDefaultOrderBys());
 		defaultSelectionRef = new AtomicReference<>(defaultSelection);
-
 	}
 
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
 		return stickyFilters;
+	}
+	
+	private SqlViewRowIdsConverter getRowIdsConverter()
+	{
+		return huEditorRepo.getRowIdsConverter();
 	}
 
 	private ViewRowIdsOrderedSelection getDefaultSelection()
@@ -144,7 +152,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		final DocumentIdsSelection rowIdsToAdd = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToAdd);
+		final DocumentIdsSelection rowIdsToAdd = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToAdd);
 		if (rowIdsToAdd.isEmpty())
 		{
 			return false;
@@ -161,7 +169,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			return false;
 		}
 
-		final DocumentIdsSelection rowIdsToRemove = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToRemove);
+		final DocumentIdsSelection rowIdsToRemove = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToRemove);
 
 		rowIdsToRemove.forEach(rowId -> cache_huRowsById.remove(rowId));
 
@@ -171,7 +179,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	@Override
 	public boolean containsAnyOfHUIds(final Collection<Integer> huIdsToCheck)
 	{
-		final DocumentIdsSelection rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIdsToCheck);
+		final DocumentIdsSelection rowIds = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIdsToCheck);
 		return viewSelectionFactory.containsAnyOfRowIds(getDefaultSelection().getSelectionId(), rowIds);
 	}
 
@@ -213,20 +221,29 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		}
 
 		final HUEditorRow[] rows = new HUEditorRow[rowIds.size()];
-		final Map<DocumentId, Integer> rowIdToLoad2index = new HashMap<>();
+		final Map<HUEditorRowId, Integer> rowIdToLoad2index = new HashMap<>();
 		{
 			int idx = 0;
-			for (final DocumentId rowId : rowIds.toSet())
+			for (final HUEditorRowId rowId : rowIds.toSet(HUEditorRowId::ofDocumentId))
 			{
-				final HUEditorRow row = cache_huRowsById.get(rowId);
-				if (row == null)
+				final HUEditorRowId topLevelRowId = rowId.toTopLevelRowId();
+				final HUEditorRow topLevelRow = cache_huRowsById.get(topLevelRowId.toDocumentId());
+
+				if (topLevelRow == null)
 				{
 					// to be loaded
 					rowIdToLoad2index.put(rowId, idx);
 				}
 				else
 				{
-					rows[idx] = row;
+					if (rowId.equals(topLevelRowId))
+					{
+						rows[idx] = topLevelRow;
+					}
+					else
+					{
+						rows[idx] = topLevelRow.getIncludedRowById(rowId.toDocumentId()).orElse(null);
+					}
 				}
 
 				idx++;
@@ -235,25 +252,40 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 		if (!rowIdToLoad2index.isEmpty())
 		{
-			final Set<Integer> huIds = HUEditorRow.rowIdsToM_HU_IDs(rowIdToLoad2index.keySet());
-			huEditorRepo.retrieveHUEditorRows(huIds)
-					.forEach(row -> {
-						final DocumentId rowId = row.getId();
-						final Integer idx = rowIdToLoad2index.remove(rowId);
-						if (idx == null)
+			final ListMultimap<HUEditorRowId, HUEditorRowId> topLevelRowId2rowIds = rowIdToLoad2index.keySet()
+					.stream()
+					.map(rowId -> GuavaCollectors.entry(rowId.toTopLevelRowId(), rowId))
+					.collect(GuavaCollectors.toImmutableListMultimap());
+			
+			final Set<Integer> topLevelHUIds = topLevelRowId2rowIds.keys().stream().map(HUEditorRowId::getTopLevelHUId).collect(ImmutableSet.toImmutableSet());
+			
+			huEditorRepo.retrieveHUEditorRows(topLevelHUIds)
+					.forEach(topLevelRow -> {
+						final HUEditorRowId topLevelRowId = topLevelRow.getHURowId();
+						for (final HUEditorRowId includedRowId : topLevelRowId2rowIds.get(topLevelRowId))
 						{
-							// wtf?! we got some more then we requested?!?
-							return;
+							final Integer idx = rowIdToLoad2index.remove(includedRowId);
+							if (idx == null)
+							{
+								// wtf?! shall not happen
+								continue;
+							}
+							
+							if(topLevelRowId.equals(includedRowId))
+							{
+								rows[idx] = topLevelRow;
+								cache_huRowsById.put(topLevelRow.getId(), topLevelRow);
+							}
+							else
+							{
+								rows[idx] = topLevelRow.getIncludedRowById(includedRowId.toDocumentId()).orElse(null);
+							}
 						}
-
-						rows[idx] = row;
-
-						cache_huRowsById.put(rowId, row);
 					});
 		}
 
 		return Stream.of(rows)
-				.filter(row -> row != null); // just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
+				.filter(row -> row != null); // IMPORTANT: just to make sure we won't stream some empty gaps (e.g. missing rows because HU was not a top level one)
 	}
 
 	@Override
@@ -263,7 +295,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Set<Integer> huIds = retrieveHUIdsByPage(firstRow, pageLength, orderBys);
-		final DocumentIdsSelection rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIds);
+		final DocumentIdsSelection rowIds = HUEditorRowId.rowIdsFromTopLevelM_HU_IDs(huIds);
 		return streamByIds(rowIds);
 	}
 
@@ -329,8 +361,19 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	@Override
 	public HUEditorRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		// FIXME: fails if not top level ...
-		return cache_huRowsById.getOrLoad(rowId, () -> huEditorRepo.retrieveForHUId(HUEditorRow.rowIdToM_HU_ID(rowId)));
+		final HUEditorRowId huRowId = HUEditorRowId.ofDocumentId(rowId);
+		final HUEditorRowId topLevelRowId = huRowId.toTopLevelRowId();
+
+		final HUEditorRow topLevelRow = cache_huRowsById.getOrLoad(topLevelRowId.toDocumentId(), () -> huEditorRepo.retrieveForHUId(topLevelRowId.getTopLevelHUId()));
+		if (topLevelRowId.equals(huRowId))
+		{
+			return topLevelRow;
+		}
+		else
+		{
+			return topLevelRow.getIncludedRowById(rowId)
+					.orElseThrow(() -> new EntityNotFoundException("No row found for " + rowId).setParameter("topLevelRowId", topLevelRowId));
+		}
 	}
 
 	@Override
@@ -338,6 +381,6 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	{
 		final String sqlKeyColumnNameFK = I_M_HU.Table_Name + "." + I_M_HU.COLUMNNAME_M_HU_ID;
 		final String selectionId = getViewId().getViewId();
-		return SqlViewSelectionQueryBuilder.buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds.toDocumentIdsSelectionWithOnlyIntegerDocumentIds());
+		return SqlViewSelectionQueryBuilder.buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds, getRowIdsConverter());
 	}
 }

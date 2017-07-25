@@ -21,6 +21,7 @@ import de.metas.ui.web.menu.datatypes.json.JSONMenuNodeType;
 import de.metas.ui.web.menu.datatypes.json.JSONPatchMenuNodeRequest;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -182,11 +183,12 @@ public class MenuRestController
 	@GetMapping("/elementPath")
 	public JSONMenuNode getPath(
 			@RequestParam(name = PARAM_Type, required = true) final JSONMenuNodeType jsonType,
-			@RequestParam(name = PARAM_ElementId, required = true) final String elementId,
+			@RequestParam(name = PARAM_ElementId, required = true) final String elementIdStr,
 			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode)
 	{
 		userSession.assertLoggedIn();
 
+		final DocumentId elementId = DocumentId.of(elementIdStr);
 		final List<MenuNode> path = getMenuTree()
 				.getPath(jsonType.toMenuNodeType(), elementId);
 
