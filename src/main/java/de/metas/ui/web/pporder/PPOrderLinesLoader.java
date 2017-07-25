@@ -92,17 +92,16 @@ public class PPOrderLinesLoader
 		huAttributesProvider = HUEditorRowAttributesProvider.builder()
 				.readonly(false)
 				.build();
-		
+
 		huEditorRepo = HUEditorViewRepository.builder()
 				.windowId(viewWindowId)
 				.referencingTableName(I_PP_Order.Table_Name)
 				.attributesProvider(huAttributesProvider)
 				.build();
 
-
 		this.asiAttributesProvider = asiAttributesProvider;
 	}
-	
+
 	/**
 	 * Loads {@link PPOrderLinesViewData}s.
 	 *
@@ -135,12 +134,12 @@ public class PPOrderLinesLoader
 
 		return new PPOrderLinesViewData(ppOrder_description, ppOrder_planningStatus, records.build());
 	}
-	
+
 	private static final ITranslatableString extractDescription(final I_PP_Order ppOrder)
 	{
 		final ITranslatableString docTypeStr;
 		final I_C_DocType docType = ppOrder.getC_DocType();
-		if(docType != null)
+		if (docType != null)
 		{
 			final IModelTranslationMap docTypeTrlMap = InterfaceWrapperHelper.getModelTranslationMap(docType);
 			docTypeStr = docTypeTrlMap.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
@@ -149,9 +148,9 @@ public class PPOrderLinesLoader
 		{
 			docTypeStr = ImmutableTranslatableString.empty();
 		}
-		
+
 		final ITranslatableString documentNoStr = ImmutableTranslatableString.constant(ppOrder.getDocumentNo());
-		
+
 		return ITranslatableString.compose(" ", docTypeStr, documentNoStr);
 	}
 

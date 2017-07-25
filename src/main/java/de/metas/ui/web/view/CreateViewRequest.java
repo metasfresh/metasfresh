@@ -15,6 +15,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
@@ -22,6 +23,7 @@ import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
@@ -69,11 +71,14 @@ public final class CreateViewRequest
 
 		return builder(view.getViewId().getWindowId(), view.getViewType())
 				.setParentViewId(view.getParentViewId())
+				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(view.getReferencingDocumentPaths())
 				.setStickyFilters(view.getStickyFilters())
 				.setFiltersFromJSON(jsonFilters)
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
-				.addActions(view.getActions());
+				.addActions(view.getActions())
+				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors())
+				;
 	}
 
 	public static final Builder deleteStickyFilterBuilder(@NonNull final IView view, @NonNull final String stickyFilterIdToDelete)
@@ -89,17 +94,20 @@ public final class CreateViewRequest
 		
 		return builder(view.getViewId().getWindowId(), view.getViewType())
 				.setParentViewId(view.getParentViewId())
+				.setParentRowId(view.getParentRowId())
 				.setReferencingDocumentPaths(referencingDocumentPaths)
 				.setStickyFilters(stickyFilters)
 				.setFilters(view.getFilters())
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
-				.addActions(view.getActions());
+				.addActions(view.getActions())
+				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
 	private final WindowId windowId;
 	private final JSONViewDataType viewType;
 
 	private final ViewId parentViewId;
+	private final DocumentId parentRowId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
 	private final List<DocumentFilter> stickyFilters;
@@ -107,13 +115,15 @@ public final class CreateViewRequest
 	private final Set<Integer> filterOnlyIds;
 
 	private final ViewActionDescriptorsList actions;
-
+	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+	
 	private CreateViewRequest(final Builder builder)
 	{
 		windowId = builder.getWindowId();
 		viewType = builder.getViewType();
 
 		parentViewId = builder.getParentViewId();
+		parentRowId = builder.getParentRowId();
 
 		referencingDocumentPaths = builder.getReferencingDocumentPaths();
 		filterOnlyIds = builder.getFilterOnlyIds();
@@ -121,21 +131,7 @@ public final class CreateViewRequest
 		stickyFilters = builder.getStickyFilters();
 
 		actions = builder.getActions();
-	}
-
-	public ViewId getParentViewId()
-	{
-		return parentViewId;
-	}
-
-	public WindowId getWindowId()
-	{
-		return windowId;
-	}
-
-	public ViewActionDescriptorsList getActions()
-	{
-		return actions;
+		additionalRelatedProcessDescriptors = ImmutableList.copyOf(builder.getAdditionalRelatedProcessDescriptors());
 	}
 
 	public Characteristic getViewTypeRequiredFieldCharacteristic()
@@ -179,6 +175,7 @@ public final class CreateViewRequest
 		private final JSONViewDataType viewType;
 
 		private ViewId parentViewId;
+		private DocumentId parentRowId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
 		private Set<Integer> filterOnlyIds;
@@ -186,8 +183,11 @@ public final class CreateViewRequest
 		private DocumentFiltersList filters;
 
 		private ViewActionDescriptorsList actions = ViewActionDescriptorsList.EMPTY;
+		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
 
-		private Builder(@NonNull final WindowId windowId, @NonNull final JSONViewDataType viewType)
+		private Builder(
+				@NonNull final WindowId windowId, 
+				@NonNull final JSONViewDataType viewType)
 		{
 			this.windowId = windowId;
 			this.viewType = viewType;
@@ -217,6 +217,17 @@ public final class CreateViewRequest
 		private ViewId getParentViewId()
 		{
 			return parentViewId;
+		}
+		
+		public Builder setParentRowId(DocumentId parentRowId)
+		{
+			this.parentRowId = parentRowId;
+			return this;
+		}
+		
+		private DocumentId getParentRowId()
+		{
+			return parentRowId;
 		}
 
 		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
@@ -316,6 +327,24 @@ public final class CreateViewRequest
 		{
 			return actions;
 		}
+		
+		private List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
+		{
+			return additionalRelatedProcessDescriptors;
+		}
+		
+		public Builder addAdditionalRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor)
+		{
+			additionalRelatedProcessDescriptors.add(relatedProcessDescriptor);
+			return this;
+		}
+
+		public Builder addAdditionalRelatedProcessDescriptors(@NonNull final List<RelatedProcessDescriptor> relatedProcessDescriptors)
+		{
+			additionalRelatedProcessDescriptors.addAll(relatedProcessDescriptors);
+			return this;
+		}
+
 	}
 
 	public static final class DocumentFiltersList

@@ -263,7 +263,8 @@ public class MailRestController
 						}
 						return email;
 					}
-				});
+				})
+				.flatMap(emails -> EMail.toEMailsList(emails).stream());
 	}
 
 	@PatchMapping("/{emailId}")

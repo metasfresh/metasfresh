@@ -65,7 +65,8 @@ public final class PickingSlotRow implements IViewRow
 
 	private final PickingSlotRowId id;
 	private final IViewRowType type;
-	private final boolean processed;
+	
+	
 	private final DocumentPath documentPath;
 
 	//
@@ -86,9 +87,16 @@ public final class PickingSlotRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
 	})
 	private final String huCode;
+	
+//	@ViewColumn(captionKey = "Processed", widgetType = DocumentFieldWidgetType.YesNo, layouts = {
+//			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
+//	})
+	// this is the "standard" processed flag which every IViewRow has-.
+	// TODO: decide whether to display it or not
+	private final boolean processed;
 
 	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
 	private final JSONLookupValue huProduct;
 
@@ -425,5 +433,10 @@ public final class PickingSlotRow implements IViewRow
 			}
 		}
 
+	}
+
+	public BigDecimal getHuQtyCU()
+	{
+		return huQtyCU;
 	}
 }

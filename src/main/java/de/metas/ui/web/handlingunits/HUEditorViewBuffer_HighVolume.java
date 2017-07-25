@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -69,7 +70,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private final HUEditorViewRepository huEditorRepo;
 	private final IStringExpression sqlSelectHUIdsByPage;
-	
+
 	private final ImmutableList<DocumentFilter> stickyFilters;
 
 	private final SqlViewRowIdsOrderedSelectionFactory viewSelectionFactory;
@@ -88,7 +89,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		final SqlViewBinding viewBinding = huEditorRepo.getSqlViewBinding();
 		viewSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(viewBinding);
 		sqlSelectHUIdsByPage = viewBinding.getSqlSelectByPage();
-		
+
 		this.stickyFilters = ImmutableList.copyOf(stickyFilters);
 
 		final ViewEvaluationCtx viewEvalCtx = ViewEvaluationCtx.of(Env.getCtx());
@@ -97,7 +98,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		defaultSelectionRef = new AtomicReference<>(defaultSelection);
 
 	}
-	
+
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
@@ -188,7 +189,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(final DocumentIdsSelection rowIds)
+	public Stream<HUEditorRow> streamByIdsExcludingIncludedRows(@NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds == null || rowIds.isEmpty())
 		{
@@ -198,7 +199,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 		return streamByIds(rowIds);
 	}
 
-	private Stream<HUEditorRow> streamByIds(final DocumentIdsSelection rowIds)
+	private Stream<HUEditorRow> streamByIds(@NonNull final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -256,7 +257,10 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public Stream<HUEditorRow> streamPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
+	public Stream<HUEditorRow> streamPage(
+			final int firstRow,
+			final int pageLength,
+			final List<DocumentQueryOrderBy> orderBys)
 	{
 		final Set<Integer> huIds = retrieveHUIdsByPage(firstRow, pageLength, orderBys);
 		final DocumentIdsSelection rowIds = HUEditorRow.rowIdsFromM_HU_IDs(huIds);
@@ -323,11 +327,10 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	}
 
 	@Override
-	public HUEditorRow getById(final DocumentId rowId) throws EntityNotFoundException
+	public HUEditorRow getById(@NonNull final DocumentId rowId) throws EntityNotFoundException
 	{
-		final int huId = rowId.toInt();
 		// FIXME: fails if not top level ...
-		return huEditorRepo.retrieveForHUId(huId);
+		return cache_huRowsById.getOrLoad(rowId, () -> huEditorRepo.retrieveForHUId(HUEditorRow.rowIdToM_HU_ID(rowId)));
 	}
 
 	@Override

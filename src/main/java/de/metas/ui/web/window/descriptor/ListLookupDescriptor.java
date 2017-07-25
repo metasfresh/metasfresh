@@ -12,8 +12,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -39,7 +41,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 
 /**
  * {@link LookupDescriptor} and {@link LookupDataSourceFetcher} implementation which is backed by a given {@link LookupValuesList} supplier.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -50,8 +52,9 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		return new Builder();
 	}
 
-	private final Function<LookupDataSourceContext, LookupValuesList> lookupValues;
+	private final LookupSource lookupSourceType;
 	private final boolean numericKey;
+	private final Function<LookupDataSourceContext, LookupValuesList> lookupValues;
 
 	private final Set<String> dependsOnFieldNames;
 	private final Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
@@ -61,8 +64,9 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 	{
 		Check.assumeNotNull(builder.lookupValues, "Parameter builder.lookupValues is not null");
 
-		lookupValues = builder.lookupValues;
 		numericKey = builder.numericKey;
+		lookupSourceType = builder.lookupSourceType;
+		lookupValues = builder.lookupValues;
 
 		dependsOnFieldNames = builder.dependsOnFieldNames == null ? ImmutableSet.of() : ImmutableSet.copyOf(builder.dependsOnFieldNames);
 
@@ -88,6 +92,12 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		return MoreObjects.toStringHelper(this)
 				.add("lookupValues", lookupValues)
 				.toString();
+	}
+
+	@Override
+	public LookupSource getLookupSourceType()
+	{
+		return lookupSourceType;
 	}
 
 	@Override
@@ -134,8 +144,9 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 
 	public static class Builder
 	{
-		private Function<LookupDataSourceContext, LookupValuesList> lookupValues;
+		private LookupSource lookupSourceType = LookupSource.list;
 		private boolean numericKey;
+		private Function<LookupDataSourceContext, LookupValuesList> lookupValues;
 
 		private Function<LookupDataSourceContext, LookupValue> filteredLookupValues;
 		private Set<String> dependsOnFieldNames;
@@ -149,6 +160,12 @@ public final class ListLookupDescriptor extends SimpleLookupDescriptorTemplate
 		public ListLookupDescriptor build()
 		{
 			return new ListLookupDescriptor(this);
+		}
+
+		public Builder setLookupSourceType(@NonNull final LookupSource lookupSourceType)
+		{
+			this.lookupSourceType = lookupSourceType;
+			return this;
 		}
 
 		public Builder setLookupValues(final boolean numericKey, final Function<LookupDataSourceContext, LookupValuesList> lookupValues)

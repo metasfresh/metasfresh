@@ -78,7 +78,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		// Invalidate the view
 		if (huIdsDestroyed != null && !huIdsDestroyed.isEmpty())
 		{
-			getView().removesHUIdsAndInvalidate(huIdsDestroyed);
+			getView().removeHUIdsAndInvalidate(huIdsDestroyed);
 		}
 	}
 }

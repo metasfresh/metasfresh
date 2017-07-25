@@ -1,8 +1,11 @@
 package de.metas.ui.web.board;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -39,6 +42,7 @@ import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewResult;
@@ -88,9 +92,37 @@ public class BoardRestController
 	@Autowired
 	private IViewsRepository viewsRepo;
 
+	private final ConcurrentHashMap<Integer, Set<IView>> boardId2newCardsViewId = new ConcurrentHashMap<>();
+
 	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.builder(userSession).build();
+	}
+
+	private void addActiveNewCardsView(final int boardId, final IView view)
+	{
+		final Set<IView> boardActiveViews = boardId2newCardsViewId.computeIfAbsent(boardId, id -> Collections.newSetFromMap(new WeakHashMap<>()));
+		synchronized (boardActiveViews)
+		{
+			boardActiveViews.add(view);
+		}
+	}
+
+	private void invalidateAllNewCardsViews(final int boardId)
+	{
+		final Set<IView> boardActiveViews = boardId2newCardsViewId.get(boardId);
+		if (boardActiveViews == null)
+		{
+			return;
+		}
+
+		synchronized (boardActiveViews)
+		{
+			// NOTE: because we are actually not deleting from view but just filtering out the board cardIds,
+			// we don't have to actually invalidate the view but just fire an "refresh request" to frontend
+			boardActiveViews.forEach(view -> ViewChangesCollector.getCurrentOrAutoflush()
+					.collectFullyChanged(view));
+		}
 	}
 
 	@GetMapping("/{boardId}")
@@ -130,6 +162,7 @@ public class BoardRestController
 
 		final int position = request.getPosition() != null ? request.getPosition() : Integer.MAX_VALUE;
 		final BoardCard card = boardsRepo.addCardForDocumentId(boardId, request.getLaneId(), request.getDocumentId(), position);
+		invalidateAllNewCardsViews(boardId);
 		return JSONBoardCard.of(card, userSession.getAD_Language());
 	}
 
@@ -164,6 +197,7 @@ public class BoardRestController
 		userSession.assertLoggedIn();
 
 		boardsRepo.removeCard(boardId, cardId);
+		invalidateAllNewCardsViews(boardId);
 	}
 
 	@PatchMapping("/{boardId}/card/{cardId}")
@@ -203,13 +237,6 @@ public class BoardRestController
 		return request.build();
 	}
 
-	@GetMapping("/{boardId}/newCardsView")
-	@Deprecated
-	public JSONViewResult createNewCardsView_DEPRECATED(@PathVariable("boardId") final int boardId)
-	{
-		return createNewCardsView(boardId);
-	}
-
 	@PostMapping("/{boardId}/newCardsView")
 	public JSONViewResult createNewCardsView(@PathVariable("boardId") final int boardId)
 	{
@@ -221,6 +248,8 @@ public class BoardRestController
 				.setStickyFilters(boardDescriptor.getDocumentFilters())
 				.build();
 		final IView view = viewsRepo.createView(request);
+		addActiveNewCardsView(boardId, view);
+
 		return toJSONCardsViewResult(boardId, view, userSession.getAD_Language());
 	}
 

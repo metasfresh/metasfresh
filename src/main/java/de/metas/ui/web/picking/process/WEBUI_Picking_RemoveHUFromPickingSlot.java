@@ -1,12 +1,15 @@
 package de.metas.ui.web.picking.process;
 
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewRepository;
+import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -22,20 +25,28 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+/**
+ * 
+ * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
+ * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
-	private PickingSlotViewRepository pickingSlotRepo;
-
+	private PickingCandidateCommand pickingCandidateCommand;
+	
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -43,11 +54,12 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		
-		final PickingSlotRow huRow = getSingleSelectedRow();
-		if(!huRow.isHURow())
+
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isHURow())
 		{
-			return ProcessPreconditionsResolution.reject("select an HU");
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -59,7 +71,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 		final PickingSlotRow huRow = getSingleSelectedRow();
 		final int huId = huRow.getHuId();
 		final int pickingSlotId = huRow.getPickingSlotId();
-		pickingSlotRepo.removeHUFromPickingSlot(huId, pickingSlotId);
+		pickingCandidateCommand.removeHUFromPickingSlot(huId, pickingSlotId);
 
 		invalidateView();
 

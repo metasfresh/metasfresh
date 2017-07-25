@@ -227,10 +227,11 @@ final class WebuiProcessClassInfo
 				.collect(ImmutableList.toImmutableList());
 
 		final Method methodToInvoke = method; // FIXME: holding a hard reference to method may introduce ClassLoader memory leaks
-
+		
 		final LookupDescriptor lookupDescriptor = ListLookupDescriptor.builder()
 				.setLookupTableName(ann.lookupTableName())
 				.setDependsOnFieldNames(ann.dependsOn())
+				.setLookupSourceType(ann.lookupSource())
 				.setLookupValues(ann.numericKey(), evalCtx -> retriveLookupValues(methodToInvoke, parameterValueProviders, evalCtx))
 				.build();
 
@@ -238,7 +239,10 @@ final class WebuiProcessClassInfo
 		return GuavaCollectors.entry(ann.parameterName(), lookupDescriptorProvider);
 	}
 
-	private static final LookupValuesList retriveLookupValues(final Method method, final List<Function<LookupDataSourceContext, Object>> parameterValueProviders, final LookupDataSourceContext evalCtx)
+	private static final LookupValuesList retriveLookupValues(
+			final Method method, 
+			final List<Function<LookupDataSourceContext, Object>> parameterValueProviders, 
+			final LookupDataSourceContext evalCtx)
 	{
 		Check.assumeNotNull(method, "Parameter method is not null");
 		final JavaProcess processClassInstance = JavaProcess.currentInstance();

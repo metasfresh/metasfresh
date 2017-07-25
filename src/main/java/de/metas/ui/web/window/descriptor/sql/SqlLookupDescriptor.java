@@ -146,6 +146,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				numericKey
 		// dependsOnFieldNames // not needed because it's computed
 		// lookupSourceType // not needed because it's computed
+		// lookupDataSourceFetcher // not needed because it's computed
 		);
 	}
 
@@ -174,8 +175,9 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				&& Objects.equals(postQueryPredicate, other.postQueryPredicate)
 				&& highVolume == other.highVolume
 				&& numericKey == other.numericKey
-				// && Objects.equals(dependsOnFieldNames, other.dependsOnFieldNames) // not needed because it's computed
+				// dependsOnFieldNames // not needed because it's computed
 				// lookupSourceType // not needed because it's computed
+				// lookupDataSourceFetcher // not needed because it's computed
 		;
 	}
 
@@ -290,6 +292,17 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 			
 			return buildProvider(columnName, widgetType, displayType, AD_Reference_Value_ID, AD_Val_Rule_ID);
 		}
+		
+		public LookupDescriptor buildForScope(final LookupScope scope)
+		{
+			return buildProvider().provideForScope(scope);
+		}
+		
+		public LookupDescriptor buildForDefaultScope()
+		{
+			return buildProvider().provideForScope(LookupScope.DocumentField);
+		}
+
 
 		private static LookupDescriptorProvider buildProvider(
 				final String sqlColumnName //

@@ -61,22 +61,33 @@ public final class PickingRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
 	})
 	private final LookupValue warehouse;
+	
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20)
 	})
 	private final LookupValue product;
+	
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyToDeliver, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
 	})
 	private final BigDecimal qtyToDeliver;
+	
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, captionKey = I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 35)
+	})
+	private final BigDecimal qtyPickedPlanned;
+
 	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_DeliveryDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40)
 	})
 	private final java.util.Date deliveryDate;
+	
 	@ViewColumn(widgetType = DocumentFieldWidgetType.DateTime, captionKey = I_M_Packageable_V.COLUMNNAME_PreparationDate, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
 	private final java.util.Date preparationDate;
+	
+	private final int shipmentScheduleId;
 	
 	private final ViewId includedViewId;
 
@@ -93,8 +104,10 @@ public final class PickingRow implements IViewRow
 			final LookupValue warehouse,
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,
+			final BigDecimal qtyPickedPlanned,
 			final Date deliveryDate,
-			final Date preparationDate)
+			final Date preparationDate,
+			final int shipmentScheduleId)
 	{
 		this.id = id;
 		this.viewId = viewId;
@@ -105,9 +118,11 @@ public final class PickingRow implements IViewRow
 		this.warehouse = warehouse;
 		this.product = product;
 		this.qtyToDeliver = qtyToDeliver;
+		this.qtyPickedPlanned = qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
 		this.deliveryDate = deliveryDate;
 		this.preparationDate = preparationDate;
-		
+		this.shipmentScheduleId = shipmentScheduleId;
+
 		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
 	}
 
@@ -173,5 +188,10 @@ public final class PickingRow implements IViewRow
 	public ViewId getIncludedViewId()
 	{
 		return includedViewId;
+	}
+
+	public int getShipmentScheduleId()
+	{
+		return shipmentScheduleId;
 	}
 }

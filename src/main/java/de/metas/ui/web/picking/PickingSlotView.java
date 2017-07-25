@@ -1,13 +1,17 @@
 package de.metas.ui.web.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Preconditions;
@@ -15,6 +19,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.ITranslatableString;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
@@ -64,6 +69,8 @@ public class PickingSlotView implements IView
 	}
 
 	private final ViewId viewId;
+	private final ViewId parentViewId;
+	private final DocumentId parentRowId;
 	private final ITranslatableString description;
 	private final int shipmentScheduleId;
 	private final ExtendedMemorizingSupplier<Map<PickingSlotRowId, PickingSlotRow>> rowsSupplier;
@@ -71,6 +78,8 @@ public class PickingSlotView implements IView
 
 	@Builder
 	private PickingSlotView(@NonNull final ViewId viewId,
+			final ViewId parentViewId,
+			final DocumentId parentRowId,
 			final ITranslatableString description,
 			final int shipmentScheduleId,
 			final Supplier<List<PickingSlotRow>> rows,
@@ -79,10 +88,11 @@ public class PickingSlotView implements IView
 		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");
 
 		this.viewId = viewId;
+		this.parentViewId = parentViewId;
+		this.parentRowId = parentRowId;
 		this.description = description != null ? description : ITranslatableString.empty();
 		this.shipmentScheduleId = shipmentScheduleId;
-//		this.rows = Maps.uniqueIndex(rows, PickingSlotRow::getPickingSlotRowId);
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(()->Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
@@ -119,7 +129,13 @@ public class PickingSlotView implements IView
 	@Override
 	public ViewId getParentViewId()
 	{
-		return null;
+		return parentViewId;
+	}
+	
+	@Override
+	public DocumentId getParentRowId()
+	{
+		return parentRowId;
 	}
 
 	@Override
@@ -160,22 +176,22 @@ public class PickingSlotView implements IView
 	public PickingSlotRow getById(final DocumentId id) throws EntityNotFoundException
 	{
 		PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
-		
+
 		final PickingSlotRowId pickingSlotRowId = rowId.toPickingSlotId();
 		final PickingSlotRow pickingSlotRow = rowsSupplier.get().get(pickingSlotRowId);
 		if (pickingSlotRow == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("pickingSlotRowId", pickingSlotRowId);
 		}
-		
-		if(pickingSlotRowId.equals(rowId))
+
+		if (pickingSlotRowId.equals(rowId))
 		{
 			return pickingSlotRow;
 		}
 		else
 		{
 			return pickingSlotRow.findIncludedRowById(rowId)
-					.orElseThrow(()->new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
+					.orElseThrow(() -> new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
 		}
 	}
 
@@ -234,7 +250,14 @@ public class PickingSlotView implements IView
 	@Override
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
-		return rowIds.stream().map(this::getById);
+		if (rowIds.isAll())
+		{
+			return rowsSupplier.get().values().stream();
+		}
+		else
+		{
+			return rowIds.stream().map(this::getById);
+		}
 	}
 
 	@Override
@@ -250,9 +273,23 @@ public class PickingSlotView implements IView
 		return additionalRelatedProcessDescriptors;
 	}
 
+	/**
+	 * 
+	 * @return never returns a value {@code <= 0} (see constructor code).
+	 */
 	public int getShipmentScheduleId()
 	{
 		return shipmentScheduleId;
+	}
+
+	/**
+	 * 
+	 * @return never returns {@code null} (see constructor code).
+	 */
+	public I_M_ShipmentSchedule getShipmentSchedule()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = create(Env.getCtx(), shipmentScheduleId, I_M_ShipmentSchedule.class, ITrx.TRXNAME_ThreadInherited);
+		return shipmentSchedule;
 	}
 
 	@Override

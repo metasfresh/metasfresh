@@ -5,11 +5,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
@@ -21,13 +23,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.process.ProcessInstanceResult.CreateAndOpenIncludedViewAction;
-import de.metas.ui.web.process.view.ViewAction;
-import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
+import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -67,6 +67,8 @@ import lombok.NonNull;
  */
 public class PickingView implements IView
 {
+	private final PickingCandidateCommand pickingCandidateCommand;
+	
 	public static PickingView cast(final IView view)
 	{
 		return (PickingView)view;
@@ -74,18 +76,20 @@ public class PickingView implements IView
 
 	private final ViewId viewId;
 	private final ITranslatableString description;
-	private final Map<DocumentId, PickingRow> rows;
+	private final ExtendedMemorizingSupplier<Map<DocumentId, PickingRow>> rowsSupplier;
 
 	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
 
 	@Builder
 	private PickingView(@NonNull final ViewId viewId,
-			final ITranslatableString description,
-			final List<PickingRow> rows)
+			@NonNull final ITranslatableString description,
+			@NonNull final Supplier<List<PickingRow>> rowsSupplier,
+			@NonNull final PickingCandidateCommand pickingCandidateCommand)
 	{
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
-		this.rows = Maps.uniqueIndex(rows, PickingRow::getId);
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PickingRow::getId));
+		this.pickingCandidateCommand = pickingCandidateCommand;
 	}
 
 	@Override
@@ -123,23 +127,42 @@ public class PickingView implements IView
 	{
 		return null;
 	}
+	
+	@Override
+	public DocumentId getParentRowId()
+	{
+		return null;
+	}
+
+	private final Map<DocumentId, PickingRow> getRows()
+	{
+		return rowsSupplier.get();
+	}
 
 	@Override
 	public long size()
 	{
-		return rows.size();
+		return getRows().size();
 	}
 
 	@Override
 	public void close()
 	{
+		final List<Integer> shipmentScheduleIds = getRows()
+				.values().stream()
+				.map(row -> row.getShipmentScheduleId())
+				.collect(Collectors.toList());
+
+		pickingCandidateCommand.setCandidatesClosed(shipmentScheduleIds);
 	}
-	
+
 	@Override
 	public void invalidateAll()
 	{
-		// TODO Auto-generated method stub
+		rowsSupplier.forget();
 		
+		ViewChangesCollector.getCurrentOrAutoflush()
+				.collectFullyChanged(this);
 	}
 
 	@Override
@@ -157,7 +180,7 @@ public class PickingView implements IView
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<PickingRow> pageRows = rows.values().stream()
+		final List<PickingRow> pageRows = getRows().values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
@@ -168,7 +191,7 @@ public class PickingView implements IView
 	@Override
 	public PickingRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PickingRow row = rows.get(rowId);
+		final PickingRow row = getRows().get(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
@@ -179,43 +202,57 @@ public class PickingView implements IView
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Just throws an {@link UnsupportedOperationException}.
+	 */
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
-		// TODO Auto-generated method stub
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns an empty list.
+	 */
 	@Override
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return ImmutableList.of();
 	}
 
+	/**
+	 * Just returns {@code null}.
+	 */
 	@Override
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
+	/**
+	 * Returns {@code false}.
+	 */
 	@Override
 	public boolean hasAttributesSupport()
 	{
@@ -245,11 +282,12 @@ public class PickingView implements IView
 		return rowIds.stream().map(this::getById);
 	}
 
+	/**
+	 * Does nothing
+	 */
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		// TODO Auto-generated method stub
-
 	}
 
 	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
@@ -266,22 +304,9 @@ public class PickingView implements IView
 	{
 		return pickingSlotsViewByRowId.get(rowId);
 	}
-	
+
 	/* package */ PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
 	{
 		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
-	}
-
-	@ViewAction(caption = "picking slots", defaultAction = true)
-	public CreateAndOpenIncludedViewAction openPickingSlots(final DocumentIdsSelection selectedRowIds)
-	{
-		final DocumentId pickingRowId = selectedRowIds.getSingleDocumentId();
-		final PickingRow pickingRow = getById(pickingRowId);
-
-		final CreateViewRequest createViewRequest = CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
-				.setParentViewId(viewId)
-				.setReferencingDocumentPath(pickingRow.getDocumentPath())
-				.build();
-		return CreateAndOpenIncludedViewAction.of(createViewRequest);
 	}
 }

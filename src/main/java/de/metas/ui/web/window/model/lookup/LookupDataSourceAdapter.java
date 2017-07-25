@@ -95,6 +95,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingList()
 				.setParentEvaluatee(ctx)
 				.putFilter(filterEffective, firstRow, pageLength)
+				.requiresFilterAndLimit() // make sure the filter, limit and offset will be kept on build
 				.build();
 
 		final LookupValuesList lookupValuesList = fetcher.retrieveEntities(evalCtx);

@@ -55,14 +55,14 @@ public final class WebuiRelatedProcessDescriptor
 	private final String debugProcessClassname;
 
 	@lombok.Builder
-	private WebuiRelatedProcessDescriptor( //
-			final ProcessId processId //
-			, final ITranslatableString processCaption //
-			, final ITranslatableString processDescription //
-			, final boolean quickAction //
-			, final boolean defaultQuickAction //
-			, @NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier //
-			, final String debugProcessClassname //
+	private WebuiRelatedProcessDescriptor(
+			final ProcessId processId,
+			final ITranslatableString processCaption,
+			final ITranslatableString processDescription,
+			final boolean quickAction,
+			final boolean defaultQuickAction,
+			@NonNull final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier,
+			final String debugProcessClassname
 	)
 	{
 		super();
@@ -114,7 +114,7 @@ public final class WebuiRelatedProcessDescriptor
 	{
 		return preconditionsResolutionSupplier.get();
 	}
-
+	
 	public boolean isDisabled()
 	{
 		return getPreconditionsResolution().isRejected();

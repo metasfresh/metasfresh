@@ -6,14 +6,17 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.StringUtils;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 
@@ -98,6 +101,11 @@ public final class HUEditorRow implements IViewRow
 	public static Set<Integer> rowIdsToM_HU_IDs(final Collection<DocumentId> rowIds)
 	{
 		return DocumentIdsSelection.of(rowIds).toIntSet();
+	}
+
+	public static int rowIdToM_HU_ID(@NonNull final DocumentId rowId)
+	{
+		return rowId.toIntOrThrow(() -> new AdempiereException("Cannot convert rowId=" + rowId + " to huId"));
 	}
 
 	static final int HUSTATUS_AD_Reference_ID = X_M_HU.HUSTATUS_AD_Reference_ID;
@@ -321,6 +329,17 @@ public final class HUEditorRow implements IViewRow
 		}
 		return InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
 	}
+	
+	public boolean isHUPlanningReceiptOwnerPM()
+	{
+		// TODO: cache it or better it shall be provided when the row is created
+		final I_M_HU hu = getM_HU();
+		if(hu == null)
+		{
+			return false;
+		}
+		return hu.isHUPlanningReceiptOwnerPM();
+	}
 
 	public String getValue()
 	{
@@ -481,6 +500,27 @@ public final class HUEditorRow implements IViewRow
 	public LookupValue toLookupValue()
 	{
 		return IntegerLookupValue.of(getM_HU_ID(), getSummary());
+	}
+	
+	/**
+	 * @param stringFilter
+	 * @param adLanguage AD_Language (used to get the right row's string representation)
+	 * @return true if the row is matching the string filter
+	 */
+	public boolean matchesStringFilter(final String stringFilter)
+	{
+		if (Check.isEmpty(stringFilter, true))
+		{
+			return true;
+		}
+
+		final String rowDisplayName = getSummary();
+
+		final Function<String, String> normalizer = s -> StringUtils.stripDiacritics(s.trim()).toLowerCase();
+		final String rowDisplayNameNorm = normalizer.apply(rowDisplayName);
+		final String stringFilterNorm = normalizer.apply(stringFilter);
+
+		return rowDisplayNameNorm.contains(stringFilterNorm);
 	}
 
 	//

@@ -67,7 +67,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	{
 		if (husToReturn != null && !husToReturn.isEmpty())
 		{
-			getView().removesHUsAndInvalidate(getSelectedHUs());
+			getView().removeHUsAndInvalidate(getSelectedHUs());
 		}
 	}
 

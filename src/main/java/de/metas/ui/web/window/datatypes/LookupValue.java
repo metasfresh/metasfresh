@@ -191,6 +191,12 @@ public abstract class LookupValue
 		return displayName.getDefaultValue();
 	}
 	
+	public String getDisplayName(final String adLanguage)
+	{
+		return displayName.translate(adLanguage);
+	}
+
+	
 	public ITranslatableString getDisplayNameTrl()
 	{
 		return displayName;

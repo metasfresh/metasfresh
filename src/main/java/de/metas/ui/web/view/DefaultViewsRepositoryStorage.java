@@ -35,7 +35,7 @@ import lombok.NonNull;
 // NOTE: don't add it to spring context! i.e. don't annotate it with @Component or similar
 /* package */final class DefaultViewsRepositoryStorage implements IViewsIndexStorage
 {
-	private final Cache<String, IView> views = CacheBuilder.newBuilder()
+	private final Cache<ViewId, IView> views = CacheBuilder.newBuilder()
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.removalListener(notification -> onViewRemoved(notification))
 			.build();
@@ -61,30 +61,31 @@ import lombok.NonNull;
 	@Override
 	public void put(@NonNull final IView view)
 	{
-		views.put(view.getViewId().getViewId(), view);
+		views.put(view.getViewId(), view);
 	}
 
 	@Override
 	public IView getByIdOrNull(@NonNull final ViewId viewId)
 	{
-		return views.getIfPresent(viewId.getViewId());
+		return views.getIfPresent(viewId);
 	}
 
 	@Override
 	public void removeById(@NonNull final ViewId viewId)
 	{
-		views.invalidate(viewId.getViewId());
+		views.invalidate(viewId);
+		views.cleanUp(); // also cleanup to prevent views cache to grow.
 	}
-	
+
 	@Override
 	public void invalidateView(final ViewId viewId)
 	{
 		final IView view = getByIdOrNull(viewId);
-		if(view == null)
+		if (view == null)
 		{
 			return;
 		}
-		
+
 		view.invalidateAll();
 	}
 

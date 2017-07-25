@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.util.GuavaCollectors;
+import org.adempiere.util.collections.ListUtils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -16,8 +16,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 
 /*
  * #%L
@@ -106,11 +108,26 @@ public final class JSONCreateViewRequest implements Serializable
 		}
 
 		final WindowId windowId = WindowId.fromJson(referencing.getDocumentType());
-		return documentIds.stream()
-				.map(id -> DocumentPath.rootDocumentPath(windowId, id))
-				.collect(GuavaCollectors.toImmutableSet());
+
+		final String tabIdStr = referencing.getTabId();
+		if (tabIdStr == null)
+		{
+			return documentIds.stream()
+					.map(id -> DocumentPath.rootDocumentPath(windowId, id))
+					.collect(ImmutableSet.toImmutableSet());
+		}
+		else
+		{
+			final DocumentId documentId = DocumentId.of(ListUtils.singleElement(documentIds));
+			final DetailId tabId = DetailId.fromJson(tabIdStr);
+			final Set<String> rowIds = referencing.getRowIds();
+			return rowIds.stream()
+					.map(DocumentId::of)
+					.map(rowId -> DocumentPath.includedDocumentPath(windowId, documentId, tabId, rowId))
+					.collect(ImmutableSet.toImmutableSet());
+		}
 	}
-	
+
 	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 	@lombok.Data
 	public static final class JSONReferencing implements Serializable
@@ -121,12 +138,19 @@ public final class JSONCreateViewRequest implements Serializable
 		@JsonProperty("documentIds")
 		private final Set<String> documentIds;
 
+		@JsonProperty("tabId")
+		private final String tabId;
+
+		@JsonProperty("rowIds")
+		private final Set<String> rowIds;
+
 		@JsonCreator
 		private JSONReferencing(
-				@JsonProperty("documentType") final String documentType //
-				, @JsonProperty("documentIds") final Set<String> documentIds //
-				, @JsonProperty("documentId") @Deprecated final String documentId //
-		)
+				@JsonProperty("documentType") final String documentType,
+				@JsonProperty("documentIds") final Set<String> documentIds,
+				@JsonProperty("documentId") @Deprecated final String documentId, // but still used!
+				@JsonProperty("tabId") final String tabId,
+				@JsonProperty("rowIds") final Set<String> rowIds)
 		{
 			super();
 			Preconditions.checkNotNull(documentType, "documentType is missing");
@@ -145,6 +169,26 @@ public final class JSONCreateViewRequest implements Serializable
 			else
 			{
 				throw new IllegalArgumentException("'documentIds' not provided");
+			}
+
+			this.tabId = tabId;
+
+			if (tabId != null)
+			{
+				if (this.documentIds.size() > 1)
+				{
+					throw new IllegalArgumentException("Only one documentId is allowed when tabId is set.");
+				}
+				if (rowIds == null || rowIds.isEmpty())
+				{
+					throw new IllegalArgumentException("rowIds not provided");
+				}
+
+				this.rowIds = ImmutableSet.copyOf(rowIds);
+			}
+			else
+			{
+				this.rowIds = null;
 			}
 		}
 	}

@@ -89,13 +89,13 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		}
 		this.huIdsFilterData = huIdsFilterData;
 
-		this.stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
+		stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
 				.filter(HUIdsFilterHelper::isNotHUIdsFilter)
 				.collect(ImmutableList.toImmutableList());
 
 		final List<DocumentFilter> filtersAll = ImmutableList.copyOf(Iterables.concat(stickyFiltersWithoutHUIdsFilter, filters));
 
-		this.huIdsSupplier = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
+		huIdsSupplier = Suppliers.memoize(() -> new CopyOnWriteArraySet<>(huEditorRepo.retrieveHUIdsEffective(this.huIdsFilterData, filtersAll)));
 	}
 
 	@Override
