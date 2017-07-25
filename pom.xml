@@ -280,6 +280,25 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<systemPropertyVariables>
+						<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
+					</systemPropertyVariables>
+					<includes>
+                        <!-- default inclusions, see http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html -->
+						<include>**/Test*.java</include>
+						<include>**/*Test.java</include>
+						<include>**/*TestCase.java</include>
+
+                        <!-- additional include, because we often use that pattern -->
+						<include>**/*Tests.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 </project>
