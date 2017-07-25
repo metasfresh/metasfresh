@@ -56,7 +56,7 @@ class UserDropdown extends Component {
         return (
             <div
                 className={
-                    'header-item-container header-item-container-static ' +
+                    'header-item-container ' +
                     'pointer user-dropdown-container tooltip-parent ' +
                     (open ? 'header-item-open ' : '')
                 }
