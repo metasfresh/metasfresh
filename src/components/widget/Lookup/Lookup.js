@@ -174,8 +174,6 @@ class Lookup extends Component {
 
                             const itemByProperty = getItemsByProperty(
                                 defaultValue, 'field', item.field
-                            )[0] && getItemsByProperty(
-                                defaultValue, 'field', item.field
                             )[0];
 
                             const objectValue = itemByProperty && itemByProperty.value;
