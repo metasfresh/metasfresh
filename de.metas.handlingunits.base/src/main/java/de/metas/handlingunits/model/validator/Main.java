@@ -49,11 +49,11 @@ import org.eevolution.model.I_DD_OrderLine;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
 import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate_GridTabSummaryInfoProvider;
 import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
@@ -146,7 +146,11 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
 
-		//
+		engine.addModelValidator( de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE, client);
+		
+		// #484 HU tracing
+		engine.addModelValidator(de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor.INSTANCE, client);
+				
 		// M_Package integration
 		engine.addModelValidator(new M_ShippingPackage(), client);
 
@@ -283,13 +287,12 @@ public final class Main extends AbstractModuleInterceptor
 		{
 			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
 		}
-
 		//
 		// Weights Attributes
 		{
 			huTrxBL.addListener(WeightGenerateHUTrxListener.instance);
 		}
-
+		
 		//
 		// Receipt schedule
 		{

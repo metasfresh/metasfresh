@@ -230,7 +230,7 @@ public class MFSession
 		// get the session's host key
 		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
 		final String newHostKey = hostKeyBL.getCreateHostKey();
-		log.info("Setting AD_Session.HostKey={} for sessionPO={}", hostKey, sessionPO);
+		log.info("Setting AD_Session.HostKey={} for sessionPO={}", newHostKey, sessionPO);
 
 		setHostKey(newHostKey, ctxToUpdate);
 		return newHostKey;

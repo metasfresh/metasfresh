@@ -38,9 +38,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
@@ -55,7 +52,10 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HULoadException;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -371,7 +371,7 @@ public class HULoader
 
 			//
 			// Iterate each load transaction:
-			// * create it's counterpart unload transaction (taking properties from unloadTrx)
+			// * create it's counterpart 'unloadTrxPartial' by taking properties from 'unloadTrx', but just the part that was actually loaded
 			// * transfer attributes
 			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
 			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());

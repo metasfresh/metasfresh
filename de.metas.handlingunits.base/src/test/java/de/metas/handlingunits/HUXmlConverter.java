@@ -56,6 +56,7 @@ import org.w3c.dom.Node;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUAttributesDAO;
+import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;

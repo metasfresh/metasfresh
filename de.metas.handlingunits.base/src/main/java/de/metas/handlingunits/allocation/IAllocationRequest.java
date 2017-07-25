@@ -79,7 +79,7 @@ public interface IAllocationRequest
 	 * Gets referenced model.
 	 *
 	 * In case you are doing allocations/deallocations, creating new HUs, the Qty changes or newly created HUs can be linked to this model. This is done in
-	 * {@link de.metas.handlingunits.IHUTrxListener} implementations and those implementation decide when and how this is made.
+	 * {@link de.metas.handlingunits.hutransaction.IHUTrxListener} implementations and those implementation decide when and how this is made.
 	 *
 	 * @return referenced model (e.g. a document line)
 	 */

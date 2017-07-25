@@ -107,6 +107,18 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 		}
 		return itemParent.getM_HU();
 	}
+	
+	@Override
+	public int retrieveParentId(final I_M_HU hu)
+	{
+		final I_M_HU_Item itemParent = hu.getM_HU_Item_Parent();
+		if (itemParent == null)
+		{
+			return -1;
+		}
+		return itemParent.getM_HU_ID();
+	}
+	
 
 	@Override
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)

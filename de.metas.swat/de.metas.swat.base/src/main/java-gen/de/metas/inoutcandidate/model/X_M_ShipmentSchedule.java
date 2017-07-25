@@ -4,7 +4,6 @@ package de.metas.inoutcandidate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1601343268L;
+	private static final long serialVersionUID = -2014321599L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -30,16 +29,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 			setC_BPartner_Location_ID (0);
 			setDeliveryRule (null);
 			setDeliveryViaRule (null);
-			setIsBPartnerAddress_Override (false);
-// N
-			setIsDisplayed (true);
-// Y
-			setIsDropShip (false);
-// N
+			setIsBPartnerAddress_Override (false); // N
+			setIsDisplayed (true); // Y
+			setIsDropShip (false); // N
 			setM_ShipmentSchedule_ID (0);
 			setM_Warehouse_ID (0);
-			setProcessed (false);
-// N
+			setProcessed (false); // N
 			setRecord_ID (0);
         } */
     }

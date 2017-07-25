@@ -8,9 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.event.Event;
+import de.metas.event.SimpleObjectSerializer;
 import de.metas.event.jms.JsonEventSerializer;
 import de.metas.material.event.impl.ManufactoringEventSerializerTests;
-import de.metas.material.event.impl.MaterialEventSerializer;
 
 /*
  * #%L
@@ -55,7 +55,7 @@ public class JSonEventSerializerTests
 	public void test()
 	{
 		final TransactionEvent inOutEvent = ManufactoringEventSerializerTests.createSampleTransactionEvent();
-		final String inOutEventStr = MaterialEventSerializer.get().serialize(inOutEvent);
+		final String inOutEventStr = SimpleObjectSerializer.get().serialize(inOutEvent);
 
 		final Event event = Event.builder()
 				.putProperty(MaterialEventService.MANUFACTURING_DISPOSITION_EVENT, inOutEventStr)
@@ -66,7 +66,7 @@ public class JSonEventSerializerTests
 		final Event deserialisedEvent = JsonEventSerializer.instance.fromString(eventStr);
 		final String deserializedInOutEventStr = deserialisedEvent.getProperty(MaterialEventService.MANUFACTURING_DISPOSITION_EVENT);
 
-		final MaterialEvent deserializedInOutEvent = MaterialEventSerializer.get().deserialize(deserializedInOutEventStr);
+		final MaterialEvent deserializedInOutEvent = SimpleObjectSerializer.get().deserialize(deserializedInOutEventStr, MaterialEvent.class);
 
 		assertThat(deserializedInOutEvent instanceof TransactionEvent, is(true));
 		assertThat(((TransactionEvent)deserializedInOutEvent)

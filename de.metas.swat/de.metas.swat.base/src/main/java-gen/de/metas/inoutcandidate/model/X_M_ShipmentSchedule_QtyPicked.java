@@ -4,7 +4,6 @@ package de.metas.inoutcandidate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_ShipmentSchedule_QtyPicked
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 342216522L;
+	private static final long serialVersionUID = 1448422297L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_QtyPicked (Properties ctx, int M_ShipmentSchedule_QtyPicked_ID, String trxName)
@@ -25,10 +24,8 @@ public class X_M_ShipmentSchedule_QtyPicked extends org.compiere.model.PO implem
       /** if (M_ShipmentSchedule_QtyPicked_ID == 0)
         {
 			setM_ShipmentSchedule_QtyPicked_ID (0);
-			setProcessed (false);
-// N
-			setQtyPicked (BigDecimal.ZERO);
-// 0
+			setProcessed (false); // N
+			setQtyPicked (BigDecimal.ZERO); // 0
         } */
     }
 

@@ -27,9 +27,9 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 
 /**
  * Null {@link IAllocationResult} implementation.

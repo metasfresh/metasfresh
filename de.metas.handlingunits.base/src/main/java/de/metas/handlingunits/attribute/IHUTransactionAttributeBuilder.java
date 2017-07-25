@@ -25,10 +25,10 @@ package de.metas.handlingunits.attribute;
 
 import java.util.List;
 
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 
 /**
  * Used to collect and process {@link IHUTransactionAttribute}s while processing HUs.

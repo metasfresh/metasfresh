@@ -1150,6 +1150,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		// FIXME: introduce M_ShipmentSchedule.C_UOM_ID
 		// See http://dewiki908/mediawiki/index.php/05565_Introduce_M_ShipmentSchedule.C_UOM_ID_%28107483088069%29
+		// when changing also pls check/fix M_Packageable_V view
 
 		// return sched.getC_OrderLine().getC_UOM();
 		return sched.getM_Product().getC_UOM();

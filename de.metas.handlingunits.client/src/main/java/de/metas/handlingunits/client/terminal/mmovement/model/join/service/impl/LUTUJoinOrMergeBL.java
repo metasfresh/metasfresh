@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
@@ -45,6 +44,7 @@ import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMoveme
 import de.metas.handlingunits.client.terminal.mmovement.model.join.ILUTUJoinKey;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.service.ILUTUJoinOrMergeBL;
 import de.metas.handlingunits.exceptions.NoCompatibleHUItemParentFoundException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;

@@ -515,7 +515,7 @@ public class InterfaceWrapperHelper
 			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
-
+	
 	public static void save(final Object model)
 	{
 		final Object modelToSave;

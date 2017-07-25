@@ -35,12 +35,12 @@ import org.compiere.model.I_M_InOutLine;
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 

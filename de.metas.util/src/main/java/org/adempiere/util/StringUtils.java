@@ -137,6 +137,83 @@ public final class StringUtils
 		return Boolean.parseBoolean(strBoolean);
 	}
 	
+	
+	/**
+	 * Convert given object to ADempiere's boolean value.
+	 * 
+	 * @param value
+	 * @param defaultValue
+	 * @return <ul>
+	 *         <li>true if value is boolean true, "true" or "Y"
+	 *         <li>false if value is boolean false, "false" or "N"
+	 *         <li><code>defaultValue</code> if value is null or other
+	 *         </ul>
+	 */
+	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	{
+		if (value == null)
+		{
+			return defaultValue;
+		}
+		else if (value instanceof Boolean)
+		{
+			return (Boolean)value;
+		}
+		else
+		{
+			final String valueStr = value.toString();
+			if ("true".equalsIgnoreCase(valueStr)
+					|| "Y".equalsIgnoreCase(valueStr))
+			{
+				return Boolean.TRUE;
+			}
+			else if ("false".equalsIgnoreCase(valueStr)
+					|| "N".equalsIgnoreCase(valueStr))
+			{
+				return Boolean.FALSE;
+			}
+			else
+			{
+				return defaultValue;
+			}
+		}
+	}
+
+	/**
+	 * Converts the give object to boolean value, same as {@link #toBoolean(Object, boolean)} but assumes default value is <code>false</code>.
+	 * 
+	 * @param value may be {@code null}. in that case, {@code false} is returned.
+	 * @return <ul>
+	 *         <li>true if value is boolean true, "true" or "Y"
+	 *         <li>false if value is boolean false, "false" or "N"
+	 *         <li>false if value is null or other
+	 *         </ul>
+	 */
+	public static final boolean toBoolean(final Object value)
+	{
+		final Boolean defaultValue = Boolean.FALSE;
+		return toBoolean(value, defaultValue);
+	}
+
+	/**
+	 * Converts given boolean value to ADempiere's string representation of it
+	 * 
+	 * @param value
+	 * @return <ul>
+	 *         <li><code>null</code> if value is null
+	 *         <li>"Y" if value is true
+	 *         <li>"N" if value is false
+	 *         </ul>
+	 */
+	public static final String toBooleanString(final Boolean value)
+	{
+		if (value == null)
+		{
+			return null;
+		}
+		return value ? "Y" : "N";
+	}
+	
 	/**
 	 * Formats the given message, using either {@link java.text.Format} or {@link org.slf4j.helpers.MessageFormatter}.<br>
 	 * If the given <code>message</code> contains <code>{0}</code> as a substring and the given <code>params</code> has at least one item, then {@link java.text.Format} is used, otherwise the SLF4J

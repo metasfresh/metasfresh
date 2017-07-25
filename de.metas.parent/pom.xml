@@ -522,7 +522,158 @@
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<systemPropertyVariables>
+						<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
+					</systemPropertyVariables>
+					<includes>
+						<!-- default inclusions, see http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html -->
+						<include>**/Test*.java</include>
+						<include>**/*Test.java</include>
+						<include>**/*TestCase.java</include>
+
+						<!-- additional include, because we often use that pattern -->
+						<include>**/*Tests.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<configuration>
+					<rules>
+
+						<!-- task 08834: We shall not leave the decision about plugin-versions
+							to maven. Rationale: we had the case that a build stopped working at a *very*
+							critical moment, because maven picked a more recent version of the jaxb plugin.
+							That version didn't support the way, we configured it and failed with an
+							error message. This shall not happen again. -->
+						<requirePluginVersions>
+							<message>!! We need to have the plugin version under control to	avoid build failures due to maven releasing a new plugin version !!</message>
+							<banLatest>true</banLatest>
+							<banRelease>true</banRelease>
+							<banSnapshots>true</banSnapshots>
+							<phases>clean,deploy,site</phases>
+							<additionalPlugins>
+								<additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
+							</additionalPlugins>
+							<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
+						</requirePluginVersions>
+
+						<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
+						<dependencyConvergence />
+
+						<banDuplicateClasses>
+							<ignoreClasses>
+
+								<!-- itext-2.1.7 has two different versions as dependences -->
+								<ignoreClass>org.bouncycastle.*</ignoreClass>
+
+								<!-- org.jboss.client:jbossall-client and partially geronimo specs -->
+								<ignoreClass>javax.annotation.*</ignoreClass>
+								<ignoreClass>javax.ejb.*</ignoreClass>
+								<ignoreClass>javax.jms.*</ignoreClass>
+								<ignoreClass>javax.management.j2ee.*</ignoreClass>
+								<ignoreClass>javax.xml.*</ignoreClass>
+								<ignoreClass>javax.transaction.*</ignoreClass>
+
+								<ignoreClass>org.apache.*</ignoreClass>
+								<ignoreClass>org.codehaus.*</ignoreClass>
+								<ignoreClass>hidden.org.codehaus.*</ignoreClass>
+								<ignoreClass>org.junit.*</ignoreClass>
+								<ignoreClass>org.w3c.*</ignoreClass>
+								<ignoreClass>org.xml.*</ignoreClass>
+
+								<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
+								<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
+
+								<!-- the following are camel/servicemix related dependencies -->
+								<!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
+									net.sf.opencsv:opencsv:jar:2.1:compile -->
+								<ignoreClass>au.com.bytecode.*</ignoreClass>
+
+								<ignoreClass>com.microsoft.schemas.*</ignoreClass>
+								<ignoreClass>org.etsi.uri.*</ignoreClass>
+								<ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
+								<ignoreClass>org.w3.x2000.*</ignoreClass>
+
+								<!-- Found in: xmlpull:xmlpull:jar:1.1.3.1:compile xpp3:xpp3_min:jar:1.1.4c:compile -->
+								<ignoreClass>org.xmlpull.*</ignoreClass>
+
+								<!-- Found in: org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile -->
+								<ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>
+								<ignoreClass>repackage.Repackager</ignoreClass>
+								<ignoreClass>repackage.Repackage</ignoreClass>
+								<ignoreClass>repackage.EditBuildScript</ignoreClass>
+
+								<!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
+									javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
+								<ignoreClass>javax.servlet.*</ignoreClass>
+							</ignoreClasses>
+
+							<dependencies>
+								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM
+									("JUnit classes in JMockit jar") for background info -->
+								<dependency>
+									<artifactId>jmockit</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.junit.runner.Runner</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+								<!-- this is a dependency of spring-boot-starter-test 1.4.1 the error
+									message we are avoiding this was goes like this: ================= Duplicate
+									classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test
+									Duplicate classes: org/objectweb/asm/Type.class [...] ================= -->
+								<dependency>
+									<groupId>net.minidev</groupId>
+									<artifactId>accessors-smart</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.objectweb.asm.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
+								<dependency>
+									<groupId>org.elasticsearch</groupId>
+									<artifactId>elasticsearch</artifactId>
+									<ignoreClasses>
+										<ignoreClass>org.joda.*</ignoreClass>
+									</ignoreClasses>
+								</dependency>
+
+							</dependencies>
+
+							<findAllDuplicates>true</findAllDuplicates>
+						</banDuplicateClasses>
+					</rules>
+					<fail>true</fail>
+				</configuration>
+
+				<executions>
+					<execution>
+						<id>enforce</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.2</version>
+			</plugin>
+
 		</plugins>
+
 	</build>
 
 	<profiles>

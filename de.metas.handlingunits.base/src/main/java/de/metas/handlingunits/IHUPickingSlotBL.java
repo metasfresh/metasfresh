@@ -33,6 +33,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 
 /**
@@ -102,7 +103,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	void removeFromPickingSlotQueue(I_M_HU hu);
 
 	/**
-	 * Removes the given <code>hu</code> all of it's children (recursivelly) from any picking slot (current picking slot HU or in picking slot queue).
+	 * Removes the given <code>hu</code> all of it's children (recursively) from any picking slot (current picking slot HU or in picking slot queue).
 	 *
 	 * @param hu
 	 * @see #removeFromPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot, I_M_HU)
@@ -148,4 +149,13 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 
 		I_M_PickingSlot_HU getI_M_PickingSlot_HU();
 	}
+
+	/**
+	 * Search for available HUs to be picked.
+	 *
+	 * @param shipmentSchedules for which the HUs shall be picked
+	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
+	 * @return matching HUs
+	 */
+	List<I_M_HU> retrieveAvailableHUsToPick(List<I_M_ShipmentSchedule> shipmentSchedules, boolean considerAttributes);
 }
