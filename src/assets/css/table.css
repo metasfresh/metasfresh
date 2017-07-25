@@ -27,6 +27,11 @@
     vertical-align: middle;
 }
 
+.table thead th .sort-menu {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
 .table .col-xs-12,
 .table .col-sm-12 {
     position: static;
