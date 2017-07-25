@@ -3,10 +3,12 @@ package de.metas.ui.web.process;
 import java.util.List;
 import java.util.Objects;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Functions;
 import org.adempiere.util.Functions.MemoizingFunction;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -76,7 +78,6 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	private final MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
-
 	private ViewAsPreconditionsContext(@NonNull final IView view, @NonNull final DocumentIdsSelection selectedDocumentIds)
 	{
 		Check.assumeNotNull(view, "Parameter view is not null");
@@ -108,13 +109,13 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		final T viewCasted = (T)view;
 		return viewCasted;
 	}
-	
+
 	@Override
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
 		return view.getAdditionalRelatedProcessDescriptors();
 	}
-	
+
 	@Override
 	public int getAD_Window_ID()
 	{
@@ -131,16 +132,22 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		return selectedDocumentIds;
 	}
-	
+
 	public DocumentId getSingleSelectedDocumentId()
 	{
 		return selectedDocumentIds.getSingleDocumentId();
 	}
-	
+
 	@Override
 	public int getSingleSelectedRecordId()
 	{
-		return getSingleSelectedDocumentId().toInt();
+		final DocumentId rowId = getSingleSelectedDocumentId();
+		final TableRecordReference recordRef = view.getTableRecordReferenceOrNull(rowId);
+		if (recordRef == null)
+		{
+			throw new AdempiereException("Cannot extract Record_ID from single selected rowId: " + rowId);
+		}
+		return recordRef.getRecord_ID();
 	}
 
 	@Override
@@ -172,13 +179,13 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		return getSelectedDocumentIds().size();
 	}
-	
+
 	@Override
 	public boolean isNoSelection()
 	{
 		return getSelectedDocumentIds().isEmpty();
 	}
-	
+
 	@Override
 	public boolean isMoreThanOneSelected()
 	{

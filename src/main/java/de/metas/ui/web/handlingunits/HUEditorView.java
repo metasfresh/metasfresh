@@ -94,7 +94,7 @@ public class HUEditorView implements IView
 
 	private final transient DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final ImmutableList<DocumentFilter> filters;
-	
+
 	private final ImmutableMap<String, Object> parameters;
 
 	private HUEditorView(final Builder builder)
@@ -136,7 +136,7 @@ public class HUEditorView implements IView
 
 		actions = builder.getActions();
 		additionalRelatedProcessDescriptors = builder.getAdditionalRelatedProcessDescriptors();
-		
+
 		parameters = builder.getParameters();
 	}
 
@@ -240,7 +240,7 @@ public class HUEditorView implements IView
 	{
 		return additionalRelatedProcessDescriptors;
 	}
-	
+
 	public boolean getParameterAsBoolean(final String name, final boolean defaultValue)
 	{
 		final Boolean value = (Boolean)parameters.get(name);
@@ -299,6 +299,25 @@ public class HUEditorView implements IView
 	public String getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
 	{
 		return rowsBuffer.getSqlWhereClause(rowIds);
+	}
+
+	@Override
+	public TableRecordReference getTableRecordReferenceOrNull(final DocumentId rowId)
+	{
+		if (rowId == null)
+		{
+			return null;
+		}
+
+		final HUEditorRowId huRowId = HUEditorRowId.ofDocumentId(rowId);
+		if (huRowId.isHU())
+		{
+			return TableRecordReference.of(I_M_HU.Table_Name, huRowId.getHuId());
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	@Override
@@ -579,7 +598,7 @@ public class HUEditorView implements IView
 
 		public Builder addAdditionalRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor descriptor)
 		{
-			if (this.additionalRelatedProcessDescriptors == null)
+			if (additionalRelatedProcessDescriptors == null)
 			{
 				additionalRelatedProcessDescriptors = new ArrayList<>();
 			}
@@ -632,10 +651,10 @@ public class HUEditorView implements IView
 					parameters.put(name, value);
 				}
 			}
-			
+
 			return this;
 		}
-		
+
 		private ImmutableMap<String, Object> getParameters()
 		{
 			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();

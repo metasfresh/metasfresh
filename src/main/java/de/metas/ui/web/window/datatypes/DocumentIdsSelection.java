@@ -19,6 +19,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -265,18 +266,21 @@ public final class DocumentIdsSelection
 		assertNotAll();
 		return documentIds;
 	}
-
-	public Set<Integer> toIntSet()
+	
+	public <T> Set<T> toSet(@NonNull final Function<DocumentId, T> mapper)
 	{
 		assertNotAll();
-		if (documentIds.isEmpty())
+		if(documentIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
+		return documentIds.stream().map(mapper).collect(ImmutableSet.toImmutableSet());
+	}
 
-		return documentIds.stream()
-				.map(DocumentId::toInt)
-				.collect(ImmutableSet.toImmutableSet());
+
+	public Set<Integer> toIntSet()
+	{
+		return toSet(DocumentId::toInt);
 	}
 
 	public Set<String> toJsonSet()
@@ -285,15 +289,7 @@ public final class DocumentIdsSelection
 		{
 			return ALL_StringSet;
 		}
-		else if (documentIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-		else
-		{
-			return documentIds.stream()
-					.map(DocumentId::toJson)
-					.collect(ImmutableSet.toImmutableSet());
-		}
+		
+		return toSet(DocumentId::toJson);
 	}
 }

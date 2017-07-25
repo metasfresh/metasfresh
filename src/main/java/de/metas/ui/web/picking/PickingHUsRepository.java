@@ -106,8 +106,7 @@ import lombok.NonNull;
 						pc -> ImmutablePair.of(pc.getM_PickingSlot_ID(), isPickingCandidateProcessed(pc))) // value function
 		);
 
-		final List<HUEditorRow> huRows = huEditorRepo.retrieveHUEditorRows(
-				huId2pickingSlotId.keySet());
+		final List<HUEditorRow> huRows = huEditorRepo.retrieveHUEditorRows(huId2pickingSlotId.keySet());
 
 		final ListMultimap<Integer, PickingSlotHUEditorRow> result = huRows.stream()
 				.map(huRow -> GuavaCollectors.entry(
