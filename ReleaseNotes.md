@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Refined Layout for the Detail Views in Handling Unit Editor Window of WebUI.
   * [#2058](https://github.com/metasfresh/metasfresh/issues/2058) Change AD_Table_ID Identifier to Name only
     * Changing the Identifier for AD_Table from TableName + Name to Name only. This allows a better readability for the user.
+  * [#2029](https://github.com/metasfresh/metasfresh/issues/2029) New Window for Accounts and Elements in WebUI
+    * New Window for the maintenance of Account Elements in WebUI
 
 * metasfresh-webui-api
 
