@@ -13,7 +13,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -128,7 +127,7 @@ public class PickingCandidateCommand
 		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		I_M_Product product = shipmentSchedule.getM_Product();
+		final I_M_Product product = shipmentSchedule.getM_Product();
 
 		final I_M_Picking_Candidate candidate = getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
 
@@ -156,7 +155,9 @@ public class PickingCandidateCommand
 		// Request
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx());
+		// create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing();
+
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(product)
