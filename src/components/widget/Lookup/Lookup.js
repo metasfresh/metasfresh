@@ -172,9 +172,11 @@ class Lookup extends Component {
 
                         } else if (item.source === 'list') {
 
-                            const objectValue = getItemsByProperty(
+                            const itemByProperty = getItemsByProperty(
                                 defaultValue, 'field', item.field
-                            )[0].value;
+                            )[0];
+
+                            const objectValue = itemByProperty && itemByProperty.value;
 
                             return <div
                                 className={
