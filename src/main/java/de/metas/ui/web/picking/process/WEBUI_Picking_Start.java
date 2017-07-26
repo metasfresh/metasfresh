@@ -37,7 +37,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
  * #L%
  */
 
-public class WEBUI_M_Packageable_StartPicking extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

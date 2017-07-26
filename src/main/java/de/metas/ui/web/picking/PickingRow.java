@@ -86,12 +86,17 @@ public final class PickingRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
 	private final java.util.Date preparationDate;
-	
+
 	private final int shipmentScheduleId;
-	
+
 	private final ViewId includedViewId;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
+
+	public static PickingRow cast(final IViewRow row)
+	{
+		return (PickingRow)row;
+	}
 
 	@Builder
 	private PickingRow(
@@ -100,7 +105,7 @@ public final class PickingRow implements IViewRow
 			final IViewRowType type,
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
-			//
+
 			final LookupValue warehouse,
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,

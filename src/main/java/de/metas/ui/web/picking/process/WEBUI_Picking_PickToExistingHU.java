@@ -1,13 +1,14 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_HU;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 
-import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -72,9 +73,14 @@ public class WEBUI_Picking_PickToExistingHU
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isHURow())
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}
+		
+		if (pickingSlotRow.isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
+		}
+
 
 // let's decide later, if we allow qty to be added out of thin air in case of "force"
 // for now,the qty should come from an exiting HU that's somewhere in this warehouse		
