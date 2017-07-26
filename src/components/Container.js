@@ -112,19 +112,21 @@ class Container extends Component {
                                      inModal={modal.visible}
                                  >
                                  </DocumentList>
-                                 {includedView.windowType &&
-                                     includedView.viewId &&
+                                 {includedView.windowType && includedView.viewId && (
                                      <DocumentList
                                          type="includedView"
                                          selected={selected}
                                          selectedWindowType={selectedWindowType}
                                          windowType={includedView.windowType}
                                          defaultViewId={includedView.viewId}
+                                         fetchQuickActionsOnInit={true}
+                                         isModal={true}
                                          isIncluded={true}
                                          processStatus={processStatus}
+                                         inBackground={false}
                                          inModal={modal.visible}
                                      />
-                                 }
+                                 )}
                             </div>
                          </RawModal>
                      }
