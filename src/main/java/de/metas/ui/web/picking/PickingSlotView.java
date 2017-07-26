@@ -283,6 +283,7 @@ public class PickingSlotView implements IView
 	}
 
 	/**
+	 * Convenience method.
 	 * 
 	 * @return never returns {@code null} (see constructor code).
 	 */

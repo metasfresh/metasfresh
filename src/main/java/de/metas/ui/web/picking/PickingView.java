@@ -276,9 +276,16 @@ public class PickingView implements IView
 		return InterfaceWrapperHelper.createList(packables, modelClass);
 	}
 
+	/**
+	 * Also supports {@link DocumentIdsSelection#ALL}, because there won't be too many packageable lines at one time.
+	 */
 	@Override
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
+		if(rowIds.isAll())
+		{
+			return getRows().values().stream();
+		}
 		return rowIds.stream().map(this::getById);
 	}
 

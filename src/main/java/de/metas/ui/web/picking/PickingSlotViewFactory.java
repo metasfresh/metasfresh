@@ -5,12 +5,16 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
@@ -80,10 +84,25 @@ public class PickingSlotViewFactory implements IViewFactory
 	}
 
 	/**
-	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
+	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side).
 	 */
 	@Override
 	public PickingSlotView createView(@NonNull final CreateViewRequest request)
+	{
+		return createView(request, null);
+	}
+
+	/**
+	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
+	 * 
+	 * @param request
+	 * @param allShipmentScheduleIds the shipment schedule IDs to display picking slots for; <br>
+	 *            may be {@code null} or empty, in this case we assume that only the given {@code request}'s {@code shipmentScheduleId} is available.
+	 * @return
+	 */
+	/* package */ PickingSlotView createView(
+			@NonNull final CreateViewRequest request,
+			@Nullable final List<Integer> allShipmentScheduleIds)
 	{
 		final ViewId pickingViewId = request.getParentViewId();
 		final DocumentId pickingRowId = request.getParentRowId();
@@ -91,8 +110,21 @@ public class PickingSlotViewFactory implements IViewFactory
 
 		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
 
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
+		//
+		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
+		final PickingSlotRepoQuery query;
+		if (allShipmentScheduleIds == null || allShipmentScheduleIds.isEmpty())
+		{
+			query = PickingSlotRepoQuery.of(shipmentScheduleId);
+		}
+		else
+		{
+			Check.errorUnless(allShipmentScheduleIds.contains(shipmentScheduleId), 
+					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; shipmentScheduleId={}; allShipmentScheduleIds={}; request={}",
+					shipmentScheduleId, allShipmentScheduleIds, request);
 
+			query = PickingSlotRepoQuery.of(allShipmentScheduleIds);
+		}
 		// notice for noobs such as me: this is executed each time the view is revalidated. and it's not executed when this createView method runs
 		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(query);
 

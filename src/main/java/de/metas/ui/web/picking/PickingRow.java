@@ -128,6 +128,9 @@ public final class PickingRow implements IViewRow
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;
 
+		// create the included view's ID
+		// note that despite all our packageable-rows have the same picking slots, the IDs still need to be individual per-row,
+		// because we need to notify the picking slot view of this packageable-rows is selected at a given point in time
 		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
 	}
 

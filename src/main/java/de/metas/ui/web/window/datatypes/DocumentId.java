@@ -47,6 +47,12 @@ public abstract class DocumentId implements Serializable
 	public static final transient String NEW_ID_STRING = "NEW";
 	public static final transient DocumentId NEW = new IntDocumentId(NEW_ID);
 
+	/**
+	 * Attempts to parse the given {@code idStr} into an integer and return an {@link IntDocumentId}. If the parsing fails, it returns a {@link StringDocumentId} instead. 
+	 * 
+	 * @param idStr might represent an integer or a string, but may not be empty or {@code null}.
+	 * @return
+	 */
 	@JsonCreator
 	public static final DocumentId of(final String idStr)
 	{
