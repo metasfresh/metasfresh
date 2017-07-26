@@ -53,7 +53,7 @@ class MenuOverlayItem extends Component {
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                this.handeArrowUp();
+                this.handleArrowUp();
                 break;
             case 'Tab':
                 e.preventDefault();
@@ -75,7 +75,7 @@ class MenuOverlayItem extends Component {
         }
     }
 
-    handeArrowUp() {
+    handleArrowUp() {
         let prevSiblings = document.activeElement.previousSibling;
         if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
             document.getElementById('search-input-query').focus();
@@ -123,6 +123,8 @@ class MenuOverlayItem extends Component {
                 }
 
             } else if(parentElem.parentElement.parentElement.nextSibling) {
+                parentElem.parentElement.parentElement.nextSibling
+                .getElementsByClassName('js-menu-item')[0] &&
                 parentElem.parentElement.parentElement.nextSibling
                 .getElementsByClassName('js-menu-item')[0].focus();
             }

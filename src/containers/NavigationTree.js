@@ -117,11 +117,26 @@ class NavigationTree extends Component {
         const input = document.getElementById('search-input');
         const firstMenuItem =
             document.getElementsByClassName('js-menu-item')[0];
+        let prevSiblings = document.activeElement.previousSibling;
 
         switch(e.key) {
             case 'ArrowDown':
                 if(document.activeElement === input) {
                     firstMenuItem.focus();
+                }
+                break;
+            case 'ArrowUp':
+                if(
+                    document.activeElement.classList.contains('js-menu-header')
+                ){
+                    prevParentSibling.children[0] &&
+                    prevParentSibling.children[0]
+                        .classList.contains('js-menu-header') &&
+                    prevParentSibling.children[0].focus();
+                }
+
+                if(document.activeElement.classList.contains('js-menu-item')) {
+                    this.handleArrowUp();
                 }
                 break;
             case 'Tab':
@@ -136,6 +151,79 @@ class NavigationTree extends Component {
                 e.preventDefault();
                 document.activeElement.childNodes[0].childNodes[0].click();
                 break;
+        }
+    }
+
+    handleArrowUp() {
+        let prevSiblings = document.activeElement.previousSibling;
+        if(prevSiblings && prevSiblings.classList.contains('input-primary')) {
+            document.getElementById('search-input-query').focus();
+        } else if (
+            prevSiblings && prevSiblings.classList.contains('js-menu-item')
+        ) {
+            document.activeElement.previousSibling.focus();
+        } else {
+            this.handleGroupUp();
+        }
+    }
+
+    findPreviousGroup() {
+        let elem = document.activeElement.parentElement;
+        let i = 0;
+        while (
+            !(elem && elem.classList.contains('js-menu-container') &&
+                elem.previousSibling && elem.previousSibling.children.length
+                !== 0 || elem &&
+                elem.classList.contains('js-menu-main-container') &&
+                i < 100)
+            ) {
+            elem = elem && elem.parentElement;
+            i++;
+        }
+
+        return elem.previousSibling;
+    }
+
+    handleGroupUp() {
+        const previousMainGroup = this.findPreviousGroup();
+        const previousGroup =
+            document.activeElement.parentElement.previousSibling;
+
+        if(previousGroup && previousGroup.classList.contains('js-menu-item')){
+            previousGroup.focus();
+        } else {
+            if (previousGroup && previousGroup.children.length > 0) {
+                this.selectLastItem(previousGroup);
+            } else if(previousMainGroup) {
+                this.selectLastItem(previousMainGroup);
+            } else {
+                document.activeElement.previousSibling.focus();
+            }
+        }
+    }
+
+    selectLastItem(previousGroup) {
+        const listChildren = previousGroup.childNodes;
+        const lastChildren = listChildren[listChildren.length - 1];
+        if(listChildren.length == 1){
+            listChildren[0].focus && listChildren[0].focus();
+        }else{
+            if(lastChildren.classList.contains('js-menu-item')) {
+                lastChildren.focus();
+            } else {
+                if(lastChildren.children[lastChildren.children.length - 1]
+                    .classList.contains('js-menu-item')){
+                    lastChildren.children[lastChildren.children.length - 1]
+                    .focus();
+                } else {
+                    lastChildren.children[lastChildren.children.length - 1]
+                    .getElementsByClassName('js-menu-item')[lastChildren
+                    .children[lastChildren.children.length - 1]
+                    .getElementsByClassName('js-menu-item').length-1].focus();
+                }
+
+            }
+
         }
     }
 
