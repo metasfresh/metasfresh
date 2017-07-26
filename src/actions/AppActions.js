@@ -187,7 +187,7 @@ export function changeKPIItem(id, path, value) {
     ]);
 }
 
-export function changetargetIndicatorsItem(id, path, value) {
+export function changeTargetIndicatorsItem(id, path, value) {
     return axios.patch(config.API_URL + '/dashboard/targetIndicators/'+id, [
         {
             "op": "replace",

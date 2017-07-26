@@ -4,18 +4,13 @@ import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
 import RawChart from '../charts/RawChart';
-import RawList from '../widget/List/RawList';
-
-import {changeKPIItem} from '../../actions/AppActions';
 
 export class ChartWidget extends Component {
     constructor(props) {
         super(props);
         this.state = {
             toggleWidgetMenu: false,
-            height: 400,
-            chartOptions: false,
-            when: ""
+            height: 400
         };
     }
 
@@ -40,39 +35,12 @@ export class ChartWidget extends Component {
         })
     }
 
-    handleChange = (e) => {
-        this.setState({
-            captionHandler: e.target.value
-        });
-    }
-
-    handleChartOptions = (opened) => {
-        this.setState({
-            chartOptions: opened
-        });
-    }
-
-    changeChartData = (path, value) => {
-        const {id} = this.props;
-        changeKPIItem(id, path, value).then(() => {
-            this.handleChartOptions(false);
-        });
-    }
-
-    handleOptionSelect = (path, option) => {
-        const {id} = this.props;
-        changeKPIItem(id, path, option.value).then(() => {
-            path === 'when' && this.setState({
-                when: option
-            });
-        });
-    }
 
     render() {
         const {
             text, framework, noData, maximizeWidget,
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
-            caption, fields, groupBy, pollInterval, editmode
+            caption, fields, groupBy, pollInterval, editmode, handleChartOptions
         } = this.props;
 
         const {
@@ -103,7 +71,7 @@ export class ChartWidget extends Component {
                         {editmode ? 
                             <span
                                 className="chart-edit-mode"
-                                onClick={() => this.handleChartOptions(true)}
+                                onClick={() => handleChartOptions(true, text, id, false)}
                             >
                                 <i className="meta-icon-settings"></i>
                             </span>
@@ -145,55 +113,6 @@ export class ChartWidget extends Component {
                     /> : 
                         <div>{chartType}</div>
                     }
-                    {  chartOptions && 
-                        <div className="chart-options-overlay">
-                            <div className="chart-options-wrapper">
-                                <div className="chart-options">
-                                    <div className="form-group">
-                                        <label>caption</label>
-                                        <input 
-                                            className="input-options input-secondary"
-                                            value={captionHandler}
-                                            onChange={this.handleChange}
-                                        />
-                                        
-                                    </div>
-                                    <div className="form-group">
-                                        <label>interval</label>
-                                        <div className="chart-options-list-wrapper">
-                                            <RawList
-                                                onSelect={option => this.handleOptionSelect('interval', option)}
-                                                list={[{caption: "week"}]}
-                                                selected={{caption: "week"}}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="form-group">
-                                        <label>when</label>
-                                        <div className="chart-options-list-wrapper">
-                                            <RawList
-                                                onSelect={option => this.handleOptionSelect('when', option)}
-                                                list={[{caption: "now", value: "now"},
-                                                        {caption: "last week", value: "lastWeek"}]}
-                                                selected={when}
-                                            />
-                                        </div>
-                                        
-                                    </div>
-                                </div>
-                                <div className="chart-options-button-wrapper">
-                                    <button 
-                                        className="btn btn-meta-outline-secondary btn-sm"
-                                        onClick={() => this.changeChartData("caption", captionHandler )}
-                                    >
-                                        Save
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                    
-                    
                 </div>
             </div>
         );
