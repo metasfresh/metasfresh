@@ -240,7 +240,7 @@ UPDATE AD_Field SET Name='Abschreibung',Updated=TO_TIMESTAMP('2017-07-26 19:55:1
 
 -- 2017-07-26T19:55:42.792
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Field SET Name='Über-/Unterzahlung',Updated=TO_TIMESTAMP('2017-07-26 19:55:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=8931
+UPDATE AD_Field SET Name='Ãœber-/Unterzahlung',Updated=TO_TIMESTAMP('2017-07-26 19:55:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=8931
 ;
 
 -- 2017-07-26T19:56:20.806
