@@ -5,9 +5,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.util.Check;
-import org.compiere.util.Env;
-
 /** Generated Model for C_BPartner
  *  @author Adempiere (generated) 
  */
@@ -18,7 +15,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1677576635L;
+	private static final long serialVersionUID = 954867283L;
 
     /** Standard Constructor */
     public X_C_BPartner (Properties ctx, int C_BPartner_ID, String trxName)
@@ -26,27 +23,23 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
       super (ctx, C_BPartner_ID, trxName);
       /** if (C_BPartner_ID == 0)
         {
-			setAllowConsolidateInOut (true);
-// Y
+			setAllowConsolidateInOut (true); // Y
 			setC_BP_Group_ID (0);
 			setC_BPartner_ID (0);
+			setIsCreateDefaultPOReference (false); // N
 			setIsCustomer (false);
 			setIsEmployee (false);
 			setIsOneTime (false);
-			setIsPOTaxExempt (false);
-// N
+			setIsPOTaxExempt (false); // N
 			setIsProspect (false);
 			setIsSalesRep (false);
 			setIsSummary (false);
 			setIsVendor (false);
 			setName (null);
-			setPaymentRule (null);
-// P
-			setPaymentRulePO (null);
-// P
+			setPaymentRule (null); // P
+			setPaymentRulePO (null); // P
 			setSendEMail (false);
-			setSO_CreditLimit (Env.ZERO);
-			setSO_CreditUsed (Env.ZERO);
+			setSO_CreditLimit (BigDecimal.ZERO);
 			setValue (null);
         } */
     }
@@ -84,7 +77,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AcqusitionCost);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -137,21 +130,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public int getAD_OrgBP_ID () 
 	{
-		final Integer ii;
-		final Object value = get_Value(COLUMNNAME_AD_OrgBP_ID);
-		
-		// metas-ts: in the DB this is a numeric, but still get_Value(COLUMNNAME_AD_OrgBP_ID) returns it as a string,
-		// so we need to avoid a ClassCastException
-		if (value instanceof String && !Check.isEmpty((String)value, true))
-		{
-			ii = Integer.parseInt((String)value);
-		}
-		else
-		{
-			ii = (Integer)value;
-		}
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgBP_ID);
 		if (ii == null)
-			return 0;
+			 return 0;
 		return ii.intValue();
 	}
 
@@ -388,9 +369,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_ValueFromPO(COLUMNNAME_C_PaymentTerm_ID, org.compiere.model.I_C_PaymentTerm.class, C_PaymentTerm);
 	}
 
-	/** Set Zahlungskondition.
+	/** Set Zahlungsbedingung.
 		@param C_PaymentTerm_ID 
-		The terms of Payment (timing, discount)
+		Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
@@ -401,8 +382,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
 	}
 
-	/** Get Zahlungskondition.
-		@return The terms of Payment (timing, discount)
+	/** Get Zahlungsbedingung.
+		@return Die Bedingungen für die Bezahlung dieses Vorgangs
 	  */
 	@Override
 	public int getC_PaymentTerm_ID () 
@@ -678,7 +659,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatDiscount);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -801,6 +782,32 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isCompany () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsCompany);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Autom. Referenz.
+		@param IsCreateDefaultPOReference 
+		Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	  */
+	@Override
+	public void setIsCreateDefaultPOReference (boolean IsCreateDefaultPOReference)
+	{
+		set_Value (COLUMNNAME_IsCreateDefaultPOReference, Boolean.valueOf(IsCreateDefaultPOReference));
+	}
+
+	/** Get Autom. Referenz.
+		@return Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	  */
+	@Override
+	public boolean isCreateDefaultPOReference () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsCreateDefaultPOReference);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -1038,7 +1045,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return false;
 	}
 
-	/** Set steuerbefreit.
+	/** Set Steuerbefreit.
 		@param IsTaxExempt 
 		Steuersatz steuerbefreit
 	  */
@@ -1048,7 +1055,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_IsTaxExempt, Boolean.valueOf(IsTaxExempt));
 	}
 
-	/** Get steuerbefreit.
+	/** Get Steuerbefreit.
 		@return Steuersatz steuerbefreit
 	  */
 	@Override
@@ -1200,9 +1207,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, M_DiscountSchema);
 	}
 
-	/** Set Rabatt-Schema.
+	/** Set Rabatt Schema.
 		@param M_DiscountSchema_ID 
-		Schema to calculate the trade discount percentage
+		Schema um den prozentualen Rabatt zu berechnen
 	  */
 	@Override
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
@@ -1213,8 +1220,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			set_Value (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
 	}
 
-	/** Get Rabatt-Schema.
-		@return Schema to calculate the trade discount percentage
+	/** Get Rabatt Schema.
+		@return Schema um den prozentualen Rabatt zu berechnen
 	  */
 	@Override
 	public int getM_DiscountSchema_ID () 
@@ -1437,9 +1444,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
-	/** Set Name 2.
+	/** Set Name Zusatz.
 		@param Name2 
-		Additional Name
+		Zusätzliche Bezeichnung
 	  */
 	@Override
 	public void setName2 (java.lang.String Name2)
@@ -1447,8 +1454,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_Name2, Name2);
 	}
 
-	/** Get Name 2.
-		@return Additional Name
+	/** Get Name Zusatz.
+		@return Zusätzliche Bezeichnung
 	  */
 	@Override
 	public java.lang.String getName2 () 
@@ -1456,9 +1463,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_Name2);
 	}
 
-	/** Set Mitarbeiter.
+	/** Set Anzahl Beschäftigte.
 		@param NumberEmployees 
-		Number of employees
+		Anzahl der Mitarbeiter
 	  */
 	@Override
 	public void setNumberEmployees (int NumberEmployees)
@@ -1466,8 +1473,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_Value (COLUMNNAME_NumberEmployees, Integer.valueOf(NumberEmployees));
 	}
 
-	/** Get Mitarbeiter.
-		@return Number of employees
+	/** Get Anzahl Beschäftigte.
+		@return Anzahl der Mitarbeiter
 	  */
 	@Override
 	public int getNumberEmployees () 
@@ -1599,7 +1606,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_ValueFromPO(COLUMNNAME_PO_DiscountSchema_ID, org.compiere.model.I_M_DiscountSchema.class, PO_DiscountSchema);
 	}
 
-	/** Set PO Discount Schema.
+	/** Set Einkauf Rabatt Schema.
 		@param PO_DiscountSchema_ID 
 		Schema to calculate the purchase trade discount percentage
 	  */
@@ -1612,7 +1619,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			set_Value (COLUMNNAME_PO_DiscountSchema_ID, Integer.valueOf(PO_DiscountSchema_ID));
 	}
 
-	/** Get PO Discount Schema.
+	/** Get Einkauf Rabatt Schema.
 		@return Schema to calculate the purchase trade discount percentage
 	  */
 	@Override
@@ -1751,6 +1758,25 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
 
+	/** Set Referenz Vorgabe.
+		@param POReferencePattern 
+		Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	  */
+	@Override
+	public void setPOReferencePattern (java.lang.String POReferencePattern)
+	{
+		set_Value (COLUMNNAME_POReferencePattern, POReferencePattern);
+	}
+
+	/** Get Referenz Vorgabe.
+		@return Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	  */
+	@Override
+	public java.lang.String getPOReferencePattern () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_POReferencePattern);
+	}
+
 	/** Set PostageFreeAmt.
 		@param PostageFreeAmt 
 		Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
@@ -1769,7 +1795,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PostageFreeAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1791,7 +1817,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PotentialLifeTimeValue);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -1833,6 +1859,38 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return (java.lang.String)get_Value(COLUMNNAME_ReferenceNo);
 	}
 
+	/** Set Wiedervorlage Datum Aussen.
+		@param ReminderDateExtern Wiedervorlage Datum Aussen	  */
+	@Override
+	public void setReminderDateExtern (java.sql.Timestamp ReminderDateExtern)
+	{
+		set_Value (COLUMNNAME_ReminderDateExtern, ReminderDateExtern);
+	}
+
+	/** Get Wiedervorlage Datum Aussen.
+		@return Wiedervorlage Datum Aussen	  */
+	@Override
+	public java.sql.Timestamp getReminderDateExtern () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderDateExtern);
+	}
+
+	/** Set Wiedervorlage Datum Innen.
+		@param ReminderDateIntern Wiedervorlage Datum Innen	  */
+	@Override
+	public void setReminderDateIntern (java.sql.Timestamp ReminderDateIntern)
+	{
+		set_Value (COLUMNNAME_ReminderDateIntern, ReminderDateIntern);
+	}
+
+	/** Get Wiedervorlage Datum Innen.
+		@return Wiedervorlage Datum Innen	  */
+	@Override
+	public java.sql.Timestamp getReminderDateIntern () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ReminderDateIntern);
+	}
+
 	@Override
 	public org.compiere.model.I_AD_User getSalesRep() throws RuntimeException
 	{
@@ -1845,10 +1903,8 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -1858,13 +1914,49 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_AD_User getSalesRepIntern() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_SalesRepIntern_ID, org.compiere.model.I_AD_User.class);
+	}
+
+	@Override
+	public void setSalesRepIntern(org.compiere.model.I_AD_User SalesRepIntern)
+	{
+		set_ValueFromPO(COLUMNNAME_SalesRepIntern_ID, org.compiere.model.I_AD_User.class, SalesRepIntern);
+	}
+
+	/** Set Sales Responsible.
+		@param SalesRepIntern_ID 
+		Sales Responsible Internal
+	  */
+	@Override
+	public void setSalesRepIntern_ID (int SalesRepIntern_ID)
+	{
+		if (SalesRepIntern_ID < 1) 
+			set_Value (COLUMNNAME_SalesRepIntern_ID, null);
+		else 
+			set_Value (COLUMNNAME_SalesRepIntern_ID, Integer.valueOf(SalesRepIntern_ID));
+	}
+
+	/** Get Sales Responsible.
+		@return Sales Responsible Internal
+	  */
+	@Override
+	public int getSalesRepIntern_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRepIntern_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -1980,7 +2072,7 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SO_CreditLimit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
