@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
@@ -308,7 +309,7 @@ public class WindowRestController
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
 
 		// Extract and send websocket events
-		JSONDocument.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+		JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
 
 		return jsonDocumentEvents;
 	}
