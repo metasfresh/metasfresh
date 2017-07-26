@@ -41,7 +41,7 @@ class TableItem extends Component {
                             .getElementsByClassName('js-input-field')[0];
 
                     if(elem){
-                        elem.focus();
+                        elem.select();
                     }
 
                     const disabled =
