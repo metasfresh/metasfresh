@@ -1,19 +1,17 @@
 package de.metas.request.model.validator;
 
-import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.ModelValidator;
@@ -44,7 +42,7 @@ import de.metas.inout.model.I_M_QualityNote;
  * #L%
  */
 
-@Validator(I_R_Request.class)
+@Interceptor(I_R_Request.class)
 @Callout(I_R_Request.class)
 public class R_Request
 {
@@ -122,45 +120,6 @@ public class R_Request
 		if (supervisor != null)
 		{
 			request.setSalesRep(supervisor);
-		}
-	}
-
-	/**
-	 * If request has the ReminderDate set then update the BPartner's ReminderDateExtern or ReminderDateIntern (based on request's sales rep).
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh/issues/2066
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_R_Request.COLUMNNAME_ReminderDate)
-	public void updateBPartnerReminderDate(final I_R_Request request)
-	{
-		final Timestamp reminderDate = request.getReminderDate();
-		if (reminderDate == null)
-		{
-			return;
-		}
-
-		final int adUserId = request.getSalesRep_ID();
-		if (adUserId < 0)
-		{
-			return;
-		}
-
-		final I_C_BPartner bpartner = request.getC_BPartner();
-		if (bpartner == null)
-		{
-			// nothing to do
-			return;
-		}
-
-		if (bpartner.getSalesRepIntern_ID() == adUserId)
-		{
-			bpartner.setReminderDateIntern(reminderDate);
-			InterfaceWrapperHelper.save(bpartner);
-		}
-		else if (bpartner.getSalesRep_ID() == adUserId)
-		{
-			bpartner.setReminderDateExtern(reminderDate);
-			InterfaceWrapperHelper.save(bpartner);
 		}
 	}
 }
