@@ -45,7 +45,8 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 	/**
 	 * Add QtyPickedDiff to current QtyPicked of given shipment schedule.
 	 *
-	 * Also updates the given <code>hu</code>'s (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to the given <code>sched</code>'s effective values.
+	 * Also update the given <code>hu</code>'s (and therefore its childrens') <code>C_BPartner_ID</code> and <code>C_BPartner_Location_ID</code> to the given <code>sched</code>'s effective values.<br>
+	 * And finally update the given {@code tuOrVHU}'s status to "Picked".
 	 *
 	 * @param sched
 	 * @param qtyPickedDiff
