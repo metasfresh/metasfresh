@@ -27,6 +27,13 @@
     vertical-align: middle;
 }
 
+.table thead .sort-menu .th-caption {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+}
+
 .table .col-xs-12,
 .table .col-sm-12 {
     position: static;
