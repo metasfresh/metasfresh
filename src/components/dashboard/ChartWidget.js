@@ -4,6 +4,7 @@ import ItemTypes from '../../constants/ItemTypes';
 import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
 import RawChart from '../charts/RawChart';
+import RawList from '../widget/List/RawList';
 
 import {changeKPIItem} from '../../actions/AppActions';
 
@@ -13,7 +14,8 @@ export class ChartWidget extends Component {
         this.state = {
             toggleWidgetMenu: false,
             height: 400,
-            chartOptions: false
+            chartOptions: false,
+            when: ""
         };
     }
 
@@ -57,6 +59,15 @@ export class ChartWidget extends Component {
         });
     }
 
+    handleOptionSelect = (path, option) => {
+        const {id} = this.props;
+        changeKPIItem(id, path, option.value).then(() => {
+            path === 'when' && this.setState({
+                when: option
+            });
+        });
+    }
+
     render() {
         const {
             text, framework, noData, maximizeWidget,
@@ -65,7 +76,8 @@ export class ChartWidget extends Component {
         } = this.props;
 
         const {
-            toggleWidgetMenu, height, captionHandler, chartOptions
+            toggleWidgetMenu, height, captionHandler, chartOptions,
+            when
         } = this.state;
         
         const isMaximized = idMaximized === id;
@@ -140,28 +152,34 @@ export class ChartWidget extends Component {
                                     <div className="form-group">
                                         <label>caption</label>
                                         <input 
-                                            className="input-secondary"
+                                            className="input-options input-secondary"
                                             value={captionHandler}
                                             onChange={this.handleChange}
                                         />
                                         
                                     </div>
-                                    {/*<div className="form-group">
+                                    <div className="form-group">
                                         <label>interval</label>
-                                        <input 
-                                            className="input-secondary"
-                                            value={captionHandler}
-                                            onChange={this.handleChange}
-                                        />
+                                        <div className="chart-options-list-wrapper">
+                                            <RawList
+                                                onSelect={option => this.handleOptionSelect('interval', option)}
+                                                list={[{caption: "week"}]}
+                                                selected={{caption: "week"}}
+                                            />
+                                        </div>
                                     </div>
                                     <div className="form-group">
                                         <label>when</label>
-                                        <input 
-                                            className="input-secondary"
-                                            value={captionHandler}
-                                            onChange={this.handleChange}
-                                        />
-                                    </div>*/}
+                                        <div className="chart-options-list-wrapper">
+                                            <RawList
+                                                onSelect={option => this.handleOptionSelect('when', option)}
+                                                list={[{caption: "now", value: "now"},
+                                                        {caption: "last week", value: "lastWeek"}]}
+                                                selected={when}
+                                            />
+                                        </div>
+                                        
+                                    </div>
                                 </div>
                                 <div className="chart-options-button-wrapper">
                                     <button 

@@ -53,10 +53,16 @@
     min-width: 140px;
 }
 
-.chart-options input {
+.chart-options .input-options {
     border-top: none;
     border-right: none;
     border-left: none;
+    min-width: 250px;
+}
+
+.chart-options-list-wrapper {
+    min-width: 250px;
+    display: inline-block
 }
 
 .chart-options-button-wrapper {
