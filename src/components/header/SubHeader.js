@@ -188,8 +188,12 @@ class Subheader extends Component {
             </div>
         ]
 
-        const currentNode = elementPath &&
-                elementPath.children[elementPath.children.length-1];
+        let currentNode = elementPath;
+        if (currentNode && currentNode.children) {
+            do {
+                currentNode = currentNode.children[currentNode.children.length - 1];
+            } while (currentNode && currentNode.children && (currentNode.type !== 'window'));
+        }
 
         return (
             <div
