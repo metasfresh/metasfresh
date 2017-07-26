@@ -24,6 +24,8 @@ Here come the actual release notes:
     * Changing the Identifier for AD_Table from TableName + Name to Name only. This allows a better readability for the user.
   * [#2029](https://github.com/metasfresh/metasfresh/issues/2029) New Window for Accounts and Elements in WebUI
     * New Window for the maintenance of Account Elements in WebUI
+  * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
+    * Adopting the Payment Window to the Current Window Concept for Documents in metasfresh WebUI
 
 * metasfresh-webui-api
 
