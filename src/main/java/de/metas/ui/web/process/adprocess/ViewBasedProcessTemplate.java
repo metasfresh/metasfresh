@@ -80,7 +80,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	/**
 	 * Please implement {@link #checkPreconditionsApplicable()} instead of this.
 	 *
-	 * WARNING: The preconditions will be checked only if the extending class implements IProcessPrecondition class.
+	 * WARNING: The preconditions will be checked only if the extending class implements the {@link de.metas.process.IProcessPrecondition} interface.
 	 *
 	 * @param context
 	 */

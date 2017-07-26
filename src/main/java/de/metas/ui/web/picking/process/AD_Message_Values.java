@@ -41,7 +41,11 @@ public final class AD_Message_Values
 	static final String MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU = "WEBUI_Picking_Not_TopLevelHU";
 
 	static final String MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P = "WEBUI_Picking_Wrong_HU_Status";
-	
+
 	static final String MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = "WEBUI_Picking_Already_Shipped";
+
+	static final String MSG_WEBUI_PICKING_DIVERGING_LOCATIONS = "WEBUI_Picking_Diverging_Locations";
+	
+	static final String MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P = "WEBUI_Picking_Too_Many_Packageables";
 
 }
