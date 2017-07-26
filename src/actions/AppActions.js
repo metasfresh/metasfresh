@@ -177,6 +177,16 @@ export function getKPIData(id) {
         '/data?silentError=true');
 }
 
+export function changeKPIItem(id, path, value) {
+    return axios.patch(config.API_URL + '/dashboard/kpis/'+id, [
+        {
+            "op": "replace",
+            "path": path,
+            "value": value
+        }
+    ]);
+}
+
 export function getTargetIndicatorsData(id) {
     return axios.get(
         config.API_URL +

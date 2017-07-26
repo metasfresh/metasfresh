@@ -5,13 +5,24 @@ import { DragSource, DropTarget } from 'react-dnd';
 import onClickOutside from 'react-onclickoutside';
 import RawChart from '../charts/RawChart';
 
+import {changeKPIItem} from '../../actions/AppActions';
+
 export class ChartWidget extends Component {
     constructor(props) {
         super(props);
         this.state = {
             toggleWidgetMenu: false,
-            height: 400
+            height: 400,
+            chartOptions: false
         };
+    }
+
+    componentDidMount(){
+        const {text} = this.props;
+
+        this.setState({
+            captionHandler: text
+        });
     }
 
     handleClickOutside = () => {
@@ -27,6 +38,25 @@ export class ChartWidget extends Component {
         })
     }
 
+    handleChange = (e) => {
+        this.setState({
+            captionHandler: e.target.value
+        });
+    }
+
+    handleChartOptions = (opened) => {
+        this.setState({
+            chartOptions: opened
+        });
+    }
+
+    changeChartData = (path, value) => {
+        const {id} = this.props;
+        changeKPIItem(id, path, value).then(() => {
+            this.handleChartOptions(false);
+        });
+    }
+
     render() {
         const {
             text, framework, noData, maximizeWidget,
@@ -35,7 +65,7 @@ export class ChartWidget extends Component {
         } = this.props;
 
         const {
-            toggleWidgetMenu, height
+            toggleWidgetMenu, height, captionHandler, chartOptions
         } = this.state;
         
         const isMaximized = idMaximized === id;
@@ -58,6 +88,14 @@ export class ChartWidget extends Component {
                         className="draggable-widget-title"
                     >
                         {text}
+                        {editmode ? 
+                            <span
+                                className="chart-edit-mode"
+                                onClick={() => this.handleChartOptions(true)}
+                            >
+                                <i className="meta-icon-settings"></i>
+                            </span>
+                        : ''}
                     </p>
                     {!editmode && !framework && <i
                         className="draggable-widget-icon meta-icon-down-1 input-icon-sm"
@@ -95,6 +133,49 @@ export class ChartWidget extends Component {
                     /> : 
                         <div>{chartType}</div>
                     }
+                    {  chartOptions && 
+                        <div className="chart-options-overlay">
+                            <div className="chart-options-wrapper">
+                                <div className="chart-options">
+                                    <div className="form-group">
+                                        <label>caption</label>
+                                        <input 
+                                            className="input-secondary"
+                                            value={captionHandler}
+                                            onChange={this.handleChange}
+                                        />
+                                        
+                                    </div>
+                                    {/*<div className="form-group">
+                                        <label>interval</label>
+                                        <input 
+                                            className="input-secondary"
+                                            value={captionHandler}
+                                            onChange={this.handleChange}
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>when</label>
+                                        <input 
+                                            className="input-secondary"
+                                            value={captionHandler}
+                                            onChange={this.handleChange}
+                                        />
+                                    </div>*/}
+                                </div>
+                                <div className="chart-options-button-wrapper">
+                                    <button 
+                                        className="btn btn-meta-outline-secondary btn-sm"
+                                        onClick={() => this.changeChartData("caption", captionHandler )}
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    
+                    
                 </div>
             </div>
         );
