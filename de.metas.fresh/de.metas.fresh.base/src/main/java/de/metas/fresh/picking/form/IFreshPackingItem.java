@@ -72,7 +72,7 @@ public interface IFreshPackingItem extends IPackingItem
 	 * Subtract the given quantity from this packing item and create a new packing item with it. Don't alter this packing item.
 	 *
 	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate
+	 * @param acceptShipmentSchedulePredicate may be {@code null}.
 	 * @return
 	 */
 	IFreshPackingItem subtractToPackingItem(BigDecimal subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);

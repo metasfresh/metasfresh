@@ -49,6 +49,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
@@ -818,14 +819,20 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus)
+	public void setHUStatus(final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String huStatus)
 	{
 		final boolean forceFetchPackingMaterial = false; // rely on HU Status configuration for detection when fetching packing material
 		setHUStatus(huContext, hu, huStatus, forceFetchPackingMaterial);
 	}
 
 	@Override
-	public void setHUStatus(final IHUContext huContext, final I_M_HU hu, final String huStatus, final boolean forceFetchPackingMaterial)
+	public void setHUStatus(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final String huStatus,
+			final boolean forceFetchPackingMaterial)
 	{
 		// keep this so we can compare it with the new one and make sure the moving to/from
 		// gebindelager is done only when needed

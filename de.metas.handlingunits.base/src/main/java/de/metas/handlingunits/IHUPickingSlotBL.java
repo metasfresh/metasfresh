@@ -84,8 +84,9 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	IQueueActionResult addToPickingSlotQueue(de.metas.picking.model.I_M_PickingSlot pickingSlot, I_M_HU hu);
 
 	/**
-	 * Removes the given <code>hu</code> from the picking slot queue by deleting its associating {@link I_M_PickingSlot_HU} record. If the given hu was the slot's current HU, it is unset as current HU
-	 * as well. Finally, if the given <code>pickingSlot</code> is dynamic, it also releases the slot from its current BPartner.
+	 * Removes the given <code>hu</code> from the picking slot queue by deleting its associating {@link I_M_PickingSlot_HU} record.<br>
+	 * If the given hu was the slot's current HU, it is unset as current HU as well.<br>
+	 * Finally, if the given <code>pickingSlot</code> is dynamic, it also releases the slot from its current BPartner.
 	 *
 	 * TODO: i think it should check if there queue is *really* empty before releasing form the BPartner.
 	 *
