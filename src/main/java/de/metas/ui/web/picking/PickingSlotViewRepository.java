@@ -59,6 +59,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Class to retrieve {@link PickingSlotRow}s that are displayed in the {@link PickingSlotView}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Component
 public class PickingSlotViewRepository
 {
@@ -132,7 +138,7 @@ public class PickingSlotViewRepository
 	public List<PickingSlotRow> retrieveRowsByShipmentScheduleId(@NonNull final PickingSlotRepoQuery query)
 	{
 		Check.errorIf(query.getShipmentScheduleIds().isEmpty(), "Given query has no shipmentScheduleIds; query={}", query);
-		
+
 		// retrieve the M_PickingSlots that are available for the given shipmentSchedules' partner and location.
 		// assume that all shipment schedules have the same partner and location (needs to be made sure) before starting all this stuff
 		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(query.getShipmentScheduleIds().get(0), I_M_ShipmentSchedule.class);
@@ -151,7 +157,7 @@ public class PickingSlotViewRepository
 
 		// retrieve HURows (if any)
 		final ListMultimap<Integer, PickingSlotHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(query);
-		
+
 		final Predicate<? super I_M_PickingSlot> predicate = pickingSlotPO ->
 			{
 				if (query.getPickingCandidates() == PickingCandidate.DONT_CARE)

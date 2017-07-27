@@ -45,7 +45,7 @@ import lombok.NonNull;
 /**
  * {@link PickingSlotView}s index storage.
  * 
- * It's not actually a storage. It just forwards all calls to {@link PickingView} where the {@link PickingSlotView}s are stored, one per each row.
+ * It's not actually a storage. It just forwards all calls to {@link PackageableView} where the {@link PickingSlotView}s are stored, one per each row.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -82,7 +82,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	public void put(final IView pickingSlotView)
 	{
 		final ViewId pickingSlotViewId = pickingSlotView.getViewId();
-		final PickingView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
+		final PackageableView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
 
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
 
@@ -112,10 +112,10 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 		return DocumentId.of(rowIdStr);
 	}
 
-	private PickingView getPickingViewByPickingSlotViewId(final ViewId pickingSlotViewId)
+	private PackageableView getPickingViewByPickingSlotViewId(final ViewId pickingSlotViewId)
 	{
 		final ViewId pickingViewId = extractPickingViewId(pickingSlotViewId);
-		final PickingView view = PickingView.cast(getViewsRepository().getView(pickingViewId));
+		final PackageableView view = PackageableView.cast(getViewsRepository().getView(pickingViewId));
 		return view;
 	}
 
@@ -128,7 +128,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 
 	private PickingSlotView getOrCreatePickingSlotView(final ViewId pickingSlotViewId, final boolean create)
 	{
-		final PickingView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
+		final PackageableView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
 		final DocumentId pickingSlotRowId = extractRowId(pickingSlotViewId);
 
 		if (create)
@@ -136,7 +136,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 			return pickingView.computePickingSlotViewIfAbsent(
 					pickingSlotRowId, 
 					() -> {
-						final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
+						final PackageableRow pickingRow = pickingView.getById(pickingSlotRowId);
 						final CreateViewRequest createViewRequest = CreateViewRequest
 							.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
 							.setParentViewId(pickingView.getViewId())
@@ -144,7 +144,7 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 							.build();
 
 						// provide all pickingView's M_ShipmentSchedule_IDs to the factory, because we want to show the same picking slots and picked HU-rows for all of them.
-						final List<Integer> allShipmentScheduleIds = pickingView.streamByIds(DocumentIdsSelection.ALL).map(PickingRow::cast).map(PickingRow::getShipmentScheduleId).collect(Collectors.toList());
+						final List<Integer> allShipmentScheduleIds = pickingView.streamByIds(DocumentIdsSelection.ALL).map(PackageableRow::cast).map(PackageableRow::getShipmentScheduleId).collect(Collectors.toList());
 
 						return pickingSlotViewFactory.createView(createViewRequest, allShipmentScheduleIds);
 					});

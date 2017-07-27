@@ -11,7 +11,6 @@ import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.printing.esb.base.util.Check;
@@ -57,6 +56,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Factory to create {@link PickingSlotView}s instances. This includes assigning a number of picking related processed to the view.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @ViewFactory(windowId = PickingConstants.WINDOWID_PickingSlotView_String, viewTypes =
 	{ JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PickingSlotViewFactory implements IViewFactory
@@ -119,7 +124,7 @@ public class PickingSlotViewFactory implements IViewFactory
 		}
 		else
 		{
-			Check.errorUnless(allShipmentScheduleIds.contains(shipmentScheduleId), 
+			Check.errorUnless(allShipmentScheduleIds.contains(shipmentScheduleId),
 					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; shipmentScheduleId={}; allShipmentScheduleIds={}; request={}",
 					shipmentScheduleId, allShipmentScheduleIds, request);
 
