@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -14,6 +16,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
@@ -50,12 +53,12 @@ import lombok.NonNull;
 @Component
 public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 {
+	@Autowired
+	private PickingSlotViewFactory pickingSlotViewFactory;
+
 	// NOTE: avoid using @Autowired because might introduce cyclic dependency.
 	// We have a setter which will be called when this instance will be registered.
 	private IViewsRepository viewsRepository;
-
-	@Autowired
-	private PickingSlotViewFactory pickingSlotViewFactory;
 
 	@Override
 	public void setViewsRepository(@NonNull final IViewsRepository viewsRepository)
@@ -130,14 +133,21 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 
 		if (create)
 		{
-			return pickingView.computePickingSlotViewIfAbsent(pickingSlotRowId, () -> {
-				final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
-				return pickingSlotViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
-						.setParentViewId(pickingView.getViewId())
-						.setParentRowId(pickingRow.getId())
-						.build());
+			return pickingView.computePickingSlotViewIfAbsent(
+					pickingSlotRowId, 
+					() -> {
+						final PickingRow pickingRow = pickingView.getById(pickingSlotRowId);
+						final CreateViewRequest createViewRequest = CreateViewRequest
+							.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
+							.setParentViewId(pickingView.getViewId())
+							.setParentRowId(pickingRow.getId())
+							.build();
 
-			});
+						// provide all pickingView's M_ShipmentSchedule_IDs to the factory, because we want to show the same picking slots and picked HU-rows for all of them.
+						final List<Integer> allShipmentScheduleIds = pickingView.streamByIds(DocumentIdsSelection.ALL).map(PickingRow::cast).map(PickingRow::getShipmentScheduleId).collect(Collectors.toList());
+
+						return pickingSlotViewFactory.createView(createViewRequest, allShipmentScheduleIds);
+					});
 		}
 		else
 		{

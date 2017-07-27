@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -56,7 +58,7 @@ public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate imple
 		final HUEditorRow huRow = getSingleSelectedRow();
 		if (!huRow.isTopLevel())
 		{
-			return ProcessPreconditionsResolution.reject("not top level HU");
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();

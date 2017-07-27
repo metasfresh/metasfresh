@@ -1,5 +1,8 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_PICK_SOMETHING;
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -22,14 +25,12 @@ import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.i18n.IMsgBL;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -62,11 +63,12 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  */
 
 /**
- * Un-processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
- * unprocessing means that
+ * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
+ * Processing means that
  * <ul>
- * <li>the HU is changed from status "picked" to "active" (even if it was only "planned" before the candidate was processed!)</li>
- * <li>the HU is de-associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
+ * <li>the HU is changed from status "planned" or "active" to "picked"</li>
+ * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
+ * <li>The HU is added to its picking slot's picking-slot-queue</li>
  * </ul>
  * 
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
@@ -75,14 +77,13 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_M_Picking_Candidate_UnProcessed
+public class WEBUI_Picking_M_Picking_Candidate_Process
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
+	
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
-
-	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -92,27 +93,25 @@ public class WEBUI_Picking_M_Picking_Candidate_UnProcessed
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}
 		if(pickingSlotRow.getIncludedRows().isEmpty())
 		{
 			// we want a toplevel HU..this is kindof dirty, but should work in this context
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}
 
 		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_PickSomething"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_PICK_SOMETHING));
 		}
 
 		if (pickingSlotRow.isProcessed())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_No_Unprocessed_Records"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -163,16 +162,10 @@ public class WEBUI_Picking_M_Picking_Candidate_UnProcessed
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();
 
-		huPickingSlotBL.addToPickingSlotQueue(pickingSlot, hu);
-
 		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
-
-		//getView().invalidateAll();
-		
+				
 		invalidateView();
 		invalidateParentView();
-
-		//invalidateView();
 		
 		return MSG_OK;
 	}

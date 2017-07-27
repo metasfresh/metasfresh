@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
@@ -67,6 +69,8 @@ import lombok.NonNull;
 public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	
+
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
@@ -88,7 +92,7 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isPickingSlotRow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectPickingSlot"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
 		}
 
 		return ProcessPreconditionsResolution.accept();

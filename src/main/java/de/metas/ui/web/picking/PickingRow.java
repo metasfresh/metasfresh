@@ -86,12 +86,17 @@ public final class PickingRow implements IViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50)
 	})
 	private final java.util.Date preparationDate;
-	
+
 	private final int shipmentScheduleId;
-	
+
 	private final ViewId includedViewId;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
+
+	public static PickingRow cast(final IViewRow row)
+	{
+		return (PickingRow)row;
+	}
 
 	@Builder
 	private PickingRow(
@@ -100,7 +105,7 @@ public final class PickingRow implements IViewRow
 			final IViewRowType type,
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
-			//
+
 			final LookupValue warehouse,
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,
@@ -123,6 +128,9 @@ public final class PickingRow implements IViewRow
 		this.preparationDate = preparationDate;
 		this.shipmentScheduleId = shipmentScheduleId;
 
+		// create the included view's ID
+		// note that despite all our packageable-rows have the same picking slots, the IDs still need to be individual per-row,
+		// because we need to notify the picking slot view of this packageable-rows is selected at a given point in time
 		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
 	}
 
