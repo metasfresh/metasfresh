@@ -34,8 +34,8 @@ class QuickActions extends Component {
 
         const {fetchOnInit} = this.props;
 
-        if(fetchOnInit){
-            this.fetchActions();
+        if (fetchOnInit) {
+            this.fetchActions(props.windowType, props.viewId, props.selected);
         }
     }
 
@@ -47,10 +47,36 @@ class QuickActions extends Component {
         this.mounted = false;
     }
 
+    componentWillReceiveProps = (nextProps) => {
+        const {
+            selected, viewId, windowType
+        } = this.props;
+
+        if (nextProps.selectedWindowType && (nextProps.selectedWindowType !== nextProps.windowType)) {
+            return;
+        }
+
+        if (
+            (nextProps.selected && (JSON.stringify(nextProps.selected) !== JSON.stringify(selected))) ||
+            (nextProps.viewId && (nextProps.viewId !== viewId)) ||
+            (nextProps.windowType && (nextProps.windowType !== windowType))
+        ) {
+            this.fetchActions(nextProps.windowType, nextProps.viewId, nextProps.selected);
+        }
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return (nextProps.shouldNotUpdate !== true);
+    }
+
+    updateActions = () => {
+        const { windowType, viewId, selected } = this.props;
+        this.fetchActions(windowType, viewId, selected);
+    }
+
     componentDidUpdate = (prevProps) => {
         const {
-            selected, refresh, shouldNotUpdate, viewId, selectedWindowType,
-            windowType, inBackground, inModal
+            inBackground, inModal
         } = this.props;
 
         if (inModal === false && (prevProps.inModal === true)) {
@@ -65,22 +91,6 @@ class QuickActions extends Component {
             this.setState({
                 loading: false
             });
-        }
-
-        if(shouldNotUpdate){
-            return;
-        }
-
-        if(selectedWindowType && (selectedWindowType !== windowType)){
-            return;
-        }
-
-        if(
-            (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) ||
-            (JSON.stringify(prevProps.refresh) !== JSON.stringify(refresh)) ||
-            (JSON.stringify(prevProps.viewId) !== JSON.stringify(viewId))
-        ){
-            this.fetchActions();
         }
     }
 
@@ -113,25 +123,32 @@ class QuickActions extends Component {
         this.toggleDropdown();
     }
 
-    fetchActions = () => {
-        const {windowType, viewId, selected} = this.props;
-
-        this.mounted && this.setState({
+    fetchActions = (windowType, viewId, selected) => {
+/*
+        this.setState({
             loading: true
         });
+*/
 
-        quickActionsRequest(windowType, viewId, selected)
-            .then(response => {
-                this.mounted && this.setState({
-                    actions: response.data.actions,
-                    loading: false
+        if (windowType && viewId && selected) {
+            quickActionsRequest(windowType, viewId, selected)
+                .then(response => {
+                    this.setState({
+                        actions: response.data.actions,
+                        loading: false
+                    })
                 })
-            })
-            .catch(() => {
-                this.mounted && this.setState({
-                    loading: false
-                })
+                .catch(() => {
+                    this.setState({
+                        loading: false
+                    })
+                });
+        }
+        else {
+            this.setState({
+                loading: false
             });
+        }
     }
 
     toggleDropdown = (option) => {
@@ -250,6 +267,6 @@ QuickActions.propTypes = {
     dispatch: PropTypes.func.isRequired
 };
 
-QuickActions = connect()(QuickActions)
+QuickActions = connect(false, false, false, { withRef: true })(QuickActions)
 
 export default QuickActions;
