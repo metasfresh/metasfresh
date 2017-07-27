@@ -328,15 +328,13 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
 
 				sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
-
-				//sh "mvn deploy:deploy-file -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -DgeneratePom=true -DrepositoryId=nexus -Dpackaging=tar.gz -Durl=https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz"
 				sh "mvn --settings ${MAVEN_SETTINGS} deploy:deploy-file ${MF_MAVEN_TASK_RESOLVE_PARAMS} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz -Durl=${MF_MAVEN_DEPLOY_REPO_URL} -DrepositoryId=${MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -Dpackaging=tar.gz -DgeneratePom=true"
-				// IMPORTANT: we might parse this build description's href value in downstream builds!
 
 				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION}/metasfresh-webui-frontend-${BUILD_VERSION}.tar.gz";
 
-currentBuild.description="""artifacts (if not yet cleaned up)
-				<ul>
+				// IMPORTANT: we might parse this build description's href value in downstream builds!
+				currentBuild.description="""artifacts (if not yet cleaned up)
+<ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${BUILD_VERSION}.tar.gz</a></li>
 </ul>""";
 
@@ -345,9 +343,9 @@ currentBuild.description="""artifacts (if not yet cleaned up)
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
 				env.BUILD_VERSION="${BUILD_VERSION}"
 				env.BUILD_GIT_SHA1="${commit_sha1}";
-      }
-		}
-	}
+      } // stage
+		} // withMaven
+	} // configFileProvider
  } // node
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
