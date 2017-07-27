@@ -279,11 +279,11 @@ timestamps
 {
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
-	stage('Preparation') // for display purposes
-	{
-		checkout scm; // i hope this to do all the magic we need
-		sh 'git clean -d --force -x' // clean the workspace
-	}
+		stage('Preparation') // for display purposes
+		{
+			checkout scm; // i hope this to do all the magic we need
+			sh 'git clean -d --force -x' // clean the workspace
+    }
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
@@ -344,9 +344,23 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
+				// create and upload a docker image
+				sh "cp target/metasfresh-webui-api-${BUILD_VERSION}.jar src/main/docker/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
+				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
+				{
+					def app = docker.build 'metasfresh/metasfresh-webui-api', 'src/main/docker';
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+					if(MF_UPSTREAM_BRANCH=='release')
+					{
+						echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
+						app.push mkDockerTag('latest');
+					}
+				}
+
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
-currentBuild.description="""artifacts (if not yet cleaned up)
-				<ul>
+				currentBuild.description="""artifacts (if not yet cleaned up)
+<ul>
 <li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
 </ul>"""
 
