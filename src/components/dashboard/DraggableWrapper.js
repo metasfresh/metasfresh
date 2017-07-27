@@ -296,6 +296,56 @@ export class DraggableWrapper extends Component {
         )
     }
 
+    renderOptionModal = () => {
+        const {chartOptions, captionHandler, when, interval} = this.state;
+        return (
+            chartOptions && 
+                <div className="chart-options-overlay">
+                    <div className="chart-options-wrapper">
+                        <div className="chart-options">
+                            <div className="form-group">
+                                <label>caption</label>
+                                <input
+                                    className="input-options input-secondary"
+                                    value={captionHandler}
+                                    onChange={this.handleChange}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>interval</label>
+                                <div className="chart-options-list-wrapper">
+                                    <RawList
+                                        onSelect={option => this.handleOptionSelect('interval', option)}
+                                        list={[{caption: "week", value: "week"}]}
+                                        selected={interval}
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>when</label>
+                                <div className="chart-options-list-wrapper">
+                                    <RawList
+                                        onSelect={option => this.handleOptionSelect('when', option)}
+                                        list={[{caption: "now", value: "now"},
+                                                {caption: "last week", value: "lastWeek"}]}
+                                        selected={when}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="chart-options-button-wrapper">
+                            <button 
+                                className="btn btn-meta-outline-secondary btn-sm"
+                                onClick={() => this.changeChartData("caption", captionHandler )}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        );
+    }
+
     handleChartOptions = (opened, caption, id, isIndicator) => {
         this.setState({
             chartOptions: opened,
@@ -311,23 +361,21 @@ export class DraggableWrapper extends Component {
         const {currentId, isIndicator} = this.state;
         if(isIndicator){
             changeTargetIndicatorsItem(currentId, path, option.value).then(() => {
-                path === 'when' && this.setState({
-                    when: option
-                });
-                path === 'interval' && this.setState({
-                    interval: option
-                });
+                this.setSelectedOption(path, option);
             });
         } else {
             changeKPIItem(currentId, path, option.value).then(() => {
-                path === 'when' && this.setState({
-                    when: option
-                });
-                path === 'interval' && this.setState({
-                    interval: option
-                });
+                this.setSelectedOption(path, option);
             });
         }
+    }
+
+    setSelectedOption = (path, option) => {
+        const {when, interval} = this.state;
+        this.setState({
+            when: path === 'when' ? option : when,
+            interval: path === 'interval' ? option : interval
+        });
     }
 
     handleChange = (e) => {
@@ -351,57 +399,10 @@ export class DraggableWrapper extends Component {
     
     render() {
         const {editmode, toggleEditMode} = this.props;
-        const {chartOptions, captionHandler, when, interval} = this.state;
         
         return (
             <div className="dashboard-cards-wrapper">
-                { chartOptions && 
-                    <div className="chart-options-overlay">
-                        <div className="chart-options-wrapper">
-                            <div className="chart-options">
-                                <div className="form-group">
-                                    <label>caption</label>
-                                    <input 
-                                        className="input-options input-secondary"
-                                        value={captionHandler}
-                                        onChange={this.handleChange}
-                                    />
-                                    
-                                </div>
-                                <div className="form-group">
-                                    <label>interval</label>
-                                    <div className="chart-options-list-wrapper">
-                                        <RawList
-                                            onSelect={option => this.handleOptionSelect('interval', option)}
-                                            list={[{caption: "week", value: "week"}]}
-                                            selected={interval}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="form-group">
-                                    <label>when</label>
-                                    <div className="chart-options-list-wrapper">
-                                        <RawList
-                                            onSelect={option => this.handleOptionSelect('when', option)}
-                                            list={[{caption: "now", value: "now"},
-                                                    {caption: "last week", value: "lastWeek"}]}
-                                            selected={when}
-                                        />
-                                    </div>
-                                    
-                                </div>
-                            </div>
-                            <div className="chart-options-button-wrapper">
-                                <button 
-                                    className="btn btn-meta-outline-secondary btn-sm"
-                                    onClick={() => this.changeChartData("caption", captionHandler )}
-                                >
-                                    Save
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                }
+                {this.renderOptionModal()}
                 <div
                     className={(editmode ?
                         'dashboard-edit-mode' : 'dashboard-cards')}>
