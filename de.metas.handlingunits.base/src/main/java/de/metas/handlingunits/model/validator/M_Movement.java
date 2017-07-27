@@ -41,8 +41,10 @@ import de.metas.handlingunits.HUContextDateTrxProvider.ITemporaryDateTrx;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU;
@@ -195,11 +197,6 @@ public class M_Movement
 
 	private void moveHandlingUnits(final I_M_MovementLine movementLine, final boolean doReversal)
 	{
-		// NOTE: no HUContext needed as a parameter to this method because the status active doesn't
-		// trigger a movement to/from gebindelager in this case
-		// a movement is already created from a lager to another. So no HU leftovers
-		final IHUContext huContext = IHUContext.NULL;
-
 		final I_M_Locator locatorFrom;
 		final I_M_Locator locatorTo;
 		if (!doReversal)
@@ -217,11 +214,11 @@ public class M_Movement
 		final List<I_M_HU> hus = huAssignmentDAO.retrieveTopLevelHUsForModel(movementLine);
 		for (final I_M_HU hu : hus)
 		{
-			moveHandlingUnit(huContext, hu, locatorFrom, locatorTo, doReversal);
+			moveHandlingUnit(hu, locatorFrom, locatorTo, doReversal);
 		}
 	}
 
-	private void moveHandlingUnit(final IHUContext huContext,
+	private void moveHandlingUnit(
 			final I_M_HU hu,
 			final I_M_Locator locatorFrom, final I_M_Locator locatorTo,
 			final boolean doReversal)
@@ -244,6 +241,11 @@ public class M_Movement
 		//
 		// Activate HU (not needed, but we want to be sure)
 		// (even if we do reversals)
+		
+		// NOTE: as far as we know, HUContext won't be used by setHUStatus, because the status active doesn't
+		// trigger a movement to/from gebindelager. In this case a movement is already created from a lager to another. 
+		// So no HU leftovers.
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 		Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 
 		//

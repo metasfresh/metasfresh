@@ -47,6 +47,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import lombok.NonNull;
 
 /* package */class HUStorage implements IHUStorage
 {
@@ -60,16 +61,16 @@ import de.metas.handlingunits.storage.IProductStorage;
 	private final I_M_HU hu;
 	private final boolean virtualHU;
 
-	public HUStorage(final IHUStorageFactory storageFactory, final I_M_HU hu)
+	public HUStorage(
+			@NonNull final IHUStorageFactory storageFactory, 
+			@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(storageFactory, "storageFactory not null");
 		this.storageFactory = storageFactory;
 
 		dao = storageFactory.getHUStorageDAO();
 		Check.assumeNotNull(dao, "dao not null");
 
-		Check.assumeNotNull(hu, "HU not null");
-		Check.assumeNotNull(hu.getM_HU_ID() > 0, "HU is saved: {}", hu);
+		Check.errorUnless(hu.getM_HU_ID() > 0, "Given HU has to be saved; hu={}", hu);
 		this.hu = hu;
 		virtualHU = Services.get(IHandlingUnitsBL.class).isVirtual(hu);
 	}
