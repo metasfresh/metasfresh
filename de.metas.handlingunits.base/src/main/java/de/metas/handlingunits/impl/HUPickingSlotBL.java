@@ -76,6 +76,7 @@ import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 import de.metas.storage.spi.hu.impl.HUStorageRecord;
+import lombok.NonNull;
 
 public class HUPickingSlotBL
 		extends PickingSlotBL
@@ -271,7 +272,9 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<IQueueActionResult> addToPickingSlotQueue(final de.metas.picking.model.I_M_PickingSlot pickingSlot, final List<I_M_HU> hus)
+	public List<IQueueActionResult> addToPickingSlotQueue(
+			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot, 
+			@NonNull final List<I_M_HU> hus)
 	{
 		if (Check.isEmpty(hus))
 		{
@@ -310,7 +313,10 @@ public class HUPickingSlotBL
 		return queueActionResults;
 	}
 
-	private final IQueueActionResult addToPickingSlotQueue0(final IHUContext huContext, final de.metas.picking.model.I_M_PickingSlot pickingSlot, final I_M_HU hu)
+	private final IQueueActionResult addToPickingSlotQueue0(
+			@NonNull final IHUContext huContext, 
+			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot, 
+			@NonNull final I_M_HU hu)
 	{
 		// services
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
