@@ -56,6 +56,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
@@ -649,6 +650,10 @@ public class Adempiere
 		if (runmodeClient)
 		{
 			LogManager.updateConfigurationFromIni();
+		}
+		else
+		{
+			LogManager.setLevel(Level.WARN);
 		}
 
 		// Set UI
