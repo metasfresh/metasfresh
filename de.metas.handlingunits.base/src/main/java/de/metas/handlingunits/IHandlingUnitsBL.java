@@ -354,7 +354,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * NOTE: this method is not saving the HU.
 	 *
-	 * @param huContext
+	 * @param huContext mandatory, because depending on the given {@code huStatus}, we might need the context's {@link IHUContext#getHUPackingMaterialsCollector()}.
 	 * @param hu
 	 * @param huStatus
 	 */
