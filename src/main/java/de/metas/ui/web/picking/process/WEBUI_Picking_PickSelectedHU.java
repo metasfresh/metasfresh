@@ -40,6 +40,12 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * #L%
  */
 
+/**
+ * This process is called from the HU selection dialog that is opened by {@link WEBUI_Picking_OpenHUsToPick}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired

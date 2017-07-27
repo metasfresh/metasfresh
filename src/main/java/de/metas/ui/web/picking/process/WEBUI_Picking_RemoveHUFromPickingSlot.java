@@ -1,6 +1,6 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_HU;
+import static de.metas.ui.web.picking.process.AD_Message_Values.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,6 +61,11 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}
 
+		if(pickingSlotRow.isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
+		}
+		
 		return ProcessPreconditionsResolution.accept();
 	}
 

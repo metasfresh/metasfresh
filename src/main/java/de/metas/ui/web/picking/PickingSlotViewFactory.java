@@ -157,7 +157,6 @@ public class PickingSlotViewFactory implements IViewFactory
 						.webuiQuickAction(true)
 						.build(),
 
-				// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
 						.anyTable().anyWindow()
