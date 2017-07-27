@@ -32,7 +32,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.Predicate;
 import org.adempiere.util.time.SystemTime;
@@ -58,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.NonNull;
 
 public class PackingService implements IPackingService
 {
@@ -131,14 +131,12 @@ public class PackingService implements IPackingService
 	}
 
 	@Override
-	public void packItem(final IPackingContext packingContext,
-			final IFreshPackingItem itemToPack,
-			final BigDecimal qtyToPack,
-			final IPackingHandler packingHandler)
+	public void packItem(
+			@NonNull final IPackingContext packingContext,
+			@NonNull final IFreshPackingItem itemToPack,
+			@NonNull final BigDecimal qtyToPack,
+			@NonNull final IPackingHandler packingHandler)
 	{
-		Check.assumeNotNull(packingContext, "packingContext not null");
-		Check.assumeNotNull(packingHandler, "packingHandler not null");
-
 		final int key = packingContext.getPackingItemsMapKey();
 
 		// Packing items
