@@ -26,6 +26,8 @@ Here come the actual release notes:
     * New Window for the maintenance of Account Elements in WebUI
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the Current Window Concept for Documents in metasfresh WebUI
+  * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
+    * Adopting the Payment Allocation Window to the Current Window Concept for Documents in metasfresh WebUI
 
 * metasfresh-webui-api
 
