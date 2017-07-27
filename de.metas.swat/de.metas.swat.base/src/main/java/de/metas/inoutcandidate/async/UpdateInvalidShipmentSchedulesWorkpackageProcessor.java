@@ -54,7 +54,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	 */
 	public static final void schedule(final Properties ctx, final String trxName)
 	{
-		SCHEDULER.schedule(new PlainContextAware(ctx, trxName));
+		SCHEDULER.schedule(PlainContextAware.newWithTrxName(ctx, trxName));
 	}
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> //
