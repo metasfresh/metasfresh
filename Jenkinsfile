@@ -344,11 +344,17 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
+				// now create and publish some docker image..well, 1 docker image for starts
+				final dockerWorkDir='docker-build/metasfresh-webui-api'
+				sh "mkdir -p ${dockerWorkDir}"
+
 				// create and upload a docker image
-				sh "cp target/metasfresh-webui-api-${BUILD_VERSION}.jar src/main/docker/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
+				sh "cp target/metasfresh-webui-api-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
+				sh "cp -R src/main/docker/* ${dockerWorkDir}"
+				sh "cp -R src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
-					def app = docker.build 'metasfresh/metasfresh-webui-api', 'src/main/docker';
+					def app = docker.build 'metasfresh/metasfresh-webui-api', "${dockerWorkDir}";
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
 					if(MF_UPSTREAM_BRANCH=='release')

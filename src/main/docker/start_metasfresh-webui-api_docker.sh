@@ -39,9 +39,9 @@ run_metasfresh()
 
 set_properties /opt/metasfresh/metasfresh-webui-api/metasfresh.properties
 
-echo "*********************************************************"
-echo "Waiting for the database server to start on host $DB_HOST"
-echo "*********************************************************"
+echo "************************************************************"
+echo "Waiting for the database server to start on DB_HOST=$DB_HOST"
+echo "************************************************************"
 wait_dbms
 echo ">>>>>>>>>>>> Database Server has started"
 
