@@ -72,6 +72,8 @@
 				<executions>
 					<execution>
 						<goals>
+							<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+							<goal>build-info</goal>
 							<goal>repackage</goal>
 						</goals>
 					</execution>
