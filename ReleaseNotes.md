@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Adopting the Purchase Order Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2052](https://github.com/metasfresh/metasfresh/issues/2052) Window Design WebUI: Price System
     * Adopting the Price System Window to the current Window Concept for Master Data in metasfresh WebUI
+  * [#2053](https://github.com/metasfresh/metasfresh/issues/2053) Window Design WebUI: Inventory Move
+    * Adopting the Inventory Move Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
