@@ -13,15 +13,14 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 import java.util.Properties;
@@ -38,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import lombok.NonNull;
 
 public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 {
@@ -50,9 +50,8 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
-						.addOnlyActiveRecordsFilter();
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, hu)
+				.addOnlyActiveRecordsFilter();
 
 		//
 		// Filter HU based on it's type (LU/TU)
@@ -127,17 +126,19 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(final I_M_ShipmentSchedule shipmentSchedule, final I_M_HU tuHU, final String trxName)
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule, 
+			@NonNull final I_M_HU tuHU, 
+			final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(tuHU);
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
-						.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHU.getM_HU_ID())
-						.addOnlyActiveRecordsFilter();
 
-		queryBuilder.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHU.getM_HU_ID())
+				.orderBy()
+				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).endOrderBy();
 
 		return queryBuilder.create().list();
 	}
@@ -151,17 +152,13 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(final I_M_HU vhu)
+	public IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(@NonNull final I_M_HU vhu)
 	{
-		Check.assumeNotNull(vhu, "vhu not null");
-
-		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder =
-				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, vhu)
-						.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
-						.addOnlyActiveRecordsFilter();
-
-		queryBuilder.orderBy()
-				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID);
+		final IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class, vhu)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_VHU_ID, vhu.getM_HU_ID())
+				.orderBy()
+				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_QtyPicked_ID).endOrderBy();
 
 		return queryBuilder;
 	}

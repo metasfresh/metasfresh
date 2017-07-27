@@ -191,7 +191,7 @@ public class M_ShipmentSchedule
 			})
 	public void invalidate(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		// 08746: make sure that at any rate, the sched itself is invalidated, even i it has delivery rule "force"
+		// 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
 		Services.get(IShipmentSchedulePA.class).invalidate( 
 				Collections.singletonList(
 						InterfaceWrapperHelper.create(shipmentSchedule, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class)),
