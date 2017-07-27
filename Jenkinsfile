@@ -363,7 +363,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				sh "cp -R src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
-					def app = docker.build 'metasfresh/metasfresh-webui-api', "${dockerWorkDir}";
+					def app = docker.build 'metasfresh/metasfresh-webapi-dev', "${dockerWorkDir}";
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
 					if(MF_UPSTREAM_BRANCH=='release')
