@@ -61,9 +61,11 @@ import org.slf4j.Logger;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -109,6 +111,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Services
 		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		//
 		// Retrieve VHU, TU and LU
@@ -140,8 +144,15 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		schedQtyPickedHU.setVHU(vhu);
 		InterfaceWrapperHelper.save(schedQtyPickedHU);
 
+		// Change HU status to Picked
+		// huContext might be needed if the M_HU_Status record has ExChangeGebindeLagerWhenEmpty='Y'
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
+		handlingUnitsBL.setHUStatus(huContext, tuHU, X_M_HU.HUSTATUS_Picked);
+
 		// update HU from sched
 		setHUPartnerAndLocationFromSched(sched, tuHU);
+
+		handlingUnitsDAO.saveHU(tuHU);
 
 		return schedQtyPickedHU;
 	}
@@ -164,7 +175,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		hu.setC_BPartner_ID(schedEffectiveBPartner_ID);
 		hu.setC_BPartner_Location_ID(schedEffectiveBP_Location_ID);
-		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
 	}
 
 	@Override
@@ -384,7 +394,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (shipmentCount > 1)
 		{
 			final Exception ex = new AdempiereException("More than 1 open shipment found for schedule {}. Returning the first one (out of {}).",
-					new Object[] { shipmentSchedule, shipmentCount });
+					new Object[]
+					{ shipmentSchedule, shipmentCount });
 			logger.warn(ex.getLocalizedMessage());
 		}
 
@@ -506,7 +517,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				final I_M_HU huTU = alloc.getM_TU_HU();
 				if (huTU != null)
 				{
-					//gh #1244: also cover the case of aggregate HUs.
+					// gh #1244: also cover the case of aggregate HUs.
 					final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 					final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 					if (handlingUnitsBL.isAggregateHU(huTU))
