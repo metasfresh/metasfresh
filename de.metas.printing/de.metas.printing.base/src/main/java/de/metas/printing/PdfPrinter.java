@@ -30,16 +30,16 @@ import com.lowagie.text.pdf.PdfWriter;
 public class PdfPrinter
 {
 	private final static String PDF_FONT_DIR = "PDF_FONT_DIR";
-	
+
 	/**
 	 * Prints the given {@link Printable} to a pdf file and returns the result as a byte-array. The size of the document is A4.
-	 * 
+	 *
 	 * @param printable The {@link Printable} that has to be printed.
 	 * @param clone A clone of the first {@link Printable}. Needed because internally, it must be printed twice and the Printable may keep state and may not be re-usable.
 	 * @param orientation {@link PageFormat}.PORTRAIT or {@link PageFormat}.LANDSCAPE.
 	 * @return A byte-array with the pdf file.
 	 */
-	public static byte[] print(Printable printable, Printable clone)
+	public static byte[] print(final Printable printable, final Printable clone)
 	{
 
 		// The bytes to be returned
@@ -53,14 +53,14 @@ public class PdfPrinter
 		{
 			try
 			{
-				Printable usedPrintable = i == 0 ? printable : clone; // First time, use the printable, second time, use the clone
+				final Printable usedPrintable = i == 0 ? printable : clone; // First time, use the printable, second time, use the clone
 
-				ByteArrayOutputStream bos = new ByteArrayOutputStream();
+				final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
-				Document document = new Document(PageSize.A4); // This determines the size of the pdf document
-				PdfWriter writer = PdfWriter.getInstance(document, bos);
+				final Document document = new Document(PageSize.A4); // This determines the size of the pdf document
+				final PdfWriter writer = PdfWriter.getInstance(document, bos);
 				document.open();
-				PdfContentByte contentByte = writer.getDirectContent();
+				final PdfContentByte contentByte = writer.getDirectContent();
 
 				final PrinterJob pjob = PrinterJob.getPrinterJob();
 
@@ -72,8 +72,8 @@ public class PdfPrinter
 				paper.setImageableArea(0, 0, size.getSize(Size2DSyntax.INCH)[0] * 72, size.getSize(Size2DSyntax.INCH)[1] * 72);
 				pf.setPaper(paper);
 
-				float width = ((float)pf.getWidth());
-				float height = ((float)pf.getHeight());
+				final float width = (float)pf.getWidth();
+				final float height = (float)pf.getHeight();
 
 				final DefaultFontMapper mapper = new DefaultFontMapper();
 
@@ -82,17 +82,19 @@ public class PdfPrinter
 				if (pdfFontDir != null && pdfFontDir.trim().length() > 0)
 				{
 					pdfFontDir = pdfFontDir.trim();
-					File dir = new File(pdfFontDir);
+					final File dir = new File(pdfFontDir);
 					if (dir.exists() && dir.isDirectory())
+					{
 						mapper.insertDirectory(pdfFontDir);
+					}
 				}
 				//
 
 				// First time, don't use numberOfPages, since we don't know it yet
 				for (int j = 0; j < numberOfPages || i == 0; j++)
 				{
-					Graphics2D g2d = contentByte.createGraphics(width, height, mapper);
-					int pageReturn = usedPrintable.print(g2d, pf, j);
+					final Graphics2D g2d = contentByte.createGraphics(width, height, mapper);
+					final int pageReturn = usedPrintable.print(g2d, pf, j);
 					g2d.dispose();
 
 					// The page that we just printed, actually existed; we only know this afterwards
@@ -114,13 +116,22 @@ public class PdfPrinter
 
 				bytes = bos.toByteArray();
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				// We expect no Exceptions, so any Exception that occurs is a technical one and should be a RuntimeException
-				throw new RuntimeException(e);
+				throw new PrintException(e);
 			}
 		}
 		return bytes;
 	}
 
+	public static class PrintException extends RuntimeException
+	{
+		private static final long serialVersionUID = -37592114843097156L;
+
+		public PrintException(final Exception cause)
+		{
+			super(cause);
+		}
+	}
 }

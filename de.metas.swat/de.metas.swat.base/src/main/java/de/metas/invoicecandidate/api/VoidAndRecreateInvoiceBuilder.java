@@ -140,13 +140,8 @@ public class VoidAndRecreateInvoiceBuilder
 
 		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
 
-		// if there is no payment and is paid (can be payed with credit memo, but no real payment) , can not void
-		if (invoice.isPaid() && availablePayments.isEmpty())
-		{
-			return false;
-		}
-
-		return true;
+		// if there is no payment and is paid (can be payed with credit memo, but no real payment), we can not void
+		return !(invoice.isPaid() && availablePayments.isEmpty());
 	}
 
 	private void enqueInvoice(final I_C_Invoice invoice, final I_C_Async_Batch asyncBatch)
@@ -221,9 +216,10 @@ public class VoidAndRecreateInvoiceBuilder
 
 			if (canWarnUser)
 			{
-				factory.info(0, Services.get(IMsgBL.class).getMsg(ctx, "C_Invoice_VoidAndRecreateInvoice_NewInvoice", new Object[] { invoice.getDocumentNo() }));
+				factory.info(0, Services.get(IMsgBL.class).getMsg(ctx, "C_Invoice_VoidAndRecreateInvoice_NewInvoice", new Object[]
+					{ invoice.getDocumentNo() }));
 			}
-			
+
 			getProcessInfo().getResult().setRecordToOpen(TableRecordReference.of(invoice), 0, OpenTarget.GridView);
 
 			builder.append("@Enqueued@ @C_Invoice_ID@ ")

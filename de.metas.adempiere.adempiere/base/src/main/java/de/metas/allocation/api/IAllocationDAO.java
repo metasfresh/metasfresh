@@ -71,15 +71,14 @@ public interface IAllocationDAO extends ISingletonService
 	 * @return
 	 */
 	BigDecimal retrieveAllocatedAmt(org.compiere.model.I_C_Invoice invoice);
-	
+
 	/**
 	 * Retrieves the written off amount of an <code>invoice</code>.
 	 * 
 	 * @param invoice
-	 * @param trxName TODO
 	 * @return
 	 */
-	BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice, String trxName);
+	BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice);
 
 	/**
 	 * Similar to {@link #retrieveAllocatedAmt(org.compiere.model.I_C_Invoice)}, but excludes those allocations from the sum that are related to the given <code>C_Payment_ID</code>s.

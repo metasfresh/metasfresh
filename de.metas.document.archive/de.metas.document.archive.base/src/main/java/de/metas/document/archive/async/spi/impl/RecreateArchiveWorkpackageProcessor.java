@@ -28,12 +28,10 @@ public class RecreateArchiveWorkpackageProcessor implements IWorkpackageProcesso
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private I_C_Async_Batch asyncBatch;
-
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		this.asyncBatch = workpackage.getC_Async_Batch();
+		final  I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);

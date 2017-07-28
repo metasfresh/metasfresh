@@ -37,10 +37,8 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;

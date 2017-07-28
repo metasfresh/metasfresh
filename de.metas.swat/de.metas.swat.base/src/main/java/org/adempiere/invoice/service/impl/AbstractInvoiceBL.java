@@ -13,11 +13,11 @@ package org.adempiere.invoice.service.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -66,7 +66,6 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.model.X_C_Tax;
 import org.compiere.process.DocAction;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -118,7 +117,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public static final String SYSCONFIG_AutoPayZeroAmt = "org.compiere.model.MInvoice.AutoPayZeroAmt";
 	public static final String SYSCONFIG_SortILsByShipmentLineOrders = "org.compiere.model.MInvoice.SortILsByShipmentLineOrders";
 
-	//FRESH-488: Payment rule from sys config
+	// FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
 	@Override
@@ -144,15 +143,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final int targetDocTypeID = getTarget_DocType_ID(ctx, invoice, creditCtx.getC_DocType_ID());
 		//
 		// create the credit memo as a copy of the original invoice
-		final I_C_Invoice creditMemo =
-				InterfaceWrapperHelper.create(
-						copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
-								false, // counter == false
-								creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
-								creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
-								true, // copyLines == true
-								new CreditMemoInvoiceCopyHandler(ctx, creditCtx, openAmt, trxName)),
-						I_C_Invoice.class);
+		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
+				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
+						false, // counter == false
+						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
+						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
+						true, // copyLines == true
+						new CreditMemoInvoiceCopyHandler(ctx, creditCtx, openAmt, trxName)),
+				I_C_Invoice.class);
 		return creditMemo;
 	}
 
@@ -179,8 +177,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return Services.get(IDocumentPA.class).retriveDocTypeId(ctx, invoice.getAD_Org_ID(), docBaseType);
 	}
 
-	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler =
-			new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);
+	public static final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> defaultDocCopyHandler = new DefaultDocCopyHandler<>(org.compiere.model.I_C_Invoice.class, org.compiere.model.I_C_InvoiceLine.class);
 
 	@Override
 	public final org.compiere.model.I_C_Invoice copyFrom(
@@ -243,8 +240,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setIsInDispute(false);
 		//
 		// Amounts are updated by trigger when adding lines
-		to.setGrandTotal(Env.ZERO);
-		to.setTotalLines(Env.ZERO);
+		to.setGrandTotal(BigDecimal.ZERO);
+		to.setTotalLines(BigDecimal.ZERO);
 		//
 		to.setIsTransferred(false);
 		to.setPosted(false);
@@ -355,7 +352,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				.setAD_Org_ID(invoice.getAD_Org_ID())
 				.setC_BPartner_ID(invoice.getC_BPartner_ID())
 				.setC_Invoice_ID(invoice.getC_Invoice_ID())
-				.setAmount(Env.ZERO)
+				.setAmount(BigDecimal.ZERO)
 				.setWriteOffAmt(openAmtAbs)
 			.lineDone()
 			.create(true);
@@ -363,7 +360,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, boolean ignoreProcessed)
+	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
 		boolean change = false;
 
@@ -373,7 +370,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final boolean hasAllocations = alloc != null; // metas: tsa: 01955
 			if (alloc == null)
 			{
-				alloc = Env.ZERO;
+				alloc = BigDecimal.ZERO;
 			}
 			BigDecimal total = invoice.getGrandTotal();
 			// metas: tsa: begin: 01955:
@@ -592,7 +589,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// 02139: Sort InvoiceLines before renumbering.
-		final List<I_C_InvoiceLine> linesToReorder = new ArrayList<I_C_InvoiceLine>(lines);
+		final List<I_C_InvoiceLine> linesToReorder = new ArrayList<>(lines);
 		sortLines(linesToReorder);
 
 		int number = step;
@@ -711,7 +708,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 */
 	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
-		final HashMap<Integer, Integer> invoiceLineId2inOutId = new HashMap<Integer, Integer>();
+		final HashMap<Integer, Integer> invoiceLineId2inOutId = new HashMap<>();
 
 		for (int i = 0; i < lines.size(); i++)
 		{
@@ -945,7 +942,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// http://sourceforge.net/tracker/index.php?func=detail&aid=1733602&group_id=176962&atid=879332
 		if (isTaxIncluded && !documentLevel)
 		{
-			BigDecimal taxStdAmt = Env.ZERO, taxThisAmt = Env.ZERO;
+			BigDecimal taxStdAmt = BigDecimal.ZERO, taxThisAmt = BigDecimal.ZERO;
 
 			I_C_Tax stdTax = null;
 
@@ -1030,7 +1027,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			tax.setIsDocumentLevel(true);
 			tax.setIsSummary(false);
 			tax.setIsTaxExempt(false);
-			tax.setRate(Env.ZERO);
+			tax.setRate(BigDecimal.ZERO);
 			tax.setRequiresTaxCertificate(false);
 			tax.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 			tax.setValidFrom(TimeUtil.getDay(1990, 1, 1));
@@ -1143,7 +1140,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public boolean isReversal(org.compiere.model.I_C_Invoice invoice)
+	public boolean isReversal(final org.compiere.model.I_C_Invoice invoice)
 	{
 		if (invoice == null)
 		{
@@ -1183,14 +1180,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
 		final int targetDocTypeID = Services.get(IDocumentPA.class).retriveDocTypeIdForDocSubtype(ctx, docbasetype, docSubType);
-		final I_C_Invoice adjustmentCharge =
-				InterfaceWrapperHelper.create(
-						copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
-								false, // counter == false
-								true, // setOrderRef == true
-								true, // setInvoiceRef == true
-								true), // copyLines == true
-						I_C_Invoice.class);
+		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
+				copyFrom(invoice, SystemTime.asTimestamp(), targetDocTypeID, invoice.isSOTrx(),
+						false, // counter == false
+						true, // setOrderRef == true
+						true, // setInvoiceRef == true
+						true), // copyLines == true
+				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
 				+ invoice.getDescription());
@@ -1395,14 +1391,14 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		return Services.get(ISysConfigBL.class).getValue(SYSCONFIG_C_Invoice_PaymentRule, X_C_Invoice.PAYMENTRULE_OnCredit);
 	}
-	
+
 	@Override
 	public I_C_Invoice voidAndRecreateInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		// first make sure that payments have the flag auto-allocate set
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-		final de.metas.adempiere.model.I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class);
+		final I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
 		final List<I_C_Payment> availablePayments = allocationDAO.retrieveInvoicePayments(inv);
 
@@ -1416,7 +1412,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final IInvoiceCandDAO invoiceCandDB = Services.get(IInvoiceCandDAO.class);
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<I_C_Invoice_Candidate>();
+		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
 
 		final MInvoice invoicePO = (MInvoice)InterfaceWrapperHelper.getPO(invoice);
 		for (final MInvoiceLine ilPO : invoicePO.getLines(true))

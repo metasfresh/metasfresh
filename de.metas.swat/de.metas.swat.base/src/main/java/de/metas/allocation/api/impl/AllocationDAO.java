@@ -225,10 +225,11 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice, String trxName)
+	public BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice)
 	{
 		final String sql = "select invoicewriteoff(?)";
-		final BigDecimal amt = DB.getSQLValueBD(trxName, sql, invoice.getC_Invoice_ID());
+
+		final BigDecimal amt = DB.getSQLValueBD(ITrx.TRXNAME_ThreadInherited, sql, invoice.getC_Invoice_ID());
 		if (amt == null)
 		{
 			return BigDecimal.ZERO;

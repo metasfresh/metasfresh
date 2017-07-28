@@ -25,7 +25,6 @@ package de.metas.printing.spi.impl;
 
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.spi.IPrintJobBatchMonitor;
-import de.metas.printing.spi.IPrintJobMonitor;
 
 /**
  * Null Monitor. A monitor which is doing nothing (pass-through).
