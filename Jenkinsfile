@@ -381,7 +381,12 @@ node('agent && linux')
 
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
-				}
+          			if(MF_UPSTREAM_BRANCH=='release')
+          			{
+            			echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
+            			app.push mkDockerTag('latest');
+          			}
+				} // docker.withRegistry
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
 
