@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.adempiere.impexp.ArrayExcelExporter;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
@@ -45,6 +44,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.compiere.util.ValueNamePair;
 
+import de.metas.attachments.IAttachmentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.MetasfreshLastError;
 

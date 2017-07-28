@@ -1,4 +1,4 @@
-package org.adempiere.service.impl;
+package de.metas.attachments.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,15 +14,15 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IAttachmentDAO;
 import org.adempiere.util.Services;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.MimeType;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentDAO;
 import lombok.NonNull;
 
 /*
