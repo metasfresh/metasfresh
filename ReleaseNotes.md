@@ -102,7 +102,7 @@ Here come the actual release notes:
   * [#1993](https://github.com/metasfresh/metasfresh/issues/1993) Set default Widget width for certain Columns
     * Refining and Harmonizing the Widget width of columns in GridView for those, where generic width according to their widget type does not match to the user requirement or field content.
   * [#1995](https://github.com/metasfresh/metasfresh/issues/1995) Language Names too Long
-    * Ranaming of Language Names, avoiding them to get too long because of Country Name. Now added the 2-digit iso country code instead.
+    * Renaming of Language Names, avoiding them to get too long because of Country Name. Now added the 2-digit iso country code instead.
   * [#1996](https://github.com/metasfresh/metasfresh/issues/1996) Take out all AD_Client_ID from GridView in WebUI
     * Rearranging GridView in general, taking out the client column from there to free space for other more important columns. Harmonizing oever all GridViews.
   * [#2001](https://github.com/metasfresh/metasfresh/issues/2001) Add AD_Org_ID to all default Filters
@@ -152,7 +152,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2005](https://github.com/metasfresh/metasfresh/issues/2005) invoiced and delivered status in order
-    * Updateing the the invoiced and delivered Status in Orders again.
+    * Updating the the invoiced and delivered Status in Orders again.
   * [#2013](https://github.com/metasfresh/metasfresh/issues/2013) Broken Included Tabs to be redone
     * Fixes a broken Included Tab in the Manufacturing Order Window
 
@@ -166,11 +166,11 @@ Here come the actual release notes:
   * [#1015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1015) Uncaught TypeError: Cannot read property 'className' of null
     * Fixes an issue that occured when using the scoll bar in Handling Unit Editor Window.
   * [#1028](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1028) Tooltip when hovering GridView Header
-    * Fix fir the Grid Header Tooltip, that was not shown anymore.
+    * Fix for the Grid Header Tooltip, that was not shown anymore.
   * [#1030](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1030) Directly display quick actions for the first row of a modal window
     * Bugfix for the Quickaction behavior in modal overlay when opened and first row is initially selected.
   * [#1040](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1040) Readonly field Contact looks editable
-    * Fix for Fielss that look editable but are readonly.
+    * Fix for Fields that look editable but are readonly.
   * [#1041](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1041) included tab: when zoom into the new window opens with error
     * Error solved when using Zoom-To in new Tab and window
 
