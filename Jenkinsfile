@@ -382,7 +382,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
 <li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
-<li>A docker image which you can run în docker via<br>
+<li>A docker image which you can run in docker via<br>
 <code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${BUILD_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
 </ul>"""
 
