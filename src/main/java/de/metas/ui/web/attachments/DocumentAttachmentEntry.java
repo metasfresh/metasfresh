@@ -1,7 +1,6 @@
 package de.metas.ui.web.attachments;
 
-import org.compiere.model.AttachmentEntry;
-
+import de.metas.attachments.AttachmentEntry;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
