@@ -2,7 +2,16 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-
+/**
+ * According to the documentation at https://docs.docker.com/engine/reference/commandline/tag/ :
+ * A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes. A tag name may not start with a period or a dash and may contain a maximum of 128 characters.
+ */
+ def String mkDockerTag(String input)
+ {
+ 	return input
+ 		.replaceFirst('^[#\\.]', '') // delete the first letter if it is a period or dash
+ 		.replaceAll('[^a-zA-Z0-9_#\\.]', '_'); // replace everything that's not allowed with an underscore
+ }
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
@@ -279,11 +288,11 @@ timestamps
 {
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
-	stage('Preparation') // for display purposes
-	{
-		checkout scm; // i hope this to do all the magic we need
-		sh 'git clean -d --force -x' // clean the workspace
-	}
+		stage('Preparation') // for display purposes
+		{
+			checkout scm; // i hope this to do all the magic we need
+			sh 'git clean -d --force -x' // clean the workspace
+    }
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
@@ -331,6 +340,35 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
 
+				// do the actual building and deployment
+				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+
+				// now create and publish some docker image..well, 1 docker image for starts
+				final dockerWorkDir='docker-build/metasfresh-webui-api'
+				sh "mkdir -p ${dockerWorkDir}"
+
+				final BUILD_DOCKER_REPOSITORY='metasfresh';
+				final BUILD_DOCKER_NAME='metasfresh-webapi-dev';
+				final BUILD_DOCKER_TAG=mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+				final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}:${BUILD_DOCKER_TAG}";
+
+				// create and upload a docker image
+				sh "cp target/metasfresh-webui-api-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
+				sh "cp -R src/main/docker/* ${dockerWorkDir}"
+				sh "cp -R src/main/configs ${dockerWorkDir}"
+				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
+				{
+					def app = docker.build "${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}", "${dockerWorkDir}";
+					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
+					app.push BUILD_DOCKER_TAG;
+					if(MF_UPSTREAM_BRANCH=='release')
+					{
+						echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
+						app.push mkDockerTag('latest');
+					}
+				}
+
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
@@ -339,15 +377,13 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
 				env.BUILD_VERSION="${BUILD_VERSION}";
 				env.BUILD_GIT_SHA1="${commit_sha1}";
+				env.BUILD_DOCKER_IMAGE="${BUILD_DOCKER_IMAGE}";
 
-				// do the actual building and deployment
-				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
-
-				// IMPORTANT: we might parse this build description's href value in downstream builds!
-currentBuild.description="""artifacts (if not yet cleaned up)
-				<ul>
-<li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
+				currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
+<ul>
+<li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
+<li>A docker image which you can run in docker via<br>
+<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${BUILD_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
