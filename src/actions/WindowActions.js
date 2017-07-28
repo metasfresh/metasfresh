@@ -428,6 +428,20 @@ export function patch(
     }
 }
 
+export function fireUpdateData(entity, windowType, id, tabId, rowId, isModal,
+    isAdvanced){
+
+        return dispatch => {
+            getData(
+                entity, windowType, id, tabId, rowId, null, null, isAdvanced
+            ).then(response => {
+                dispatch(mapDataToState(
+                    response.data, isModal, rowId, id, windowType, isAdvanced
+                ));
+            });
+        }
+}
+
 function updateData(doc, scope){
     return dispatch => {
         Object.keys(doc).map(key => {
