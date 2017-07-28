@@ -38,6 +38,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import lombok.NonNull;
 
 public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 {
@@ -72,15 +73,12 @@ public class ShipmentScheduleAllocBL implements IShipmentScheduleAllocBL
 	 * @param justAdd if true, then if will create a {@link I_M_ShipmentSchedule_QtyPicked} only for difference between given <code>qtyPicked</code> and current qty picked.
 	 * @return {@link I_M_ShipmentSchedule_QtyPicked} created record
 	 */
-	private I_M_ShipmentSchedule_QtyPicked setQtyPicked(final I_M_ShipmentSchedule sched,
-			final BigDecimal qtyPicked,
-			final I_C_UOM uom,
+	private I_M_ShipmentSchedule_QtyPicked setQtyPicked(
+			@NonNull final I_M_ShipmentSchedule sched,
+			@NonNull final BigDecimal qtyPicked,
+			@NonNull final I_C_UOM uom,
 			final boolean justAdd)
 	{
-		Check.assumeNotNull(sched, "sched not null");
-		Check.assumeNotNull(uom, "uom not null");
-		Check.assumeNotNull(qtyPicked, "qtyPicked not null");
-
 		// Convert QtyPicked to shipment schedule's UOM
 		final org.compiere.model.I_M_Product product = sched.getM_Product();
 		final I_C_UOM schedUOM = Services.get(IShipmentScheduleBL.class).getC_UOM(sched);
