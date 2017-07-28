@@ -24,6 +24,9 @@ package de.metas.camel.test;
 
 
 import java.io.StringWriter;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -33,8 +36,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.StringSource;
 import org.junit.Ignore;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.printing.esb.base.jaxb.JAXBConstants;
 import de.metas.printing.esb.base.jaxb.ObjectFactoryHelper;
@@ -50,8 +51,9 @@ import de.metas.printing.esb.base.jaxb.generated.ObjectFactory;
 @Ignore
 public abstract class AbstractResponder<IT, OT> implements Processor
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
-
+	
+	private static final transient Logger log = LogManager.getLogManager().getLogger(AbstractResponder.class.getName());
+	
 	//
 	// Status properties
 	public OT lastXmlResponse = null;
@@ -89,7 +91,7 @@ public abstract class AbstractResponder<IT, OT> implements Processor
 		//
 		// Fetching request (sent by printing client)
 		final String requestStr = exchange.getIn().getBody(String.class);
-		log.debug("Received request: " + requestStr);
+		log.info("Received request: " + requestStr);
 		final IT xmlRequest = retrieveRequest(requestStr);
 
 		// Validate request and create the response
@@ -99,7 +101,7 @@ public abstract class AbstractResponder<IT, OT> implements Processor
 		final String responseStr = createResponseString(xmlRequest);
 
 		// Sending back the response (to printing client)
-		log.debug("Replying with: " + responseStr);
+		log.info("Replying with: " + responseStr);
 		exchange.getOut().setBody(responseStr);
 	}
 
@@ -143,7 +145,7 @@ public abstract class AbstractResponder<IT, OT> implements Processor
 		}
 		catch (JAXBException e)
 		{
-			LogManager.getLogger(AbstractResponder.class).error(e.getLocalizedMessage(), e);
+			log.log(Level.SEVERE, "Caught JAXBException" , e);
 			throw e;
 		}
 	}
