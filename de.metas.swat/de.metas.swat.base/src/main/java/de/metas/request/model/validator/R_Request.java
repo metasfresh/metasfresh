@@ -6,8 +6,8 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -42,7 +42,7 @@ import de.metas.inout.model.I_M_QualityNote;
  * #L%
  */
 
-@Validator(I_R_Request.class)
+@Interceptor(I_R_Request.class)
 @Callout(I_R_Request.class)
 public class R_Request
 {
@@ -106,18 +106,18 @@ public class R_Request
 
 		request.setPerformanceType(performanceType);
 	}
-	
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW})
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setSalesRep(final I_R_Request request)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(request);
-		
+
 		final I_AD_Role role = Services.get(IRoleDAO.class).retrieveRole(ctx);
-		
-		//task #577: The SalesRep in R_Request will be Role's supervisor
+
+		// task #577: The SalesRep in R_Request will be Role's supervisor
 		final I_AD_User supervisor = role.getSupervisor();
-		
-		if(supervisor != null)
+
+		if (supervisor != null)
 		{
 			request.setSalesRep(supervisor);
 		}

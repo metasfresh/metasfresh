@@ -333,8 +333,8 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
 
 	/**
-	 * Set Zahlungskondition.
-	 * The terms of Payment (timing, discount)
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -343,8 +343,8 @@ public interface I_C_BPartner
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungskondition.
-	 * The terms of Payment (timing, discount)
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -813,6 +813,31 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_IsCompany = "IsCompany";
 
 	/**
+	 * Set Autom. Referenz.
+	 * Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsCreateDefaultPOReference (boolean IsCreateDefaultPOReference);
+
+	/**
+	 * Get Autom. Referenz.
+	 * Erlaubt es, bei einem neuen Auftrag automatisch das Referenz-Feld des Auftrags vorzubelegen.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isCreateDefaultPOReference();
+
+    /** Column definition for IsCreateDefaultPOReference */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_IsCreateDefaultPOReference = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "IsCreateDefaultPOReference", null);
+    /** Column name IsCreateDefaultPOReference */
+    public static final String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
+
+	/**
 	 * Set Kunde.
 	 * Indicates if this Business Partner is a Customer
 	 *
@@ -1034,7 +1059,7 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_IsSummary = "IsSummary";
 
 	/**
-	 * Set steuerbefreit.
+	 * Set Steuerbefreit.
 	 * Steuersatz steuerbefreit
 	 *
 	 * <br>Type: YesNo
@@ -1044,7 +1069,7 @@ public interface I_C_BPartner
 	public void setIsTaxExempt (boolean IsTaxExempt);
 
 	/**
-	 * Get steuerbefreit.
+	 * Get Steuerbefreit.
 	 * Steuersatz steuerbefreit
 	 *
 	 * <br>Type: YesNo
@@ -1203,8 +1228,8 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_Logo_ID = "Logo_ID";
 
 	/**
-	 * Set Rabatt-Schema.
-	 * Schema to calculate the trade discount percentage
+	 * Set Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1213,8 +1238,8 @@ public interface I_C_BPartner
 	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
 
 	/**
-	 * Get Rabatt-Schema.
-	 * Schema to calculate the trade discount percentage
+	 * Get Rabatt Schema.
+	 * Schema um den prozentualen Rabatt zu berechnen
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1421,8 +1446,8 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Name 2.
-	 * Additional Name
+	 * Set Name Zusatz.
+	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1431,8 +1456,8 @@ public interface I_C_BPartner
 	public void setName2 (java.lang.String Name2);
 
 	/**
-	 * Get Name 2.
-	 * Additional Name
+	 * Get Name Zusatz.
+	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1446,8 +1471,8 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Mitarbeiter.
-	 * Number of employees
+	 * Set Anzahl Beschäftigte.
+	 * Anzahl der Mitarbeiter
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1456,8 +1481,8 @@ public interface I_C_BPartner
 	public void setNumberEmployees (int NumberEmployees);
 
 	/**
-	 * Get Mitarbeiter.
-	 * Number of employees
+	 * Get Anzahl Beschäftigte.
+	 * Anzahl der Mitarbeiter
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1546,7 +1571,7 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_PO_DeliveryViaRule = "PO_DeliveryViaRule";
 
 	/**
-	 * Set PO Discount Schema.
+	 * Set Einkauf Rabatt Schema.
 	 * Schema to calculate the purchase trade discount percentage
 	 *
 	 * <br>Type: Table
@@ -1556,7 +1581,7 @@ public interface I_C_BPartner
 	public void setPO_DiscountSchema_ID (int PO_DiscountSchema_ID);
 
 	/**
-	 * Get PO Discount Schema.
+	 * Get Einkauf Rabatt Schema.
 	 * Schema to calculate the purchase trade discount percentage
 	 *
 	 * <br>Type: Table
@@ -1685,6 +1710,31 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
+	 * Set Referenz Vorgabe.
+	 * Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPOReferencePattern (java.lang.String POReferencePattern);
+
+	/**
+	 * Get Referenz Vorgabe.
+	 * Der Wert dieses Feldes wird mit der Auftrags-Belegnummer kombiniert, um die Auftragsreferenz zu erzeugen
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPOReferencePattern();
+
+    /** Column definition for POReferencePattern */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_POReferencePattern = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "POReferencePattern", null);
+    /** Column name POReferencePattern */
+    public static final String COLUMNNAME_POReferencePattern = "POReferencePattern";
+
+	/**
 	 * Set PostageFreeAmt.
 	 * Betrag zur Bestimmung der Potofreigrenze im Lieferlauf.
 	 *
@@ -1785,8 +1835,53 @@ public interface I_C_BPartner
     public static final String COLUMNNAME_ReferenceNo = "ReferenceNo";
 
 	/**
-	 * Set Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Set Wiedervorlage Datum Aussen.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReminderDateExtern (java.sql.Timestamp ReminderDateExtern);
+
+	/**
+	 * Get Wiedervorlage Datum Aussen.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getReminderDateExtern();
+
+    /** Column definition for ReminderDateExtern */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ReminderDateExtern = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ReminderDateExtern", null);
+    /** Column name ReminderDateExtern */
+    public static final String COLUMNNAME_ReminderDateExtern = "ReminderDateExtern";
+
+	/**
+	 * Set Wiedervorlage Datum Innen.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setReminderDateIntern (java.sql.Timestamp ReminderDateIntern);
+
+	/**
+	 * Get Wiedervorlage Datum Innen.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getReminderDateIntern();
+
+    /** Column definition for ReminderDateIntern */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_ReminderDateIntern = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "ReminderDateIntern", null);
+    /** Column name ReminderDateIntern */
+    public static final String COLUMNNAME_ReminderDateIntern = "ReminderDateIntern";
+
+	/**
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1795,8 +1890,7 @@ public interface I_C_BPartner
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1812,6 +1906,35 @@ public interface I_C_BPartner
     public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_User>(I_C_BPartner.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
     /** Column name SalesRep_ID */
     public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/**
+	 * Set Sales Responsible.
+	 * Sales Responsible Internal
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSalesRepIntern_ID (int SalesRepIntern_ID);
+
+	/**
+	 * Get Sales Responsible.
+	 * Sales Responsible Internal
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSalesRepIntern_ID();
+
+	public org.compiere.model.I_AD_User getSalesRepIntern();
+
+	public void setSalesRepIntern(org.compiere.model.I_AD_User SalesRepIntern);
+
+    /** Column definition for SalesRepIntern_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_User> COLUMN_SalesRepIntern_ID = new org.adempiere.model.ModelColumn<I_C_BPartner, org.compiere.model.I_AD_User>(I_C_BPartner.class, "SalesRepIntern_ID", org.compiere.model.I_AD_User.class);
+    /** Column name SalesRepIntern_ID */
+    public static final String COLUMNNAME_SalesRepIntern_ID = "SalesRepIntern_ID";
 
 	/**
 	 * Set Verkaufsvolumen in 1.000.
@@ -2044,12 +2167,9 @@ public interface I_C_BPartner
 	 * Get Aktualisiert.
 	 * Date this record was updated
 	 *
-	 * <br>
-	 * Type: DateTime
-	 * <br>
-	 * Mandatory: true
-	 * <br>
-	 * Virtual Column: false
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
 	public java.sql.Timestamp getUpdated();
 

@@ -56,7 +56,7 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
-	public IHUStorage getStorage(final I_M_HU hu)
+	public IHUStorage getStorage(@NonNull final I_M_HU hu)
 	{
 		final HUStorage huStorage = new HUStorage(this, hu);
 		// huStorage.addHUStorageListener(listeners);
