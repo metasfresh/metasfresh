@@ -57,6 +57,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#525](https://github.com/metasfresh/metasfresh/issues/525) Retraceability Transparency for Product Lifecycle
+    * New improved Functionality for retraceability in mtefasresh. Now allowing to analyze the material paths in no time.
   * [#1993](https://github.com/metasfresh/metasfresh/issues/1993) Set default Widget width for certain Columns
     * Refining and Harmonizing the Widget width of columns in GridView for those, where generic width according to their widget type does not match to the user requirement or field content.
   * [#1995](https://github.com/metasfresh/metasfresh/issues/1995) Language Names too Long
@@ -70,6 +71,7 @@ Here come the actual release notes:
   * [#2009](https://github.com/metasfresh/metasfresh/issues/2009) Feedback WebUI Prices
     * Further Layout Adjustments to Pricelist and Product Price window in WebUI.
   * [#2012](https://github.com/metasfresh/metasfresh/issues/2012) import messages
+    * New import of static massages for webUI.
   * [#2015](https://github.com/metasfresh/metasfresh/issues/2015) Create Window Price List Schema in WebUI
     * Adjusting the Layout for Price List Schema Window in WebUI
   * [#2017](https://github.com/metasfresh/metasfresh/issues/2017) Create Window Pricing Rule in WebUI
@@ -77,12 +79,15 @@ Here come the actual release notes:
   * [#2020](https://github.com/metasfresh/metasfresh/issues/2020) Add System Configuration Window to WebUI
     * New Window for System Configuration in WebUI.
   * [#2022](https://github.com/metasfresh/metasfresh/issues/2022) Create Window Textvariablen in WebUI
+    * New Window for Boilerplate Variables in WebUI.
   * [#2023](https://github.com/metasfresh/metasfresh/issues/2023) Create Window Textbausteinein WebUI
+    * New Window for Boilerplate Text Elements in WebUI.
   * [#2027](https://github.com/metasfresh/metasfresh/issues/2027) Fine Tuning of Window Bankaccount in WebUI
     * Various Adjustments to the Bankaccount Window in WebUI.
   * [#2028](https://github.com/metasfresh/metasfresh/issues/2028) New Window for Validcombination in WebUI
     * New Window in WebUI thats allows the user to maintain the valid Account Combinations.
   * [#2038](https://github.com/metasfresh/metasfresh/issues/2038) Adjusted Business Partner Window for Small Companies
+    * New Business Partner Window for B2C Companies.
 
 * metasfresh-webui-api
   * [#506](https://github.com/metasfresh/metasfresh-webui-api/issues/506) view: accept included referencing documents when creating a new view
