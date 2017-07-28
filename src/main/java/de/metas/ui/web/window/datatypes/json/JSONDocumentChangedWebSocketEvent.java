@@ -21,6 +21,7 @@ import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument.JSONIncludedTabInfo;
+import de.metas.ui.web.window.descriptor.DetailId;
 import lombok.NonNull;
 
 /*
@@ -53,7 +54,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility=Visibility.NONE, setterVisibility = Visibility.NONE)
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class JSONDocumentChangedWebSocketEvent
 {
 	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final WebsocketSender websocketSender)
@@ -69,7 +70,6 @@ public final class JSONDocumentChangedWebSocketEvent
 				.forEach(wsEvent -> websocketSender.convertAndSend(wsEvent.getWebsocketEndpoint(), wsEvent));
 	}
 
-	
 	/** @return websocket event or null */
 	private static final JSONDocumentChangedWebSocketEvent extractWebsocketEvent(final JSONDocument event)
 	{
@@ -92,7 +92,7 @@ public final class JSONDocumentChangedWebSocketEvent
 		tabInfos.forEach(wsEvent::addIncludedTabInfo);
 		return wsEvent;
 	}
-	
+
 	public static JSONDocumentChangedWebSocketEvent staleRootDocument(final WindowId windowId, final DocumentId documentId)
 	{
 		final String tabId = null;
@@ -101,7 +101,18 @@ public final class JSONDocumentChangedWebSocketEvent
 		event.setStale();
 		return event;
 	}
-	
+
+	public static JSONDocumentChangedWebSocketEvent staleTabs(final WindowId windowId, final DocumentId documentId, final Set<DetailId> tabIds)
+	{
+		final JSONDocumentChangedWebSocketEvent event = new JSONDocumentChangedWebSocketEvent(windowId, documentId, (String)null /* tabId */, (DocumentId)null/* rowId */);
+
+		tabIds.stream()
+				.map(tabId -> JSONIncludedTabInfo.staleTab(tabId))
+				.forEach(event::addIncludedTabInfo);
+
+		return event;
+	}
+
 	@JsonProperty("windowId")
 	private final WindowId windowId;
 
@@ -120,12 +131,12 @@ public final class JSONDocumentChangedWebSocketEvent
 	@JsonProperty("rowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final DocumentId rowId;
-	
+
 	/** Event's timestamp. */
 	@JsonProperty("timestamp")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String timestamp;
-	
+
 	@JsonProperty("stale")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Boolean stale;
@@ -147,15 +158,15 @@ public final class JSONDocumentChangedWebSocketEvent
 		this.tabId = tabId;
 		this.tabid = tabId;
 		this.rowId = rowId;
-		
+
 		this.timestamp = JSONDate.toJson(SystemTime.millis());
 	}
-	
+
 	private void setStale()
 	{
 		this.stale = Boolean.TRUE;
 	}
-	
+
 	public void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
 	{
 		if (includedTabsInfo == null)
@@ -164,7 +175,7 @@ public final class JSONDocumentChangedWebSocketEvent
 		}
 		includedTabsInfo.put(tabInfo.getTabId(), tabInfo);
 	}
-	
+
 	@JsonIgnore
 	public String getWebsocketEndpoint()
 	{

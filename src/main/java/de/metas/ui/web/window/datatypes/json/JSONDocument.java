@@ -30,6 +30,7 @@ import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -333,6 +334,12 @@ public final class JSONDocument extends JSONDocumentBase
 	@ToString
 	public static final class JSONIncludedTabInfo
 	{
+		public static JSONIncludedTabInfo staleTab(final DetailId tabId)
+		{
+			final boolean stale = true;
+			return new JSONIncludedTabInfo(tabId, stale);
+		}
+		
 		@JsonProperty("tabid")
 		private final String tabid;
 
@@ -354,12 +361,15 @@ public final class JSONDocument extends JSONDocumentBase
 		@JsonInclude(JsonInclude.Include.NON_EMPTY)
 		private String allowDeleteReason;
 
+		private JSONIncludedTabInfo(@NonNull final DetailId tabId, final boolean stale)
+		{
+			this.tabid = DetailId.toJson(tabId);
+			this.stale = stale ? Boolean.TRUE : null;
+		}
+
 		private JSONIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
 		{
-			tabid = DetailId.toJson(includedDocumentsCollection.getDetailId());
-
-			final boolean stale = includedDocumentsCollection.isStale();
-			this.stale = stale ? Boolean.TRUE : null;
+			this(includedDocumentsCollection.getDetailId(), includedDocumentsCollection.isStale());
 
 			final LogicExpressionResult allowCreateNew = includedDocumentsCollection.getAllowCreateNewDocument();
 			if (allowCreateNew != null)
