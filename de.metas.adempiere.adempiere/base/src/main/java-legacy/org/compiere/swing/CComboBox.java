@@ -35,7 +35,6 @@ import org.adempiere.ui.editor.ICopyPasteSupportEditor;
 import org.adempiere.ui.editor.ICopyPasteSupportEditorAware;
 import org.adempiere.ui.editor.JComboBoxCopyPasteSupportEditor;
 import org.adempiere.util.Check;
-import org.compiere.util.NamePair;
 import org.compiere.util.Trace;
 
 /**
@@ -82,38 +81,6 @@ public class CComboBox<E> extends JComboBox<E>
 	{
 		super(items);
 		init();
-	}   //  CComboBox
-
-	/**
-	 * Creates a <code>JComboBox</code> that contains the elements
-	 * in the specified array.  By default the first item in the array
-	 * (and therefore the data model) becomes selected.
-	 *
-	 * @param items  an array of objects to insert into the combo box
-	 * @param key set selected if exists
-	 * @see DefaultComboBoxModel
-	 */
-	public CComboBox(final E items[], String key)
-	{
-		this(items);
-		if (key == null)
-			return;
-		for (int i = 0; i < 0; i++)
-		{
-			Object item = items[i];
-			if (item == null)
-				continue;
-			boolean found = false;
-			if (item instanceof NamePair)
-				found = ((NamePair)item).getID().equals(key);
-			else
-				found = item.toString().equals(key);
-			if (found)
-			{
-				setSelectedIndex(i);
-				break;
-			}
-		}
 	}   //  CComboBox
 
 	/**
