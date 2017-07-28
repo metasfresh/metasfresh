@@ -111,21 +111,27 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2005](https://github.com/metasfresh/metasfresh/issues/2005) invoiced and delivered status in order
+    * Updateing the the invoiced and delivered Status in Orders again.
   * [#2013](https://github.com/metasfresh/metasfresh/issues/2013) Broken Included Tabs to be redone
     * Fixes a broken Included Tab in the Manufacturing Order Window
 
 * metasfresh-webui-api
   * [#1982](https://github.com/metasfresh/metasfresh/issues/1982) partial issue problem
+    * Fixes an error in Action Issue of Manufacturing when patially issueing.
 
 * metasfresh-webui-frontend
   * [#1009](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1009) Window Name missing in Action Menu
     * Fixes a Bug not showing the Window Name in Action Menu nor the possibility to set a Bookmark for the window.
   * [#1015](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1015) Uncaught TypeError: Cannot read property 'className' of null
+    * Fixes an issue that occured when using the scoll bar in Handling Unit Editor Window.
   * [#1028](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1028) Tooltip when hovering GridView Header
+    * Fix fir the Grid Header Tooltip, that was not shown anymore.
   * [#1030](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1030) Directly display quick actions for the first row of a modal window
     * Bugfix for the Quickaction behavior in modal overlay when opened and first row is initially selected.
   * [#1040](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1040) Readonly field Contact looks editable
+    * Fix for Fielss that look editable but are readonly.
   * [#1041](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1041) included tab: when zoom into the new window opens with error
+    * Error solved when using Zoom-To in new Tab and window
 
 
 # metasfresh 5.18 (2017-29)
