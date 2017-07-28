@@ -1,30 +1,29 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.process;
 
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -33,12 +32,13 @@ import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.MField;
-import org.compiere.model.MTab;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableSet;
+
 import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 
 /**
  * Create Field from Table Column. (which do not exist in the Tab yet)
@@ -46,74 +46,31 @@ import de.metas.process.JavaProcess;
  * @author Jorg Janke
  * @version $Id: TabCreateFields.java,v 1.3 2006/07/30 00:51:02 jjanke Exp $
  * 
- * @author Teo Sarca <li>BF [ 2827782 ] TabCreateFields process not setting entity type well https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2827782&group_id=176962
+ * @author Teo Sarca
+ *         <li>BF [ 2827782 ] TabCreateFields process not setting entity type well https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2827782&group_id=176962
  */
 public class TabCreateFields extends JavaProcess
 {
-	private static final Logger log = LogManager.getLogger(TabCreateFields.class);
+	private static final transient Logger log = LogManager.getLogger(TabCreateFields.class);
 
-	/** AD_Tab_ID */
-	private int p_AD_Tab_ID = -1;
+	private static final Set<String> COLUMNNAMES_Standard = ImmutableSet.of("Created", "CreatedBy", "Updated", "UpdatedBy");
 
-	private static final String PARAM_EntityType = "EntityType";
-	/** Column's EntityType */
-	private String p_EntityType = null;
+	@Param(parameterName = "EntityType")
+	private String p_EntityType;
 
-	private static final String PARAM_AD_Column_ID = "AD_Column_ID";
-	private int p_AD_Column_ID = -1;
+	@Param(parameterName = "AD_Column_ID")
+	private int p_AD_Column_ID;
 
-	private static final String PARAM_IsTest = "IsTest";
+	@Param(parameterName = "IsCreateStandardFields")
+	private boolean p_IsCreateStandardFields;
+
+	@Param(parameterName = "IsTest")
 	private boolean p_IsTest = false;
 
-	/**
-	 * prepare
-	 */
 	@Override
-	protected void prepare()
+	protected String doIt()
 	{
-		p_AD_Tab_ID = getRecord_ID();
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			if (para.getParameter() == null)
-			{
-				continue;
-			}
-			
-			final String parameterName = para.getParameterName();
-			if (PARAM_EntityType.equals(parameterName))
-			{
-				p_EntityType = para.getParameterAsString();
-			}
-			if (PARAM_AD_Column_ID.equals(parameterName))
-			{
-				p_AD_Column_ID = para.getParameterAsInt();
-			}
-			else if (PARAM_IsTest.equals(parameterName))
-			{
-				p_IsTest = para.getParameterAsBoolean();
-			}
-		}
-	}	// prepare
-
-	/**
-	 * Process
-	 * 
-	 * @return info
-	 * @throws Exception
-	 */
-	@Override
-	protected String doIt() throws Exception
-	{
-		if (p_AD_Tab_ID <= 0)
-		{
-			throw new FillMandatoryException(I_AD_Tab.COLUMNNAME_AD_Tab_ID);
-		}
-		final MTab adTab = new MTab(getCtx(), p_AD_Tab_ID, get_TrxName());
-		if (adTab.getAD_Tab_ID() <= 0)
-		{
-			throw new AdempiereException("@NotFound@ @AD_Tab_ID@ " + p_AD_Tab_ID);
-		}
-		log.info("Tab: " + adTab.toString());
+		final I_AD_Tab adTab = getRecord(I_AD_Tab.class);
 
 		//
 		int count = 0;
@@ -136,7 +93,7 @@ public class TabCreateFields extends JavaProcess
 		{
 			throw new AdempiereException("ROLLBACK");
 		}
-		
+
 		return "@Created@ #" + count;
 	}	// doIt
 
@@ -153,31 +110,32 @@ public class TabCreateFields extends JavaProcess
 				// Columns for Tab's AD_Table_ID
 				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, adTab.getAD_Table_ID())
 				//
-				// Don't add standard columns
-				.filter(new NotQueryFilter<I_AD_Column>(
-						new InArrayQueryFilter<I_AD_Column>(I_AD_Column.COLUMNNAME_ColumnName, "Created", "CreatedBy", "Updated", "UpdatedBy")
-						))
-				//
 				// Columns that were not already added to Tab
-				.filter(new NotQueryFilter<I_AD_Column>(
-						new InSubQueryFilter<I_AD_Column>(
-								I_AD_Column.COLUMN_AD_Column_ID,
-								I_AD_Field.COLUMNNAME_AD_Column_ID, queryTabFields)
-						));
-
+				.filter(new NotQueryFilter<I_AD_Column>(new InSubQueryFilter<I_AD_Column>(I_AD_Column.COLUMN_AD_Column_ID, I_AD_Field.COLUMNNAME_AD_Column_ID, queryTabFields)));
+		
 		//
 		// Filter by AD_Column's EntityType (if any)
 		if (!Check.isEmpty(p_EntityType, true))
 		{
 			queryBuilder.addEqualsFilter(I_AD_Column.COLUMNNAME_EntityType, p_EntityType);
 		}
-		
+
 		//
 		// Filter by AD_Column_ID (if any)
+		boolean createStandardFields = p_IsCreateStandardFields;
 		if (p_AD_Column_ID > 0)
 		{
 			queryBuilder.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Column_ID, p_AD_Column_ID);
+			createStandardFields = true; // set it to true to avoid excluding this column
 		}
+
+		//
+		// Exclude standard columns
+		if(!createStandardFields)
+		{
+			queryBuilder.addNotInArrayFilter(I_AD_Column.COLUMN_ColumnName, COLUMNNAMES_Standard);		
+		}
+
 
 		queryBuilder.orderBy()
 				.addColumn(I_AD_Column.COLUMNNAME_AD_Column_ID);
@@ -208,7 +166,7 @@ public class TabCreateFields extends JavaProcess
 			field.setIsDisplayed(false);
 			field.setIsDisplayedGrid(false);
 		}
-		
+
 		InterfaceWrapperHelper.save(field);
 		return field;
 	}
