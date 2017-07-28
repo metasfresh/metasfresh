@@ -21,9 +21,10 @@ COPY ./configs/metasfresh.properties /opt/metasfresh/metasfresh-material-dispo/
 
 COPY ./start_materialdispo_docker.sh /opt/metasfresh/metasfresh-material-dispo/
 
-# i don't understand why i have to do this. I would assume that when I check out this sh file on a linux machine, it has lf eols, but aparently it doesn't
-# at any rate, thx to https://stackoverflow.com/a/41424794/1012103
-RUN dos2unix /opt/metasfresh/metasfresh-webui-api/start_metasfresh-webui-api_docker.sh
+# I don't understand why I have to do this. I would assume that when I commit this sh file on windows with lf eols and 
+# then check it out on a linux machine, it has lf eols. But aparently it doesn't.
+# At any rate, thx to https://stackoverflow.com/a/41424794/1012103
+RUN dos2unix /opt/metasfresh/metasfresh-material-dispo/start_materialdispo_docker.sh
 
 # make our start command executable
 RUN chmod 700 /opt/metasfresh/metasfresh-material-dispo/start_materialdispo_docker.sh
