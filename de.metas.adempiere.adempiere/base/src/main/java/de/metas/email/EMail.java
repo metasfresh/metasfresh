@@ -53,6 +53,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.sun.mail.smtp.SMTPMessage;
 
@@ -1120,5 +1121,15 @@ public final class EMail implements Serializable
 				.add("attachments", _attachments.isEmpty() ? null : _attachments)
 				.add("mailbox", _mailbox)
 				.toString();
+	}
+	
+	public static List<String> toEMailsList(final String emailsListStr)
+	{
+		if (Check.isEmpty(emailsListStr, true))
+		{
+			return ImmutableList.of();
+		}
+
+		return Splitter.on(";").trimResults().omitEmptyStrings().splitToList(emailsListStr);
 	}
 }	// EMail

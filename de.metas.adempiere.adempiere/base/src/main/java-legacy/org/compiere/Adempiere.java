@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere;
 
@@ -145,7 +145,7 @@ public class Adempiere
 	{
 		this.applicationContext = applicationContext;
 		logger.info("Set application context: {}", applicationContext);
-		
+
 		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
 		// we will call it when the spring context was loaded.
 
@@ -166,6 +166,12 @@ public class Adempiere
 		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
 	}
 
+	/**
+	 * When running this method from within a junit test, we need to fire up spring
+	 * 
+	 * @param requiredType
+	 * @return
+	 */
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getSpringApplicationContext();
@@ -174,7 +180,6 @@ public class Adempiere
 			throw new IllegalStateException("springApplicationContext not configured yet");
 		}
 
-		System.out.println("Trying to fetch " + requiredType);
 		return springApplicationContext.getBean(requiredType);
 	}
 

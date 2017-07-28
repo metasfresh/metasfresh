@@ -126,6 +126,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	I_M_HU retrieveParent(final I_M_HU hu);
 
 	/**
+	 * @param hu may not be {@code null}
+	 * @return parent M_HU_ID or -1
+	 */
+	int retrieveParentId(I_M_HU hu);
+
+	/**
 	 * Actually returns {@link I_M_HU#getM_HU_Item_Parent()}, but in a potentially DB decoupled fashion.
 	 * 
 	 * @param hu
@@ -355,4 +361,12 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 * @return the aggregated item or null.
 	 */
 	I_M_HU_Item retrieveAggregatedItemOrNull(I_M_HU hu, I_M_HU_PI_Item piItem);
+
+	/**
+	 * Retrieve all the child HUs of the given item, both active and not active
+	 * 
+	 * @param parentItem
+	 * @return
+	 */
+	List<I_M_HU> retrieveChildHUsForItem(I_M_HU_Item parentItem);
 }

@@ -13,15 +13,14 @@ package de.metas.handlingunits.storage.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import lombok.NonNull;
 
 /* package */class HUStorage implements IHUStorage
 {
@@ -57,20 +57,20 @@ import de.metas.handlingunits.storage.IProductStorage;
 
 	private final IHUStorageFactory storageFactory;
 	private final IHUStorageDAO dao;
-	
+
 	private final I_M_HU hu;
 	private final boolean virtualHU;
 
-	public HUStorage(final IHUStorageFactory storageFactory, final I_M_HU hu)
+	public HUStorage(
+			@NonNull final IHUStorageFactory storageFactory, 
+			@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(storageFactory, "storageFactory not null");
 		this.storageFactory = storageFactory;
 
 		dao = storageFactory.getHUStorageDAO();
 		Check.assumeNotNull(dao, "dao not null");
 
-		Check.assumeNotNull(hu, "HU not null");
-		Check.assumeNotNull(hu.getM_HU_ID() > 0, "HU is saved: {}", hu);
+		Check.errorUnless(hu.getM_HU_ID() > 0, "Given HU has to be saved; hu={}", hu);
 		this.hu = hu;
 		virtualHU = Services.get(IHandlingUnitsBL.class).isVirtual(hu);
 	}
@@ -266,12 +266,12 @@ import de.metas.handlingunits.storage.IProductStorage;
 		// => this can be a single product storage
 		return true;
 	}
-	
+
 	@Override
 	public final I_M_Product getSingleProductOrNull()
 	{
 		final List<I_M_HU_Storage> storages = dao.retrieveStorages(hu);
-		
+
 		I_M_Product product = null;
 		for (final I_M_HU_Storage storage : storages)
 		{
@@ -289,7 +289,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 				// same product => go on
 			}
 		}
-		
+
 		return product;
 	}
 
@@ -313,7 +313,7 @@ import de.metas.handlingunits.storage.IProductStorage;
 		final IHUProductStorage productStorage = getProductStorageOrNull(product);
 		if (productStorage == null)
 		{
-			throw new AdempiereException("@NotFound@ M_HU_Storage_ID@ (@M_Product_ID@:" + product.getName() + ")");
+			throw new AdempiereException("@NotFound@ @M_HU_Storage_ID@ (@M_Product_ID@:" + product.getName() + "; @M_HU_ID@:" + getM_HU().getM_HU_ID() + ")");
 		}
 
 		return productStorage;

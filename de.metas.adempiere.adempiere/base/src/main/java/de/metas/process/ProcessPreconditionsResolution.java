@@ -3,12 +3,15 @@ package de.metas.process;
 import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -34,6 +37,16 @@ import de.metas.i18n.ImmutableTranslatableString;
 
 public final class ProcessPreconditionsResolution
 {
+	/**
+	 * {@code AD_Message} value that is used by {@link #rejectBecauseNotSingleSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
+	 */
+	public static final String MSG_ONLY_ONE_SELECTED_ROW_ALLOWED = "ProcessPreconditionsResolution_OnlyOneSelectedRowAllowed";
+	
+	/**
+	 * {@code AD_Message} value that is used by {@link #rejectBecauseNoSelection()}. This constant can also be used with {@link #rejectWithInternalReason(String)}.
+	 */
+	public static final String MSG_NO_ROWS_SELECTED = "ProcessPreconditionsResolution_NoRowsSelected";
+
 	public static final ProcessPreconditionsResolution accept()
 	{
 		return ACCEPTED;
@@ -44,6 +57,28 @@ public final class ProcessPreconditionsResolution
 		return REJECTED_UnknownReason;
 	}
 
+	/**
+	 * Convenience method to flag a process as not available in a particular context, giving the user a short reason about why the process is unavailable.
+	 * 
+	 * @param reason
+	 * @return
+	 */
+	public static final ProcessPreconditionsResolution reject(@NonNull final ITranslatableString reason)
+	{
+		final boolean accepted = false;
+		final boolean internal = false;
+		return new ProcessPreconditionsResolution(accepted, reason, internal);
+	}
+
+	/**
+	 * Like {@link #reject(ITranslatableString)}, but with a constant string.
+	 * 
+	 * @param reasonStr this string will be used as-is (not translated)
+	 * @return
+	 * 
+	 * @deprecated please use {@link #reject(ITranslatableString)} instead; see issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/510">metasfresh-webui-api#510</a>.
+	 */
+	@Deprecated
 	public static final ProcessPreconditionsResolution reject(final String reasonStr)
 	{
 		if (Check.isEmpty(reasonStr, true))
@@ -51,12 +86,18 @@ public final class ProcessPreconditionsResolution
 			return REJECTED_UnknownReason;
 		}
 
-		final boolean accepted = false;
 		final ITranslatableString reason = ImmutableTranslatableString.constant(reasonStr);
-		final boolean internal = false;
-		return new ProcessPreconditionsResolution(accepted, reason, internal);
+		return reject(reason);
 	}
 
+	/**
+	 * Convenience method to flag a process as not available in a particular context.<br>
+	 * The process shall not be shown to the user.<br>
+	 * The given {@code reasonStr} is intended only for logging, debugging etc.
+	 * 
+	 * @param reasonStr this string will be used as-is (not translated)
+	 * @return
+	 */
 	public static final ProcessPreconditionsResolution rejectWithInternalReason(final String reasonStr)
 	{
 		if (Check.isEmpty(reasonStr, true))
@@ -73,7 +114,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNoSelection()
 	{
 		final boolean accepted = false;
-		final ITranslatableString reason = ImmutableTranslatableString.constant("no rows selected"); // TODO: trl
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -81,7 +122,7 @@ public final class ProcessPreconditionsResolution
 	public static final ProcessPreconditionsResolution rejectBecauseNotSingleSelection()
 	{
 		final boolean accepted = false;
-		final ITranslatableString reason = ImmutableTranslatableString.constant("only one row shall be selected"); // TODO: trl
+		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED); 
 		final boolean internal = false;
 		return new ProcessPreconditionsResolution(accepted, reason, internal);
 	}
@@ -149,11 +190,11 @@ public final class ProcessPreconditionsResolution
 
 	public ITranslatableString getRejectReason()
 	{
-		if(accepted)
+		if (accepted)
 		{
 			return ImmutableTranslatableString.empty();
 		}
-		
+
 		return reason != null ? reason : ImmutableTranslatableString.empty();
 	}
 
@@ -182,7 +223,7 @@ public final class ProcessPreconditionsResolution
 		{
 		}
 
-		private Builder(final ProcessPreconditionsResolution template)
+		private Builder(@NonNull final ProcessPreconditionsResolution template)
 		{
 			accepted = template.accepted;
 			reason = template.reason;
@@ -219,12 +260,27 @@ public final class ProcessPreconditionsResolution
 			return reason;
 		}
 
+		/**
+		 * Set a translatable string to be shown as "process name", instead of the actual {@code AD_Process.Name}.
+		 * 
+		 * @param captionOverride optional, may be {@code null} to have no override.
+		 * @return
+		 */
 		public ProcessPreconditionsResolution.Builder setCaptionOverride(final ITranslatableString captionOverride)
 		{
 			this.captionOverride = captionOverride;
 			return this;
 		}
 
+		/**
+		 * Set a constant string to be shown as "process name", instead of the actual {@code AD_Process.Name}.
+		 * <p>
+		 * Note: this method makes sense, because there are cases where we choose not to translate a string.<br>
+		 * Known example: packing instruction names, such as "IFCO 6410 x 10"
+		 * 
+		 * @param captionOverride optional, may be {@code null} to have no override.
+		 * @return
+		 */
 		public ProcessPreconditionsResolution.Builder setCaptionOverride(final String captionOverride)
 		{
 			this.captionOverride = captionOverride == null ? null : ImmutableTranslatableString.constant(captionOverride);

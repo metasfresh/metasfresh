@@ -30,12 +30,14 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_InvoiceCandidate_InOutLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InventoryLine;
 
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -207,7 +209,12 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 		//
 		// Get quantity left to be invoiced
 		final BigDecimal qtyLeftToInvoice = getQtyInvoiceable(cand);
-		if (qtyLeftToInvoice.multiply(factor).signum() <= 0)
+
+		// #1604
+		// if we deal with a material disposal, this qtyLeftToInvoice is acceptable
+		final boolean isMaterialDisposalIC = ics.getC_Invoice_Candidate().getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
+		
+		if (qtyLeftToInvoice.multiply(factor).signum() <= 0 && !isMaterialDisposalIC)
 		{
 			// if we already invoiced the whole qty for this IC, then we also skip
 			return;

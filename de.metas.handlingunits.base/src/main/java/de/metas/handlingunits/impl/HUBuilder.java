@@ -10,12 +10,12 @@ package de.metas.handlingunits.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +40,6 @@ import org.compiere.model.I_M_Locator;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -49,6 +48,7 @@ import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -65,9 +65,9 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
  * Important class to build new HUs. Use {@link IHandlingUnitsDAO#createHUBuilder(IHUContext)} to get an isntance.
  * <p>
  * More or less employed and driven by the {@link IAllocationDestination}s and also {@link IAllocationStrategy}s, whenever the need to create a new {@link I_M_HU}.
- * 
+ *
  * This builder also creates {@link I_M_HU_Item} for the new {@link I_M_HU} it creates (see {@link HUNodeIncludedItemBuilder}), but out of itself it doesn't create any child HUs.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -128,9 +128,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setM_HU_Item_Parent(final I_M_HU_Item parentItem)
+	public final IHUBuilder setM_HU_Item_Parent(final I_M_HU_Item parentItem)
 	{
 		_parentItem = parentItem;
+		return this;
 	}
 
 	@Override
@@ -146,9 +147,10 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public void setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piip)
+	public IHUBuilder setM_HU_PI_Item_Product(final I_M_HU_PI_Item_Product piip)
 	{
 		_piip = piip;
+		return this;
 	}
 
 	@Override
@@ -165,10 +167,11 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setHUStatus(final String huStatus)
+	public IHUBuilder setHUStatus(final String huStatus)
 	{
 		Check.assumeNotEmpty(huStatus, "huStatus not empty");
 		_huStatus = huStatus;
+		return this;
 	}
 
 	@Override
@@ -178,12 +181,12 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 	}
 
 	@Override
-	public final void setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public final IHUBuilder setM_HU_LUTU_Configuration(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		if (lutuConfiguration == null)
 		{
 			_lutuConfiguration = null;
-			return;
+			return this;
 		}
 
 		if (lutuConfiguration.getM_HU_LUTU_Configuration_ID() <= 0)
@@ -197,6 +200,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		}
 
 		_lutuConfiguration = lutuConfiguration;
+		return this;
 	}
 
 	@Override
@@ -252,7 +256,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 
 	/**
 	 * Note that currently this method does not really do work recursive since we registered {@link HUBuilder.HUItemNodeIncludedHUBuilderNOOP} do get the downstream nodes for HU items.
-	 * 
+	 *
 	 * @param huPIVersion
 	 * @param parentItem
 	 * @return
@@ -490,7 +494,7 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 		@Override
 		public List<I_M_HU_Item> retrieveDownstreamNodes(final I_M_HU hu)
 		{
-			final List<I_M_HU_Item> result = new ArrayList<I_M_HU_Item>();
+			final List<I_M_HU_Item> result = new ArrayList<>();
 			final IHUStorageDAO huStorageDAO = getHUContext().getHUStorageFactory().getHUStorageDAO();
 
 			if (handlingUnitsBL.isAggregateHU(hu))

@@ -139,7 +139,6 @@
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.4.1209.jre7</version>
 		</dependency>
 
 
@@ -190,13 +189,6 @@
 			<groupId>it.sauronsoftware.cron4j</groupId>
 			<artifactId>cron4j</artifactId>
 			<version>2.2.5</version>
-		</dependency>
-
-		<!-- required by /adempiereTrunkMvcForms/base/src/org/adempiere/pipo/CreateZipFile.java -->
-		<dependency>
-			<groupId>org.apache.ant</groupId>
-			<artifactId>ant</artifactId>
-			<version>1.7.0</version>
 		</dependency>
 
 		<!-- Reporting -->
@@ -292,6 +284,12 @@
 			<artifactId>gson</artifactId>
 		</dependency>
 		
+		<!-- we use this for its "capability of serializing java.time objects with the Jackson core".  -->
+		<!-- jackson itself is pulled in via spring-boot -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
 		
 		<!--
 			Lombok

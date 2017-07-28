@@ -71,8 +71,10 @@ public interface IHUBuilder extends IHUIterator
 	 */
 	I_M_HU create(I_M_HU_PI_Version piVersion);
 
+	@Override
 	Date getDate();
 
+	@Override
 	void setStorageFactory(IHUStorageFactory storageFactory);
 
 	I_M_HU_Item getM_HU_Item_Parent();
@@ -86,11 +88,11 @@ public interface IHUBuilder extends IHUIterator
 	 * 
 	 * @param parentItem
 	 */
-	void setM_HU_Item_Parent(I_M_HU_Item parentItem);
+	IHUBuilder setM_HU_Item_Parent(I_M_HU_Item parentItem);
 
 	I_M_HU_PI_Item_Product getM_HU_PI_Item_Product();
 
-	void setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product piip);
+	IHUBuilder setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product piip);
 
 	I_C_BPartner getC_BPartner();
 
@@ -116,11 +118,11 @@ public interface IHUBuilder extends IHUIterator
 	 *
 	 * @param huStatus HU Status (see X_M_HU.HUSTATUS_*); null is not accepted
 	 */
-	void setHUStatus(String huStatus);
+	IHUBuilder setHUStatus(String huStatus);
 
 	String getHUStatus();
 
-	void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration lutuConfiguration);
+	IHUBuilder setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
 

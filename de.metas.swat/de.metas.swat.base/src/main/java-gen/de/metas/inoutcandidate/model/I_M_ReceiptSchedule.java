@@ -870,7 +870,7 @@ public interface I_M_ReceiptSchedule
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
+	 * Set Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -880,7 +880,7 @@ public interface I_M_ReceiptSchedule
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
+	 * Get Bewegungsdatum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date

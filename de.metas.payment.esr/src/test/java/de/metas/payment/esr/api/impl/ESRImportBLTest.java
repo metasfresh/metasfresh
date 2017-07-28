@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +46,6 @@ import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
@@ -178,7 +178,7 @@ public class ESRImportBLTest extends ESRTestBase
 		// save(allocAmt);
 
 		// invoke the code under test
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		refresh(esrImport, true);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
@@ -283,7 +283,7 @@ public class ESRImportBLTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new StringInputStream(esrImportLineText));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final BigDecimal grandTotal = new BigDecimal(123.56);
 

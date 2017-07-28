@@ -29,11 +29,11 @@ import de.metas.adempiere.model.I_C_Invoice;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -60,6 +60,8 @@ public class ProcessExecutionResultTest
 		//
 		result.setRecordsToOpen(createDummyTableRecordReferenceList(3), 1234);
 		//
+		result.setWebuiIncludedViewIdToOpen("123-dummyIncludedViewId");
+		//
 		System.out.println("result: " + result);
 
 		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
@@ -85,6 +87,8 @@ public class ProcessExecutionResultTest
 		//
 		Assert.assertEquals(result.getRecordsToOpen(), resultFromJson.getRecordsToOpen());
 		//
+		Assert.assertEquals(result.getWebuiIncludedViewIdToOpen(), resultFromJson.getWebuiIncludedViewIdToOpen());
+		//
 		// Assert.assertEquals(result.get, resultFromJson.get);
 	}
 
@@ -95,7 +99,7 @@ public class ProcessExecutionResultTest
 		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
 		return invoiceRef;
 	}
-	
+
 	private static final List<TableRecordReference> createDummyTableRecordReferenceList(final int size)
 	{
 		final List<TableRecordReference> list = new ArrayList<>();
@@ -105,6 +109,5 @@ public class ProcessExecutionResultTest
 		}
 		return list;
 	}
-
 
 }

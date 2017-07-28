@@ -14,7 +14,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -379321177L;
+	private static final long serialVersionUID = -1044082489L;
 
     /** Standard Constructor */
     public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
@@ -23,7 +23,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
       /** if (M_HU_ID == 0)
         {
 			setHUStatus (null); // 'P'
-			setIsCompressedVHU (false); // N
 			setM_HU_ID (0);
 			setM_HU_PI_Version_ID (0);
 			setValue (null);
@@ -119,25 +118,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 		return ii.intValue();
 	}
 
-	/** Set TUs Count.
-		@param Compressed_TUsCount TUs Count	  */
-	@Override
-	public void setCompressed_TUsCount (int Compressed_TUsCount)
-	{
-		set_Value (COLUMNNAME_Compressed_TUsCount, Integer.valueOf(Compressed_TUsCount));
-	}
-
-	/** Get TUs Count.
-		@return TUs Count	  */
-	@Override
-	public int getCompressed_TUsCount () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Compressed_TUsCount);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set eigene Gebinde.
 		@param HUPlanningReceiptOwnerPM 
 		If true, then the packing material's owner is "us" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.
@@ -212,29 +192,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public boolean isChildHU () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsChildHU);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set Compressed VHU.
-		@param IsCompressedVHU Compressed VHU	  */
-	@Override
-	public void setIsCompressedVHU (boolean IsCompressedVHU)
-	{
-		set_Value (COLUMNNAME_IsCompressedVHU, Boolean.valueOf(IsCompressedVHU));
-	}
-
-	/** Get Compressed VHU.
-		@return Compressed VHU	  */
-	@Override
-	public boolean isCompressedVHU () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsCompressedVHU);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

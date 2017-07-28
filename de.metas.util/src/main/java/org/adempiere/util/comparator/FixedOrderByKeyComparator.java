@@ -59,7 +59,7 @@ public class FixedOrderByKeyComparator<V, K> implements Comparator<V>
 	private FixedOrderByKeyComparator(final List<K> fixedOrderList, final int notMatchedMarkerIndex, final Function<V, K> keyMapper)
 	{
 		Check.assumeNotNull(fixedOrderList, "fixedOrderList not null");
-		Check.assume(!fixedOrderList.isEmpty(), "fixedOrderList not empty");
+		// Check.assume(!fixedOrderList.isEmpty(), "fixedOrderList not empty"); // empty list shall be OK
 		Check.assumeNotNull(keyMapper, "Parameter keyMapper is not null");
 
 		this.fixedOrderList = fixedOrderList;

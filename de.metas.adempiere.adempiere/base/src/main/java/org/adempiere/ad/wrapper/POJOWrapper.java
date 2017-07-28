@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -211,7 +212,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return; // we are not in unit test mode. Don't create in-memory objects on the fly.
 		}
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(cl);
-		if (Check.isEmpty(tableName) || Check.equals(I_AD_Table.Table_Name, tableName))
+		if (Check.isEmpty(tableName) || Objects.equals(I_AD_Table.Table_Name, tableName))
 		{
 			return; // the given class has no table name.
 		}
@@ -586,7 +587,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				if (referencedObject != null)
 				{
 					final String referencedObjectTrxName = getTrxName(referencedObject);
-					Check.assume(Check.equals(this.getTrxName(), referencedObjectTrxName), "Invalid transaction"); // shall not happen, never ever
+					Check.assume(Objects.equals(this.getTrxName(), referencedObjectTrxName), "Invalid transaction"); // shall not happen, never ever
 					// POJOWrapper.setTrxName(referencedObject, POJOWrapper.getTrxName(this));
 				}
 				return referencedObject;
@@ -876,7 +877,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		// Value cached has same ID
 		if (valueCachedId == id
 				&& valueCachedWrapper != null
-				&& Check.equals(this.getTrxName(), valueCachedWrapper.getTrxName()))
+				&& Objects.equals(this.getTrxName(), valueCachedWrapper.getTrxName()))
 		{
 			if (valueCachedId > 0 && !valueCachedWrapper.hasChanges())
 			{
@@ -954,7 +955,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		final Object valueOld = values.put(propertyName, value);
 
 		if (!valuesOld.containsKey(propertyName)
-				&& !Check.equals(valueOld, value))
+				&& !Objects.equals(valueOld, value))
 		{
 			valuesOld.put(propertyName, valueOld);
 		}
@@ -1117,7 +1118,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 				return false;
 			}
 		}
-		else if (!Check.equals(copyValues(), other.copyValues()))
+		else if (!Objects.equals(copyValues(), other.copyValues()))
 		{
 			return false;
 		}
@@ -1244,7 +1245,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 
 		throw new AdempiereException("Refreshing object when it has changes is not allowed."
-				+ "\nIf you relly want to allow this in your tests, then try setting " + POJOWrapper.class.getName() + ".setAllowRefreshingChangedModels(true)."
+				+ "\nIf you really want to allow this in your tests, then try setting " + POJOWrapper.class.getName() + ".setAllowRefreshingChangedModels(true)."
 				+ "\nModel: " + this
 				+ "\n" + changedColumns);
 	}
@@ -1553,7 +1554,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		final Object valueOld = wrapper.valuesOld.get(propertyName);
 		final Object value = wrapper.getValue(propertyName, Object.class);
-		final boolean changed = !Check.equals(valueOld, value);
+		final boolean changed = !Objects.equals(valueOld, value);
 		return changed;
 	}
 
@@ -1594,7 +1595,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return false;
 		}
 
-		final boolean changed = !Check.equals(valueOld, value);
+		final boolean changed = !Objects.equals(valueOld, value);
 		return changed;
 	}
 

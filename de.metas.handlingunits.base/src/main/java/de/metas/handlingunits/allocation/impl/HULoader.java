@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,9 +38,6 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationRequestBuilder;
@@ -55,7 +52,10 @@ import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
 import de.metas.handlingunits.exceptions.HULoadException;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -90,7 +90,6 @@ public class HULoader
 
 	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
 	{
-		// this.huContext = huContext;
 		this.source = source;
 		this.destination = destination;
 	}
@@ -143,7 +142,7 @@ public class HULoader
 	 * If this setter is called with {@code true}, then the loader will load into the destination whatever was unloaded from the source, no matter what the destination's capacity is.
 	 * <p>
 	 * The default if this setter is not called is {@code false}.
-	 * 
+	 *
 	 * @param forceLoad
 	 */
 	public HULoader setForceLoad(final boolean forceLoad)
@@ -368,11 +367,11 @@ public class HULoader
 				// source.unloadCancel(unloadResult, unloadTrx, loadResult.getQtyToAllocate());
 			}
 
-			final List<IHUTransaction> trxs = new ArrayList<IHUTransaction>();
+			final List<IHUTransaction> trxs = new ArrayList<>();
 
 			//
 			// Iterate each load transaction:
-			// * create it's counterpart unload transaction (taking properties from unloadTrx)
+			// * create it's counterpart 'unloadTrxPartial' by taking properties from 'unloadTrx', but just the part that was actually loaded
 			// * transfer attributes
 			// also now aggregate the IHUTransactions to avoid UC problems with receipt schedule allocations and others that are created per trx-candidate
 			final List<IHUTransaction> aggregatedLoadTransactions = huTrxBL.aggregateTransactions(loadResult.getTransactions());
@@ -605,7 +604,7 @@ public class HULoader
 
 	/**
 	 * Advises the {@link HULoader} to skip transferring the attributes.
-	 * 
+	 *
 	 * @param skipAttributesTransfer true if the loader shall NOT transfer the attributes
 	 */
 	public HULoader setSkipAttributesTransfer(final boolean skipAttributesTransfer)

@@ -18,6 +18,7 @@ package org.compiere.util;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.util.BitSet;
 import java.util.Calendar;
 import java.util.Date;
@@ -671,8 +672,7 @@ public class TimeUtil
 	{
 		return new Timestamp(addMinutes((Date)dateTime, offset).getTime());
 	}
-	
-	
+
 	/**
 	 * Return DateTime + offset in millis
 	 * 
@@ -692,7 +692,6 @@ public class TimeUtil
 		cal.add(Calendar.MILLISECOND, offset);			// may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
 	}	// addMillis
-
 
 	/**
 	 * Return DateTime + offset in hours
@@ -1077,6 +1076,18 @@ public class TimeUtil
 	}
 
 	/**
+	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
+	 */
+	public static Timestamp asTimestamp(final Instant instant)
+	{
+		if (instant == null)
+		{
+			return null;
+		}
+		return new Timestamp(Date.from(instant).getTime());
+	}
+
+	/**
 	 * Get last date in year
 	 * 
 	 * @param day day
@@ -1214,5 +1225,4 @@ public class TimeUtil
 		}
 		return dayOfWeek - 1;
 	}
-
 }	// TimeUtil

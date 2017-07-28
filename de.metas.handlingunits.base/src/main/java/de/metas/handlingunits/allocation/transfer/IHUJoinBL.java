@@ -25,8 +25,8 @@ package de.metas.handlingunits.allocation.transfer;
 import org.adempiere.util.ISingletonService;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.exceptions.NoCompatibleHUItemParentFoundException;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 

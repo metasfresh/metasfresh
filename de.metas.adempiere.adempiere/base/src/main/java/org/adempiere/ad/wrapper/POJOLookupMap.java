@@ -1,5 +1,7 @@
 package org.adempiere.ad.wrapper;
 
+import static org.adempiere.model.InterfaceWrapperHelper.hasChanges;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,17 +15,17 @@ package org.adempiere.ad.wrapper;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.lang.management.ManagementFactory;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,6 +66,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
@@ -382,12 +385,19 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 
 				fireModelChanged(model, isNew ? ModelChangeType.BEFORE_NEW : ModelChangeType.BEFORE_CHANGE);
 
+				final Timestamp now = SystemTime.asTimestamp();
 				if (isNew)
 				{
 					id = nextId(tableName);
 					wrapper.setId(id);
+					
+					wrapper.setValue("Updated", now);
 				}
-
+				if (hasChanges(model))
+				{
+					wrapper.setValue("Updated", now);
+				}
+				
 				Map<Integer, Object> tableRecords = cachedObjects.get(tableName);
 				if (tableRecords == null)
 				{

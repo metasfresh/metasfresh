@@ -24,6 +24,8 @@ package de.metas.handlingunits;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -42,6 +44,9 @@ public interface IHUAndItemsDAO
 	 * @return parent HU or null
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
+
+	/** @return parent M_HU_ID or -1 */
+	int retrieveParentId(@Nullable I_M_HU hu);
 
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 

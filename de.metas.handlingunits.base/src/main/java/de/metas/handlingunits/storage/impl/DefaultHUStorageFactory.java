@@ -22,9 +22,8 @@ package de.metas.handlingunits.storage.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.ObjectUtils;
@@ -37,6 +36,7 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import lombok.NonNull;
 
 public class DefaultHUStorageFactory implements IHUStorageFactory
 {
@@ -56,7 +56,7 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
-	public IHUStorage getStorage(final I_M_HU hu)
+	public IHUStorage getStorage(@NonNull final I_M_HU hu)
 	{
 		final HUStorage huStorage = new HUStorage(this, hu);
 		// huStorage.addHUStorageListener(listeners);
@@ -82,16 +82,15 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	}
 
 	@Override
-	public List<IHUProductStorage> getHUProductStorages(final List<I_M_HU> hus, final I_M_Product product)
+	public List<IHUProductStorage> getHUProductStorages(
+			@NonNull final List<I_M_HU> hus,
+			@NonNull final I_M_Product product)
 	{
-		final List<IHUProductStorage> productStorages = new ArrayList<IHUProductStorage>(hus.size());
-
-		for (final I_M_HU hu : hus)
-		{
-			final IHUStorage huStorage = getStorage(hu);
-			final IHUProductStorage productStorage = huStorage.getProductStorageOrNull(product);
-			productStorages.add(productStorage);
-		}
+		final List<IHUProductStorage> productStorages = hus.stream()
+				.map(hu -> getStorage(hu))
+				.map(huStorage -> huStorage.getProductStorageOrNull(product))
+				.filter(productStorage -> productStorage != null)
+				.collect(Collectors.toList());
 
 		return productStorages;
 	}

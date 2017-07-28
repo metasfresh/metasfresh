@@ -29,7 +29,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.trace_report(
 		io_bp_value character varying, 
 		io_bp_name character varying, 
 		io_qty numeric, 
-		io_uom character varying
+		io_uom character varying,
+		isPOfromSO character varying
 		) 
 AS
 $$
@@ -54,7 +55,8 @@ SELECT
 	a.io_bp_value,
 	a.io_bp_name,
 	SUM(a.io_qty),
-	a.io_uom
+	a.io_uom,
+	'N' AS isPOfromSO
 FROM (
 SELECT distinct
 	o.DateOrdered,
@@ -185,14 +187,108 @@ GROUP BY
 	a.io_uom
 
 
+
+UNION 
+
+(
+select 	
+	o.DateOrdered,
+	o.DocumentNo AS ODocumentNo,
+	bp.Value AS bp_value,
+	bp.Name AS bp_name,
+	p.Value AS p_value,
+	p.Name AS p_name,
+	(select attributes_value from de_metas_endcustomer_fresh_reports.get_attributes_value(ol.M_AttributeSetInstance_ID)) AS attributes,
+	ol.PriceEntered AS price,	
+	ol.linenetamt AS total,
+	c.iso_code AS currency,
+	uom.uomsymbol,
+	ol.qtyEntered AS qty,
+
+	--inout part
+	c_o.dateordered as movementdate,
+	c_o.documentno AS orderdocumentno,
+	c_bp.value as io_bp_value,
+	c_bp.name as io_bp_name,
+	c_ol.qtyentered as io_qty,
+	c_uom.uomsymbol as io_uom,
+	'Y' AS isPOfromSO
+
+	
+from C_Order o
+join C_OrderLine ol on o.C_Order_ID = ol.C_Order_ID AND ol.isActive = 'Y'
+join C_OrderLine c_ol on (ol.C_OrderLine_ID = c_ol.Link_OrderLine_ID OR c_ol.C_OrderLine_ID = ol.Link_OrderLine_ID) AND c_ol.isActive = 'Y'
+join C_Order c_o on c_ol.C_Order_ID = c_o.C_Order_ID AND c_o.isActive = 'Y'
+
+INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+INNER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+INNER JOIN C_UOM uom ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+INNER JOIN C_Currency c ON ol.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+
+		
+INNER JOIN C_Period per_st ON $2 = per_st.C_Period_ID AND per_st.isActive = 'Y'
+INNER JOIN C_Period per_end ON $3 = per_end.C_Period_ID AND per_end.isActive = 'Y'
+
+INNER JOIN C_BPartner c_bp ON c_bp.C_BPartner_ID = c_o.C_BPartner_ID AND c_bp.isActive = 'Y'
+INNER JOIN C_UOM c_uom ON c_ol.price_UOM_ID = c_uom.C_UOM_ID AND c_uom.isActive = 'Y'
+
+WHERE 
+	o.AD_Org_ID = (CASE WHEN $1 IS NULL THEN o.AD_Org_ID ELSE $1 END)
+	AND per_st.startdate::date <= o.DateOrdered::date
+	AND per_end.enddate::date >= o.DateOrdered::date
+	AND ol.C_Activity_ID = (CASE WHEN $4 IS NULL THEN ol.C_Activity_ID ELSE $4 END)
+	AND o.C_BPartner_ID = (CASE WHEN $5 IS NULL THEN o.C_BPartner_ID ELSE $5 END)
+	AND ol.M_Product_ID = (CASE WHEN $6 IS NULL THEN ol.M_Product_ID ELSE $6 END)
+	AND o.isSOTrx= $7
+	AND o.isActive ='Y'
+	AND o.docStatus IN ('CO', 'CL')
+	AND c_o.docStatus IN ('CO', 'CL')
+	AND pc.M_Product_Category_ID != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+	
+	AND
+		(CASE WHEN EXISTS ( SELECT ai_value FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = $8 )
+			-- ... then apply following filter:
+			THEN ( 
+			-- Take lines where the attributes of the current InoutLine's asi are in the parameter asi and their Values Match
+				EXISTS (
+					SELECT	0
+					FROM	report.fresh_Attributes_ConcreteADR a -- a = Attributes from order line, pa = Parameter Attributes
+					INNER JOIN report.fresh_Attributes_ConcreteADR pa ON pa.M_AttributeSetInstance_ID = $8
+					AND a.at_value = pa.at_value -- same attribute
+					AND (CASE WHEN a.at_value = '1000015' THEN  ('%'||substring(a.ai_value from 5)||'%' like '%'||substring(pa.ai_value from 5)||'%' OR '%'||substring(pa.ai_value from 5)||'%' like '%'||substring(a.ai_value from 5)||'%' ) --case of adr containing similar value
+					ELSE a.ai_value = pa.ai_value END)  --same value
+					WHERE	a.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+					)
+					-- Dismiss lines where the Attributes in the Parameter are not in the inoutline's asi
+				AND NOT EXISTS (
+					SELECT	0
+					FROM	report.fresh_Attributes_ConcreteADR pa
+						LEFT OUTER JOIN report.fresh_Attributes_ConcreteADR a 
+						ON a.at_value = pa.at_value AND
+						(CASE WHEN a.at_value = '1000015' THEN  ('%'||substring(a.ai_value from 5)||'%' like '%'||substring(pa.ai_value from 5)||'%' OR '%'||substring(pa.ai_value from 5)||'%' like '%'||substring(a.ai_value from 5)||'%' ) --case of adr containing similar value
+					ELSE a.ai_value = pa.ai_value END)
+							AND a.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+					WHERE	pa.M_AttributeSetInstance_ID = $8
+						AND a.M_AttributeSetInstance_ID IS null
+						)
+					)	
+		ELSE TRUE END)
+		
+
+
+
 ORDER BY 
 
-	a.DateOrdered,
-	a.oDocumentNo,
-	a.bp_value,
-	a.p_value,
-	a.movementdate,
-	a.orderdocumentno,
-	a.io_bp_value
+	DateOrdered,
+	oDocumentNo,
+	bp_value,
+	p_value,
+	movementdate,
+	orderdocumentno,
+	io_bp_value
+	
+)
+	
 $$
   LANGUAGE sql STABLE;

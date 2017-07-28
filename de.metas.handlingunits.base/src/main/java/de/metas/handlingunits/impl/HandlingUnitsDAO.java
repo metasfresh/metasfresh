@@ -220,6 +220,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	{
 		return getHUAndItemsDAO().retrieveParent(hu);
 	}
+	
+	@Override
+	public int retrieveParentId(final I_M_HU hu)
+	{
+		return getHUAndItemsDAO().retrieveParentId(hu);
+	}
 
 	@Override
 	public I_M_HU_Item retrieveParentItem(final I_M_HU hu)
@@ -593,6 +599,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.create()
 				.setOnlyActiveRecords(true)
 				.iterate(I_M_HU.class);
+	}
+	
+	@Override
+	public List <I_M_HU>retrieveChildHUsForItem(final I_M_HU_Item parentItem)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_HU.class, parentItem);
+		
+		return queryBuilder
+		.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID, parentItem.getM_HU_Item_ID())
+		.create()
+		.list();
 	}
 
 	@Override

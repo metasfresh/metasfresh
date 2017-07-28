@@ -31,10 +31,10 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.expectations.HUTransactionExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;

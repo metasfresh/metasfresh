@@ -31,13 +31,13 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTrxBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -46,6 +46,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -109,7 +110,12 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 	 */
 	protected abstract IHUContext createHUContextInitial();
 
-	public final void setFromHUs(final Collection<I_M_HU> fromHUs)
+	/**
+	 * 
+	 * @param fromHUs the HUs to assign to the shipment schedule. The all need be !out of transaction", i.e. have {@link InterfaceWrapperHelper#getTrxName(Object)} {@code ==} {@link ITrx#TRXNAME_None} 
+	 * @return
+	 */
+	public final AbstractShipmentScheduleQtyPickedBuilder setFromHUs(final Collection<I_M_HU> fromHUs)
 	{
 		assertConfigurable();
 
@@ -121,6 +127,7 @@ public abstract class AbstractShipmentScheduleQtyPickedBuilder
 		{
 			_fromHUs = new ArrayList<>(fromHUs);
 		}
+		return this;
 	}
 
 	protected final List<I_M_HU> getFromHUs()

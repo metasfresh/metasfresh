@@ -27,9 +27,14 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+
 /**
  * Annotation used to mark Model Interceptor classes.
- * 
+ * <p>
+ * In oder to register a particular interceptor for your unit test,<br>
+ * you can call {@link IModelInterceptorRegistry#addModelInterceptor(Object)} in the test's init method.
+ * <p>
  * NOTE: the interceptor's class name shall start with <code>value</code>'s table name.
  * 
  * @author tsa

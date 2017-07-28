@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,6 +47,14 @@ public class ADProcessDAO implements IADProcessDAO
 	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
 	private final RelatedProcessDescriptorMap staticRelatedProcessDescriptors = new RelatedProcessDescriptorMap();
+
+	@Override
+	public int retriveProcessIdByClass(final Properties ctx, final Class<?> processClass)
+	{
+		final int processId = retriveProcessIdByClassIfUnique(ctx, processClass);
+		Check.errorIf(processId <= 0, "Could not retrieve a singe AD_Process_ID for processClass={}", processClass);
+		return processId;
+	}
 
 	@Override
 	public int retriveProcessIdByClassIfUnique(final Properties ctx, final Class<?> processClass)
@@ -188,20 +198,36 @@ public class ADProcessDAO implements IADProcessDAO
 	@Cached(cacheName = I_AD_Table_Process.Table_Name + "#RelatedProcessDescriptors")
 	public Map<Integer, RelatedProcessDescriptor> retrieveRelatedProcessesForTableIndexedByProcessId(@CacheCtx final Properties ctx, final int adTableId, final int adWindowId)
 	{
+		final Map<Integer, RelatedProcessDescriptor> result = new HashMap<>();
+
 		//
 		// Get the programmatically registered ones
-		final Map<Integer, RelatedProcessDescriptor> result = new HashMap<>(staticRelatedProcessDescriptors.getIndexedByProcessId(adTableId, adWindowId));
+		{
+			final Map<Integer, RelatedProcessDescriptor> relatedProcessesStatic = staticRelatedProcessDescriptors.getIndexedByProcessId(adTableId, adWindowId);
+			result.putAll(relatedProcessesStatic);
+		}
 
 		//
 		// Fetch related processes from database and override the ones which we have registered here
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		queryBL.createQueryBuilder(I_AD_Table_Process.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_Table_Process.COLUMNNAME_AD_Table_ID, adTableId)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.stream()
-				.map(tableProcess -> createRelatedProcessDescriptor(tableProcess))
-				.forEach(relatedProcess -> result.put(relatedProcess.getProcessId(), relatedProcess));
+		{
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final Map<Integer, RelatedProcessDescriptor> relatedProcessesFromAppDict = queryBL.createQueryBuilder(I_AD_Table_Process.class, ctx, ITrx.TRXNAME_None)
+					.addEqualsFilter(I_AD_Table_Process.COLUMN_AD_Table_ID, adTableId)
+					.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Window_ID, null, adWindowId)
+					.addOnlyActiveRecordsFilter()
+					//
+					.orderBy()
+					.addColumn(I_AD_Table_Process.COLUMN_AD_Window_ID, Direction.Ascending, Nulls.Last) // important: keep the record without AD_Window_ID as last
+					.endOrderBy()
+					//
+					.create()
+					.stream()
+					.map(tableProcess -> createRelatedProcessDescriptor(tableProcess))
+					.collect(GuavaCollectors.toImmutableMapByKeyKeepFirstDuplicate(RelatedProcessDescriptor::getProcessId));
+
+			// Add all to result, overriding existing ones
+			result.putAll(relatedProcessesFromAppDict);
+		}
 
 		return ImmutableMap.copyOf(result);
 	}
@@ -211,6 +237,7 @@ public class ADProcessDAO implements IADProcessDAO
 		return RelatedProcessDescriptor.builder()
 				.processId(tableProcess.getAD_Process_ID())
 				.tableId(tableProcess.getAD_Table_ID())
+				.windowId(tableProcess.getAD_Window_ID())
 				.webuiQuickAction(tableProcess.isWEBUI_QuickAction())
 				.webuiDefaultQuickAction(tableProcess.isWEBUI_QuickAction_Default())
 				.build();

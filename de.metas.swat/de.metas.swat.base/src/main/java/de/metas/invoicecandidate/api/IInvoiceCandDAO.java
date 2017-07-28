@@ -48,6 +48,7 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 
 public interface IInvoiceCandDAO extends ISingletonService
@@ -415,4 +416,12 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return
 	 */
 	String getSQLDefaultFilter(Properties ctx);
+
+	/**
+	 * Retrieve all the invoice candidates for the given inventoryLine
+	 * 
+	 * @param inventoryLine
+	 * @return
+	 */
+	IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(I_M_InventoryLine inventoryLine);
 }

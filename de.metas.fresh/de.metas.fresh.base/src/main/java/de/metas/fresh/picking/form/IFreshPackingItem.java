@@ -34,6 +34,12 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
  * #L%
  */
 
+/**
+ * You can obtain an instance via {@link FreshPackingItemHelper#create(java.util.Map)}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public interface IFreshPackingItem extends IPackingItem
 {
 	@Override
@@ -66,7 +72,7 @@ public interface IFreshPackingItem extends IPackingItem
 	 * Subtract the given quantity from this packing item and create a new packing item with it. Don't alter this packing item.
 	 *
 	 * @param subtrahent
-	 * @param acceptShipmentSchedulePredicate
+	 * @param acceptShipmentSchedulePredicate may be {@code null}.
 	 * @return
 	 */
 	IFreshPackingItem subtractToPackingItem(BigDecimal subtrahent, Predicate<I_M_ShipmentSchedule> acceptShipmentSchedulePredicate);

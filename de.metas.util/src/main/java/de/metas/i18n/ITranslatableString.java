@@ -27,7 +27,8 @@ import java.util.Set;
  */
 
 /**
- * A string which can be translated to a given <code>AD_Language</code>.
+ * A string which can be translated to a given <code>AD_Language</code>.<br>
+ * You can use e.g. {@link IMsgBL#getTranslatableMsgText(String, Object...)} to obtain an instance.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -38,7 +39,7 @@ public interface ITranslatableString
 	{
 		return compose(""/* joinString */, trls);
 	}
-	
+
 	public static ITranslatableString compose(final String joiningString, final ITranslatableString... trls)
 	{
 		if (trls == null || trls.length == 0)
@@ -53,7 +54,7 @@ public interface ITranslatableString
 
 		return new CompositeTranslatableString(Arrays.asList(trls), joiningString);
 	}
-	
+
 	public static ITranslatableString compose(final String joiningString, final List<ITranslatableString> trls)
 	{
 		if (trls == null || trls.isEmpty())
@@ -68,12 +69,12 @@ public interface ITranslatableString
 
 		return new CompositeTranslatableString(trls, joiningString);
 	}
-	
+
 	public static ITranslatableString constant(final String value)
 	{
 		return ImmutableTranslatableString.constant(value);
 	}
-	
+
 	public static ITranslatableString empty()
 	{
 		return ImmutableTranslatableString.empty();

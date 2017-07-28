@@ -100,7 +100,7 @@ public class ProductCost
 	{
 		if (m_product != null)
 		{
-			return Services.get(IProductBL.class).isItem(m_product);
+			return !Services.get(IProductBL.class).isItem(m_product);
 		}
 		return false;
 	}	// isService

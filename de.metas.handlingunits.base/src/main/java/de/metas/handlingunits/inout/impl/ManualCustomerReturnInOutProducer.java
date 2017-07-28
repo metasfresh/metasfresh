@@ -2,7 +2,7 @@ package de.metas.handlingunits.inout.impl;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -22,13 +22,11 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentBL;
-import de.metas.handlingunits.IHUTrxBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 
 /*
@@ -56,7 +54,6 @@ import de.metas.inout.event.ReturnInOutProcessedEventBus;
 public class ManualCustomerReturnInOutProducer
 {
 	// services
-	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	//
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -71,6 +68,8 @@ public class ManualCustomerReturnInOutProducer
 	private Timestamp _movementDate;
 	private final List<I_M_HU> _husToReturn = new ArrayList<>();
 
+	private final Map<Integer, List<I_M_HU>> _lineToHUs = new HashMap<>();
+
 	private I_M_InOut _manualCustomerReturn;
 
 	public List<I_M_InOut> create()
@@ -84,21 +83,21 @@ public class ManualCustomerReturnInOutProducer
 		// Iterate all HUs, group them by Partner and HU's warehouse
 		// and create one vendor returns producer for each group.
 		final Map<ArrayKey, CustomerReturnsInOutProducer> customerReturnProducers = new TreeMap<>();
-		// final int inOutLineTableId = InterfaceWrapperHelper.getTableId(I_M_InOutLine.class); // The M_InOutLine's table id
-		for (final I_M_HU hu : _husToReturn)
+
+		for (final Integer originInOutID : _lineToHUs.keySet())
 		{
-			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
+			final I_M_InOutLine customerReturnLine = InterfaceWrapperHelper.create(Env.getCtx(), originInOutID, I_M_InOutLine.class, ITrx.TRXNAME_None);
 
-			final int warehouseId = hu.getM_Locator().getM_Warehouse_ID();
-
-			//
-			// If the HU is not a top level one, extract it first
-			huTrxBL.extractHUFromParentIfNeeded(hu);
-
-			//
-			// Get the HU and the original vendor receipt M_InOutLine_ID and add it to the right producer
-			for (final I_M_InOutLine customerReturnLine : Services.get(IInOutDAO.class).retrieveLines(_manualCustomerReturn, I_M_InOutLine.class))
+			for (final I_M_HU hu : _lineToHUs.get(originInOutID))
 			{
+				InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
+
+				final int warehouseId = hu.getM_Locator().getM_Warehouse_ID();
+
+				//
+				// If the HU is not a top level one, extract it first
+				huTrxBL.extractHUFromParentIfNeeded(hu);
+
 
 				final int bpartnerId = _manualCustomerReturn.getC_BPartner_ID();
 
@@ -110,6 +109,7 @@ public class ManualCustomerReturnInOutProducer
 						.addHUToReturn(hu, customerReturnLine.getM_InOutLine_ID());
 
 				Services.get(IHUAssignmentBL.class).assignHU(customerReturnLine, hu, ITrx.TRXNAME_ThreadInherited);
+
 			}
 		}
 
@@ -137,9 +137,8 @@ public class ManualCustomerReturnInOutProducer
 			}
 			final Properties ctx = InterfaceWrapperHelper.getCtx(returnInOuts.get(0));
 			// mark HUs as active and create movements to QualityReturnWarehouse for them
-			Services.get(IHUInOutBL.class).activateHUsForCustomerReturn(ctx, getHUsToReturn());
+			Services.get(IHUInOutBL.class).moveHUsForCustomerReturn(ctx, getHUsToReturn());
 
-			handlingUnitsBL.setHUStatusActive(_husToReturn);
 		}
 
 		// return the created vendor returns
@@ -204,9 +203,13 @@ public class ManualCustomerReturnInOutProducer
 		return _husToReturn;
 	}
 
-	public ManualCustomerReturnInOutProducer addHUsToReturn(final Collection<I_M_HU> hus)
+	public ManualCustomerReturnInOutProducer addLineToHUs(final Map<Integer, List<I_M_HU>> lineToHus)
 	{
-		_husToReturn.addAll(hus);
+		this._lineToHUs.putAll(lineToHus);
+		for (final Integer key : lineToHus.keySet())
+		{
+			_husToReturn.addAll(lineToHus.get(key));
+		}
 		return this;
 	}
 
