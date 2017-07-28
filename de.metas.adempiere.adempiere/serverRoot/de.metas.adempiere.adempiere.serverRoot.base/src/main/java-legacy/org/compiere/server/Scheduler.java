@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                        *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.server;
 
@@ -110,7 +110,7 @@ public class Scheduler extends AdempiereServer
 		// metas us1030 updating status
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, AD_PInstance_ID_None); // saveLogs=false
 	}	// Scheduler
-	
+
 	private static final transient Logger log = LogManager.getLogger(Scheduler.class);
 
 	/** The Concrete Model */
@@ -251,7 +251,7 @@ public class Scheduler extends AdempiereServer
 						m_summary.append(e.toString());
 						return ROLLBACK;
 					}
-					
+
 					@Override
 					public void doFinally()
 					{
@@ -331,7 +331,12 @@ public class Scheduler extends AdempiereServer
 			final IUserRolePermissions role = Services.get(IUserRolePermissionsDAO.class)
 					.retrieveFirstUserRolesPermissionsForUserWithOrgAccess(schedulerCtx, adUserId, adOrgId)
 					.orNull();
-			adRoleId = role == null ? Env.CTXVALUE_AD_Role_ID_NONE : role.getAD_Role_ID();
+
+			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.
+			Check.errorIf(role == null,
+					"Scheduler {} has does not reference an AD_Role and we were unable to retrieve one for AD_User_ID={} and AD_Org_ID={}; AD_Scheduler={}",
+					m_model.getName(), adUserId, adOrgId, m_model);
+			adRoleId = role.getAD_Role_ID();
 		}
 		Env.setContext(schedulerCtx, Env.CTXNAME_AD_Role_ID, adRoleId);
 
@@ -361,7 +366,7 @@ public class Scheduler extends AdempiereServer
 
 		// Process
 		final ProcessExecutionResult result = ProcessExecutor.builder(pi)
-				//.switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
+				// .switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
 				.executeSync()
 				.getResult();
 		if (result.isError())
@@ -412,11 +417,11 @@ public class Scheduler extends AdempiereServer
 		log.debug("Run process: {}", pi);
 
 		final ProcessExecutionResult result = ProcessExecutor.builder(pi)
-				//.switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
+				// .switchContextWhenRunning() // NOTE: not needed, context was already switched in caller method
 				.executeSync()
 				.getResult();
 		final boolean ok = !result.isError();
-		
+
 		// notify supervisor if error
 		// metas: c.ghita@metas.ro: start
 		final I_AD_User from = Services.get(IUserDAO.class).retrieveUserOrNull(pi.getCtx(), pi.getAD_User_ID());
@@ -444,7 +449,7 @@ public class Scheduler extends AdempiereServer
 	private static final ProcessInfo createProcessInfo(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
 		final I_AD_Process adProcess = adScheduler.getAD_Process();
-		
+
 		final ProcessInfo pi = ProcessInfo.builder()
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
@@ -508,7 +513,7 @@ public class Scheduler extends AdempiereServer
 	 * Fill Parameter
 	 *
 	 * @param pInstance process instance
-	 * @return 
+	 * @return
 	 */
 	private static List<ProcessInfoParameter> createProcessInfoParameters(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
@@ -520,22 +525,22 @@ public class Scheduler extends AdempiereServer
 		for (final I_AD_Scheduler_Para schedulerPara : schedulerParams)
 		{
 			final String variable = schedulerPara.getParameterDefault();
-			
+
 			final I_AD_Process_Para adProcessPara = schedulerPara.getAD_Process_Para();
 			final String parameterName = adProcessPara.getColumnName();
 			final int displayType = adProcessPara.getAD_Reference_ID();
 			final ProcessInfoParameter pip = createProcessInfoParameter(schedulerCtx, parameterName, variable, displayType);
-			if(pip == null)
+			if (pip == null)
 			{
 				continue;
 			}
-			
+
 			processInfoParameters.add(pip);
 		}	// instance parameter loop
-		
+
 		return processInfoParameters.build();
 	}	// fillParameter
-	
+
 	private static final ProcessInfoParameter createProcessInfoParameter(final Properties schedulerCtx, final String parameterName, final String variable, final int displayType)
 	{
 		log.debug("Filling parameter: {} = {}", parameterName, variable);
@@ -557,7 +562,7 @@ public class Scheduler extends AdempiereServer
 				return null;
 			}
 			columnName = columnName.substring(0, index);
-			
+
 			// try Env
 			final String env = Env.getContext(schedulerCtx, columnName);
 			if (Check.isEmpty(env))
