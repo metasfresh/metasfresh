@@ -1,5 +1,7 @@
 package de.metas.document.archive.api.impl;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.document.archive.base
@@ -155,5 +157,16 @@ public abstract class AbstractDocOutboundDAO implements IDocOutboundDAO
 				.setOrderBy(queryOrderBy)
 				.first(I_C_Doc_Outbound_Log.class);
 		
+	}
+	
+	@Override
+	public final List<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final Properties ctx, final int pInstanceId, final String trxName)
+	{
+		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Doc_Outbound_Log.class, ctx, trxName)
+				.setOnlySelection(pInstanceId);
+		final List<I_C_Doc_Outbound_Log> logs = queryBuilder.create()
+				.list(I_C_Doc_Outbound_Log.class);
+		return logs;
 	}
 }

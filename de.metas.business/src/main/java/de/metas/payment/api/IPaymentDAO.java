@@ -32,6 +32,7 @@ import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 
 public interface IPaymentDAO extends ISingletonService
@@ -74,6 +75,14 @@ public interface IPaymentDAO extends ISingletonService
 	 * @return never return <code>null</code>, even if there are no allocations
 	 */
 	BigDecimal getAllocatedAmt(I_C_Payment payment);
+	
+	/**
+	 * retrieve allocated payments fro an invoice
+	 * 
+	 * @param invoice
+	 * @return
+	 */
+	List<I_C_Payment> retrievePayments(I_C_Invoice invoice);
 
 	/**
 	 * Retrieve all the payments that are marked as posted but do not actually have fact accounts.

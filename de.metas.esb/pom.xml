@@ -36,7 +36,6 @@
 	</properties>
 
 	<modules>
-		<module>../de.metas.document.archive.esb</module>
 		<module>../de.metas.edi.esb.camel</module>
 		<module>../de.metas.printing.esb.camel</module>
 	</modules>

@@ -407,4 +407,6 @@ public interface IInvoiceBL extends ISingletonService
 	 * @return the value if set, {@code X_C_Invoice.PAYMENTRULE_OnCredit} otherwise
 	 */
 	String getDefaultPaymentRule();
+
+	I_C_Invoice voidAndRecreateInvoice(I_C_Invoice invoice);
 }

@@ -16,7 +16,7 @@
 
 	<packaging>pom</packaging>
 
-	<description>metasfresh parent pom with common settings (e.g. java file encoding, enforcer rules, depdendency management) to be used by all metasfreseh maven projects</description>
+	<description>metasfresh parent pom with common settings to be used by all metasfreseh maven projects</description>
 
 	<!-- TODO: consider removing jasperreports.version and dependencyManagement
 		from this pom. It will instead be handled by adempiereJasper-parent -->
@@ -30,7 +30,8 @@
 		<!-- right now 6.2.2 is the latest, but there we suffer from http://community.jaspersoft.com/jasperreports-library/issues/7521 -->
 		<jasperreports.version>6.2.1</jasperreports.version>
 
-		<!-- FRESH-397: jasper 6.2.2 uses itext, poi and zxing with theses versions -->
+		<!-- FRESH-397: jasper 6.2.1 uses poi and zxing with theses versions -->
+		<!-- actually, jasper-6.2.1 accidentally uses 2.1.7.js5-SNAPSHOT, but we don't don't -->
 		<itext.version>2.1.7.js5</itext.version>
 		<poi.version>3.12</poi.version>
 		<zxing.version>2.3.0</zxing.version>
@@ -39,6 +40,9 @@
 		<activeMQ.version>5.12.1</activeMQ.version>
 
 		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+
+		<!-- this is the version uses by elasticsearch:2.4.4 which is turn is used by spring-boot 1.5.3 -->
+		<lucene.version>5.5.2</lucene.version>
 
 		<!--
 			Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base
@@ -92,22 +96,28 @@
 				<groupId>net.sf.jasperreports</groupId>
 				<artifactId>jasperreports</artifactId>
 				<version>${jasperreports.version}</version>
-				<exclusions>
-					<!-- excluding Lucene dependencies because they are conflicting with
-						org.elasticsearch:elasticsearch -->
-					<exclusion>
-						<groupId>org.apache.lucene</groupId>
-						<artifactId>lucene-core</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.apache.lucene</groupId>
-						<artifactId>lucene-analyzers-common</artifactId>
-					</exclusion>
-					<exclusion>
-						<groupId>org.apache.lucene</groupId>
-						<artifactId>lucene-queryparser</artifactId>
-					</exclusion>
-				</exclusions>
+			</dependency>
+			
+			<!-- manage the versions of lucene because we need to exclude them from jasperreports and then want to explicitly add them -->
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-queryparser</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-analyzers-common</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-core</artifactId>
+				<version>${lucene.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.lucene</groupId>
+				<artifactId>lucene-queries</artifactId>
+				<version>${lucene.version}</version>
 			</dependency>
 
 			<dependency>
@@ -175,7 +185,7 @@
 			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
-				<version>1.1.1</version>
+				<version>1.2</version>
 			</dependency>
 
 			<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -257,49 +267,16 @@
 					<artifactId>maven-release-plugin</artifactId>
 					<version>2.3.1</version>
 				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-site-plugin</artifactId>
-					<version>3.0</version>
-				</plugin>
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
 					<version>2.10</version>
 				</plugin>
 				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.0.0</version>
-				</plugin>
-				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
 					<version>1.8</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-clean-plugin</artifactId>
-					<version>2.4.1</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-deploy-plugin</artifactId>
-					<version>2.7</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-install-plugin</artifactId>
-					<version>2.3.1</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-reactor-plugin</artifactId>
-					<version>1.1</version>
 				</plugin>
 
 				<plugin>
@@ -313,29 +290,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jarsigner-plugin</artifactId>
 					<version>1.3.2</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-enforcer-plugin</artifactId>
-					<!-- note: with 1.4.1 we had this problem: https://issues.apache.org/jira/browse/MASSEMBLY-659
-						https://issues.apache.org/jira/browse/MENFORCER-156 ... solved in 1.3.1 but
-						aparently came back in 1.4.1 ... Concretely, we got errors like: [...] 00:00:34.798
-						[INFO] Adding ignorable dependency: null:jmockit:null 00:00:34.799 [INFO]
-						Adding ignore: org.junit.runner.Runner 00:00:34.800 [WARNING] Could not find
-						junit:junit:jar:4.11:test at null 00:00:34.801 [WARNING] Could not find de.metas.migration:de.metas.migration.cli:jar:3.0.0:compile
-						at null 00:00:34.802 [WARNING] Could not find org.hamcrest:hamcrest-all:jar:1.3:test
-						at null 00:00:34.803 [WARNING] Could not find org.jmockit:jmockit:jar:1.20:test
-						at null -->
-					<version>1.3.1</version>
-					<dependencies>
-						<!-- needed for banDuplicateClasses -->
-						<dependency>
-							<groupId>org.codehaus.mojo</groupId>
-							<artifactId>extra-enforcer-rules</artifactId>
-							<version>1.0-beta-4</version>
-						</dependency>
-					</dependencies>
 				</plugin>
 
 				<plugin>
@@ -521,32 +475,9 @@
 				</executions>
 			</plugin>
 
-			<!-- Add the generic info plus ci build info to the manifests of all jars that we create -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-						</manifest>
-						<manifestEntries>
-							<ciBuildNo>${BUILD_NUMBER}</ciBuildNo>
-							<ciBuildTag>${BUILD_TAG}</ciBuildTag>
-							<ciJobName>${JOB_NAME}</ciJobName>
-							<ciBuildUrl>${BUILD_URL}</ciBuildUrl>
-						</manifestEntries>
-					</archive>
-				</configuration>
-			</plugin>
-			<!--  -->
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
 				<executions>
-
 					<execution>
 						<id>copy-springboot-properties</id>
 						<phase>process-resources</phase>
@@ -586,149 +517,6 @@
 					<archiveClasses>false</archiveClasses>
 					<attachClasses>true</attachClasses>
 				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
-				<configuration>
-					<systemPropertyVariables>
-						<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
-					</systemPropertyVariables>
-					<includes>
-						<!-- default inclusions, see http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html -->
-						<include>**/Test*.java</include>
-						<include>**/*Test.java</include>
-						<include>**/*TestCase.java</include>
-
-						<!-- additional include, because we often use that pattern -->
-						<include>**/*Tests.java</include>
-					</includes>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<configuration>
-					<rules>
-
-						<!-- task 08834: We shall not leave the decision about plugin-versions
-							to maven. Rationale: we had the case that a build stopped working at a *very*
-							critical moment, because maven picked a more recent version of the jaxb plugin.
-							That version didn't support the way, we configured it and failed with an
-							error message. This shall not happen again. -->
-						<requirePluginVersions>
-							<message>!! We need to have the plugin version under control to	avoid build failures due to maven releasing a new plugin version !!</message>
-							<banLatest>true</banLatest>
-							<banRelease>true</banRelease>
-							<banSnapshots>true</banSnapshots>
-							<phases>clean,deploy,site</phases>
-							<additionalPlugins>
-								<additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
-							</additionalPlugins>
-							<unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
-						</requirePluginVersions>
-
-						<!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
-						<dependencyConvergence />
-
-						<banDuplicateClasses>
-							<ignoreClasses>
-
-								<!-- itext-2.1.7 has two different versions as dependences -->
-								<ignoreClass>org.bouncycastle.*</ignoreClass>
-
-								<!-- org.jboss.client:jbossall-client and partially geronimo specs -->
-								<ignoreClass>javax.annotation.*</ignoreClass>
-								<ignoreClass>javax.ejb.*</ignoreClass>
-								<ignoreClass>javax.jms.*</ignoreClass>
-								<ignoreClass>javax.management.j2ee.*</ignoreClass>
-								<ignoreClass>javax.xml.*</ignoreClass>
-								<ignoreClass>javax.transaction.*</ignoreClass>
-
-								<ignoreClass>org.apache.*</ignoreClass>
-								<ignoreClass>org.codehaus.*</ignoreClass>
-								<ignoreClass>hidden.org.codehaus.*</ignoreClass>
-								<ignoreClass>org.junit.*</ignoreClass>
-								<ignoreClass>org.w3c.*</ignoreClass>
-								<ignoreClass>org.xml.*</ignoreClass>
-
-								<!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
-								<ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
-
-								<!-- the following are camel/servicemix related dependencies -->
-								<!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
-									net.sf.opencsv:opencsv:jar:2.1:compile -->
-								<ignoreClass>au.com.bytecode.*</ignoreClass>
-
-								<ignoreClass>com.microsoft.schemas.*</ignoreClass>
-								<ignoreClass>org.etsi.uri.*</ignoreClass>
-								<ignoreClass>org.openxmlformats.schemas.*</ignoreClass>
-								<ignoreClass>org.w3.x2000.*</ignoreClass>
-
-								<!-- Found in: xmlpull:xmlpull:jar:1.1.3.1:compile xpp3:xpp3_min:jar:1.1.4c:compile -->
-								<ignoreClass>org.xmlpull.*</ignoreClass>
-
-								<!-- Found in: org.apache.xmlbeans:xmlbeans:jar:2.3.0:compile org.apache.servicemix.bundles:org.apache.servicemix.bundles.poi:jar:3.12_1:compile -->
-								<ignoreClass>schemaorg_apache_xmlbeans.system.*</ignoreClass>
-								<ignoreClass>repackage.Repackager</ignoreClass>
-								<ignoreClass>repackage.Repackage</ignoreClass>
-								<ignoreClass>repackage.EditBuildScript</ignoreClass>
-
-								<!-- Found in: org.apache.tomcat.embed:tomcat-embed-core:jar:8.0.30:compile
-									javax.servlet:javax.servlet-api:jar:3.1.0:provided -->
-								<ignoreClass>javax.servlet.*</ignoreClass>
-							</ignoreClasses>
-
-							<dependencies>
-								<!-- See https://groups.google.com/forum/#!topic/jmockit-users/nwNw-la_FAM
-									("JUnit classes in JMockit jar") for background info -->
-								<dependency>
-									<artifactId>jmockit</artifactId>
-									<ignoreClasses>
-										<ignoreClass>org.junit.runner.Runner</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
-								<!-- this is a dependency of spring-boot-starter-test 1.4.1 the error
-									message we are avoiding this was goes like this: ================= Duplicate
-									classes found: Found in: org.ow2.asm:asm:jar:5.0.3:test net.minidev:accessors-smart:jar:1.1:test
-									Duplicate classes: org/objectweb/asm/Type.class [...] ================= -->
-								<dependency>
-									<groupId>net.minidev</groupId>
-									<artifactId>accessors-smart</artifactId>
-									<ignoreClasses>
-										<ignoreClass>org.objectweb.asm.*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
-								<!-- see also https://www.elastic.co/blog/to-shade-or-not-to-shade -->
-								<dependency>
-									<groupId>org.elasticsearch</groupId>
-									<artifactId>elasticsearch</artifactId>
-									<ignoreClasses>
-										<ignoreClass>org.joda.*</ignoreClass>
-									</ignoreClasses>
-								</dependency>
-
-							</dependencies>
-
-							<findAllDuplicates>true</findAllDuplicates>
-						</banDuplicateClasses>
-					</rules>
-					<fail>true</fail>
-				</configuration>
-
-				<executions>
-					<execution>
-						<id>enforce</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-
-					</execution>
-				</executions>
 			</plugin>
 
 			<!-- thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-git-info -->
@@ -945,10 +733,13 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- If there is a "webapp" directory, this profile will activate and put
-			the content into a zip file -->
+		
+		<!-- 
+			If there is a "webapp" directory, this profile will activate and put the content into a zip file 
+			this was (and still is in some legacy projects!) used to create web folders for different modules which can in the end be all mashed into one.
+		-->
 		<profile>
-			<id>webapp-dir</id>
+			<id>webapp-dir-legacy</id>
 			<activation>
 				<file>
 					<exists>src/main/webapp</exists>
@@ -960,10 +751,10 @@
 						<artifactId>maven-assembly-plugin</artifactId>
 						<dependencies>
 							<dependency>
+								<!--  these are the de.metas.assemblies:de.metas.assemblies:1.0.0 of ye olden days. they contain the webapp_dir which our modern assemblies do not contain anymore -->
 								<groupId>de.metas</groupId>
-								<artifactId>metasfresh-assemblies</artifactId>
-								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
-								<version>[1.0.0,5.0.0]</version>
+								<artifactId>metasfresh-legacy-assemblies</artifactId>
+								<version>1.0.0</version>
 							</dependency>
 						</dependencies>
 						<executions>

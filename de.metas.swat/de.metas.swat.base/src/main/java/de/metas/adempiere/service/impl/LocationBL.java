@@ -159,6 +159,7 @@ public class LocationBL implements ILocationBL
 		return null;
 	}
 
+	@Override
 	public List<I_C_Postal> retrievePostals(Properties ctx, String countryCode, String city, String postal, String trxName)
 	{
 		final I_C_Country country = getCountryByCode(ctx, countryCode);
@@ -708,4 +709,6 @@ public class LocationBL implements ILocationBL
 		InterfaceWrapperHelper.save(locationNew);
 		return locationNew;
 	}
+	
+	
 }

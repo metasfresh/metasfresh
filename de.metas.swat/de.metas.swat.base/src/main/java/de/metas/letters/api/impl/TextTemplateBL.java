@@ -13,15 +13,14 @@ package de.metas.letters.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Iterator;
 import java.util.List;
@@ -67,7 +66,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 	private static final int AD_Process_ID_T_Letter_Spool_Print = 540278; // TODO: HARDCODED
 
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	
+
 	public static TextTemplateBL get()
 	{
 		return instance;
@@ -138,7 +137,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(letter);
 			final String trxName = InterfaceWrapperHelper.getTrxName(letter);
-			
+
 			bpl = bPartnerDAO.retrieveShipToLocation(ctx, letter.getC_BPartner_ID(), trxName);
 			letter.setC_BPartner_Location(bpl);
 		}
@@ -231,7 +230,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 				+ ",getdate(),0,getdate(),0,'Y'"
 				+ ")";
 		DB.executeUpdateEx(sql,
-				new Object[] {
+				new Object[]
+				{
 						clientId,
 						letter.getAD_Org_ID(), // NOTE: using the same Org as in C_Letter is very important for reports to know from where to take the Org Header
 						adPInstanceId,
@@ -339,6 +339,10 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 			// 04238 : We need to flag the letter for enqueue.
 			letter.setIsMembershipBadgeToPrint(true);
+
+			// mo73_05916 : Add record and table ID
+			letter.setAD_Table_ID(InterfaceWrapperHelper.getModelTableId(item));
+			letter.setRecord_ID(InterfaceWrapperHelper.getId(item));
 
 			InterfaceWrapperHelper.save(letter);
 			return letter;

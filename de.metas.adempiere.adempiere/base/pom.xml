@@ -283,7 +283,7 @@
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
 		</dependency>
-		
+
 		<!-- we use this for its "capability of serializing java.time objects with the Jackson core".  -->
 		<!-- jackson itself is pulled in via spring-boot -->
 		<dependency>
@@ -302,7 +302,6 @@
 			<artifactId>lombok</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		
 
 	</dependencies>
 

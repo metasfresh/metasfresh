@@ -10,12 +10,12 @@ package de.metas.dunning.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,16 +28,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
-import de.metas.document.IDocumentLocationBL;
+import de.metas.async.Async_Constants;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
@@ -49,6 +49,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunningAggregator;
+import de.metas.logging.LogManager;
 
 public class DefaultDunningProducer implements IDunningProducer
 {
@@ -60,7 +61,7 @@ public class DefaultDunningProducer implements IDunningProducer
 
 	private I_C_DunningDoc dunningDoc = null;
 	private I_C_DunningDoc_Line dunningDocLine = null;
-	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<I_C_DunningDoc_Line_Source>();
+	private final List<I_C_DunningDoc_Line_Source> dunningDocLineSources = new ArrayList<>();
 
 	@Override
 	public void setDunningContext(IDunningContext context)
@@ -88,6 +89,14 @@ public class DefaultDunningProducer implements IDunningProducer
 		{
 			dunningDoc = createDunningDoc(candidate);
 			dunningDocLine = null;
+
+			//
+			// check for async batch set
+			final I_C_Async_Batch asyncBatch = getDunningContext().getProperty(IDunningProducer.CONTEXT_AsyncBatchDunningDoc);
+			if (asyncBatch != null)
+			{
+				InterfaceWrapperHelper.setDynAttribute(dunningDoc, Async_Constants.C_Async_Batch, asyncBatch);
+			}
 		}
 
 		if (dunningDocLine != null && dunningAggregators.isNewDunningDocLine(candidate))
@@ -148,7 +157,8 @@ public class DefaultDunningProducer implements IDunningProducer
 		doc.setIsActive(true);
 		doc.setProcessed(false);
 
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(new DunningDocDocumentLocationAdapter(doc));
+		// task 07359: the PartnerAddress is created&updated by the C_DunningDoc model validator
+		// Services.get(IDocumentLocationBL.class).setBPartnerAddress(new DunningDocDocumentLocationAdapter(doc));
 
 		return doc;
 	}
@@ -195,10 +205,10 @@ public class DefaultDunningProducer implements IDunningProducer
 		source.setC_DunningDoc_Line(dunningDocLine);
 		source.setProcessed(false);
 		source.setIsActive(true);
-		
+
 		source.setIsWriteOff(candidate.isWriteOff());
 		source.setIsWriteOffApplied(false);
-		
+
 		dunningDAO.save(source);
 
 		dunningDocLineSources.add(source);

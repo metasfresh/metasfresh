@@ -36,6 +36,19 @@ import de.metas.printing.model.I_C_Printing_Queue;
  */
 public abstract class AbstractPrintingQueueSource implements IPrintingQueueSource
 {
+	private String name;
+	
+	@Override
+	public String getName()
+	{
+		return name;
+	}
+
+	@Override
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 
 	@Override
 	public boolean isPrinted(I_C_Printing_Queue item)

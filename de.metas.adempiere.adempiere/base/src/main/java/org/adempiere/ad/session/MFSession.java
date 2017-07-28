@@ -226,7 +226,7 @@ public class MFSession
 		{
 			return hostKey; // the host key was already determined. Nothing more to do.
 		}
-		
+
 		// get the session's host key
 		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
 		final String newHostKey = hostKeyBL.getCreateHostKey();
@@ -234,6 +234,11 @@ public class MFSession
 
 		setHostKey(newHostKey, ctxToUpdate);
 		return newHostKey;
+	}
+
+	public String getWebSessionId()
+	{
+		return sessionPO.getWebSession();
 	}
 
 	public void setWebSessionId(final String webSessionId)

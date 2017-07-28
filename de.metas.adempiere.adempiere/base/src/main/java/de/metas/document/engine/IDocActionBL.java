@@ -13,17 +13,18 @@ package de.metas.document.engine;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -33,6 +34,7 @@ import org.compiere.process.DocAction;
 
 /**
  * Note the the implementation of this
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -211,4 +213,26 @@ public interface IDocActionBL extends ISingletonService
 	 */
 	String getSummary(Object model);
 
+	/**
+	 * Return {@code true} if the given {@code model} has are {@code Reversal_ID} and its own ID is bigger than its reversal partner's ID.
+	 * In other words, returns {@code true}, if the given {@code model} is the reversal and not the reversed document.
+	 *
+	 * @param model
+	 * @return
+	 */
+	boolean isReversalDocument(Object model);
+
+	/**
+	 * Retrieve a map with DocAction Ref_List(135) values.
+	 *
+	 * @return
+	 */
+	Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue();
+
+	interface IDocActionItem
+	{
+		String getValue();
+
+		String getDescription();
+	}
 }

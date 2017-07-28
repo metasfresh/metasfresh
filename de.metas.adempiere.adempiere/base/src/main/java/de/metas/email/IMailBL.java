@@ -134,4 +134,6 @@ public interface IMailBL extends ISingletonService
 	IMailTextBuilder newMailTextBuilder(I_R_MailText mailText);
 
 	IMailTextBuilder newMailTextBuilder(Properties ctx, int R_MailText_ID);
+	
+	void validateEmail(String email);
 }

@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 import org.adempiere.util.time.SystemTime;
 
@@ -39,20 +41,19 @@ public class TimeUtil
 {
 	/**
 	 * Get earliest time of a day (truncate)
-	 * 
+	 *
 	 * @param time day and time
 	 * @return day with 00:00
 	 */
-	static public Timestamp getDay(long time)
+	static public Timestamp getDay(final long time)
 	{
-		if (time == 0)
-			time = System.currentTimeMillis();
+		final long timeToUse = time > 0 ? time : SystemTime.millis();
 
 		// note-ts: not using a locale because this method may be used during early startup
 		// (and I don't see what for we need a locale)
 		// GregorianCalendar cal = new GregorianCalendar(Language.getLoginLanguage().getLocale());
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTimeInMillis(time);
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(timeToUse);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
@@ -62,14 +63,16 @@ public class TimeUtil
 
 	/**
 	 * Get earliest time of a day (truncate)
-	 * 
+	 *
 	 * @param dayTime day and time
 	 * @return day with 00:00
 	 */
-	static public Timestamp getDay(java.util.Date dayTime)
+	static public Timestamp getDay(@Nullable final java.util.Date dayTime)
 	{
 		if (dayTime == null)
+		{
 			return getDay(System.currentTimeMillis());
+		}
 		return getDay(dayTime.getTime());
 	}	// getDay
 
@@ -81,37 +84,52 @@ public class TimeUtil
 	 * @param year year (if two diguts: < 50 is 2000; > 50 is 1900)
 	 * @return timestamp ** not too reliable
 	 */
-	static public Timestamp getDay(int year, int month, int day)
+	static public Timestamp getDay(final int year, final int month, final int day)
 	{
-		int hour = 0;
-		int minute = 0;
-		int second = 0;
+		final int hour = 0;
+		final int minute = 0;
+		final int second = 0;
 		return getDay(year, month, day, hour, minute, second);
 	}
 
-	static public Timestamp getDay(int year, int month, int day, int hour, int minute, int second)
+	static public Timestamp getDay(
+			final int year,
+			final int month,
+			final int day,
+			final int hour,
+			final int minute,
+			final int second)
 	{
+		final int yearToUse;
 		if (year < 50)
-			year += 2000;
+		{
+			yearToUse = year + 2000;
+		}
 		else if (year < 100)
-			year += 1900;
-		if (month < 1 || month > 12)
-			throw new IllegalArgumentException("Invalid Month: " + month);
-		if (day < 1 || day > 31)
-			throw new IllegalArgumentException("Invalid Day: " + month);
-		GregorianCalendar cal = new GregorianCalendar(year, month - 1, day, hour, minute, second);
+		{
+			yearToUse = year + 1900;
+		}
+		else
+		{
+			yearToUse = year;
+		}
+
+		Check.errorIf(month < 1 || month > 12, "Invalid Month: {}", month);
+		Check.errorIf(day < 1 || day > 31, "Invalid Day: {}", day);
+
+		final GregorianCalendar cal = new GregorianCalendar(yearToUse, month - 1, day, hour, minute, second);
 		return new Timestamp(cal.getTimeInMillis());
 	}	// getDay
 
 	/**
 	 * Get today (truncate)
-	 * 
+	 *
 	 * @return day with 00:00
 	 */
 	static public Calendar getToday()
 	{
-		GregorianCalendar cal = new GregorianCalendar();
-		// cal.setTimeInMillis(System.currentTimeMillis());
+		final GregorianCalendar cal = new GregorianCalendar();
+
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
@@ -121,56 +139,61 @@ public class TimeUtil
 
 	/**
 	 * Get earliest time of next day
-	 * 
+	 *
 	 * @param day day
 	 * @return next day with 00:00
 	 */
-	static public Timestamp getNextDay(Timestamp day)
+	static public Timestamp getNextDay(@Nullable final Timestamp day)
 	{
-		if (day == null)
-			day = new Timestamp(System.currentTimeMillis());
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTimeInMillis(day.getTime());
+		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+
+		final GregorianCalendar cal = new GregorianCalendar();
+
+		cal.setTimeInMillis(dayToUse.getTime());
 		cal.add(Calendar.DAY_OF_YEAR, +1);	// next
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
+
 		return new Timestamp(cal.getTimeInMillis());
 	}	// getNextDay
 
 	/**
 	 * Get earliest time of prev day
-	 * 
+	 *
 	 * @param day day
 	 * @return next day with 00:00
 	 */
-	static public Timestamp getPrevDay(Timestamp day)
+	static public Timestamp getPrevDay(@Nullable final Timestamp day)
 	{
-		if (day == null)
-			day = new Timestamp(System.currentTimeMillis());
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTimeInMillis(day.getTime());
+		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+
+		final GregorianCalendar cal = new GregorianCalendar();
+
+		cal.setTimeInMillis(dayToUse.getTime());
 		cal.add(Calendar.DAY_OF_YEAR, -1);	// prev
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
+
 		return new Timestamp(cal.getTimeInMillis());
 	}	// getPrevDay
 
 	/**
 	 * Get last date in month
-	 * 
+	 *
 	 * @param day day
 	 * @return last day with 00:00
 	 */
-	static public Timestamp getMonthLastDay(Timestamp day)
+	static public Timestamp getMonthLastDay(@Nullable final Timestamp day)
 	{
-		if (day == null)
-			day = new Timestamp(System.currentTimeMillis());
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTimeInMillis(day.getTime());
+		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+
+		final GregorianCalendar cal = new GregorianCalendar();
+
+		cal.setTimeInMillis(dayToUse.getTime());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
@@ -179,20 +202,22 @@ public class TimeUtil
 		cal.add(Calendar.MONTH, 1);			// next
 		cal.set(Calendar.DAY_OF_MONTH, 1);	// first
 		cal.add(Calendar.DAY_OF_YEAR, -1);	// previous
+
 		return new Timestamp(cal.getTimeInMillis());
 	}	// getNextDay
 
 	/**
 	 * Get 15'th day in month
-	 * 
+	 *
 	 * @param day may be <code>null</code>, in which case the current time is used.
 	 * @return 15'th with 00:00
 	 */
-	static public Timestamp getMonthMiddleDay(final Timestamp day)
+	static public Timestamp getMonthMiddleDay(@Nullable final Timestamp day)
 	{
 		final Timestamp dateToUse = day == null ? SystemTime.asDayTimestamp() : day;
 
 		final GregorianCalendar cal = new GregorianCalendar();
+
 		cal.setTimeInMillis(dateToUse.getTime());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -207,23 +232,23 @@ public class TimeUtil
 
 	/**
 	 * Compose <code>day</code> (year, month, day) and <code>time</code> (hour, minute) and return the resulting date+time.
-	 * 
+	 *
 	 * Milliseconds will be set to zero.
-	 * 
+	 *
 	 * @param day day part
 	 * @param time time part
 	 * @return day + time.
 	 */
-	public static Timestamp getDayTime(final Date day, final Date time)
+	public static Timestamp getDayTime(
+			@NonNull final Date day,
+			@NonNull final Date time)
 	{
-		Check.assumeNotNull(day, "day not null");
-		Check.assumeNotNull(time, "time not null");
-
 		final GregorianCalendar dayCal = new GregorianCalendar();
 		dayCal.setTime(day);
+
 		final GregorianCalendar timeCal = new GregorianCalendar();
 		timeCal.setTime(time);
-		//
+
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.set(dayCal.get(Calendar.YEAR),
 				dayCal.get(Calendar.MONTH),
@@ -238,27 +263,35 @@ public class TimeUtil
 
 	/**
 	 * Is the _1 in the Range of _2
-	 * 
+	 *
 	 * <pre>
 	 * 		Time_1         +--x--+
 	 * 		Time_2   +a+      +---b---+   +c+
 	 * </pre>
-	 * 
+	 *
 	 * The function returns true for b and false for a/b.
-	 * 
+	 *
 	 * @param start_1 start (1)
 	 * @param end_1 not included end (1)
 	 * @param start_2 start (2)
 	 * @param end_2 not included (2)
 	 * @return true if in range
 	 */
-	static public boolean inRange(Timestamp start_1, Timestamp end_1, Timestamp start_2, Timestamp end_2)
+	static public boolean inRange(
+			@NonNull final Timestamp start_1,
+			@NonNull final Timestamp end_1,
+			@NonNull final Timestamp start_2,
+			@NonNull final Timestamp end_2)
 	{
 		// validity check
 		if (end_1.before(start_1))
+		{
 			throw new UnsupportedOperationException("TimeUtil.inRange End_1=" + end_1 + " before Start_1=" + start_1);
+		}
 		if (end_2.before(start_2))
+		{
 			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
+		}
 		// case a
 		if (!end_2.after(start_1))		// end not including
 		{
@@ -277,7 +310,7 @@ public class TimeUtil
 
 	/**
 	 * Is start..end on one of the days ?
-	 * 
+	 *
 	 * @param start start day
 	 * @param end end day (not including)
 	 * @param OnMonday true if OK
@@ -289,19 +322,28 @@ public class TimeUtil
 	 * @param OnSunday true if OK
 	 * @return true if on one of the days
 	 */
-	static public boolean inRange(Timestamp start, Timestamp end,
-			boolean OnMonday, boolean OnTuesday, boolean OnWednesday,
-			boolean OnThursday, boolean OnFriday, boolean OnSaturday, boolean OnSunday)
+	static public boolean inRange(
+			@NonNull final Timestamp start, 
+			@NonNull final Timestamp end,
+			final boolean OnMonday, 
+			final boolean OnTuesday, 
+			final boolean OnWednesday,
+			final boolean OnThursday, 
+			final boolean OnFriday, 
+			final boolean OnSaturday, 
+			final boolean OnSunday)
 	{
 		// are there restrictions?
 		if (OnSaturday && OnSunday && OnMonday && OnTuesday && OnWednesday && OnThursday && OnFriday)
+		{
 			return false;
+		}
 
-		GregorianCalendar calStart = new GregorianCalendar();
+		final GregorianCalendar calStart = new GregorianCalendar();
 		calStart.setTimeInMillis(start.getTime());
-		int dayStart = calStart.get(Calendar.DAY_OF_WEEK);
+		final int dayStart = calStart.get(Calendar.DAY_OF_WEEK);
 		//
-		GregorianCalendar calEnd = new GregorianCalendar();
+		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTimeInMillis(end.getTime());
 		calEnd.add(Calendar.DAY_OF_YEAR, -1);	// not including
 		int dayEnd = calEnd.get(Calendar.DAY_OF_WEEK);
@@ -311,13 +353,13 @@ public class TimeUtil
 				&& calStart.get(Calendar.MONTH) == calEnd.get(Calendar.MONTH)
 				&& calStart.get(Calendar.DAY_OF_MONTH) == calEnd.get(Calendar.DAY_OF_YEAR))
 		{
-			if ((!OnSaturday && dayStart == Calendar.SATURDAY)
-					|| (!OnSunday && dayStart == Calendar.SUNDAY)
-					|| (!OnMonday && dayStart == Calendar.MONDAY)
-					|| (!OnTuesday && dayStart == Calendar.TUESDAY)
-					|| (!OnWednesday && dayStart == Calendar.WEDNESDAY)
-					|| (!OnThursday && dayStart == Calendar.THURSDAY)
-					|| (!OnFriday && dayStart == Calendar.FRIDAY))
+			if (!OnSaturday && dayStart == Calendar.SATURDAY
+					|| !OnSunday && dayStart == Calendar.SUNDAY
+					|| !OnMonday && dayStart == Calendar.MONDAY
+					|| !OnTuesday && dayStart == Calendar.TUESDAY
+					|| !OnWednesday && dayStart == Calendar.WEDNESDAY
+					|| !OnThursday && dayStart == Calendar.THURSDAY
+					|| !OnFriday && dayStart == Calendar.FRIDAY)
 			{
 				// log.debug( "TimeUtil.InRange - SameDay - Yes", start + "->" + end + " - "
 				// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
@@ -331,15 +373,19 @@ public class TimeUtil
 		// log.debug( "TimeUtil.inRange - WeekDay Start=" + dayStart + ", Incl.End=" + dayEnd);
 
 		// Calendar.SUNDAY=1 ... SATURDAY=7
-		BitSet days = new BitSet(8);
+		final BitSet days = new BitSet(8);
 		// Set covered days in BitArray
 		if (dayEnd <= dayStart)
+		{
 			dayEnd += 7;
+		}
 		for (int i = dayStart; i < dayEnd; i++)
 		{
 			int index = i;
 			if (index > 7)
+			{
 				index -= 7;
+			}
 			days.set(index);
 			// System.out.println("Set index=" + index + " i=" + i);
 		}
@@ -348,13 +394,13 @@ public class TimeUtil
 		// System.out.println("Result i=" + i + " - " + days.get(i));
 
 		// Compare days to availability
-		if ((!OnSaturday && days.get(Calendar.SATURDAY))
-				|| (!OnSunday && days.get(Calendar.SUNDAY))
-				|| (!OnMonday && days.get(Calendar.MONDAY))
-				|| (!OnTuesday && days.get(Calendar.TUESDAY))
-				|| (!OnWednesday && days.get(Calendar.WEDNESDAY))
-				|| (!OnThursday && days.get(Calendar.THURSDAY))
-				|| (!OnFriday && days.get(Calendar.FRIDAY)))
+		if (!OnSaturday && days.get(Calendar.SATURDAY)
+				|| !OnSunday && days.get(Calendar.SUNDAY)
+				|| !OnMonday && days.get(Calendar.MONDAY)
+				|| !OnTuesday && days.get(Calendar.TUESDAY)
+				|| !OnWednesday && days.get(Calendar.WEDNESDAY)
+				|| !OnThursday && days.get(Calendar.THURSDAY)
+				|| !OnFriday && days.get(Calendar.FRIDAY))
 		{
 			// log.debug( "MAssignment.InRange - Yes", start + "->" + end + " - "
 			// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
@@ -368,61 +414,88 @@ public class TimeUtil
 
 	/**
 	 * Is it the same day
-	 * 
+	 *
 	 * @param one day
 	 * @param two compared day
 	 * @return true if the same day
 	 */
 	static public boolean isSameDay(final Date one, final Date two)
 	{
-		GregorianCalendar calOne = new GregorianCalendar();
+		final GregorianCalendar calOne = new GregorianCalendar();
 		if (one != null)
+		{
 			calOne.setTimeInMillis(one.getTime());
-		GregorianCalendar calTwo = new GregorianCalendar();
+		}
+		final GregorianCalendar calTwo = new GregorianCalendar();
 		if (two != null)
+		{
 			calTwo.setTimeInMillis(two.getTime());
+		}
 		if (calOne.get(Calendar.YEAR) == calTwo.get(Calendar.YEAR)
 				&& calOne.get(Calendar.MONTH) == calTwo.get(Calendar.MONTH)
 				&& calOne.get(Calendar.DAY_OF_MONTH) == calTwo.get(Calendar.DAY_OF_MONTH))
+		{
 			return true;
+		}
 		return false;
 	}	// isSameDay
 
 	/**
 	 * Is it the same hour
-	 * 
+	 *
 	 * @param one day/time
 	 * @param two compared day/time
 	 * @return true if the same day
 	 */
-	static public boolean isSameHour(Timestamp one, Timestamp two)
+	static public boolean isSameHour(final Timestamp one, final Timestamp two)
 	{
-		GregorianCalendar calOne = new GregorianCalendar();
+		final GregorianCalendar calOne = new GregorianCalendar();
 		if (one != null)
+		{
 			calOne.setTimeInMillis(one.getTime());
-		GregorianCalendar calTwo = new GregorianCalendar();
+		}
+		final GregorianCalendar calTwo = new GregorianCalendar();
 		if (two != null)
+		{
 			calTwo.setTimeInMillis(two.getTime());
+		}
 		if (calOne.get(Calendar.YEAR) == calTwo.get(Calendar.YEAR)
 				&& calOne.get(Calendar.MONTH) == calTwo.get(Calendar.MONTH)
 				&& calOne.get(Calendar.DAY_OF_MONTH) == calTwo.get(Calendar.DAY_OF_MONTH)
 				&& calOne.get(Calendar.HOUR_OF_DAY) == calTwo.get(Calendar.HOUR_OF_DAY))
+		{
 			return true;
+		}
 		return false;
 	}	// isSameHour
 
 	/**
+	 * If is the dates are form the same year, returns true
+	 *
+	 * @param one
+	 * @param two
+	 * @return
+	 */
+	static public boolean isSameYear(final Timestamp one, final Timestamp two)
+	{
+		final int year1 = getYearFromTimestamp(one);
+		final int year2 = getYearFromTimestamp(two);
+
+		return year1 == year2;
+	}
+
+	/**
 	 * Is all day
-	 * 
+	 *
 	 * @param start start date
 	 * @param end end date
 	 * @return true if all day (00:00-00:00 next day)
 	 */
-	static public boolean isAllDay(Timestamp start, Timestamp end)
+	static public boolean isAllDay(final Timestamp start, final Timestamp end)
 	{
-		GregorianCalendar calStart = new GregorianCalendar();
+		final GregorianCalendar calStart = new GregorianCalendar();
 		calStart.setTimeInMillis(start.getTime());
-		GregorianCalendar calEnd = new GregorianCalendar();
+		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTimeInMillis(end.getTime());
 		if (calStart.get(Calendar.HOUR_OF_DAY) == calEnd.get(Calendar.HOUR_OF_DAY)
 				&& calStart.get(Calendar.MINUTE) == calEnd.get(Calendar.MINUTE)
@@ -433,19 +506,21 @@ public class TimeUtil
 				&& calStart.get(Calendar.SECOND) == 0
 				&& calStart.get(Calendar.MILLISECOND) == 0
 				&& start.before(end))
+		{
 			return true;
+		}
 		//
 		return false;
 	}	// isAllDay
 
 	/**
 	 * Calculate the number of hours between start and end.
-	 * 
+	 *
 	 * @param start start date
 	 * @param end end date
 	 * @return number of hours (0 = same)
 	 */
-	public static long getHoursBetween(Date date1, Date date2)
+	public static long getHoursBetween(final Date date1, final Date date2)
 	{
 
 		final int MILLI_TO_HOUR = 1000 * 60 * 60;
@@ -454,7 +529,7 @@ public class TimeUtil
 
 	/**
 	 * Calculate the number of days between start and end.
-	 * 
+	 *
 	 * @param start start date
 	 * @param end end date
 	 * @return number of days (0 = same)
@@ -465,7 +540,7 @@ public class TimeUtil
 		if (end.before(start))
 		{
 			negative = true;
-			Date temp = start;
+			final Date temp = start;
 			start = end;
 			end = temp;
 		}
@@ -490,7 +565,9 @@ public class TimeUtil
 		if (cal.get(Calendar.YEAR) == calEnd.get(Calendar.YEAR))
 		{
 			if (negative)
+			{
 				return (calEnd.get(Calendar.DAY_OF_YEAR) - cal.get(Calendar.DAY_OF_YEAR)) * -1;
+			}
 			return calEnd.get(Calendar.DAY_OF_YEAR) - cal.get(Calendar.DAY_OF_YEAR);
 		}
 
@@ -502,18 +579,20 @@ public class TimeUtil
 			counter++;
 		}
 		if (negative)
+		{
 			return counter * -1;
+		}
 		return counter;
 	}	// getDaysBetween
 
 	/**
 	 * Return Day + offset (truncates)
-	 * 
+	 *
 	 * @param day Day
 	 * @param offset day offset
 	 * @return Day + offset at 00:00
 	 */
-	static public Timestamp addYears(Timestamp day, int offset)
+	static public Timestamp addYears(Timestamp day, final int offset)
 	{
 		if (offset == 0)
 		{
@@ -537,7 +616,7 @@ public class TimeUtil
 
 	/**
 	 * Return Day + offset (truncates)
-	 * 
+	 *
 	 * @param day Day
 	 * @param offset day offset
 	 * @return Day + offset at 00:00
@@ -566,12 +645,12 @@ public class TimeUtil
 
 	/**
 	 * Return Day + offset (truncates)
-	 * 
+	 *
 	 * @param day Day
 	 * @param offset day offset
 	 * @return Day + offset at 00:00
 	 */
-	static public Timestamp addWeeks(Timestamp day, int offset)
+	static public Timestamp addWeeks(Timestamp day, final int offset)
 	{
 		if (offset == 0)
 		{
@@ -595,7 +674,7 @@ public class TimeUtil
 
 	/**
 	 * Return Day + offset (truncates)
-	 * 
+	 *
 	 * @param day Day
 	 * @param offset day offset
 	 * @return day + offset at 00:00
@@ -618,7 +697,9 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		if (offset == 0)
+		{
 			return new Timestamp(cal.getTimeInMillis());
+		}
 		cal.add(Calendar.DAY_OF_YEAR, offset);			// may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
 	}	// addDays
@@ -626,7 +707,7 @@ public class TimeUtil
 	/**
 	 * Similar to {@link #addDays(Date, int)}, but the given {@code day} may not be {@code null},
 	 * and the return value has the same hours, minutes, records and milliseconds as the given day (i.e. it's not 00:00).
-	 * 
+	 *
 	 * @param day
 	 * @param offset day offset
 	 * @return day + offset
@@ -641,7 +722,7 @@ public class TimeUtil
 
 	/**
 	 * Return DateTime + offset in minutes
-	 * 
+	 *
 	 * @param dateTime Date and Time
 	 * @param offset minute offset
 	 * @return dateTime + offset in minutes; never returns {@code null}
@@ -663,7 +744,7 @@ public class TimeUtil
 
 	/**
 	 * Like {@link #addMinutes(Date, int)}, but takes and returns a {@link Timestamp} and not a {@link Date}.
-	 * 
+	 *
 	 * @param dateTime
 	 * @param offset
 	 * @return
@@ -675,19 +756,23 @@ public class TimeUtil
 
 	/**
 	 * Return DateTime + offset in millis
-	 * 
+	 *
 	 * @param dateTime Date and Time
 	 * @param offset minute offset
 	 * @return dateTime + offset in millis
 	 */
-	static public Timestamp addMillis(Timestamp dateTime, int offset)
+	static public Timestamp addMillis(Timestamp dateTime, final int offset)
 	{
 		if (dateTime == null)
+		{
 			dateTime = new Timestamp(System.currentTimeMillis());
+		}
 		if (offset == 0)
+		{
 			return dateTime;
+		}
 		//
-		GregorianCalendar cal = new GregorianCalendar();
+		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(dateTime);
 		cal.add(Calendar.MILLISECOND, offset);			// may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
@@ -695,7 +780,7 @@ public class TimeUtil
 
 	/**
 	 * Return DateTime + offset in hours
-	 * 
+	 *
 	 * @param dateTime Date and Time
 	 * @param offset minute offset
 	 * @return dateTime + offset in hours
@@ -703,11 +788,15 @@ public class TimeUtil
 	static public Timestamp addHours(Date dateTime, final int offset)
 	{
 		if (dateTime == null)
+		{
 			dateTime = new Timestamp(System.currentTimeMillis());
+		}
 		if (offset == 0)
+		{
 			return asTimestamp(dateTime);
+		}
 		//
-		GregorianCalendar cal = new GregorianCalendar();
+		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(dateTime);
 		cal.add(Calendar.HOUR, offset);			// may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
@@ -715,39 +804,49 @@ public class TimeUtil
 
 	/**************************************************************************
 	 * Format Elapsed Time
-	 * 
+	 *
 	 * @param start start time or null for now
 	 * @param end end time or null for now
 	 * @return formatted time string 1'23:59:59.999
 	 */
-	public static String formatElapsed(Timestamp start, Timestamp end)
+	public static String formatElapsed(final Timestamp start, final Timestamp end)
 	{
 		long startTime = 0;
 		if (start == null)
+		{
 			startTime = System.currentTimeMillis();
+		}
 		else
+		{
 			startTime = start.getTime();
+		}
 		//
 		long endTime = 0;
 		if (end == null)
+		{
 			endTime = System.currentTimeMillis();
+		}
 		else
+		{
 			endTime = end.getTime();
+		}
 		return formatElapsed(endTime - startTime);
 	}	// formatElapsed
 
 	/**
 	 * Format Elapsed Time until now
-	 * 
+	 *
 	 * @param start start time
 	 * @return formatted time string 1'23:59:59.999
 	 */
-	public static String formatElapsed(Timestamp start)
+	public static String formatElapsed(final Timestamp start)
 	{
 		if (start == null)
+		{
 			return "NoStartTime";
-		long startTime = start.getTime();
-		long endTime = System.currentTimeMillis();
+		}
+		final long startTime = start.getTime();
+		final long endTime = System.currentTimeMillis();
 		return formatElapsed(endTime - startTime);
 	}	// formatElapsed
 
@@ -760,35 +859,47 @@ public class TimeUtil
 	public static String formatElapsed(long elapsedMS)
 	{
 		if (elapsedMS == 0)
+		{
 			return "0";
-		StringBuffer sb = new StringBuffer();
+		}
+		final StringBuffer sb = new StringBuffer();
 		if (elapsedMS < 0)
 		{
 			elapsedMS = -elapsedMS;
 			sb.append("-");
 		}
 		//
-		long miliSeconds = elapsedMS % 1000;
+		final long miliSeconds = elapsedMS % 1000;
 		elapsedMS = elapsedMS / 1000;
-		long seconds = elapsedMS % 60;
+		final long seconds = elapsedMS % 60;
 		elapsedMS = elapsedMS / 60;
-		long minutes = elapsedMS % 60;
+		final long minutes = elapsedMS % 60;
 		elapsedMS = elapsedMS / 60;
-		long hours = elapsedMS % 24;
-		long days = elapsedMS / 24;
+		final long hours = elapsedMS % 24;
+		final long days = elapsedMS / 24;
 		//
 		if (days != 0)
+		{
 			sb.append(days).append("'");
+		}
 		// hh
 		if (hours != 0)
+		{
 			sb.append(get2digits(hours)).append(":");
+		}
 		else if (days != 0)
+		{
 			sb.append("00:");
+		}
 		// mm
 		if (minutes != 0)
+		{
 			sb.append(get2digits(minutes)).append(":");
+		}
 		else if (hours != 0 || days != 0)
+		{
 			sb.append("00:");
+		}
 		// ss
 		sb.append(get2digits(seconds))
 				.append(".").append(miliSeconds);
@@ -801,11 +912,13 @@ public class TimeUtil
 	 * @param no number
 	 * @return String
 	 */
-	private static String get2digits(long no)
+	private static String get2digits(final long no)
 	{
-		String s = String.valueOf(no);
+		final String s = String.valueOf(no);
 		if (s.length() > 1)
+		{
 			return s;
+		}
 		return "0" + s;
 	}	// get2digits
 
@@ -816,14 +929,14 @@ public class TimeUtil
 	 * @param validTo valid to
 	 * @return true if walid
 	 */
-	public static boolean isValid(Timestamp validFrom, Timestamp validTo)
+	public static boolean isValid(final Timestamp validFrom, final Timestamp validTo)
 	{
 		return isValid(validFrom, validTo, new Timestamp(System.currentTimeMillis()));
 	}	// isValid
 
 	/**
 	 * Is it valid on test date.
-	 * 
+	 *
 	 * If <code>testDate</code> is null, true will be returned.
 	 *
 	 * @param validFrom valid from
@@ -844,9 +957,9 @@ public class TimeUtil
 
 	/**
 	 * Checks if given <code>date</code> is between <code>dateFrom</code> and <code>dateTo</code> inclusivelly.
-	 * 
+	 *
 	 * If <code>dateFrom</code> or <code>dateTo</code> are <code>null</code> it will be considered as infinity.
-	 * 
+	 *
 	 * @param date
 	 * @param dateFrom
 	 * @param dateTo
@@ -879,22 +992,28 @@ public class TimeUtil
 	public static <T extends java.util.Date> T max(final T ts1, final T ts2)
 	{
 		if (ts1 == null)
+		{
 			return ts2;
+		}
 		if (ts2 == null)
+		{
 			return ts1;
+		}
 
 		if (ts2.after(ts1))
+		{
 			return ts2;
+		}
 		return ts1;
 	}	// max
 
 	/**
 	 * Gets Minimum date.
-	 * 
+	 *
 	 * If one of the dates is null, then the not null one will be returned.
-	 * 
+	 *
 	 * If both dates are null then null will be returned.
-	 * 
+	 *
 	 * @param date1
 	 * @param date2
 	 * @return minimum date or null
@@ -942,7 +1061,7 @@ public class TimeUtil
 
 	/**
 	 * Get truncated day/time
-	 * 
+	 *
 	 * @param dayTime day
 	 * @param trunc how to truncate TRUNC_*
 	 * @return next day with 00:00
@@ -956,11 +1075,13 @@ public class TimeUtil
 	public static long truncToMillis(Date dayTime, final String trunc)
 	{
 		if (dayTime == null)
+		{
 			dayTime = new Timestamp(System.currentTimeMillis());
+		}
 		// note-ts: not using a locale because this method may be used during early startup
 		// (and I don't see what for we need a locale)
 		// GregorianCalendar cal = new GregorianCalendar(Env.getLanguage(Env.getCtx()).getLocale());
-		GregorianCalendar cal = new GregorianCalendar();
+		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTimeInMillis(dayTime.getTime());
 		cal.set(Calendar.MILLISECOND, 0);
 
@@ -986,7 +1107,9 @@ public class TimeUtil
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		// D
 		if (trunc == null || trunc.equals(TRUNC_DAY))
+		{
 			return cal.getTimeInMillis();
+		}
 		// W
 		if (trunc.equals(TRUNC_WEEK))
 		{
@@ -997,19 +1120,29 @@ public class TimeUtil
 		// MM
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		if (trunc.equals(TRUNC_MONTH))
+		{
 			return cal.getTimeInMillis();
+		}
 		// Q
 		if (trunc.equals(TRUNC_QUARTER))
 		{
 			int mm = cal.get(Calendar.MONTH);
 			if (mm < 4)
+			{
 				mm = 1;
+			}
 			else if (mm < 7)
+			{
 				mm = 4;
+			}
 			else if (mm < 10)
+			{
 				mm = 7;
+			}
 			else
+			{
 				mm = 10;
+			}
 			cal.set(Calendar.MONTH, mm);
 			return cal.getTimeInMillis();
 		}
@@ -1025,22 +1158,22 @@ public class TimeUtil
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the
 	 * day (if end == true).
-	 * 
+	 *
 	 * @param dateTime
 	 * @param timeSlot
 	 * @param end
 	 * @return
 	 */
-	public static Timestamp getDayBorder(Timestamp dateTime, Timestamp timeSlot, boolean end)
+	public static Timestamp getDayBorder(final Timestamp dateTime, final Timestamp timeSlot, final boolean end)
 	{
-		GregorianCalendar gc = new GregorianCalendar();
+		final GregorianCalendar gc = new GregorianCalendar();
 		gc.setTimeInMillis(dateTime.getTime());
 		dateTime.setNanos(0);
 
 		if (timeSlot != null)
 		{
 			timeSlot.setNanos(0);
-			GregorianCalendar gcTS = new GregorianCalendar();
+			final GregorianCalendar gcTS = new GregorianCalendar();
 			gcTS.setTimeInMillis(timeSlot.getTime());
 
 			gc.set(Calendar.HOUR_OF_DAY, gcTS.get(Calendar.HOUR_OF_DAY));
@@ -1089,7 +1222,7 @@ public class TimeUtil
 
 	/**
 	 * Get last date in year
-	 * 
+	 *
 	 * @param day day
 	 * @return year last day with 00:00
 	 */
@@ -1097,8 +1230,10 @@ public class TimeUtil
 	static public Timestamp getYearLastDay(Date day)
 	{
 		if (day == null)
+		{
 			day = new Timestamp(System.currentTimeMillis());
-		GregorianCalendar cal = new GregorianCalendar(Env.getLanguage(Env.getCtx()).getLocale());
+		}
+		final GregorianCalendar cal = new GregorianCalendar(Env.getLanguage(Env.getCtx()).getLocale());
 		cal.setTimeInMillis(day.getTime());
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -1111,8 +1246,33 @@ public class TimeUtil
 	}	// getYearLastDay
 
 	/**
+	 * Get first date in year
+	 *
+	 * @param day day
+	 * @return year first day with 00:00
+	 */
+	// metas
+	static public Timestamp getYearFirstDay(Date day)
+	{
+		if (day == null)
+		{
+			day = new Timestamp(System.currentTimeMillis());
+		}
+		final GregorianCalendar cal = new GregorianCalendar();
+		cal.setTimeInMillis(day.getTime());
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		//
+		cal.set(Calendar.MONTH, Calendar.JANUARY);
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		return new Timestamp(cal.getTimeInMillis());
+	}	// getYearFirstDay
+
+	/**
 	 * Extract the year from a given date.
-	 * 
+	 *
 	 * @param date
 	 * @return the year as int
 	 */
@@ -1142,7 +1302,7 @@ public class TimeUtil
 
 	/**
 	 * Truncates given dates by using the <code>trunc</code> method and then compares them.
-	 * 
+	 *
 	 * @param date1
 	 * @param date2
 	 * @param trunc see TRUNC_* constants
@@ -1177,10 +1337,10 @@ public class TimeUtil
 
 	/**
 	 * Get the week of year number for the given Date
-	 * 
+	 *
 	 * The logic for calculating the week number is based on the ISO week date conventions.
 	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
-	 * 
+	 *
 	 * @param date
 	 * @return
 	 */
@@ -1208,7 +1368,7 @@ public class TimeUtil
 	 * Get the day of the week for the given date.
 	 * First day of the week is considered Monday, due to ISO 8601.
 	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
-	 * 
+	 *
 	 * @param date
 	 * @return
 	 */

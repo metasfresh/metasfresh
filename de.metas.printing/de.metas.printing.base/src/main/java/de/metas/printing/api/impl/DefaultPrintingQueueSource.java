@@ -109,6 +109,12 @@ public class DefaultPrintingQueueSource extends AbstractPrintingQueueSource
 	}
 	
 	@Override
+	public int countItems()
+	{
+		return Services.get(IPrintingDAO.class).countItems(ctx, printingQueueQuery, ITrx.TRXNAME_None);
+	}
+	
+	@Override
 	public String getTrxName()
 	{
 		// mass processing of not printed queue items shall be out of transaction

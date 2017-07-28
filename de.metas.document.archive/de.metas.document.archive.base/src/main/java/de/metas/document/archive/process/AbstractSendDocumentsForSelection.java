@@ -31,6 +31,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.bpartner.service.IBPartnerBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -90,13 +91,16 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 			}
 		}
 
+		
+		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getFilter();
 		final int pInstanceId = getAD_PInstance_ID();
-		final ProcessInfo pi = getProcessInfo();
 
+		//
+		// Create selection for PInstance and make sure we're enqueuing something
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
 				.addOnlyActiveRecordsFilter()
-				.filter(pi.getQueryFilter())
+				.filter(filter)
 				.create()
 				.createSelection(pInstanceId);
 
@@ -106,6 +110,12 @@ public abstract class AbstractSendDocumentsForSelection extends JavaProcess
 		}
 	}
 
+	protected IQueryFilter<I_C_Doc_Outbound_Log> getFilter()
+	{
+		final ProcessInfo pi = getProcessInfo();
+		return pi.getQueryFilter();
+	}
+	
 	@Override
 	protected final String doIt() throws Exception
 	{

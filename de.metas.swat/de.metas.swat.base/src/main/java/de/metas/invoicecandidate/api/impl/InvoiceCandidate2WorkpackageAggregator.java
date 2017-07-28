@@ -34,6 +34,7 @@ import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
@@ -62,9 +63,10 @@ import de.metas.lock.api.LockOwner;
 	private final String _trxName;
 	private final IWorkPackageQueue _workpackageQueue;
 	private final IWorkPackageBlockBuilder _queueBlockBuilder;
-	private final IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
+	private IWorkpackagePrioStrategy workpackagePriority = SizeBasedWorkpackagePrio.INSTANCE;
 	private ILock invoiceCandidatesLock = ILock.NULL;
-
+	private I_C_Async_Batch _asyncBatch = null;
+	
 	// status
 	private final IdentityHashMap<IWorkPackageBuilder, ICNetAmtToInvoiceChecker> group2netAmtToInvoiceChecker = new IdentityHashMap<>();
 
@@ -180,6 +182,11 @@ import de.metas.lock.api.LockOwner;
 		group.parameters()
 				.setParameter(ICNetAmtToInvoiceChecker.PARAMETER_NAME, netAmtToInvoiceChecker.getValue());
 
+		if (_asyncBatch != null)
+		{
+			group.setC_Async_Batch(_asyncBatch);
+		}
+
 		//
 		// Mark the workpackage as ready for processing (when trxName will be commited)
 		group.build();
@@ -191,6 +198,18 @@ import de.metas.lock.api.LockOwner;
 		return this;
 	}
 
+	public InvoiceCandidate2WorkpackageAggregator setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	{
+		_asyncBatch = asyncBatch;
+		return this;
+	}
+	
+	public InvoiceCandidate2WorkpackageAggregator setPriority(final IWorkpackagePrioStrategy priority)
+	{
+		workpackagePriority = priority;
+		return this;
+	}
+	
 	/**
 	 * Gets unprocessed workpackages queue size
 	 */

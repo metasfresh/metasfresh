@@ -102,6 +102,43 @@ public class X_C_Letter extends org.compiere.model.PO implements I_C_Letter, org
 		return ii.intValue();
 	}
 
+	@Override
+	public org.compiere.model.I_AD_Table getAD_Table() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class);
+	}
+
+	@Override
+	public void setAD_Table(org.compiere.model.I_AD_Table AD_Table)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Table_ID, org.compiere.model.I_AD_Table.class, AD_Table);
+	}
+
+	/** Set DB-Tabelle.
+		@param AD_Table_ID 
+		Database Table information
+	  */
+	@Override
+	public void setAD_Table_ID (int AD_Table_ID)
+	{
+		if (AD_Table_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+	}
+
+	/** Get DB-Tabelle.
+		@return Database Table information
+	  */
+	@Override
+	public int getAD_Table_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+	
 	/** Set Anschrift-Text.
 		@param BPartnerAddress Anschrift-Text	  */
 	@Override
@@ -317,5 +354,30 @@ public class X_C_Letter extends org.compiere.model.PO implements I_C_Letter, org
 	public java.lang.String getLetterSubject () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_LetterSubject);
+	}
+
+	/** Set Datensatz-ID.
+		@param Record_ID 
+		Direct internal record ID
+	  */
+	@Override
+	public void setRecord_ID (int Record_ID)
+	{
+		if (Record_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
+	}
+
+	/** Get Datensatz-ID.
+		@return Direct internal record ID
+	  */
+	@Override
+	public int getRecord_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 }

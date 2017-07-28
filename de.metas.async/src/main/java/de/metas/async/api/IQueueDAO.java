@@ -118,4 +118,11 @@ public interface IQueueDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryOrderBy getQueueOrderBy();
+	
+	/**
+	 * Checks if the workpackage processor is enabled
+	 * @param packageProcessorClass
+	 * @return
+	 */
+	boolean isWorkpackageProcessorEnabled(Class<? extends IWorkpackageProcessor> packageProcessorClass);
 }

@@ -26,6 +26,8 @@ package de.metas.camel.test;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -35,8 +37,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.StringSource;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import de.metas.printing.esb.base.jaxb.JAXBConstants;
 
@@ -46,7 +46,7 @@ import de.metas.printing.esb.base.jaxb.JAXBConstants;
  */
 public class SwitchResponder implements Processor
 {
-	private static final transient Logger log = LogManager.getLogger(SwitchResponder.class);
+	private static final transient Logger log = LogManager.getLogManager().getLogger(SwitchResponder.class.getName());
 	private final JAXBContext jaxbContext;
 
 	private final Map<Class<?>, AbstractResponder<?, ?>> respondersMap = new HashMap<Class<?>, AbstractResponder<?, ?>>();

@@ -13,15 +13,14 @@ package de.metas.adempiere.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.InputStream;
 
@@ -43,6 +42,13 @@ import de.metas.adempiere.form.IClientUIAsyncInvoker.IClientUIAsyncRunnable;
  */
 public interface IClientUIInstance
 {
+	/**
+	 * @deprecated this method is implemented by legacy zk code only. Please avoid using it in any new code.
+	 * @task https://github.com/metasfresh/metasfresh/issues/1771
+	 */
+	@Deprecated
+	void infoNoWait(int WindowNo, String AD_Message);
+
 	void info(int WindowNo, String AD_Message);
 
 	void info(int WindowNo, String AD_Message, String message);
@@ -71,6 +77,13 @@ public interface IClientUIInstance
 	void error(int WIndowNo, String AD_Message, String message);
 
 	void error(int WindowNo, Throwable e);
+
+	/**
+	 * @deprecated this method is implemented by legacy zk code only. Please avoid using it in any new code.
+	 * @task https://github.com/metasfresh/metasfresh/issues/1771
+	 */
+	@Deprecated
+	void hideBusyDialog();
 
 	/**
 	 * Trigger a download preview of given data
@@ -115,7 +128,7 @@ public interface IClientUIInstance
 	 * @param runnable
 	 * @see #invoke()
 	 * @see IClientUIInvoker#setLongOperation(boolean)
-	 * 
+	 *
 	 * @deprecated Please consider using {@link #invokeAsync()}.
 	 */
 	@Deprecated
@@ -146,10 +159,10 @@ public interface IClientUIInstance
 	 * @return UI invoker helper
 	 */
 	IClientUIInvoker invoke();
-	
+
 	/**
 	 * Creates an UI invoker which is able to execute a long running {@link IClientUIAsyncRunnable} in a background thread.
-	 * 
+	 *
 	 * @return async invoker
 	 */
 	IClientUIAsyncInvoker invokeAsync();
@@ -167,4 +180,13 @@ public interface IClientUIInstance
 	 * @param url
 	 */
 	void showURL(final String url);
+
+	/**
+	 * Disable server push
+	 *
+	 * @deprecated this method is implemented by legacy zk code only. Please avoid using it in any new code.
+	 * @task https://github.com/metasfresh/metasfresh/issues/1771
+	 */
+	@Deprecated
+	void disableServerPush();
 }

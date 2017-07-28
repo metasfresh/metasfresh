@@ -45,6 +45,11 @@ import de.metas.dunning.spi.IDunningAggregator;
 public interface IDunningProducer
 {
 	/**
+	 * If this option is set in context, the producer will use the async batch when enqueueing
+	 */
+	String CONTEXT_AsyncBatchDunningDoc = IDunningProducer.class.getName() + "#" + "AsyncBatch";
+
+	/**
 	 * If this option is set in context, the producer will also process the {@link I_C_DunningDoc}s.
 	 */
 	String CONTEXT_ProcessDunningDoc = IDunningProducer.class.getName() + "#" + "ProcessDunningDoc";

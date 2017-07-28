@@ -45,4 +45,19 @@ public interface IPrintJobMonitor
 	 * @return
 	 */
 	IPrintJobBatchMonitor createBatchMonitor();
+	
+
+	/**
+	 * Set Dynamic Attribute.
+	 * @param name
+	 * @param value
+	 */
+	public Object setDynAttribute(String name, Object value);
+	
+	/**
+	 * Get Dynamic Attribute
+	 * @param name
+	 * @return attribute value or null if not found
+	 */
+	public Object getDynAttribute(String name);
 }

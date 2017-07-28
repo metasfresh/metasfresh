@@ -44,6 +44,7 @@ import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_AD_User;
@@ -84,7 +85,7 @@ public class UserBL implements IUserBL
 
 		int passwordLength = this.passwordLength;
 		final int minPasswordLength = getMinPasswordLength();
-		if (minPasswordLength > 0 && passwordLength < minPasswordLength)
+		if(minPasswordLength > 0 && passwordLength < minPasswordLength)
 		{
 			passwordLength = minPasswordLength;
 		}
@@ -279,16 +280,16 @@ public class UserBL implements IUserBL
 
 		//
 		// Make sure the old password is matching (if required)
-		if (isOldPasswordRequired(ctx, adUserId))
+		if(isOldPasswordRequired(ctx, adUserId))
 		{
 			final String userPassword = user.getPassword();
-			if (Check.isEmpty(userPassword) && !Check.isEmpty(oldPassword))
+			if(Check.isEmpty(userPassword) && !Check.isEmpty(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@")
 						.setParameter("reason", "User does not have a password set. Please leave empty the OldPassword field.");
 			}
 
-			if (Check.isEmpty(oldPassword))
+			if(Check.isEmpty(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordMandatory@");
 			}
@@ -311,13 +312,13 @@ public class UserBL implements IUserBL
 		final IUserRolePermissions loggedInPermissions = userRolePermissionsDAO.retrieveUserRolePermissions(UserRolePermissionsKey.of(ctx));
 
 		// Changing your own password always requires entering the old password
-		if (loggedInPermissions.getAD_User_ID() == adUserId)
+		if(loggedInPermissions.getAD_User_ID() == adUserId)
 		{
 			return true;
 		}
 
 		// If logged in as Administrator, there is no need to enter the old password
-		if (userRolePermissionsDAO.isAdministrator(ctx, adUserId))
+		if(userRolePermissionsDAO.isAdministrator(ctx, adUserId))
 		{
 			return false;
 		}
@@ -392,6 +393,19 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public I_AD_User createUser(final String name, final I_AD_Org org)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(org, true);
+		final String trxName = InterfaceWrapperHelper.getTrxName(org);
+		final I_AD_User user = InterfaceWrapperHelper.create(ctx, I_AD_User.class, trxName);
+		user.setName(name);
+		user.setAD_Org_ID(org.getAD_Org_ID());
+		InterfaceWrapperHelper.save(user);
+
+		return user;
+	}
+
+	@Override
 	public boolean isNotificationEMail(final I_AD_User user)
 	{
 		final String s = user.getNotificationType();
@@ -431,23 +445,23 @@ public class UserBL implements IUserBL
 
 		final boolean haveInvalidEMails = emails.stream().anyMatch(email -> checkEMailValid(email) != null);
 		return !haveInvalidEMails;
-	}	// isEMailValid
+	}	//	isEMailValid
 
 	private static ITranslatableString checkEMailValid(final String email)
 	{
 		if (Check.isEmpty(email, true))
-		{
+	{
 			return ITranslatableString.constant("no email");
 		}
 		try
 		{
 			final InternetAddress ia = new InternetAddress(email, true);
-			ia.validate();	// throws AddressException
+				ia.validate();	//	throws AddressException
 
 			if (ia.getAddress() == null)
 			{
 				return ITranslatableString.constant("invalid email");
-			}
+		}
 
 			return null; // OK
 		}
@@ -474,18 +488,18 @@ public class UserBL implements IUserBL
 		if (Services.get(IClientDAO.class).retriveClient(Env.getCtx()).isSmtpAuthorization())
 		{
 			// SMTP user
-			final String emailUser = user.getEMailUser();
-			if (Check.isEmpty(emailUser, true))
-			{
+		final String emailUser = user.getEMailUser();
+		if(Check.isEmpty(emailUser, true))
+		{
 				return ITranslatableString.constant("no STMP user configured");
-			}
-
+		}
+			
 			// SMTP password
 			final String emailPassword = user.getEMailUserPW();
 			if (Check.isEmpty(emailPassword, false))
-			{
+		{
 				return ITranslatableString.constant("STMP authorization is required but no STMP password configured");
-			}
+		}
 		}
 
 		return null; // OK
@@ -496,5 +510,5 @@ public class UserBL implements IUserBL
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUser(adUserId);
 		return checkCanSendEMail(user);
-	}
+}
 }

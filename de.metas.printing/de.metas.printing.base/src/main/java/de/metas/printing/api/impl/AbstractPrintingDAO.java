@@ -39,8 +39,11 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Archive;
 
 import de.metas.printing.api.IPrintingDAO;
+import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -51,12 +54,16 @@ import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_AD_PrinterTray_Matching;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
+import de.metas.printing.model.I_C_PrintPackageData;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import lombok.NonNull;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
 {
@@ -117,6 +124,13 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		return retrievePrintJobLines(job, fromSeqNo, toSeqNo);
 	}
 
+	@Override
+	public int countItems(final Properties ctx, final IPrintingQueueQuery queueQuery, final String trxName)
+	{
+		final IQuery<I_C_Printing_Queue> query = createQuery(ctx, queueQuery, trxName);
+		return query.count();
+	}
+	
 	@Override
 	public List<I_C_Print_Job_Detail> retrievePrintJobDetails(final I_C_Print_Job_Line jobLine)
 	{
@@ -303,6 +317,29 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.create()
 				.firstOnly(I_AD_Print_Clients.class);
 	}
+	
+	@Override
+	public List<I_C_Print_Job_Line> retrievePrintJobLines(final I_C_Printing_Queue printingQueue)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(printingQueue);
+		final String trxName = InterfaceWrapperHelper.getTrxName(printingQueue);
+
+		final StringBuilder whereClause = new StringBuilder();
+		final List<Object> params = new ArrayList<Object>();
+
+		whereClause.append(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID).append("=?");
+		params.add(printingQueue.getC_Printing_Queue_ID());
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_Job_Line.class, ctx, trxName)
+				.addEqualsFilter(I_C_Print_Job_Line.COLUMNNAME_C_Printing_Queue_ID, printingQueue.getC_Printing_Queue_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderBy()
+				.addColumn(I_C_Print_Job_Line.COLUMNNAME_SeqNo, true)
+				.endOrderBy()
+				.create()
+				.list(I_C_Print_Job_Line.class);
+	}
+
 
 	@Override
 	public final I_AD_PrinterHW_MediaSize retrieveMediaSize(final I_AD_PrinterHW hwPrinter,
@@ -337,4 +374,46 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				hwPrinter.getName());
 		return result;
 	}
+
+	@Override
+	public I_C_Printing_Queue retrievePrintingQueue(@NonNull final I_AD_Archive archive)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_C_Printing_Queue.class, archive)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Printing_Queue.COLUMN_AD_Archive_ID, archive.getAD_Archive_ID())
+				.orderBy()
+				.addColumn(I_C_Printing_Queue.COLUMNNAME_Created, false)
+				.addColumn(I_C_Printing_Queue.COLUMNNAME_C_Printing_Queue_ID, false) // also order by ID in case created is not unique
+				.endOrderBy()
+				.create()
+				.first();
+	}
+
+	@Override
+	public List<I_C_Print_PackageInfo> retrievePrintPackageInfos(@NonNull final I_C_Print_Package printPackage)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Print_PackageInfo.class, printPackage)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Print_PackageInfo.COLUMN_C_Print_Package_ID, printPackage.getC_Print_Package_ID())
+				.orderBy().addColumn(I_C_Print_PackageInfo.COLUMNNAME_AD_PrinterHW_ID).endOrderBy()
+				.create()
+				.list();
+	}
+
+	@Override
+	public I_C_PrintPackageData retrievePrintPackageData(@NonNull final I_C_Print_Package printPackage)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_PrintPackageData.class, printPackage)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PrintPackageData.COLUMN_C_Print_Package_ID, printPackage.getC_Print_Package_ID())
+				.orderBy()
+				.addColumn(I_C_PrintPackageData.COLUMNNAME_Created)
+				.addColumn(I_C_PrintPackageData.COLUMNNAME_C_PrintPackageData_ID)
+				.endOrderBy()
+				.create()
+				.first(); // note: right now IDK why it's first an not firstOnly
+	}
+
 }

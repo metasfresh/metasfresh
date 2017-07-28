@@ -49,6 +49,7 @@ import org.adempiere.model.engines.CostDimension;
 import org.adempiere.model.engines.CostEngine;
 import org.adempiere.model.engines.CostEngineFactory;
 import org.adempiere.util.Services;
+import org.compiere.model.I_M_Cost;
 import org.compiere.model.I_M_CostElement;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MCost;
@@ -61,10 +62,10 @@ import org.compiere.wf.MWorkflow;
 import org.eevolution.api.IPPWorkflowDAO;
 import org.eevolution.model.MPPProductPlanning;
 
-import de.metas.process.ProcessInfoParameter;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 /**
  *	RollUp of Cost Manufacturing Workflow
@@ -105,7 +106,7 @@ public class RollupWorkflow extends JavaProcess
 
 			if (para.getParameter() == null)
 				;
-			else if (name.equals(MCost.COLUMNNAME_AD_Org_ID))
+			else if (name.equals(I_M_Cost.COLUMNNAME_AD_Org_ID))
 				p_AD_Org_ID = para.getParameterAsInt();
 			else if (name.equals(MCost.COLUMNNAME_C_AcctSchema_ID))
 			{

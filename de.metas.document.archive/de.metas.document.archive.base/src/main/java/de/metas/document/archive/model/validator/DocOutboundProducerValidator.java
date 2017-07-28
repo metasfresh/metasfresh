@@ -10,36 +10,38 @@ package de.metas.document.archive.model.validator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Client;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
+import org.compiere.process.DocAction;
 
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.api.impl.AbstractDocOutboundProducer;
 import de.metas.document.archive.async.spi.impl.DocOutboundWorkpackageProcessor;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.engine.IDocActionBL;
 
 /**
  * Intercepter which listens to a a table specified in {@link I_C_Doc_Outbound_Config} and enqueues the documents to {@link DocOutboundWorkpackageProcessor}.
- * 
+ *
  * @author tsa
- * 
+ *
  */
 /* package */class DocOutboundProducerValidator extends AbstractDocOutboundProducer implements ModelValidator
 {
@@ -62,10 +64,11 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 		// Detect AD_Client to be used for registering
 		final I_C_Doc_Outbound_Config config = getC_Doc_Outbound_Config();
 		final int adClientId = config.getAD_Client_ID();
-		final MClient client;
+
+		final I_AD_Client client;
 		if (adClientId > 0)
 		{
-			client = MClient.get(Env.getCtx(), adClientId);
+			client = config.getAD_Client();
 		}
 		else
 		{
@@ -120,10 +123,23 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 	}
 
 	@Override
-	public String modelChange(final PO po, final int type) throws Exception
+	public String modelChange(PO po, int type) throws Exception
 	{
-		if (type == ModelValidator.TYPE_AFTER_NEW || type == ModelValidator.TYPE_AFTER_CHANGE)
+		if (type == TYPE_AFTER_NEW || type == TYPE_AFTER_CHANGE)
 		{
+			if (isDocument())
+			{
+				if (!acceptDocument(po))
+				{
+					return null;
+				}
+
+				if (po.is_ValueChanged(DocAction.DocStatus) && Services.get(IDocActionBL.class).isDocumentReversedOrVoided(po))
+				{
+					voidDocOutbound(po);
+				}
+			}
+
 			if (isJustProcessed(po, type))
 			{
 				createDocOutbound(po);
@@ -137,23 +153,29 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 	{
 		Check.assume(isDocument(), "PO '{}' is a document", po);
 
-		if (timing != ModelValidator.TIMING_AFTER_COMPLETE)
-		{
-			return null;
-		}
-
 		if (!acceptDocument(po))
 		{
 			return null;
 		}
 
-		createDocOutbound(po);
+		if (timing == ModelValidator.TIMING_AFTER_COMPLETE
+				&& !Services.get(IDocActionBL.class).isReversalDocument(po))
+		{
+			createDocOutbound(po);
+		}
+
+		if (timing == ModelValidator.TIMING_AFTER_VOID
+				|| timing == ModelValidator.TIMING_AFTER_REVERSEACCRUAL
+				|| timing == ModelValidator.TIMING_AFTER_REVERSECORRECT)
+		{
+			voidDocOutbound(po);
+		}
 
 		return null;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param po
 	 * @param changeType
 	 * @return true if the given PO was just processed

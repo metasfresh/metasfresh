@@ -148,7 +148,7 @@ public class ClientUI extends AbstractClientUI
 		{
 			throw new UnsupportedOperationException("not implemented");
 		}
-		
+
 		@Override
 		public IClientUIAsyncInvoker invokeAsync()
 		{

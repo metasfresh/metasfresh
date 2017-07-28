@@ -290,4 +290,19 @@ public class DunningDAO extends AbstractDunningDAO
 		});
 		return result[0];
 	}
+	
+	public List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(final Properties ctx, final int tableId, final int recordId, final String trxName)
+	{
+		final StringBuilder whereClause = new StringBuilder();
+
+		whereClause.append(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID).append("=?")
+				.append(" AND ")
+				.append(I_C_Dunning_Candidate.COLUMNNAME_Record_ID).append("=?")
+				.append(" AND ")
+				.append(I_C_Dunning_Candidate.COLUMNNAME_IsDunningDocProcessed).append("='Y'");
+
+		return new Query(ctx, I_C_Dunning_Candidate.Table_Name, whereClause.toString(), trxName)
+				.setParameters(tableId, recordId)
+				.list(I_C_Dunning_Candidate.class);
+	}
 }

@@ -56,6 +56,11 @@ public final class Printing_Constants
 	public static final String SYSCONFIG_PrintingClientApplet_PREFIX = SYSCONFIG_Printing_PREFIX + "client.";
 
 	private static final String SYSCONFIG_Enabled = ENTITY_TYPE + ".Enabled";
+
+	/**
+	 * Internal name for pdf printing async batch
+	 */
+	public static final String C_Async_Batch_InternalName_PDFPrinting = "PDFPrinting";
 	
 	/**
 	 * @return true if printing module is enabled; false if printing module is fully disabled

@@ -36,6 +36,7 @@ import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import lombok.NonNull;
 import net.sf.jasperreports.engine.JasperPrint;
 
 /**
@@ -90,6 +91,18 @@ public class ReportStarter implements IProcess
 		{
 			startProcessPrintPreview(reportPrintingInfo);
 		}
+	}
+
+	private static JRReportViewerProvider viewerProvider = null;
+
+	/**
+	 * Set jasper report viewer provider.
+	 *
+	 * @param provider
+	 */
+	public static void setNonSwingViewerProvider(@NonNull final JRReportViewerProvider provider)
+	{
+		viewerProvider = provider;
 	}
 
 	private void startProcessDirectPrint(final ReportPrintingInfo reportPrintingInfo)
@@ -220,7 +233,7 @@ public class ReportStarter implements IProcess
 		}
 		else
 		{
-			return null;
+			return viewerProvider;
 		}
 	}
 
@@ -250,9 +263,7 @@ public class ReportStarter implements IProcess
 
 		private boolean forceSync = false;
 
-		private JRReportViewerProvider reportViewerProvider;
-
-		@Override
+			@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
@@ -261,7 +272,6 @@ public class ReportStarter implements IProcess
 					.add("printPreview", printPreview)
 					.add("forceSync", forceSync)
 					.add("processInfo", processInfo)
-					.add("reportViewerProvider", reportViewerProvider)
 					.toString();
 		}
 

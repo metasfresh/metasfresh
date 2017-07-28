@@ -50,12 +50,12 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.X_C_Payment;
 import org.compiere.process.DocAction;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.util.CacheCtx;
 import de.metas.adempiere.util.CacheTrx;
 import de.metas.allocation.api.IAllocationDAO;
+import lombok.NonNull;
 
 public class AllocationDAO implements IAllocationDAO
 {
@@ -225,6 +225,20 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
+	public BigDecimal retrieveWriteoffAmt(org.compiere.model.I_C_Invoice invoice)
+	{
+		final String sql = "select invoicewriteoff(?)";
+
+		final BigDecimal amt = DB.getSQLValueBD(ITrx.TRXNAME_ThreadInherited, sql, invoice.getC_Invoice_ID());
+		if (amt == null)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		return amt;
+	}
+	
+	@Override
 	public BigDecimal retrieveAllocatedAmtIgnoreGivenPaymentIDs(final org.compiere.model.I_C_Invoice invoice, final Set<Integer> paymentIDsToIgnore)
 	{
 		BigDecimal retValue = null;
@@ -290,15 +304,15 @@ public class AllocationDAO implements IAllocationDAO
 
 		// Exclude the entries that don't have either Amount, DiscountAmt, WriteOffAmt or OverUnderAmt. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_AllocationLine> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_AllocationLine.class).setJoinOr()
-				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_Amount, Env.ZERO)
-				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_DiscountAmt, Env.ZERO)
-				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_WriteOffAmt, Env.ZERO)
-				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_OverUnderAmt, Env.ZERO)
-				.addNotEqualsFilter(I_C_AllocationLine.COLUMN_PaymentWriteOffAmt, Env.ZERO);
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_Amount, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_DiscountAmt, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_WriteOffAmt, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMNNAME_OverUnderAmt, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_C_AllocationLine.COLUMN_PaymentWriteOffAmt, BigDecimal.ZERO);
 
 		// exclude credit memos, adjustment charges and reversals
 		final IQuery<I_C_AllocationHdr> approvedAmtFilter = queryBL.createQueryBuilder(I_C_AllocationHdr.class, ctx, trxName)
-				.addNotEqualsFilter(I_C_AllocationHdr.COLUMN_ApprovalAmt, Env.ZERO)
+				.addNotEqualsFilter(I_C_AllocationHdr.COLUMN_ApprovalAmt, BigDecimal.ZERO)
 				.create();
 
 		// the allocation header must have lines with the payment set or have a non 0 approvalAmt to be eligible for posting
@@ -319,7 +333,7 @@ public class AllocationDAO implements IAllocationDAO
 		// Query builder for the allocation header
 		final IQueryBuilder<I_C_AllocationHdr> allocationHdrQuery = queryBuilder
 				.andCollect(I_C_AllocationHdr.COLUMN_C_AllocationHdr_ID, I_C_AllocationHdr.class);
-		
+
 		// Only the documents created after the given start time
 		if (startTime != null)
 		{
@@ -334,5 +348,36 @@ public class AllocationDAO implements IAllocationDAO
 				.create()
 				.list(I_C_AllocationHdr.class);
 
+	}
+
+	@Override
+	public List<I_C_Payment> retrieveInvoicePayments(@NonNull final I_C_Invoice invoice)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		// add invoice check in allocation line
+		final IQuery<I_C_AllocationLine> invoiceAllocationLineFilter = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.create();
+
+		final ICompositeQueryFilter<I_C_Payment> invoiceOrAllocFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_Payment.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID()) // add explicit invoice in payment
+				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, invoiceAllocationLineFilter);
+
+		final List<I_C_Payment> availablePayments = queryBL.createQueryBuilder(I_C_Payment.class, invoice)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMN_C_BPartner_ID, invoice.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocAction.STATUS_Completed)
+				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
+				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, invoice.isSOTrx())
+				.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, true)
+				.filter(invoiceOrAllocFilter)
+				.orderBy().addColumn(I_C_Payment.COLUMN_DateTrx).endOrderBy()
+				.create()
+				.list();
+
+		return availablePayments;
 	}
 }

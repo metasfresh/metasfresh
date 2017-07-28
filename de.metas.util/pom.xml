@@ -35,13 +35,9 @@
 			</exclusions>
 		</dependency>
 
-		<!-- 3.10.0-GA is required by jboss-aop. 
-		As long as we also use jboss-aop, we can't freely choose our javassist version 
-		-->
 		<dependency>
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
-			<version>3.19.0-GA</version>
 		</dependency>
 
 <!-- 	nice standardiced annotations, but requires java7	
@@ -62,13 +58,36 @@
 			<artifactId>commons-lang3</artifactId>
 			<version>3.3.2</version>
 		</dependency>
-		
+
+		<!-- used for email aggress validation and maybe more -->
+		<!-- 
+			has different version of commons-logging and -connections within its dependency tree so to avoid problems with our enforcer,
+			we exclude them from the transitive tree and then explicitly explicitly add them 
+		-->
 		<dependency>
-    		<groupId>commons-validator</groupId>
-    		<artifactId>commons-validator</artifactId>
-    		<version>1.4.1</version>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.6</version>
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>commons-collections</groupId>
+					<artifactId>commons-collections</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -87,7 +106,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.2</version>
 				<executions>
 					<execution>
 						<goals>

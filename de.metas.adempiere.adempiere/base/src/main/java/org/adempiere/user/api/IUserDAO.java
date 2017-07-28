@@ -10,12 +10,12 @@ package org.adempiere.user.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_AD_User;
@@ -36,9 +37,11 @@ public interface IUserDAO extends ISingletonService
 	int SYSTEM_USER_ID = Env.CTXVALUE_AD_User_ID_System;
 	int SUPERUSER_USER_ID = 100;
 
+	String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
+
 	/**
 	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code>.
-	 * 
+	 *
 	 * @param userId
 	 * @return user; never return null
 	 */
@@ -46,7 +49,7 @@ public interface IUserDAO extends ISingletonService
 
 	/**
 	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code> and password matches the given one.
-	 * 
+	 *
 	 * @param userId
 	 * @return user; never return null
 	 */
@@ -63,8 +66,17 @@ public interface IUserDAO extends ISingletonService
 	I_AD_User retrieveUser(int adUserId);
 
 	I_AD_User retrieveUserInTrx(int adUserId);
+	
+	I_AD_User retrieveDefaultUser(I_C_BPartner bpartner);
 
 	/** @return user's full name or <code>?</code> if no found */
 	String retrieveUserFullname(int adUserId);
+
+	/**
+	 * fetch all system users
+	 * @param ctx
+	 * @return
+	 */
+	List<I_AD_User> retrieveSystemUsers();
 
 }

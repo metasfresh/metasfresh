@@ -370,7 +370,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// In case of a problem, this two variables are used to hand the problematic candidates and the
 				// exception over to the TrxRunnable's doFinally() method for logging
 				final List<I_C_Invoice_Candidate> errorCandidates = new ArrayList<I_C_Invoice_Candidate>();
-				final AdempiereException[] errorException = { null };
+				final AdempiereException[] errorException =
+					{ null };
 
 				//
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
@@ -839,6 +840,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	{
 		final List<IInvoiceHeader> aggregationResult = aggregationEngine.aggregate();
 
+		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
+		{
+			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
+					aggregationResult.size(), aggregationResult);
+		}
+
 		//
 		// generate an invoice for each aggregate (i.e. 'header')
 		for (final IInvoiceHeader header : aggregationResult)
@@ -848,7 +855,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				continue;
 			}
-
 			generateInvoice(header);
 		}
 	}
@@ -973,7 +979,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					final String noteMsg = msgBL.getMsg(
 							adLanguage,
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
-							new Object[] { candidates.toString() });
+							new Object[]
+							{ candidates.toString() });
 					note.setTextMsg(noteMsg);
 					InterfaceWrapperHelper.save(note);
 					// @formatter:off
@@ -1117,8 +1124,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	{
 		if (_collector == null)
 		{
-			// note that we don't want to store the actual invoices in the result to omit memory-problems
-			_collector = invoiceCandBL.createInvoiceGenerateResult(false);
+			// note that we don't want to store the actual invoices in the result if there is a change to encounter memory problems
+			_collector = invoiceCandBL.createInvoiceGenerateResult(_invoicingParams == null ? false : _invoicingParams.isStoreInvoicesInResult());
 		}
 		return _collector;
 	}

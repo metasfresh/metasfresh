@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_PInstance;
 
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.form.IClientUIInstance;
@@ -71,6 +72,7 @@ public abstract class AbstractPrintJobCreate extends JavaProcess
 
 		final IClientUIInstance clientUI = Services.get(IClientUI.class).createInstance();
 		final IPrintJobMonitor monitor = createPrintJobMonitor(clientUI);
+		monitor.setDynAttribute(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, getAD_PInstance_ID());
 
 		for (final IPrintingQueueSource source : sources)
 		{

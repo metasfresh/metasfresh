@@ -10,12 +10,12 @@ package de.metas.document.archive.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,10 +28,11 @@ import java.util.Properties;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.archive.spi.IArchiveEventListener;
+import org.adempiere.archive.spi.ArchiveEventListenerAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_User;
 
@@ -44,7 +45,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.IDocActionBL;
 
-public class DocOutboundArchiveEventListener implements IArchiveEventListener
+public class DocOutboundArchiveEventListener extends ArchiveEventListenerAdapter
 {
 	/**
 	 * Creates and saves {@link I_C_Doc_Outbound_Log}
@@ -68,11 +69,11 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchange.setAD_Table_ID(adTableId);
 		docExchange.setRecord_ID(recordId);
 		docExchange.setC_BPartner_ID(archive.getC_BPartner_ID());
-		
+
 		//
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docExchange.setC_DocType_ID(doctypeID);
-		
+
 		//
 		// set isInvoiceEmailEnabled
 		final Object archiveReferencedModel = Services.get(IArchiveDAO.class).retrieveReferencedModel(archive, Object.class);
@@ -86,20 +87,20 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(archiveReferencedModel, I_C_Invoice.class);
 				final I_C_BPartner bpartner = InterfaceWrapperHelper.create(invoice.getC_BPartner(), I_C_BPartner.class);
 				final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(invoice.getAD_User(), de.metas.document.archive.model.I_AD_User.class);
+
 				matchingisInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
-				
 			}
 			else
 			{
 				// set by defualt on Y for all other documents
 				matchingisInvoiceEmailEnabled = Boolean.TRUE;
 			}
-			 
+
 			docExchange.setIsInvoiceEmailEnabled(matchingisInvoiceEmailEnabled);
 		}
 
-		
-		
+
+
 		docExchange.setDateLastEMail(null);
 		docExchange.setDateLastPrint(null);
 
@@ -110,7 +111,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		final Timestamp documentDate = docActionBL.getDocumentDate(ctx, adTableId, recordId);
 		docExchange.setDateDoc(documentDate); // task 08905: Also set the the documentDate
-		
+
 		InterfaceWrapperHelper.save(docExchange);
 
 		return docExchange;
@@ -170,7 +171,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	}
 
 	@Override
-	public void onPdfUpdate(final I_AD_Archive archive, final I_AD_User user)
+	public void onPdfUpdate(final I_AD_Archive archive, final I_AD_User user, final String action)
 	{
 		Check.assumeNotNull(archive, "archive not null");
 
@@ -180,7 +181,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		}
 
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = createLogLine(archive);
-		docExchangeLine.setAction(X_C_Doc_Outbound_Log_Line.ACTION_PdfExport);
+		docExchangeLine.setAction(action);
 		docExchangeLine.setAD_User(user);
 
 		InterfaceWrapperHelper.save(docExchangeLine);
@@ -206,6 +207,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docExchangeLine.setAD_User(user);
 
 		InterfaceWrapperHelper.save(docExchangeLine);
+
+		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
+		log.setDateLastEMail(SystemTime.asTimestamp());
+		InterfaceWrapperHelper.save(log);
 	}
 
 	@Override
