@@ -25,8 +25,6 @@ package org.adempiere.server.rpl.api.impl;
 
 import java.util.Iterator;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -57,7 +55,10 @@ import org.compiere.model.MTable;
 import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 import org.w3c.dom.Document;
+
+import de.metas.logging.LogManager;
 
 public class IMPProcessorBL implements IIMPProcessorBL
 {
@@ -128,7 +129,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
 		final I_AD_Attachment attachment = attachmentBL.getAttachment(pLog);
 
-		final byte[] data = attachmentBL.getEntryAsBytes(attachment, XMLATTACHMENT_NAME);
+		final byte[] data = attachmentBL.getEntryByFilenameAsBytes(attachment, XMLATTACHMENT_NAME);
 		if (data == null || data.length == 0)
 		{
 			return null;

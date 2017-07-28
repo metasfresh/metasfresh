@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.adempiere.impexp.ArrayExcelExporter;
+import org.adempiere.service.IAttachmentBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
@@ -34,7 +35,6 @@ import org.compiere.model.MAlert;
 import org.compiere.model.MAlertProcessor;
 import org.compiere.model.MAlertProcessorLog;
 import org.compiere.model.MAlertRule;
-import org.compiere.model.MAttachment;
 import org.compiere.model.MClient;
 import org.compiere.model.MNote;
 import org.compiere.model.MSysConfig;
@@ -274,19 +274,17 @@ public class AlertProcessor extends AdempiereServer
 				Trx trx = null;
 				try {
 					trx = Trx.get(Trx.createTrxName("AP_NU"), true);
+					
 					// Notice
 					int AD_Message_ID = 52244;  /* TODO - Hardcoded message=notes */
 					MNote note = new MNote(getCtx(), AD_Message_ID, user_id, trx.getTrxName());
 					note.setClientOrg(m_model.getAD_Client_ID(), m_model.getAD_Org_ID());
 					note.setTextMsg(message);
 					note.saveEx();
+					
 					// Attachment
-					MAttachment attachment = new MAttachment (getCtx(), MNote.Table_ID, note.getAD_Note_ID(), trx.getTrxName());
-					for (File f : attachments) {
-						attachment.addEntry(f);
-					}
-					attachment.setTextMsg(message);
-					attachment.saveEx();
+					Services.get(IAttachmentBL.class).addEntriesFromFiles(note, attachments);
+					
 					countMail++;
 					trx.commit();
 				} catch (Throwable e) {

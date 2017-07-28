@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.IAttachmentBL;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -40,7 +41,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_AD_Process;
@@ -49,7 +49,6 @@ import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_SchedulerLog;
 import org.compiere.model.I_AD_Scheduler_Para;
 import org.compiere.model.I_AD_Task;
-import org.compiere.model.MAttachment;
 import org.compiere.model.MNote;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTask;
@@ -395,11 +394,7 @@ public class Scheduler extends AdempiereServer
 			note.save();
 
 			// Attachment
-			final MAttachment attachment = new MAttachment(ctx, I_AD_Note.Table_ID, note.getAD_Note_ID(), ITrx.TRXNAME_ThreadInherited);
-			attachment.setClientOrg(pi.getAD_Client_ID(), pi.getAD_Org_ID());
-			attachment.addEntry(report);
-			attachment.setTextMsg(m_model.getName());
-			attachment.save();
+			Services.get(IAttachmentBL.class).addEntriesFromFiles(note, ImmutableList.of(report));
 		}
 		//
 		return result.getSummary();

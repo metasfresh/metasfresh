@@ -253,7 +253,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			{
 				final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
 				final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
-				attachmentBL.addEntries(requestAttachment, attachmentDataSources);
+				attachmentBL.addEntriesFromDataSources(requestAttachment, attachmentDataSources);
 			}
 		}
 		catch (final Exception ex)
@@ -280,9 +280,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		//
 		// Attach printed letter
-		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-		final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
-		attachmentBL.addEntry(requestAttachment, pdf);
+		if(pdf != null)
+		{
+			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
+			final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
+			attachmentBL.addEntry(requestAttachment, pdf);
+		}
 	}
 
 	private static void updateRequestDetails(final I_R_Request rq,

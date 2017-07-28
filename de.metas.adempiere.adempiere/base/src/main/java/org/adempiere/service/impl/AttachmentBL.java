@@ -23,6 +23,7 @@ package org.adempiere.service.impl;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -31,34 +32,46 @@ import javax.activation.DataSource;
 
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IAttachmentBL;
 import org.adempiere.service.IAttachmentDAO;
 import org.adempiere.util.Check;
-import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Attachment;
-import org.compiere.model.MAttachment;
-import org.compiere.model.MAttachmentEntry;
+import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 public class AttachmentBL implements IAttachmentBL
 {
 	@Override
+	@NonNull
 	public I_AD_Attachment getAttachment(final Object model)
 	{
 		Check.assumeNotNull(model, "Parameter model is not null");
+
+		if (InterfaceWrapperHelper.isInstanceOf(model, I_AD_Attachment.class))
+		{
+			return InterfaceWrapperHelper.create(model, I_AD_Attachment.class);
+		}
 
 		final Properties ctx;
 		final String trxName;
 		final int adTableId;
 		final int recordId;
 
-		if(model instanceof ITableRecordReference)
+		if (model instanceof ITableRecordReference)
 		{
 			final ITableRecordReference recordRef = (ITableRecordReference)model;
 			ctx = Env.getCtx();
@@ -70,7 +83,7 @@ public class AttachmentBL implements IAttachmentBL
 		{
 			ctx = InterfaceWrapperHelper.getCtx(model);
 			trxName = InterfaceWrapperHelper.getTrxName(model);
-	
+
 			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			recordId = InterfaceWrapperHelper.getId(model);
@@ -79,17 +92,10 @@ public class AttachmentBL implements IAttachmentBL
 		I_AD_Attachment attachment = Services.get(IAttachmentDAO.class).retrieveAttachment(ctx, adTableId, recordId, trxName);
 		if (attachment == null)
 		{
-			if (Adempiere.isUnitTestMode())
-			{
-				attachment = InterfaceWrapperHelper.newInstance(I_AD_Attachment.class, model);
-				attachment.setAD_Table_ID(adTableId);
-				attachment.setRecord_ID(recordId);
-			}
-			else
-			{
-				// FIXME: if we are not in test mode we need to use the old M class because attachment storage is handled there
-				attachment = new MAttachment(ctx, adTableId, recordId, trxName);
-			}
+			attachment = InterfaceWrapperHelper.newInstance(I_AD_Attachment.class, PlainContextAware.newWithTrxName(ctx, trxName));
+			attachment.setTitle("."); // fill with something because it's mandatory
+			attachment.setAD_Table_ID(adTableId);
+			attachment.setRecord_ID(recordId);
 
 			// Not saving here, we will save the attachment just when it's needed
 			// attachment.saveEx();
@@ -98,50 +104,83 @@ public class AttachmentBL implements IAttachmentBL
 		return attachment;
 	}
 
-	@Override
-	public List<MAttachmentEntry> getEntiresForModel(final Object model)
+	private int getAttachmentId(final Object model)
 	{
-		final MAttachment attachment = LegacyAdapters.convertToPO(getAttachment(model));
-		return attachment == null ? ImmutableList.of() : attachment.getEntriesAsList();
-	}
-
-	@Override
-	public MAttachmentEntry getEntryForModelById(final Object model, final int id)
-	{
-		final MAttachment attachment = LegacyAdapters.convertToPO(getAttachment(model));
-		return attachment == null ? null : attachment.getEntryById(id);
+		final I_AD_Attachment attachment = getAttachment(model);
+		return attachment.getAD_Attachment_ID();
 	}
 
 	@Override
 	public void deleteEntryForModel(final Object model, final int id)
 	{
-		final MAttachment attachment = LegacyAdapters.convertToPO(getAttachment(model));
+		final I_AD_Attachment attachment = getAttachment(model);
 		if (attachment == null)
 		{
 			return;
 		}
 
-		attachment.deleteEntryById(id);
-		InterfaceWrapperHelper.save(attachment);
+		deleteEntryById(attachment, id);
 	}
 
 	@Override
-	public void addEntry(final I_AD_Attachment attachment, final File file)
+	public void deleteEntryById(final Object model, final int attachmentEntryId)
 	{
-		if (file == null)
-		{
-			return;
-		}
+		final int attachmentId = getAttachmentId(model);
+		Services.get(IAttachmentDAO.class).deleteAttachmentEntryById(attachmentId, attachmentEntryId);
+	}
 
+	@Override
+	public AttachmentEntry addEntry(@NonNull final Object model, @NonNull final File file)
+	{
+		return addEntry(model, AttachmentEntryCreateRequest.fromFile(file));
+	}
+
+	private AttachmentEntry addEntry(@NonNull final Object model, @NonNull final AttachmentEntryCreateRequest request)
+	{
+		final String filename = request.getFilename();
+		final String contentType = request.getContentType();
+		final byte[] data = request.getData();
+
+		//
+		// Make sure the attachment is saved
+		final I_AD_Attachment attachment = getAttachment(model);
 		if (attachment.getAD_Attachment_ID() <= 0)
 		{
 			InterfaceWrapperHelper.save(attachment);
 		}
 
-		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
-		attachmentPO.addEntry(file);
+		//
+		// Create entry
+		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.newInstance(I_AD_AttachmentEntry.class);
+		entryRecord.setAD_Attachment_ID(attachment.getAD_Attachment_ID());
+		entryRecord.setAD_Table_ID(attachment.getAD_Table_ID());
+		entryRecord.setRecord_ID(attachment.getRecord_ID());
+		//
+		entryRecord.setFileName(filename);
+		entryRecord.setBinaryData(data);
+		entryRecord.setContentType(contentType);
+		InterfaceWrapperHelper.save(entryRecord);
 
-		InterfaceWrapperHelper.save(attachment);
+		//
+		final AttachmentEntry entry = Services.get(IAttachmentDAO.class).toAttachmentEntry(entryRecord);
+		return entry;
+	}
+
+	@Override
+	public List<AttachmentEntry> addEntriesFromFiles(@NonNull final Object model, @NonNull final Collection<File> files)
+	{
+		if (files.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final I_AD_Attachment attachment = getAttachment(model);
+
+		final List<AttachmentEntry> entries = files.stream()
+				.map(file -> addEntry(attachment, file))
+				.collect(ImmutableList.toImmutableList());
+
+		return entries;
 	}
 
 	@Override
@@ -162,68 +201,188 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public void addEntry(final I_AD_Attachment attachment, final String name, final byte[] data)
+	public AttachmentEntry addEntry(final Object model, final String name, final byte[] data)
 	{
-		if (data == null)
-		{
-			return;
-		}
-
-		if (attachment.getAD_Attachment_ID() <= 0)
-		{
-			InterfaceWrapperHelper.save(attachment);
-		}
-
-		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
-		attachmentPO.addEntry(name, data);
-
-		InterfaceWrapperHelper.save(attachment);
+		return addEntry(model, AttachmentEntryCreateRequest.builder()
+				.filename(name)
+				.contentType(MimeType.getMimeType(name))
+				.data(data)
+				.build());
 	}
 
 	@Override
-	public void addEntries(final I_AD_Attachment attachment, final Collection<DataSource> dataSources)
+	public List<AttachmentEntry> addEntriesFromDataSources(@NonNull final Object model, final Collection<DataSource> dataSources)
 	{
-		Check.assumeNotNull(attachment, "Parameter attachment is not null");
 		if (dataSources == null || dataSources.isEmpty())
 		{
+			return ImmutableList.of();
+		}
+		
+		final I_AD_Attachment attachment = getAttachment(model);
+
+		final List<AttachmentEntry> entries = dataSources.stream()
+				.map(dataSource -> AttachmentEntryCreateRequest.fromDataSource(dataSource))
+				.map(request -> addEntry(attachment, request))
+				.collect(ImmutableList.toImmutableList());
+
+		InterfaceWrapperHelper.save(attachment);
+
+		return entries;
+	}
+
+	@Override
+	public byte[] getEntryByFilenameAsBytes(final Object model, final String filename)
+	{
+		final AttachmentEntry entry = getEntryByFilename(model, filename);
+		return entry != null ? entry.getData() : null;
+	}
+
+	@Override
+	public byte[] getEntryByIdAsBytes(final Object model, final int id)
+	{
+		final AttachmentEntry entry = getEntryById(model, id);
+		if (entry == null)
+		{
+			return null;
+		}
+
+		return entry.getData();
+	}
+
+	@Override
+	public AttachmentEntry getEntryById(@NonNull final Object model, final int attachmentEntryId)
+	{
+		if (attachmentEntryId <= 0)
+		{
+			return null;
+		}
+
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return null;
+		}
+		return Services.get(IAttachmentDAO.class).retrieveAttachmentEntryById(attachmentId, attachmentEntryId);
+	}
+
+	@Override
+	public AttachmentEntry getEntryByFilename(final Object model, final String filename)
+	{
+		final int attachmentId = getAttachmentId(model);
+		if(attachmentId <= 0)
+		{
+			return null;
+		}
+		return Services.get(IAttachmentDAO.class).retrieveAttachmentEntryByFilename(attachmentId, filename);
+	}
+
+	@Override
+	public byte[] getFirstEntryAsBytesOrNull(final Object model)
+	{
+		final int attachmentId = getAttachmentId(model);
+		if(attachmentId <= 0)
+		{
+			return null;
+		}
+		return Services.get(IAttachmentDAO.class).retrieveFirstAttachmentEntryAsBytes(attachmentId);
+	}
+
+	@Override
+	public AttachmentEntry getFirstEntry(final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return null;
+		}
+
+		return Services.get(IAttachmentDAO.class).retrieveFirstAttachmentEntry(attachmentId);
+	}
+
+	@Override
+	public List<AttachmentEntry> getEntries(@NonNull final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		return Services.get(IAttachmentDAO.class).retrieveAttachmentEntries(attachment);
+	}
+
+	@Override
+	public boolean hasEntries(@NonNull final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
+			return false;
+		}
+
+		return Services.get(IAttachmentDAO.class).hasAttachmentEntries(attachmentId);
+	}
+
+	@Override
+	public void deleteAttachment(@NonNull final Object model)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		final int attachmentId = attachment.getAD_Attachment_ID();
+		if (attachmentId <= 0)
+		{
 			return;
 		}
 
-		if (attachment.getAD_Attachment_ID() <= 0)
-		{
-			InterfaceWrapperHelper.save(attachment);
-		}
+		// TODO: delete entries first
+		InterfaceWrapperHelper.delete(attachment);
+	}
 
-		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
-		dataSources.forEach(attachmentPO::addEntry);
+	@Override
+	public void setAttachmentText(@NonNull final Object model, final String textMsg)
+	{
+		final I_AD_Attachment attachment = getAttachment(model);
+		attachment.setTextMsg(textMsg);
 		InterfaceWrapperHelper.save(attachment);
 	}
 
-	@Override
-	public byte[] getEntryAsBytes(final I_AD_Attachment attachment, final String name)
+	@Value
+	@Builder
+	private static final class AttachmentEntryCreateRequest
 	{
-		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
-		for (final MAttachmentEntry entry : attachmentPO.getEntries())
+		public static AttachmentEntryCreateRequest fromDataSource(final DataSource dataSource)
 		{
-			if (name.equals(entry.getName()))
+			final String filename = dataSource.getName();
+			final String contentType = dataSource.getContentType();
+			final byte[] data;
+			try
 			{
-				return entry.getData();
+				data = Util.readBytes(dataSource.getInputStream());
 			}
+			catch (final IOException e)
+			{
+				throw new AdempiereException("Failed reading data from " + dataSource);
+			}
+
+			return builder()
+					.filename(filename)
+					.contentType(contentType)
+					.data(data)
+					.build();
 		}
 
-		return null;
-	}
-
-	@Override
-	public byte[] getFirstEntryAsBytesOrNull(final I_AD_Attachment attachment)
-	{
-		final MAttachment attachmentPO = InterfaceWrapperHelper.getPO(attachment);
-		for (final MAttachmentEntry entry : attachmentPO.getEntries())
+		public static AttachmentEntryCreateRequest fromFile(final File file)
 		{
+			final String filename = file.getName();
+			final String contentType = MimeType.getMimeType(filename);
+			final byte[] data = Util.readBytes(file);
 
-			return entry.getData();
+			return builder()
+					.filename(filename)
+					.contentType(contentType)
+					.data(data)
+					.build();
 		}
 
-		return null;
+		private final String filename;
+		private final String contentType;
+		private final byte[] data;
 	}
 }
