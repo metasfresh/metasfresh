@@ -46,10 +46,10 @@ prepare()
 
 	check_java_version
 	
-	check_file_exists ~/local_settings.properties
+	check_file_exists $LOCAL_SETTINGS_FILE
 	
 	trace prepare "checking  if the local settings file has the right permissions"	
-	local LOCAL_SETTINGS_PERMS=$(ls -l ~/local_settings.properties | cut -d " " -f 1)
+	local LOCAL_SETTINGS_PERMS=$(ls -l ${LOCAL_SETTINGS_FILE} | cut -d " " -f 1)
 	if [ "$LOCAL_SETTINGS_PERMS" != "-rw-------" ]; then
 		trace prepare "file ~/local_settings.properties has permissions '$LOCAL_SETTINGS_PERMS'. It should have '-rw-------'. Use 'chmod 0600 ~/local_settings.properties' to fix "
 	fi
