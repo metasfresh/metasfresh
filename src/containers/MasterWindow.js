@@ -52,7 +52,7 @@ class MasterWindow extends Component {
                 const {includedTabsInfo} = msg;
                 const {master} = this.props;
                 includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
-                    const tabLayout = master.layout.tabs.filter(tab =>
+                    const tabLayout = master.layout.tabs && master.layout.tabs.filter(tab =>
                         tab.tabId === tabId
                     )[0];
                     if(
