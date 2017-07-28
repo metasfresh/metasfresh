@@ -10,7 +10,8 @@ import {
     addRowData,
     sortTab,
     connectWS,
-    disconnectWS
+    disconnectWS,
+    fireUpdateData
 } from '../actions/WindowActions';
 
 import {
@@ -49,8 +50,16 @@ class MasterWindow extends Component {
 
         if(prevProps.master.websocket !== master.websocket && master.websocket){
             connectWS.call(this, master.websocket, msg => {
-                const {includedTabsInfo} = msg;
+                const {includedTabsInfo, stale} = msg;
                 const {master} = this.props;
+
+                if(stale){
+                    dispatch(
+                        fireUpdateData('window', params.windowType, params.docId, null, null, null, null )
+                    );
+                    
+                }
+
                 includedTabsInfo && Object.keys(includedTabsInfo).map(tabId => {
                     const tabLayout = master.layout.tabs && master.layout.tabs.filter(tab =>
                         tab.tabId === tabId
