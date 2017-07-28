@@ -17,7 +17,7 @@ set_properties()
  fi
  echo "set_properties END"
 }
-
+ 
 wait_dbms()
 {
  until nc -z $DB_HOST 5432
