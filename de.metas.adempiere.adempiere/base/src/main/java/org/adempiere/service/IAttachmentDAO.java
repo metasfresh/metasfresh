@@ -1,5 +1,7 @@
 package org.adempiere.service;
 
+import java.util.List;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -13,23 +15,42 @@ package org.adempiere.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Attachment;
+import org.compiere.model.I_AD_AttachmentEntry;
 
 public interface IAttachmentDAO extends ISingletonService
 {
 	I_AD_Attachment retrieveAttachment(Properties ctx, int adTableId, int recordId, String trxName);
+
+	List<AttachmentEntry> retrieveAttachmentEntries(I_AD_Attachment attachment);
+
+	AttachmentEntry retrieveAttachmentEntryById(int attachmentId, int attachmentEntryId);
+
+	AttachmentEntry retrieveAttachmentEntryByFilename(int attachmentId, String filename);
+
+	byte[] retrieveFirstAttachmentEntryAsBytes(int attachmentId);
+
+	AttachmentEntry retrieveFirstAttachmentEntry(int attachmentId);
+
+	AttachmentEntry toAttachmentEntry(I_AD_AttachmentEntry entryRecord);
+
+	void saveAttachmentEntry(I_AD_Attachment attachment, AttachmentEntry entry);
+
+	boolean deleteAttachmentEntryById(int attachmentId, int attachmentEntryId);
+
+	boolean hasAttachmentEntries(int attachmentId);
 
 }
