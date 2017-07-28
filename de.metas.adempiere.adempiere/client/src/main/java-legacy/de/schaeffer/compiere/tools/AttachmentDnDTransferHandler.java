@@ -28,20 +28,21 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.TransferHandler;
 
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.APanel;
 import org.compiere.model.DataStatusEvent;
 import org.compiere.model.GridTab;
-import org.compiere.model.MAttachment;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+import org.compiere.model.I_AD_Attachment;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.attachments.IAttachmentBL;
+import de.metas.logging.LogManager;
 
 public class AttachmentDnDTransferHandler extends TransferHandler
 {
@@ -117,31 +118,22 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 				if (flavor.equals(DataFlavor.javaFileListFlavor))
 				{
 					@SuppressWarnings("unchecked")
-					java.util.List<File> l = (java.util.List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
+					java.util.List<File> files = (java.util.List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
 
-					final MAttachment att = getAttachment();
-					for (File f : l)
-					{
-						att.addEntry(f);
-						log.debug("file added: " + f.getAbsolutePath());
-					}
-					att.setTitle(att.getTitle() + " "); // otherwise it is not saved (nothing changed message..)
-					if (!att.save())
-					{
-						log.error("Can't save attachment");
-					}
+					final I_AD_Attachment attachment = getAttachment();
+					Services.get(IAttachmentBL.class).addEntriesFromFiles(attachment, files);
 				}
 				else if (flavor.getMimeType().startsWith("text"))
 				{
-					Object data = t.getTransferData(DataFlavor.stringFlavor);
+					final Object data = t.getTransferData(DataFlavor.stringFlavor);
 					if (data == null)
 						continue;
 					final String text = data.toString();
 					final DateFormat df = DisplayType.getDateFormat(DisplayType.DateTime);
 					final String name = "Text " + df.format(new Timestamp(System.currentTimeMillis()));
-					final MAttachment att = getAttachment();
-					att.addEntry(name, text.getBytes());
-					att.saveEx();
+					
+					final I_AD_Attachment attachment = getAttachment();
+					Services.get(IAttachmentBL.class).addEntry(attachment, name, text.getBytes());
 				}
 			}
 			catch (Exception ex)
@@ -163,14 +155,8 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 		return true;
 	}
 
-	private MAttachment getAttachment()
+	private I_AD_Attachment getAttachment()
 	{
-		MAttachment att = MAttachment.get(Env.getCtx(), getTableId(), getRecordId());
-		if (att == null)
-		{
-			log.debug("new attachment created");
-			att = new MAttachment(Env.getCtx(), getTableId(), getRecordId(), null);
-		}
-		return att;
+		return Services.get(IAttachmentBL.class).getAttachment(TableRecordReference.of(getTableId(), getRecordId()));
 	}
 }

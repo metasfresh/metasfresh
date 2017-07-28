@@ -4295,7 +4295,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 			if (partiallyLoaded || forceLoadIfNotExists)
 			{
-				final String sql = "SELECT AD_Attachment_ID FROM AD_Attachment WHERE AD_Table_ID=? AND Record_ID=?";
+				final String sql = "SELECT AD_Attachment_ID FROM " + I_AD_Attachment.Table_Name + " WHERE AD_Table_ID=? AND Record_ID=?";
 				int attachmentId = DB.getSQLValue(ITrx.TRXNAME_None, sql, adTableId, recordId);
 				if (attachmentId <= 0)
 				{
@@ -4329,7 +4329,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 			final Map<Integer, Integer> recordId2attachementId = new HashMap<>(BUFFER_SIZE);
 			boolean partiallyLoaded = false;
 
-			final String sql = "SELECT AD_Attachment_ID, Record_ID FROM AD_Attachment WHERE AD_Table_ID=? LIMIT ?";
+			final String sql = "SELECT AD_Attachment_ID, Record_ID FROM " + I_AD_Attachment.Table_Name + " WHERE AD_Table_ID=? LIMIT ?";
 			int rowsLoaded = 0;
 			PreparedStatement pstmt = null;
 			ResultSet rs = null;

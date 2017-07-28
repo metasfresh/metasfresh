@@ -25,12 +25,18 @@ import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
-import org.compiere.model.MAttachment;
+
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MImage;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.PrintDataElement;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
 
 /**
  *	Image Element
@@ -48,7 +54,7 @@ public class ImageElement extends PrintElement
 	public static ImageElement get (String imageURLString)
 	{
 		Object key = imageURLString;
-		ImageElement image = (ImageElement)s_cache.get(key);
+		ImageElement image = s_cache.get(key);
 		if (image == null)
 		{
 			image = new ImageElement(imageURLString);
@@ -65,7 +71,7 @@ public class ImageElement extends PrintElement
 	public static ImageElement get (URL imageURL)
 	{
 		Object key = imageURL;
-		ImageElement image = (ImageElement)s_cache.get(key);
+		ImageElement image = s_cache.get(key);
 		if (image == null)
 		{
 			image = new ImageElement(imageURL);
@@ -82,7 +88,7 @@ public class ImageElement extends PrintElement
 	public static ImageElement get (int AD_PrintFormatItem_ID)
 	{
 		Object key = new Integer(AD_PrintFormatItem_ID);
-		ImageElement image = (ImageElement)s_cache.get(key);
+		ImageElement image = s_cache.get(key);
 		if (image == null)
 		{
 			image = new ImageElement(AD_PrintFormatItem_ID);
@@ -99,8 +105,8 @@ public class ImageElement extends PrintElement
 	 */
 	public static ImageElement get(PrintDataElement data, String imageURLString)
 	{
-		Object key = (BigDecimal) data.getValue();
-		ImageElement image = (ImageElement)s_cache.get(key);
+		Object key = data.getValue();
+		ImageElement image = s_cache.get(key);
 		if (image == null)
 		{
 			BigDecimal imkeybd = (BigDecimal) data.getValue();
@@ -255,27 +261,19 @@ public class ImageElement extends PrintElement
 	 */
 	private void loadAttachment(int AD_PrintFormatItem_ID)
 	{
-		MAttachment attachment = MAttachment.get(Env.getCtx(), 
-			MPrintFormatItem.Table_ID, AD_PrintFormatItem_ID);
-		if (attachment == null)
+		final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).getFirstEntry(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
+		if (attachmentEntry == null)
 		{
-			log.warn("No Attachment - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
+			log.warn("No Attachment entry - AD_PrintFormatItem_ID={}", AD_PrintFormatItem_ID);
 			return;
 		}
-		if (attachment.getEntryCount() != 1)
-		{
-			log.warn("Need just 1 Attachment Entry = " + attachment.getEntryCount());
-			return;
-		}
-		byte[] imageData = attachment.getEntryData(0);
+		final byte[] imageData = attachmentEntry.getData();
 		if (imageData != null)
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 		if (m_image != null)
-			log.debug(attachment.getEntryName(0) 
-				+ " - Size=" + imageData.length);
+			log.debug(attachmentEntry.getFilename() + " - Size=" + imageData.length);
 		else
-			log.warn(attachment.getEntryName(0)
-				+ " - not loaded (must be gif or jpg) - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
+			log.warn(attachmentEntry.getFilename() + " - not loaded (must be gif or jpg) - AD_PrintFormatItem_ID=" + AD_PrintFormatItem_ID);
 	}	//	loadAttachment
 
 	/**************************************************************************
@@ -283,6 +281,7 @@ public class ImageElement extends PrintElement
 	 * 	Set p_width & p_height
 	 * 	@return true if calculated
 	 */
+	@Override
 	protected boolean calculateSize()
 	{
 		p_width = 0;
@@ -357,6 +356,7 @@ public class ImageElement extends PrintElement
 	 *  @param ctx print context
 	 *  @param isView true if online view (IDs are links)
 	 */
+	@Override
 	public void paint(Graphics2D g2D, int pageNo, Point2D pageStart, Properties ctx, boolean isView)
 	{
 		if (m_image == null)

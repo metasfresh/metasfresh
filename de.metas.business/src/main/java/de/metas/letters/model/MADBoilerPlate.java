@@ -53,7 +53,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
@@ -91,6 +90,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
+import de.metas.attachments.IAttachmentBL;
 import de.metas.email.EMail;
 import de.metas.email.EMailAttachment;
 import de.metas.email.EMailSentStatus;
@@ -253,7 +253,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 			{
 				final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
 				final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
-				attachmentBL.addEntries(requestAttachment, attachmentDataSources);
+				attachmentBL.addEntriesFromDataSources(requestAttachment, attachmentDataSources);
 			}
 		}
 		catch (final Exception ex)
@@ -280,9 +280,12 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 
 		//
 		// Attach printed letter
-		final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
-		final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
-		attachmentBL.addEntry(requestAttachment, pdf);
+		if(pdf != null)
+		{
+			final IAttachmentBL attachmentBL = Services.get(IAttachmentBL.class);
+			final I_AD_Attachment requestAttachment = attachmentBL.getAttachment(request);
+			attachmentBL.addEntry(requestAttachment, pdf);
+		}
 	}
 
 	private static void updateRequestDetails(final I_R_Request rq,
