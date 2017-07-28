@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -67,7 +68,7 @@ public final class MenuNode
 	private final String caption;
 	private final String captionBreadcrumb;
 	private final MenuNodeType type;
-	private final String elementId;
+	private final DocumentId elementId;
 	private final String mainTableName;
 
 	private final List<MenuNode> children;
@@ -214,7 +215,7 @@ public final class MenuNode
 		return type;
 	}
 
-	public String getElementId()
+	public DocumentId getElementId()
 	{
 		return elementId;
 	}
@@ -329,7 +330,7 @@ public final class MenuNode
 		private String caption;
 		private String captionBreadcrumb;
 		private MenuNodeType type;
-		private String elementId;
+		private DocumentId elementId;
 		private String mainTableName;
 		private final List<MenuNode> childrenFirst = new ArrayList<>();
 		private final List<MenuNode> childrenRest = new ArrayList<>();
@@ -386,10 +387,17 @@ public final class MenuNode
 			return this;
 		}
 
-		public Builder setType(final MenuNodeType type, final String elementId)
+		public Builder setType(final MenuNodeType type, final DocumentId elementId)
 		{
 			this.type = type;
 			this.elementId = elementId;
+			return this;
+		}
+
+		public Builder setTypeGroup()
+		{
+			final DocumentId elementId = null;
+			setType(MenuNodeType.Group, elementId);
 			return this;
 		}
 

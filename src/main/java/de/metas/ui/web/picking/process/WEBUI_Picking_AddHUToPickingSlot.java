@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IProcessPrecondition;
@@ -41,13 +43,11 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
-@Deprecated
 public class WEBUI_Picking_AddHUToPickingSlot extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
-	
+
 	@Param(parameterName = "M_HU_ID", mandatory = true)
 	private int p_M_HU_ID;
 
@@ -59,6 +59,12 @@ public class WEBUI_Picking_AddHUToPickingSlot extends ViewBasedProcessTemplate i
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isPickingSlotRow())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -68,7 +74,7 @@ public class WEBUI_Picking_AddHUToPickingSlot extends ViewBasedProcessTemplate i
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
 		final int shipmentScheduleId = getView().getShipmentScheduleId();
-		
+
 		pickingCandidateCommand.addHUToPickingSlot(p_M_HU_ID, pickingSlotId, shipmentScheduleId);
 
 		invalidateView();

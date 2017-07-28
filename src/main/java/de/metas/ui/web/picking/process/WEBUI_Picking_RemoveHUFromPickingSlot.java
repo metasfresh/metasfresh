@@ -1,9 +1,9 @@
 package de.metas.ui.web.picking.process;
 
-import org.adempiere.util.Services;
+import static de.metas.ui.web.picking.process.AD_Message_Values.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingCandidateCommand;
@@ -58,10 +58,14 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isHURow())
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText("WEBUI_Picking_SelectHU"));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}
 
+		if(pickingSlotRow.isProcessed())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
+		}
+		
 		return ProcessPreconditionsResolution.accept();
 	}
 

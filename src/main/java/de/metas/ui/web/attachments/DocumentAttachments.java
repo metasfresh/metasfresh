@@ -17,6 +17,7 @@ import org.compiere.model.MAttachmentEntry;
 import org.compiere.util.Env;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -64,7 +65,9 @@ final class DocumentAttachments
 
 	public static final String ID_PREFIX_Attachment = "ATT";
 	public static final String ID_PREFIX_Archive = "ARR";
-	private static final Splitter ID_Splitter = Splitter.on("_");
+	private static final String ID_SEPARATOR = "_";
+	private static final Splitter ID_Splitter = Splitter.on(ID_SEPARATOR);
+	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
 
 	private final transient IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
 
@@ -179,7 +182,7 @@ final class DocumentAttachments
 
 	private static final DocumentId buildId(final String idPrefix, final int entryId)
 	{
-		return DocumentId.ofString(idPrefix + "_" + entryId);
+		return DocumentId.ofString(ID_Joiner.join(idPrefix, entryId));
 	}
 
 }

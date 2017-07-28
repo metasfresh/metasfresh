@@ -1,0 +1,11 @@
+
+# Thanks to https://help.github.com/articles/dealing-with-line-endings/#platform-all
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Shell files shall always have linux style line endings
+*.sh text eol=lf
+
+# Make sure the system knows that the license file is a text file..
+LICENSE.txt text

@@ -34,10 +34,12 @@ import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentReference;
@@ -249,6 +251,14 @@ public class WindowRestController
 		});
 	}
 
+	/**
+	 * 
+	 * @param windowIdStr
+	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created. 
+	 * @param advanced
+	 * @param events
+	 * @return
+	 */
 	@PatchMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> patchRootDocument(
 			@PathVariable("windowId") final String windowIdStr //
@@ -299,16 +309,19 @@ public class WindowRestController
 	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
-			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-			changesCollector.setPrimaryChange(document.getDocumentPath());
-			return null; // void
-		});
+		documentCollection.forDocumentWritable(
+				documentPath, 
+				changesCollector, 
+				document -> {
+					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					changesCollector.setPrimaryChange(document.getDocumentPath());
+					return null; // void
+				});
 
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
 
 		// Extract and send websocket events
-		JSONDocument.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
+		JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
 
 		return jsonDocumentEvents;
 	}

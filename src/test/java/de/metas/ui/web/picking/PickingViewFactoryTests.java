@@ -35,19 +35,19 @@ import mockit.Mocked;
 public class PickingViewFactoryTests
 {
 	@Mocked
-	private PickingViewRepository pickingViewRepo;
+	private PackageableViewRepository pickingViewRepo;
 	
 	@Mocked
 	private PickingCandidateCommand pickingCandidateCommand;
 	
 	/**
-	 * Verifies that {@link PickingViewFactory#createView(de.metas.ui.web.view.CreateViewRequest)} still works,<br>
+	 * Verifies that {@link PackageableViewFactory#createView(de.metas.ui.web.view.CreateViewRequest)} still works,<br>
 	 * because when adding certain stuff one might break the builder.
 	 */
 	@Test
 	public void testCreateView()
 	{
-		final PickingViewFactory pickingViewFactory = new PickingViewFactory(pickingViewRepo, pickingCandidateCommand);
+		final PackageableViewFactory pickingViewFactory = new PackageableViewFactory(pickingViewRepo, pickingCandidateCommand);
 		final IView view = pickingViewFactory.createView(CreateViewRequest.builder(PickingConstants.WINDOWID_PickingView, JSONViewDataType.grid).build());
 		assertThat(view, notNullValue());
 	}

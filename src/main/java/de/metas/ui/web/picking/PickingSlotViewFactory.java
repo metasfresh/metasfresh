@@ -5,17 +5,21 @@ import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Services;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
-import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Processed;
+import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
+import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickToExistingHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickToNewHU;
@@ -52,7 +56,14 @@ import lombok.NonNull;
  * #L%
  */
 
-@ViewFactory(windowId = PickingConstants.WINDOWID_PickingSlotView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
+/**
+ * Factory to create {@link PickingSlotView}s instances. This includes assigning a number of picking related processed to the view.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@ViewFactory(windowId = PickingConstants.WINDOWID_PickingSlotView_String, viewTypes =
+	{ JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PickingSlotViewFactory implements IViewFactory
 {
 	@Autowired
@@ -78,22 +89,49 @@ public class PickingSlotViewFactory implements IViewFactory
 	}
 
 	/**
-	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
+	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side).
 	 */
 	@Override
 	public PickingSlotView createView(@NonNull final CreateViewRequest request)
+	{
+		return createView(request, null);
+	}
+
+	/**
+	 * This method is called once for each shipment schedule (left-hand side) and creates the respective picking view (right-hand side)
+	 * 
+	 * @param request
+	 * @param allShipmentScheduleIds the shipment schedule IDs to display picking slots for; <br>
+	 *            may be {@code null} or empty, in this case we assume that only the given {@code request}'s {@code shipmentScheduleId} is available.
+	 * @return
+	 */
+	/* package */ PickingSlotView createView(
+			@NonNull final CreateViewRequest request,
+			@Nullable final List<Integer> allShipmentScheduleIds)
 	{
 		final ViewId pickingViewId = request.getParentViewId();
 		final DocumentId pickingRowId = request.getParentRowId();
 		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 
 		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
-		
-		final PickingSlotRepoQuery query = PickingSlotRepoQuery.of(shipmentScheduleId);
 
+		//
+		// setup the picking slot query and the rowsSupplier which uses the query to retrieve the PickingSlotView's rows.
+		final PickingSlotRepoQuery query;
+		if (allShipmentScheduleIds == null || allShipmentScheduleIds.isEmpty())
+		{
+			query = PickingSlotRepoQuery.of(shipmentScheduleId);
+		}
+		else
+		{
+			Check.errorUnless(allShipmentScheduleIds.contains(shipmentScheduleId),
+					"The given allShipmentScheduleIds has to include the given request's shipmentScheduleId; shipmentScheduleId={}; allShipmentScheduleIds={}; request={}",
+					shipmentScheduleId, allShipmentScheduleIds, request);
+
+			query = PickingSlotRepoQuery.of(allShipmentScheduleIds);
+		}
 		// notice for noobs such as me: this is executed each time the view is revalidated. and it's not executed when this createView method runs
-		final Supplier<List<PickingSlotRow>> rowsSupplier = 
-				() -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(query);
+		final Supplier<List<PickingSlotRow>> rowsSupplier = () -> pickingSlotRepo.retrieveRowsByShipmentScheduleId(query);
 
 		return PickingSlotView.builder()
 				.viewId(pickingSlotViewId)
@@ -119,7 +157,6 @@ public class PickingSlotViewFactory implements IViewFactory
 						.webuiQuickAction(true)
 						.build(),
 
-				// TODO: remove WEBUI_Picking_AddHUToPickingSlot when opening included view is fixed in frontend
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
 						.anyTable().anyWindow()
@@ -144,7 +181,13 @@ public class PickingSlotViewFactory implements IViewFactory
 						.build(),
 
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Processed.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Process.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Unprocess.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build());

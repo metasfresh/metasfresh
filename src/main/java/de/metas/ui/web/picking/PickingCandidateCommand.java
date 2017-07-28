@@ -13,7 +13,6 @@ import org.adempiere.util.Services;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -128,7 +127,7 @@ public class PickingCandidateCommand
 		}
 
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		I_M_Product product = shipmentSchedule.getM_Product();
+		final I_M_Product product = shipmentSchedule.getM_Product();
 
 		final I_M_Picking_Candidate candidate = getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
 
@@ -156,7 +155,9 @@ public class PickingCandidateCommand
 		// Request
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
-		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(Env.getCtx());
+		// create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing();
+
 		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
 				.setHUContext(huContext)
 				.setProduct(product)
@@ -254,15 +255,36 @@ public class PickingCandidateCommand
 		}
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
-				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR);
-
-		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_IP)
 				.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huIds)
-				.create()
-				.updateDirectly(updater);
+				.create();
+
+		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
+				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR);
+
+		return query.updateDirectly(updater);
+	}
+
+	public int setCandidatesInProgress(@NonNull final List<Integer> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return 0;
+		}
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huIds)
+				.create();
+
+		final ICompositeQueryUpdater<I_M_Picking_Candidate> updater = queryBL.createCompositeQueryUpdater(I_M_Picking_Candidate.class)
+				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_IP);
+
+		return query.updateDirectly(updater);
 	}
 
 	/**

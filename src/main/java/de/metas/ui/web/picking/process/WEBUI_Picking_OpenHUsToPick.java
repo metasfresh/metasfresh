@@ -43,6 +43,12 @@ import de.metas.ui.web.view.json.JSONViewDataType;
  * #L%
  */
 
+/**
+ * This process opens a HU editor window within the picking window
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 {
 	@Autowired
@@ -80,6 +86,7 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 				.setParentViewId(pickingSlotViewId)
 				.setParentRowId(pickingSlotRow.getId())
 				.addStickyFilters(HUIdsFilterHelper.createFilter(huIdsToAvailableToPickQuery))
+
 				.addAdditionalRelatedProcessDescriptor(RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
 						.webuiQuickAction(true)

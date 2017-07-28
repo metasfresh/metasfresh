@@ -21,12 +21,15 @@ package de.metas.ui.web.picking;
  * #L%
  */
 
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.picking.model.I_M_PickingSlot;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Used in the repo services, to specify which data we want to be retrieved.
@@ -43,8 +46,14 @@ public class PickingSlotRepoQuery
 		return builder().shipmentScheduleId(shipmentScheduleId).build();
 	}
 
+	public static PickingSlotRepoQuery of(final List<Integer> shipmentScheduleIds)
+	{
+		return builder().shipmentScheduleIds(shipmentScheduleIds).build();
+	}
+	
 	@NonNull
-	final Integer shipmentScheduleId;
+	@Singular
+	final ImmutableList<Integer> shipmentScheduleIds;
 
 	public enum PickingCandidate
 	{

@@ -5,12 +5,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.time.SystemTime;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -21,7 +19,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.websocket.WebSocketConfig;
-import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -230,43 +227,6 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonDocument;
 	}
 
-	public static final void extractAndSendWebsocketEvents(final Collection<JSONDocument> jsonDocumentEvents, final WebsocketSender websocketSender)
-	{
-		if (jsonDocumentEvents == null || jsonDocumentEvents.isEmpty())
-		{
-			return;
-		}
-
-		jsonDocumentEvents.stream()
-				.map(JSONDocument::extractWebsocketEvent)
-				.filter(wsEvent -> wsEvent != null)
-				.forEach(wsEvent -> websocketSender.convertAndSend(wsEvent.getWebsocketEndpointEffective(), wsEvent));
-	}
-
-	/** @return websocket event or null */
-	private static final JSONDocument extractWebsocketEvent(final JSONDocument event)
-	{
-		final WindowId windowId = event.getWindowId();
-		if (windowId == null)
-		{
-			return null;
-		}
-
-		final Set<JSONIncludedTabInfo> tabInfos = event.getIncludedTabsInfos()
-				.stream()
-				.filter(JSONIncludedTabInfo::isStale)
-				.collect(ImmutableSet.toImmutableSet());
-		if (tabInfos.isEmpty())
-		{
-			return null;
-		}
-
-		final JSONDocument wsEvent = new JSONDocument(windowId, event.getId(), event.getTabId(), event.getRowId());
-		wsEvent.setTimestamp();
-		tabInfos.forEach(wsEvent::addIncludedTabInfo);
-		return wsEvent;
-	}
-
 	@JsonProperty("validStatus")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private DocumentValidStatus validStatus;
@@ -334,11 +294,6 @@ public final class JSONDocument extends JSONDocumentBase
 		return saveStatus;
 	}
 
-	public void setTimestamp()
-	{
-		this.timestamp = JSONDate.toJson(SystemTime.millis());
-	}
-
 	public void addIncludedTabInfo(final JSONIncludedTabInfo tabInfo)
 	{
 		if (includedTabsInfo == null)
@@ -358,16 +313,16 @@ public final class JSONDocument extends JSONDocumentBase
 		return includedTabsInfo.values();
 	}
 
-	@JsonIgnore
-	public String getWebsocketEndpointEffective()
-	{
-		if (websocketEndpoint != null)
-		{
-			return websocketEndpoint;
-		}
-
-		return buildWebsocketEndpointOrNull(getWindowId(), getId());
-	}
+//	@JsonIgnore
+//	public String getWebsocketEndpointEffective()
+//	{
+//		if (websocketEndpoint != null)
+//		{
+//			return websocketEndpoint;
+//		}
+//
+//		return buildWebsocketEndpointOrNull(getWindowId(), getId());
+//	}
 
 	//
 	//

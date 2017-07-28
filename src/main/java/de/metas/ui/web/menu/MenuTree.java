@@ -22,6 +22,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.menu.exception.NoMenuNodesFoundException;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
@@ -89,7 +90,7 @@ public final class MenuTree
 		nodesByMainTableName = nodesByMainTableNameBuilder.build();
 	}
 
-	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final String elementId)
+	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final DocumentId elementId)
 	{
 		return Util.mkKey(type, elementId);
 	}
@@ -130,7 +131,7 @@ public final class MenuTree
 				.filter(node -> node.getAD_Menu_ID() == adMenuId);
 	}
 
-	private MenuNode getFirstNodeByElementIdOrNull(final MenuNodeType type, final String elementId)
+	private MenuNode getFirstNodeByElementIdOrNull(final MenuNodeType type, final DocumentId elementId)
 	{
 		final ArrayKey key = mkTypeAndElementIdKey(type, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
@@ -142,7 +143,7 @@ public final class MenuTree
 		return nodes.get(0);
 	}
 
-	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final String elementId)
+	public MenuNode getFirstNodeByElementId(final MenuNodeType type, final DocumentId elementId)
 	{
 		final MenuNode node = getFirstNodeByElementIdOrNull(type, elementId);
 		if (node == null)
@@ -154,7 +155,7 @@ public final class MenuTree
 
 	public Optional<MenuNode> getNewRecordNodeForWindowId(final WindowId windowId)
 	{
-		final String elementId = windowId.toJson();
+		final DocumentId elementId = windowId.toDocumentId();
 		final ArrayKey key = mkTypeAndElementIdKey(MenuNodeType.NewRecord, elementId);
 		final List<MenuNode> nodes = nodesByTypeAndElementId.get(key);
 		if (nodes == null || nodes.isEmpty())
@@ -180,7 +181,7 @@ public final class MenuTree
 		return getPath(node);
 	}
 
-	public List<MenuNode> getPath(final MenuNodeType type, final String elementId)
+	public List<MenuNode> getPath(final MenuNodeType type, final DocumentId elementId)
 	{
 		final MenuNode node = getFirstNodeByElementId(type, elementId);
 		return getPath(node);
@@ -188,7 +189,7 @@ public final class MenuTree
 
 	public MenuNode getTopLevelMenuGroupOrNull(final WindowId windowId)
 	{
-		final String elementId = windowId.toJson();
+		final DocumentId elementId = windowId.toDocumentId();
 		final MenuNode node = getFirstNodeByElementIdOrNull(MenuNodeType.Window, elementId);
 		if (node == null)
 		{

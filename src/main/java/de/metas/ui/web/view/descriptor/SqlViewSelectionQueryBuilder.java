@@ -135,6 +135,11 @@ public final class SqlViewSelectionQueryBuilder
 		return _sqlDocumentFieldConverters;
 	}
 
+	private SqlViewRowIdsConverter getRowIdsConverter()
+	{
+		return _viewBinding.getRowIdsConverter();
+	}
+
 	private Set<String> getGroupByFieldNames()
 	{
 		return _viewBinding.getGroupByFieldNames();
@@ -558,10 +563,15 @@ public final class SqlViewSelectionQueryBuilder
 		final String sqlTableName = getTableName();
 		final String sqlKeyColumnName = getKeyColumnName();
 		final String sqlKeyColumnNameFK = sqlTableName + "." + sqlKeyColumnName;
-		return buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds);
+		final SqlViewRowIdsConverter rowIdsConverter = getRowIdsConverter();
+		return buildSqlWhereClause(sqlKeyColumnNameFK, selectionId, rowIds, rowIdsConverter);
 	}
 
-	public static String buildSqlWhereClause(@NonNull final String sqlKeyColumnNameFK, @NonNull final String selectionId, final DocumentIdsSelection rowIds)
+	public static String buildSqlWhereClause(
+			@NonNull final String sqlKeyColumnNameFK,
+			@NonNull final String selectionId,
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final SqlViewRowIdsConverter rowIdsConverter)
 	{
 		if (rowIds.isEmpty())
 		{
@@ -579,8 +589,8 @@ public final class SqlViewSelectionQueryBuilder
 
 		if (!rowIds.isAll())
 		{
-			final Set<Integer> rowIdsAsInts = rowIds.toIntSet();
-			sqlWhereClause.append(" AND ").append(sqlKeyColumnNameFK).append(" IN ").append(DB.buildSqlList(rowIdsAsInts));
+			final Set<Integer> recordIds = rowIdsConverter.convertToRecordIds(rowIds);
+			sqlWhereClause.append(" AND ").append(sqlKeyColumnNameFK).append(" IN ").append(DB.buildSqlList(recordIds));
 		}
 
 		return sqlWhereClause.toString();

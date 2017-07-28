@@ -43,12 +43,18 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Factory class for {@link PackageableView} intances.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes =
 	{ JSONViewDataType.grid, JSONViewDataType.includedView })
-public class PickingViewFactory implements IViewFactory
+public class PackageableViewFactory implements IViewFactory
 {
-	private final PickingViewRepository pickingViewRepo;
-	
+	private final PackageableViewRepository pickingViewRepo;
+
 	private final PickingCandidateCommand pickingCandidateCommand;
 
 	/**
@@ -56,8 +62,8 @@ public class PickingViewFactory implements IViewFactory
 	 * @param pickingViewRepo
 	 * @param pickingCandidateCommand when a new view is created, this stateless instance is given to that view
 	 */
-	public PickingViewFactory(
-			@NonNull final PickingViewRepository pickingViewRepo,
+	public PackageableViewFactory(
+			@NonNull final PackageableViewRepository pickingViewRepo,
 			@NonNull final PickingCandidateCommand pickingCandidateCommand)
 	{
 		this.pickingViewRepo = pickingViewRepo;
@@ -82,7 +88,7 @@ public class PickingViewFactory implements IViewFactory
 				.setHasIncludedViewSupport(true)
 				.setHasIncludedViewOnSelectSupport(true)
 				//
-				.addElementsFromViewRowClass(PickingRow.class, viewDataType)
+				.addElementsFromViewRowClass(PackageableRow.class, viewDataType)
 				//
 				.build();
 	}
@@ -110,9 +116,9 @@ public class PickingViewFactory implements IViewFactory
 		final ViewId viewId = ViewId.random(PickingConstants.WINDOWID_PickingView);
 
 		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
-		final Supplier<List<PickingRow>> rowsSupplier = () -> pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
+		final Supplier<List<PackageableRow>> rowsSupplier = () -> pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
 
-		return PickingView.builder()
+		return PackageableView.builder()
 				.viewId(viewId)
 				.description(ITranslatableString.empty())
 				.rowsSupplier(rowsSupplier)

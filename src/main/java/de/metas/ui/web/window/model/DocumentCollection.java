@@ -1,8 +1,10 @@
 package de.metas.ui.web.window.model;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
@@ -27,6 +29,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.logging.LogManager;
@@ -34,12 +37,14 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedWebSocketEvent;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
@@ -84,7 +89,12 @@ public class DocumentCollection
 	@Autowired
 	private UserSession userSession;
 
+	@Autowired
+	private WebsocketSender websocketSender;
+
 	private final Cache<DocumentKey, Document> rootDocuments = CacheBuilder.newBuilder().build();
+
+	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>();
 
 	/* package */ DocumentCollection()
 	{
@@ -105,6 +115,24 @@ public class DocumentCollection
 	{
 		final DocumentDescriptor descriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
 		return descriptor.getEntityDescriptor();
+	}
+
+	private final void addToTableName2WindowIdsCache(final DocumentEntityDescriptor entityDescriptor)
+	{
+		final String tableName = entityDescriptor.getTableNameOrNull();
+		if (tableName == null)
+		{
+			return;
+		}
+
+		final Set<WindowId> windowIds = tableName2windowIds.computeIfAbsent(tableName, k -> Collections.newSetFromMap(new ConcurrentHashMap<>()));
+		windowIds.add(entityDescriptor.getWindowId());
+	}
+
+	private final Set<WindowId> getCachedWindowIdsForTableName(final String tableName)
+	{
+		final Set<WindowId> windowIds = tableName2windowIds.get(tableName);
+		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
 
 	public <R> R forDocumentReadonly(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector, final Function<Document, R> documentProcessor)
@@ -134,7 +162,11 @@ public class DocumentCollection
 	{
 		try
 		{
-			return rootDocuments.get(documentKey, () -> retrieveRootDocumentFromRepository(documentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+			return rootDocuments.get(documentKey, () -> {
+				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
+				addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
+				return rootDocument;
+			});
 		}
 		catch (final ExecutionException e)
 		{
@@ -318,6 +350,7 @@ public class DocumentCollection
 		// Add the saved and changed document back to index
 		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
 		rootDocuments.put(rootDocumentKey, rootDocument.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+		addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
 
 		//
 		// Make sure all events were collected for the case when we just created the new document
@@ -516,6 +549,35 @@ public class DocumentCollection
 				.build();
 	}
 
+	/**
+	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
+	 * 
+	 * @param tableName
+	 * @param recordId
+	 */
+	public void invalidateDocumentByRecordId(final String tableName, final int recordId)
+	{
+		//
+		// Create possible documentKeys for given tableName/recordId
+		final DocumentId documentId = DocumentId.of(recordId);
+		final Set<DocumentKey> documentKeys = getCachedWindowIdsForTableName(tableName)
+				.stream()
+				.map(windowId -> DocumentKey.of(windowId, documentId))
+				// .filter(documentKey -> rootDocuments.getIfPresent(documentKey) != null) // not needed
+				.collect(ImmutableSet.toImmutableSet());
+
+		//
+		// Invalidate the root documents
+		rootDocuments.invalidateAll(documentKeys);
+
+		//
+		// Notify frontend
+		documentKeys.forEach(documentKey -> {
+			final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
+			websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
+		});
+	}
+
 	@Immutable
 	@Value
 	@Builder
@@ -549,6 +611,11 @@ public class DocumentCollection
 				throw new InvalidDocumentPathException(documentPath, "document path for creating new documents is not allowed");
 			}
 			return new DocumentKey(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentPath.getDocumentId());
+		}
+
+		public static final DocumentKey of(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
+		{
+			return new DocumentKey(DocumentType.Window, windowId.toDocumentId(), documentId);
 		}
 
 		private final DocumentType documentType;

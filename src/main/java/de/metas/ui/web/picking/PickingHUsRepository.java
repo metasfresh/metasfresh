@@ -68,9 +68,10 @@ import lombok.NonNull;
 
 	/**
 	 * 
-	 * @param pickingSlotRowQuery determines which shipment schedule ID this is about, and also (optionally) if the returned rows shall have picking candidates with a certain status.
+	 * @param pickingSlotRowQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>
+	 * and also (optionally) if the returned rows shall have picking candidates with a certain status.
 	 * 
-	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows with the respective picking candidates' processed status values.
+	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows which also contain with the respective {@code M_Picking_Candidate}s' {@code processed} states.
 	 */
 	public ListMultimap<Integer, PickingSlotHUEditorRow> retrieveHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
 	{
@@ -80,7 +81,7 @@ import lombok.NonNull;
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingSlotRowQuery.getShipmentScheduleId());
+				.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID, pickingSlotRowQuery.getShipmentScheduleIds());
 
 		switch (pickingSlotRowQuery.getPickingCandidates())
 		{
@@ -106,8 +107,7 @@ import lombok.NonNull;
 						pc -> ImmutablePair.of(pc.getM_PickingSlot_ID(), isPickingCandidateProcessed(pc))) // value function
 		);
 
-		final List<HUEditorRow> huRows = huEditorRepo.retrieveHUEditorRows(
-				huId2pickingSlotId.keySet());
+		final List<HUEditorRow> huRows = huEditorRepo.retrieveHUEditorRows(huId2pickingSlotId.keySet());
 
 		final ListMultimap<Integer, PickingSlotHUEditorRow> result = huRows.stream()
 				.map(huRow -> GuavaCollectors.entry(

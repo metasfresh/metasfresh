@@ -60,35 +60,37 @@ import lombok.NonNull;
  */
 
 /**
- * Picking editor view
+ * Picking editor's view left-hand side view which lists one or more {@link PackageableRow} records to be picked.
+ * <p>
+ * Note that technically this view also contains the right-hand side {@link PickingSlotView}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PickingView implements IView
+public class PackageableView implements IView
 {
 	private final PickingCandidateCommand pickingCandidateCommand;
-	
-	public static PickingView cast(final IView view)
+
+	public static PackageableView cast(final IView view)
 	{
-		return (PickingView)view;
+		return (PackageableView)view;
 	}
 
 	private final ViewId viewId;
 	private final ITranslatableString description;
-	private final ExtendedMemorizingSupplier<Map<DocumentId, PickingRow>> rowsSupplier;
+	private final ExtendedMemorizingSupplier<Map<DocumentId, PackageableRow>> rowsSupplier;
 
 	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
 
 	@Builder
-	private PickingView(@NonNull final ViewId viewId,
+	private PackageableView(@NonNull final ViewId viewId,
 			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<PickingRow>> rowsSupplier,
+			@NonNull final Supplier<List<PackageableRow>> rowsSupplier,
 			@NonNull final PickingCandidateCommand pickingCandidateCommand)
 	{
 		this.viewId = viewId;
 		this.description = description != null ? description : ITranslatableString.empty();
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PickingRow::getId));
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PackageableRow::getId));
 		this.pickingCandidateCommand = pickingCandidateCommand;
 	}
 
@@ -127,14 +129,14 @@ public class PickingView implements IView
 	{
 		return null;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
 		return null;
 	}
 
-	private final Map<DocumentId, PickingRow> getRows()
+	private final Map<DocumentId, PackageableRow> getRows()
 	{
 		return rowsSupplier.get();
 	}
@@ -160,7 +162,7 @@ public class PickingView implements IView
 	public void invalidateAll()
 	{
 		rowsSupplier.forget();
-		
+
 		ViewChangesCollector.getCurrentOrAutoflush()
 				.collectFullyChanged(this);
 	}
@@ -180,7 +182,7 @@ public class PickingView implements IView
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<PickingRow> pageRows = getRows().values().stream()
+		final List<PackageableRow> pageRows = getRows().values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
@@ -189,9 +191,9 @@ public class PickingView implements IView
 	}
 
 	@Override
-	public PickingRow getById(final DocumentId rowId) throws EntityNotFoundException
+	public PackageableRow getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final PickingRow row = getRows().get(rowId);
+		final PackageableRow row = getRows().get(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
@@ -276,9 +278,16 @@ public class PickingView implements IView
 		return InterfaceWrapperHelper.createList(packables, modelClass);
 	}
 
+	/**
+	 * Also supports {@link DocumentIdsSelection#ALL}, because there won't be too many packageable lines at one time.
+	 */
 	@Override
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
+		if (rowIds.isAll())
+		{
+			return getRows().values().stream();
+		}
 		return rowIds.stream().map(this::getById);
 	}
 

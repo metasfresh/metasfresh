@@ -107,6 +107,7 @@ public class HUEditorViewFactory implements IViewFactory
 				.setDisplayFieldNames(displayFieldNames)
 				.setSqlWhereClause(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null" // top level
 						+ " AND " + I_M_HU.COLUMNNAME_IsActive + "=" + DB.TO_BOOLEAN(Boolean.TRUE)) // active
+				.setRowIdsConverter(HUSqlViewRowIdsConverter.instance)
 		;
 
 		//
@@ -133,7 +134,7 @@ public class HUEditorViewFactory implements IViewFactory
 					.addViewFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
 					.addViewFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
 		}
-
+		
 		//
 		return sqlViewBinding.build();
 	}

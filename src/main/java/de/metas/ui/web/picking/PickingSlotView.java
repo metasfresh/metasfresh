@@ -61,6 +61,14 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Picking editor's view right-hand side view which lists {@link PickingSlotRow}s.
+ * <p>
+ * Note that technically this is contained the left-hand side {@link PackageableView}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class PickingSlotView implements IView
 {
 	public static PickingSlotView cast(final IView pickingSlotView)
@@ -131,7 +139,7 @@ public class PickingSlotView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -283,6 +291,7 @@ public class PickingSlotView implements IView
 	}
 
 	/**
+	 * Convenience method.
 	 * 
 	 * @return never returns {@code null} (see constructor code).
 	 */

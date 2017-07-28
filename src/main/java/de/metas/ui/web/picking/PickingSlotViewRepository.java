@@ -26,6 +26,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.PickingHUsRepository.PickingSlotHUEditorRow;
 import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
@@ -58,6 +59,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Class to retrieve {@link PickingSlotRow}s that are displayed in the {@link PickingSlotView}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Component
 public class PickingSlotViewRepository
 {
@@ -130,8 +137,11 @@ public class PickingSlotViewRepository
 	// ..ad least for checkPreconditionsApplicable()
 	public List<PickingSlotRow> retrieveRowsByShipmentScheduleId(@NonNull final PickingSlotRepoQuery query)
 	{
-		// retrieve the M_PickingSlots that are available for the given shipmentSchedule's partner and location.
-		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(query.getShipmentScheduleId(), I_M_ShipmentSchedule.class);
+		Check.errorIf(query.getShipmentScheduleIds().isEmpty(), "Given query has no shipmentScheduleIds; query={}", query);
+
+		// retrieve the M_PickingSlots that are available for the given shipmentSchedules' partner and location.
+		// assume that all shipment schedules have the same partner and location (needs to be made sure) before starting all this stuff
+		final I_M_ShipmentSchedule shipmentSchedule = loadOutOfTrx(query.getShipmentScheduleIds().get(0), I_M_ShipmentSchedule.class);
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
@@ -147,7 +157,7 @@ public class PickingSlotViewRepository
 
 		// retrieve HURows (if any)
 		final ListMultimap<Integer, PickingSlotHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrieveHUsIndexedByPickingSlotId(query);
-		
+
 		final Predicate<? super I_M_PickingSlot> predicate = pickingSlotPO ->
 			{
 				if (query.getPickingCandidates() == PickingCandidate.DONT_CARE)

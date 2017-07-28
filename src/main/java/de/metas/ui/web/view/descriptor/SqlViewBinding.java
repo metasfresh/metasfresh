@@ -78,6 +78,8 @@ public class SqlViewBinding implements SqlEntityBinding
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 	private final SqlDocumentFilterConvertersList viewFilterConverters;
 
+	private final SqlViewRowIdsConverter rowIdsConverter;
+
 	private final SqlViewGroupingBinding groupingBinding;
 
 	private SqlViewBinding(final Builder builder)
@@ -150,6 +152,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 		viewFilterDescriptors = builder.getViewFilterDescriptors();
 		viewFilterConverters = builder.buildViewFilterConverters();
+		
+		rowIdsConverter = builder.getRowIdsConverter();
 	}
 
 	@Override
@@ -251,6 +255,11 @@ public class SqlViewBinding implements SqlEntityBinding
 	{
 		return viewFilterConverters;
 	}
+	
+	public SqlViewRowIdsConverter getRowIdsConverter()
+	{
+		return rowIdsConverter;
+	}
 
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
@@ -332,6 +341,9 @@ public class SqlViewBinding implements SqlEntityBinding
 		private List<DocumentQueryOrderBy> defaultOrderBys;
 		private DocumentFilterDescriptorsProvider viewFilterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private SqlDocumentFilterConvertersList.Builder viewFilterConverters = null;
+		
+		private SqlViewRowIdsConverter rowIdsConverter = DefaultSqlViewRowIdsConverter.instance;
+
 
 		private SqlViewGroupingBinding groupingBinding;
 
@@ -474,6 +486,17 @@ public class SqlViewBinding implements SqlEntityBinding
 				return SqlDocumentFilterConverters.emptyList();
 			}
 			return viewFilterConverters.build();
+		}
+		
+		public Builder setRowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)
+		{
+			this.rowIdsConverter = rowIdsConverter;
+			return this;
+		}
+		
+		private SqlViewRowIdsConverter getRowIdsConverter()
+		{
+			return rowIdsConverter;
 		}
 
 		public Builder setGroupingBinding(SqlViewGroupingBinding groupingBinding)

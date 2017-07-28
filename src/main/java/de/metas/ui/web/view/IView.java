@@ -20,6 +20,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -114,6 +115,16 @@ public interface IView
 	List<DocumentFilter> getFilters();
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
+	
+	default TableRecordReference getTableRecordReferenceOrNull(@NonNull final DocumentId rowId)
+	{
+		final int recordId = rowId.toIntOr(-1);
+		if(recordId < 0)
+		{
+			return null;
+		}
+		return TableRecordReference.of(getTableName(), recordId);
+	}
 
 	String getSqlWhereClause(DocumentIdsSelection rowIds);
 

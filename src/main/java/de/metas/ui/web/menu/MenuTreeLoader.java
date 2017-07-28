@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
 import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 
 /*
@@ -161,7 +162,7 @@ final class MenuTreeLoader
 		final String action = nodeModel.getImageIndiactor();
 		if (nodeModel.isSummary())
 		{
-			builder.setType(MenuNodeType.Group, null);
+			builder.setTypeGroup();
 		}
 		else if (depth == DEPTH_RootChildren)
 		{
@@ -170,22 +171,22 @@ final class MenuTreeLoader
 		}
 		else if (X_AD_Menu.ACTION_Window.equals(action))
 		{
-			final String elementId = String.valueOf(nodeModel.getAD_Window_ID());
+			final DocumentId elementId = DocumentId.of(nodeModel.getAD_Window_ID());
 			builder.setType(MenuNodeType.Window, elementId);
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
 		{
-			final String elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toJson();
+			final DocumentId elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toDocumentId();
 			builder.setType(MenuNodeType.Process, elementId);
 		}
 		else if (X_AD_Menu.ACTION_Report.equals(action))
 		{
-			final String elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toJson();
+			final DocumentId elementId = ProcessId.ofAD_Process_ID(nodeModel.getAD_Process_ID()).toDocumentId();
 			builder.setType(MenuNodeType.Report, elementId);
 		}
 		else if (X_AD_Menu.ACTION_Board.equals(action))
 		{
-			final String elementId = String.valueOf(nodeModel.getWEBUI_Board_ID());
+			final DocumentId elementId = DocumentId.of(nodeModel.getWEBUI_Board_ID());
 			builder.setType(MenuNodeType.Board, elementId);
 		}
 		else

@@ -37,6 +37,14 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Document changed event.
+ * 
+ * Event sent by frontend when the user wants to change some fields.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @ApiModel("document-change-event")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value

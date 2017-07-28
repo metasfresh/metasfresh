@@ -55,6 +55,12 @@ import lombok.ToString;
  * #L%
  */
 
+/**
+ * Rows shown in {@link PickingSlotView}. One row can represent a picking slot, a TU or a picked good (CU).
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @ToString
 public final class PickingSlotRow implements IViewRow
 {
@@ -65,8 +71,7 @@ public final class PickingSlotRow implements IViewRow
 
 	private final PickingSlotRowId id;
 	private final IViewRowType type;
-	
-	
+
 	private final DocumentPath documentPath;
 
 	//
@@ -83,31 +88,35 @@ public final class PickingSlotRow implements IViewRow
 
 	//
 	// HU
-	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
-	})
+	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts =
+		{
+				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
+		})
 	private final String huCode;
-	
-//	@ViewColumn(captionKey = "Processed", widgetType = DocumentFieldWidgetType.YesNo, layouts = {
-//			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
-//	})
+
+	// @ViewColumn(captionKey = "Processed", widgetType = DocumentFieldWidgetType.YesNo, layouts = {
+	// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
+	// })
 	// this is the "standard" processed flag which every IViewRow has-.
 	// TODO: decide whether to display it or not
 	private final boolean processed;
 
-	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
-	})
+	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts =
+		{
+				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
+		})
 	private final JSONLookupValue huProduct;
 
-	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
-	})
+	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts =
+		{
+				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+		})
 	private final String huPackingInfo;
 
-	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-	})
+	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts =
+		{
+				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+		})
 	private final BigDecimal huQtyCU;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
@@ -270,7 +279,7 @@ public final class PickingSlotRow implements IViewRow
 		{
 			return Optional.of(this);
 		}
-		
+
 		// Direct children
 		{
 			final PickingSlotRow row = includedHURows.get(id);
@@ -337,7 +346,7 @@ public final class PickingSlotRow implements IViewRow
 	{
 		return !isPickingSlotRow();
 	}
-	
+
 	public int getPickingSlotWarehouseId()
 	{
 		return pickingSlotWarehouse != null ? pickingSlotWarehouse.getIdAsInt() : -1;

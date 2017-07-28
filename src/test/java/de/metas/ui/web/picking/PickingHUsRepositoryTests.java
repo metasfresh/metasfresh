@@ -18,10 +18,10 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
 import de.metas.ui.web.picking.PickingHUsRepository.PickingSlotHUEditorRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -88,15 +88,14 @@ public class PickingHUsRepositoryTests
 	{
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID);
-		pickingCandidate.setM_HU_ID(223);
+		pickingCandidate.setM_HU_ID(M_HU_ID);
 		pickingCandidate.setM_PickingSlot_ID(M_PICKINGSLOT_ID);
 		pickingCandidate.setStatus(pickingCandidateStatus);
 		save(pickingCandidate);
 
 		final HUEditorRow huEditorRow = HUEditorRow
 				.builder(WindowId.of(423))
-				.setHUId(M_HU_ID)
-				.setRowId(DocumentId.of(523))
+				.setRowId(HUEditorRowId.ofTopLevelHU(M_HU_ID))
 				.setType(HUEditorRowType.LU)
 				.setTopLevel(true)
 				.build();

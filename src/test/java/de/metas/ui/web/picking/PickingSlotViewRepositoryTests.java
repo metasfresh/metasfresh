@@ -17,10 +17,10 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.PickingHUsRepository.PickingSlotHUEditorRow;
 import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 import mockit.Expectations;
@@ -130,14 +130,12 @@ public class PickingSlotViewRepositoryTests
 				new PickingSlotHUEditorRow(
 						HUEditorRow
 								.builder(WindowId.of(423))
-								.setHUId(100)
-								.setRowId(DocumentId.of(523))
+								.setRowId(HUEditorRowId.ofTopLevelHU(100))
 								.setType(HUEditorRowType.TU)
 								.setTopLevel(true)
 								.addIncludedRow(HUEditorRow
 										.builder(WindowId.of(423))
-										.setHUId(101)
-										.setRowId(DocumentId.of(523))
+										.setRowId(HUEditorRowId.ofHU(101, 100))
 										.setType(HUEditorRowType.VHU)
 										.setTopLevel(false)
 										.build())

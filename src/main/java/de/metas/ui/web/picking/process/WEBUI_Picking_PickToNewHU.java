@@ -1,5 +1,7 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
+
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
@@ -67,6 +69,8 @@ import lombok.NonNull;
 public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
+	
+
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
@@ -83,6 +87,12 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+		if (!pickingSlotRow.isPickingSlotRow())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -164,13 +174,20 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		final int pickingSlotWarehouseId = pickingSlotRow.getPickingSlotWarehouseId();
 		if (pickingSlotWarehouseId <= 0)
 		{
-			throw new AdempiereException("Picking slot has no warehouse configured");
+			throw new AdempiereException("Picking slot with M_PickingSlot_ID=" + pickingSlotRow.getPickingSlotId() + " has no warehouse configured");
 		}
 		final I_M_Warehouse pickingSlotWarehouse = InterfaceWrapperHelper.loadOutOfTrx(pickingSlotWarehouseId, I_M_Warehouse.class);
 		final I_M_Locator pickingSlotLocator = Services.get(IWarehouseBL.class).getDefaultLocator(pickingSlotWarehouse);
 		return pickingSlotLocator;
 	}
 
+	/**
+	 * Creates a new M_HU within the processe's interited trx.
+	 * 
+	 * @param itemProduct
+	 * @param locator
+	 * @return
+	 */
 	private static final I_M_HU createTU(@NonNull final I_M_HU_PI_Item_Product itemProduct, @NonNull final I_M_Locator locator)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
