@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.controller.WindowRestController;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -59,12 +60,20 @@ public class DocumentAttachmentsRestController
 	private UserSession userSession;
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptorFactory;
+	@Autowired
+	private WebsocketSender websocketSender;
 
 	private DocumentAttachments getDocumentAttachments(final String windowIdStr, final String documentId)
 	{
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), documentId);
 		final TableRecordReference recordRef = documentDescriptorFactory.getTableRecordReference(documentPath);
-		return DocumentAttachments.of(recordRef);
+
+		return DocumentAttachments.builder()
+				.documentPath(documentPath)
+				.recordRef(recordRef)
+				.entityDescriptor(documentDescriptorFactory.getDocumentEntityDescriptor(documentPath))
+				.websocketSender(websocketSender)
+				.build();
 	}
 
 	/**
