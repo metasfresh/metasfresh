@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
+  * [#2080](https://github.com/metasfresh/metasfresh/issues/2080) Window Design WebUI: Payment Allocation Translation en_US
+    * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
 
 * metasfresh-webui-api
 
