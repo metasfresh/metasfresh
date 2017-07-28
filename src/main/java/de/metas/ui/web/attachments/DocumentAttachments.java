@@ -6,13 +6,11 @@ import java.util.stream.Stream;
 
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
@@ -25,6 +23,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.websocket.WebsocketSender;
