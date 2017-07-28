@@ -1,4 +1,4 @@
-package org.adempiere.service;
+package de.metas.attachments;
 
 /*
  * #%L
@@ -30,7 +30,6 @@ import javax.activation.DataSource;
 
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Attachment;
 
 /**

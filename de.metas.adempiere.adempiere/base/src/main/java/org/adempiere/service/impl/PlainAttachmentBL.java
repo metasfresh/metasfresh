@@ -1,7 +1,5 @@
 package org.adempiere.service.impl;
 
-import org.compiere.model.AttachmentEntry;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -27,6 +25,8 @@ import org.compiere.model.AttachmentEntry;
 
 import org.slf4j.Logger;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.impl.AttachmentBL;
 import de.metas.logging.LogManager;
 
 public class PlainAttachmentBL extends AttachmentBL

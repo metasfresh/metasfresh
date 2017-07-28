@@ -31,10 +31,8 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
 import org.compiere.util.CCache;
@@ -42,6 +40,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 
 /**

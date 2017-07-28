@@ -1,4 +1,4 @@
-package org.adempiere.service.impl;
+package de.metas.attachments.impl;
 
 /*
  * #%L
@@ -35,12 +35,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.IAttachmentBL;
-import org.adempiere.service.IAttachmentDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.util.Env;
@@ -49,6 +46,9 @@ import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.IAttachmentDAO;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

@@ -30,7 +30,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -65,6 +64,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.adempiere.model.I_AD_User;
+import de.metas.attachments.IAttachmentBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.process.ProcessExecutionResult;

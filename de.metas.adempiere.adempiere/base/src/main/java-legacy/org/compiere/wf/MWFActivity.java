@@ -35,7 +35,6 @@ import org.adempiere.ad.security.permissions.DocumentApprovalConstraint;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.user.api.IUserBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
@@ -66,6 +65,7 @@ import org.compiere.util.Util;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.attachments.IAttachmentBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;

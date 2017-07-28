@@ -26,16 +26,17 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
-import org.adempiere.service.IAttachmentBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_PrintFormatItem;
 import org.compiere.model.MImage;
 import org.compiere.print.MPrintFormatItem;
 import org.compiere.print.PrintDataElement;
 import org.compiere.util.CCache;
 import org.compiere.util.Env;
+
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
 
 /**
  *	Image Element

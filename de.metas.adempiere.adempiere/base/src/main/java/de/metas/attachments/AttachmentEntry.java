@@ -1,4 +1,4 @@
-package org.compiere.model;
+package de.metas.attachments;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

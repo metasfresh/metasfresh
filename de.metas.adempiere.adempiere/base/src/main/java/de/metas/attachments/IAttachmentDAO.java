@@ -1,4 +1,4 @@
-package org.adempiere.service;
+package de.metas.attachments;
 
 import java.util.List;
 
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.AttachmentEntry;
 import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_AttachmentEntry;
 
