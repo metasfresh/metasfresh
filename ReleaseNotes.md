@@ -91,15 +91,21 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#506](https://github.com/metasfresh/metasfresh-webui-api/issues/506) view: accept included referencing documents when creating a new view
+    * Providing the REST-API for referenced Documents from Zoom-To in included Tabs
   * [#509](https://github.com/metasfresh/metasfresh-webui-api/issues/509) DocumentIdsSelection.stream() and other methods shall work with "ALL"
     * General clarification and a fix for the concrete problem
 
 * metasfresh-webui-frontend
   * [#999](https://github.com/metasfresh/metasfresh-webui-frontend/issues/999) grid view: use keyboard + and - to expand/collapse included rows
+    * New Feature allowing the usage of keyboard to expand/ collapse included rows in Grid Table.
   * [#1007](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1007) eMail Icon in Action Menu
+    * Adding the eMail icon to metasfresh WebUI Action Menu.
   * [#1029](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1029) keyboard shortcut and tooltip for button in filters
+    * New Keyboard Navigation for Apply Button in Filter selections.
   * [#1030](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1030) Directly display quick actions for the first row of a modal window
+    * Autoselection and Quickaction activation for first row of newly opened Window in GridView.
   * [#1038](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1038) Flickering effect in Picking Terminal
+    * Eliminating the Flickering Effect in the new Picking Terminal when navigating through the picking lines.
 
 
 ## Fixes
