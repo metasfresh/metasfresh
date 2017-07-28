@@ -258,10 +258,9 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
 
-							//docker.withTool('default') {
-        			//sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy docker:build -DpushImage"
 							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
+              // create and upload a docker image
 							sh "cp target/metasfresh-admin-${BUILD_VERSION}.jar src/main/docker/metasfresh-admin.jar" // copy the file so it can be handled by the docker build
 							docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 							{
@@ -274,7 +273,7 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 									app.push mkDockerTag('latest');
 								}
 							}
-            }
+            } // stage
 		}
 	}
 	// clean up the work space, including the local maven repositories that the withMaven steps created
