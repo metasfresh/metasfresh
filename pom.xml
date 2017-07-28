@@ -59,7 +59,6 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
@@ -123,6 +122,12 @@
 		<dependency>
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<!-- Required for elasticsearch -->
@@ -135,6 +140,12 @@
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
 			<version>${springfox-swagger.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.google.guava</groupId>
+					<artifactId>guava</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
@@ -216,7 +227,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -278,25 +288,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
-				<configuration>
-					<systemPropertyVariables>
-						<concordion.output.dir>${acceptance.reports.dir}</concordion.output.dir>
-					</systemPropertyVariables>
-					<includes>
-                        <!-- default inclusions, see http://maven.apache.org/surefire/maven-surefire-plugin/examples/inclusion-exclusion.html -->
-						<include>**/Test*.java</include>
-						<include>**/*Test.java</include>
-						<include>**/*TestCase.java</include>
-
-                        <!-- additional include, because we often use that pattern -->
-						<include>**/*Tests.java</include>
-					</includes>
-				</configuration>
 			</plugin>
 
 		</plugins>
