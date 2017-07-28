@@ -250,6 +250,14 @@ public class WindowRestController
 		});
 	}
 
+	/**
+	 * 
+	 * @param windowIdStr
+	 * @param documentIdStr the string to identify the document to be returned. May also be {@code NEW}, if a new record shall be created. 
+	 * @param advanced
+	 * @param events
+	 * @return
+	 */
 	@PatchMapping("/{windowId}/{documentId}")
 	public List<JSONDocument> patchRootDocument(
 			@PathVariable("windowId") final String windowIdStr //
@@ -300,11 +308,14 @@ public class WindowRestController
 	private List<JSONDocument> patchDocument0(final DocumentPath documentPath, final List<JSONDocumentChangedEvent> events, final JSONOptions jsonOpts)
 	{
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
-		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
-			document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
-			changesCollector.setPrimaryChange(document.getDocumentPath());
-			return null; // void
-		});
+		documentCollection.forDocumentWritable(
+				documentPath, 
+				changesCollector, 
+				document -> {
+					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					changesCollector.setPrimaryChange(document.getDocumentPath());
+					return null; // void
+				});
 
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
 
