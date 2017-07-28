@@ -83,6 +83,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 		_adFieldId2columnName = gridTabVO.getFields()
 				.stream()
 				.filter(gridFieldVO -> gridFieldVO.getAD_Field_ID() > 0)
+				.filter(gridFieldVO -> gridFieldVO.getDisplayType() != DocumentFieldWidgetType.BinaryData.getDisplayType()) // exclude BinaryData columns
 				.collect(Collectors.toMap(GridFieldVO::getAD_Field_ID, GridFieldVO::getColumnName));
 
 		defaultValueExpressionsFactory = new DefaultValueExpressionsFactory(gridTabVO.getTabLevel() > 0);
