@@ -1,7 +1,6 @@
 package de.metas.ui.web.attachments;
 
-import org.compiere.model.MAttachmentEntry;
-
+import de.metas.attachments.AttachmentEntry;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -34,15 +33,15 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 {
-	/* package */static DocumentAttachmentEntry of(final DocumentId id, final MAttachmentEntry entry)
+	/* package */static DocumentAttachmentEntry of(final DocumentId id, final AttachmentEntry entry)
 	{
 		return new DocumentAttachmentEntry(id, entry);
 	}
 
 	private DocumentId id;
-	private final MAttachmentEntry entry;
+	private final AttachmentEntry entry;
 
-	private DocumentAttachmentEntry(final DocumentId id, final MAttachmentEntry entry)
+	private DocumentAttachmentEntry(final DocumentId id, final AttachmentEntry entry)
 	{
 		this.id = id;
 		this.entry = entry;
