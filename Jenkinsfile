@@ -351,7 +351,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				final BUILD_DOCKER_REPOSITORY='metasfresh';
 				final BUILD_DOCKER_NAME='metasfresh-webapi-dev';
 				final BUILD_DOCKER_TAG=mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
-				final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_IMAGE}:${BUILD_DOCKER_TAG}";
+				final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}:${BUILD_DOCKER_TAG}";
 
 				// create and upload a docker image
 				sh "cp target/metasfresh-webui-api-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
@@ -359,7 +359,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				sh "cp -R src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
-					def app = docker.build "${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_IMAGE}", "${dockerWorkDir}";
+					def app = docker.build "${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}", "${dockerWorkDir}";
 					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 					app.push BUILD_DOCKER_TAG;
 					if(MF_UPSTREAM_BRANCH=='release')
