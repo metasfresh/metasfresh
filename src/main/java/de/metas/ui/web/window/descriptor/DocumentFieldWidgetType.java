@@ -63,7 +63,8 @@ public enum DocumentFieldWidgetType
 	// Special lookups
 	, Address(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.Location) //
 	, ProductAttributes(LayoutAlign.Left, IntegerLookupValue.class, DisplayType.PAttribute) //
-	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image)
+	, Image(LayoutAlign.Left, Integer.class, DisplayType.Image) //
+	, BinaryData(LayoutAlign.Left, byte[].class, DisplayType.Binary) // TODO: not supported, search for references and see
 
 	//
 	// Checkboxes
