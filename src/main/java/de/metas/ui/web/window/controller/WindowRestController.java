@@ -34,6 +34,7 @@ import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
 import de.metas.ui.web.process.json.JSONDocumentActionsList;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
@@ -253,7 +254,7 @@ public class WindowRestController
 	/**
 	 * 
 	 * @param windowIdStr
-	 * @param documentIdStr the string to identify the document to be returned. May also be {@code NEW}, if a new record shall be created. 
+	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created. 
 	 * @param advanced
 	 * @param events
 	 * @return
