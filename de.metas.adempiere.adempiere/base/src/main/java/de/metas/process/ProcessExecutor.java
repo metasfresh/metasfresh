@@ -93,8 +93,11 @@ public final class ProcessExecutor
 
 	private ProcessExecutor(final Builder builder)
 	{
-		super();
 		pi = builder.getProcessInfo();
+
+		// gh #2092 verify that we have an AD_Role_ID; otherwise, the assertPermissions() call we are going to do will fail
+		Check.errorIf(pi.getAD_Role_ID() < 0, "Process info has AD_Role_ID={}; builder={}", pi.getAD_Role_ID(), builder);
+
 		listener = builder.getListener();
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
@@ -202,6 +205,7 @@ public final class ProcessExecutor
 		logger.debug("running: {}", pi);
 
 		//
+		// set up the processExecutor that we will run further down
 		final TrxRunnableAdapter processExecutor = new TrxRunnableAdapter()
 		{
 			@Override
@@ -251,6 +255,8 @@ public final class ProcessExecutor
 			}
 		};
 
+		//
+		// now run the process executor
 		final Integer previousProcessId = s_currentProcess_ID.get();
 		final Integer previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
