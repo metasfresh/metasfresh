@@ -62,6 +62,8 @@ Here come the actual release notes:
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2083](https://github.com/metasfresh/metasfresh/issues/2083) Window Design WebUI: Customer Returns
   * [#2092](https://github.com/metasfresh/metasfresh/issues/2092) Scheduler - improve error handling if AD_Role_ID can't be found
+  * [#2096](https://github.com/metasfresh/metasfresh/issues/2096) Businesspartner B2C Location Editor missing
+    * Adjustments for the Businesspartner B2C Window, adding missing Fields and Layout.
 
 * metasfresh-webui-api
   * [#503](https://github.com/metasfresh/metasfresh-webui-api/issues/503) Picking prototype (v5)
