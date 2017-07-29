@@ -113,7 +113,7 @@ class QuickActions extends Component {
             loading: true
         });
 
-        let result = dispatch(
+        dispatch(
             openModal(
                 action.caption, action.processId, 'process', null, null, false,
                 viewId, selected
@@ -196,9 +196,7 @@ class QuickActions extends Component {
                             onClick={(e) => {
                                 e.preventDefault();
 
-                                if (!disabledDuringProcessing) {
-                                    this.handleClick(actions[0])
-                                }
+                                this.handleClick(actions[0])
                             }}
                             title={actions[0].caption}
                         >
@@ -214,9 +212,7 @@ class QuickActions extends Component {
                             onMouseLeave={() => this.toggleTooltip(false)}
                             onClick={
                                 () => {
-                                    if (!disabledDuringProcessing) {
-                                        this.toggleDropdown(!isDropdownOpen)
-                                    }
+                                    this.toggleDropdown(!isDropdownOpen)
                                 }
                             }
                         >

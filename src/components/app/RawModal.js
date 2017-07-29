@@ -5,7 +5,8 @@ import counterpart from 'counterpart';
 
 import Indicator from './Indicator';
 import {
-    closeRawModal
+    closeRawModal,
+    closeModal
 } from '../../actions/WindowActions';
 
 import {
@@ -80,6 +81,7 @@ class RawModal extends Component {
         const {dispatch, modalVisible} = this.props;
 
         dispatch(closeRawModal());
+        dispatch(closeModal());
 
         if (!modalVisible){
             document.body.style.overflow = 'auto';

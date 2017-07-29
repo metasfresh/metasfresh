@@ -524,6 +524,11 @@ class DocumentList extends Component {
             />
         }
 
+        let showQuickActions = true;
+        if (isModal && !inBackground && !selectionValid) {
+            showQuickActions = false;
+        }
+
         if(layout && data) {
             return (
                 <div
@@ -560,22 +565,25 @@ class DocumentList extends Component {
                                     clearFilters={this.clearStaticFilters}
                                 />}
                             </div>
-                            <QuickActions
-                                {...{
-                                    selectedWindowType,
-                                    refresh,
-                                    processStatus
-                                }}
-                                ref={ (c) => this.quickActionsComponent = (c && c.getWrappedInstance()) }
-                                selected={selected}
-                                viewId={viewId}
-                                windowType={windowType}
-                                fetchOnInit={fetchQuickActionsOnInit}
-                                disabled={hasIncluded}
-                                shouldNotUpdate={inBackground && !hasIncluded}
-                                inBackground={disablePaginationShortcuts}
-                                inModal={inModal}
-                            />
+
+                            {showQuickActions && (
+                                <QuickActions
+                                    {...{
+                                        selectedWindowType,
+                                        refresh,
+                                        processStatus
+                                    }}
+                                    ref={ (c) => this.quickActionsComponent = (c && c.getWrappedInstance()) }
+                                    selected={selected}
+                                    viewId={viewId}
+                                    windowType={windowType}
+                                    fetchOnInit={fetchQuickActionsOnInit}
+                                    disabled={hasIncluded}
+                                    shouldNotUpdate={inBackground && !hasIncluded}
+                                    inBackground={disablePaginationShortcuts}
+                                    inModal={inModal}
+                                />
+                            )}
                         </div>}
                         <div className="document-list-body">
                             <Table
