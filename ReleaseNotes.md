@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2086](https://github.com/metasfresh/metasfresh/issues/2086) Sales Order Advanced Edit Window in main View
     * Adopting the Sales Order Window to the current Window Concept for Documents in metasfresh WebUI
+  * [#2087](https://github.com/metasfresh/metasfresh/issues/2087) Purchase Order Advanced Edit Window in main View
+    * Adopting the Purchase Order Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2096](https://github.com/metasfresh/metasfresh/issues/2096) Businesspartner B2C Location Editor missing
     * Adjustments for the Businesspartner B2C Window, adding missing Fields and Layout.
 * metasfresh-webui-api
