@@ -25,7 +25,9 @@ class Subheader extends Component {
     componentDidMount() {
         document.getElementsByClassName('js-subheader-column')[0].focus();
 
-        elementPathRequest('window', this.props.windowType).then(response => {
+        const entity = (this.props.entity === 'board') ? 'board' : 'window';
+
+        elementPathRequest(entity, this.props.windowType).then(response => {
             this.setState({
                 elementPath: response.data
             });

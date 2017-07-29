@@ -7,6 +7,9 @@ import {push} from 'react-router-redux';
 import {
     getData, patchRequest, deleteRequest, getRequest
 } from '../actions/GenericActions';
+import {
+    getElementBreadcrumb
+} from '../actions/MenuActions';
 import {connectWS, disconnectWS} from '../actions/WindowActions';
 import {addCard} from '../actions/BoardActions';
 
@@ -188,6 +191,7 @@ class Board extends Component {
             <Container
                 entity="board"
                 siteName={board && board.caption}
+                windowType={board && board.boardId && String(board.boardId)}
                 {...{modal, rawModal, breadcrumb, indicator}}
             >
                 {sidenav && (
