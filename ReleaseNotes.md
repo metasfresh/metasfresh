@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2070](https://github.com/metasfresh/metasfresh/issues/2070) Window Design WebUI: Product
+    * Adopting the Product Window to the current Window Concept for Master Data in metasfresh WebUI
   * [#2080](https://github.com/metasfresh/metasfresh/issues/2080) Window Design WebUI: Payment Allocation Translation en_US
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
 * metasfresh-webui-api
