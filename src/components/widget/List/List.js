@@ -95,7 +95,7 @@ class List extends Component {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
             emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
-            blur, initialFocus, lastProperty, focusMainLookup
+            blur, initialFocus, lastProperty
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 
@@ -122,7 +122,6 @@ class List extends Component {
                 blur={blur}
                 initialFocus={initialFocus}
                 lastProperty={lastProperty}
-                focusMainLookup={focusMainLookup}
             />
         )
     }
