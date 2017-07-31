@@ -102,6 +102,29 @@ export function getWindowBreadcrumb(id){
     }
 }
 
+export function getElementBreadcrumb(entity, id){
+    return dispatch => {
+        if (!breadcrumbsRequested && (breadcrumbsId !== id)) {
+            breadcrumbsRequested = true;
+
+            elementPathRequest(entity, id).then(response => {
+                let pathData = flattenOneLine(response.data);
+                return pathData;
+            }).then((item) => {
+                dispatch(setBreadcrumb(item.reverse()));
+
+                breadcrumbsId = id;
+                breadcrumbsRequested = false;
+            }).catch(() => {
+                dispatch(setBreadcrumb([]));
+
+                breadcrumbsId = null;
+                breadcrumbsRequested = false;
+            });
+        }
+    }
+}
+
 //END OF THUNK ACTIONS
 
 // UTILITIES

@@ -30,6 +30,14 @@ class Actions extends Component {
             return;
         }
 
+        if (entity === 'board') {
+            this.setState({
+                data: []
+            });
+
+            return;
+        }
+
         actionsRequest(
             entity, windowType, docId, rowId
         ).then((response) => {

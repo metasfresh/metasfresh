@@ -23,6 +23,11 @@ class Breadcrumb extends Component {
         dispatch(push('/window/' + page));
     }
 
+    linkToEntityPage = (entity, page) => {
+        const {dispatch} = this.props;
+        dispatch(push(`/${entity}/${page}`));
+    }
+
     toggleTooltip = (tooltip) => {
         this.setState({
             tooltipOpen: tooltip
@@ -60,10 +65,17 @@ class Breadcrumb extends Component {
             handleMenuOverlay, windowType
         } = this.props;
 
-        const noChildNodes = menu && ((menu.type === 'window') || (menu.children && (menu.children.length === 0)));
+        const noChildNodes = menu && ((menu.type === 'window') || (menu.type === 'board') || (menu.children && (menu.children.length === 0)));
 
         if(menu && (menu.elementId || noChildNodes)) {
-            (windowType) && this.linkToPage(windowType);
+            if (windowType) {
+                if (menu.type === 'board') {
+                    this.linkToEntityPage(menu.type, windowType)
+                }
+                else {
+                    this.linkToPage(windowType);
+                }
+            }
         } else {
             handleMenuOverlay(e, menu.nodeId);
         }
