@@ -251,8 +251,9 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
         {
             stage('Set versions and build metasfresh-admin')
             {
-							// update the parent pom version
-							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} -DparentVersion=LATEST versions:update-parent"
+							// update the parent pom version. Since https://github.com/metasfresh/metasfresh/issues/2102 we have a parent version *range*, therefore, we don't use "update-parent" anymore, but "resolve-ranges"
+							//sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} -DparentVersion=LATEST versions:update-parent"
+							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} -DprocessParent=true versions:resolve-ranges"
 
               // set the artifact version of everything below the pom.xml
 							sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
