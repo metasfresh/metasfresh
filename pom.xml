@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0.0</version>
+		<version>[1,3.0.0]</version>
 	</parent>
 
 	<groupId>de.metas.admin</groupId>
