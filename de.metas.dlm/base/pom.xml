@@ -2,11 +2,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
+<parent>
+		<groupId>de.metas.dlm</groupId>
+		<artifactId>metasfresh-dlm</artifactId>
 		<version>3.0.0</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.dlm</groupId>
@@ -48,9 +48,9 @@
 			<version>1.0.0</version>
 		</dependency>
 		<!--
-		Those two are needed to visualize a partition-graph.
-		I played with a very rudimentory JFrame to show a graph, but it would need much more work in order to be any usefull for graphs of a non-trivial size.
-		Also see http://jgrapht.org/visualizations.html
+			Those two are needed to visualize a partition-graph.
+			I played with a very rudimentory JFrame to show a graph, but it would need much more work in order to be any usefull for graphs of a non-trivial size.
+			Also see http://jgrapht.org/visualizations.html
 		<dependency>
 			<groupId>org.jgrapht</groupId>
 			<artifactId>jgrapht-ext</artifactId>
