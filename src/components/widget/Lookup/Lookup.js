@@ -14,11 +14,9 @@ class Lookup extends Component {
     constructor(props) {
         super(props);
 
-        const {properties} = this.props;
-
         this.state = {
             isInputEmpty: true,
-            propertiesCopy: getItemsByProperty(properties, 'source', 'list'),
+            propertiesCopy: getItemsByProperty(this.props.properties, 'source', 'list'),
             property: '',
             fireClickOutside: false,
             initialFocus: false,
@@ -32,51 +30,47 @@ class Lookup extends Component {
         this.checkIfDefaultValue();
     }
 
-    handleClickOutside = () => {
-        this.setState({
-            fireClickOutside: true,
-            property: ''
-        }, () => {
-            this.setState({
-                fireClickOutside: false
-            })
-        })
-    }
-
-    handleInputEmptyStatus = (isEmpty) => {
-        this.setState({
-            isInputEmpty: isEmpty
-        })
-    }
-
-    setNextProperty = (prop)=> {
-        const {defaultValue, properties} = this.props;
-
-        defaultValue.map((item, index)=>{
-            const nextIndex = index+1;
-            if(nextIndex<defaultValue.length &&
-                defaultValue[index].field === prop){
-                this.setState({
-                    property: properties[nextIndex].field
-                })
-                return;
-            } else if(defaultValue[defaultValue.length-1].field === prop){
-                this.setState({
-                    property: ''
-                })
-            }
-        })
-    }
-
     checkIfDefaultValue = () => {
-        const {defaultValue} = this.props;
-        defaultValue.map(item => {
-            if(item.value){
-                this.setState({
-                    isInputEmpty: false
-                })
-            }
-        });
+        const { defaultValue } = this.props;
+
+        if (defaultValue) {
+            defaultValue.map( (item) => {
+                if (item.value) {
+                    this.setState({
+                        isInputEmpty: false
+                    });
+                }
+            });
+        }
+    }
+
+    setNextProperty = (prop) => {
+        const { defaultValue, properties } = this.props;
+
+        if (defaultValue) {
+            defaultValue.map( (item, index) => {
+                const nextIndex = index + 1;
+
+                if ((nextIndex < defaultValue.length) && (defaultValue[index].field === prop)) {
+                    let nextProp = properties[nextIndex];
+
+                    if (nextProp.source === 'list') {
+                        if (this.linkedList && this.linkedList.requestListData) {
+                            this.linkedList.requestListData(true);
+                        }
+                    } else {
+                        this.setState({
+                            property: nextProp.field
+                        });
+                    }
+                }
+                else if (defaultValue[defaultValue.length - 1].field === prop) {
+                    this.setState({
+                        property: ''
+                    });
+                }
+            });
+        }
     }
 
     openDropdownList = () => {
@@ -86,18 +80,39 @@ class Lookup extends Component {
             this.setState({
                 fireDropdownList: false
             })
-        })
+        });
     }
 
     resetLocalClearing = () => {
         this.setState({
             localClearing: false
-        })
+        });
+    }
+
+    handleClickOutside = () => {
+        this.setState({
+            fireClickOutside: true,
+            property: ''
+        }, () => {
+            this.setState({
+                fireClickOutside: false
+            });
+        });
+    }
+
+    handleInputEmptyStatus = (isEmpty) => {
+        this.setState({
+            isInputEmpty: isEmpty
+        });
     }
 
     handleClear = () => {
-        const {onChange, properties} = this.props;
-        onChange(properties, null, false);
+        const { onChange, properties } = this.props;
+
+        if (onChange) {
+            onChange(properties, null, false);
+        }
+
         this.setState({
             isInputEmpty: true,
             property: '',
@@ -135,121 +150,103 @@ class Lookup extends Component {
 
         return (
             <div
-                ref={(c) => this.dropdown = c}
+                ref={ (c) => this.dropdown = c }
                 className={
-                    'input-dropdown-container lookup-wrapper input-' +
-                    (rank ? rank : 'primary') +
-                    (updated ? ' pulse-on' : ' pulse-off') +
-                    (filterWidget ? ' input-full' : '') +
+                    'input-dropdown-container lookup-wrapper input-' + (rank ? rank : 'primary') +
+                    (updated ? ' pulse-on' : ' pulse-off') + (filterWidget ? ' input-full' : '') +
                     (mandatory && (isInputEmpty ||
                         (validStatus && validStatus.initialValue &&
                         !validStatus.valid)) ?
-                        ' input-mandatory ' : '') +
+                        ' input-mandatory' : '') +
                     ((validStatus &&
                         (
                             (!validStatus.valid && !validStatus.initialValue)
                         )
-                    ) ? ' input-error ' : '') +
-                    (readonly ? ' lookup-wrapper-disabled ' : ' ')
+                    ) ? ' input-error' : '') +
+                    (readonly ? ' lookup-wrapper-disabled' : '')
                 }
             >
 
-            {
-                properties && properties.map((item, index) => {
-                        const disabled = isInputEmpty && index != 0;
-                        if(item.source === 'lookup' ||
-                            item.widgetType === 'Lookup'){
-                            return <RawLookup
+                {properties && properties.map( (item, index) => {
+                    const disabled = isInputEmpty && (index !== 0);
+                    const itemByProperty = getItemsByProperty(defaultValue, 'field', item.field)[0];
+
+                    if ((item.source === 'lookup') || (item.widgetType === 'Lookup')) {
+                        return (
+                            <RawLookup
                                 key={index}
-                                defaultValue={
-                                    getItemsByProperty(defaultValue,
-                                            'field', item.field)[0].value
-                                }
+                                defaultValue={itemByProperty.value}
+                                initialFocus={(index === 0) ? initialFocus : false}
                                 mainProperty={[item]}
-                                handleInputEmptyStatus={
-                                    this.handleInputEmptyStatus
-                                }
                                 resetLocalClearing={this.resetLocalClearing}
-                                initialFocus={index===0 ? initialFocus : false}
                                 setNextProperty={this.setNextProperty}
                                 lookupEmpty={isInputEmpty}
                                 fireDropdownList={fireDropdownList}
+                                handleInputEmptyStatus={this.handleInputEmptyStatus}
                                 enableAutofocus={this.enableAutofocus}
-                                {...{placeholder, readonly, tabIndex,
-                                windowType, parameterName, entity, dataId,
-                                isModal, recent, rank, updated, filterWidget,
-                                mandatory, validStatus, align, onChange, item,
-                                disabled, fireClickOutside, viewId, subentity,
-                                subentityId, autoFocus, tabId, rowId,
-                                newRecordCaption, newRecordWindowId,
-                                localClearing}}
+                                {...{
+                                    placeholder, readonly, tabIndex,
+                                    windowType, parameterName, entity, dataId,
+                                    isModal, recent, rank, updated, filterWidget,
+                                    mandatory, validStatus, align, onChange, item,
+                                    disabled, fireClickOutside, viewId, subentity,
+                                    subentityId, autoFocus, tabId, rowId,
+                                    newRecordCaption, newRecordWindowId,
+                                    localClearing
+                                }}
                             />
+                        )
 
-                        } else if (item.source === 'list') {
+                    } else if (item.source === 'list') {
 
-                            const itemByProperty = getItemsByProperty(
-                                defaultValue, 'field', item.field
-                            )[0];
+                        const isFirstProperty = (index === 0);
+                        const isCurrentProperty = (item.field === property) && !autofocusDisabled;
 
-                            const objectValue = itemByProperty && itemByProperty.value;
-
-                            return <div
+                        return (
+                            <div
+                                key={index}
                                 className={
-                                    'raw-lookup-wrapper ' +
-                                    'raw-lookup-wrapper-bcg ' +
-                                    (disabled || readonly ? 'raw-lookup-disabled':'')
-                                    }
-                                key={index}>
-                                    <List
-                                        {...{dataId, entity, windowType,
-                                            filterWidget, tabId, rowId,
-                                            subentity, subentityId, viewId,
-                                            onChange, isInputEmpty, property
-                                        }}
-                                        properties={[item]}
-                                        lookupList={true}
-                                        autofocus={
-                                            item.field == property &&
-                                            !autofocusDisabled ?
-                                            true : false
-                                        }
-                                        defaultValue={
-                                            objectValue ?
-                                            objectValue : ''
-                                        }
-                                        initialFocus={
-                                            index===0 ? initialFocus : false
-                                        }
-                                        lastProperty={
-                                            properties[properties.length-1].field ===property ? true : false
-                                        }
-                                        setNextProperty={this.setNextProperty}
-                                        mainProperty={[item]}
-                                        blur={!property?true:false}
-                                        readonly={disabled || readonly}
-                                        disableAutofocus={this.disableAutofocus}
-                                        enableAutofocus={this.enableAutofocus}
-                                    />
-                                </div>
-                        }
-                })
-            }
-            {isInputEmpty ?
-                <div
-                    className="input-icon input-icon-lg raw-lookup-wrapper"
-                    onClick={this.openDropdownList}
-                >
-                    { !readonly &&
-                        <i className="meta-icon-preview" />
+                                    'raw-lookup-wrapper raw-lookup-wrapper-bcg ' +
+                                    (disabled || readonly ? 'raw-lookup-disabled' : '')
+                                }
+                            >
+                                <List
+                                    ref={ (c) => this.linkedList = (c && c.getWrappedInstance()) }
+                                    readonly={disabled || readonly}
+                                    lookupList={true}
+                                    autofocus={isCurrentProperty}
+                                    properties={[item]}
+                                    mainProperty={[item]}
+                                    defaultValue={itemByProperty.value ? itemByProperty.value : ''}
+                                    initialFocus={isFirstProperty ? initialFocus : false}
+                                    blur={!property ? true : false}
+                                    setNextProperty={this.setNextProperty}
+                                    disableAutofocus={this.disableAutofocus}
+                                    enableAutofocus={this.enableAutofocus}
+                                    {...{
+                                        dataId, entity, windowType,
+                                        filterWidget, tabId, rowId,
+                                        subentity, subentityId, viewId,
+                                        onChange, isInputEmpty, property
+                                    }}
+                                />
+                            </div>
+                        )
                     }
-                </div> :
-                <div className="input-icon input-icon-lg raw-lookup-wrapper">
-                    {!readonly && <i
-                        onClick={this.handleClear}
-                        className="meta-icon-close-alt"
-                    />}
-                </div>
-            }
+                })}
+
+                {!readonly && (isInputEmpty ? (
+                    <div
+                        className="input-icon input-icon-lg raw-lookup-wrapper"
+                        onClick={this.openDropdownList}
+                    >
+                        <i className="meta-icon-preview" />
+                    </div>
+                ) : (
+                    <div className="input-icon input-icon-lg raw-lookup-wrapper">
+                        <i className="meta-icon-close-alt" onClick={this.handleClear} />
+                    </div>
+                ))}
             </div>
         )
     }
