@@ -86,7 +86,6 @@ class Container extends Component {
                      {rawModal.visible &&
                          <RawModal
                              modalTitle={modalTitle}
-                             modalDescription={this.modalDescription}
                              modalDescription={modalDescription}
                              windowType={rawModal.type}
                              viewId={rawModal.viewId}
@@ -100,7 +99,7 @@ class Container extends Component {
                                      selectedWindowType={selectedWindowType}
                                      setModalTitle={setModalTitle}
                                      setModalDescription={setModalDescription}
-                                     fetchQuickActionsOnInit={true}
+                                     fetchQuickActionsOnInit={!(includedView.windowType && includedView.viewId)}
                                      modalDescription={this.modalDescription}
                                      isModal={true}
                                      processStatus={processStatus}
