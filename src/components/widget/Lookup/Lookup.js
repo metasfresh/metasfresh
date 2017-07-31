@@ -204,6 +204,7 @@ class Lookup extends Component {
                                         initialFocus={
                                             index===0 ? initialFocus : false
                                         }
+                                        lastProperty={properties[properties.length-1].field === property ? true : false}
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}
                                         blur={!property?true:false}

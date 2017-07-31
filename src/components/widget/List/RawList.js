@@ -23,13 +23,18 @@ class RawList extends Component {
     componentDidUpdate = (prevProps, prevState) => {
         const {
             list, mandatory, defaultValue, autofocus, blur, property,
-            initialFocus, selected, doNotOpenOnFocus
+            initialFocus, selected, doNotOpenOnFocus, lastProperty, loading,
+            focusMainLookup
         } = this.props;
 
         if(prevProps.blur != blur){
             blur && this.handleBlur();
         }
 
+        if(list.length > 0 && (prevProps.loading != loading) && loading === false && lastProperty){
+            // this.dropdown.focus();
+        }
+        
         if(this.dropdown && autofocus) {
             this.dropdown.focus();
             if (prevState.selected !== this.state.selected) {
