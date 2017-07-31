@@ -2,6 +2,7 @@ package de.metas.ui.web.picking;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -10,9 +11,11 @@ import java.util.stream.Stream;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -150,6 +153,15 @@ public class PackageableView implements IView
 	@Override
 	public void close()
 	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		
+		final Properties ctx = Env.getCtx();
+		final boolean closeCandidatesNow = sysConfigBL.getBooleanValue("WEBUI_Picking.Close_PickingCandidatesOnWindowClose", false, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		if (!closeCandidatesNow)
+		{
+			return; // nothing to do.
+		}
+
 		final List<Integer> shipmentScheduleIds = getRows()
 				.values().stream()
 				.map(row -> row.getShipmentScheduleId())

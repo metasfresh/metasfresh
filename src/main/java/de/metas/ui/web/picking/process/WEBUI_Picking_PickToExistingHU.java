@@ -1,7 +1,7 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_HU;
 
 import java.math.BigDecimal;
 import java.util.Objects;

@@ -1,7 +1,7 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_DIVERGING_LOCATIONS;
-import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_DIVERGING_LOCATIONS;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P;
 
 import java.util.List;
 import java.util.Set;

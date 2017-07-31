@@ -1,6 +1,6 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.process.AD_Message_Values.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
