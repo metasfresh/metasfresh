@@ -340,7 +340,9 @@ node('agent && linux')
 
 				// update the parent-pom version of our de.metas.parent/pom.xml to the latest from the metasfresh-parent project
 				// --non-recursive is not strictly needed, but it will spare us a lot of messages saying "building blah..Project's parent is part of the reactor"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
+				// update the parent pom version. Since https://github.com/metasfresh/metasfresh/issues/2102 we have a parent version *range*, therefore, we don't use "update-parent" anymore, but "resolve-ranges"
+				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} -DprocessParent=true versions:resolve-ranges"
 
 				// set the artifact version of everything below de.metas.parent/pom.xml
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
@@ -401,7 +403,9 @@ node('agent && linux')
 
 				// update the parent-pom version of our de.metas.esb/pom.xml to the latest from the metasfresh-parent project
 				// --non-recursive is not strictly needed, but it will spare us a lot of messages saying "building blah..Project's parent is part of the reactor"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
+				// update the parent pom version. Since https://github.com/metasfresh/metasfresh/issues/2102 we have a parent version *range*, therefore, we don't use "update-parent" anymore, but "resolve-ranges"
+				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
+				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS}  -DprocessParent=true versions:resolve-ranges"
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
 				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
