@@ -5,6 +5,7 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
 import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Misc
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -70,10 +71,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.*:*\" ${mvnConf.resolveParams} versions:set"
 
 							// do the actual building and deployment
-							// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
-
-							// junit '**/target/surefire-reports/*.xml' // in metasfresh-parent we don't have tests
+							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
             }
 		}
 	}
@@ -83,23 +81,31 @@ stage('Invoke downstream job')
 {
 	if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	{
-		def invokeAndWait = invokeDownStreamJobs.curry(
-			MF_UPSTREAM_BUILDNO,
-			MF_UPSTREAM_BRANCH,
-			BUILD_VERSION, // parentPomVersion; this build *is* the parent version
-			false, // skipToDist=false; when we invoke the metasfresh build, we want it to do a full build
-			true, // triggerDownStreamBuilds=true; we want "everything" beeing build
-			true // wait=true; if a downstream job fails with this parent pom then we want to know about it
-		);
+		def misc = new de.metas.jenkins.Misc();
+		echo "Created instance; misc=${misc}";
 
 		parallel (
 			metasfresh_admin: {
-				invokeAndWait('metasfresh-admin');
+				misc.invokeDownStreamJobs(
+				 	MF_UPSTREAM_BUILDNO,
+				 	MF_UPSTREAM_BRANCH,
+				 	BUILD_VERSION, // parentPomVersion; this build *is* the parent version
+				 	false, // skipToDist=false; when we invoke the metasfresh build, we want it to do a full build
+				 	true, // triggerDownStreamBuilds=true; we want "everything" beeing build
+				 	true, // wait=true; if a downstream job fails with this parent pom then we want to know about it
+					'metasfresh-admin')
 			},
 			metasfresh: {
-				invokeAndWait('metasfresh');
+				misc.invokeDownStreamJobs(
+				 	MF_UPSTREAM_BUILDNO,
+				 	MF_UPSTREAM_BRANCH,
+				 	BUILD_VERSION, // parentPomVersion; this build *is* the parent version
+				 	false, // skipToDist=false; when we invoke the metasfresh build, we want it to do a full build
+				 	true, // triggerDownStreamBuilds=true; we want "everything" beeing build
+				 	true, // wait=true; if a downstream job fails with this parent pom then we want to know about it
+					'metasfresh')
 			}
-		);
+		)
 	}
 	else
 	{
