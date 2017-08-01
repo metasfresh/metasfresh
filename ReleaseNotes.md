@@ -68,24 +68,31 @@ Here come the actual release notes:
   * [#2067](https://github.com/metasfresh/metasfresh/issues/2067) switch between C_Order_MFGWarehouse with and without barcode
     * New Feture that allows to switch between Warehouses in Manufacturing with and without Barcodes.
   * [#2069](https://github.com/metasfresh/metasfresh/issues/2069) Window Design WebUI: Bill of Materials
-    * Adopting the Bill of Materials Window to the current Window Concept for Documents in metasfresh WebUI
+    * Adopting the Bill of Materials Window to the current Window Concept for Master Data in metasfresh WebUI
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2083](https://github.com/metasfresh/metasfresh/issues/2083) Window Design WebUI: Customer Returns
+    * Adopting the Customer Returns Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2092](https://github.com/metasfresh/metasfresh/issues/2092) Scheduler - improve error handling if AD_Role_ID can't be found
+    * Improving the User Experience with better messages when the Scheduler fails not able to receive the User Role for running a process.
   * [#2096](https://github.com/metasfresh/metasfresh/issues/2096) Businesspartner B2C Location Editor missing
     * Adjustments for the Businesspartner B2C Window, adding missing Fields and Layout.
 
 * metasfresh-webui-api
   * [#503](https://github.com/metasfresh/metasfresh-webui-api/issues/503) Picking prototype (v5)
+    * Further Improvements of the Picking API now in Version 5. Belongs to the Development of the new Picking Window in WebUI.
   * [#514](https://github.com/metasfresh/metasfresh-webui-api/issues/514) Support HU transform from HU window
+    * Improvement od the Handling Unit Transform Action in Handling Unit Editor Window.
   * [#518](https://github.com/metasfresh/metasfresh-webui-api/issues/518) Picking prototype (v6)
+    * Further Improvements of the Picking API now in Version 5. Belongs to the Development of the new Picking Window in WebUI.
 
 * metasfresh-webui-frontend
   * [#1031](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1031) Autoselect when doubleclick on included Tab Row Field
+    * New Feature wanted heaviliy by Power Users. Now it's possible to directly edit the field content after double clicking a field in Included Tab Grid View.
   * [#1061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1061) Larger Avatar Menu Photo
+    * Resizing of the Avatar Image allowing to better differentiate the User Sessions on smaller Screens.
 
 ## Fixes
 * metasfresh-app
