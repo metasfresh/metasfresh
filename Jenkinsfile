@@ -7,46 +7,6 @@
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
-def String getEffectiveDownStreamJobName(final String jobFolderName, final String upstreamBranch)
-{
-	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
-	//
-	// Here i'm not checking if the build job exists but if the respective branch on github exists. If the branch is there, then I assume that the multibranch plugin also created the job
-	def exitCode;
-	node('linux')
-	{
-		// We run this within a node to avoid the error saying:
-		// Required context class hudson.FilePath is missing
-		// Perhaps you forgot to surround the code with a step that provides this, such as: node
-		// ...
-		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
-		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
-	}
-	if(exitCode == 0)
-	{
-		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
-		jobName = jobFolderName + "/" + upstreamBranch
-	}
-	else
-	{
-		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
-		jobName = jobFolderName + "/master"
-	}
-
-	// I also tried
-	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name]
-	// which worked from chrome, also for metas-dev.
-	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
-	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
-	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
-
-	// and I also tried inspecting the list returned by
-	// Jenkins.instance.getAllItems()
-	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
-
-	return jobName;
-}
-
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
  *
@@ -58,7 +18,14 @@ def String getEffectiveDownStreamJobName(final String jobFolderName, final Strin
  * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
  *
  */
-def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, final String upstreamBranch, final String metasfreshVersion, final boolean wait)
+Map invokeDownStreamJobs(
+          final String buildId,
+          final String upstreamBranch,
+          final String parentPomVersion,
+          final String metasfreshVersion,
+          final boolean wait,
+          final String jobFolderName
+        )
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 
@@ -67,15 +34,14 @@ def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, f
 
 	final buildResult = build job: jobName,
 		parameters: [
+			string(name: 'MF_PARENT_VERSION', value: parentPomVersion),
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false) // the job shall just run but not trigger further builds because we are doing all the orchestration
 		], wait: wait
-	;
 
 	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
-
 	return buildResult.getBuildVariables();
 }
 
@@ -163,7 +129,7 @@ node('agent && linux')
 	{
 		// create our config instance to be used further on
 		final MvnConf mvnConf = new MvnConf(
-			'/de.metas.parent/pom.xml', // pomFile
+			'de.metas.parent/pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
 			'https://repo.metasfresh.com', // mvnRepoBaseURL
 			"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
@@ -188,9 +154,7 @@ node('agent && linux')
 				sh 'git clean -d --force -x' // clean the workspace
 
 				// update the parent pom version
-        mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
-
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${mvnConf.resolveParams} -DprocessParent=true versions:resolve-ranges"
+ 				mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
 
 				// set the artifact version of everything below ${mvnConf.pomFile}
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
@@ -199,8 +163,8 @@ node('agent && linux')
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
 
-        final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
-        echo "mvnEsbConf=${mvnEsbConf}"
+ 				final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
+				echo "mvnReactorConf=${mvnReactorConf}"
 
 				// update the versions of metas dependencies that are external to our reactor modules
 				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnReactorConf.resolveParams} versions:use-latest-versions"
@@ -258,7 +222,7 @@ node('agent && linux')
         echo "mvnEsbConf=${mvnEsbConf}"
 
 				// update the parent pom version
-        mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
+ 				mvnUpdateParentPomVersion mvnEsbConf, params.MF_PARENT_VERSION
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
 				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
@@ -294,6 +258,8 @@ final MF_ARTIFACT_VERSIONS = [:];
 // wait for the results, but don't block a node while waiting
 stage('Invoke downstream jobs')
 {
+  MF_ARTIFACT_VERSIONS['metasfresh-parent'] = params.MF_PARENT_VERSION ?: "LATEST";
+
 	if(params.MF_SKIP_TO_DIST)
 	{
 		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs";
@@ -327,13 +293,25 @@ stage('Invoke downstream jobs')
 		parallel (
 			metasfresh_webui: {
 				// TODO: rename the build job to metasfresh-webui-api
-				final webuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-				MF_ARTIFACT_VERSIONS['metasfresh-webui']=webuiDownStreamJobMap.BUILD_VERSION;
+				final webuiDownStreamJobMap = invokeDownStreamJobs(
+          MF_BUILD_ID,
+          MF_UPSTREAM_BRANCH,
+          MF_ARTIFACT_VERSIONS['metasfresh-parent'],
+          BUILD_VERSION,
+          true,
+          'metasfresh-webui'); // wait=true
+				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamJobMap.BUILD_VERSION;
 			},
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
-				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs('metasfresh-procurement-webui', MF_BUILD_ID, MF_UPSTREAM_BRANCH, BUILD_VERSION, true); // wait=true
-				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=procurementWebuiDownStreamJobMap.BUILD_VERSION;
+				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs(
+          MF_BUILD_ID,
+          MF_UPSTREAM_BRANCH,
+          MF_ARTIFACT_VERSIONS['metasfresh-parent'],
+          BUILD_VERSION,
+          true,
+          'metasfresh-procurement-webui'); // wait=true
+				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.BUILD_VERSION;
 			}
 		);
 
@@ -344,7 +322,6 @@ stage('Invoke downstream jobs')
 	} // if(params.MF_SKIP_TO_DIST)
 
 	// complement the MF_ARTIFACT_VERSIONS we did not set so far
-  MF_ARTIFACT_VERSIONS['metasfresh-parent'] = params.MF_PARENT_VERSION ?: "LATEST";
   MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-webui'] ?: "LATEST";
