@@ -2,58 +2,7 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-/**
- * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
- */
-def invokeDownStreamJobs(String jobFolderName, String buildId, String upstreamBranch, boolean wait)
-{
-	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
-
-	// if this is not the master branch but a feature branch, we need to find out if the "BRANCH_NAME" job exists or not
-	//
-	// Here i'm not checking if the build job exists but if the respective branch on github exists. If the branch is there, then I assume that the multibranch plugin also created the job
-	def exitCode;
-	node('linux')
-	{
-		// We run this within a node to avoid the error saying:
-		// Required context class hudson.FilePath is missing
-		// Perhaps you forgot to surround the code with a step that provides this, such as: node
-		// ...
-		// org.jenkinsci.plugins.workflow.steps.MissingContextVariableException: Required context class hudson.FilePath is missing
-
-		exitCode = sh returnStatus: true, script: "git ls-remote --exit-code https://github.com/metasfresh/${jobFolderName} ${upstreamBranch}"
-	}
-
-	if(exitCode == 0)
-	{
-		echo "Branch ${upstreamBranch} also exists in ${jobFolderName}"
-		jobName = jobFolderName + "/" + upstreamBranch
-	}
-	else
-	{
-		echo "Branch ${upstreamBranch} does not exist in ${jobFolderName}; falling back to master"
-		jobName = jobFolderName + "/master"
-	}
-
-	// I also tried
-	// https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs[name]
-	// which worked from chrome, also for metas-dev.
-	// It worked from the shell using curl (with [ and ] escaped) for user metas-ts and an access token,
-	// but did not work from the shell with curl and user metas-dev with "metas-dev is missing the Overall/Read permission"
-	// the curl string was sh "curl -XGET 'https://jenkins.metasfresh.com/job/metasfresh-multibranch/api/xml?tree=jobs%5Bname%5D' --user metas-dev:access-token
-
-	// and I also tried inspecting the list returned by
-	// Jenkins.instance.getAllItems()
-	// but there I got a scurity exception and am not sure if an how I can have a SCM maintained script that is approved by an admin
-
-	build job: jobName,
-		parameters: [
-			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
-			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId),
-			booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
-			booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-		], wait: wait
-}
+@Library('misc') _
 
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
@@ -69,12 +18,19 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
+
 		string(defaultValue: '',
 			description: 'Build number of the upstream job that called us, if any.',
 			name: 'MF_UPSTREAM_BUILDNO'),
+
+		string(defaultValue: '',
+			description: 'Version of the metasfresh-parent parent pom.xml we shall use when building. Leave empty and this build will use the latest.',
+			name: 'MF_PARENT_VERSION'),
+
 		string(defaultValue: '',
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_VERSION'),
+
 		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger "endcustomer" builds.<br>
 Set to false if this build is called from elsewhere and the orchestrating also takes place elsewhere''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
@@ -174,8 +130,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 					mavenUpdatePropertyParam='-Dproperty=metasfresh.version';
 				}
 
-                // update the parent pom version
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
+				// update the parent pom version
+				updateParentPomVersion 'pom.xml' params.MF_PARENT_VERSION
+				//sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdateParentParam} versions:update-parent"
 
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
@@ -207,7 +164,12 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, false); // wait=false
+		invokeDownStreamJobs(
+			'metasfresh',
+			MF_UPSTREAM_BUILDNO,
+			MF_UPSTREAM_BRANCH, 
+			MF_PARENT_VERSION,
+			false); // wait=false
 	}
 }
 else
