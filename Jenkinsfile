@@ -365,16 +365,18 @@ stage('Invoke downstream jobs')
 			string(name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'])
 		];
 
+  def misc = new de.metas.jenkins.Misc();
+
 	// Run the downstream dist jobs in parallel.
 	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
 	parallel (
 		metasfresh_dist: {
-			build job: getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
+			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
 			parameters: distJobParameters,
 			wait: true;
 		},
 		metasfresh_dist_orgs: {
-			build job: getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
+			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
 			parameters: distJobParameters,
 			wait: true;
 		}
