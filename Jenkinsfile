@@ -23,10 +23,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_UPSTREAM_BUILDNO'),
 
 		string(defaultValue: '',
-			description: 'Version of the metasfresh-parent parent pom.xml we shall use when building. Leave empty and this build will use the latest.',
-			name: 'MF_PARENT_VERSION'),
-
-		string(defaultValue: '',
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_VERSION'),
 
@@ -106,7 +102,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         {
 
 				// update the parent pom version
-				mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
+				mvnUpdateParentPomVersion mvnConf
 
 				final String mavenUpdatePropertyParam;
 				if(params.MF_METASFRESH_VERSION)
@@ -158,7 +154,6 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 
 		build job: jobName,
 	     parameters: [
-	       string(name: 'MF_PARENT_VERSION', value: params.MF_PARENT_VERSION),
 	       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 	       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
 	       string(name: 'MF_UPSTREAM_VERSION', value: BUILD_VERSION),
