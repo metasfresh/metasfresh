@@ -107,15 +107,23 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1026](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1026) grid: Get rid of double scrollbar
+    * Fix the double Scrollbar Issue in new Picking Window. Now only showing 1 Scrollbar when needed.
   * [#1027](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1027) line looks selected, but it's not
+    * Fixes a minor Bug that presented a row as seleted although it wasn'nt,
   * [#1045](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1045) frontend shall switch to offline mode on http 503 error
+    * Fix for the case that a 503 error is returned. Now the frontend switches to offline mode.
   * [#1046](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1046) opening included view from action not working in picking
+    * Fix in Picking Window now also opening included views there too. 
   * [#1062](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1062) Avatar Foto stretches when not Square
+    * Fix for the Avatar Photo that was presented in a stretched way when the uploaded Photo was not one with square dimensions.
   * [#1065](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1065) Window title wrong for windows in deeper menu hierarchy
     * Fix for the Window Name in Action Menu, that was not shown properly for Windows in deeper Menu Hierarchy.
   * [#1067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1067) board: add new: don't show the loading icon after data is loaded
+    * Fix for the new Board Functionality, now not showing the Loading Icon after the card data is loaded.
   * [#1068](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1068) board: when there are no new cards show the empty result text/hint
+    * Better Transparency for the user after leaving a card selection List empty. Now showing a empty result hint to the user.
   * [#1073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1073) Bug in Advanced edit of Purchase order
+    * Fix for the Advanced Edit Mode in Window Purchase Order, that sometimes did not open.
 
 # metasfresh 5.19 (2017-30)
 
