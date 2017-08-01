@@ -105,7 +105,7 @@ class RawList extends Component {
 
         //not visible from down
         const scrollFromUp =
-            listElementHeight * (selectedIndex - listVisibleElements);
+            listElementHeight * (selectedIndex - listVisibleElements+1);
 
         if (
             (selectedIndex + 1) * listElementHeight > visibleMax &&
