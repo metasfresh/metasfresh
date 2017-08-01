@@ -23,7 +23,8 @@ class Lookup extends Component {
             fireClickOutside: false,
             initialFocus: false,
             localClearing: false,
-            fireDropdownList: false
+            fireDropdownList: false,
+            autofocusDisabled: false
         }
     }
 
@@ -101,7 +102,20 @@ class Lookup extends Component {
             isInputEmpty: true,
             property: '',
             initialFocus: true,
-            localClearing: true
+            localClearing: true,
+            autofocusDisabled: false
+        });
+    }
+
+    disableAutofocus= () => {
+        this.setState({
+            autofocusDisabled: true
+        });
+    }
+
+    enableAutofocus = () => {
+        this.setState({
+            autofocusDisabled: false
         });
     }
 
@@ -116,7 +130,7 @@ class Lookup extends Component {
 
         const {
             isInputEmpty, property, fireClickOutside, initialFocus,
-            localClearing, fireDropdownList
+            localClearing, fireDropdownList, autofocusDisabled
         } = this.state;
 
         return (
@@ -160,6 +174,7 @@ class Lookup extends Component {
                                 setNextProperty={this.setNextProperty}
                                 lookupEmpty={isInputEmpty}
                                 fireDropdownList={fireDropdownList}
+                                enableAutofocus={this.enableAutofocus}
                                 {...{placeholder, readonly, tabIndex,
                                 windowType, parameterName, entity, dataId,
                                 isModal, recent, rank, updated, filterWidget,
@@ -194,7 +209,8 @@ class Lookup extends Component {
                                         properties={[item]}
                                         lookupList={true}
                                         autofocus={
-                                            item.field == property ?
+                                            item.field == property &&
+                                            !autofocusDisabled ?
                                             true : false
                                         }
                                         defaultValue={
@@ -204,11 +220,15 @@ class Lookup extends Component {
                                         initialFocus={
                                             index===0 ? initialFocus : false
                                         }
-                                        lastProperty={properties[properties.length-1].field === property ? true : false}
+                                        lastProperty={
+                                            properties[properties.length-1].field ===property ? true : false
+                                        }
                                         setNextProperty={this.setNextProperty}
                                         mainProperty={[item]}
                                         blur={!property?true:false}
                                         readonly={disabled || readonly}
+                                        disableAutofocus={this.disableAutofocus}
+                                        enableAutofocus={this.enableAutofocus}
                                     />
                                 </div>
                         }
@@ -218,7 +238,7 @@ class Lookup extends Component {
                 <div
                     className="input-icon input-icon-lg raw-lookup-wrapper"
                     onClick={this.openDropdownList}
-                >   
+                >
                     { !readonly &&
                         <i className="meta-icon-preview" />
                     }

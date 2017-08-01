@@ -66,9 +66,12 @@ class List extends Component {
 
     handleSelect = (option) => {
         const {
-            onChange, lookupList, properties, setNextProperty, mainProperty
+            onChange, lookupList, properties, setNextProperty, mainProperty,
+            enableAutofocus
         } = this.props;
         const {prevValue} = this.state;
+
+        enableAutofocus();
 
          if( prevValue !== (option && option[Object.keys(option)[0]] )) {
              if(lookupList){
@@ -95,7 +98,7 @@ class List extends Component {
         const {
             rank, readonly, defaultValue, selected, align, updated, rowId,
             emptyText, tabIndex, mandatory, validStatus, lookupList, autofocus,
-            blur, initialFocus, lastProperty
+            blur, initialFocus, lastProperty, disableAutofocus
         } = this.props;
         const {list, loading, selectedItem} = this.state;
 
@@ -122,6 +125,7 @@ class List extends Component {
                 blur={blur}
                 initialFocus={initialFocus}
                 lastProperty={lastProperty}
+                disableAutofocus={disableAutofocus}
             />
         )
     }
