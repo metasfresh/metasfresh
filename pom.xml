@@ -37,9 +37,9 @@
 					<rules>
 						<banDuplicateClasses>
 							<dependencies>
-								<!-- 
-									do not check this dependency, because the endcustomer allInOne-jar contains 
-									all the classes that are also its dependencies 
+								<!--
+									do not check this dependency, because the endcustomer allInOne-jar contains
+									all the classes that are also its dependencies
 								-->
 								<dependency>
 									<groupId>${project.groupId}</groupId>
@@ -97,7 +97,7 @@
 							<autoLinkDependencies>true</autoLinkDependencies>
 						</property>
 
-						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968 
+						<!-- gh #968 https://github.com/metasfresh/metasfresh/issues/968
 							declare the the version properties of related artifacts which we can to set in the dist module
 						-->
 						<property>

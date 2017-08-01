@@ -2,136 +2,10 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-
-def boolean isRepoExists(String repoId)
-{
-	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
-	{
-		echo "Check if the nexus repository ${repoId} exists";
-
-		// check if there is a repository for ur branch
-		final String checkForRepoCommand = "curl --silent -X GET -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories | grep '<id>${repoId}-releases</id>'";
-		final grepExitCode = sh returnStatus: true, script: checkForRepoCommand;
-		final repoExists = grepExitCode == 0;
-
-		echo "The nexus repository ${repoId} exists: ${repoExists}";
-		return repoExists;
-	}
-}
-
-def createRepo(String repoId)
-{
-	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
-	{
-		echo "Create the repository ${repoId}-releases";
-
-		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<repository>
-  <data>
-	<id>${repoId}-releases</id>
-	<name>${repoId}-releases</name>
-	<exposed>true</exposed>
-	<repoType>hosted</repoType>
-	<writePolicy>ALLOW_WRITE_ONCE</writePolicy>
-    <browseable>true</browseable>
-    <indexable>true</indexable>
-	<repoPolicy>RELEASE</repoPolicy>
-	<providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
-	<provider>maven2</provider>
-	<format>maven2</format>
-  </data>
-</repository>
-""";
-
-		// # nexus ignored application/json
-		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
-		sh "${createRepoCommand}"
-
-		echo "Create the repository-group ${repoId}";
-
-		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
-<repo-group>
-  <data>
-    <repositories>
-	  <!-- include mvn-public that contains everything we need to perform the build-->
-      <repo-group-member>
-        <name>mvn-public</name>
-        <id>mvn-public</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
-      </repo-group-member>
-	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
-      <repo-group-member>
-        <name>${repoId}-releases</name>
-        <id>${repoId}-releases</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/${repoId}-releases/</resourceURI>
-      </repo-group-member>
-    </repositories>
-    <name>${repoId}</name>
-    <repoType>group</repoType>
-    <providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
-    <exposed>true</exposed>
-    <id>${repoId}</id>
-	<provider>maven2</provider>
-	<format>maven2</format>
-  </data>
-</repo-group>
-"""
-
-		// # nexus ignored application/json
-		final String createGroupCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createGroupPayload}\' https://repo.metasfresh.com/service/local/repo_groups"
-		sh "${createGroupCommand}"
-
-		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
-
-final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
-<scheduled-task>
-  <data>
-	<id>cleanup-repo-${repoId}-releases</id>
-	<enabled>true</enabled>
-	<name>Remove Releases from ${repoId}-releases</name>
-	<typeId>ReleaseRemoverTask</typeId>
-	<schedule>daily</schedule>
-	<startDate>${currentBuild.startTimeInMillis}</startDate>
-	<recurringTime>03:00</recurringTime>
-	<properties>
-      <scheduled-task-property>
-        <key>numberOfVersionsToKeep</key>
-        <value>3</value>
-      </scheduled-task-property>
-      <scheduled-task-property>
-        <key>indexBackend</key>
-        <value>false</value>
-      </scheduled-task-property>
-      <scheduled-task-property>
-        <key>repositoryId</key>
-        <value>${repoId}-releases</value>
-      </scheduled-task-property>
-	</properties>
-  </data>
-</scheduled-task>"""
-
-		// # nexus ignored application/json
-		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
-		sh "${createScheduleCommand}"
-	} // withCredentials
-}
-
-def deleteRepo(String repoId)
-{
-	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
-	{
-		echo "Delete the repository ${repoId}";
-
-		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
-		sh "${deleteGroupCommand}"
-
-		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
-		sh "${deleteRepoCommand}"
-
-		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
-		sh "${deleteScheduleCommand}"
-	}
-}
+// note that we set a default version for this library in jenkins, so we don't have to specify it here
+@Library('misc')
+import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Misc
 
 //
 // setup: we'll need the following variables in different stages, that's we we create them here
@@ -182,7 +56,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
-	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_UPSTREAM_BUILDNO in each snapshot artifact's version
 ])
 
 if(params.MF_UPSTREAM_BUILDNO)
@@ -204,32 +77,6 @@ echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 // never incorporate params.MF_UPSTREAM_BUILDNO into the version anymore. Always go with the build number.
 final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
-
-// metasfresh-task-repo is a constant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
-final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
-echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
-
-// name of the task/branch specific maven nexus-repository that we will create if it doesn't exist and and resolve from
-// make sure the maven repo name is OK, to avoid an error message saying
-// "Only letters, digits, underscores(_), hyphens(-), and dots(.) are allowed in Repository ID"
-final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}".replaceAll('[^a-zA-Z0-9_-]', '_');
-echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
-
-final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
-echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
-
-// IMPORTANT: the task-repo-url which we set in MF_MAVEN_TASK_RESOLVE_PARAMS is used within the settings.xml that our jenkins provides to the build. That's why we need it in the mvn parameters
-final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
-echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
-
-// the repository to which we are going to deploy
-final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
-echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
-
-// provide these cmdline params to all maven invocations that do a deploy
-// deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
-final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
-echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
 // gh #968 make create a map equal to the one we create in metasfresh/Jenkinsfile. The way we used it further down is also similar
 final MF_ARTIFACT_VERSIONS = [:];
@@ -256,20 +103,27 @@ node('agent && linux && libc6-i386')
 		sh "echo \"testing 'witEnv' using shell: BUILD_VERSION=${BUILD_VERSION}\""
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
 		{
+			// create our config instance to be used further on
+			final MvnConf mvnConf = new MvnConf(
+				'pom.xml', // pomFile
+				MAVEN_SETTINGS, // settingsFile
+				'https://repo.metasfresh.com', // mvnRepoBaseURL
+				"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+			)
+			echo "mvnConf=${mvnConf}"
+
+			nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
+
 			stage('Set versions and build endcustomer-dist')
 			{
-				if(!isRepoExists(MF_MAVEN_REPO_NAME))
-				{
-					createRepo(MF_MAVEN_REPO_NAME);
-				}
-
 				// checkout our code
 				// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
 				// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
 				checkout scm; // i hope this to do all the magic we need
 				sh 'git clean -d --force -x' // clean the workspace
 
-				final String metasfreshUpdateParentParam="-DparentVersion=${MF_ARTIFACT_VERSIONS['metasfresh']}";
+				// update the parent pom version
+				mvnUpdateParentPomVersion mvnConf
 
 				final inSquaresIfNeeded = { String version -> return version == "LATEST" ? version: "[${version}]"; }
 
@@ -280,25 +134,22 @@ node('agent && linux && libc6-i386')
 				final String metasfreshProcurementWebuiUpdatePropertyParam = "-Dproperty=metasfresh-procurement-webui.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'])}";
 				final String metasfreshUpdatePropertyParam="-Dproperty=metasfresh.version -DnewVersion=${inSquaresIfNeeded(MF_ARTIFACT_VERSIONS['metasfresh'])}";
 
-				// update the parent pom version
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdateParentParam} versions:update-parent"
-
 				// update the metasfresh.version property. either to the latest version or to the given params.MF_METASFRESH_VERSION.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshUpdatePropertyParam} versions:update-property"
 
 				// gh #968 also update the metasfresh-webui-frontend.version, metasfresh-webui-api.versions and procurement versions.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshAdminPropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshAdminPropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebFrontEndUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshWebApiUpdatePropertyParam} versions:update-property"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 
-				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				// set the artifact version of everything below the endcustomer.mf15's parent ${mvnConf.pomFile}
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${mvnConf.resolveParams} versions:set"
 
 				// do the actual building and deployment
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// about -Dmaven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
 
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
@@ -308,18 +159,19 @@ node('agent && linux && libc6-i386')
 
 				// we now have set the versions of metas-webui etc within the pom.xml. In order to document them, write them into a file.
 				// the file's name is app.properties, as configured in metasfresh-parent's pom.xml. Thx to http://stackoverflow.com/a/26589696/1012103
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.endcustomer.mf15.dist/pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
+				final MvnConf mvnDistConf = mvnConf.withPomFile('de.metas.endcustomer.mf15.dist/pom.xml')
+				sh "mvn --settings ${mvnDistConf.settingsFile} --file ${mvnDistConf.pomFile} --batch-mode ${mvnDistConf.resolveParams} org.codehaus.mojo:properties-maven-plugin:1.0.0:write-project-properties"
 
 				// now load the properties we got from the pom.xml. Thx to http://stackoverflow.com/a/39644024/1012103
 				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15.dist/app.properties'
 
 				final MF_ARTIFACT_URLS = [:];
-				MF_ARTIFACT_URLS['metasfresh-admin'] = "http://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-dist'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz";
-				MF_ARTIFACT_URLS['metasfresh-material-dispo']= "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-webui'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz";
+				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.repoURL}/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.repoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz";
+				MF_ARTIFACT_URLS['metasfresh-material-dispo']= "${mvnConf.repoURL}/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "${mvnConf.repoURL}/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-webui'] = "${mvnConf.repoURL}/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.repoURL}/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz";
 
 				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
 				// See
@@ -342,8 +194,8 @@ node('agent && linux && libc6-i386')
 <h3>Deployable artifacts</h3>
 <ul>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
+	<li><a href=\"${mvnConf.repoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+	<li><a href=\"${mvnConf.repoURL}/de/metas/dist/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
@@ -360,7 +212,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <p>
 <h3>Additional notes</h3>
 <ul>
-  <li>The artifacts on <a href="https://repo.metasfresh.com">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
+  <li>The artifacts on <a href="${mvnConf.mvnRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
     Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
   <li>It is important to note that both the <i>"endcustomer"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
 </ul>
@@ -386,12 +238,20 @@ def downloadForDeployment = { String groupId, String artifactId, String version,
 	// See http://maven.apache.org/plugins/maven-dependency-plugin/get-mojo.html "Caveat: will always check thecentral repository defined in the super pom"
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
+		final MvnConf mvnDeployConf = new MvnConf(
+			'pom.xml', // pomFile
+			MAVEN_SETTINGS, // settingsFile
+			'https://repo.metasfresh.com', // mvnRepoBaseURL
+			"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+		)
+		echo "mvnDeployConf=${mvnDeployConf}"
+
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
 		{
-			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact} ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
+			sh "mvn --settings ${mvnDeployConf.settingsFile} org.apache.maven.plugins:maven-dependency-plugin:2.10:get -Dtransitive=false -Dartifact=${artifact} ${mvnDeployConf.resolveParams}"
 
 			// copy the artifact to a deploy folder.
-			sh "mvn --settings $MAVEN_SETTINGS org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${MF_MAVEN_TASK_RESOLVE_PARAMS}"
+			sh "mvn --settings ${mvnDeployConf.settingsFile} org.apache.maven.plugins:maven-dependency-plugin:2.10:copy -Dartifact=${artifact} -DoutputDirectory=deploy -Dmdep.stripClassifier=false -Dmdep.stripVersion=false ${mvnDeployConf.resolveParams}"
 		}
 	}
 	sh "scp ${WORKSPACE}/deploy/${artifactId}-${version}-${classifier}.${packaging} ${sshTargetUser}@${sshTargetHost}:/home/${sshTargetUser}/${artifactId}-${version}-${classifier}.${packaging}"
