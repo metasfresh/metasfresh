@@ -4,13 +4,13 @@
 	<parent>
 		<groupId>de.metas</groupId>
 		<artifactId>de.metas.parent.general</artifactId>
-		<version>1.0.0</version>
+		<version>3.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas</groupId>
 	<artifactId>metasfresh-assemblies</artifactId>
-	<version>1.0.0</version>
+	<version>3.0.0</version>
 
 	<description>Shared assembly descriptors for metas projects</description>
 
