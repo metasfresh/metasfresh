@@ -98,7 +98,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         )
         echo "mvnConf=${mvnConf}"
 
-		nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
+        nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
 
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
@@ -153,12 +153,19 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-		invokeDownStreamJobs(
-			'metasfresh',
-			MF_UPSTREAM_BUILDNO,
-			MF_UPSTREAM_BRANCH,
-			MF_PARENT_VERSION,
-			false); // wait=false
+		def misc = new de.metas.jenkins.Misc();
+	  final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
+
+		build job: jobName,
+	     parameters: [
+	       string(name: 'MF_PARENT_VERSION', value: params.MF_PARENT_VERSION),
+	       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+	       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
+	       string(name: 'MF_UPSTREAM_VERSION', value: BUILD_VERSION),
+	       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
+	       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
+	       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+	     ], wait: false
 	}
 }
 else
