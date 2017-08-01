@@ -24,10 +24,6 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS'),
 
 		string(defaultValue: '',
-			description: 'Version of the metasfresh-parent parent pom.xml we shall use when building. Leave empty and this build will use the latest.',
-			name: 'MF_PARENT_VERSION'),
-
-		string(defaultValue: '',
 			description: 'Will be incorporated into the artifact version and forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>',
 			name: 'MF_BUILD_ID')
 	]),
@@ -103,7 +99,7 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
             stage('Set versions and build metasfresh-admin')
             {
 							// update the parent pom version
-      				mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
+      				mvnUpdateParentPomVersion mvnConf
 
               // set the artifact version of everything below the pom.xml
 							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
