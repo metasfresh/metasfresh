@@ -116,7 +116,7 @@ class RawChart extends Component {
     renderChart() {
         const {
             id, chartType, caption, fields, groupBy, height,
-            isMaximized, chartTitle, editmode, noData
+            isMaximized, chartTitle, editmode, noData, handleChartOptions
         } = this.props;
         const {chartData, forceChartReRender} = this.state;
         const data = chartData[0] && chartData[0].values;
@@ -155,11 +155,24 @@ class RawChart extends Component {
                 );
             case 'Indicator':
                 return(
-                    <Indicator
-                        value={noData ? '' : (data[0][fields[0].fieldName] +
-                            (fields[0].unit ? ' ' + fields[0].unit : ''))}
-                        {...{caption, editmode}}
-                    />
+                    <div>
+                        {editmode ? 
+                            <span
+                                className="chart-edit-mode"
+                                onClick={() => handleChartOptions(true, caption, id, true)}
+                            >
+                                <i className="meta-icon-settings"></i>
+                            </span>
+                        : ''}
+                        
+                        <Indicator
+                            value={noData ? '' : (data[0][fields[0].fieldName] +
+                                (fields[0].unit ? ' ' + fields[0].unit : ''))}
+                            {...{caption, editmode}}
+                        />
+                        
+                    </div>
+                    
                 );
             default:
                 return <div>{ chartType }</div>;

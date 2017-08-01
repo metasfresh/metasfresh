@@ -14,6 +14,61 @@
     margin: 20px auto;
 }
 
+.chart-edit-mode {
+    cursor: pointer;
+    position: absolute;
+    right: 30px;
+    top: 8px;
+}
+
+.draggable-edit-mode-input {
+    height: 100%;
+}
+
+.chart-options-overlay {
+    background-color: rgba(18, 18, 18, .7);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 400;
+}
+
+.chart-options-wrapper {
+    background: $brand-bright-color;
+    width: 40%;
+    margin-left: -20%;
+    left: 50%;
+    top: 20%;
+    position: absolute;
+    padding: 40px;
+}
+
+.chart-options {
+    min-height: 300px;
+}
+
+.chart-options label {
+    min-width: 140px;
+}
+
+.chart-options .input-options {
+    border-top: none;
+    border-right: none;
+    border-left: none;
+    min-width: 250px;
+}
+
+.chart-options-list-wrapper {
+    min-width: 250px;
+    display: inline-block
+}
+
+.chart-options-button-wrapper {
+    text-align: right;
+}
+
 @media (max-width: $breakpoint-md){
     .chart-data-table-wrapper,
     .panel.chart-data-table-wrapper {

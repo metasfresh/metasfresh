@@ -11,10 +11,13 @@ import DndWidget from './DndWidget';
 import Sidenav from './Sidenav';
 import Placeholder from './Placeholder';
 import Indicator from '../charts/Indicator';
+import RawList from '../widget/List/RawList';
 
 import {
     getKPIsDashboard,
-    getTargetIndicatorsDashboard
+    getTargetIndicatorsDashboard,
+    changeKPIItem,
+    changeTargetIndicatorsItem
 } from '../../actions/AppActions';
 
 import {
@@ -38,7 +41,13 @@ export class DraggableWrapper extends Component {
             cards: [],
             indicators: [],
             idMaximized: null,
-            websocketEndpoint: null
+            websocketEndpoint: null,
+            chartOptions: false,
+            captionHandler: '',
+            when: '',
+            interval: '',
+            currentId: '',
+            isIndicator: ''
         };
     }
     
@@ -207,6 +216,7 @@ export class DraggableWrapper extends Component {
                             chartType={'Indicator'}
                             kpi={false}
                             noData={indicator.fetchOnDrop}
+                            handleChartOptions={this.handleChartOptions}
                             {...{editmode}}
                         />
                     </DndWidget>
@@ -271,6 +281,7 @@ export class DraggableWrapper extends Component {
                                 maximizeWidget={this.maximizeWidget}
                                 text={item.caption}
                                 noData={item.fetchOnDrop}
+                                handleChartOptions={this.handleChartOptions}
                                 {...{editmode}}
                             />
                         </DndWidget>
@@ -284,12 +295,114 @@ export class DraggableWrapper extends Component {
             </div>
         )
     }
+
+    renderOptionModal = () => {
+        const {chartOptions, captionHandler, when, interval} = this.state;
+        return (
+            chartOptions && 
+                <div className="chart-options-overlay">
+                    <div className="chart-options-wrapper">
+                        <div className="chart-options">
+                            <div className="form-group">
+                                <label>caption</label>
+                                <input
+                                    className="input-options input-secondary"
+                                    value={captionHandler}
+                                    onChange={this.handleChange}
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>interval</label>
+                                <div className="chart-options-list-wrapper">
+                                    <RawList
+                                        onSelect={option => this.handleOptionSelect('interval', option)}
+                                        list={[{caption: "week", value: "week"}]}
+                                        selected={interval}
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>when</label>
+                                <div className="chart-options-list-wrapper">
+                                    <RawList
+                                        onSelect={option => this.handleOptionSelect('when', option)}
+                                        list={[{caption: "now", value: "now"},
+                                                {caption: "last week", value: "lastWeek"}]}
+                                        selected={when}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="chart-options-button-wrapper">
+                            <button 
+                                className="btn btn-meta-outline-secondary btn-sm"
+                                onClick={() => this.changeChartData("caption", captionHandler )}
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+        );
+    }
+
+    handleChartOptions = (opened, caption, id, isIndicator) => {
+        this.setState({
+            chartOptions: opened,
+            captionHandler: caption,
+            currentId: id,
+            when: opened ? this.state.when : '',
+            interval: opened ? this.state.interval : '',
+            isIndicator: isIndicator ? true : false
+        });
+    }
+
+    handleOptionSelect = (path, option) => {
+        const {currentId, isIndicator} = this.state;
+        if(isIndicator){
+            changeTargetIndicatorsItem(currentId, path, option.value).then(() => {
+                this.setSelectedOption(path, option);
+            });
+        } else {
+            changeKPIItem(currentId, path, option.value).then(() => {
+                this.setSelectedOption(path, option);
+            });
+        }
+    }
+
+    setSelectedOption = (path, option) => {
+        const {when, interval} = this.state;
+        this.setState({
+            when: path === 'when' ? option : when,
+            interval: path === 'interval' ? option : interval
+        });
+    }
+
+    handleChange = (e) => {
+        this.setState({
+            captionHandler: e.target.value
+        });
+    }
+
+    changeChartData = (path, value) => {
+        const {currentId, isIndicator} = this.state;
+        if(isIndicator){
+            changeTargetIndicatorsItem(currentId, path, value).then(() => {
+                this.handleChartOptions(false);
+            });
+        } else {
+            changeKPIItem(currentId, path, value).then(() => {
+                this.handleChartOptions(false);
+            });
+        }
+    }
     
     render() {
         const {editmode, toggleEditMode} = this.props;
         
         return (
             <div className="dashboard-cards-wrapper">
+                {this.renderOptionModal()}
                 <div
                     className={(editmode ?
                         'dashboard-edit-mode' : 'dashboard-cards')}>
