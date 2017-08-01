@@ -59,7 +59,9 @@ class Table extends Component {
     }
 
     componentDidMount(){
-        this.getIndentData(true);
+        const {rows} = this.state;
+        
+        this.getIndentData(true); //selecting first table elem while getting indent data
 
         const {autofocus} = this.props;
 
@@ -70,7 +72,7 @@ class Table extends Component {
         const {
             mainTable, open, rowData, defaultSelected, disconnectFromState,
             dispatch, type, refreshSelection, supportIncludedViewOnSelect,
-            showIncludedViewOnSelect, viewId
+            showIncludedViewOnSelect, viewId, isModal
         } = this.props;
 
         const {
@@ -79,10 +81,13 @@ class Table extends Component {
 
         if((JSON.stringify(prevState.rows) !==
             JSON.stringify(rows))){
-                this.showSelectedIncludedView(selected);
+                if(isModal){
+                    supportIncludedViewOnSelect &&
+                        this.showSelectedIncludedView([rows[0].id]);
+                    rows[0].id && this.selectOneProduct(rows[0].id);
+                }
         }
         
-
         if(mainTable && open){
             this.table.focus();
         }
