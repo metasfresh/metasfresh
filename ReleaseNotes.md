@@ -99,8 +99,11 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#496](https://github.com/metasfresh/metasfresh-webui-api/issues/496) String document IDs cannot be converted to int Handling Unit Editor
+    * Fixes a Bug that occurred in Handling Unit Editor for String Document No being a String instead of an Integer.
   * [#511](https://github.com/metasfresh/metasfresh-webui-api/issues/511) Problems with Sales Opportunities Board
+    * Fix for the Sales Opportunity Board, now removing Cards from the New Selection List that were previously added to the Board.
   * [#516](https://github.com/metasfresh/metasfresh-webui-api/issues/516) moving 1 TU from one LU to another
+    * Fixes a refresh issue in Handling Unit Editor when transforming 1 Transport Unit to other existing Logistic Unit.
 
 * metasfresh-webui-frontend
   * [#1026](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1026) grid: Get rid of double scrollbar
