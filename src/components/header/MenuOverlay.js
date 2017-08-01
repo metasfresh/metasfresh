@@ -174,7 +174,8 @@ class MenuOverlay extends Component {
                             onClick={() => dispatch(push('/sitemap'))}
                             tabIndex={0}
                         >
-                            Browse whole tree
+                            {counterpart.translate(
+                                'window.browseTree.caption')}
                         </span>
                     </div>
                 }
