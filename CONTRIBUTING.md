@@ -35,7 +35,7 @@ The process of creating and maintaning a fork with git and github is explained i
 
 If you need help, don't hesitate to contact us, for example on our [metasfresh-webui-frontend gitter chat](https://gitter.im/metasfresh/metasfresh-webui-frontend).
 
-# Contribute and efficient clean code
+# Aim for efficient and clean code
 
 * Avoid creating redundant properties
   * negative example: we have both of `disableAutoFocus`, `enableAutoFocus`
