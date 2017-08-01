@@ -2,16 +2,10 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-/**
- * According to the documentation at https://docs.docker.com/engine/reference/commandline/tag/ :
- * A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes. A tag name may not start with a period or a dash and may contain a maximum of 128 characters.
- */
- def String mkDockerTag(String input)
- {
- 	return input
- 		.replaceFirst('^[#\\.]', '') // delete the first letter if it is a period or dash
- 		.replaceAll('[^a-zA-Z0-9_#\\.]', '_'); // replace everything that's not allowed with an underscore
- }
+// note that we set a default version for this library in jenkins, so we don't have to specify it here
+@Library('misc')
+import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Misc
 
 def String getEffectiveDownStreamJobName(final String jobFolderName, final String upstreamBranch)
 {
@@ -68,7 +62,8 @@ def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, f
 {
 	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
 
-	final String jobName = getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
+  def misc = new de.metas.jenkins.Misc();
+	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 
 	final buildResult = build job: jobName,
 		parameters: [
@@ -82,136 +77,6 @@ def Map invokeDownStreamJobs(final String jobFolderName, final String buildId, f
 	echo "Job invokation done; buildResult.getBuildVariables()=${buildResult.getBuildVariables()}"
 
 	return buildResult.getBuildVariables();
-}
-
-def boolean isRepoExists(String repoId)
-{
-	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
-	{
-		echo "Check if the nexus repository ${repoId} exists";
-
-		// check if there is a repository for ur branch
-		final String checkForRepoCommand = "curl --silent -X GET -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories | grep '<id>${repoId}-releases</id>'";
-		final grepExitCode = sh returnStatus: true, script: checkForRepoCommand;
-		final repoExists = grepExitCode == 0;
-
-		echo "The nexus repository ${repoId} exists: ${repoExists}";
-		return repoExists;
-	}
-}
-
-def createRepo(String repoId)
-{
-	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
-	{
-		echo "Create the repository ${repoId}-releases";
-
-		final String createRepoPayload = """<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<repository>
-  <data>
-	<id>${repoId}-releases</id>
-	<name>${repoId}-releases</name>
-	<exposed>true</exposed>
-	<repoType>hosted</repoType>
-	<writePolicy>ALLOW_WRITE_ONCE</writePolicy>
-    <browseable>true</browseable>
-    <indexable>true</indexable>
-	<repoPolicy>RELEASE</repoPolicy>
-	<providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
-	<provider>maven2</provider>
-	<format>maven2</format>
-  </data>
-</repository>
-""";
-
-		// # nexus ignored application/json
-		final String createRepoCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createRepoPayload}\' https://repo.metasfresh.com/service/local/repositories"
-		sh "${createRepoCommand}"
-
-		echo "Create the repository-group ${repoId}";
-
-		final String createGroupPayload = """<?xml version="1.0" encoding="UTF-8"?>
-<repo-group>
-  <data>
-    <repositories>
-	  <!-- include mvn-public that contains everything we need to perform the build-->
-      <repo-group-member>
-        <name>mvn-public</name>
-        <id>mvn-public</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/mvn-public/</resourceURI>
-      </repo-group-member>
-	  <!-- include ${repoId}-releases which is the repo to which we release everything we build within this branch -->
-      <repo-group-member>
-        <name>${repoId}-releases</name>
-        <id>${repoId}-releases</id>
-        <resourceURI>https://repo.metasfresh.com/content/repositories/${repoId}-releases/</resourceURI>
-      </repo-group-member>
-    </repositories>
-    <name>${repoId}</name>
-    <repoType>group</repoType>
-    <providerRole>org.sonatype.nexus.proxy.repository.Repository</providerRole>
-    <exposed>true</exposed>
-    <id>${repoId}</id>
-	<provider>maven2</provider>
-	<format>maven2</format>
-  </data>
-</repo-group>
-"""
-
-		// # nexus ignored application/json
-		final String createGroupCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createGroupPayload}\' https://repo.metasfresh.com/service/local/repo_groups"
-		sh "${createGroupCommand}"
-
-		echo "Create the scheduled task to keep ${repoId}-releases from growing too big";
-
-final String createSchedulePayload = """<?xml version="1.0" encoding="UTF-8"?>
-<scheduled-task>
-  <data>
-	<id>cleanup-repo-${repoId}-releases</id>
-	<enabled>true</enabled>
-	<name>Remove Releases from ${repoId}-releases</name>
-	<typeId>ReleaseRemoverTask</typeId>
-	<schedule>daily</schedule>
-	<startDate>${currentBuild.startTimeInMillis}</startDate>
-	<recurringTime>03:00</recurringTime>
-	<properties>
-      <scheduled-task-property>
-        <key>numberOfVersionsToKeep</key>
-        <value>3</value>
-      </scheduled-task-property>
-      <scheduled-task-property>
-        <key>indexBackend</key>
-        <value>false</value>
-      </scheduled-task-property>
-      <scheduled-task-property>
-        <key>repositoryId</key>
-        <value>${repoId}-releases</value>
-      </scheduled-task-property>
-	</properties>
-  </data>
-</scheduled-task>"""
-
-		// # nexus ignored application/json
-		final String createScheduleCommand =  "curl --silent -H \"Content-Type: application/xml\" -X POST -u ${NEXUS_LOGIN} -d \'${createSchedulePayload}\' https://repo.metasfresh.com/service/local/schedules"
-		sh "${createScheduleCommand}"
-	} // withCredentials
-}
-
-def deleteRepo(String repoId)
-{
-	withCredentials([usernameColonPassword(credentialsId: 'nexus_jenkins', variable: 'NEXUS_LOGIN')])
-	{
-		echo "Delete the repository ${repoId}";
-
-		final String deleteGroupCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repo_groups/${repoId}"
-		sh "${deleteGroupCommand}"
-
-		final String deleteRepoCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/repositories/${repoId}-releases"
-		sh "${deleteRepoCommand}"
-
-		final String deleteScheduleCommand = "curl --silent -X DELETE -u ${NEXUS_LOGIN} https://repo.metasfresh.com/service/local/schedules/cleanup-repo-${repoId}-releases"
-		sh "${deleteScheduleCommand}"
-	}
 }
 
 //
@@ -243,16 +108,22 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
+
 		string(defaultValue: '',
 			description: 'Name of the upstream job which called us. Required only in conjunction with MF_UPSTREAM_VERSION',
 			name: 'MF_UPSTREAM_JOBNAME'),
+
 		string(defaultValue: '',
 			description: 'Version of the upstream job\'s artifact that was build by the job which called us. Shall used when resolving the upstream depdendency. Leave empty and this build will use the latest.',
 			name: 'MF_UPSTREAM_VERSION'),
-		booleanParam(defaultValue: false, description: '''Set to true to skip over the stage that creates a copy of our reference DB and then applies the migration script to it to look for trouble with the migration.''',
-			name: 'MF_SKIP_SQL_MIGRATION_TEST'),
+
 		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''',
 			name: 'MF_SKIP_TO_DIST'),
+
+		string(defaultValue: '',
+			description: 'Version of the metasfresh-parent parent pom.xml we shall use when building. Leave empty and this build will use the latest.',
+			name: 'MF_PARENT_VERSION'),
+
 		string(defaultValue: '',
 			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>',
 			name: 'MF_BUILD_ID')
@@ -281,34 +152,6 @@ echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
 final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
 echo "Setting BUILD_VERSION=$BUILD_VERSION"
 
-// metasfresh-task-repo is a constant (does not depend or the task/branch name) so that maven can find the credentials in our provided settings.xml file
-final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
-echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
-
-// name of the task/branch specific maven nexus-repository that we will create if it doesn't exist and and resolve from
-// make sure the maven repo name is OK, to avoid an error message saying
-// "Only letters, digits, underscores(_), hyphens(-), and dots(.) are allowed in Repository ID"
-final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}".replaceAll('[^a-zA-Z0-9_-]', '_');
-echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
-
-
-final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
-echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
-
-// IMPORTANT: the task-repo-url which we set in MF_MAVEN_TASK_RESOLVE_PARAMS is used within the settings.xml that our jenkins provides to the build. That's why we need it in the mvn parameters
-final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
-echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
-
-// the repository to which we are going to deploy
-final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
-echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
-
-// provide these cmdline params to all maven invocations that do a deploy
-// deploy-repo-id=metasfresh-task-repo so that maven can find the credentials in our provided settings.xml file
-// deployAtEnd=true so that
-final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
-echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
-
 // these two are shown in jenkins, for each build
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
 
@@ -318,6 +161,15 @@ node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
+		// create our config instance to be used further on
+		final MvnConf mvnConf = new MvnConf(
+			'/de.metas.parent/pom.xml', // pomFile
+			MAVEN_SETTINGS, // settingsFile
+			'https://repo.metasfresh.com', // mvnRepoBaseURL
+			"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+		)
+		echo "mvnConf=${mvnConf}"
+
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
@@ -330,34 +182,33 @@ node('agent && linux')
 				else
 				{
 
-				if(!isRepoExists(MF_MAVEN_REPO_NAME))
-				{
-					createRepo(MF_MAVEN_REPO_NAME);
-				}
+        nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
 
 				checkout scm; // i hope this to do all the magic we need
 				sh 'git clean -d --force -x' // clean the workspace
 
-				// update the parent-pom version of our de.metas.parent/pom.xml to the latest from the metasfresh-parent project
-				// --non-recursive is not strictly needed, but it will spare us a lot of messages saying "building blah..Project's parent is part of the reactor"
-				// update the parent pom version. Since https://github.com/metasfresh/metasfresh/issues/2102 we have a parent version *range*, therefore, we don't use "update-parent" anymore, but "resolve-ranges"
-				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} -DprocessParent=true versions:resolve-ranges"
+				// update the parent pom version
+        mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
 
-				// set the artifact version of everything below de.metas.parent/pom.xml
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${mvnConf.resolveParams} -DprocessParent=true versions:resolve-ranges"
+
+				// set the artifact version of everything below ${mvnConf.pomFile}
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.parent/pom.xml --batch-mode --non-recursive ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
+
+        final MvnConf mvnReactorConf = mvnConf.withPomFile('de.metas.reactor/pom.xml');
+        echo "mvnEsbConf=${mvnEsbConf}"
 
 				// update the versions of metas dependencies that are external to our reactor modules
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnReactorConf.resolveParams} versions:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.reactor/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy";
+				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${mvnReactorConf.resolveParams} ${mvnReactorConf.deployParam} clean deploy";
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 			stage('Build metasfresh docker image(s)')
@@ -381,13 +232,14 @@ node('agent && linux')
 					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
 					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
 
-					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-					app.push mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
-          			if(MF_UPSTREAM_BRANCH=='release')
-          			{
-            			echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
-            			app.push mkDockerTag('latest');
-          			}
+          def misc = new de.metas.jenkins.Misc();
+					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
+					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+          if(MF_UPSTREAM_BRANCH=='release')
+          {
+          	echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
+          	app.push misc.mkDockerTag('latest');
+          }
 				} // docker.withRegistry
 				} // if(params.MF_SKIP_TO_DIST)
       } // stage
@@ -401,22 +253,23 @@ node('agent && linux')
 				else
 				{
 
-				// update the parent-pom version of our de.metas.esb/pom.xml to the latest from the metasfresh-parent project
-				// --non-recursive is not strictly needed, but it will spare us a lot of messages saying "building blah..Project's parent is part of the reactor"
-				// update the parent pom version. Since https://github.com/metasfresh/metasfresh/issues/2102 we have a parent version *range*, therefore, we don't use "update-parent" anymore, but "resolve-ranges"
-				//sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:update-parent"
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode --non-recursive -DallowSnapshots=false -DgenerateBackupPoms=true ${MF_MAVEN_TASK_RESOLVE_PARAMS}  -DprocessParent=true versions:resolve-ranges"
+        // create our config instance to be used further on
+        final MvnConf mvnEsbConf = mvnConf.withPomFile('de.metas.esb/pom.xml');
+        echo "mvnEsbConf=${mvnEsbConf}"
+
+				// update the parent pom version
+        mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
 
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:use-latest-versions"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:use-latest-versions"
 
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings $MAVEN_SETTINGS --file de.metas.esb/pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${mvnEsbConf.resolveParams} ${mvnEsbConf.deployParam} clean deploy"
 				} // if(params.MF_SKIP_TO_DIST)
 			} // stage
 
@@ -465,7 +318,6 @@ stage('Invoke downstream jobs')
 			MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']=params.MF_UPSTREAM_VERSION;
 			echo "Set MF_ARTIFACT_VERSIONS.metasfresh-procurement-webui=${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}"
 		}
-		// TODO: also handle procurement-webui
 	}
 	else
 	{
@@ -485,14 +337,15 @@ stage('Invoke downstream jobs')
 			}
 		);
 
-		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. the frontend doesn't depend on this repo.
+		// gh #968: note that there is no point invoking metasfresh-webui-frontend from here. The frontend doesn't depend on this repo.
 		// Therefore we will just get the latest webui-frontend later, when we need it.
 
 		// more to come: admin-webui
 	} // if(params.MF_SKIP_TO_DIST)
 
 	// complement the MF_ARTIFACT_VERSIONS we did not set so far
-	MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
+  MF_ARTIFACT_VERSIONS['metasfresh-parent'] = params.MF_PARENT_VERSION ?: "LATEST";
+  MF_ARTIFACT_VERSIONS['metasfresh'] = MF_ARTIFACT_VERSIONS['metasfresh'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
@@ -511,6 +364,7 @@ stage('Invoke downstream jobs')
 			final jsonPayload = """{
 				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\",
 				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\",
+        \"MF_PARENT_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-parent']}\",
 				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
@@ -522,11 +376,12 @@ stage('Invoke downstream jobs')
 		}
 	}
 
-	echo "Invoking downstream job 'metasfresh-dist' with preferred branch=${MF_UPSTREAM_BRANCH}"
+	echo "Invoking downstream jobs 'metasfresh-dist' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
 	final List distJobParameters = [
 			string(name: 'MF_UPSTREAM_BUILDNO', value: MF_BUILD_ID), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+      string(name: 'MF_PARENT_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-parent']),
 			string(name: 'MF_METASFRESH_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']),
 			string(name: 'MF_METASFRESH_WEBUI_API_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui']),
