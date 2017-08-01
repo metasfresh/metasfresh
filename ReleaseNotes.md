@@ -46,12 +46,15 @@ Here come the actual release notes:
   * [#1994](https://github.com/metasfresh/metasfresh/issues/1994) Adjust Sales Invoice Window
     * Finetuning for the Sales Invoice Window to adjust the Layout to meet our current Look And Feel concept.
   * [#2019](https://github.com/metasfresh/metasfresh/issues/2019) Add Widget Size to System Elements
+    * New Feature in metasfresh Application Dictionary, allowing the admin to define default widget sizes per System Element.
   * [#2029](https://github.com/metasfresh/metasfresh/issues/2029) New Window for Accounts and Elements in WebUI
     * New Window for the maintenance of Account Elements in WebUI
   * [#2032](https://github.com/metasfresh/metasfresh/issues/2032) Layout for Handling Unit Editor Window in WebUI
     * Refined Layout for the Detail Views in Handling Unit Editor Window of WebUI.
   * [#2042](https://github.com/metasfresh/metasfresh/issues/2042) Process to Update Widget Size in all child UI Elements of a System Element
+    * New Process to update all Widget Child Elements of a given System Element.
   * [#2046](https://github.com/metasfresh/metasfresh/issues/2046) Window Design WebUI: Attribute Set
+    * Adding the refined Layout for the Attribute Set Window in WebUI.
   * [#2049](https://github.com/metasfresh/metasfresh/issues/2049) Window Design WebUI: Purchase Order
     * Adopting the Purchase Order Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2052](https://github.com/metasfresh/metasfresh/issues/2052) Window Design WebUI: Price System
@@ -61,8 +64,11 @@ Here come the actual release notes:
   * [#2058](https://github.com/metasfresh/metasfresh/issues/2058) Change AD_Table_ID Identifier to Name only
     * Changing the Identifier for AD_Table from TableName + Name to Name only. This allows a better readability for the user.
   * [#2066](https://github.com/metasfresh/metasfresh/issues/2066) CRM: Businesspartner B2C Reminder Functionality
+    *  New CRM Feature in Businesspartner B2C Window, allowing to set reminder Dates via Request Actions for Sales Responsible and Sales Representative. 
   * [#2067](https://github.com/metasfresh/metasfresh/issues/2067) switch between C_Order_MFGWarehouse with and without barcode
+    * New Feture that allows to switch between Warehouses in Manufacturing with and without Barcodes.
   * [#2069](https://github.com/metasfresh/metasfresh/issues/2069) Window Design WebUI: Bill of Materials
+    * Adopting the Bill of Materials Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
