@@ -14,6 +14,14 @@ export class ChartWidget extends Component {
         };
     }
 
+    componentDidMount(){
+        const {text} = this.props;
+
+        this.setState({
+            captionHandler: text
+        });
+    }
+
     handleClickOutside = () => {
         this.setState({
             toggleWidgetMenu: false
@@ -27,15 +35,17 @@ export class ChartWidget extends Component {
         })
     }
 
+
     render() {
         const {
             text, framework, noData, maximizeWidget,
             hideWidgets, showWidgets, index, idMaximized, id, chartType,
-            caption, fields, groupBy, pollInterval, editmode
+            caption, fields, groupBy, pollInterval, editmode, handleChartOptions
         } = this.props;
 
         const {
-            toggleWidgetMenu, height
+            toggleWidgetMenu, height, captionHandler, chartOptions,
+            when
         } = this.state;
         
         const isMaximized = idMaximized === id;
@@ -58,6 +68,14 @@ export class ChartWidget extends Component {
                         className="draggable-widget-title"
                     >
                         {text}
+                        {editmode ? 
+                            <span
+                                className="chart-edit-mode"
+                                onClick={() => handleChartOptions(true, text, id, false)}
+                            >
+                                <i className="meta-icon-settings"></i>
+                            </span>
+                        : ''}
                     </p>
                     {!editmode && !framework && <i
                         className="draggable-widget-icon meta-icon-down-1 input-icon-sm"

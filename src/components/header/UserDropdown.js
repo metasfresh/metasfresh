@@ -97,7 +97,8 @@ class UserDropdown extends Component {
                                     me.userProfileWindowId +
                                     '/' + me.userProfileId
                                 );
-                                handleUDOpen(false)}}
+                                handleUDOpen(false);
+                                toggleTooltip('')}}
                             tabIndex={0}
                         >
                             <i className="meta-icon-settings" />

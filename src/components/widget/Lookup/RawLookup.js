@@ -168,8 +168,10 @@ class RawLookup extends Component {
         const {
             recent, windowType, dataId, filterWidget, parameterName,
             tabId, rowId, entity, subentity, subentityId, viewId, mainProperty,
-            handleInputEmptyStatus
+            handleInputEmptyStatus, enableAutofocus
         } = this.props;
+
+        enableAutofocus();
 
         if(this.inputSearch.value != '' || allowEmpty){
 
