@@ -61,6 +61,10 @@
     height: 42px;
 }
 
+.table th {
+    padding-right: .5rem;
+}
+
 .table td {
     cursor: pointer;
     border-top: 0;
