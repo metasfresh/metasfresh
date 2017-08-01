@@ -34,7 +34,6 @@ Map invokeDownStreamJobs(
 
 	final buildResult = build job: jobName,
 		parameters: [
-			string(name: 'MF_PARENT_VERSION', value: parentPomVersion),
 			string(name: 'MF_UPSTREAM_BRANCH', value: upstreamBranch),
 			string(name: 'MF_UPSTREAM_BUILDNO', value: buildId), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_VERSION', value: metasfreshVersion), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
@@ -87,10 +86,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 			name: 'MF_SKIP_TO_DIST'),
 
 		string(defaultValue: '',
-			description: 'Version of the metasfresh-parent parent pom.xml we shall use when building. Leave empty and this build will use the latest.',
-			name: 'MF_PARENT_VERSION'),
-
-		string(defaultValue: '',
 			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>',
 			name: 'MF_BUILD_ID')
 	]),
@@ -136,7 +131,7 @@ node('agent && linux')
 		)
 		echo "mvnConf=${mvnConf}"
 
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
+		withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
       stage('Set versions and build metasfresh')
@@ -154,7 +149,7 @@ node('agent && linux')
 				sh 'git clean -d --force -x' // clean the workspace
 
 				// update the parent pom version
- 				mvnUpdateParentPomVersion mvnConf, params.MF_PARENT_VERSION
+ 				mvnUpdateParentPomVersion mvnConf
 
 				// set the artifact version of everything below ${mvnConf.pomFile}
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
@@ -222,7 +217,7 @@ node('agent && linux')
         echo "mvnEsbConf=${mvnEsbConf}"
 
 				// update the parent pom version
- 				mvnUpdateParentPomVersion mvnEsbConf, params.MF_PARENT_VERSION
+ 				mvnUpdateParentPomVersion mvnEsbConf
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
 				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
@@ -258,8 +253,6 @@ final MF_ARTIFACT_VERSIONS = [:];
 // wait for the results, but don't block a node while waiting
 stage('Invoke downstream jobs')
 {
-  MF_ARTIFACT_VERSIONS['metasfresh-parent'] = params.MF_PARENT_VERSION ?: "LATEST";
-
 	if(params.MF_SKIP_TO_DIST)
 	{
 		echo "params.MF_SKIP_TO_DIST is true so don't build metasfresh and esb jars and don't invoke downstream jobs";
@@ -341,7 +334,6 @@ stage('Invoke downstream jobs')
 			final jsonPayload = """{
 				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\",
 				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\",
-        \"MF_PARENT_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-parent']}\",
 				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
 				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
 				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
@@ -358,7 +350,6 @@ stage('Invoke downstream jobs')
 	final List distJobParameters = [
 			string(name: 'MF_UPSTREAM_BUILDNO', value: MF_BUILD_ID), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-      string(name: 'MF_PARENT_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-parent']),
 			string(name: 'MF_METASFRESH_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']),
 			string(name: 'MF_METASFRESH_WEBUI_API_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-webui']),
