@@ -34,6 +34,11 @@ public class PrintPackagePDFBuilder
 
 	private I_C_Print_Package printPackage;
 
+	public PrintPackagePDFBuilder()
+	{
+		super();
+	}
+
 	public PrintPackagePDFBuilder setPrintPackage(I_C_Print_Package printPackage)
 	{
 		this.printPackage = printPackage;

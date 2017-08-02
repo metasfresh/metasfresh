@@ -31,8 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -45,15 +44,24 @@ import org.adempiere.util.collections.PeekIterator;
 import org.adempiere.util.collections.SingletonIterator;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
+import org.slf4j.Logger;
 
 import de.metas.adempiere.service.IPrinterRoutingDAO;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintPackageBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
+import de.metas.printing.async.spi.impl.PDFDocPrintingWorkpackageProcessor;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_C_Print_Job;
@@ -527,5 +535,27 @@ public class PrintJobBL implements IPrintJobBL
 		return Services.get(IMsgBL.class).translate(ctx, I_C_Print_Job.COLUMNNAME_C_Print_Job_ID)
 				+ " "
 				+ printJob.getC_Print_Job_ID();
+	}
+	
+	@Override
+	public void enquePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, final I_C_Async_Batch asyncBatch)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
+		I_C_Queue_Block queueBlock = null;
+
+		if (queueBlock == null)
+		{
+			queueBlock = queue.enqueueBlock(ctx);
+		}
+
+		final I_C_Queue_WorkPackage queueWorkpackage = queue.enqueueWorkPackage(queueBlock, IWorkPackageQueue.PRIORITY_AUTO); // priority=null=Auto/Default
+
+		// set the async batch in workpackage in order to track it
+		queueWorkpackage.setC_Async_Batch(asyncBatch);
+		Services.get(IQueueDAO.class).saveInLocalTrx(queueWorkpackage);
+
+		queue.enqueueElement(queueWorkpackage, jobInstructions);
+		queue.markReadyForProcessing(queueWorkpackage);
 	}
 }
