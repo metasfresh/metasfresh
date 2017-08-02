@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
@@ -30,7 +14,7 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -360378621L;
+	private static final long serialVersionUID = -1435794584L;
 
     /** Standard Constructor */
     public X_C_Printing_Queue_Recipient (Properties ctx, int C_Printing_Queue_Recipient_ID, String trxName)
@@ -38,6 +22,7 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
       super (ctx, C_Printing_Queue_Recipient_ID, trxName);
       /** if (C_Printing_Queue_Recipient_ID == 0)
         {
+			setAD_User_ToPrint_ID (0);
 			setC_Printing_Queue_Recipient_ID (0);
         } */
     }
@@ -126,7 +111,9 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
 	}
 
 	/** Set Druck-Empfänger.
-		@param C_Printing_Queue_Recipient_ID Druck-Empfänger	  */
+		@param C_Printing_Queue_Recipient_ID 
+		Bei einem automatischer Druck über das "Massendruck" Framework ist nicht der eigenentlich druckende Nutzer, sondern der jeweils als Druck-Empfänger eingerichtete Nutzer der Empfänger der Druckstücke.
+	  */
 	@Override
 	public void setC_Printing_Queue_Recipient_ID (int C_Printing_Queue_Recipient_ID)
 	{
@@ -137,7 +124,8 @@ public class X_C_Printing_Queue_Recipient extends org.compiere.model.PO implemen
 	}
 
 	/** Get Druck-Empfänger.
-		@return Druck-Empfänger	  */
+		@return Bei einem automatischer Druck über das "Massendruck" Framework ist nicht der eigenentlich druckende Nutzer, sondern der jeweils als Druck-Empfänger eingerichtete Nutzer der Empfänger der Druckstücke.
+	  */
 	@Override
 	public int getC_Printing_Queue_Recipient_ID () 
 	{
