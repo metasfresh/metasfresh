@@ -107,8 +107,8 @@ node('agent && linux && libc6-i386')
 			final MvnConf mvnConf = new MvnConf(
 				'pom.xml', // pomFile
 				MAVEN_SETTINGS, // settingsFile
-				'https://repo.metasfresh.com', // mvnRepoBaseURL
-				"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+				"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+				'https://repo.metasfresh.com' // mvnRepoBaseURL
 			)
 			echo "mvnConf=${mvnConf}"
 
@@ -166,12 +166,12 @@ node('agent && linux && libc6-i386')
 				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15.dist/app.properties'
 
 				final MF_ARTIFACT_URLS = [:];
-				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.repoURL}/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.repoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz";
-				MF_ARTIFACT_URLS['metasfresh-material-dispo']= "${mvnConf.repoURL}/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "${mvnConf.repoURL}/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-webui'] = "${mvnConf.repoURL}/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.repoURL}/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz";
+				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.deployRepoURL}/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-dist'] = "${mvnConf.deployRepoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-dist.tar.gz";
+				MF_ARTIFACT_URLS['metasfresh-material-dispo']= "${mvnConf.deployRepoURL}/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "${mvnConf.deployRepoURL}/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-webui'] = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar";
+				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz";
 
 				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
 				// See
@@ -194,8 +194,8 @@ node('agent && linux && libc6-i386')
 <h3>Deployable artifacts</h3>
 <ul>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"${mvnConf.repoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-	<li><a href=\"${mvnConf.repoURL}/de/metas/dist/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
+	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/de.metas.endcustomer.mf15.dist/${BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+	<li><a href=\"${mvnConf.deployRepoURL}/de/metas/dist/de.metas.endcustomer.mf15.swingui/${BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${BUILD_VERSION}-client.zip\">client.zip</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
@@ -241,8 +241,8 @@ def downloadForDeployment = { String groupId, String artifactId, String version,
 		final MvnConf mvnDeployConf = new MvnConf(
 			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
-			'https://repo.metasfresh.com', // mvnRepoBaseURL
-			"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+			'https://repo.metasfresh.com' // mvnRepoBaseURL
 		)
 		echo "mvnDeployConf=${mvnDeployConf}"
 
