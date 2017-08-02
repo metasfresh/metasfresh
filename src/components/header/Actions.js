@@ -7,6 +7,7 @@ import Loader from '../app/Loader';
 
 import {
     actionsRequest,
+    rowActionsRequest
 } from '../../actions/GenericActions';
 
 class Actions extends Component {
@@ -20,15 +21,17 @@ class Actions extends Component {
 
     componentDidMount = () => {
         const {
-            windowType, entity, docId, rowId, notfound
+            windowType, entity, docId, rowId, notfound, activeTab, activeTabSelected
         } = this.props;
 
         if(!windowType || docId === 'notfound' || notfound){
             this.setState({
                 data: []
-            })
+            });
             return;
         }
+
+        const requestRowActions = activeTab && activeTabSelected && (activeTabSelected.length > 0);
 
         if (entity === 'board') {
             this.setState({
@@ -41,9 +44,36 @@ class Actions extends Component {
         actionsRequest(
             entity, windowType, docId, rowId
         ).then((response) => {
-            this.setState({
-                data: response.data.actions
-            });
+            let actions = response.data.actions;
+
+            if (requestRowActions) {
+                rowActionsRequest(
+                    windowType, docId, activeTab, activeTabSelected
+                ).then((response) => {
+                    if (response.data && response.data.actions && (response.data.actions.length > 0)) {
+                        let mergeActions = response.data.actions.map( (item) => {
+                            return Object.assign(item, {
+                                rowId: activeTabSelected,
+                                tabId: activeTab
+                            });
+                        });
+                        actions = actions.concat([null], mergeActions);
+                    }
+
+                    this.setState({
+                        data: actions
+                    });
+                }).catch(() => {
+                    this.setState({
+                        data: actions
+                    });
+                });
+            }
+            else {
+                this.setState({
+                    data: actions
+                });
+            }
         }).catch(() => {
             this.setState({
                 data: []
@@ -52,26 +82,47 @@ class Actions extends Component {
     }
 
     renderData = () => {
-        const {closeSubheader, openModal} = this.props;
-        const {data} = this.state;
+        const { closeSubheader, openModal, openModalRow } = this.props;
+        const { data } = this.state;
 
-        return (data && data.length) ? data.map((item, key) =>
-            <div
-                className="subheader-item js-subheader-item"
-                onClick={() => {
-                    openModal(
-                        item.processId + '', 'process', item.caption
-                    );
-                    closeSubheader()
-                }}
-                key={key}
-                tabIndex={0}
-            >
-                {item.caption}
+        return (data && data.length) ? data.map( (item, key) => {
+            if (item) {
+                return (
+                    <div
+                        key={key}
+                        tabIndex={0}
+                        className="subheader-item js-subheader-item"
+                        onClick={ () => {
+                            if (item.tabId && item.rowId) {
+                                openModalRow(
+                                    item.processId + '', 'process', item.caption, item.tabId, item.rowId[0]
+                                );
+                            }
+                            else {
+                                openModal(
+                                    item.processId + '', 'process', item.caption
+                                );
+                            }
+
+                            closeSubheader()
+                        }}
+                    >
+                        {item.caption}
+                    </div>
+                );
+            }
+
+            return (
+                <hr
+                    key={key}
+                    tabIndex={0}
+                />
+            );
+        }) : (
+            <div className="subheader-item subheader-item-disabled">
+                {counterpart.translate('window.actions.emptyText')}
             </div>
-        ) : <div className="subheader-item subheader-item-disabled">
-            {counterpart.translate('window.actions.emptyText')}
-        </div>
+        )
     }
 
     render() {

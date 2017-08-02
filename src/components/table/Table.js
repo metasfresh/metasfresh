@@ -11,7 +11,8 @@ import {
     mapIncluded,
     collapsedMap,
     getItemsByProperty,
-    getZoomIntoWindow
+    getZoomIntoWindow,
+    selectRow
 } from '../../actions/WindowActions';
 
 import {
@@ -229,21 +230,32 @@ class Table extends Component {
     }
 
     selectProduct = (id, idFocused, idFocusedDown) => {
-        const {dispatch, type, disconnectFromState} = this.props;
+        const {dispatch, type, disconnectFromState, tabInfo} = this.props;
 
         this.setState(prevState => ({
             selected: prevState.selected.concat([id])
         }), () => {
             const {selected} = this.state;
+
+            if (tabInfo) {
+                dispatch(selectRow(selected));
+            }
+
             !disconnectFromState && dispatch(selectTableItems(selected, type))
             this.triggerFocus(idFocused, idFocusedDown);
         })
     }
 
     selectRangeProduct = (ids) => {
+        const { dispatch, tabInfo } = this.props;
+
         this.setState({
             selected: ids
         });
+
+        if (tabInfo) {
+            dispatch(selectRow(ids));
+        }
     }
 
     selectAll = () => {
@@ -256,25 +268,43 @@ class Table extends Component {
     }
 
     selectOneProduct = (id, idFocused, idFocusedDown, cb) => {
+        const { dispatch, tabInfo } = this.props;
+
         this.setState({
             selected: [id]
         }, () => {
+            if (tabInfo) {
+                dispatch(selectRow([id]));
+            }
+
             this.triggerFocus(idFocused, idFocusedDown);
             cb && cb();
         })
     }
 
     deselectProduct = (id) => {
+        const { dispatch, tabInfo } = this.props;
         const index = this.state.selected.indexOf(id);
+
         this.setState(update(this.state, {
             selected: {$splice: [[index, 1]]}
-        }))
+        }), () => {
+            if (tabInfo) {
+                dispatch(selectRow(this.state.selected));
+            }
+        })
     }
 
     deselectAllProducts = (cb) => {
+        const { dispatch, tabInfo } = this.props;
+
         this.setState({
             selected: []
         }, cb && cb());
+
+        if (tabInfo) {
+            dispatch(selectRow([]));
+        }
     }
 
     triggerFocus = (idFocused, idFocusedDown) => {
