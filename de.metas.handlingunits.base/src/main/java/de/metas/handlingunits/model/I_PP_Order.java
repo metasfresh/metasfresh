@@ -29,7 +29,8 @@ public interface I_PP_Order extends org.eevolution.model.I_PP_Order
 	public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 	//public void setM_HU_LUTU_Configuration_ID(int M_HU_LUTU_Configuration_ID);
 	public void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration);
-	//public int getM_HU_LUTU_Configuration_ID();
+
+	public int getM_HU_LUTU_Configuration_ID();
 	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
 	// @formatter:on
 

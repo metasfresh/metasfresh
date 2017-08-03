@@ -13,15 +13,14 @@ package de.metas.handlingunits.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 public interface I_PP_Order_BOMLine extends org.eevolution.model.I_PP_Order_BOMLine
 {
@@ -29,7 +28,8 @@ public interface I_PP_Order_BOMLine extends org.eevolution.model.I_PP_Order_BOML
 	public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 	//public void setM_HU_LUTU_Configuration_ID(int M_HU_LUTU_Configuration_ID);
 	public void setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration);
-	//public int getM_HU_LUTU_Configuration_ID();
+
+	public int getM_HU_LUTU_Configuration_ID();
 	public I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration();
 	// @formatter:on
 }
