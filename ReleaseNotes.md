@@ -29,6 +29,8 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#1099](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1099) Browse whole tree is not translated in DE
+    * New Transition of static element in WebUI Sitemap
 
 ## Fixes
 * metasfresh-app
