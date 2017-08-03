@@ -71,6 +71,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveItems(workpackage, I_C_Print_Job_Instructions.class, localTrxName);
 		for (final I_C_Print_Job_Instructions printjobInstructions : list)
 		{
+			InterfaceWrapperHelper.refresh(printjobInstructions, localTrxName);
 			createPrintPackage(printjobInstructions, localTrxName);
 			if (X_C_Print_Job_Instructions.STATUS_Error.equals(printjobInstructions.getStatus()))
 			{
@@ -118,8 +119,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			if (jobLine.getC_Printing_Queue_ID() > 0)
 			{
 				final I_C_Printing_Queue pq = jobLine.getC_Printing_Queue();
-				final Optional<String> itemName = InterfaceWrapperHelper.getValue(pq, "ItemName");
-				if (!itemName.isPresent())
+				final Optional<String> itemName = InterfaceWrapperHelper.getValueOrNull(pq, "ItemName");
+				if (itemName == null || !itemName.isPresent())
 				{
 					isCreateSummary = false;
 				}
@@ -233,7 +234,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		printPackage.setTransactionID(transactionId);
 		InterfaceWrapperHelper.save(printPackage, trxName);
 
-		final PrintPackageCtx printCtx = (PrintPackageCtx)printPackageBL.createInitialCtx(ctx);
+		final PrintPackageCtx printCtx = (PrintPackageCtx)printPackageBL.createEmptyInitialCtx();
 		printCtx.setHostKey(printjobInstructions.getHostKey());
 		printCtx.setTransactionId(printPackage.getTransactionID());
 

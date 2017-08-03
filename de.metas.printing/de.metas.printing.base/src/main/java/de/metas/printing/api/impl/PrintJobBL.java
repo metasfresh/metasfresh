@@ -91,6 +91,7 @@ public class PrintJobBL implements IPrintJobBL
 
 	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
 	
+	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
@@ -526,6 +527,9 @@ public class PrintJobBL implements IPrintJobBL
 			instructions.setAD_User_ToPrint_ID(userToPrintId);
 		}
 
+		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
+		instructions.setAD_PrinterHW(dao.retrieveVirtualPrinter(ctx, hostKey, trxName));
+		
 		InterfaceWrapperHelper.save(instructions);
 		return instructions;
 	}

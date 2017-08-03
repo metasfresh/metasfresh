@@ -46,4 +46,6 @@ public interface IPrintPackageBL extends ISingletonService
 	boolean createPrintPackage(I_C_Print_Package printPackage, 
 			I_C_Print_Job_Instructions jobInstructions, 
 			IPrintPackageCtx printPackageCtx);
+
+	IPrintPackageCtx createEmptyInitialCtx();
 }

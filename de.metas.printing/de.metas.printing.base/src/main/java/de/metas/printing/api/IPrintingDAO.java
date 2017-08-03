@@ -303,5 +303,14 @@ public interface IPrintingDAO extends ISingletonService
 	 * @return
 	 */
 	I_C_PrintPackageData retrievePrintPackageData(I_C_Print_Package printPackage);
+	
+	/**
+	 * retrieve virtual printer
+	 * 
+	 * @param ctx
+	 * @param trxName
+	 * @return
+	 */
+	I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName);
 
 }

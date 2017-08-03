@@ -132,7 +132,8 @@ public class PrintPackageBL implements IPrintPackageBL
 			final String trxName)
 	{
 		final String jobInstructionsTrxName = InterfaceWrapperHelper.getTrxName(jobInstructions);
-		Check.assume(Objects.equals(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		Check.assume(trxManager.isSameTrxName(trxName, jobInstructionsTrxName), "Same transaction (Param 'trxName': {}, jobInstructions' trxName: {}; jobInstructions={})",
 				trxName, jobInstructionsTrxName, jobInstructions);
 
 		printPackage.setCopies(jobInstructions.getCopies());
@@ -160,6 +161,14 @@ public class PrintPackageBL implements IPrintPackageBL
 		return new PrintJobLinesAggregator(printPackageCtx, jobInstructions);
 	}
 
+	
+	@Override
+	public IPrintPackageCtx createEmptyInitialCtx()
+	{
+		final PrintPackageCtx printCtx = new PrintPackageCtx();
+		return printCtx;
+	}
+	
 	@Override
 	public IPrintPackageCtx createInitialCtx(final Properties ctx)
 	{
