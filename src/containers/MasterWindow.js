@@ -220,6 +220,10 @@ class MasterWindow extends Component {
 
         const dataId = master.docId;
         const docNoData = master.data.DocumentNo;
+        let activeTab;
+        if (master.layout) {
+            activeTab = master.layout.activeTab
+        }
 
         const docStatusData = {
             'status': master.data.DocStatus || -1,
@@ -241,7 +245,7 @@ class MasterWindow extends Component {
                 {...{dropzoneFocused, docStatusData, docSummaryData, modal,
                     dataId, breadcrumb, docNoData, isDocumentNotSaved, rawModal,
                     selected, selectedWindowType, modalTitle, includedView,
-                    processStatus
+                    processStatus, activeTab
                 }}
                 closeModalCallback={this.closeModalCallback}
                 setModalTitle={this.setModalTitle}

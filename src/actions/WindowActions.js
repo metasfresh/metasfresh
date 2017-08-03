@@ -172,6 +172,13 @@ export function deleteRow(tabid, rowid, scope) {
     }
 }
 
+export function selectRow(selected) {
+    return {
+        type: types.SELECT_ROW,
+        selected
+    }
+}
+
 export function updateDataFieldProperty(property, item, scope) {
     return {
         type: types.UPDATE_DATA_FIELD_PROPERTY,

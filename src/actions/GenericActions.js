@@ -196,6 +196,19 @@ export function actionsRequest(entity, type, id, selected){
     );
 }
 
+export function rowActionsRequest(windowId, documentId, tabId, selected) {
+    let query = selected.join(',');
+
+    return axios.get(
+        config.API_URL + '/window/' +
+        windowId + '/' +
+        documentId + '/' +
+        tabId + '/' +
+        query +
+        '/actions'
+    );
+}
+
 export function referencesRequest(entity, type, docId, tabId, rowId){
     return axios.get(
         config.API_URL + '/' +
