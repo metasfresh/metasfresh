@@ -30,6 +30,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IOrgDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
@@ -262,7 +263,7 @@ public class ESRImportBL implements IESRImportBL
 
 		final boolean hasLines = esrImportLines.size() > 0;
 		final boolean fitAmounts = importAmt.compareTo(esrImport.getESR_Control_Amount()) == 0;
-		final boolean fitTrxQtys = (new BigDecimal(trxQty).compareTo(esrImport.getESR_Control_Trx_Qty()) == 0);
+		final boolean fitTrxQtys = evaluateTrxQty(esrImport, trxQty);
 
 		esrImport.setIsValid(hasLines && fitAmounts && fitTrxQtys);
 
@@ -288,6 +289,21 @@ public class ESRImportBL implements IESRImportBL
 							+ "). The document will not be processed."));
 		}
 		save(esrImport);
+	}
+
+	@VisibleForTesting
+	boolean evaluateTrxQty(
+			@NonNull final I_ESR_Import esrImport,
+			int trxQty)
+	{
+		if (InterfaceWrapperHelper.isNull(esrImport, I_ESR_Import.COLUMNNAME_ESR_Control_Trx_Qty))
+		{
+			// in the case of camt-54, the value is not mandatory. If it is not provided, we need to assume that it's OK
+			return true;
+		}
+
+		final boolean fitTrxQtys = (new BigDecimal(trxQty).compareTo(esrImport.getESR_Control_Trx_Qty()) == 0);
+		return fitTrxQtys;
 	}
 
 	@VisibleForTesting
@@ -322,8 +338,7 @@ public class ESRImportBL implements IESRImportBL
 			if (!unrenderedPostAccountNo.equals(postAccountNo))
 			{
 				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
-						new Object[]
-						{ unrenderedPostAccountNo, postAccountNo }));
+						new Object[] { unrenderedPostAccountNo, postAccountNo }));
 			}
 		}
 
@@ -471,7 +486,6 @@ public class ESRImportBL implements IESRImportBL
 		final List<I_ESR_ImportLine> allLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
 		try
 		{
-
 			if (allLines.isEmpty())
 			{
 				throw new AdempiereException("@NoLines@");
@@ -575,7 +589,7 @@ public class ESRImportBL implements IESRImportBL
 		}
 		catch (final Exception e)
 		{
-			// if there is an an asumption error, catch it to add a message and the release it
+			// if there is an an assumption error, catch it to add a message and the release it
 			final String message = e.getMessage();
 			if (message.startsWith("Assumption failure:"))
 			{
@@ -1072,8 +1086,7 @@ public class ESRImportBL implements IESRImportBL
 			final Properties ctx = getCtx(importLine);
 			final I_AD_Org invoiceOrg = Services.get(IOrgDAO.class).retrieveOrg(ctx, invoice.getAD_Org_ID());
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
-					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[]
-					{
+					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
 							invoiceOrg.getValue(),
 							importLine.getAD_Org().getValue()
 					}));

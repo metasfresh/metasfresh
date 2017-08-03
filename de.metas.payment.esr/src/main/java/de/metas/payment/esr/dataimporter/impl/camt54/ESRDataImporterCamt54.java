@@ -25,6 +25,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 
 import ch.qos.logback.classic.Level;
@@ -43,6 +44,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.model.I_ESR_Import;
 import lombok.NonNull;
@@ -90,11 +92,15 @@ import lombok.NonNull;
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
 
-	private static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
+	static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
 
-	private static final String MSG_MISSING_ESR_REFERENCE = "ESR_CAMT54_Missing_ESR_Reference";
+	@VisibleForTesting
+	static final String MSG_AMBIGOUS_REFERENCE = "ESR_CAMT54_Ambigous_Reference";
 
-	private static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
+	@VisibleForTesting
+	static final String MSG_MISSING_ESR_REFERENCE = "ESR_CAMT54_Missing_ESR_Reference";
+
+	static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
 
 	/**
 	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an ESR number.
@@ -147,32 +153,16 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 					if (ntryDtl.getBtch() != null && ntryDtl.getBtch().getNbOfTxs() != null)
 					{
 						final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-						if (ctrlQty == null)
-						{
-							ctrlQty = augend;
-						}
-						ctrlQty = ctrlQty.add(augend);
+						ctrlQty = (ctrlQty == null) ? augend : ctrlQty.add(augend);
 					}
 
 					for (final EntryTransaction8 txDtls : ntryDtl.getTxDtls())
 					{
-						// get the esr reference string out of the XML tree
-						final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
-								.map(strd -> strd.getCdtrRefInf())
+						final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
 
-								// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
-								.filter(cdtrRefInf -> cdtrRefInf != null
-										&& cdtrRefInf.getTp() != null
-										&& cdtrRefInf.getTp().getCdOrPrtry() != null
-										&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
-
-								.map(cdtrRefInf -> cdtrRefInf.getRef())
-								.findFirst();
-
-						stmtBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_MISSING_ESR_REFERENCE));
+						extractAndSetEsrReference(txDtls, trxBuilder);
 
 						final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
-						final BigDecimal amountValue;
 
 						// verify that the currency is consistent
 						// TODO: this does not really belong into the loader! move it to the matcher code.
@@ -181,42 +171,40 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 							final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
 							if (!headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()))
 							{
-								stmtBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_BANK_ACCOUNT_MISMATCH_2P, 
+								trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_BANK_ACCOUNT_MISMATCH_2P,
 										new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
 							}
 						}
 
 						// credit-or-debit indicator
-						final String trxType;
 						if (txDtls.getCdtDbtInd() == CreditDebitCode.CRDT)
 						{
 							if (ntry.isRvslInd() != null && ntry.isRvslInd())
 							{
-								trxType = ESRConstants.ESRTRXTYPE_ReverseBooking;
-								amountValue = transactionDetailAmt.getValue().negate();
+								trxBuilder
+										.trxType(ESRConstants.ESRTRXTYPE_ReverseBooking)
+										.amount(transactionDetailAmt.getValue().negate());
 							}
 							else
 							{
-								trxType = ESRConstants.ESRTRXTYPE_CreditMemo;
-								amountValue = transactionDetailAmt.getValue();
+								trxBuilder
+										.trxType(ESRConstants.ESRTRXTYPE_CreditMemo)
+										.amount(transactionDetailAmt.getValue());
 							}
 						}
 						else
 						{
 							// we get charged; currently not supported
-							stmtBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, new Object[]
-								{ ntry.getCdtDbtInd() }));
-							trxType = "???";
-							amountValue = null;
+							trxBuilder
+									.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, new Object[] { ntry.getCdtDbtInd() }))
+									.trxType("???")
+									.amount(null);
 						}
 
-						stmtBuilder.transaction(ESRTransaction.builder()
-								.trxType(trxType)
-								.amount(amountValue)
+						stmtBuilder.transaction(trxBuilder
 								.accountingDate(asTimestamp(ntry.getBookgDt()))
 								.paymentDate(asTimestamp(ntry.getValDt()))
 								.esrParticipantNo(ntry.getNtryRef())
-								.esrReferenceNumber(esrReferenceNumberString.orElse(null))
 								.transactionKey(mkTrxKey(txDtls))
 								.build());
 					}
@@ -227,6 +215,77 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 				.ctrlAmount(ctrAmount)
 				.ctrlQty(ctrlQty)
 				.build();
+	}
+
+	private void extractAndSetEsrReference(
+			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
+		if (esrReferenceNumberString.isPresent())
+		{
+			trxBuilder.esrReferenceNumber(esrReferenceNumberString.get());
+		}
+		else
+		{
+			final Optional<String> fallback = extractReferenceFallback(txDtls);
+			if (fallback.isPresent())
+			{
+				trxBuilder.esrReferenceNumber(fallback.get());
+				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_AMBIGOUS_REFERENCE));
+			}
+			else
+			{
+				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_MISSING_ESR_REFERENCE));
+			}
+		}
+	}
+
+	/**
+	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
+	 * from a <code>CdtrRefInf</code> element<br>
+	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
+	 * 
+	 * @param txDtls
+	 * @return
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/2107
+	 */
+	private Optional<String> extractEsrReference(@NonNull final EntryTransaction8 txDtls)
+	{
+		// get the esr reference string out of the XML tree
+		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+
+				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
+				.filter(cdtrRefInf -> cdtrRefInf != null
+						&& cdtrRefInf.getTp() != null
+						&& cdtrRefInf.getTp().getCdOrPrtry() != null
+						&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
+
+				.map(cdtrRefInf -> cdtrRefInf.getRef())
+				.findFirst();
+		return esrReferenceNumberString;
+	}
+
+	/**
+	 * 
+	 * @param txDtls
+	 * @return
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/2107
+	 */
+	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction8 txDtls)
+	{
+		// get the esr reference string out of the XML tree
+		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+				.filter(cdtrRefInf -> cdtrRefInf != null)
+				.map(cdtrRefInf -> cdtrRefInf.getRef())
+				.findFirst();
+		return esrReferenceNumberString;
 	}
 
 	private BankToCustomerDebitCreditNotificationV06 loadXML()
