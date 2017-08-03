@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	We received this file as camt.054-ESR-ASR_P_CH0309000000250090342_38000000_0_2016052723010603.xml
+	but renamed it for convenience
+ -->
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.04" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.04 camt.054.001.04.xsd">
 	<BkToCstmrDbtCdtNtfctn>
 		<GrpHdr>

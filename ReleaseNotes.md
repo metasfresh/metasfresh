@@ -29,6 +29,10 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#1000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1000) Cursor Missing after [tab] in BPartner Relation Window
+    * Fix for Focus after TAB from and into Lookup Fields.
+  * [#1099](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1099) Browse whole tree is not translated in DE
+    * New Transition of static element in WebUI Sitemap
 
 ## Fixes
 * metasfresh-app
