@@ -18,7 +18,8 @@ import Prompt from '../app/Prompt';
 import NewEmail from '../email/NewEmail';
 
 import {
-    openModal
+    openModal,
+    closeModal
 } from '../../actions/WindowActions';
 
 import {
