@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -12,7 +11,6 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DisplayType;
@@ -237,7 +235,6 @@ public class WebuiHUTransformParametersFiller
 
 	private static LookupValuesList retrieveHUPItemProductsForNewTU(final HUEditorRow cuRow)
 	{
-		// final HUEditorRow cuRow = getSingleSelectedRow();
 		final I_M_Product product = cuRow.getM_Product();
 		final I_C_BPartner bPartner = cuRow.getM_HU().getC_BPartner();
 
@@ -380,16 +377,8 @@ public class WebuiHUTransformParametersFiller
 
 		return luPIItems.stream()
 				.filter(luPIItem -> luPIItem.getM_HU_PI_Version().isCurrent() && luPIItem.getM_HU_PI_Version().isActive() && luPIItem.getM_HU_PI_Version().getM_HU_PI().isActive())
-				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), buildHUPIItemString(luPIItem)))
+				.map(luPIItem -> IntegerLookupValue.of(luPIItem.getM_HU_PI_Item_ID(), WEBUI_ProcessHelper.buildHUPIItemString(luPIItem)))
 				.sorted(Comparator.comparing(IntegerLookupValue::getDisplayName))
 				.collect(LookupValuesList.collect());
-	}
-
-	private static String buildHUPIItemString(final I_M_HU_PI_Item huPIItem)
-	{
-		return StringUtils.formatMessage("{} ({} x {})",
-				huPIItem.getM_HU_PI_Version().getName(),
-				huPIItem.getQty().setScale(0, RoundingMode.HALF_UP), // it's always integer quantities
-				huPIItem.getIncluded_HU_PI().getName());
 	}
 }

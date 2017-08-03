@@ -11,6 +11,9 @@ import com.google.common.base.MoreObjects;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.JavaProcess;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 
 /*
  * #%L
@@ -25,11 +28,11 @@ import de.metas.i18n.ImmutableTranslatableString;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -102,16 +105,16 @@ public abstract class LookupValue
 		final LookupValue defaultValue = null;
 		return fromNamePair(namePair, adLanguage, defaultValue);
 	}
-	
+
 	public static final LookupValue fromNamePair(final NamePair namePair, final String adLanguage, final LookupValue defaultValue)
 	{
 		if (namePair == null)
 		{
 			return defaultValue;
 		}
-		
+
 		final ITranslatableString displayNameTrl;
-		if(adLanguage == null)
+		if (adLanguage == null)
 		{
 			displayNameTrl = ImmutableTranslatableString.anyLanguage(namePair.getName());
 		}
@@ -119,7 +122,7 @@ public abstract class LookupValue
 		{
 			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, namePair.getName());
 		}
-		
+
 		if (namePair instanceof ValueNamePair)
 		{
 			final ValueNamePair vnp = (ValueNamePair)namePair;
@@ -190,13 +193,12 @@ public abstract class LookupValue
 	{
 		return displayName.getDefaultValue();
 	}
-	
+
 	public String getDisplayName(final String adLanguage)
 	{
 		return displayName.translate(adLanguage);
 	}
 
-	
 	public ITranslatableString getDisplayNameTrl()
 	{
 		return displayName;
@@ -225,12 +227,11 @@ public abstract class LookupValue
 		{
 			return new StringLookupValue(value, ImmutableTranslatableString.constant(displayName));
 		}
-		
+
 		public static final StringLookupValue of(final String value, final ITranslatableString displayName)
 		{
 			return new StringLookupValue(value, displayName);
 		}
-
 
 		public static final StringLookupValue unknown(final String value)
 		{
@@ -257,16 +258,23 @@ public abstract class LookupValue
 
 	public static final class IntegerLookupValue extends LookupValue
 	{
+		/**
+		 * Create a new value using the given {@code displayName} as a constant string that is valid in any language and thus never needs translation.
+		 * Note: without "anyLanguage", you can run into trouble when combining {@link ProcessParamLookupValuesProvider} and {@link IProcessDefaultParametersProvider} in one {@link JavaProcess} implementation.
+		 * 
+		 * @param id
+		 * @param displayName
+		 * @return
+		 */
 		public static final IntegerLookupValue of(final int id, final String displayName)
 		{
-			return new IntegerLookupValue(id, ImmutableTranslatableString.constant(displayName));
+			return new IntegerLookupValue(id, ImmutableTranslatableString.anyLanguage(displayName));
 		}
-		
+
 		public static final IntegerLookupValue of(final int id, final ITranslatableString displayName)
 		{
 			return new IntegerLookupValue(id, displayName);
 		}
-
 
 		public static final IntegerLookupValue of(final StringLookupValue stringLookupValue)
 		{
