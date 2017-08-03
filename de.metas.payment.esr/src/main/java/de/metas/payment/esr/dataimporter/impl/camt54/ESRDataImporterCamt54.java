@@ -5,8 +5,11 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXB;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -92,20 +95,20 @@ import lombok.NonNull;
 public class ESRDataImporterCamt54 implements IESRDataImporter
 {
 
-	static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
-
 	@VisibleForTesting
 	static final String MSG_AMBIGOUS_REFERENCE = "ESR_CAMT54_Ambigous_Reference";
 
 	@VisibleForTesting
 	static final String MSG_MISSING_ESR_REFERENCE = "ESR_CAMT54_Missing_ESR_Reference";
 
-	static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
+	private static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
 
 	/**
 	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an ESR number.
 	 */
-	public static final String ISR_REFERENCE = "ISR Reference";
+	private static final String ISR_REFERENCE = "ISR Reference";
+
+	private static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
 
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
 
@@ -134,9 +137,8 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		}
 	}
 
-	private ESRStatement createESRStatement(final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn)
+	private ESRStatement createESRStatement(@NonNull final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final ESRStatementBuilder stmtBuilder = ESRStatement.builder();
 
 		BigDecimal ctrAmount = BigDecimal.ZERO;
@@ -147,74 +149,130 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			for (final ReportEntry8 ntry : ntfctn.getNtry()) // gh #1947: there can be many ntry records
 			{
 				ctrAmount = ctrAmount.add(ntry.getAmt().getValue());
+				ctrlQty = iterateEntryDetails(stmtBuilder, ctrlQty, ntry);
 
-				for (final EntryDetails7 ntryDtl : ntry.getNtryDtls())
-				{
-					if (ntryDtl.getBtch() != null && ntryDtl.getBtch().getNbOfTxs() != null)
-					{
-						final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-						ctrlQty = (ctrlQty == null) ? augend : ctrlQty.add(augend);
-					}
-
-					for (final EntryTransaction8 txDtls : ntryDtl.getTxDtls())
-					{
-						final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
-
-						extractAndSetEsrReference(txDtls, trxBuilder);
-
-						final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
-
-						// verify that the currency is consistent
-						// TODO: this does not really belong into the loader! move it to the matcher code.
-						if (header.getC_BP_BankAccount_ID() > 0)
-						{
-							final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
-							if (!headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()))
-							{
-								trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_BANK_ACCOUNT_MISMATCH_2P,
-										new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
-							}
-						}
-
-						// credit-or-debit indicator
-						if (txDtls.getCdtDbtInd() == CreditDebitCode.CRDT)
-						{
-							if (ntry.isRvslInd() != null && ntry.isRvslInd())
-							{
-								trxBuilder
-										.trxType(ESRConstants.ESRTRXTYPE_ReverseBooking)
-										.amount(transactionDetailAmt.getValue().negate());
-							}
-							else
-							{
-								trxBuilder
-										.trxType(ESRConstants.ESRTRXTYPE_CreditMemo)
-										.amount(transactionDetailAmt.getValue());
-							}
-						}
-						else
-						{
-							// we get charged; currently not supported
-							trxBuilder
-									.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, new Object[] { ntry.getCdtDbtInd() }))
-									.trxType("???")
-									.amount(null);
-						}
-
-						stmtBuilder.transaction(trxBuilder
-								.accountingDate(asTimestamp(ntry.getBookgDt()))
-								.paymentDate(asTimestamp(ntry.getValDt()))
-								.esrParticipantNo(ntry.getNtryRef())
-								.transactionKey(mkTrxKey(txDtls))
-								.build());
-					}
-				} // ntryDtl
 			} // for ntry
 		} // ntfctn
 		return stmtBuilder
 				.ctrlAmount(ctrAmount)
 				.ctrlQty(ctrlQty)
 				.build();
+	}
+
+	/**
+	 * 
+	 * @param stmtBuilder builder to which the individual {@link ESRTransaction}s are added.
+	 * @param ctrlQty
+	 * @param ntry
+	 * @return the given {@code ctrlQty}, plus the <code>NbOfTxs</code> of the given {@code ntry}'s {@code ntryDtl}s (if any).
+	 */
+	private BigDecimal iterateEntryDetails(
+			@NonNull final ESRStatementBuilder stmtBuilder,
+			@Nullable BigDecimal ctrlQty,
+			@NonNull final ReportEntry8 ntry)
+	{
+		for (final EntryDetails7 ntryDtl : ntry.getNtryDtls())
+		{
+			if (ntryDtl.getBtch() != null && ntryDtl.getBtch().getNbOfTxs() != null)
+			{
+				final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
+				ctrlQty = (ctrlQty == null) ? augend : ctrlQty.add(augend);
+			}
+
+			final List<ESRTransaction> transactions = iterateTransactionDetails(ntry, ntryDtl);
+			stmtBuilder.transactions(transactions);
+
+		} // ntryDtl
+
+		return ctrlQty;
+	}
+
+	private List<ESRTransaction> iterateTransactionDetails(
+			@NonNull final ReportEntry8 ntry,
+			@NonNull final EntryDetails7 ntryDtl)
+	{
+		List<ESRTransaction> transactions = new ArrayList<>();
+
+		for (final EntryTransaction8 txDtls : ntryDtl.getTxDtls())
+		{
+			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
+
+			extractAndSetEsrReference(txDtls, trxBuilder);
+
+			verifyTransactionCurrency(txDtls, trxBuilder);
+
+			extractAmountAndType(ntry, txDtls, trxBuilder);
+
+			final ESRTransaction esrTransaction = trxBuilder
+					.accountingDate(asTimestamp(ntry.getBookgDt()))
+					.paymentDate(asTimestamp(ntry.getValDt()))
+					.esrParticipantNo(ntry.getNtryRef())
+					.transactionKey(mkTrxKey(txDtls))
+					.build();
+			transactions.add(esrTransaction);
+		}
+		return transactions;
+	}
+
+	private void extractAmountAndType(
+			@NonNull final ReportEntry8 ntry,
+			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+
+		// credit-or-debit indicator
+		if (txDtls.getCdtDbtInd() == CreditDebitCode.CRDT)
+		{
+			final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
+			if (ntry.isRvslInd() != null && ntry.isRvslInd())
+			{
+				trxBuilder
+						.trxType(ESRConstants.ESRTRXTYPE_ReverseBooking)
+						.amount(transactionDetailAmt.getValue().negate());
+			}
+			else
+			{
+				trxBuilder
+						.trxType(ESRConstants.ESRTRXTYPE_CreditMemo)
+						.amount(transactionDetailAmt.getValue());
+			}
+		}
+		else
+		{
+			// we get charged; currently not supported
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			trxBuilder
+					.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, new Object[] { ntry.getCdtDbtInd() }))
+					.trxType("???")
+					.amount(null);
+		}
+	}
+
+	/**
+	 * Verifies that the currency is consistent.
+	 * 
+	 * @param txDtls
+	 * @param trxBuilder
+	 */
+	private void verifyTransactionCurrency(
+			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		if (header.getC_BP_BankAccount_ID() <= 0)
+		{
+			return; // nothing to do
+		}
+
+		// TODO: this does not really belong into the loader! move it to the matcher code.
+		final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
+
+		final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
+		if (!headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()))
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_BANK_ACCOUNT_MISMATCH_2P,
+					new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
+		}
 	}
 
 	private void extractAndSetEsrReference(
