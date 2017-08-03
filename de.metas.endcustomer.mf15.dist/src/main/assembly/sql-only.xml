@@ -12,6 +12,11 @@
 	<fileSets>
 	
 		<fileSet>
+			<directory>${project.build.directory}/build-info</directory>
+			<outputDirectory></outputDirectory>
+		</fileSet>
+	
+		<fileSet>
 			<directory>${project.build.directory}/dist/sql</directory>
 			<outputDirectory>sql</outputDirectory>
 		</fileSet>
