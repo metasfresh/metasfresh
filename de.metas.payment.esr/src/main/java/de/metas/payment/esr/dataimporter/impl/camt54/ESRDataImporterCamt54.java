@@ -168,15 +168,16 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	 */
 	private BigDecimal iterateEntryDetails(
 			@NonNull final ESRStatementBuilder stmtBuilder,
-			@Nullable BigDecimal ctrlQty,
+			@Nullable final BigDecimal ctrlQty,
 			@NonNull final ReportEntry8 ntry)
 	{
+		BigDecimal newCtrlQty = ctrlQty;
 		for (final EntryDetails7 ntryDtl : ntry.getNtryDtls())
 		{
 			if (ntryDtl.getBtch() != null && ntryDtl.getBtch().getNbOfTxs() != null)
 			{
 				final BigDecimal augend = new BigDecimal(ntryDtl.getBtch().getNbOfTxs());
-				ctrlQty = (ctrlQty == null) ? augend : ctrlQty.add(augend);
+				newCtrlQty = (newCtrlQty == null) ? augend : newCtrlQty.add(augend);
 			}
 
 			final List<ESRTransaction> transactions = iterateTransactionDetails(ntry, ntryDtl);
@@ -184,7 +185,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 
 		} // ntryDtl
 
-		return ctrlQty;
+		return newCtrlQty;
 	}
 
 	private List<ESRTransaction> iterateTransactionDetails(
