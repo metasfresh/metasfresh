@@ -459,6 +459,10 @@ note: when adding new records, please roughly order them by alphabet.
 				<version>${spring-boot.version}</version>
 				<executions>
 					<execution>
+						<!-- 
+							Issue https://github.com/metasfresh/metasfresh/issues/2110:
+							Create build-info.properties and add them also to our distributable files
+						 -->
 						<id>spring-boot-dist-create-build-info</id>
 						<phase>prepare-package</phase>
 						<goals>
@@ -466,6 +470,12 @@ note: when adding new records, please roughly order them by alphabet.
 						</goals>
 						<configuration>
 							<outputFile>${project.build.directory}/build-info/build-info.properties</outputFile>
+							<additionalProperties>
+								<ciBuildNo>${env.BUILD_NUMBER}</ciBuildNo>
+								<ciBuildTag>${env.BUILD_TAG}</ciBuildTag>
+								<ciBuildUrl>${env.BUILD_URL}</ciBuildUrl>
+								<ciJobName>${env.JOB_NAME}</ciJobName>
+							</additionalProperties>
 						</configuration>
 					</execution>
 				</executions>

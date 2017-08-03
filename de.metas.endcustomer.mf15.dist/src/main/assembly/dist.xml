@@ -9,6 +9,7 @@
 	<baseDirectory></baseDirectory>
 	<fileSets>
 
+		<!-- https://github.com/metasfresh/metasfresh/issues/2110 -->
 		<fileSet>
 			<directory>${project.build.directory}/build-info</directory>
 			<outputDirectory></outputDirectory>
