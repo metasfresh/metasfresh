@@ -677,6 +677,9 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         openFile(
                             'process', type, id, 'print', action.filename
                         );
+
+                        dispatch(closeModal());
+
                         break;
                     case 'openDocument':
                         if(action.modal) {
