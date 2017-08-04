@@ -490,6 +490,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				<env.BUILD_TAG>LOCAL-NO-RELEASE</env.BUILD_TAG>
 				<env.BUILD_URL>LOCAL-NO-RELEASE</env.BUILD_URL>
 				<env.JOB_NAME>LOCAL-NO-RELEASE</env.JOB_NAME>
+				<env.BUILD_NUMBER>0</env.BUILD_NUMBER>
 			</properties>
 		</profile>
 	
