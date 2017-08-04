@@ -87,8 +87,8 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 				final MvnConf mvnConf = new MvnConf(
 					'pom.xml', // pomFile
 					MAVEN_SETTINGS, // settingsFile
-					'https://repo.metasfresh.com', // mvnRepoBaseURL
-					"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+					"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+					'https://repo.metasfresh.com' // mvnRepoBaseURL
 				)
 				echo "mvnConf=${mvnConf}"
 
