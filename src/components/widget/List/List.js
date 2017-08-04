@@ -104,7 +104,9 @@ class List extends Component {
             enableAutofocus
         } = this.props;
 
-        enableAutofocus();
+        if (enableAutofocus) {
+            enableAutofocus();
+        }
 
         let optionKey = option && Object.keys(option)[0];
         if (this.previousValue !== (option && option[optionKey] )) {
