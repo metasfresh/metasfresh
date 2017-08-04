@@ -45,19 +45,34 @@ class Lookup extends Component {
     }
 
     setNextProperty = (prop) => {
-        const { defaultValue, properties } = this.props;
+        const { defaultValue, properties, onBlurWidget } = this.props;
 
         if (defaultValue) {
             defaultValue.map( (item, index) => {
                 const nextIndex = index + 1;
 
+                const propValue = properties[index];
+                if ((propValue.field === prop) && (propValue.source === 'lookup') && this.linkedList) {
+                    this.linkedList.map( (listComponent, listIndex) => {
+                        if (listComponent && listComponent.requestListData) {
+                            listComponent.requestListData(true, !listIndex);
+                        }
+                    });
+                }
+
                 if ((nextIndex < defaultValue.length) && (defaultValue[index].field === prop)) {
                     let nextProp = properties[nextIndex];
 
                     if (nextProp.source === 'list') {
-                        if (this.linkedList && this.linkedList.requestListData) {
-                            this.linkedList.requestListData(true);
-                        }
+                        this.linkedList.map( (listComponent) => {
+                            if (listComponent && listComponent.props && (propValue.source !== 'lookup')) {
+                                let listProp = listComponent.props.mainProperty;
+
+                                if (listProp && (listProp[0].field === nextProp.field) && listComponent.activate) {
+                                    listComponent.activate();
+                                }
+                            }
+                        });
                     } else {
                         this.setState({
                             property: nextProp.field
@@ -67,6 +82,8 @@ class Lookup extends Component {
                 else if (defaultValue[defaultValue.length - 1].field === prop) {
                     this.setState({
                         property: ''
+                    }, () => {
+                        onBlurWidget && onBlurWidget();
                     });
                 }
             });
@@ -148,6 +165,8 @@ class Lookup extends Component {
             localClearing, fireDropdownList, autofocusDisabled
         } = this.state;
 
+        this.linkedList = [];
+
         return (
             <div
                 ref={ (c) => this.dropdown = c }
@@ -211,7 +230,11 @@ class Lookup extends Component {
                                 }
                             >
                                 <List
-                                    ref={ (c) => this.linkedList = (c && c.getWrappedInstance()) }
+                                    ref={ (c) => {
+                                        if (c) {
+                                            this.linkedList.push(c.getWrappedInstance());
+                                        }
+                                    }}
                                     readonly={disabled || readonly}
                                     lookupList={true}
                                     autofocus={isCurrentProperty}

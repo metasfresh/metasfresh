@@ -149,7 +149,7 @@ class RawWidget extends Component {
             windowType, dataId, type, widgetData, rowId, tabId, icon, gridAlign,
             entity, onShow, disabled, caption, viewId, data, listenOnKeys,
             listenOnKeysFalse, closeTableField, handleZoomInto, attribute,
-            allowShowPassword
+            allowShowPassword, onBlurWidget
         } = this.props;
 
         const {isEdited} = this.state;
@@ -344,6 +344,7 @@ class RawWidget extends Component {
                         listenOnKeys={listenOnKeys}
                         listenOnKeysFalse={listenOnKeysFalse}
                         closeTableField={closeTableField}
+                        onBlurWidget={onBlurWidget}
                     />
                 )
             case 'List':
