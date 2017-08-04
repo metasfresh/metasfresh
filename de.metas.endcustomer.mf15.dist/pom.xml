@@ -38,7 +38,7 @@
 	<dependencies>
 
 <!--
-We used to just get many of the following deployables with the dependencies-plugin's copy goal, but there we need to give a version. 
+We used to just get many of the following deployables with the dependencies-plugin's copy goal, but there we need to give a version.
 Ranges are not allowed.
 Since we now work with a range, we now declare the dependencies here where ranges can be resolved, and can then further down use the copy-dependencies goal instead of the copy goal.
 -->
@@ -459,7 +459,7 @@ note: when adding new records, please roughly order them by alphabet.
 				<version>${spring-boot.version}</version>
 				<executions>
 					<execution>
-						<!-- 
+						<!--
 							Issue https://github.com/metasfresh/metasfresh/issues/2110:
 							Create build-info.properties and add them also to our distributable files
 						 -->
@@ -471,10 +471,11 @@ note: when adding new records, please roughly order them by alphabet.
 						<configuration>
 							<outputFile>${project.build.directory}/build-info/build-info.properties</outputFile>
 							<additionalProperties>
-								<ciBuildNo>${env.BUILD_NUMBER}</ciBuildNo>
-								<ciBuildTag>${env.BUILD_TAG}</ciBuildTag>
-								<ciBuildUrl>${env.BUILD_URL}</ciBuildUrl>
-								<ciJobName>${env.JOB_NAME}</ciJobName>
+								<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
 							</additionalProperties>
 						</configuration>
 					</execution>
@@ -533,7 +534,7 @@ note: when adding new records, please roughly order them by alphabet.
 					</execution>
 					<execution>
 						<!--
-						Then we extract the first the fresh-specific jasper files  and finally the endcustomer-specific jasper files, 
+						Then we extract the first the fresh-specific jasper files  and finally the endcustomer-specific jasper files,
 						and we want them to overwrite the generic files if they have the same name.
 						-->
 						<id>unpack-jasper-fresh</id>
