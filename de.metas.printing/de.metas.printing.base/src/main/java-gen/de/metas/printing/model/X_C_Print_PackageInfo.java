@@ -80,15 +80,15 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW_MediaTray() throws RuntimeException
+	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray() throws RuntimeException
 	{
-		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW.class);
+		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
 	}
 
 	@Override
-	public void setAD_PrinterHW_MediaTray(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW_MediaTray)
+	public void setAD_PrinterHW_MediaTray(de.metas.printing.model.I_AD_PrinterHW_MediaTray AD_PrinterHW_MediaTray)
 	{
-		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW.class, AD_PrinterHW_MediaTray);
+		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class, AD_PrinterHW_MediaTray);
 	}
 
 	/** Set Hardware-Schacht.

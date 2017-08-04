@@ -113,12 +113,12 @@ public interface I_C_Print_PackageInfo
 	 */
 	public int getAD_PrinterHW_MediaTray_ID();
 
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW_MediaTray();
+	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray();
 
-	public void setAD_PrinterHW_MediaTray(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW_MediaTray);
+	public void setAD_PrinterHW_MediaTray(de.metas.printing.model.I_AD_PrinterHW_MediaTray AD_PrinterHW_MediaTray);
 
     /** Column definition for AD_PrinterHW_MediaTray_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, de.metas.printing.model.I_AD_PrinterHW> COLUMN_AD_PrinterHW_MediaTray_ID = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, de.metas.printing.model.I_AD_PrinterHW>(I_C_Print_PackageInfo.class, "AD_PrinterHW_MediaTray_ID", de.metas.printing.model.I_AD_PrinterHW.class);
+    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, de.metas.printing.model.I_AD_PrinterHW_MediaTray> COLUMN_AD_PrinterHW_MediaTray_ID = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, de.metas.printing.model.I_AD_PrinterHW_MediaTray>(I_C_Print_PackageInfo.class, "AD_PrinterHW_MediaTray_ID", de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
     /** Column name AD_PrinterHW_MediaTray_ID */
     public static final String COLUMNNAME_AD_PrinterHW_MediaTray_ID = "AD_PrinterHW_MediaTray_ID";
 
