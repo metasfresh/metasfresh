@@ -72,8 +72,8 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
 				<executions>
-					<id>spring-boot-admin-repackage</id>
 					<execution>
+						<id>spring-boot-admin-repackage</id>
 						<goals>
 							<goal>repackage</goal>
 						</goals>
