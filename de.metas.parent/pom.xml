@@ -971,20 +971,5 @@
 			</properties>
 		</profile>
 
-		<!-- this profile is analog to "build-number-env-missing" -->
-		<!-- See https://github.com/metasfresh/metasfresh/issues/2110 -->
-		<!-- Note that until now i don't see a reason to add a pendant for this to /de.metas.adempiere.adempiere.base/src/main/java-legacy/org/compiere/Adempiere.java ..so i don't.. -->
-		<profile>
-			<id>MF_RELEASE_VERSION-env-missing</id>
-			<activation>
-				<property>
-					<name>!env.MF_RELEASE_VERSION</name>
-				</property>
-			</activation>
-			<properties>
-				<env.MF_RELEASE_VERSION>LOCAL-NO-RELEASE</env.MF_RELEASE_VERSION>
-			</properties>
-		</profile>
-
 	</profiles>
 </project>
