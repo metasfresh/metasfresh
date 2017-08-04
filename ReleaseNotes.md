@@ -75,6 +75,7 @@ Here come the actual release notes:
     * Adopting the Bill of Materials Window to the current Window Concept for Master Data in metasfresh WebUI
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
+  * [#2074](https://github.com/metasfresh/metasfresh/issues/2074) CRM: Document List in Subtab Functionality
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2083](https://github.com/metasfresh/metasfresh/issues/2083) Window Design WebUI: Customer Returns
@@ -93,10 +94,12 @@ Here come the actual release notes:
     * Further Improvements of the Picking API now in Version 5. Belongs to the Development of the new Picking Window in WebUI.
 
 * metasfresh-webui-frontend
+  * [#982](https://github.com/metasfresh/metasfresh-webui-frontend/issues/982) Functionality to add Actions for Subtab Data
   * [#1031](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1031) Autoselect when doubleclick on included Tab Row Field
     * New Feature wanted heaviliy by Power Users. Now it's possible to directly edit the field content after double clicking a field in Included Tab Grid View.
   * [#1061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1061) Larger Avatar Menu Photo
     * Resizing of the Avatar Image allowing to better differentiate the User Sessions on smaller Screens.
+  * [#1084](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1084) Handle websocket document stale event
 
 ## Fixes
 * metasfresh-app
@@ -118,6 +121,7 @@ Here come the actual release notes:
     * Fix for the case that a 503 error is returned. Now the frontend switches to offline mode.
   * [#1046](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1046) opening included view from action not working in picking
     * Fix in Picking Window now also opening included views there too. 
+  * [#1052](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1052) Breadcrumb of "Sales Opportunities" board is incorrect
   * [#1062](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1062) Avatar Foto stretches when not Square
     * Fix for the Avatar Photo that was presented in a stretched way when the uploaded Photo was not one with square dimensions.
   * [#1065](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1065) Window title wrong for windows in deeper menu hierarchy
@@ -128,6 +132,8 @@ Here come the actual release notes:
     * Better Transparency for the user after leaving a card selection List empty. Now showing a empty result hint to the user.
   * [#1073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1073) Bug in Advanced edit of Purchase order
     * Fix for the Advanced Edit Mode in Window Purchase Order, that sometimes did not open.
+  * [#1078](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1078) Wrong quickActions call when opening HU editor
+  * [#1094](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1094) Error on document websocket event
 
 # metasfresh 5.19 (2017-30)
 
