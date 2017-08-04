@@ -246,7 +246,7 @@ MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_F
 
 timestamps
 {
-
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
 echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
 final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
@@ -260,7 +260,6 @@ node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
-
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 		withEnv([
