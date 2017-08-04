@@ -72,6 +72,7 @@ Here come the actual release notes:
   * [#518](https://github.com/metasfresh/metasfresh-webui-api/issues/518) Picking prototype (v6)
 
 * metasfresh-webui-frontend
+  * [#982](https://github.com/metasfresh/metasfresh-webui-frontend/issues/982) Functionality to add Actions for Subtab Data
   * [#1031](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1031) Autoselect when doubleclick on included Tab Row Field
   * [#1061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1061) Larger Avatar Menu Photo
   * [#1084](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1084) Handle websocket document stale event
