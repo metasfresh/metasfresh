@@ -71,15 +71,31 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
-				<configuration>
-					<executable>true</executable>
-					<mainClass>${start-class}</mainClass>
-				</configuration>
 				<executions>
+					<id>spring-boot-admin-repackage</id>
 					<execution>
 						<goals>
 							<goal>repackage</goal>
 						</goals>
+						<configuration>
+							<executable>true</executable>
+							<mainClass>${start-class}</mainClass>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-admin-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+							<configuration>
+								<additionalProperties>
+									<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
+									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+									<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+								</additionalProperties>
+							</configuration>
 					</execution>
 				</executions>
 			</plugin>
