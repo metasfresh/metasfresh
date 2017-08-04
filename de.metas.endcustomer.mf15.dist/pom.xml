@@ -454,6 +454,34 @@ note: when adding new records, please roughly order them by alphabet.
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot.version}</version>
+				<executions>
+					<execution>
+						<!-- 
+							Issue https://github.com/metasfresh/metasfresh/issues/2110:
+							Create build-info.properties and add them also to our distributable files
+						 -->
+						<id>spring-boot-dist-build-info</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+						</goals>
+						<configuration>
+							<outputFile>${project.build.directory}/build-info/build-info.properties</outputFile>
+							<additionalProperties>
+								<ciBuildNo>${env.BUILD_NUMBER}</ciBuildNo>
+								<ciBuildTag>${env.BUILD_TAG}</ciBuildTag>
+								<ciBuildUrl>${env.BUILD_URL}</ciBuildUrl>
+								<ciJobName>${env.JOB_NAME}</ciJobName>
+							</additionalProperties>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
