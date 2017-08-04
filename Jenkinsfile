@@ -126,8 +126,8 @@ node('agent && linux')
 		final MvnConf mvnConf = new MvnConf(
 			'de.metas.parent/pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
-			'https://repo.metasfresh.com', // mvnRepoBaseURL
-			"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+			'https://repo.metasfresh.com' // mvnRepoBaseURL
 		)
 		echo "mvnConf=${mvnConf}"
 
