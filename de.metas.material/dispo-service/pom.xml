@@ -134,14 +134,21 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${spring-boot.version}</version>
-				<configuration>
-					<executable>true</executable>
-					<mainClass>${start-class}</mainClass>
-				</configuration>
 				<executions>
 					<execution>
+						<id>spring-boot-material-dispo-service-repackage</id>
 						<goals>
 							<goal>repackage</goal>
+						</goals>
+						<configuration>
+							<executable>true</executable>
+							<mainClass>${start-class}</mainClass>
+						</configuration>
+					</execution>
+					<execution>
+						<id>spring-boot-material-dispo-service-build-info</id>
+						<goals>
+							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
 						</goals>
 					</execution>
 				</executions>

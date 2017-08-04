@@ -29,6 +29,10 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#1000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1000) Cursor Missing after [tab] in BPartner Relation Window
+    * Fix for Focus after TAB from and into Lookup Fields.
+  * [#1099](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1099) Browse whole tree is not translated in DE
+    * New Transition of static element in WebUI Sitemap
 
 ## Fixes
 * metasfresh-app
@@ -46,12 +50,15 @@ Here come the actual release notes:
   * [#1994](https://github.com/metasfresh/metasfresh/issues/1994) Adjust Sales Invoice Window
     * Finetuning for the Sales Invoice Window to adjust the Layout to meet our current Look And Feel concept.
   * [#2019](https://github.com/metasfresh/metasfresh/issues/2019) Add Widget Size to System Elements
+    * New Feature in metasfresh Application Dictionary, allowing the admin to define default widget sizes per System Element.
   * [#2029](https://github.com/metasfresh/metasfresh/issues/2029) New Window for Accounts and Elements in WebUI
     * New Window for the maintenance of Account Elements in WebUI
   * [#2032](https://github.com/metasfresh/metasfresh/issues/2032) Layout for Handling Unit Editor Window in WebUI
     * Refined Layout for the Detail Views in Handling Unit Editor Window of WebUI.
   * [#2042](https://github.com/metasfresh/metasfresh/issues/2042) Process to Update Widget Size in all child UI Elements of a System Element
+    * New Process to update all Widget Child Elements of a given System Element.
   * [#2046](https://github.com/metasfresh/metasfresh/issues/2046) Window Design WebUI: Attribute Set
+    * Adding the refined Layout for the Attribute Set Window in WebUI.
   * [#2049](https://github.com/metasfresh/metasfresh/issues/2049) Window Design WebUI: Purchase Order
     * Adopting the Purchase Order Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2052](https://github.com/metasfresh/metasfresh/issues/2052) Window Design WebUI: Price System
@@ -61,45 +68,66 @@ Here come the actual release notes:
   * [#2058](https://github.com/metasfresh/metasfresh/issues/2058) Change AD_Table_ID Identifier to Name only
     * Changing the Identifier for AD_Table from TableName + Name to Name only. This allows a better readability for the user.
   * [#2066](https://github.com/metasfresh/metasfresh/issues/2066) CRM: Businesspartner B2C Reminder Functionality
+    *  New CRM Feature in Businesspartner B2C Window, allowing to set reminder Dates via Request Actions for Sales Responsible and Sales Representative. 
   * [#2067](https://github.com/metasfresh/metasfresh/issues/2067) switch between C_Order_MFGWarehouse with and without barcode
+    * New Feture that allows to switch between Warehouses in Manufacturing with and without Barcodes.
   * [#2069](https://github.com/metasfresh/metasfresh/issues/2069) Window Design WebUI: Bill of Materials
+    * Adopting the Bill of Materials Window to the current Window Concept for Master Data in metasfresh WebUI
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2083](https://github.com/metasfresh/metasfresh/issues/2083) Window Design WebUI: Customer Returns
+    * Adopting the Customer Returns Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2092](https://github.com/metasfresh/metasfresh/issues/2092) Scheduler - improve error handling if AD_Role_ID can't be found
+    * Improving the User Experience with better messages when the Scheduler fails not able to receive the User Role for running a process.
   * [#2096](https://github.com/metasfresh/metasfresh/issues/2096) Businesspartner B2C Location Editor missing
     * Adjustments for the Businesspartner B2C Window, adding missing Fields and Layout.
 
 * metasfresh-webui-api
   * [#503](https://github.com/metasfresh/metasfresh-webui-api/issues/503) Picking prototype (v5)
+    * Further Improvements of the Picking API now in Version 5. Belongs to the Development of the new Picking Window in WebUI.
   * [#514](https://github.com/metasfresh/metasfresh-webui-api/issues/514) Support HU transform from HU window
+    * Improvement od the Handling Unit Transform Action in Handling Unit Editor Window.
   * [#518](https://github.com/metasfresh/metasfresh-webui-api/issues/518) Picking prototype (v6)
+    * Further Improvements of the Picking API now in Version 5. Belongs to the Development of the new Picking Window in WebUI.
 
 * metasfresh-webui-frontend
   * [#1031](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1031) Autoselect when doubleclick on included Tab Row Field
+    * New Feature wanted heaviliy by Power Users. Now it's possible to directly edit the field content after double clicking a field in Included Tab Grid View.
   * [#1061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1061) Larger Avatar Menu Photo
+    * Resizing of the Avatar Image allowing to better differentiate the User Sessions on smaller Screens.
 
 ## Fixes
 * metasfresh-app
 
 * metasfresh-webui-api
   * [#496](https://github.com/metasfresh/metasfresh-webui-api/issues/496) String document IDs cannot be converted to int Handling Unit Editor
+    * Fixes a Bug that occurred in Handling Unit Editor for String Document No being a String instead of an Integer.
   * [#511](https://github.com/metasfresh/metasfresh-webui-api/issues/511) Problems with Sales Opportunities Board
+    * Fix for the Sales Opportunity Board, now removing Cards from the New Selection List that were previously added to the Board.
   * [#516](https://github.com/metasfresh/metasfresh-webui-api/issues/516) moving 1 TU from one LU to another
+    * Fixes a refresh issue in Handling Unit Editor when transforming 1 Transport Unit to other existing Logistic Unit.
 
 * metasfresh-webui-frontend
   * [#1026](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1026) grid: Get rid of double scrollbar
+    * Fix the double Scrollbar Issue in new Picking Window. Now only showing 1 Scrollbar when needed.
   * [#1027](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1027) line looks selected, but it's not
+    * Fixes a minor Bug that presented a row as seleted although it wasn'nt,
   * [#1045](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1045) frontend shall switch to offline mode on http 503 error
+    * Fix for the case that a 503 error is returned. Now the frontend switches to offline mode.
   * [#1046](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1046) opening included view from action not working in picking
+    * Fix in Picking Window now also opening included views there too. 
   * [#1062](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1062) Avatar Foto stretches when not Square
+    * Fix for the Avatar Photo that was presented in a stretched way when the uploaded Photo was not one with square dimensions.
   * [#1065](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1065) Window title wrong for windows in deeper menu hierarchy
     * Fix for the Window Name in Action Menu, that was not shown properly for Windows in deeper Menu Hierarchy.
   * [#1067](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1067) board: add new: don't show the loading icon after data is loaded
+    * Fix for the new Board Functionality, now not showing the Loading Icon after the card data is loaded.
   * [#1068](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1068) board: when there are no new cards show the empty result text/hint
+    * Better Transparency for the user after leaving a card selection List empty. Now showing a empty result hint to the user.
   * [#1073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1073) Bug in Advanced edit of Purchase order
+    * Fix for the Advanced Edit Mode in Window Purchase Order, that sometimes did not open.
 
 # metasfresh 5.19 (2017-30)
 
