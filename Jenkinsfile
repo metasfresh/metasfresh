@@ -307,6 +307,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
+        // env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
+        withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
+        {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
@@ -398,9 +401,10 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
-      }
-		}
-	}
+      } // stage
+		  } // withMaven
+	    } // withEnv
+   } // configFileProvider
  } // node
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
