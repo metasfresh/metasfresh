@@ -14,7 +14,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -476272590L;
+	private static final long serialVersionUID = 1634844680L;
 
     /** Standard Constructor */
     public X_C_Print_PackageInfo (Properties ctx, int C_Print_PackageInfo_ID, String trxName)
