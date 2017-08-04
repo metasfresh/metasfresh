@@ -487,8 +487,11 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			</activation>
 			<properties>
 				<env.MF_RELEASE_VERSION>LOCAL-NO-RELEASE</env.MF_RELEASE_VERSION>
+				<env.BUILD_TAG>LOCAL-NO-RELEASE</env.BUILD_TAG>
+				<env.BUILD_URL>LOCAL-NO-RELEASE</env.BUILD_URL>
+				<env.JOB_NAME>LOCAL-NO-RELEASE</env.JOB_NAME>
 			</properties>
 		</profile>
-		
+	
 	</profiles>
 </project>
