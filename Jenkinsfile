@@ -253,7 +253,7 @@ node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
-		final Props RELEASE_PROPS = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+		final def RELEASE_PROPS = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
 		echo "will use release.version=${RELEASE_PROPS.release.version}"
 
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
