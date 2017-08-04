@@ -259,7 +259,7 @@ node('agent && linux && libc6-i386')
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 		withEnv([
-				"MF_RELEASE_VERSION=${RELEASE_PROPS.release.version}"
+				"MF_RELEASE_VERSION=${RELEASE_PROPS.release.version}",
 				"MF_BUILD_VERSION=${MF_BUILD_VERSION}",
 				"MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}",
 				"CHANGE_URL=${env.CHANGE_URL}",
