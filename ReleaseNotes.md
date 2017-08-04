@@ -108,6 +108,7 @@ Here come the actual release notes:
   * [#2071](https://github.com/metasfresh/metasfresh/issues/2071) Window Design WebUI: Payment Window
     * Adopting the Payment Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2074](https://github.com/metasfresh/metasfresh/issues/2074) CRM: Document List in Subtab Functionality
+    * New Feature in the Businesspartner B2C Window. Including a new Included Tab, Data Structure and Functionality for CRM Documents.
   * [#2077](https://github.com/metasfresh/metasfresh/issues/2077) Window Design WebUI: Payment Allocation Window
     * Adopting the Payment Allocation Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2083](https://github.com/metasfresh/metasfresh/issues/2083) Window Design WebUI: Customer Returns
@@ -127,11 +128,13 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#982](https://github.com/metasfresh/metasfresh-webui-frontend/issues/982) Functionality to add Actions for Subtab Data
+    * New Functionality now allowing to also define actions to included subtabs and use them via Action Menu.
   * [#1031](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1031) Autoselect when doubleclick on included Tab Row Field
     * New Feature wanted heaviliy by Power Users. Now it's possible to directly edit the field content after double clicking a field in Included Tab Grid View.
   * [#1061](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1061) Larger Avatar Menu Photo
     * Resizing of the Avatar Image allowing to better differentiate the User Sessions on smaller Screens.
   * [#1084](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1084) Handle websocket document stale event
+    * New internal Functionality to only refresh a Document without all included Tabs when needed. This avoids the reload of mass data although nothing has changed in Subdata.
 
 ## Fixes
 * metasfresh-app
@@ -148,7 +151,7 @@ Here come the actual release notes:
   * [#1026](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1026) grid: Get rid of double scrollbar
     * Fix the double Scrollbar Issue in new Picking Window. Now only showing 1 Scrollbar when needed.
   * [#1027](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1027) line looks selected, but it's not
-    * Fixes a minor Bug that presented a row as seleted although it wasn'nt,
+    * Fixes a minor Bug that presented a row as seleted although it wasn't.
   * [#1045](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1045) frontend shall switch to offline mode on http 503 error
     * Fix for the case that a 503 error is returned. Now the frontend switches to offline mode.
   * [#1046](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1046) opening included view from action not working in picking
