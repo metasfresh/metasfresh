@@ -157,6 +157,7 @@ Here come the actual release notes:
   * [#1046](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1046) opening included view from action not working in picking
     * Fix in Picking Window now also opening included views there too.
   * [#1052](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1052) Breadcrumb of "Sales Opportunities" board is incorrect
+    * Fixes the Breadcrumb menu in Windows that are in 2nd level hierarchy in menu tree.
   * [#1062](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1062) Avatar Foto stretches when not Square
     * Fix for the Avatar Photo that was presented in a stretched way when the uploaded Photo was not one with square dimensions.
   * [#1065](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1065) Window title wrong for windows in deeper menu hierarchy
@@ -168,7 +169,9 @@ Here come the actual release notes:
   * [#1073](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1073) Bug in Advanced edit of Purchase order
     * Fix for the Advanced Edit Mode in Window Purchase Order, that sometimes did not open.
   * [#1078](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1078) Wrong quickActions call when opening HU editor
+    * Fix for action calls when opening the Handling Unit Editor initially.
   * [#1094](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1094) Error on document websocket event
+    * Fix for a minor error on document websocket events.
 
 # metasfresh 5.19 (2017-30)
 
