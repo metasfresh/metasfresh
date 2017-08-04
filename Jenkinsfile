@@ -243,18 +243,23 @@ MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = params.MF_METASFRESH_PROC
 MF_ARTIFACT_VERSIONS['metasfresh-webui'] = params.MF_METASFRESH_WEBUI_API_VERSION ?: "LATEST";
 MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_FRONTEND_VERSION ?: "LATEST";
 
-// these two are shown in jenkins, for each build
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_BUILD_VERSION}";
 
 timestamps
 {
+
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
+// shown in jenkins, for each build
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
-		final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-		echo "will use release.version=${MF_RELEASE_VERSION}"
 
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
@@ -265,7 +270,6 @@ node('agent && linux && libc6-i386')
 				"CHANGE_URL=${env.CHANGE_URL}",
 				"BUILD_NUMBER=${env.BUILD_NUMBER}"])
 		{
-		sh "echo \"testing 'witEnv' using shell: MF_BUILD_VERSION=${MF_BUILD_VERSION}\""
 		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
 		{
 			stage('Set versions and build endcustomer-dist')
@@ -305,12 +309,12 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${MF_RELEASE_VERSION}.${MF_BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// do the actual building and deployment
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// about -Dmaven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_BUILD_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${MF_MAVEN_TASK_DEPLOY_PARAMS} clean deploy"
 
 
 				// endcustomer.mf15 currently has no tests. Don't try to collect any, or a typical error migh look like this:
@@ -327,7 +331,7 @@ node('agent && linux && libc6-i386')
 
 				final MF_ARTIFACT_URLS = [:];
 				MF_ARTIFACT_URLS['metasfresh-admin'] = "http://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar";
-				MF_ARTIFACT_URLS['metasfresh-dist'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.dist/${MF_BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${MF_BUILD_VERSION}-dist.tar.gz";
+				MF_ARTIFACT_URLS['metasfresh-dist'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.dist/${MF_VERSION}/de.metas.endcustomer.mf15.dist-${MF_VERSION}-dist.tar.gz";
 				MF_ARTIFACT_URLS['metasfresh-material-dispo']= "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar";
 				MF_ARTIFACT_URLS['metasfresh-procurement-webui']= "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar";
 				MF_ARTIFACT_URLS['metasfresh-webui'] = "https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar";
@@ -340,7 +344,7 @@ node('agent && linux && libc6-i386')
 				currentBuild.description="""
 <h3>Version infos</h3>
 <ul>
-  <li>endcustomer.mf15: version <b>${MF_BUILD_VERSION}</b></li>
+  <li>endcustomer.mf15: version <b>${MF_VERSION}</b></li>
   <li>metasfresh-webui-API: version <b>${mavenProps['metasfresh-webui-api.version']}</b></li>
   <li>metasfresh-webui-frontend: version <b>${mavenProps['metasfresh-webui-frontend.version']}</b></li>
   <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b></li>
@@ -354,8 +358,8 @@ node('agent && linux && libc6-i386')
 <h3>Deployable artifacts</h3>
 <ul>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-dist']}\">dist-tar.gz</a></li>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.dist/${MF_BUILD_VERSION}/de.metas.endcustomer.mf15.dist-${MF_BUILD_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
-	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.swingui/${MF_BUILD_VERSION}/de.metas.endcustomer.mf15.swingui-${MF_BUILD_VERSION}-client.zip\">client.zip</a></li>
+	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.dist/${MF_VERSION}/de.metas.endcustomer.mf15.dist-${MF_VERSION}-sql-only.tar.gz\">sql-only-tar.gz</a></li>
+	<li><a href=\"https://repo.metasfresh.com/service/local/repositories/${MF_MAVEN_REPO_NAME}/content/de/metas/dist/de.metas.endcustomer.mf15.swingui/${MF_VERSION}/de.metas.endcustomer.mf15.swingui-${MF_VERSION}-client.zip\">client.zip</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui']}\">metasfresh-webui-api.jar</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\">metasfresh-webui-frontend.tar.gz</a></li>
 	<li><a href=\"${MF_ARTIFACT_URLS['metasfresh-procurement-webui']}\">metasfresh-procurement-webui.jar</a></li>
@@ -379,7 +383,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 """;
 			}
 		} // withMaven
-		} // withEnv(["MF_BUILD_VERSION=${MF_BUILD_VERSION}"])
+		} // withEnv
 	} // configFileProvider
 
 	// clean up the workspace after (successfull) builds
@@ -437,9 +441,9 @@ stage('Test SQL-Migration')
 				final sshTargetHost='mf15cloudit'; // we made sure the mf15cloudit can be resolved on every jenkins node labeled with 'linux'
 				final sshTargetUser='metasfresh'
 
-				downloadForDeployment('de.metas.dist', distArtifactId, MF_BUILD_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
+				downloadForDeployment('de.metas.dist', distArtifactId, MF_VERSION, packaging, classifier, sshTargetHost, sshTargetUser);
 
-				final fileAndDirName="${distArtifactId}-${MF_BUILD_VERSION}-${classifier}"
+				final fileAndDirName="${distArtifactId}-${MF_VERSION}-${classifier}"
 				final deployDir="/home/${sshTargetUser}/${fileAndDirName}-${MF_UPSTREAM_BRANCH}"
 
 				// Look Ma, I'm currying!!
@@ -448,7 +452,7 @@ stage('Test SQL-Migration')
 
 				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");
 				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="tmp-metasfresh-dist-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${MF_BUILD_VERSION}"
+			final VALIDATE_MIGRATION_TEST_DB="tmp-metasfresh-dist-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${MF_VERSION}"
 						.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 						.toLowerCase(); // also, DB names are generally in lowercase
 
