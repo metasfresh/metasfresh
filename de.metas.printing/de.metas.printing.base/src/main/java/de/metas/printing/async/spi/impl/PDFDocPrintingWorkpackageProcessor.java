@@ -119,8 +119,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			if (jobLine.getC_Printing_Queue_ID() > 0)
 			{
 				final I_C_Printing_Queue pq = jobLine.getC_Printing_Queue();
-				final Optional<String> itemName = InterfaceWrapperHelper.getValueOrNull(pq, "ItemName");
-				if (itemName == null || !itemName.isPresent())
+				final String itemName = pq.getItemName();
+				if (Check.isEmpty(itemName, true))
 				{
 					isCreateSummary = false;
 				}
@@ -180,7 +180,6 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		piParams.add(ProcessInfoParameter.ofValueObject(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID, jobInstructions.getC_Print_Job_Instructions_ID()));
 		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg.toString()));
 		Services.get(IADPInstanceDAO.class).saveParameterToDB(pinstance.getAD_PInstance_ID(), piParams);
-		
 		
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(ctx)
