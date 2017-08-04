@@ -136,6 +136,21 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 	}
 
+	
+	private void handleDoc(final I_C_Printing_Queue queueItem, Object archiveRerencedModel)
+	{
+		// Handles operations specific for invoices.
+		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
+		{
+			queueItem.setItemName(I_C_Printing_Queue.ITEM_NAME_Rechnung);
+		}
+
+		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Print_Package.class))
+		{
+			queueItem.setItemName(I_C_Printing_Queue.ITEM_NAME_PDF);
+		}
+	}
+	
 	private void handleInOuts(final I_C_Printing_Queue queueItem, final I_M_InOut inout)
 	{
 		// services

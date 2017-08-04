@@ -556,6 +556,29 @@ public interface I_C_Printing_Queue
     public static final String COLUMNNAME_IsPrintoutForOtherUser = "IsPrintoutForOtherUser";
 
 	/**
+	 * Set Print Item Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setItemName (java.lang.String ItemName);
+
+	/**
+	 * Get Print Item Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getItemName();
+
+    /** Column definition for ItemName */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_ItemName = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "ItemName", null);
+    /** Column name ItemName */
+    public static final String COLUMNNAME_ItemName = "ItemName";
+
+	/**
 	 * Set Warteschlangen-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String

@@ -14,7 +14,7 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -560751217L;
+	private static final long serialVersionUID = 1629929298L;
 
     /** Standard Constructor */
     public X_C_Printing_Queue (Properties ctx, int C_Printing_Queue_ID, String trxName)
@@ -540,6 +540,42 @@ public class X_C_Printing_Queue extends org.compiere.model.PO implements I_C_Pri
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** 
+	 * ItemName AD_Reference_ID=540735
+	 * Reference name: ItemName
+	 */
+	public static final int ITEMNAME_AD_Reference_ID=540735;
+	/** Rechnung = Rechnung */
+	public static final String ITEMNAME_Rechnung = "Rechnung";
+	/** Mahnung = Mahnung */
+	public static final String ITEMNAME_Mahnung = "Mahnung";
+	/** Mitgliedsausweis = Mitgliedsausweis */
+	public static final String ITEMNAME_Mitgliedsausweis = "Mitgliedsausweis";
+	/** Brief = Brief */
+	public static final String ITEMNAME_Brief = "Brief";
+	/** Sofort-Druck PDF = Sofort-Druck PDF */
+	public static final String ITEMNAME_Sofort_DruckPDF = "Sofort-Druck PDF";
+	/** PDF = PDF */
+	public static final String ITEMNAME_PDF = "PDF";
+	/** Versand/Wareneingang = Versand/Wareneingang */
+	public static final String ITEMNAME_VersandWareneingang = "Versand/Wareneingang";
+	/** Set Print Item Name.
+		@param ItemName Print Item Name	  */
+	@Override
+	public void setItemName (java.lang.String ItemName)
+	{
+
+		set_Value (COLUMNNAME_ItemName, ItemName);
+	}
+
+	/** Get Print Item Name.
+		@return Print Item Name	  */
+	@Override
+	public java.lang.String getItemName () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ItemName);
 	}
 
 	/** Set Warteschlangen-Aggregationsmerkmal.
