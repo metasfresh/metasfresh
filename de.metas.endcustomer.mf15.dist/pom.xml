@@ -463,7 +463,7 @@ note: when adding new records, please roughly order them by alphabet.
 							Issue https://github.com/metasfresh/metasfresh/issues/2110:
 							Create build-info.properties and add them also to our distributable files
 						 -->
-						<id>spring-boot-dist-create-build-info</id>
+						<id>spring-boot-dist-build-info</id>
 						<phase>prepare-package</phase>
 						<goals>
 							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
