@@ -81,8 +81,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     		final MvnConf mvnConf = new MvnConf(
     			'pom.xml', // pomFile
     			MAVEN_SETTINGS, // settingsFile
-    			'https://repo.metasfresh.com', // mvnRepoBaseURL
-    			"mvn-${MF_UPSTREAM_BRANCH}" // mvnRepoName
+    			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+    			'https://repo.metasfresh.com' // mvnRepoBaseURL
     		)
     		echo "mvnConf=${mvnConf}"
 
@@ -120,7 +120,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// set the artifact version of everything below the webui's ${mvnConf.pomFile}
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
 
-				final BUILD_ARTIFACT_URL="${mvnConf.repoURL}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
+				final BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
 
 				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
