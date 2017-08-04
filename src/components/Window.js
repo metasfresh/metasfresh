@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ReactDOM from 'react-dom';
 
 import Dropzone from './Dropzone';
 import Separator from './Separator';
@@ -169,6 +170,34 @@ class Window extends Component {
         })
     }
 
+    handleBlurWidget(fieldName) {
+        let currentWidgetIndex = -1;
+
+        if (this.widgets) {
+            this.widgets.forEach( (widget, index) => {
+                if (widget && widget.props && widget.props.widgetData) {
+                    let widgetData = widget.props.widgetData[0];
+                    if (widgetData && widgetData.field === fieldName) {
+                        currentWidgetIndex = index;
+                    }
+                }
+            });
+
+            if (currentWidgetIndex >= 0) {
+                let nextWidgetIndex = Math.min(this.widgets.length - 1, currentWidgetIndex + 1);
+
+                let element = ReactDOM.findDOMNode(this.widgets[nextWidgetIndex]);
+                if (element) {
+                    let tabElement = element.querySelector('[tabindex]');
+
+                    if (tabElement) {
+                        tabElement.focus();
+                    }
+                }
+            }
+        }
+    }
+
     renderElements = (elements, tabIndex, isFocused) => {
         const {type} = this.props.layout;
         const {data, modal, tabId, rowId, dataId, isAdvanced} = this.props;
@@ -177,9 +206,15 @@ class Window extends Component {
         return elements.map((elem, id)=> {
             const autoFocus = isFocused && (id === 0);
             const widgetData = elem.fields.map(item => data[item.field] || -1);
+            const fieldName = (elem.fields) ? elem.fields[0].field : '';
             const relativeDocId = data.ID && data.ID.value;
             return (
                 <MasterWidget
+                    ref={ (c) => {
+                        if (c) {
+                            this.widgets.push(c);
+                        }
+                    }}
                     entity="window"
                     key={'element' + id}
                     windowType={type}
@@ -193,6 +228,7 @@ class Window extends Component {
                     tabIndex={tabIndex}
                     autoFocus={!modal && autoFocus}
                     fullScreen={fullScreen}
+                    onBlurWidget={this.handleBlurWidget.bind(this, fieldName)}
                     {...elem}
                 />
             )
@@ -204,6 +240,8 @@ class Window extends Component {
         const {
             handleDropFile, handleRejectDropped, handleDragStart, isModal
         } = this.props;
+
+        this.widgets = [];
 
         return (
             <div key="window" className="window-wrapper">

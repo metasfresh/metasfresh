@@ -123,6 +123,12 @@ class RawList extends Component {
         }
     }
 
+    focus() {
+        if (this.dropdown) {
+            this.dropdown.focus();
+        }
+    }
+
     getSelectedIndex() {
         const { list, mandatory } = this.props;
         const { selected } = this.state;

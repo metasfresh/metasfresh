@@ -13,7 +13,7 @@ class List extends Component {
         super(props);
 
         this.state = {
-            list: [],
+            list: null,
             loading: false,
             selectedItem: ''
         }
@@ -37,7 +37,7 @@ class List extends Component {
         }
     }
 
-    requestListData = (forceSelection = false) => {
+    requestListData = (forceSelection = false, forceFocus = false) => {
         const {
             properties, dataId, rowId, tabId, windowType,
             filterWidget, entity, subentity, subentityId, viewId, attribute
@@ -73,7 +73,29 @@ class List extends Component {
                     loading: false
                 });
             }
+
+            if (forceFocus && values && (values.length > 1)) {
+                this.focus();
+            }
         });
+    }
+
+    handleFocus = () => {
+        if (this.state && !this.state.list && !this.state.loading) {
+            this.requestListData();
+        }
+    }
+
+    focus = () => {
+        if (this.rawList) {
+            this.rawList.focus();
+        }
+    }
+
+    activate = () => {
+        if (this.state.list && this.state.list.length > 1) {
+            this.focus();
+        }
     }
 
     handleSelect = (option) => {
@@ -121,8 +143,9 @@ class List extends Component {
 
         return (
             <RawList
+                ref={ (c) => this.rawList = c }
                 loading={loading}
-                list={list}
+                list={list || []}
                 lookupList={lookupList}
                 rank={rank}
                 readonly={readonly}
@@ -141,6 +164,7 @@ class List extends Component {
                 disableAutofocus={disableAutofocus}
                 blur={blur}
                 onRequestListData={this.requestListData}
+                onFocus={this.handleFocus}
                 onSelect={option => this.handleSelect(option)}
             />
         )
