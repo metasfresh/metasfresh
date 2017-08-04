@@ -253,13 +253,13 @@ node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
-		final def RELEASE_PROPS = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-		echo "will use release.version=${RELEASE_PROPS.release.version}"
+		final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+		echo "will use release.version=${MF_RELEASE_VERSION}"
 
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 		withEnv([
-				"MF_RELEASE_VERSION=${RELEASE_PROPS.release.version}",
+				"MF_RELEASE_VERSION=${MF_RELEASE_VERSION}",
 				"MF_BUILD_VERSION=${MF_BUILD_VERSION}",
 				"MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}",
 				"CHANGE_URL=${env.CHANGE_URL}",
@@ -305,7 +305,7 @@ node('agent && linux && libc6-i386')
 				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${metasfreshProcurementWebuiUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below the endcustomer.mf15's parent pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${RELEASE_PROPS.release.version}.${MF_BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${MF_RELEASE_VERSION}.${MF_BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// do the actual building and deployment
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
@@ -367,7 +367,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <h3>Deploy</h3>
 <ul>
 	<li><a href=\"https://jenkins.metasfresh.com/job/ops/job/deploy_metasfresh/parambuild/?MF_ROLLOUT_FILE_URL=${MF_ARTIFACT_URLS['metasfresh-dist']}&MF_UPSTREAM_BUILD_URL=${BUILD_URL}\"><b>This link</b></a> lets you jump to a rollout job that will deploy (roll out) the tar.gz to a host of your choice.</li>
-	<li>..and <a href=\"https://jenkins.metasfresh.com/job/ops/job/release_weekly_release_package/parambuild/?VERSION_RELEASE=${RELEASE_PROPS.release.version}&URL_APP_DIST=${MF_ARTIFACT_URLS['metasfresh-dist']}&URL_WEBAPI_JAR=${MF_ARTIFACT_URLS['metasfresh-webui']}&URL_WEBUI_FRONTEND=${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\"><b>this link</b></a> lets you jump to a release job that will create the weekly release package from this build.</li>
+	<li>..and <a href=\"https://jenkins.metasfresh.com/job/ops/job/release_weekly_release_package/parambuild/?VERSION_RELEASE=${MF_RELEASE_VERSION}&URL_APP_DIST=${MF_ARTIFACT_URLS['metasfresh-dist']}&URL_WEBAPI_JAR=${MF_ARTIFACT_URLS['metasfresh-webui']}&URL_WEBUI_FRONTEND=${MF_ARTIFACT_URLS['metasfresh-webui-frontend']}\"><b>this link</b></a> lets you jump to a release job that will create the weekly release package from this build.</li>
 </ul>
 <p>
 <h3>Additional notes</h3>
