@@ -12,6 +12,8 @@ Here come the actual release notes:
 
 # metasfresh 5.22 (2017-33)
 
+**upcoming release for week 2017-33**
+
 ## Features
 * metasfresh-app
 
@@ -26,12 +28,12 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
 
-**upcoming release for week 2017-33**
 
 # metasfresh 5.21 (2017-32)
 
 ## Features
 * metasfresh-app
+  * [#1771](https://github.com/metasfresh/metasfresh/issues/1771) add legacy features
   * [#2070](https://github.com/metasfresh/metasfresh/issues/2070) Window Design WebUI: Product
     * Adopting the Product Window to the current Window Concept for Master Data in metasfresh WebUI
   * [#2080](https://github.com/metasfresh/metasfresh/issues/2080) Window Design WebUI: Payment Allocation Translation en_US
@@ -42,9 +44,11 @@ Here come the actual release notes:
     * Adopting the Purchase Order Window to the current Window Concept for Documents in metasfresh WebUI
   * [#2096](https://github.com/metasfresh/metasfresh/issues/2096) Businesspartner B2C Location Editor missing
     * Adjustments for the Businesspartner B2C Window, adding missing Fields and Layout.
+  * [#2101](https://github.com/metasfresh/metasfresh/issues/2101) webui - allow disabling auto-close of picking candidates
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#977](https://github.com/metasfresh/metasfresh-webui-frontend/issues/977) Add frontend support for modifying the KPI config (caption, offset, etc)
   * [#1051](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1051) Cut-Off Header names
 
 ## Fixes
@@ -57,6 +61,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1000) Cursor Missing after [tab] in BPartner Relation Window
     * Fix for Focus after TAB from and into Lookup Fields.
+  * [#1006](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1006) row selection in picking
+  * [#1048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1048) POST .../documentView/{windowId} is called twice when opening a view
   * [#1063](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1063) view: when refreshing the page the data is loaded twice
   * [#1077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1077) Sitemap Navigation [arrow-up] not working
   * [#1089](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1089) Avatar Tooltip opens and stays open after selecting Avatar Settings
