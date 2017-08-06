@@ -26,9 +26,26 @@ package org.adempiere.ad.service;
 import java.util.Properties;
 
 import org.adempiere.util.ISingletonService;
-import org.compiere.model.MSystem;
+import org.compiere.model.I_AD_System;
 
 public interface ISystemBL extends ISingletonService
 {
-	MSystem get(Properties ctx);
+	I_AD_System get(Properties ctx);
+
+	String getProfileInfo(boolean recalc);
+
+	String getStatisticsInfo(boolean recalc);
+
+	boolean setInfo(I_AD_System system);
+
+	boolean isLDAP();
+
+	boolean isLDAP(String userName, String password);
+
+	boolean isSwingRememberUserAllowed();
+
+	boolean isSwingRememberPasswordAllowed();
+
+	boolean isValid();
 }
+

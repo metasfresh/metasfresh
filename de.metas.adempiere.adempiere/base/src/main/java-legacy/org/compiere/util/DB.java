@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -39,6 +41,7 @@ import javax.sql.RowSet;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -57,9 +60,9 @@ import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.dbPort.Convert;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MAcctSchema;
 import org.compiere.model.MSequence;
-import org.compiere.model.MSystem;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
@@ -160,10 +163,11 @@ public final class DB
 	public static boolean afterMigration(Properties ctx)
 	{
 		// UPDATE AD_System SET IsJustMigrated='Y'
-		MSystem system = MSystem.get(ctx);
+		final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
 		if (!system.isJustMigrated())
+		{
 			return false;
-
+		}
 		// Role update
 		log.info("After migration: running role access update for all roles");
 		try
@@ -205,7 +209,8 @@ public final class DB
 
 		// Reset Flag
 		system.setIsJustMigrated(false);
-		return system.save();
+		save(system);
+		return true;
 	}	// afterMigration
 
 	/**************************************************************************

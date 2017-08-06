@@ -32,8 +32,10 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.LogRecord;
 
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Check;
+import org.adempiere.util.Services;
 import org.adempiere.util.net.NetUtils;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -164,7 +166,9 @@ public class MIssue extends X_AD_Issue
 	 */
 	private void init(Properties ctx) throws Exception
 	{
-		MSystem system = MSystem.get(ctx);
+		final ISystemBL systemBL = Services.get(ISystemBL.class);
+		final I_AD_System system = systemBL.get(ctx);
+
 		setName(system.getName());
 		setUserName(system.getUserName());
 		setDBAddress(system.getDBAddress());
@@ -186,11 +190,11 @@ public class MIssue extends X_AD_Issue
 		if (system.isAllowStatistics())
 		{
 			// NOTE: there is no need to recalculate how many tenants, bpartners, invoices etc are in the system.
-			// An aproximative information it's also acceptable.
+			// An aproximative information is also acceptable.
 			// Also counting all those infos could be quite expensive.
 			final boolean recalc = false;
-			setStatisticsInfo(system.getStatisticsInfo(recalc));
-			setProfileInfo(system.getProfileInfo(recalc));
+			setStatisticsInfo(systemBL.getStatisticsInfo(recalc));
+			setProfileInfo(systemBL.getProfileInfo(recalc));
 		}
 	}	//	init
 	

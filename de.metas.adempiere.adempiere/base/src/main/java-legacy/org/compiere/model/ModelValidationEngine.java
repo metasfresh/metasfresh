@@ -39,6 +39,7 @@ import org.adempiere.ad.modelvalidator.ModelInterceptorInitException;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.ad.security.IUserLoginListener;
 import org.adempiere.ad.service.IADTableScriptValidatorDAO;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -306,7 +307,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			return failOnMissingModelInteceptorsOverride;
 		}
 
-		final I_AD_System system = MSystem.get(Env.getCtx());
+		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());
 		final boolean isFail = system.isFailOnMissingModelValidator();
 		return isFail;
 	}
