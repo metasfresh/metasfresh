@@ -13,23 +13,20 @@ package de.metas.migration.cli;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.Date;
-import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -41,39 +38,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.metas.migration.IDatabase;
-import de.metas.migration.IScript;
-import de.metas.migration.IScriptsRegistry;
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
 import de.metas.migration.applier.impl.NullScriptsApplierListener;
-import de.metas.migration.executor.IScriptExecutorFactory;
-import de.metas.migration.impl.AbstractScriptsApplierTemplate;
-import de.metas.migration.impl.CreateDBFromTemplateScript;
-import de.metas.migration.impl.SQLDatabase;
-import de.metas.migration.scanner.IFileRef;
-import de.metas.migration.scanner.IScriptFactory;
-import de.metas.migration.scanner.IScriptScanner;
-import de.metas.migration.scanner.IScriptScannerFactory;
-import de.metas.migration.scanner.impl.FileRef;
-import de.metas.migration.scanner.impl.GloballyOrderedScannerDecorator;
-import de.metas.migration.scanner.impl.SingletonScriptScanner;
+import de.metas.migration.cli.Config.ConfigBuilder;
 
 public final class RolloutMigrate
 {
-	private static final String PROP_DB_NAME = "METASFRESH_DB_NAME";
-
-	private static final String PROP_DB_PASSWORD = "METASFRESH_DB_PASSWORD";
-
-	private static final String PROP_DB_USER = "METASFRESH_DB_USER";
-
-	private static final String PROP_DB_PORT = "METASFRESH_DB_PORT";
-
-	private static final String PROP_DB_SERVER = "METASFRESH_DB_SERVER";
-
-	private static final String PROP_DB_TYPE = "METASFRESH_DB_TYPE";
-
-	private static final String DEFAULT_SETTINGS_FILENAME = "local_settings.properties";
-
 	private static final transient Logger logger = LoggerFactory.getLogger(RolloutMigrate.class);
 
 	private static final String OPTION_Help = "h";
@@ -82,25 +53,32 @@ public final class RolloutMigrate
 
 	private static final String OPTION_ScriptFile = "f";
 	private static final String OPTION_SettingsFile = "s";
-	private static final String OPTION_IgnoreErrors = "i";
 	private static final String OPTION_JustMarkScriptAsExecuted = "r";
 	private static final String OPTION_CreateNewDB = "n";
 	private static final String OPTION_Interactive = "a"; // "a" (from ask)
+	private static final String OPTION_DoNotCheckVersions = "v";
+
+	private static final String OPTION_DoNotFailIfRolloutIsGreaterThanDB = "i";
 
 	private final Options options;
-	private Properties settings;
-	private File rolloutDir;
-	private File sqlDir;
-	private boolean ignoreErrors;
-	private boolean justMarkScriptAsExecuted;
-	private String scriptFile;
-	private String newDBName;
-	private String templateDBName;
+	// private Properties settings;
+	// private File rolloutDir;
+
+	private Config config;
+
+	/**
+	 * By default we will check the versions
+	 */
+	// private boolean doNotCheckVersions = false;
+	//
+	// private boolean doNotFailIfRolloutIsGreaterThanDB = true;
+	//
+	// private String newDBName;
+	// private String templateDBName;
 	private IScriptsApplierListener scriptsApplierListener = NullScriptsApplierListener.instance;
 
 	public RolloutMigrate()
 	{
-		super();
 		options = RolloutMigrate.createOptions();
 	}
 
@@ -109,7 +87,7 @@ public final class RolloutMigrate
 		final Options options = new Options();
 		// Help
 		{
-			final Option option = new Option(RolloutMigrate.OPTION_Help, "Print this message and exit");
+			final Option option = new Option(RolloutMigrate.OPTION_Help, "Print this (h)elp message and exit");
 			option.setArgs(0);
 			option.setArgName("Help");
 			option.setRequired(false);
@@ -118,7 +96,7 @@ public final class RolloutMigrate
 		// Rollout Directory
 		{
 			final Option option = new Option(RolloutMigrate.OPTION_RolloutDirectory,
-					"Directory that contains the rollout package. The tool assumes that the actual SQL scripts are in a folder structure within <RolloutDirectory>/sql/. "
+					"The (d)irectory that contains the rollout package. The tool assumes that the actual SQL scripts are in a folder structure within <RolloutDirectory>/sql/. "
 							+ "If omitted, then '" + RolloutMigrate.DEFAULT_RolloutDirectory + "' (i.e. " + new File(RolloutMigrate.DEFAULT_RolloutDirectory).getAbsolutePath() + ") will be used");
 			option.setArgs(1);
 			option.setArgName("Rollout-Directory");
@@ -127,7 +105,7 @@ public final class RolloutMigrate
 		}
 		// File
 		{
-			final Option option = new Option(RolloutMigrate.OPTION_ScriptFile, "Only process the given file in the rollout directory");
+			final Option option = new Option(RolloutMigrate.OPTION_ScriptFile, "Only process the given (f)ile in the rollout directory");
 			option.setArgs(1);
 			option.setArgName("File");
 			option.setRequired(false);
@@ -136,42 +114,49 @@ public final class RolloutMigrate
 		// Settings
 		{
 			final Option option = new Option(RolloutMigrate.OPTION_SettingsFile,
-					"Name of the settings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*. If ommitted, then "
-							+ System.getProperty("user.home") + "/" + DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
+					"Name of the (s)ettings file (e.g. settings_<hostname>.properties) *within the Rollout-Directory*. If ommitted, then "
+							+ System.getProperty("user.home") + "/" + Config.DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
 			option.setArgs(1);
 			option.setArgName("Settings file");
 			option.setRequired(false);
 			options.addOption(option);
 		}
-		// Ignore database errors
-		{
-			final Option option = new Option(RolloutMigrate.OPTION_IgnoreErrors, "Ignore database errors. WARNING: Only use if you know what you are doing!");
-			option.setArgs(0);
-			option.setRequired(false);
-			options.addOption(option);
-		}
 		// Only record script
 		{
-			final Option option = new Option(RolloutMigrate.OPTION_JustMarkScriptAsExecuted, "Only record script, but don't actually execute. WARNING: Only use if you know what you are doing!");
+			final Option option = new Option(RolloutMigrate.OPTION_JustMarkScriptAsExecuted, "Only (r)ecord script, but don't actually execute. WARNING: Only use if you know what you are doing!");
 			option.setArgs(0);
 			option.setRequired(false);
 			options.addOption(option);
 		}
 		// create a new DB from template and run the migration there
 		{
-			final Option option = new Option(RolloutMigrate.OPTION_CreateNewDB, "Create a new Database from a template, and do the migration on that new DB. Arguments <templateDBName> <newDBName>");
+			final Option option = new Option(RolloutMigrate.OPTION_CreateNewDB, "Create a (n)ew Database from a template, and do the migration on that new DB. Arguments <templateDBName> <newDBName>");
 			option.setArgs(2);
 			option.setRequired(false);
 			options.addOption(option);
 		}
 		//
 		{
-			final Option option = new Option(OPTION_Interactive, "In case of script errors, ask what to do");
+			final Option option = new Option(OPTION_Interactive, "In case of script errors, (a)sk what to do");
 			option.setArgs(0);
 			option.setRequired(false);
 			options.addOption(option);
 		}
 
+		{
+			final Option option = new Option(OPTION_DoNotCheckVersions, "By default we compare this package's (v)ersion with AD_System.DBVersion. This parameter disables that check.");
+			option.setArgs(0);
+			option.setRequired(false);
+			options.addOption(option);
+		}
+
+		{
+			final Option option = new Option(OPTION_DoNotFailIfRolloutIsGreaterThanDB, "If the version was checked and the DB's version is already ahead"
+					+ " of whatever we could rollout here, then an error is thrown. However, with this parameter set, the problem is (i)gnored");
+			option.setArgs(0);
+			option.setRequired(false);
+			options.addOption(option);
+		}
 		return options;
 	}
 
@@ -209,34 +194,29 @@ public final class RolloutMigrate
 			return false;
 		}
 
+		final ConfigBuilder configBuilder = Config.builder();
+
 		final String rolloutDir = cmd.getOptionValue(RolloutMigrate.OPTION_RolloutDirectory, RolloutMigrate.DEFAULT_RolloutDirectory);
-		setRolloutDir(rolloutDir);
+		configBuilder.rolloutDirName(rolloutDir);
 
 		final String settingsFile = cmd.getOptionValue(RolloutMigrate.OPTION_SettingsFile);
-		if (settingsFile != null)
-		{
-			setSettingsFile(getRolloutDir(), settingsFile);
-		}
-		else
-		{
-			setSettingsFile(new File(System.getProperty("user.home")), DEFAULT_SETTINGS_FILENAME);
-		}
+		configBuilder.settingsFileName(settingsFile);
 
 		final String scriptFile = cmd.getOptionValue(RolloutMigrate.OPTION_ScriptFile);
-		setScriptFile(scriptFile);
-
-		final boolean ignoreErrors = cmd.hasOption(RolloutMigrate.OPTION_IgnoreErrors);
-		setIgnoreErrors(ignoreErrors);
+		configBuilder.scriptFileName(scriptFile);
 
 		final boolean justMarkScriptAsExecuted = cmd.hasOption(RolloutMigrate.OPTION_JustMarkScriptAsExecuted);
-		setJustMarkScriptAsExecuted(justMarkScriptAsExecuted);
+		configBuilder.justMarkScriptAsExecuted(justMarkScriptAsExecuted);
 
 		final String[] optionValues = cmd.getOptionValues(RolloutMigrate.OPTION_CreateNewDB);
 		if (optionValues != null)
 		{
-			setTemplateDBName(optionValues[0]);
-			setNewDBName(optionValues[1]);
+			configBuilder.templateDBName(optionValues[0]);
+			configBuilder.newDBName(optionValues[1]);
 		}
+
+		config = configBuilder.build();
+		log("config=" + config);
 
 		if (cmd.hasOption(OPTION_Interactive))
 		{
@@ -244,172 +224,17 @@ public final class RolloutMigrate
 			scriptsApplierListener = ConsoleScriptsApplierListener.instance;
 		}
 
+		if (cmd.hasOption(OPTION_DoNotCheckVersions))
+		{
+			log("Will not compare DB Versions");
+			configBuilder.doNotCheckVersions(true);
+		}
+		if (cmd.hasOption(OPTION_DoNotFailIfRolloutIsGreaterThanDB))
+		{
+			configBuilder.doNotFailIfRolloutIsGreaterThanDB(true);
+		}
+
 		return true;
-	}
-
-	private void setRolloutDir(final String rolloutDirname)
-	{
-		if (rolloutDirname == null || rolloutDirname.trim().isEmpty())
-		{
-			throw new IllegalArgumentException("Rollout directory not specified");
-		}
-
-		rolloutDir = RolloutMigrate.checkDirectory("Rollout directory", new File(rolloutDirname));
-		log("Rollout directory: " + rolloutDir);
-
-		final File sqlDir = new File(rolloutDir, "sql");
-		setSqlDir(sqlDir);
-	}
-
-	private File getRolloutDir()
-	{
-		if (rolloutDir == null)
-		{
-			throw new IllegalStateException("Rollout Directory was not configured");
-		}
-		return rolloutDir;
-	}
-
-	private void setJustMarkScriptAsExecuted(final boolean justMarkScriptAsExecuted)
-	{
-		this.justMarkScriptAsExecuted = justMarkScriptAsExecuted;
-		log("Just mark the script as executed: " + this.justMarkScriptAsExecuted);
-	}
-
-	private boolean isJustMarkScriptAsExecuted()
-	{
-		return justMarkScriptAsExecuted;
-	}
-
-	private void setIgnoreErrors(final boolean ignoreErrors)
-	{
-		this.ignoreErrors = ignoreErrors;
-		log("Ignore errors: " + this.ignoreErrors);
-
-		if (this.ignoreErrors)
-		{
-			throw new UnsupportedOperationException("'Ignore errors' option is not implemented at the moment");
-		}
-	}
-
-	private void setScriptFile(final String scriptFile)
-	{
-		this.scriptFile = scriptFile;
-		log("Script file: " + this.scriptFile);
-	}
-
-	private void setSettingsFile(final File dir, final String settingsFilename)
-	{
-		final File settingsFile = new File(dir, settingsFilename);
-		final Properties settings = new Properties();
-
-		FileInputStream in = null;
-		try
-		{
-			in = new FileInputStream(settingsFile);
-			settings.load(in);
-		}
-		catch (final IOException e)
-		{
-			throw new RuntimeException("Cannot load " + settingsFile, e);
-		}
-		finally
-		{
-			if (in != null)
-			{
-				try
-				{
-					in.close();
-				}
-				catch (final IOException e)
-				{
-				}
-			}
-		}
-
-		//
-		// fallback: be nice to old settings files that contains "ADEMPIERE_" settings.
-		final Properties additionalProps = new Properties();
-		for (String key : settings.stringPropertyNames())
-		{
-			if (!key.contains("ADEMPIERE"))
-			{
-				continue; // nothing to do
-			}
-
-			final String newKey = key.replaceAll("ADEMPIERE", "METASFRESH");
-
-			logger.info("The settings file contains the old settings name " + key + ". Acting as if it was the new settings name " + newKey + ".");
-			additionalProps.setProperty(newKey, settings.getProperty(key));
-		}
-		settings.putAll(additionalProps);
-
-		log("Settings file: " + settingsFilename);
-		this.settings = settings;
-	}
-
-	private String getProperty(final String propertyName, final String defaultValue)
-	{
-		if (settings == null)
-		{
-			throw new IllegalStateException("Settings were not configured");
-		}
-
-		return settings.getProperty(propertyName, defaultValue);
-	}
-
-	private void setSqlDir(final File sqlDir)
-	{
-		this.sqlDir = RolloutMigrate.checkDirectory("SQL Directory", sqlDir);
-		log("SQL directory: " + this.sqlDir);
-	}
-
-	private File getSqlDir()
-	{
-		if (sqlDir == null)
-		{
-			throw new IllegalStateException("SQL Directory was not configured");
-		}
-		return sqlDir;
-	}
-
-	private void setNewDBName(String newDBName)
-	{
-		this.newDBName = newDBName;
-	}
-
-	private void setTemplateDBName(String templateDBName)
-	{
-		this.templateDBName = templateDBName;
-	}
-
-	private static final File checkDirectory(final String name, final File dir)
-	{
-		if (!dir.exists())
-		{
-			throw new IllegalArgumentException(name + " '" + dir + "' does not exists");
-		}
-
-		final File dirAbs;
-		try
-		{
-			dirAbs = dir.getCanonicalFile();
-		}
-		catch (final IOException e)
-		{
-			throw new IllegalArgumentException(name + " '" + dir + "' is not accessible", e);
-		}
-
-		if (!dirAbs.isDirectory())
-		{
-			throw new IllegalArgumentException(name + " '" + dirAbs + "' is not a directory");
-		}
-		if (!dirAbs.canRead())
-		{
-			throw new IllegalArgumentException(name + " '" + dirAbs + "' is not readable");
-		}
-
-		return dirAbs;
 	}
 
 	public final void run()
@@ -425,144 +250,60 @@ public final class RolloutMigrate
 			log("Duration: " + (ts2 - ts) + "ms (" + new Date(ts2) + ")");
 			log("Done.");
 		}
-
 	}
 
 	private void run0()
 	{
-		final boolean useNewDBName = newDBName != null && !newDBName.isEmpty();
+		final DirectoryChecker directoryChecker = new DirectoryChecker();
+		final PropertiesFileLoader propertiesFileLoader = new PropertiesFileLoader(directoryChecker);
+
+		final Settings settings = new SettingsLoader(config, directoryChecker, propertiesFileLoader).loadConfig();
+
+		final DBConnectionMaker dbConnectionMaker = new DBConnectionMaker(settings);
+
+		final RolloutVersionLoader rolloutVersionLoader = new RolloutVersionLoader(propertiesFileLoader.loadFromFile(config.getRolloutDirName(), "build-info.properties"));
+		final String rolloutVersionString = rolloutVersionLoader.getRolloutVersionString();
+
+		if (!config.isDoNotCheckVersions())
+		{
+			final String dbName = settings.getDbName();
+
+			final boolean dbNeedsMigration = VersionChecker.builder()
+					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
+					.rolloutVersionStr(rolloutVersionString)
+					.doNotFailIfRolloutIsGreaterThanDB(config.isDoNotFailIfRolloutIsGreaterThanDB())
+					.build()
+					.dbNeedsMigration();
+			if (!dbNeedsMigration)
+			{
+				return; // nuzzing to do
+			}
+		}
+		final boolean useNewDBName = config.getNewDBName() != null && !config.getNewDBName().isEmpty();
 		if (useNewDBName)
 		{
-			final AbstractScriptsApplierTemplate prepareDBApplier = new AbstractScriptsApplierTemplate()
-			{
-				@Override
-				protected IScriptFactory createScriptFactory()
-				{
-					return new RolloutDirScriptFactory();
-				}
-
-				@Override
-				protected void configureScriptExecutorFactory(final IScriptExecutorFactory scriptExecutorFactory)
-				{
-					scriptExecutorFactory.setDryRunMode(isJustMarkScriptAsExecuted());
-				}
-
-				@Override
-				protected IScriptScanner createScriptScanner(final IScriptScannerFactory scriptScannerFactory)
-				{
-					final CreateDBFromTemplateScript createDBFromTemplateScript = CreateDBFromTemplateScript.builder()
-							.templateDBName(templateDBName)
-							.newDBName(newDBName)
-							.newOwner(getProperty(PROP_DB_USER, "metasfresh"))
-							.build();
-
-					final IScriptScanner result = new SingletonScriptScanner(createDBFromTemplateScript);
-					return result;
-				}
-
-				@Override
-				protected IScriptsApplierListener createScriptsApplierListener()
-				{
-					return scriptsApplierListener;
-				}
-
-				@Override
-				protected IDatabase createDatabase()
-				{
-					final String dbType = getProperty(PROP_DB_TYPE, "postgresql");
-					final String dbHostname = getProperty(PROP_DB_SERVER, "localhost");
-					final String dbPort = getProperty(PROP_DB_PORT, "5432");
-					final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
-					final String dbUser = getProperty(PROP_DB_USER, "metasfresh");
-					final String dbPassword = getProperty(PROP_DB_PASSWORD,
-							// Default value is null because in case is not configured we shall use other auth methods
-							IDatabase.PASSWORD_NA);
-					// return a database that does not check whether our script was applied or not
-					return new SQLDatabase(dbType, dbHostname, dbPort, dbName, dbUser, dbPassword)
-					{
-						// @formatter:off
-						@Override
-						public IScriptsRegistry getScriptsRegistry()
-						{
-							return new IScriptsRegistry()
-							{
-								@Override public void markIgnored(IScript script) { }
-								@Override public void markApplied(IScript script) { }
-								@Override public boolean isApplied(IScript script) { return false; }
-							};
-						};
-						// @formatter:on
-					};
-				};
-			};
-			prepareDBApplier.run();
+			final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
+			DBCopyMaker.builder()
+					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
+					.orgiginalDbNamme(config.getTemplateDBName())
+					.copyDbName(config.getNewDBName())
+					.copyDbOwner(settings.getDbUser())
+					.build()
+					.prepareNewDBCopy();
 		}
 
-		final AbstractScriptsApplierTemplate scriptApplier = new AbstractScriptsApplierTemplate()
-		{
-			@Override
-			protected IScriptFactory createScriptFactory()
-			{
-				return new RolloutDirScriptFactory();
-			}
+		final String dbName = useNewDBName ? config.getNewDBName() : settings.getDbName();
+		final IDatabase db = dbConnectionMaker.createDb(dbName);
 
-			@Override
-			protected void configureScriptExecutorFactory(final IScriptExecutorFactory scriptExecutorFactory)
-			{
-				scriptExecutorFactory.setDryRunMode(isJustMarkScriptAsExecuted());
-			}
+		MigrationScriptApplier.builder()
+				.db(db)
+				.listener(scriptsApplierListener)
+				.justMarkScriptAsExecuted(config.isJustMarkScriptAsExecuted())
+				.build()
+				.applyMigrationScripts();
 
-			@Override
-			protected IScriptScanner createScriptScanner(final IScriptScannerFactory scriptScannerFactory)
-			{
-				final String fileName;
-				if (scriptFile != null && !scriptFile.isEmpty())
-				{
-					if (new File(scriptFile).exists())
-					{
-						fileName = scriptFile;
-					}
-					else
-					{
-						fileName = getSqlDir().getAbsolutePath() + File.separator + scriptFile;
-					}
-				}
-				else
-				{
-					fileName = getSqlDir().getAbsolutePath();
-				}
-
-				final IFileRef fileRef = new FileRef(new File(fileName));
-				final IScriptScanner scriptScanner = scriptScannerFactory.createScriptScanner(fileRef);
-
-				final IScriptScanner result = new GloballyOrderedScannerDecorator(scriptScanner);
-				return result;
-			}
-
-			@Override
-			protected IScriptsApplierListener createScriptsApplierListener()
-			{
-				return scriptsApplierListener;
-			}
-
-			@Override
-			protected IDatabase createDatabase()
-			{
-				final String dbType = getProperty(PROP_DB_TYPE, "postgresql");
-				final String dbHostname = getProperty(PROP_DB_SERVER, "localhost");
-				final String dbPort = getProperty(PROP_DB_PORT, "5432");
-
-				final String dbName = useNewDBName ? newDBName : getProperty(PROP_DB_NAME, "metasfresh");
-
-				final String dbUser = getProperty(PROP_DB_USER, "metasfresh");
-				final String dbPassword = getProperty(PROP_DB_PASSWORD,
-						// Default value is null because in case is not configured we shall use other auth methods
-						IDatabase.PASSWORD_NA);
-				return new SQLDatabase(dbType, dbHostname, dbPort, dbName, dbUser, dbPassword);
-			}
-		};
-
-		scriptApplier.run();
+		new VersionSetter(db, rolloutVersionString)
+				.setVersion();
 	}
 
 	public final void printHelp(final PrintStream out)
@@ -600,7 +341,7 @@ public final class RolloutMigrate
 
 	public static final void main(final String[] args)
 	{
-		logger.info("RolloutMigrate (" + Version.instance + ")");
+		logger.info("RolloutMigrate (" + BinaryVersion.instance + ")");
 
 		final RolloutMigrate main = new RolloutMigrate();
 
