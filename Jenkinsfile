@@ -251,9 +251,8 @@ echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
-// the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_UPSTREAM_BUILDNO into the version anymore. Always go with the build number.
-final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
+// the artifacts we build in this pipeline will have a version that ends with this string
+final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
 echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 // metasfresh-task-repo is a constrant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
