@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.github.jknack.semver.Semver;
+import com.github.zafarkhaja.semver.Version;
 
 import de.metas.migration.IDatabase;
 import lombok.Builder;
@@ -56,9 +56,9 @@ public class VersionChecker
 	public boolean dbNeedsMigration()
 	{
 		final String dbVersionStr = retrieveDBVersion();
-		final Semver dbVersion = Semver.create(dbVersionStr);
+		final Version dbVersion = Version.valueOf(dbVersionStr);
 
-		final Semver rolloutVersion = Semver.create(rolloutVersionStr);
+		final Version rolloutVersion = Version.valueOf(rolloutVersionStr);
 
 		final int comp = dbVersion.compareTo(rolloutVersion);
 		if (comp == 0)

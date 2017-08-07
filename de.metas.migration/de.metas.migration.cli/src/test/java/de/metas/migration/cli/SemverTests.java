@@ -1,10 +1,11 @@
 package de.metas.migration.cli;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.github.jknack.semver.Semver;
+import com.github.zafarkhaja.semver.Version;
 
 /*
  * #%L
@@ -31,13 +32,13 @@ import com.github.jknack.semver.Semver;
 public class SemverTests
 {
 	/**
-	 * Verifies that {@link Semver} also works for four number versions
+	 * 
 	 */
 	@Test
 	public void test()
 	{
-		assertTrue(Semver.create("5.20.3.4").compareTo(Semver.create("5.20.3.5")) < 0);
-		assertTrue(Semver.create("5.20.3.4").compareTo(Semver.create("5.20.3.3")) > 0);
-		assertTrue(Semver.create("5.20.3.4").compareTo(Semver.create("5.20.3.4")) == 0);
+		assertThat(Version.valueOf("5.20.4")).isLessThan(Version.valueOf("5.20.5"));
+		assertThat(Version.valueOf("5.20.4-1")).isLessThan(Version.valueOf("5.20.4-2"));
+		assertThat(Version.valueOf("5.20.4")).isGreaterThan(Version.valueOf("5.20.3"));
 	}
 }
