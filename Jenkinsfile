@@ -204,9 +204,8 @@ else
 final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
-// the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_UPSTREAM_BUILDNO into the version anymore. Always go with the build number.
-final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
+// the artifacts we build in this pipeline will have a version that ends with this string
+final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
 echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 // metasfresh-task-repo is a constant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
@@ -249,6 +248,8 @@ timestamps
 // https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
 echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+
+// example version string: 5.20.2-23 with "5.20" == MF_RELEASE_VERSION
 final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
 echo "set MF_VERSION=${MF_VERSION}";
 
