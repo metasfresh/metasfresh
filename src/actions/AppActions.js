@@ -307,6 +307,14 @@ export function addNotification(title, msg, time, notifType, shortMsg){
     }
 }
 
+export function setNotificationProgress(key, progress){
+    return {
+        type: types.SET_NOTIFICATION_PROGRESS,
+        key: key,
+        progress: progress
+    }
+}
+
 export function deleteNotification(key){
     return {
         type: types.DELETE_NOTIFICATION,
