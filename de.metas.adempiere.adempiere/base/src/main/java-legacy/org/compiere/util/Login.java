@@ -34,6 +34,7 @@ import org.adempiere.ad.security.IRoleDAO;
 import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.IUserRolePermissionsDAO;
 import org.adempiere.ad.security.permissions.OrgResource;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrx;
@@ -50,11 +51,11 @@ import org.adempiere.util.time.SystemTime;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Role;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MAcctSchema;
-import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 
@@ -304,11 +305,13 @@ public class Login
 		//
 		if (Ini.isClient())
 		{
-			if (MSystem.isSwingRememberUserAllowed())
+			final ISystemBL systemBL = Services.get(ISystemBL.class);
+
+			if (systemBL.isSwingRememberUserAllowed())
 				Ini.setProperty(Ini.P_UID, username);
 			else
 				Ini.setProperty(Ini.P_UID, "");
-			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && MSystem.isSwingRememberPasswordAllowed())
+			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && systemBL.isSwingRememberPasswordAllowed())
 				Ini.setProperty(Ini.P_PWD, password);
 		}
 		
@@ -381,19 +384,21 @@ public class Login
 			return false;
 		}
 
-		final MSystem system = MSystem.get(ctx.getSessionContext());
+		final ISystemBL systemBL = Services.get(ISystemBL.class);
+
+		final I_AD_System system = systemBL.get(ctx.getSessionContext());
 		if (system == null)
 		{
 			throw new IllegalStateException("No System Info");
 		}
 
 		// LDAP auth not configured
-		if (!system.isLDAP())
+		if (!systemBL.isLDAP())
 		{
 			return false;
 		}
 
-		final boolean authenticated = system.isLDAP(app_user, app_pwd);
+		final boolean authenticated = systemBL.isLDAP(app_user, app_pwd);
 		return authenticated;
 	}
 

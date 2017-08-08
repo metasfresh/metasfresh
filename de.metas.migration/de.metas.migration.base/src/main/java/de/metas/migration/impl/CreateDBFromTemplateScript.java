@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 
 import de.metas.migration.IScript;
 import de.metas.migration.util.FileUtils;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -30,15 +31,18 @@ import de.metas.migration.util.FileUtils;
  * #L%
  */
 
+/**
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 public class CreateDBFromTemplateScript implements IScript
 {
-
 	private String newOwner;
 	private String newDBName;
 	private String templateDBName;
 
-	private CreateDBFromTemplateScript(
-			Builder builder)
+	private CreateDBFromTemplateScript(@NonNull final Builder builder)
 	{
 		this.newOwner = builder.newOwner;
 		this.newDBName = builder.newDBName;
@@ -113,5 +117,4 @@ public class CreateDBFromTemplateScript implements IScript
 
 		return FileUtils.createLocalFile(getFileName(), stream);
 	}
-
 }

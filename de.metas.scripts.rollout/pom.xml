@@ -19,25 +19,6 @@
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.cli</artifactId>
 			<version>1.0.0</version>
-			<exclusions>
-			<!-- we want just the all-in-one-jar..additional stuff only makes the banDuplicateClasses enforcer rule nervous -->
-				<exclusion>
-					<artifactId>de.metas.migration.base</artifactId>
-					<groupId>de.metas.migration</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>slf4j-api</artifactId>
-					<groupId>org.slf4j</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>commons-cli</artifactId>
-					<groupId>commons-cli</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>logback-classic</artifactId>
-					<groupId>ch.qos.logback</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -59,8 +40,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
-
 </project>
