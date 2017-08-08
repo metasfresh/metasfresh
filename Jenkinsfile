@@ -100,7 +100,7 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 		)
 		echo "mvnConf=${mvnConf}"
 
-		nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
+		nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
       	// env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
       	withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
