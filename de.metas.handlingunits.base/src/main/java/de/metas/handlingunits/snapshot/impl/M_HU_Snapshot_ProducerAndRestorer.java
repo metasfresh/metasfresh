@@ -73,7 +73,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
-				final IContextAware context = new PlainContextAware(contextInitial.getCtx(), localTrxName);
+				final IContextAware context = PlainContextAware.newWithTrxName(contextInitial.getCtx(), localTrxName);
 				setContext(context);
 
 				restoreInTrx();

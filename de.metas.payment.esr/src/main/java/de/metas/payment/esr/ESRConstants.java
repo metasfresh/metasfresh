@@ -47,10 +47,21 @@ public final class ESRConstants
 
 	public final static String DOCUMENT_REFID_ReferenceNo_Type_InvoiceReferenceNumber = "InvoiceReference";
 
+	/**
+	 * ESR type "Storno (-)"
+	 */
 	public static final String ESRTRXTYPE_Payment = "995";
 
+	/**
+	 * ESR type "gutschrift (+)"
+	 */
 	public static final String ESRTRXTYPE_Receipt = "999";
 
+	/**
+	 * A type of booking the we don't know how to handle
+	 */
+	public static final String ESRTRXTYPE_UNKNOWN = "???";
+	
 	public static final String ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT = "2";
 	public static final String ESRTRXTYPE_CreditMemo = "00" + ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT;
 

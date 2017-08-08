@@ -29,8 +29,10 @@ import java.util.Date;
 import org.adempiere.model.IContextAware;
 
 /**
- * Implementations of this interface are restoring models from snapshots, for a given model type. <br>
+ * Implementations of this interface are restoring models from snapshots, for a given model type.<br>
  * Use {@link IHUSnapshotDAO#restoreHUs()} to get an instance.
+ * <p>
+ * <b>Important:</b> all the setters below are mandatory.
  * 
  * @author tsa
  *
