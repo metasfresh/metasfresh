@@ -58,18 +58,26 @@ else
 }
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
+final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
+echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
-// the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_BUILD_ID into the version anymore. Always go with the build number.
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
-echo "Setting BUILD_VERSION=$BUILD_VERSION"
+// the artifacts we build in this pipeline will have a version that ends with this string
+final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
+echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
 
 timestamps
 {
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
+// shown in jenkins, for each build
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+
 node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
@@ -83,17 +91,20 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
-				// create our config instance to be used further on
-				final MvnConf mvnConf = new MvnConf(
-					'pom.xml', // pomFile
-					MAVEN_SETTINGS, // settingsFile
-					"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-					'https://repo.metasfresh.com' // mvnRepoBaseURL
-				)
-				echo "mvnConf=${mvnConf}"
+		// create our config instance to be used further on
+		final MvnConf mvnConf = new MvnConf(
+			'pom.xml', // pomFile
+			MAVEN_SETTINGS, // settingsFile
+			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+			'https://repo.metasfresh.com' // mvnRepoBaseURL
+		)
+		echo "mvnConf=${mvnConf}"
 
-				nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
+		nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
 
+      	// env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
+      	withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
+      	{
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
             stage('Set versions and build metasfresh-admin')
@@ -102,20 +113,19 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
       				mvnUpdateParentPomVersion mvnConf
 
               // set the artifact version of everything below the pom.xml
-							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
+							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
 							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:use-latest-versions"
 
 							sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
 
-              // create and upload a docker image
-							sh "cp target/metasfresh-admin-${BUILD_VERSION}.jar src/main/docker/metasfresh-admin.jar" // copy the file so it can be handled by the docker build
+							sh "cp target/metasfresh-admin-${MF_VERSION}.jar src/main/docker/metasfresh-admin.jar" // copy the file so it can be handled by the docker build
 							docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 							{
 								def app = docker.build 'metasfresh/metasfresh-admin', 'src/main/docker';
 
 								def misc = new de.metas.jenkins.Misc();
 								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+								app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
 
 								if(MF_UPSTREAM_BRANCH=='release')
 								{
@@ -124,8 +134,9 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 								}
 							}
             } // stage
+		   } // withMaven
+       } // withEnv
 		}
-	}
 	// clean up the work space, including the local maven repositories that the withMaven steps created
 	step([$class: 'WsCleanup', cleanWhenFailure: false])
 } // node
