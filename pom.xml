@@ -4,7 +4,7 @@
 
 	<groupId>de.metas</groupId>
 	<artifactId>de.metas.parent.general</artifactId>
-	<version>3.0.0</version>
+	<version>10.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -104,7 +104,7 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.0.0</version>
+					<version>10.0.0</version>
 				</plugin>
 
 				<!-- we set the metasfresh-wide encoding for code and resource files to be UTF-8 by default -->
@@ -327,13 +327,13 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								<dependencyConvergence />
 
 								<!-- 
-									metas 3.x.x dependencies are only for local use (i.e. just in your local workspace).
+									metas 10.x.x dependencies are only for local use (i.e. just in your local workspace).
 									We can't allow them to be build on jenkins, because then they would be deployed to the maven repos and shadow the "actual" builds with correct build numbers.
 									Also see http://maven.apache.org/enforcer/enforcer-rules/bannedDependencies.html 
 								-->
 								<bannedDependencies>
 								  <excludes>
-									<exclude>de.metas*:*:[3,)</exclude>
+									<exclude>de.metas*:*:[10,)</exclude>
 								  </excludes>
 								</bannedDependencies>
 								
