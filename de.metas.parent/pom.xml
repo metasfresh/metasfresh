@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>[1,3.0.0]</version>
+		<version>[1,10.0.0]</version>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
 		can't set it to another version it -->
-	<version>3.0.0</version>
+	<version>10.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -744,7 +744,7 @@
 								<!--  these are the de.metas.assemblies:de.metas.assemblies:1.0.0 of ye olden days. they contain the webapp_dir which our modern assemblies do not contain anymore -->
 								<groupId>de.metas</groupId>
 								<artifactId>metasfresh-legacy-assemblies</artifactId>
-								<version>3.0.0</version>
+								<version>10.0.0</version>
 							</dependency>
 						</dependencies>
 						<executions>
