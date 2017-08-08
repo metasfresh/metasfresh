@@ -2,7 +2,10 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
-
+// note that we set a default version for this library in jenkins, so we don't have to specify it here
+@Library('misc')
+import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Misc
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui
@@ -245,13 +248,12 @@ final NODEJS_TOOL_NAME="nodejs-default"
 echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
+final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
+echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
-// the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_UPSTREAM_BUILDNO into the version anymore. Always go with the build number.
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
-echo "Setting BUILD_VERSION=$BUILD_VERSION"
+// the artifacts we build in this pipeline will have a version that ends with this string
+final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
+echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 // metasfresh-task-repo is a constrant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
 final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
@@ -274,11 +276,20 @@ echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
 final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
 echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_BUILD_VERSION}";
 // note: going to set currentBuild.description after we deployed
 
 timestamps
 {
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
+// shown in jenkins, for each build
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
@@ -317,31 +328,32 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 															.replaceAll('\\s',''); // get rid of all whisespaces
 				final version_info_json = """{
   \"build\": {
-    \"ciBuildUrl\": \"${env.BUILD_URL}\",
-    \"ciBuildNo\": \"${env.BUILD_NUMBER}\",
-    \"ciJobName\": \"${env.JOB_NAME}\",
-    \"ciBuildTag\": \"${env.BUILD_TAG}\"
-    \"ciGitSHA1\": \"${commit_sha1}\"
+		\"releaseVersion\": \"${MF_RELEASE_VERSION}\",
+    \"jenkinsBuildUrl\": \"${env.BUILD_URL}\",
+    \"jenkinsBuildNo\": \"${env.BUILD_NUMBER}\",
+    \"jenkinsJobName\": \"${env.JOB_NAME}\",
+    \"jenkinsBuildTag\": \"${env.BUILD_TAG}\"
+    \"gitSHA1\": \"${commit_sha1}\"
   }
 }""";
 
 				writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
 
-				sh "tar cvzf webui-dist-${BUILD_VERSION}.tar.gz dist"
-				sh "mvn --settings ${MAVEN_SETTINGS} deploy:deploy-file ${MF_MAVEN_TASK_RESOLVE_PARAMS} -Dfile=webui-dist-${BUILD_VERSION}.tar.gz -Durl=${MF_MAVEN_DEPLOY_REPO_URL} -DrepositoryId=${MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${BUILD_VERSION} -Dpackaging=tar.gz -DgeneratePom=true"
+				sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
+				sh "mvn --settings ${MAVEN_SETTINGS} deploy:deploy-file ${MF_MAVEN_TASK_RESOLVE_PARAMS} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${MF_MAVEN_DEPLOY_REPO_URL} -DrepositoryId=${MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true"
 
-				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${BUILD_VERSION}/metasfresh-webui-frontend-${BUILD_VERSION}.tar.gz";
+				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${MF_VERSION}/metasfresh-webui-frontend-${MF_VERSION}.tar.gz";
 
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 				currentBuild.description="""artifacts (if not yet cleaned up)
 <ul>
-<li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${BUILD_VERSION}.tar.gz</a></li>
+<li><a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-frontend-${MF_VERSION}.tar.gz</a></li>
 </ul>""";
 
 				// gh #968:
 				// set env variables which will be available to a possible upstream job that might have called us
 				// all those env variables can be gotten from <buildResultInstance>.getBuildVariables()
-				env.BUILD_VERSION="${BUILD_VERSION}"
+				env.MF_VERSION="${MF_VERSION}"
 				env.BUILD_GIT_SHA1="${commit_sha1}";
       } // stage
 		} // withMaven
@@ -352,7 +364,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, BUILD_VERSION, false); // wait=false
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, MF_VERSION, false); // wait=false
 	}
 }
 else
