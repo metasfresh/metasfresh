@@ -27,6 +27,7 @@ import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;
@@ -34,9 +35,12 @@ import org.compiere.report.IJasperServiceRegistry;
 import org.compiere.report.IJasperServiceRegistry.ServiceType;
 import org.compiere.util.CacheMgt;
 
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.event.IEventBusFactory;
 import de.metas.notification.INotificationBL;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.async.spi.impl.PDFPrintingAsyncBatchListener;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_Calibration;
@@ -141,6 +145,12 @@ public class Main extends AbstractModuleInterceptor
 		// task 09833
 		// Register the Default Printing Info ctx provider
 		Services.get(INotificationBL.class).setDefaultCtxProvider(DefaultPrintingNotificationCtxProvider.instance);
+		
+		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new PDFPrintingAsyncBatchListener(), Printing_Constants.C_Async_Batch_InternalName_PDFPrinting);
+		
+		//
+		// Setup event bus topics on which swing client notification listener shall subscribe
+		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(PDFPrintingAsyncBatchListener.TOPIC_PDFPrinting);
 	}
 
 	@Override
