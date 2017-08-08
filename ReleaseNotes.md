@@ -62,7 +62,7 @@ Here come the actual release notes:
   * [#2106](https://github.com/metasfresh/metasfresh/issues/2106) NullPointerException on CAMT 54 Import
     * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file. 
   * [#2107](https://github.com/metasfresh/metasfresh/issues/2107) Error: Missing ESR creditor reference on CAMT 54 Import
-    * Fixes a Bug in new camt54 import which failed because mandatory ESR Reference Field is missing in sepa file. 
+    * Fixes a Bug in new camt54 import which failed because mandatory ESR Reference Field is missing in sepa file.
 
 * metasfresh-webui-api
 
