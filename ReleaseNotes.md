@@ -35,6 +35,7 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#1771](https://github.com/metasfresh/metasfresh/issues/1771) add legacy features
+    * Adding missing features from legacy systems to current metasfresh codebase.
   * [#2070](https://github.com/metasfresh/metasfresh/issues/2070) Window Design WebUI: Product
     * Adopting the Product Window to the current Window Concept for Master Data in metasfresh WebUI
   * [#2080](https://github.com/metasfresh/metasfresh/issues/2080) Window Design WebUI: Payment Allocation Translation en_US
@@ -50,7 +51,9 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#977](https://github.com/metasfresh/metasfresh-webui-frontend/issues/977) Add frontend support for modifying the KPI config (caption, offset, etc)
+    * New Functionality allowing the user to adjust KPI Settings via Frontend.
   * [#1051](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1051) Cut-Off Header names
+    * Adjusting the Header Names of Grid View Columns. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
 
 ## Fixes
 * metasfresh-app
