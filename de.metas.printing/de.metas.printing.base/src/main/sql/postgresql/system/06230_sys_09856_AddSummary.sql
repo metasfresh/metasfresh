@@ -13,10 +13,10 @@ INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,Classna
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Process_ID=540661 AND NOT EXISTS (SELECT * FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
 
--- 25.02.2016 19:01:02 OEZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540661,0,TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- 25.02.2016 19:01:02 OEZ
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540661,0,TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 
 
@@ -77,5 +77,12 @@ UPDATE AD_Process_Para_Trl SET IsTranslated='N' WHERE AD_Process_Para_ID=540905
 ;
 
 
+
+
+------------
+
+
+insert into AD_Message
+values(543934,0,0,'Y','2016-08-09 17:21:34+03',100,'2016-08-09 17:21:34+03',100,'PDFPrintingAsyncBatchListener_PrintJob_Done_2','Pdf {0} von {1} wurde fertiggestellt. Die Datei enthält {2} Belege.','','I','de.metas.printing');
 
 
