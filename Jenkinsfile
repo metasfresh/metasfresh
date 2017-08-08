@@ -94,7 +94,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         checkout scm; // i hope this to do all the magic we need
         sh 'git clean -d --force -x' // clean the workspace
 
-        nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
+        nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
         // update the parent pom version
         mvnUpdateParentPomVersion mvnConf
