@@ -1,5 +1,6 @@
 package de.metas.migration.cli;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -103,18 +104,21 @@ public class VersionChecker
 
 	public String retrieveDBVersion()
 	{
-		try (final Statement stmt = dbConnection.getConnection().createStatement())
+		try (final Connection connection = dbConnection.getConnection();
+				final Statement stmt = connection.createStatement())
 		{
 			return retrieveDBVersion0(stmt);
 		}
 		catch (final SQLException e)
 		{
+			
 			logger.info("Could not retrieve the DB version");
 			if ("42703".equals(e.getSQLState())) // 42703 => undefined_column, see https://www.postgresql.org/docs/9.5/static/errcodes-appendix.html
 			{
 				// we are a migration tool, so it might well be that the column is not yet there
 				logger.info("Trying to create the DBVersion column now");
-				try (final Statement stmt = dbConnection.getConnection().createStatement())
+				try (final Connection connection = dbConnection.getConnection();
+						final Statement stmt = connection.createStatement())
 				{
 					stmt.execute(CREATE_DB_VERSION_COLUMN_DDL);
 					logger.info("Created the column with the initial value {}", DB_VERSION_INITIAL_VALUE);

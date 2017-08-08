@@ -1,5 +1,6 @@
 package de.metas.migration.cli;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -54,7 +55,8 @@ public class VersionSetter
 		logger.info("Setting AD_System.DBVersion to {}", newVersion);
 
 		final String updateSql = "UPDATE public.AD_System SET DBVersion='" + newVersion + "'";
-		try (final Statement stmt = db.getConnection().createStatement())
+		try (final Connection connection = db.getConnection();
+				final Statement stmt = connection.createStatement())
 		{
 			stmt.executeUpdate(updateSql);
 		}
