@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2110](https://github.com/metasfresh/metasfresh/issues/2110) make version/build infos more transparent
+  * [#2111](https://github.com/metasfresh/metasfresh/issues/2111) Store version number in DB after successful sql remote
 
 * metasfresh-webui-api
 
