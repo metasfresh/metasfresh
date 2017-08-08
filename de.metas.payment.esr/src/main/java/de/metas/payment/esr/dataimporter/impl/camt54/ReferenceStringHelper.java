@@ -9,7 +9,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
-import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import lombok.NonNull;
 
@@ -36,7 +35,7 @@ import lombok.NonNull;
  */
 
 /**
- * This little helper class has the job of getting the (ESR) reference and passing it to an {@link ESRTransaction.ESRTransactionBuilder}.
+ * This little helper class has the job of getting the (ESR) reference and passing it to an {@link ESRTransactionBuilder}.
  * There is also some fallback and error messages to be done in case of some not-so-happy scenarios.
  * 
  * Note: codebeat keeps complaining about how spagetti {@link ESRDataImporterCamt54} is, so from time to time I extract something :-D.
