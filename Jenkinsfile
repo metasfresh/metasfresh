@@ -66,7 +66,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				)
 				echo "mvnConf=${mvnConf}"
 
-				nexusCreateRepoIfNotExists mvnConf.mvnRepoBaseURL, mvnConf.mvnRepoName
+				nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
