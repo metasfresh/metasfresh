@@ -50,13 +50,15 @@ public final class RolloutMigrate
 
 		final RolloutVersionLoader rolloutVersionLoader = new RolloutVersionLoader(propertiesFileLoader, config.getRolloutDirName());
 
+		final boolean copyTemplateToNewDB = config.getNewDBName() != null && !config.getNewDBName().isEmpty();
 		//
 		// check versions if that's wanted
 		if (config.isCheckVersions())
 		{
 			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString();
 
-			final String dbName = settings.getDbName();
+			// if we are asked to copy, then we check the version of the original (a.k.a. template) DB
+			final String dbName = copyTemplateToNewDB ? config.getNewDBName() : settings.getDbName();
 
 			final boolean dbNeedsMigration = VersionChecker.builder()
 					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
@@ -72,13 +74,12 @@ public final class RolloutMigrate
 
 		//
 		// create a DB copy if that's wanted
-		final boolean useNewDBName = config.getNewDBName() != null && !config.getNewDBName().isEmpty();
-		if (useNewDBName)
+		if (copyTemplateToNewDB)
 		{
 			final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
 			DBCopyMaker.builder()
 					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
-					.orgiginalDbNamme(config.getTemplateDBName())
+					.orgiginalDbName(config.getTemplateDBName())
 					.copyDbName(config.getNewDBName())
 					.copyDbOwner(settings.getDbUser())
 					.build()
@@ -87,7 +88,7 @@ public final class RolloutMigrate
 
 		//
 		// peform our "core" job, i.e. apply migration scripts
-		final String dbName = useNewDBName ? config.getNewDBName() : settings.getDbName();
+		final String dbName = copyTemplateToNewDB ? config.getNewDBName() : settings.getDbName();
 		final IDatabase db = dbConnectionMaker.createDb(dbName);
 
 		//

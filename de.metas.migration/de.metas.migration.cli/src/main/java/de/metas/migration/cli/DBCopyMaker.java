@@ -1,5 +1,8 @@
 package de.metas.migration.cli;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.metas.migration.IDatabase;
 import de.metas.migration.applier.IScriptsApplierListener;
 import de.metas.migration.applier.impl.NullScriptsApplierListener;
@@ -44,8 +47,11 @@ import lombok.NonNull;
 @Builder
 public class DBCopyMaker
 {
+	
+	private static final transient Logger logger = LoggerFactory.getLogger(DBCopyMaker.class);
+	
 	@NonNull
-	private final String orgiginalDbNamme;
+	private final String orgiginalDbName;
 
 	@NonNull
 	private final String copyDbName;
@@ -58,11 +64,12 @@ public class DBCopyMaker
 
 	public void prepareNewDBCopy()
 	{
+		logger.info("Going to create a new database {} from the original/template database {}", copyDbName, orgiginalDbName);
 		// in accordance with the command line parameters, we now create a new database
 		// before actually applying any migration script
 
 		final CreateDBFromTemplateScript createDBFromTemplateScript = CreateDBFromTemplateScript.builder()
-				.templateDBName(orgiginalDbNamme)
+				.templateDBName(orgiginalDbName)
 				.newDBName(copyDbName)
 				.newOwner(copyDbOwner)
 				.build();
