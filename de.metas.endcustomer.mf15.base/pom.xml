@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>de.metas.dist</groupId>
 		<artifactId>metasfresh-dist</artifactId>
-		<version>3.0.0</version>
+		<version>10.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.base</artifactId>
@@ -17,7 +17,7 @@
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
-		<metasfresh.version>[1,3.0.0]</metasfresh.version>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
 		<migration-sql-basedir></migration-sql-basedir>
