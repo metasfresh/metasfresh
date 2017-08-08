@@ -70,15 +70,23 @@ Here come the actual release notes:
   * [#1000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1000) Cursor Missing after [tab] in BPartner Relation Window
     * Fix for Focus after TAB from and into Lookup Fields.
   * [#1006](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1006) row selection in picking
+    * When opening the picking window intitially in Grid Veiw the first Row is now selected.
   * [#1048](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1048) POST .../documentView/{windowId} is called twice when opening a view
+    * Now Minimizing the amount of calls for documentView/{windowId} endpoint, which improves the performance of the overall System.
   * [#1063](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1063) view: when refreshing the page the data is loaded twice
+    * Reducing the load of data after refreshing a page improving the load times of views.
   * [#1077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1077) Sitemap Navigation [arrow-up] not working
+    * Fixes a Bug in the Keyboard Navigation in Sitemap. Now allowing the user to use the arrow-up key again. 
   * [#1089](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1089) Avatar Tooltip opens and stays open after selecting Avatar Settings
+    * Fixes a Bug in Avatr Tooltip which remained open after selecting the avatar Settings.
   * [#1095](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1095) Sales Order Batch Entry with Key Shortcut not working
+    * Fix for Keyborad Navigation Shortcut starting the Batch Entry in Document Views (where available).
   * [#1099](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1099) Browse whole tree is not translated in DE
-    * New Transition of static element in WebUI Sitemap
+    * New Transition of static element in WebUI Sitemap.
   * [#1098](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1098) Cant select last entry in dropdown list
+    * Fix for Selection Lists, now allowing to also select the last entry of a List.
   * [#1111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1111) Lookup Selection Lists not shown in Sequence anymore
+    * Fixes a Bug in Lookup Fields now showing the wanted selection List sequence when defining included Fields in a Lookup.
 
 
 # metasfresh 5.20 (2017-31)
