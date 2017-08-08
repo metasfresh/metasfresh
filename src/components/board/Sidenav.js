@@ -48,6 +48,36 @@ class Sidenav extends Component {
 
     }
 
+    getCardIndex = (cardId) => {
+        const { view } = this.state;
+        let result = -1;
+
+        if (view && view.result) {
+            view.result.forEach( (card, index) => {
+                if (card && (card.cardId === cardId)) {
+                    result = index;
+                }
+            });
+        }
+
+        return result;
+    }
+
+    removeCard = (cardId) => {
+        const { view } = this.state;
+        if (view && view.result) {
+            let cardIndex = this.getCardIndex(cardId);
+            if (cardIndex >= 0) {
+                this.setState(prev => update(prev, {
+                    view: {
+                        result: {$unset: [cardIndex]}
+                    },
+                    loading: {$set: false}
+                }));
+            }
+        }
+    }
+
     componentDidMount = () => {
         const {boardId} = this.props;
         getLayout(boardId).then(res =>
