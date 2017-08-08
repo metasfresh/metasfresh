@@ -94,7 +94,7 @@ stage('Invoke downstream job')
 				misc.invokeDownStreamJobs(
 				 	MF_UPSTREAM_BUILDNO,
 				 	MF_UPSTREAM_BRANCH,
-				 	BUILD_VERSION, // parentPomVersion; this build *is* the parent version
+				 	MF_BUILD_VERSION, // parentPomVersion; this build *is* the parent version
 				 	false, // skipToDist=false; when we invoke the metasfresh build, we want it to do a full build
 				 	true, // triggerDownStreamBuilds=true; we want "everything" beeing build
 				 	true, // wait=true; if a downstream job fails with this parent pom then we want to know about it
@@ -104,7 +104,7 @@ stage('Invoke downstream job')
 				misc.invokeDownStreamJobs(
 				 	MF_UPSTREAM_BUILDNO,
 				 	MF_UPSTREAM_BRANCH,
-				 	BUILD_VERSION, // parentPomVersion; this build *is* the parent version
+				 	MF_BUILD_VERSION, // parentPomVersion; this build *is* the parent version
 				 	false, // skipToDist=false; when we invoke the metasfresh build, we want it to do a full build
 				 	true, // triggerDownStreamBuilds=true; we want "everything" beeing build
 				 	true, // wait=true; if a downstream job fails with this parent pom then we want to know about it
