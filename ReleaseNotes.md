@@ -32,6 +32,8 @@ Here come the actual release notes:
 
 # metasfresh 5.21 (2017-32)
 
+**upcoming release for week 2017-31**
+
 ## Features
 * metasfresh-app
   * [#1771](https://github.com/metasfresh/metasfresh/issues/1771) add legacy features
@@ -90,8 +92,6 @@ Here come the actual release notes:
 
 
 # metasfresh 5.20 (2017-31)
-
-**upcoming release for week 2017-31**
 
 ## Features
 * metasfresh-app
@@ -190,8 +190,6 @@ Here come the actual release notes:
     * Fix for a minor error on document websocket events.
 
 # metasfresh 5.19 (2017-30)
-
-**upcoming release for week 2017-30**
 
 ## Features
 * metasfresh-app
