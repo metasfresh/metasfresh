@@ -1,5 +1,6 @@
 package de.metas.migration.cli;
 
+import java.util.HashMap;
 import java.util.Properties;
 
 import de.metas.migration.IDatabase;
@@ -93,6 +94,13 @@ public class Settings
 				// Default value is null because in case is not configured we shall use other auth methods
 				IDatabase.PASSWORD_NA);
 		return dbPassword;
+	}
+
+	public String toString()
+	{
+		final HashMap<Object, Object> result = new HashMap<>(settings);
+		result.put(PROP_DB_PASSWORD, "******");
+		return result.toString();
 	}
 
 }

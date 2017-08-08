@@ -37,6 +37,7 @@ public class RolloutMigrateManualTest
 				// "-i", // ignore errors
 				// "-r", // dry run
 				"-v", // do not check version
+				"-u", // do not update version
 				"-a" // ask
 		});
 	}

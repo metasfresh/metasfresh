@@ -95,7 +95,7 @@ public class SettingsLoader
 		}
 		fileProperties.putAll(additionalProps);
 
-		logger.info("Settings file: " + settingsFilename);
+		logger.info("Loaded settings from file {}", new File(dir, settingsFilename));
 		return fileProperties;
 	}
 
