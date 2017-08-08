@@ -58,7 +58,7 @@ public final class RolloutMigrate
 			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString();
 
 			// if we are asked to copy, then we check the version of the original (a.k.a. template) DB
-			final String dbName = copyTemplateToNewDB ? config.getNewDBName() : settings.getDbName();
+			final String dbName = copyTemplateToNewDB ? config.getTemplateDBName() : settings.getDbName();
 
 			final boolean dbNeedsMigration = VersionChecker.builder()
 					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
