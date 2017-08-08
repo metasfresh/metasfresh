@@ -11,7 +11,11 @@ import org.assertj.core.api.Condition;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.metas.payment.camt054_001_06.BatchInformation2;
+import de.metas.payment.camt054_001_06.EntryDetails7;
+import de.metas.payment.camt054_001_06.ReportEntry8;
 import de.metas.payment.esr.dataimporter.ESRStatement;
+import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.model.I_ESR_Import;
 
@@ -69,6 +73,9 @@ public class ESRDataImporterCamt54Tests
 				.isEqualByComparingTo("10");
 	}
 
+	/**
+	 * Verifies that is there is one input file without any "Batch" tag, then CtrlQty is null
+	 */
 	@Test
 	public void testMissingCtrlQty()
 	{
@@ -88,7 +95,115 @@ public class ESRDataImporterCamt54Tests
 
 		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
 		assertThat(importData.getCtrlQty()).isNull();
+	}
 
+	/**
+	 * Verifies the behavior of {@link ESRDataImporterCamt54#iterateEntryDetails(ESRStatementBuilder, BigDecimal, ReportEntry8)} a bit closer.
+	 */
+	@Test
+	public void testMissingCtrlQtyUnit()
+	{
+		final ESRDataImporterCamt54 importer = new ESRDataImporterCamt54();
+		final ESRStatementBuilder stmtBuilder = ESRStatement.builder();
+
+		final EntryDetails7 emptyNtryDetails = new EntryDetails7();
+		emptyNtryDetails.setBtch(new BatchInformation2());
+
+		final EntryDetails7 filledNtryDetails1 = new EntryDetails7();
+		{
+			final BatchInformation2 btch1 = new BatchInformation2();
+			btch1.setNbOfTxs("2");
+			filledNtryDetails1.setBtch(btch1);
+		}
+
+		final EntryDetails7 filledNtryDetails2 = new EntryDetails7();
+		{
+			final BatchInformation2 btch1 = new BatchInformation2();
+			btch1.setNbOfTxs("3");
+			filledNtryDetails2.setBtch(btch1);
+		}
+
+		//
+		// now do some testing
+		//
+
+		// only the empty one..
+		{
+			final ReportEntry8 ntry = new ReportEntry8();
+			ntry.getNtryDtls().add(emptyNtryDetails);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
+			assertThat(result).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+		}
+
+		// only the "filled" one..
+		{
+			final ReportEntry8 ntry = new ReportEntry8();
+			ntry.getNtryDtls().add(filledNtryDetails1);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
+			assertThat(result).isEqualByComparingTo("2");
+		}
+
+		// first empty, then filled (one ntry)
+		{
+			final ReportEntry8 ntry = new ReportEntry8();
+			ntry.getNtryDtls().add(emptyNtryDetails);
+			ntry.getNtryDtls().add(filledNtryDetails1);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
+			assertThat(result).isEqualByComparingTo("2");
+		}
+
+		// first empty, then filled (two ntrys)
+		{
+			final ReportEntry8 ntry1 = new ReportEntry8();
+			ntry1.getNtryDtls().add(emptyNtryDetails);
+			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry1);
+			assertThat(resultFrom1stCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+
+			final ReportEntry8 ntry2 = new ReportEntry8();
+			ntry2.getNtryDtls().add(filledNtryDetails1);
+			final BigDecimal resultFrom2ndCall = importer.iterateEntryDetails(stmtBuilder, resultFrom1stCall, ntry2);
+			assertThat(resultFrom2ndCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+		}
+
+		// first filled, then empty (one ntry)
+		{
+			final ReportEntry8 ntry = new ReportEntry8();
+			ntry.getNtryDtls().add(filledNtryDetails1);
+			ntry.getNtryDtls().add(emptyNtryDetails);
+			final BigDecimal result = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry);
+			assertThat(result).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+		}
+
+		// first filled, then empty (two ntrys)
+		{
+			final ReportEntry8 ntry1 = new ReportEntry8();
+			ntry1.getNtryDtls().add(filledNtryDetails1);
+			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry1);
+			assertThat(resultFrom1stCall).isEqualByComparingTo("2");
+
+			final ReportEntry8 ntry2 = new ReportEntry8();
+			ntry2.getNtryDtls().add(emptyNtryDetails);
+			final BigDecimal resultFrom2ndCall = importer.iterateEntryDetails(stmtBuilder, resultFrom1stCall, ntry2);
+			assertThat(resultFrom2ndCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+		}
+
+		// filled, filled, then empty (three ntrys)
+		{
+			final ReportEntry8 ntry1 = new ReportEntry8();
+			ntry1.getNtryDtls().add(filledNtryDetails1);
+			final BigDecimal resultFrom1stCall = importer.iterateEntryDetails(stmtBuilder, ESRDataImporterCamt54.CTRL_QTY_NOT_YET_SET, ntry1);
+			assertThat(resultFrom1stCall).isEqualByComparingTo("2");
+
+			final ReportEntry8 ntry2 = new ReportEntry8();
+			ntry2.getNtryDtls().add(filledNtryDetails2);
+			final BigDecimal resultFrom2ndCall = importer.iterateEntryDetails(stmtBuilder, resultFrom1stCall, ntry2);
+			assertThat(resultFrom2ndCall).isEqualByComparingTo("5");
+
+			final ReportEntry8 ntry3 = new ReportEntry8();
+			ntry3.getNtryDtls().add(emptyNtryDetails);
+			final BigDecimal resultFrom3rdCall = importer.iterateEntryDetails(stmtBuilder, resultFrom2ndCall, ntry3);
+			assertThat(resultFrom3rdCall).isEqualByComparingTo(ESRDataImporterCamt54.CTRL_QTY_AT_LEAST_ONE_NULL);
+		}
 	}
 
 	@Test
@@ -158,21 +273,29 @@ public class ESRDataImporterCamt54Tests
 		return importData;
 	}
 
+	/**
+	 * User this method to quickly run with customer-provided files which we can't share.<br>
+	 * Goal: create a "generic" and sharable test case.
+	 */
 	// @Test
 	public void otherTest()
 	{
-		final InputStream inputStream = getClass().getResourceAsStream("/adempiere_7924089069896117994_017-Binningen_1707_camt.054-ESR-ASR_P_CH3909000000400099806_303041189_0_2017072823282302.xml");
+		final InputStream inputStream = getClass().getResourceAsStream("");
 		assertThat(inputStream).isNotNull();
 
 		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
-		assertThat(importData.getTransactions().size())
-				.isEqualTo(13);
 
-		assertThat(importData.getCtrlQty())
-				.isEqualByComparingTo(new BigDecimal("13"));
+		assertThat(importData.getCtrlQty()).isEqualByComparingTo("13");
+		assertThat(importData.getTransactions()).hasSize(importData.getCtrlQty().intValue());
 
-		assertThat(importData.getCtrlAmount())
-				.isEqualByComparingTo(new BigDecimal("540"));
+		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1030");
 
+		final BigDecimal lineSum = importData
+				.getTransactions()
+				.stream()
+				.map(t -> t.getAmount()).reduce(
+						BigDecimal.ZERO,
+						(a, b) -> a.add(b));
+		assertThat(lineSum).isEqualByComparingTo(importData.getCtrlAmount());
 	}
 }
