@@ -41,8 +41,8 @@ class Tabs extends Component {
         const {tabIndex} = this.props;
         const maxWidth = (95 / pills.length) + '%';
         const {selected} = this.state;
-
         return pills.map((item) => {
+
             return (
                 <li
                     className="nav-item"
@@ -51,6 +51,8 @@ class Tabs extends Component {
                     tabIndex={tabIndex}
                     onKeyDown={(e) => this.handlePillKeyDown(e, item.key)}
                     style={{ maxWidth }}
+                    title={item.props.caption}
+
                 >
                     <a
                         className={

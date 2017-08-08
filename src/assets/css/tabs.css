@@ -17,6 +17,7 @@
 .nav-tabs .nav-item.nav-item {
     margin-right: .5rem;
     margin-left: 0;
+    position: relative;
 }
 
 .nav-tabs .nav-link.active {
