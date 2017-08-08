@@ -49,7 +49,7 @@ Here come the actual release notes:
   * [#2101](https://github.com/metasfresh/metasfresh/issues/2101) webui - allow disabling auto-close of picking candidates
     * New Switch to influence the closing behavior of picking candidates.
 
-	* metasfresh-webui-api
+* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#977](https://github.com/metasfresh/metasfresh-webui-frontend/issues/977) Add frontend support for modifying the KPI config (caption, offset, etc)
