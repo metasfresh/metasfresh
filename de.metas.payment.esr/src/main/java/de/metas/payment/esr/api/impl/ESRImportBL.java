@@ -309,7 +309,7 @@ public class ESRImportBL implements IESRImportBL
 	@VisibleForTesting
 	public void evaluateLine(@NonNull final I_ESR_Import esrImport, @NonNull final I_ESR_ImportLine importLine)
 	{
-		if (ESRConstants.ESRTRXTYPE_ReverseBooking.equalsIgnoreCase(importLine.getESRTrxType()))
+		if (isReverseBookingLine(importLine))
 		{
 			// set payment action
 			importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
@@ -508,6 +508,12 @@ public class ESRImportBL implements IESRImportBL
 					save(line);
 					continue;
 				}
+				if (line.getESRTrxType() != null && line.getESRTrxType().equalsIgnoreCase(ESRConstants.ESRTRXTYPE_UNKNOWN))
+				{
+					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+					save(line);
+					continue;
+				}
 
 				// Skip already processed lines
 				if (line.isProcessed())
@@ -591,7 +597,7 @@ public class ESRImportBL implements IESRImportBL
 		{
 			// if there is an an assumption error, catch it to add a message and the release it
 			final String message = e.getMessage();
-			if (message.startsWith("Assumption failure:"))
+			if (message != null && message.startsWith("Assumption failure:"))
 			{
 				esrImport.setDescription(esrImport.getDescription() + " > Fehler: Es ist ein Fehler beim Import aufgetreten! " + e.getLocalizedMessage());
 				save(esrImport, ITrx.TRXNAME_None); // out of transaction: we want to not be rollback
@@ -1037,7 +1043,7 @@ public class ESRImportBL implements IESRImportBL
 	private boolean isReverseBookingLine(final I_ESR_ImportLine line)
 	{
 		final String trxType = line.getESRTrxType();
-		return ESRConstants.ESRTRXTYPE_ReverseBooking.equals(trxType);
+		return ESRConstants.ESRTRXTYPE_ReverseBooking.equalsIgnoreCase(trxType);
 	}
 
 	@Override

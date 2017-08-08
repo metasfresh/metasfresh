@@ -36,7 +36,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.Adempiere;
-import org.compiere.model.MSystem;
+import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -147,7 +147,7 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 			log.info("Adempiere ImplementationVersion=" + clientVersion + "! Not checking against DB");
 			return;
 		}
-		final String newVersion = DB.getSQLValueStringEx(null, "SELECT " + MSystem.COLUMNNAME_LastBuildInfo + " FROM " + MSystem.Table_Name);
+		final String newVersion = DB.getSQLValueStringEx(null, "SELECT " + I_AD_System.COLUMNNAME_LastBuildInfo + " FROM " + I_AD_System.Table_Name);
 		log.info("Build DB=" + newVersion);
 		log.info("Build Cl=" + clientVersion);
 		// Identical DB version

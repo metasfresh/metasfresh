@@ -14,7 +14,7 @@ import de.metas.jenkins.Misc
  * IMPORTANT: i'm now wrapping up this work (i.e. https://github.com/metasfresh/metasfresh/issues/968) to do other things! it's not yet finsined or tested!
  *
  * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
- * <li>{@code BUILD_VERSION}: the version the maven artifacts were deployed with
+ * <li>{@code MF_BUILD_VERSION}: the version the maven artifacts were deployed with
  * <li>{@code BUILD_ARTIFACT_URL}: the URL on our nexus repos from where one can download the "main" artifact that was build and deplyoed
  *
  */
@@ -105,19 +105,24 @@ else
 }
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
+final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
+echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
-// the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_BUILD_ID into the version anymore. Always go with the build number.
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
-echo "Setting BUILD_VERSION=$BUILD_VERSION"
-
-// these two are shown in jenkins, for each build
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
+// the artifacts we build in this pipeline will have a version that ends with this string
+final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
+echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 timestamps
 {
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
+// shown in jenkins, for each build
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+
 node('agent && linux')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
@@ -153,7 +158,7 @@ node('agent && linux')
 
 				// set the artifact version of everything below ${mvnConf.pomFile}
 				// do not set versions for de.metas.endcustomer.mf15/pom.xml, because that one will be build in another node!
-				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -DprocessPlugins=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} versions:set"
 
 				// deploy the de.metas.parent pom.xml to our repo. Other projects that are not build right now on this node will also need it. But don't build the modules that are declared in there
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode --non-recursive ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy";
@@ -167,7 +172,7 @@ node('agent && linux')
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${mvnReactorConf.resolveParams} ${mvnReactorConf.deployParam} clean deploy";
+				sh "mvn --settings ${mvnReactorConf.settingsFile} --file ${mvnReactorConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnReactorConf.resolveParams} ${mvnReactorConf.deployParam} clean deploy";
 				} // if(params.MF_SKIP_TO_DIST)
 			}
 			stage('Build metasfresh docker image(s)')
@@ -183,7 +188,7 @@ node('agent && linux')
 				sh "mkdir -p ${dockerWorkDir}"
 
  				// copy the files so they can be handled by the docker build
-				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-service-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
+				sh "cp de.metas.material/dispo-service/target/metasfresh-material-dispo-service-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-material-dispo-service.jar" // please keep in sync with DockerFile!
 				sh "cp -R de.metas.material/dispo-service/src/main/docker/* ${dockerWorkDir}"
 				sh "cp -R de.metas.material/dispo-service/src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
@@ -191,9 +196,9 @@ node('agent && linux')
 					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
 					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
 
-          def misc = new de.metas.jenkins.Misc();
+          			def misc = new de.metas.jenkins.Misc();
 					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
-					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
           if(MF_UPSTREAM_BRANCH=='release')
           {
           	echo 'MF_UPSTREAM_BRANCH=release, so we also push this with the "latest" tag'
@@ -220,7 +225,7 @@ node('agent && linux')
  				mvnUpdateParentPomVersion mvnEsbConf
 
 				// set the artifact version of everything below de.metas.esb/pom.xml
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:set"
 
 				// update the versions of metas dependencies that are external to the de.metas.esb reactor modules
 				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnEsbConf.resolveParams} versions:use-latest-versions"
@@ -228,7 +233,7 @@ node('agent && linux')
 				// build and deploy
 				// about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property
 				// maven.test.failure.ignore=true: see metasfresh stage
-				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${BUILD_VERSION} ${mvnEsbConf.resolveParams} ${mvnEsbConf.deployParam} clean deploy"
+				sh "mvn --settings ${mvnEsbConf.settingsFile} --file ${mvnEsbConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -Dmetasfresh.assembly.descriptor.version=${MF_VERSION} ${mvnEsbConf.resolveParams} ${mvnEsbConf.deployParam} clean deploy"
 				} // if(params.MF_SKIP_TO_DIST)
 			} // stage
 
@@ -280,7 +285,7 @@ stage('Invoke downstream jobs')
 	}
 	else
 	{
-		MF_ARTIFACT_VERSIONS['metasfresh'] = BUILD_VERSION;
+		MF_ARTIFACT_VERSIONS['metasfresh'] = MF_VERSION;
 
 		// params.MF_SKIP_TO_DIST == false, so invoke downstream jobs and get the build versions which came out of them
 		parallel (
@@ -290,10 +295,10 @@ stage('Invoke downstream jobs')
           MF_BUILD_ID,
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
-          BUILD_VERSION,
+          MF_VERSION,
           true,
           'metasfresh-webui'); // wait=true
-				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamJobMap.BUILD_VERSION;
+				MF_ARTIFACT_VERSIONS['metasfresh-webui'] = webuiDownStreamJobMap.MF_VERSION;
 			},
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
@@ -301,10 +306,10 @@ stage('Invoke downstream jobs')
           MF_BUILD_ID,
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
-          BUILD_VERSION,
+          MF_VERSION,
           true,
           'metasfresh-procurement-webui'); // wait=true
-				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.BUILD_VERSION;
+				MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'] = procurementWebuiDownStreamJobMap.MF_VERSION;
 			}
 		);
 

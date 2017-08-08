@@ -13,15 +13,14 @@ package de.metas.migration.cli;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,14 +33,20 @@ import java.util.jar.Manifest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class Version
+/**
+ * This class gets the binary tool's version from its {@code MANIFEST.MF}.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public final class BinaryVersion
 {
 	private static final String RESOURCENAME_MANIFEST = "META-INF/MANIFEST.MF";
-	private static final Name NAME_CI_BUILD_TAG = new Name("ciBuildTag");
-	private static final Name NAME_CI_BUILD_NO = new Name("ciBuildNo");
+	private static final Name NAME_CI_BUILD_TAG = new Name("jenkinsBuildTag");
+	private static final Name NAME_CI_BUILD_NO = new Name("jenkinsBuildNo");
 
 	// NOTE: keep this line after all constants init because else, those constants will be NULL
-	public static final transient Version instance = new Version();
+	public static final transient BinaryVersion instance = new BinaryVersion();
 
 	protected final transient Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -51,10 +56,8 @@ public final class Version
 	private String ciBuildNo;
 	private String ciBuildTag;
 
-	private Version()
+	private BinaryVersion()
 	{
-		super();
-
 		load();
 	}
 

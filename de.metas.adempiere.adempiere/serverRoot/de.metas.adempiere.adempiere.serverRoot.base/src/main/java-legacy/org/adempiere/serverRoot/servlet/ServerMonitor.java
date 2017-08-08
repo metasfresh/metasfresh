@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.serverRoot.util.WebEnv;
@@ -64,9 +65,9 @@ import org.compiere.Adempiere;
 import org.compiere.db.AdempiereDatabase;
 import org.compiere.db.CConnection;
 import org.compiere.model.AdempiereProcessorLog;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MClient;
 import org.compiere.model.MStore;
-import org.compiere.model.MSystem;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerMgr;
 import org.compiere.util.CMemoryUsage;
@@ -768,7 +769,7 @@ public class ServerMonitor extends HttpServlet
 			body.addElement(table);
 
 			//
-			final MSystem system = MSystem.get(ctx);
+			final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
 			{
 				tr line = new tr();
 				line.addElement(new th().addElement(system.getDBAddress()));

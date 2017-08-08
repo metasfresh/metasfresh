@@ -16,6 +16,8 @@
  *****************************************************************************/
 package org.compiere;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.io.IOException;
@@ -27,6 +29,7 @@ import javax.swing.ImageIcon;
 
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.service.impl.DeveloperModeBL;
 import org.adempiere.context.SwingContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
@@ -42,8 +45,8 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
 import org.compiere.db.CConnection;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -718,7 +721,8 @@ public class Adempiere
 			return false;
 		}
 
-		final MSystem system = MSystem.get(Env.getCtx());	// Initializes Base Context too
+		
+		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
 
 		if (system == null)
 		{
@@ -739,7 +743,7 @@ public class Adempiere
 				{
 					SecureEngine.init(className);	// test it
 					system.setEncryptionKey(className);
-					system.save();
+					save(system);
 				}
 			}
 			SecureEngine.init(className);
