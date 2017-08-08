@@ -223,7 +223,7 @@ public class ESRDataImporterCamt54Tests
 				.hasSize(1) // guard
 				.allSatisfy(t -> {
 					assertThat(t.getErrorMsgs()).hasSize(1);
-					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ESRDataImporterCamt54.MSG_AMBIGOUS_REFERENCE);
+					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ReferenceStringHelper.MSG_AMBIGOUS_REFERENCE);
 				});
 
 		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");
@@ -247,7 +247,7 @@ public class ESRDataImporterCamt54Tests
 				.hasSize(1) // guard
 				.allSatisfy(t -> {
 					assertThat(t.getErrorMsgs()).hasSize(1);
-					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ESRDataImporterCamt54.MSG_MISSING_ESR_REFERENCE);
+					assertThat(t.getErrorMsgs().get(0)).isEqualTo(ReferenceStringHelper.MSG_MISSING_ESR_REFERENCE);
 				});
 
 		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1000");

@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXB;
@@ -100,18 +99,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	@VisibleForTesting
 	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
 
-	@VisibleForTesting
-	static final String MSG_AMBIGOUS_REFERENCE = "ESR_CAMT54_Ambigous_Reference";
-
-	@VisibleForTesting
-	static final String MSG_MISSING_ESR_REFERENCE = "ESR_CAMT54_Missing_ESR_Reference";
-
 	private static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
-
-	/**
-	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an ESR number.
-	 */
-	private static final String ISR_REFERENCE = "ISR Reference";
 
 	private static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
 
@@ -236,7 +224,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
 
-			extractAndSetEsrReference(txDtl, trxBuilder);
+			new ReferenceStringHelper().extractAndSetEsrReference(txDtl, trxBuilder);
 
 			verifyTransactionCurrency(txDtl, trxBuilder);
 
@@ -335,77 +323,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_BANK_ACCOUNT_MISMATCH_2P,
 					new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
 		}
-	}
-
-	private void extractAndSetEsrReference(
-			@NonNull final EntryTransaction8 txDtls,
-			@NonNull final ESRTransactionBuilder trxBuilder)
-	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final Optional<String> esrReferenceNumberString = extractEsrReference(txDtls);
-		if (esrReferenceNumberString.isPresent())
-		{
-			trxBuilder.esrReferenceNumber(esrReferenceNumberString.get());
-		}
-		else
-		{
-			final Optional<String> fallback = extractReferenceFallback(txDtls);
-			if (fallback.isPresent())
-			{
-				trxBuilder.esrReferenceNumber(fallback.get());
-				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_AMBIGOUS_REFERENCE));
-			}
-			else
-			{
-				trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), MSG_MISSING_ESR_REFERENCE));
-			}
-		}
-	}
-
-	/**
-	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
-	 * from a <code>CdtrRefInf</code> element<br>
-	 * that has <code>CdtrRefInf/Tp/CdOrPrtry == "ISR Reference"</code>.
-	 * 
-	 * @param txDtls
-	 * @return
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh/issues/2107
-	 */
-	private Optional<String> extractEsrReference(@NonNull final EntryTransaction8 txDtls)
-	{
-		// get the esr reference string out of the XML tree
-		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
-				.map(strd -> strd.getCdtrRefInf())
-
-				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
-
-				.map(cdtrRefInf -> cdtrRefInf.getRef())
-				.findFirst();
-		return esrReferenceNumberString;
-	}
-
-	/**
-	 * 
-	 * @param txDtls
-	 * @return
-	 * 
-	 * @task https://github.com/metasfresh/metasfresh/issues/2107
-	 */
-	private Optional<String> extractReferenceFallback(@NonNull final EntryTransaction8 txDtls)
-	{
-		// get the esr reference string out of the XML tree
-		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
-				.map(strd -> strd.getCdtrRefInf())
-				.filter(cdtrRefInf -> cdtrRefInf != null)
-				.map(cdtrRefInf -> cdtrRefInf.getRef())
-				.findFirst();
-		return esrReferenceNumberString;
 	}
 
 	private BankToCustomerDebitCreditNotificationV06 loadXML()
