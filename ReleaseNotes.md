@@ -20,6 +20,7 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
+  * [#1097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1097) Show progress when uploading big files
 
 ## Fixes
 * metasfresh-app
