@@ -7,7 +7,6 @@
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
-
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
