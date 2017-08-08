@@ -18,6 +18,9 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2110](https://github.com/metasfresh/metasfresh/issues/2110) make version/build infos more transparent
   * [#2111](https://github.com/metasfresh/metasfresh/issues/2111) Store version number in DB after successful sql remote
+  * [#2118](https://github.com/metasfresh/metasfresh/issues/2118) ESR - add sysconfig to ignore non-credit lines
+  * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
+
 
 * metasfresh-webui-api
 
@@ -34,7 +37,7 @@ Here come the actual release notes:
 
 # metasfresh 5.21 (2017-32)
 
-**upcoming release for week 2017-31**
+**release for week 2017-31**
 
 ## Features
 * metasfresh-app
