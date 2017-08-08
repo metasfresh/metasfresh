@@ -47,7 +47,9 @@ Here come the actual release notes:
   * [#2096](https://github.com/metasfresh/metasfresh/issues/2096) Businesspartner B2C Location Editor missing
     * Adjustments for the Businesspartner B2C Window, adding missing Fields and Layout.
   * [#2101](https://github.com/metasfresh/metasfresh/issues/2101) webui - allow disabling auto-close of picking candidates
-* metasfresh-webui-api
+    * New Switch to influence the closing behavior of picking candidates.
+
+	* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#977](https://github.com/metasfresh/metasfresh-webui-frontend/issues/977) Add frontend support for modifying the KPI config (caption, offset, etc)
@@ -58,7 +60,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2106](https://github.com/metasfresh/metasfresh/issues/2106) NullPointerException on CAMT 54 Import
+    * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file. 
   * [#2107](https://github.com/metasfresh/metasfresh/issues/2107) Error: Missing ESR creditor reference on CAMT 54 Import
+    * Fixes a Bug in new camt54 import which failed because mandatory ESR Reference Field is missing in sepa file. 
 
 * metasfresh-webui-api
 
