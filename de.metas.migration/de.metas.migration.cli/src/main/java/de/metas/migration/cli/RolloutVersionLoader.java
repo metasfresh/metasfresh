@@ -2,7 +2,9 @@ package de.metas.migration.cli;
 
 import java.util.Properties;
 
+import de.metas.migration.cli.PropertiesFileLoader.CantLoadPropertiesException;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -35,12 +37,38 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class RolloutVersionLoader
 {
-	private final Properties buildInfo;
+	public static final String BUILD_INFO_FILENAME = "build-info.properties";
 
-	public String getRolloutVersionString()
+	public static final String PROP_VERSION = "build.version";
+
+	@NonNull
+	private final PropertiesFileLoader propertiesFileLoader;
+
+	@NonNull
+	private final String dirName;
+
+	public String loadRolloutVersionString()
 	{
-		final String rolloutVersionStr = buildInfo.getProperty("build.version");
-		return rolloutVersionStr;
+		try
+		{
+			final Properties buildInfo = propertiesFileLoader.loadFromFile(dirName, BUILD_INFO_FILENAME);
+			final String rolloutVersionStr = buildInfo.getProperty(PROP_VERSION);
+			return rolloutVersionStr;
+		}
+		catch (CantLoadPropertiesException e)
+		{
+			throw new CantGetRolloutVersionStringException(e);
+		}
+	}
+
+	public static final class CantGetRolloutVersionStringException extends RuntimeException
+	{
+		private static final long serialVersionUID = -7869876695610886103L;
+
+		private CantGetRolloutVersionStringException(CantLoadPropertiesException e)
+		{
+			super("Unable to get our own version. Hint: provide the build.version file or disable both version-check and the version-update at the start and end of the tool", e);
+		}
 	}
 
 }

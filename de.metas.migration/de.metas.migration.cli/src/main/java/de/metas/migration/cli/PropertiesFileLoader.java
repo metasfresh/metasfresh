@@ -47,7 +47,7 @@ public class PropertiesFileLoader
 		return loadFromFile(new File(dir), filename);
 	}
 
-	public Properties loadFromFile(final File dir, final String filename)
+	public Properties loadFromFile(@NonNull final File dir, @NonNull final String filename)
 	{
 		final File settingsFile = new File(
 				directoryChecker.checkDirectory(filename, dir),
@@ -61,8 +61,18 @@ public class PropertiesFileLoader
 		}
 		catch (final IOException e)
 		{
-			throw new RuntimeException("Cannot load " + settingsFile, e);
+			throw new CantLoadPropertiesException("Cannot load " + settingsFile, e);
 		}
 		return fileProperties;
+	}
+
+	public static final class CantLoadPropertiesException extends RuntimeException
+	{
+		private static final long serialVersionUID = 4240250517349321980L;
+
+		public CantLoadPropertiesException(@NonNull final String msg, @NonNull final Exception e)
+		{
+			super(msg, e);
+		}
 	}
 }

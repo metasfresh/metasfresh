@@ -3,6 +3,9 @@ package de.metas.migration.cli;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.metas.migration.IDatabase;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
@@ -38,6 +41,8 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class VersionSetter
 {
+	private static final transient Logger logger = LoggerFactory.getLogger(VersionSetter.class);
+
 	@NonNull
 	private final IDatabase db;
 
@@ -46,7 +51,9 @@ public class VersionSetter
 
 	public void setVersion()
 	{
-		final String updateSql = "UPDATE public.AD_System SET DBVersion=" + newVersion;
+		logger.info("Setting AD_System.DBVersion to {}", newVersion);
+
+		final String updateSql = "UPDATE public.AD_System SET DBVersion='" + newVersion + "'";
 		try (final Statement stmt = db.getConnection().createStatement())
 		{
 			stmt.executeUpdate(updateSql);

@@ -6,7 +6,9 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.metas.migration.cli.PropertiesFileLoader.CantLoadPropertiesException;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -47,28 +49,39 @@ public class SettingsLoader
 
 	private final PropertiesFileLoader propertiesFileLoader;
 
-	public Settings loadConfig()
+	public Settings loadSettings()
 	{
 		final File settingsDir;
+		final Settings settings;
 		if (config.getSettingsFileName() != null)
 		{
 			settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
+			settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFileName()));
 		}
 		else
 		{
 			settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
+			settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
 		}
-		return new Settings(setSettingsFile(settingsDir, config.getSettingsFileName()));
+		return settings;
 	}
 
-	private Properties setSettingsFile(final File dir, final String settingsFilename)
+	private Properties setSettingsFile(@NonNull final File dir, @NonNull final String settingsFilename)
 	{
-		final Properties fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
+		final Properties fileProperties;
+		try
+		{
+			fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
+		}
+		catch (CantLoadPropertiesException e)
+		{
+			throw new CantLoadSettingsException(e);
+		}
 
 		//
 		// fallback: be nice to old settings files that contains "ADEMPIERE_" settings.
 		final Properties additionalProps = new Properties();
-		for (String key : fileProperties.stringPropertyNames())
+		for (final String key : fileProperties.stringPropertyNames())
 		{
 			if (!key.contains("ADEMPIERE"))
 			{
@@ -84,6 +97,21 @@ public class SettingsLoader
 
 		logger.info("Settings file: " + settingsFilename);
 		return fileProperties;
+	}
+
+	public static class CantLoadSettingsException extends RuntimeException
+	{
+		private static final long serialVersionUID = 7752453224987748740L;
+
+		private CantLoadSettingsException(Exception e)
+		{
+			super("Unable to load the settings file. It shall be a properties file that looks as follows:\n\n" +
+					"METASFRESH_DB_SERVER=localhost\n" +
+					"METASFRESH_DB_PORT=5432\n" +
+					"METASFRESH_DB_NAME=metasfresh\n" +
+					"METASFRESH_DB_USER=metasfresh\n" +
+					"METASFRESH_DB_PASSWORD=<pasword>\n", e);
+		}
 	}
 
 }

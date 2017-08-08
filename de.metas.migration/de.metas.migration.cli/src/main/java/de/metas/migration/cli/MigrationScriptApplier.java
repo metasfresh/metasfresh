@@ -65,7 +65,7 @@ public class MigrationScriptApplier
 	private final String rolloutDirName;
 	
 	@Default
-	private final String scriptFile = null;
+	private final String scriptFileName = null;
 	
 	@NonNull
 	private DirectoryChecker directoryChecker;
@@ -75,7 +75,7 @@ public class MigrationScriptApplier
 	public void applyMigrationScripts()
 	{
 		logger.info("Just mark the script as executed: " + this.justMarkScriptAsExecuted);
-		logger.info("Script file: " + this.scriptFile);
+		logger.info("Script file: " + this.scriptFileName);
 
 		final File sqlDir = constructSqlDir();
 		
@@ -97,15 +97,15 @@ public class MigrationScriptApplier
 			protected IScriptScanner createScriptScanner(final IScriptScannerFactory scriptScannerFactory)
 			{
 				final String fileName;
-				if (scriptFile != null && !scriptFile.isEmpty())
+				if (scriptFileName != null && !scriptFileName.isEmpty())
 				{
-					if (new File(scriptFile).exists())
+					if (new File(scriptFileName).exists())
 					{
-						fileName = scriptFile;
+						fileName = scriptFileName;
 					}
 					else
 					{
-						fileName = sqlDir.getAbsolutePath() + File.separator + scriptFile;
+						fileName = sqlDir.getAbsolutePath() + File.separator + scriptFileName;
 					}
 				}
 				else

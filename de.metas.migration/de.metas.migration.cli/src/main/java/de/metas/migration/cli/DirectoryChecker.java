@@ -51,7 +51,7 @@ public class DirectoryChecker
 	{
 		if (!dir.exists())
 		{
-			throw new IllegalArgumentException(name + " '" + dir + "' does not exists");
+			throw new IllegalArgumentException(name + " '" + dir + "' does not exist");
 		}
 
 		final File dirAbs;

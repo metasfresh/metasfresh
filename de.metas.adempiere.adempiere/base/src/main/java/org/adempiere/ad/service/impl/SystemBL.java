@@ -33,17 +33,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.Adempiere.RunMode;
 import org.compiere.db.LDAP;
 import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
@@ -78,13 +75,13 @@ public class SystemBL implements ISystemBL
 		//
 		// If running on server side, update the system info
 		// TODO i think we shall move this logic somewhere else where is obvious what we are doing and not hidden here.
-		if (Ini.getRunMode() == RunMode.BACKEND)
-		{
-			if (setInfo(system))
-			{
-				InterfaceWrapperHelper.save(system);
-			}
-		}
+//		if (Ini.getRunMode() == RunMode.BACKEND)
+//		{
+//			if (setInfo(system))
+//			{
+//				InterfaceWrapperHelper.save(system);
+//			}
+//		}
 
 		return system;
 	}
