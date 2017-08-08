@@ -471,6 +471,28 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 				</plugins>
 			</build>
 		</profile>
-
+		
+		<!-- 
+			If the environment variable MF_RELEASE_VERSION is not set, it means that
+			we are not building on jenkins, so we substitute the value "OCAL-NO-RELEASE" instead. 
+			Without any value, the spring-boot release-info goal will probably fail since is usually tries to write this value into the build-info.properties file
+			See https://github.com/metasfresh/metasfresh/issues/2110 -->
+		<!-- Note that until now i don't see a reason to add a pendant for this to /de.metas.adempiere.adempiere.base/src/main/java-legacy/org/compiere/Adempiere.java ..so i don't.. -->
+		<profile>
+			<id>MF_RELEASE_VERSION-env-missing</id>
+			<activation>
+				<property>
+					<name>!env.MF_RELEASE_VERSION</name>
+				</property>
+			</activation>
+			<properties>
+				<env.MF_RELEASE_VERSION>LOCAL-NO-RELEASE</env.MF_RELEASE_VERSION>
+				<env.BUILD_TAG>LOCAL-NO-RELEASE</env.BUILD_TAG>
+				<env.BUILD_URL>LOCAL-NO-RELEASE</env.BUILD_URL>
+				<env.JOB_NAME>LOCAL-NO-RELEASE</env.JOB_NAME>
+				<env.BUILD_NUMBER>0</env.BUILD_NUMBER>
+			</properties>
+		</profile>
+	
 	</profiles>
 </project>
