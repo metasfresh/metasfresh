@@ -26,6 +26,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1097) Show progress when uploading big files
+  * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
 
 ## Fixes
 * metasfresh-app
@@ -34,6 +35,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1114](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1114) caught in an empties loop when opened from material receipt candidates
+  * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
 
 # metasfresh 5.21 (2017-32)
 
