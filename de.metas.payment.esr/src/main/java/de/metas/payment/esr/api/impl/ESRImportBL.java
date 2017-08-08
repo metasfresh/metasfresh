@@ -92,6 +92,11 @@ public class ESRImportBL implements IESRImportBL
 {
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 
+	/**
+	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 */
+	private static final String CFG_IGNORE_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.IgnoreUnspportedTrxTypes";
+
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
 	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
@@ -221,27 +226,33 @@ public class ESRImportBL implements IESRImportBL
 				}
 			}
 
-			final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImport);
-			importLine.setLineNo(lineNo * 10);
-
-			// first that the more basic error messages that might have been collected by the importer
-			for (final String errorMsg : esrTransaction.getErrorMsgs())
-			{
-				ESRDataLoaderUtil.addImportErrorMsg(importLine, errorMsg);
-			}
-
-			importLine.setESRPostParticipantNumber(esrTransaction.getEsrParticipantNo());
-			importLine.setESRFullReferenceNumber(esrTransaction.getEsrReferenceNumber());
-			importLine.setPaymentDate(TimeUtil.asTimestamp(esrTransaction.getPaymentDate()));
-			importLine.setAccountingDate(TimeUtil.asTimestamp(esrTransaction.getAccountingDate()));
-			importLine.setAmount(esrTransaction.getAmount());
-			importLine.setESRTrxType(esrTransaction.getTrxType());
-			importLine.setESRLineText(esrTransaction.getTransactionKey());
-
-			save(importLine);
+			createEsrImportLine(esrImport, lineNo, esrTransaction);
 		}
 
 		evaluate(esrImport);
+	}
+
+	private I_ESR_ImportLine createEsrImportLine(final I_ESR_Import esrImport, int lineNo, final ESRTransaction esrTransaction)
+	{
+		final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImport);
+		importLine.setLineNo(lineNo * 10);
+
+		// first that the more basic error messages that might have been collected by the importer
+		for (final String errorMsg : esrTransaction.getErrorMsgs())
+		{
+			ESRDataLoaderUtil.addImportErrorMsg(importLine, errorMsg);
+		}
+
+		importLine.setESRPostParticipantNumber(esrTransaction.getEsrParticipantNo());
+		importLine.setESRFullReferenceNumber(esrTransaction.getEsrReferenceNumber());
+		importLine.setPaymentDate(TimeUtil.asTimestamp(esrTransaction.getPaymentDate()));
+		importLine.setAccountingDate(TimeUtil.asTimestamp(esrTransaction.getAccountingDate()));
+		importLine.setAmount(esrTransaction.getAmount());
+		importLine.setESRTrxType(esrTransaction.getTrxType());
+		importLine.setESRLineText(esrTransaction.getTransactionKey());
+
+		save(importLine);
+		return importLine;
 	}
 
 	private void evaluate(final I_ESR_Import esrImport)
@@ -249,7 +260,8 @@ public class ESRImportBL implements IESRImportBL
 		BigDecimal importAmt = BigDecimal.ZERO;
 		int trxQty = 0;
 
-		final List<I_ESR_ImportLine> esrImportLines = Services.get(IESRImportDAO.class).retrieveLines(esrImport);
+		final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
+		final List<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveLines(esrImport);
 
 		for (final I_ESR_ImportLine importLine : esrImportLines)
 		{
@@ -500,17 +512,20 @@ public class ESRImportBL implements IESRImportBL
 					save(line);
 					continue;
 				}
+
 				// skip reverse booking lines from regular processing
 				// the admin should deal with them manually
 				if (isReverseBookingLine(line))
 				{
 					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+					handleUnsuppordedTrxType(esrImport, line);
 					save(line);
 					continue;
 				}
-				if (line.getESRTrxType() != null && line.getESRTrxType().equalsIgnoreCase(ESRConstants.ESRTRXTYPE_UNKNOWN))
+				if (ESRConstants.ESRTRXTYPE_UNKNOWN.equals(line.getESRTrxType()))
 				{
 					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+					handleUnsuppordedTrxType(esrImport, line);
 					save(line);
 					continue;
 				}
@@ -520,6 +535,7 @@ public class ESRImportBL implements IESRImportBL
 				{
 					continue;
 				}
+
 				// skip lines that have a payment, but are not are not yet processed (because a user needs to select an action)
 				// 08500: skip the lines with payments
 				refresh(line);
@@ -613,6 +629,23 @@ public class ESRImportBL implements IESRImportBL
 				esrImport.setProcessed(true);
 				save(esrImport);
 			}
+		}
+	}
+
+	/**
+	 * 
+	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
+	 * @param line the line in question
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/2118
+	 */
+	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
+	{
+		final boolean flagUnsupporedTypesAsDone = Services.get(ISysConfigBL.class).getBooleanValue(CFG_IGNORE_UNSPPORTED_TRX_TYPES, false, esrImport.getAD_Client_ID(), esrImport.getAD_Org_ID());
+		if (flagUnsupporedTypesAsDone)
+		{
+			line.setIsValid(true);
+			line.setProcessed(true);
 		}
 	}
 
