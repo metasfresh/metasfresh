@@ -1061,7 +1061,55 @@ td.pulse-off input {
     bottom:0;
     left:0;
     height: 3px;
+    width: 100%;
     background-color: rgba(0,0,0,.3);
+}
+
+@-moz-keyframes infinite_progress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+@-webkit-keyframes infinite_progress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+@-ms-keyframes infinite_progress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+@keyframes infinite_progress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+.progress-bar.progress-infinite {
+    -webkit-animation: infinite_progress 5s infinite;
+    -moz-animation: infinite_progress 5s infinite;
+    -ms-animation: infinite_progress 5s infinite;
+    animation: infinite_progress 5s infinite;
 }
 
 .progress-bar.error {

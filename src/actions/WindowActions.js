@@ -18,6 +18,7 @@ import {
 
 import {
     addNotification,
+    setNotificationProgress,
     setProcessSaved,
     setProcessPending
 } from './AppActions';
@@ -575,22 +576,36 @@ export function updatePropertyValue(property, value, tabid, rowid, isModal) {
     }
 }
 
+function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
+    let percentLeft = Math.min(Math.floor((progressEvent.loaded * 100) / progressEvent.total), 98);
+
+    dispatch(setNotificationProgress(notificationTitle, percentLeft));
+}
+
 export function attachFileAction(windowType, docId, data){
-    return dispatch => {
+    return (dispatch) => {
+        const notificationTitle = 'Attachment';
+
         dispatch(addNotification(
-            'Attachment', 'Uploading attachment', 5000, 'primary'
+            notificationTitle, 'Uploading attachment', 0, 'primary'
         ));
 
+        let requestConfig = {
+            onUploadProgress: handleUploadProgress.bind(this, dispatch, notificationTitle)
+        };
+
         return axios.post(
-            `${config.API_URL}/window/${windowType}/${docId}/attachments`, data
+            `${config.API_URL}/window/${windowType}/${docId}/attachments`, data, requestConfig
         ).then(() => {
+            dispatch(setNotificationProgress(notificationTitle, 100));
+
             dispatch(addNotification(
-                'Attachment', 'Uploading attachment succeeded.', 5000, 'primary'
+                notificationTitle, 'Uploading attachment succeeded.', 5000, 'primary'
             ))
         })
         .catch(() => {
             dispatch(addNotification(
-                'Attachment', 'Uploading attachment error.', 5000, 'error'
+                notificationTitle, 'Uploading attachment error.', 5000, 'error'
             ))
         })
     }
