@@ -178,7 +178,7 @@ public class CommandlineParams
 		final String rolloutDir = cmd.getOptionValue(OPTION_RolloutDirectory, DEFAULT_RolloutDirectory);
 		configBuilder.rolloutDirName(rolloutDir);
 
-		final String settingsFile = cmd.getOptionValue(OPTION_SettingsFile, Config.DEFAULT_SETTINGS_FILENAME);
+		final String settingsFile = cmd.getOptionValue(OPTION_SettingsFile);
 		configBuilder.settingsFileName(settingsFile);
 
 		final String scriptFile = cmd.getOptionValue(OPTION_ScriptFile);
