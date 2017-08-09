@@ -1,6 +1,7 @@
 import * as types from '../constants/ActionTypes'
 import axios from 'axios';
 import { push, replace } from 'react-router-redux';
+import counterpart from 'counterpart';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
@@ -584,10 +585,10 @@ function handleUploadProgress(dispatch, notificationTitle, progressEvent) {
 
 export function attachFileAction(windowType, docId, data){
     return (dispatch) => {
-        const notificationTitle = 'Attachment';
+        const notificationTitle = counterpart.translate('window.attachment.title');
 
         dispatch(addNotification(
-            notificationTitle, 'Uploading attachment', 0, 'primary'
+            notificationTitle, counterpart.translate('window.attachment.uploading'), 0, 'primary'
         ));
 
         let requestConfig = {
@@ -600,12 +601,12 @@ export function attachFileAction(windowType, docId, data){
             dispatch(setNotificationProgress(notificationTitle, 100));
 
             dispatch(addNotification(
-                notificationTitle, 'Uploading attachment succeeded.', 5000, 'primary'
+                notificationTitle, counterpart.translate('window.attachment.upload.success'), 5000, 'primary'
             ))
         })
         .catch(() => {
             dispatch(addNotification(
-                notificationTitle, 'Uploading attachment error.', 5000, 'error'
+                notificationTitle, counterpart.translate('window.attachment.upload.error'), 5000, 'error'
             ))
         })
     }
