@@ -30,10 +30,12 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
+    * Adjusting the Header Names of Grid View Columns in included Subtabs. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
 
 ## Fixes
 * metasfresh-app
   * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) cant save purchase order
+    * Fixes a minor Bug that occured in Purchase Order under certain circumstances, avoiding the record save.
 
 * metasfresh-webui-api
 
@@ -62,8 +64,6 @@ Here come the actual release notes:
   * [#2101](https://github.com/metasfresh/metasfresh/issues/2101) webui - allow disabling auto-close of picking candidates
     * New Switch to influence the closing behavior of picking candidates.
 
-* metasfresh-webui-api
-
 * metasfresh-webui-frontend
   * [#977](https://github.com/metasfresh/metasfresh-webui-frontend/issues/977) Add frontend support for modifying the KPI config (caption, offset, etc)
     * New Functionality allowing the user to adjust KPI Settings via Frontend.
@@ -77,8 +77,6 @@ Here come the actual release notes:
     * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file. 
   * [#2107](https://github.com/metasfresh/metasfresh/issues/2107) Error: Missing ESR creditor reference on CAMT 54 Import
     * Fixes a Bug in new camt54 import which failed because mandatory ESR Reference Field is missing in sepa file.
-
-* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1000) Cursor Missing after [tab] in BPartner Relation Window
