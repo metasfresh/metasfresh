@@ -66,8 +66,6 @@ echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
 echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_BUILD_VERSION}";
-// note: going to set currentBuild.description after we deployed
 
 timestamps
 {
@@ -76,6 +74,9 @@ final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
 echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
 final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
 echo "set MF_VERSION=${MF_VERSION}";
+
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+// note: going to set currentBuild.description after we deployed
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -191,9 +192,9 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
      parameters: [
        string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
        string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
-       string(name: 'MF_UPSTREAM_VERSION', value: MF_BUILD_VERSION),
+       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
        string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
-       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
+       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
        booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
      ], wait: false
 	}
