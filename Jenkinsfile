@@ -2,6 +2,11 @@
 // the "!#/usr/bin... is just to to help IDEs, GitHub diffs, etc properly detect the language and do syntax highlighting for you.
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
+// note that we set a default version for this library in jenkins, so we don't have to specify it here
+@Library('misc')
+import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Misc
+
 /**
  * According to the documentation at https://docs.docker.com/engine/reference/commandline/tag/ :
  * A tag name must be valid ASCII and may contain lowercase and uppercase letters, digits, underscores, periods and dashes. A tag name may not start with a period or a dash and may contain a maximum of 128 characters.
@@ -250,13 +255,12 @@ else
 }
 
 // set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting BUILD_VERSION_PREFIX=$BUILD_VERSION_PREFIX"
+final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
+echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
-// the artifacts we build in this pipeline will have this version
-// never incorporate params.MF_UPSTREAM_BUILDNO into the version anymore. Always go with the build number.
-final BUILD_VERSION=BUILD_VERSION_PREFIX + "." + env.BUILD_NUMBER;
-echo "Setting BUILD_VERSION=$BUILD_VERSION"
+// the artifacts we build in this pipeline will have a version that ends with this string
+final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
+echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 // metasfresh-task-repo is a constrant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
 final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
@@ -281,11 +285,17 @@ echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 final MF_MAVEN_TASK_DEPLOY_PARAMS = "-DaltDeploymentRepository=\"${MF_MAVEN_REPO_ID}::default::${MF_MAVEN_DEPLOY_REPO_URL}\"";
 echo "Setting MF_MAVEN_TASK_DEPLOY_PARAMS=$MF_MAVEN_TASK_DEPLOY_PARAMS";
 
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${BUILD_VERSION}";
-// note: going to set currentBuild.description after we deployed
-
 timestamps
 {
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
+// shown in jenkins, for each build
+currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 		stage('Preparation') // for display purposes
@@ -296,6 +306,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
+        // env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
+        withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
+        {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
@@ -328,7 +341,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				sh "mvn --debug --settings $MAVEN_SETTINGS --file pom.xml --batch-mode ${MF_MAVEN_TASK_RESOLVE_PARAMS} ${mavenUpdatePropertyParam} versions:update-property"
 
 				// set the artifact version of everything below the webui's pom.xml
-				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${BUILD_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
+				sh "mvn --settings $MAVEN_SETTINGS --file pom.xml --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${MF_MAVEN_TASK_RESOLVE_PARAMS} versions:set"
 
 				// getting the commit_sha1 like this is a workaround until https://issues.jenkins-ci.org/browse/JENKINS-26100 is done
 				// thanks to
@@ -338,7 +351,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				final commit_sha1 = readFile('git-commit-sha1.txt')
 															.replaceAll('\\s',''); // get rid of all whisespaces
 
-				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${BUILD_VERSION}/metasfresh-webui-api-${BUILD_VERSION}.jar";
+				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-api/${MF_VERSION}/metasfresh-webui-api-${MF_VERSION}.jar";
 
 				// do the actual building and deployment
 				// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
@@ -350,11 +363,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 				final BUILD_DOCKER_REPOSITORY='metasfresh';
 				final BUILD_DOCKER_NAME='metasfresh-webapi-dev';
-				final BUILD_DOCKER_TAG=mkDockerTag("${MF_UPSTREAM_BRANCH}-${BUILD_VERSION}");
+				final BUILD_DOCKER_TAG=mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
 				final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}:${BUILD_DOCKER_TAG}";
 
 				// create and upload a docker image
-				sh "cp target/metasfresh-webui-api-${BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
+				sh "cp target/metasfresh-webui-api-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
 				sh "cp -R src/main/docker/* ${dockerWorkDir}"
 				sh "cp -R src/main/configs ${dockerWorkDir}"
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
@@ -375,28 +388,29 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// note: we do it here, because we also expect these vars to end up in the application.properties within our artifact
 				env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
 				env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
-				env.BUILD_VERSION="${BUILD_VERSION}";
+				env.MF_VERSION="${MF_VERSION}";
 				env.BUILD_GIT_SHA1="${commit_sha1}";
 				env.BUILD_DOCKER_IMAGE="${BUILD_DOCKER_IMAGE}";
 
 				currentBuild.description="""This build's main artifacts (if not yet cleaned up) are
 <ul>
-<li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${BUILD_VERSION}.jar</a></li>
+<li>The executable jar <a href=\"${BUILD_ARTIFACT_URL}\">metasfresh-webui-api-${MF_VERSION}.jar</a></li>
 <li>A docker image which you can run in docker via<br>
-<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${BUILD_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
+<code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
 </ul>"""
 
 				junit '**/target/surefire-reports/*.xml'
-      }
-		}
-	}
+      } // stage
+		  } // withMaven
+	    } // withEnv
+   } // configFileProvider
  } // node
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, BUILD_VERSION, false); // wait=false
+		invokeDownStreamJobs('metasfresh', MF_UPSTREAM_BUILDNO, MF_UPSTREAM_BRANCH, MF_VERSION, false); // wait=false
 	}
 }
 else
