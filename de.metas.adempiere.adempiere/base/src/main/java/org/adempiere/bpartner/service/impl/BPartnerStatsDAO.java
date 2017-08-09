@@ -77,9 +77,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		stat.setC_BPartner(partner);
 		stat.setSOCreditStatus(X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck);
-		stat.setActualLifeTimeValue(Env.ZERO);
-		stat.setSO_CreditUsed(Env.ZERO);
-		stat.setTotalOpenBalance(Env.ZERO);
+		stat.setActualLifeTimeValue(BigDecimal.ZERO);
+		stat.setSO_CreditUsed(BigDecimal.ZERO);
+		stat.setTotalOpenBalance(BigDecimal.ZERO);
 
 		InterfaceWrapperHelper.save(stat);
 
@@ -247,7 +247,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop.equals(initialCreditStatus)
-				|| Env.ZERO.compareTo(creditLimit) == 0)
+				|| BigDecimal.ZERO.compareTo(creditLimit) == 0)
 			return;
 
 		// Above Credit Limit

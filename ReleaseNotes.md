@@ -29,6 +29,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
+  * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) cant save purchase order
 
 * metasfresh-webui-api
 
