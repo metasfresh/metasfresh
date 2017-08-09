@@ -5,7 +5,7 @@
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "Providing & starting metasfresh-admin on port 9090"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-docker run --name metasfresh-admin -d -p 9090:9090 -t metasfresh/metasfresh-admin:master-latest
+docker run --name metasfresh-admin -d -rm -p 9090:9090 -t metasfresh/metasfresh-admin:master-latest
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo "Done providing & starting metasfresh-admin on port 9091"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
