@@ -120,7 +120,7 @@ node('agent && linux && libc6-i386')
 				'pom.xml', // pomFile
 				MAVEN_SETTINGS, // settingsFile
 				"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-				'https://repo.metasfresh.com' // mvnRepoBaseURL
+				'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
 			)
 			echo "mvnConf=${mvnConf}"
 
@@ -224,7 +224,7 @@ Note: all the separately listed artifacts are also included in the dist-tar.gz
 <p>
 <h3>Additional notes</h3>
 <ul>
-  <li>The artifacts on <a href="${mvnConf.mvnRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
+  <li>The artifacts on <a href="${mvnConf.mvnDeployRepoBaseURL}">repo.metasfresh.com</a> are cleaned up on a regular schedule to preserve disk space.<br/>
     Therefore the artifacts that are linked to by the URLs above might already have been deleted.</li>
   <li>It is important to note that both the <i>"endcustomer"</i> artifacts (client and backend server) build by this job and the <i>"webui"</i> artifacts that are also linked here are based on the same underlying metasfresh version.
 </ul>
@@ -254,7 +254,7 @@ def downloadForDeployment = { String groupId, String artifactId, String version,
 			'pom.xml', // pomFile
 			MAVEN_SETTINGS, // settingsFile
 			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-			'https://repo.metasfresh.com' // mvnRepoBaseURL
+			'https://repo.metasfresh.com' // mvnRepoBaseURL - resolve and deploy
 		)
 		echo "mvnDeployConf=${mvnDeployConf}"
 
