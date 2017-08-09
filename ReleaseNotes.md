@@ -18,11 +18,14 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2110](https://github.com/metasfresh/metasfresh/issues/2110) make version/build infos more transparent
   * [#2111](https://github.com/metasfresh/metasfresh/issues/2111) Store version number in DB after successful sql remote
+  * [#2118](https://github.com/metasfresh/metasfresh/issues/2118) ESR - add sysconfig to ignore non-credit lines
+  * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
+
 
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
-  * [#1097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1097) Show progress when uploading big files
+  * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
 
 ## Fixes
 * metasfresh-app
@@ -30,11 +33,11 @@ Here come the actual release notes:
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
-  * [#1114](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1114) caught in an empties loop when opened from material receipt candidates
+  * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
 
 # metasfresh 5.21 (2017-32)
 
-**upcoming release for week 2017-31**
+**release for week 2017-32**
 
 ## Features
 * metasfresh-app
@@ -60,6 +63,7 @@ Here come the actual release notes:
     * New Functionality allowing the user to adjust KPI Settings via Frontend.
   * [#1051](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1051) Cut-Off Header names
     * Adjusting the Header Names of Grid View Columns. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
+  * [#1097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1097) Show progress when uploading big files
 
 ## Fixes
 * metasfresh-app
@@ -91,7 +95,7 @@ Here come the actual release notes:
     * Fix for Selection Lists, now allowing to also select the last entry of a List.
   * [#1111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1111) Lookup Selection Lists not shown in Sequence anymore
     * Fixes a Bug in Lookup Fields now showing the wanted selection List sequence when defining included Fields in a Lookup.
-
+  * [#1114](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1114) caught in an empties loop when opened from material receipt candidates
 
 # metasfresh 5.20 (2017-31)
 
