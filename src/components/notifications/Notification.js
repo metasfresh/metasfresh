@@ -20,12 +20,12 @@ class Notification extends Component {
     componentDidMount() {
         const {item} = this.props;
 
-        if(item.time > 0) {
+        if (item.time > 0) {
             this.setClosing();
         }
 
         const th = this;
-        setTimeout(() => {
+        setTimeout( () => {
             th.setState({
                 isClosing: true
             })
@@ -48,9 +48,15 @@ class Notification extends Component {
 
     setClosing = () => {
         const {dispatch, item} = this.props;
-        this.closing = setTimeout(() => {
-            dispatch(deleteNotification(item.title));
-        }, item.time);
+
+        if (item.time === 0) {
+            this.closing = null;
+        }
+        else {
+            this.closing = setTimeout(() => {
+                dispatch(deleteNotification(item.title));
+            }, item.time);
+        }
     }
 
     handleCloseButton = () => {
@@ -62,13 +68,15 @@ class Notification extends Component {
     }
 
     handleClosing = (shouldClose) => {
-        shouldClose ?
-            this.setClosing() :
-            clearInterval(this.closing);
+        if (this.props.item && this.props.item.time !== 0) {
+            shouldClose ?
+                this.setClosing() :
+                clearInterval(this.closing);
 
-        this.setState({
-            isClosing: shouldClose
-        })
+            this.setState({
+                isClosing: shouldClose
+            })
+        }
     }
 
     handleToggleMore = () => {
@@ -80,6 +88,7 @@ class Notification extends Component {
     render() {
         const {item} = this.props;
         const {isClosing, isDisplayedMore} = this.state;
+        let progress = item.progress;
 
         return (
             <div
@@ -119,12 +128,13 @@ class Notification extends Component {
                 <div
                     className={
                         'progress-bar ' +
-                        (item.notifType ? item.notifType : 'error ')
+                        (item.notifType ? item.notifType : 'error')
                     }
                     style={
-                        isClosing ?
-                            {width: 0, transition: 'width 5s linear'} :
-                            {width: '100%', transition: 'width 0s linear'}
+                        (typeof progress === 'number') ? {width: `${progress}%`, transition: 'width 0s'} :
+                            isClosing ?
+                                {width: 0, transition: 'width 5s linear'} :
+                                {width: '100%', transition: 'width 0s'}
                     }
                 />
             </div>

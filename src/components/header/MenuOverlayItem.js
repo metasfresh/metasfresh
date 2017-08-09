@@ -25,6 +25,11 @@ class MenuOverlayItem extends Component {
             handleClickOnFolder, handleNewRedirect, openModal, caption
         } = this.props;
 
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
         if(type === 'newRecord'){
             handleNewRedirect(elementId);
         } else if (type === 'window' || type === 'board') {
@@ -198,7 +203,7 @@ class MenuOverlayItem extends Component {
                                         'query-clickable-link'
                                     }
                                     onClick={
-                                        e => this.clickedItem(
+                                        (e) => this.clickedItem(
                                             e, item.elementId, item.nodeId,
                                             item.type
                                         )
