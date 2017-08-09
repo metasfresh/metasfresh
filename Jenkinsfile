@@ -133,7 +133,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		final dockerWorkDir='docker-build/metasfresh-webui-api'
 		sh "mkdir -p ${dockerWorkDir}"
 
-        def misc = new de.metas.jenkins.Misc();
+		def misc = new de.metas.jenkins.Misc();
 
 		final BUILD_DOCKER_REPOSITORY='metasfresh';
 		final BUILD_DOCKER_NAME='metasfresh-webapi-dev';
@@ -141,7 +141,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		final BUILD_DOCKER_IMAGE="${BUILD_DOCKER_REPOSITORY}/${BUILD_DOCKER_NAME}:${BUILD_DOCKER_TAG}";
 
 		// create and upload a docker image
-		sh "cp target/metasfresh-webui-api-${MF_BUILD_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
+		sh "cp target/metasfresh-webui-api-${MF_VERSION}.jar ${dockerWorkDir}/metasfresh-webui-api.jar" // copy the file so it can be handled by the docker build
 		sh "cp -R src/main/docker/* ${dockerWorkDir}"
 		sh "cp -R src/main/configs ${dockerWorkDir}"
 		docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
