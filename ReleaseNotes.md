@@ -17,9 +17,13 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#2110](https://github.com/metasfresh/metasfresh/issues/2110) make version/build infos more transparent
+    * Adding the build/ version infos of the metasfresh applications to spring admin and to file build-info.properties (in dist folder), allowing to have a better overview about the configuration.
   * [#2111](https://github.com/metasfresh/metasfresh/issues/2111) Store version number in DB after successful sql remote
+    * Nice improvement of sql remote. Now storning the version number in Database and avoiding unneccesary invocations of sql remote, which speeds up the db migration process a lot.
   * [#2118](https://github.com/metasfresh/metasfresh/issues/2118) ESR - add sysconfig to ignore non-credit lines
+    * Improvement of the ESR Import action, now processing all ESR Lines also when individual Lines fail.
   * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
+    * Adding a Transaction control amount to ESR Imports coming from SEPA camt.54 file and presenting to the user.
 
 
 * metasfresh-webui-api
@@ -35,6 +39,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
+    * Fix for the new Kanban Board. Now the cards are removed from card selection List, as soon as they are dragged & dropped on the Board.
 
 # metasfresh 5.21 (2017-32)
 
