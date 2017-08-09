@@ -63,6 +63,7 @@ else
 final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
 echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
 
+// the artifacts we build in this pipeline will have a version that ends with this string
 final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
 echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
@@ -75,8 +76,15 @@ echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
 final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
 echo "set MF_VERSION=${MF_VERSION}";
 
+
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
+// shown in jenkins, for each build
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
-// note: going to set currentBuild.description after we deployed
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -91,6 +99,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     	)
     	echo "mvnConf=${mvnConf}"
 
+        // env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
+        withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
+        {
         withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
@@ -118,11 +129,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			mavenUpdatePropertyParam='-Dproperty=metasfresh.version';
 		}
 
-		// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
-		sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
+				// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
+				sh "mvn --debug --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} versions:update-property"
 
-		// set the artifact version of everything below the webui's ${mvnConf.pomFile}
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
+				// set the artifact version of everything below the webui's ${mvnConf.pomFile}
+				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
 
 		final BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${MF_VERSION}/metasfresh-webui-api-${MF_VERSION}.jar";
 
@@ -164,7 +175,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		// note: we do it here, because we also expect these vars to end up in the application.properties within our artifact
 		env.BUILD_ARTIFACT_URL="${BUILD_ARTIFACT_URL}";
 		env.BUILD_CHANGE_URL="${env.CHANGE_URL}";
-		env.MF_BUILD_VERSION="${MF_BUILD_VERSION}";
+		env.MF_VERSION="${MF_VERSION}";
 		env.BUILD_GIT_SHA1="${misc.getCommitSha1()}";
 		env.BUILD_DOCKER_IMAGE="${BUILD_DOCKER_IMAGE}";
 		env.MF_VERSION="${MF_VERSION}"
@@ -176,9 +187,10 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
 </ul>"""
 				junit '**/target/surefire-reports/*.xml'
-      }
-		}
-	}
+      } // stage
+		  } // withMaven
+	    } // withEnv
+   } // configFileProvider
  } // node
 
 if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
