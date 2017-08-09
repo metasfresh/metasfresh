@@ -16,8 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.util.Services;
 import org.compiere.model.MIssue;
-import org.compiere.model.MSystem;
 import org.compiere.util.AdempiereSystemError;
 
 import de.metas.process.JavaProcess;
@@ -49,7 +50,7 @@ public class IssueReport extends JavaProcess
 	protected String doIt () throws Exception
 	{
 		log.info("AD_Issue_ID=" + m_AD_Issue_ID);
-		if (!MSystem.get(getCtx()).isAutoErrorReport())
+		if (!Services.get(ISystemBL.class).get(getCtx()).isAutoErrorReport())
 			return "NOT reported - Enable Error Reporting in Window System";
 		//
 		MIssue issue = new MIssue(getCtx(), m_AD_Issue_ID, get_TrxName());
