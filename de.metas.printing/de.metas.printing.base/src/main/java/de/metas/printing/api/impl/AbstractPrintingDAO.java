@@ -423,8 +423,12 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		
 		
+		final IQuery<I_AD_Printer_Config> queryConfig = queryBL.createQueryBuilder(I_AD_Printer_Config.class)
+				.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_HostKey, hostkey)
+				.create();
+		
 		final IQuery<I_AD_Printer_Matching> queryMatchings = queryBL.createQueryBuilder(I_AD_Printer_Matching.class)
-				.addEqualsFilter(I_AD_Printer_Matching.COLUMNNAME_HostKey, hostkey)
+				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Config_ID, I_AD_Printer_Config.COLUMNNAME_AD_Printer_Config_ID, queryConfig)
 				.create();
 		
 		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
