@@ -164,15 +164,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Letter.class))
 		{
-			final I_C_Letter letter = InterfaceWrapperHelper.create(archiveRerencedModel, I_C_Letter.class);
-			if (X_C_Printing_Queue.ITEMNAME_Mitgliedsausweis.equals(letter.getAD_BoilerPlate().getName()))
-			{
-				queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mitgliedsausweis);
-			}
-			else
-			{
-				queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Brief);
-			}
+			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mitgliedsausweis);
 		}
 		else
 		{
