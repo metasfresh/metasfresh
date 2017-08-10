@@ -230,9 +230,6 @@ public class ESRDataLoaderUtil
 			}
 			else
 			{
-				addMatchErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
-
 				importLine.setC_BPartner(null);
 				bPartnerId = -1;
 			}
