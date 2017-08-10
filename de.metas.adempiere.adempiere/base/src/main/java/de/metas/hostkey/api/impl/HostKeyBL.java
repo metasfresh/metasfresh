@@ -62,31 +62,33 @@ public class HostKeyBL implements IHostKeyBL
 	@Override
 	public String getCreateHostKey()
 	{
-		final IHostKeyStorage hostKeyStorage = getHostKeyStorage();
-
-		String hostkey = hostKeyStorage.getHostKey();
-		if (Check.isEmpty(hostkey, true) || isHostKeyBlacklisted(hostkey))
+		
+		String hostkey = null;
+		final Properties ctx = 	Env.getCtx(); 
+		final int userId = Env.getAD_User_ID(ctx);
+		if (userId > 0)
 		{
-			final Properties ctx = 	Env.getCtx(); 
-			final int userId = Env.getAD_User_ID(ctx);
-			if (userId > 0)
+			final I_AD_User user = InterfaceWrapperHelper.create(ctx, userId, I_AD_User.class, ITrx.TRXNAME_None);
+			if (user!=null && user.isLoginAsHostKey() )
 			{
-				final I_AD_User user = InterfaceWrapperHelper.create(ctx, userId, I_AD_User.class, ITrx.TRXNAME_None);
-				if (user!=null && user.isLoginAsHostKey() )
-				{
-					hostkey = user.getLogin();
-				}
+				hostkey = user.getLogin();
 			}
-			
-			// if still empty, generate it
-			if (Check.isEmpty(hostkey, true))
+		}
+
+		final IHostKeyStorage hostKeyStorage = getHostKeyStorage();
+		if (Check.isEmpty(hostkey, true))
+		{
+			hostkey = hostKeyStorage.getHostKey();
+			if (Check.isEmpty(hostkey, true) || isHostKeyBlacklisted(hostkey))
 			{
 				// generate hostkey if not found
 				hostkey = generateHostKey();
+				
+				logger.info("HostKey generated: {}", hostkey);
 			}
-			
-			logger.info("HostKey generated: {}", hostkey);
 		}
+		
+		
 
 		// Always set back the cookie, because we want to renew the expire date
 		hostKeyStorage.setHostKey(hostkey);

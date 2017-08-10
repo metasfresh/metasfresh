@@ -63,6 +63,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintJobBL;
 import de.metas.printing.api.IPrintPackageBL;
+import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.api.IPrintingQueueSource;
 import de.metas.printing.api.PrintingQueueProcessingInfo;
@@ -211,7 +212,7 @@ public class PrintJobBL implements IPrintJobBL
 		{
 			// Send to the virtual printer
 			if (X_C_Print_Job_Instructions.STATUS_Pending.equals(pji.getStatus()) && pji.getAD_PrinterHW_ID() > 0
-				&& (X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(pji.getAD_PrinterHW().getOutputType()))	)
+				&& Services.get(IPrinterBL.class).isPDFPrinter(pji.getAD_PrinterHW_ID()))
 			{
 				pdfInstructions.add(pji);
 			}

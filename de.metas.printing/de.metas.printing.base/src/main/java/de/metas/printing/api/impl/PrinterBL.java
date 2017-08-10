@@ -210,6 +210,7 @@ public class PrinterBL implements IPrinterBL
 	@Override
 	public boolean isPDFPrinter(int AD_PrinterHW_ID)
 	{
+		Check.assume(AD_PrinterHW_ID > 0, "Printer ID must be > 0");
 		final I_AD_PrinterHW printerHW = InterfaceWrapperHelper.create(Env.getCtx(), AD_PrinterHW_ID, I_AD_PrinterHW.class, ITrx.TRXNAME_None);
 		return  X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(printerHW.getOutputType());
 	}
