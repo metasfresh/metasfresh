@@ -533,6 +533,7 @@ public class PrintJobBL implements IPrintJobBL
 		}
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(instructions);
+		// set printer for pdf printing
 		instructions.setAD_PrinterHW(dao.retrieveVirtualPrinter(ctx, hostKey, trxName));
 		
 		InterfaceWrapperHelper.save(instructions);
