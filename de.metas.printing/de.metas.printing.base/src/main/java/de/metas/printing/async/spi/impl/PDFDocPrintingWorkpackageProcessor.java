@@ -98,7 +98,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Iterator<I_C_Print_Job_Line> jobLines = dao.retrievePrintJobLines(jobInstructions);
 		final Map<Integer, I_C_Print_Package> printPackages = new LinkedHashMap<Integer, I_C_Print_Package>();
 
-		boolean isCreateSummary = false;
+		boolean isCreateSummary = false; // TODO : needs to be on true in order to have summary which currently in not working FIXME in a next working increment
 		
 		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(jobLines))
 		{
