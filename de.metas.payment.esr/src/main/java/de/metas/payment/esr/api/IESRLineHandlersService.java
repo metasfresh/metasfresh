@@ -29,7 +29,9 @@ public interface IESRLineHandlersService extends ISingletonService
 	boolean applyESRMatchingBPartnerOfTheInvoice(I_C_Invoice invoice, I_ESR_ImportLine esrLine);
 
 	/**
-	 * apply the esr matching listeners
+	 * Invoke {@link IESRLineHandler#matchBPartner(I_C_BPartner, I_ESR_ImportLine)} on all registered handlers.
+	 * 
+	 * @return {@code false} if at least one of those handlers returns {@code false}.
 	 */
 	boolean applyESRMatchingBPartner(I_C_BPartner bpartner, I_ESR_ImportLine esrLine);
 }
