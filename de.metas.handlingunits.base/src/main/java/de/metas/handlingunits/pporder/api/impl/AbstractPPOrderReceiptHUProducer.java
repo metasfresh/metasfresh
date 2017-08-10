@@ -75,7 +75,6 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
 import de.metas.quantity.Quantity;
-
 import lombok.Builder;
 import lombok.Data;
 

@@ -95,7 +95,7 @@ public class ESRImportBL implements IESRImportBL
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
-	private static final String CFG_IGNORE_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.IgnoreUnspportedTrxTypes";
+	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
@@ -641,7 +641,7 @@ public class ESRImportBL implements IESRImportBL
 	 */
 	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
 	{
-		final boolean flagUnsupporedTypesAsDone = Services.get(ISysConfigBL.class).getBooleanValue(CFG_IGNORE_UNSPPORTED_TRX_TYPES, false, esrImport.getAD_Client_ID(), esrImport.getAD_Org_ID());
+		final boolean flagUnsupporedTypesAsDone = Services.get(ISysConfigBL.class).getBooleanValue(CFG_PROCESS_UNSPPORTED_TRX_TYPES, false, esrImport.getAD_Client_ID(), esrImport.getAD_Org_ID());
 		if (flagUnsupporedTypesAsDone)
 		{
 			line.setIsValid(true);

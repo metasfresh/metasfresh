@@ -129,7 +129,6 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 	{
 		//@formatter:off
 		newLUWeightsExpectations()
-			.luPIItem(loadingUnitPIItem)
 			.tuCount(tuAmountOnLU)
 			.setLUWeightsExpectation(luExpectation)
 			.tuExpectations()

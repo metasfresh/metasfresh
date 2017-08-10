@@ -38,7 +38,6 @@ import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
 
 public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
@@ -46,7 +45,6 @@ public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpe
 	private IAttributeStorageFactory attributeStorageFactory;
 
 	// Expectations
-	private I_M_HU_PI_Item luPIItem;
 	private int tuCount;
 	private HUWeightsExpectation<?> luWeightsExpectation;
 	private TUWeightsExpectations<LUWeightsExpectations<ParentExpectationType>> tuWeightsExpectations;
@@ -106,12 +104,6 @@ public class LUWeightsExpectations<ParentExpectationType> extends AbstractHUExpe
 	public LUWeightsExpectations<ParentExpectationType> setAttributeStorageFactory(final IAttributeStorageFactory attributeStorageFactory)
 	{
 		this.attributeStorageFactory = attributeStorageFactory;
-		return this;
-	}
-
-	public LUWeightsExpectations<ParentExpectationType> luPIItem(final I_M_HU_PI_Item luPIItem)
-	{
-		this.luPIItem = luPIItem;
 		return this;
 	}
 
