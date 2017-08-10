@@ -49,3 +49,9 @@ You can run vagrant from the normal windows command line (I mean `cmd.exe`), but
 Instead of running vagrant from `cmd.exe` I run if from Git Bash (`git-bash.exe`) which starts a bash like environment including ssh.
 
 Git Bash comes with git, so you might already have it.
+
+# Eclipse docker tooling
+
+If you have this virtual machine running locally, and if you installed [eclipse docker tooling](https://wiki.eclipse.org/Linux_Tools_Project/Docker_Tooling/User_Guide), then  you can connect to the docker deamon from eclipse like this:
+
+<img src="/vagrant/images/eclipse_docker_tooling_connect.png" width="33%" alt="eclipse docker tooling connect dialog"></img>
