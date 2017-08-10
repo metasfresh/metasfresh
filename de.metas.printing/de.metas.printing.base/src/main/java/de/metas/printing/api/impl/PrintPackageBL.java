@@ -24,7 +24,6 @@ package de.metas.printing.api.impl;
 
 
 import java.util.Iterator;
-import java.util.Objects;
 import java.util.Properties;
 
 import org.adempiere.ad.session.ISessionBL;

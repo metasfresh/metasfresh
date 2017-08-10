@@ -45,7 +45,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	// services
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	final IPrintingDAO dao = Services.get(IPrintingDAO.class);
+	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 
@@ -111,7 +111,6 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	private void createNote(final I_C_Queue_WorkPackage notifiableWP, final Map<Integer, Integer> seenPackages, final I_C_Async_Batch asyncBatch)
 	{
 		final int expected = asyncBatch.getCountExpected();
-		final String name = asyncBatch.getName(); 	
 		final Properties ctx = InterfaceWrapperHelper.getCtx(notifiableWP);
 		
 

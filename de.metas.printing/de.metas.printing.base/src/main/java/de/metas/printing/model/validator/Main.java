@@ -27,7 +27,6 @@ import org.adempiere.ad.dao.cache.IModelCacheService;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.invoice.event.InvoiceGeneratedEventBus;
 import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Client;

@@ -25,11 +25,6 @@ public class MergePdfByteArrays
 	private PdfWriter writer = null;
 	private PdfContentByte cb = null;
 
-	public MergePdfByteArrays()
-	{
-		super();
-	}
-
 	public byte[] getMergedPdfByteArray()
 	{
 		if (document == null)

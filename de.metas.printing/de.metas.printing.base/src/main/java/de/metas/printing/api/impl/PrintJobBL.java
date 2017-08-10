@@ -172,12 +172,10 @@ public class PrintJobBL implements IPrintJobBL
 							for (final I_C_Print_Job_Instructions pji : printJobInstructions)
 							{
 								// Send to the virtual printer
-								if (X_C_Print_Job_Instructions.STATUS_Pending.equals(pji.getStatus()) && pji.getAD_PrinterHW_ID() > 0)
+								if (X_C_Print_Job_Instructions.STATUS_Pending.equals(pji.getStatus()) && pji.getAD_PrinterHW_ID() > 0
+									&& (X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(pji.getAD_PrinterHW().getOutputType()))	)
 								{
-									if (X_AD_PrinterHW.OUTPUTTYPE_PDF.equals(pji.getAD_PrinterHW().getOutputType()))
-									{
-										pjis.add(pji);
-									}
+									pjis.add(pji);
 								}
 							}
 						}

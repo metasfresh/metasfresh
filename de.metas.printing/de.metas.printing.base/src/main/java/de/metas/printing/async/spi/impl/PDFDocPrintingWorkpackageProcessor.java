@@ -22,8 +22,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PrintInfo;
 
-import com.google.common.base.Optional;
-
 import de.metas.adempiere.report.jasper.OutputType;
 import de.metas.adempiere.report.jasper.client.JRClient;
 import de.metas.async.Async_Constants;
