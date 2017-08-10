@@ -24,6 +24,11 @@ public class DunningPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	
 	private static final Logger logger = LogManager.getLogger(DunningPrintingQueueHandler.class);
 	
+	private DunningPrintingQueueHandler()
+	{
+		super();
+	}
+	
 	@Override
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive archive)
 	{
@@ -47,10 +52,6 @@ public class DunningPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		return ObjectUtils.toString(this);
 	}
 
-	private DunningPrintingQueueHandler()
-	{
-		super();
-	}
 
 	/**
 	 * Allays returns <code>true</code>.

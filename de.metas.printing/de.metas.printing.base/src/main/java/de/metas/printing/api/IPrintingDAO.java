@@ -305,7 +305,8 @@ public interface IPrintingDAO extends ISingletonService
 	I_C_PrintPackageData retrievePrintPackageData(I_C_Print_Package printPackage);
 	
 	/**
-	 * retrieve virtual printer
+	 * retrieves a printer which has the output type PDF
+	 * <ul> virtual printer because is not a real hardware printer
 	 * 
 	 * @param ctx
 	 * @param trxName

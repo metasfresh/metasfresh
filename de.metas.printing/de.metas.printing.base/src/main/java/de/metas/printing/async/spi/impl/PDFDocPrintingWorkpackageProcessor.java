@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
@@ -47,6 +46,13 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 
 /**
+ * This processor process the enqueued <code>C_Print_Job_Instructions</code>
+ * 
+ * <ul> for each C_Print_Job_Instructions, take the job line</ul>
+ * <ul> then fetches the print package</ul>
+ * <ul> calibrate the pdf from print package</ul>
+ * <ul> concatenates all pdf from print packages in one big pdf file per <code>C_Print_Job_Instructions</code></ul>
+ * 
  * @author cg
  * 
  */
@@ -55,7 +61,10 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 	// services
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-
+	
+	private final String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
+	private final String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
+	
 	public static final int SummaryPdfPrinting_AD_Process_ID = 540661;
 
 	private I_C_Async_Batch asyncBatch;
@@ -96,7 +105,10 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Iterator<I_C_Print_Job_Line> jobLines = dao.retrievePrintJobLines(jobInstructions);
 		final Map<Integer, I_C_Print_Package> printPackages = new LinkedHashMap<Integer, I_C_Print_Package>();
 
-		boolean isCreateSummary = false; // TODO : needs to be on true in order to have summary which currently in not working FIXME in a next working increment
+		// TODO : needs to be on true in order to have summary which currently in not working 
+		// FIXME in a next working increment see gh2128
+		
+		boolean isCreateSummary = false; 
 		
 		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(jobLines))
 		{
@@ -171,7 +183,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		
 		final StringBuffer msg = new StringBuffer();
 		msg.append(Services.get(IMsgBL.class)
-				.getMsg(ctx, "PDFPrintingAsyncBatchListener_PrintJob_Done_2", new Object[] {index, countExpected, noInvoices}));
+				.getMsg(ctx, PDFPrintJob_Done, new Object[] {index, countExpected, noInvoices}));
 		
 		
 		final List<ProcessInfoParameter> piParams = new ArrayList<>();
@@ -199,6 +211,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final String tableName = InterfaceWrapperHelper.getModelTableName(printPackage);
 		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 		final int recordId = InterfaceWrapperHelper.getId(printPackage);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 		PrintInfo printInfo = new PrintInfo(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat(), adTableId, recordId);
@@ -208,7 +221,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 		final Timestamp today = SystemTime.asDayTimestamp();
 		final SimpleDateFormat dt = new SimpleDateFormat("dd-MM-yyyy");
-		final String name = Services.get(ISysConfigBL.class).getValue("PDFDocPrintingWorkpackageProcessor_ArchiveName") + "_" + dt.format(today) + "_PDF_" + current
+		final String name = Services.get(IMsgBL.class).getMsg(ctx, PDFArchiveName) + "_" + dt.format(today) + "_PDF_" + current
 				+ "_von_" + asyncBatch.getCountExpected() + "_" + asyncBatch.getC_Async_Batch_ID();
 		directArchive.setName(name);
 		

@@ -37,6 +37,11 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
 
 /**
+ * Listener for notifying the user when a PDF printing was done
+ * <ul> when the workpackage was processed, the listener is triggered </ul>
+ * <ul> checks first if the workpackage was notified </ul>
+ * <ul>if the Wp needs to be notified, build a message with a summary and a link to the newlly cretaed printing queue</ul>
+ * 
  * @author cg
  *
  */
@@ -48,14 +53,16 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
+	private static final String MSG_Event_PDFGenerated = "PDFPrintingAsyncBatchListener_PrintJob_Done";
+	
+	private int printingQueueWindowId = 540165;
+
 
 	public static final Topic TOPIC_PDFPrinting = Topic.builder()
 			.setName("de.metas.printing.async.ProcessedEvents")
 			.setType(Type.REMOTE)
 			.build();
 	
-	private static final String MSG_Event_PDFGenerated = "PDFPrintingAsyncBatchListener_PrintJob_Done";
-
 	
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
@@ -134,7 +141,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 							.setDetailADMessage(MSG_Event_PDFGenerated, notifiableWP.getBatchEnqueuedCount(), expected, seenPackages.get(packageId) , TableRecordReference.of(pq))
 							.addRecipient_User_ID(notifiableWP.getCreatedBy())
 							.setRecord(TableRecordReference.of(pq))
-							.setSuggestedWindowId(540165)
+							.setSuggestedWindowId(printingQueueWindowId )
 							.build();
 
 					Services.get(IEventBusFactory.class)
