@@ -1,5 +1,7 @@
 package de.metas.hostkey.api.impl;
 
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,7 +27,11 @@ package de.metas.hostkey.api.impl;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import de.metas.hostkey.api.IHostKeyBL;
@@ -61,8 +67,24 @@ public class HostKeyBL implements IHostKeyBL
 		String hostkey = hostKeyStorage.getHostKey();
 		if (Check.isEmpty(hostkey, true) || isHostKeyBlacklisted(hostkey))
 		{
-			// generate hostkey if not found
-			hostkey = generateHostKey();
+			final Properties ctx = 	Env.getCtx(); 
+			final int userId = Env.getAD_User_ID(ctx);
+			if (userId > 0)
+			{
+				final I_AD_User user = InterfaceWrapperHelper.create(ctx, userId, I_AD_User.class, ITrx.TRXNAME_None);
+				if (user!=null && user.isLoginAsHostKey() )
+				{
+					hostkey = user.getLogin();
+				}
+			}
+			
+			// if still empty, generate it
+			if (Check.isEmpty(hostkey, true))
+			{
+				// generate hostkey if not found
+				hostkey = generateHostKey();
+			}
+			
 			logger.info("HostKey generated: {}", hostkey);
 		}
 
