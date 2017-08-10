@@ -173,6 +173,15 @@ class DocumentList extends Component {
             }
         }
 
+        if (
+            (selectedWindowType === windowType) &&
+            (includedView && includedView.windowType && includedView.viewId) &&
+            (layout && layout.supportIncludedView) &&
+            JSON.stringify(this.props.selected) !== JSON.stringify(selected)
+        ) {
+            dispatch(setListIncludedView());
+        }
+
         /*
          * When the selection of unfocused table changes
          */
