@@ -218,13 +218,13 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				}
 				else
 				{
-					tableName = view.getTableName();
+					tableName = view.getTableNameOrNull(viewSingleDocumentId);
 					recordId = -1;
 				}
 			}
 			else
 			{
-				tableName = view.getTableName();
+				tableName = view.getTableNameOrNull(null);
 				recordId = -1;
 			}
 

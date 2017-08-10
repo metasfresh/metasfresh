@@ -83,7 +83,15 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		Check.assumeNotNull(view, "Parameter view is not null");
 		this.view = view;
 		this.windowId = view.getViewId().getWindowId();
-		this.tableName = view.getTableName();
+		if (selectedDocumentIds.isSingleDocumentId())
+		{
+			this.tableName = view.getTableNameOrNull(selectedDocumentIds.getSingleDocumentId());
+		}
+		else
+		{
+			this.tableName = view.getTableNameOrNull(null);
+		}
+
 		this.selectedDocumentIds = selectedDocumentIds;
 	}
 
