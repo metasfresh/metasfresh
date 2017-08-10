@@ -49,6 +49,7 @@ import org.compiere.util.Env;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.client.IPrintConnectionEndpoint;
 import de.metas.printing.esb.api.LoginRequest;
 import de.metas.printing.esb.api.LoginResponse;
@@ -148,7 +149,7 @@ public class LoopbackPrintConnectionEndpoint implements IPrintConnectionEndpoint
 			// check if we deal with a pdf printing
 			final I_C_Print_Job_Instructions pji = InterfaceWrapperHelper.create(Env.getCtx(), xmlResponse.getCPrintJobInstructionsID().intValue(), I_C_Print_Job_Instructions.class, ITrx.TRXNAME_None);
 			// the HW printer is set in instruction only when the printer is PDF type
-			if (pji!= null && pji.getAD_PrinterHW_ID() > 0 )
+			if (pji!= null && pji.getAD_PrinterHW_ID() > 0 && Services.get(IPrinterBL.class).isPDFPrinter(pji.getAD_PrinterHW_ID()))
 			{
 				return null;
 			}

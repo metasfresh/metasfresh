@@ -80,4 +80,11 @@ public interface IPrinterBL extends ISingletonService
 	 * @param printerMatching
 	 */
 	void updatePrinterTrayMatching(I_AD_Printer_Matching printerMatching);
+	
+	/**
+	 * checks if the given printer is PDF printer 
+	 * @param AD_PrinterHW_ID
+	 * @return
+	 */
+	boolean isPDFPrinter(final int AD_PrinterHW_ID);
 }
