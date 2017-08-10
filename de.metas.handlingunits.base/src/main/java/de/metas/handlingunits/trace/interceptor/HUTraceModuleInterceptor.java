@@ -70,7 +70,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	/**
-	 * Registers glue code so that {@link HUTraceEventsService#createAndForHuParentChanged(I_M_HU, I_M_HU_Item)} is invoked when an HU parent relation is changed.
+	 * Registers glue code so that {@link HUTraceEventsService#createAndAddForHuParentChanged(I_M_HU, I_M_HU_Item)} is invoked when an HU parent relation is changed.
 	 * <p>
 	 * Note that I also considered creating appropriate HU transactions for that event, but it turned out to be pretty hard,<br>
 	 * and this is another case where as it turns out I actually don't really need those HU transactions.
@@ -89,7 +89,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 			public void huParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 			{
 				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
-				huTraceEventService.createAndForHuParentChanged(hu, parentHUItemOld);
+				huTraceEventService.createAndAddForHuParentChanged(hu, parentHUItemOld);
 			}
 
 			@Override
