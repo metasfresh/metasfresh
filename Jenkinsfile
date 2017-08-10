@@ -233,14 +233,12 @@ currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + 
 
 timestamps
 {
-node('linux')
-{
-  // https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-  final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-  echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-  final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
-  echo "set MF_VERSION=${MF_VERSION}";
-}
+// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+echo "set MF_VERSION=${MF_VERSION}";
+
 // shown in jenkins, for each build
 currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
 
