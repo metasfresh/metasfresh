@@ -247,12 +247,14 @@ currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} 
 
 timestamps
 {
-// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
-echo "set MF_VERSION=${MF_VERSION}";
-
+node('linux')
+{
+	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+	final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
+	echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
+	final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
+	echo "set MF_VERSION=${MF_VERSION}";
+}
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
