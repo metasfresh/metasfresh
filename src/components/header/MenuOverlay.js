@@ -205,7 +205,7 @@ class MenuOverlay extends Component {
                             tabIndex={0}
                         >
                             {counterpart.translate(
-                                'webui.window.browseTree.caption')}
+                                'window.browseTree.caption')}
                         </span>
                     </div>
                 }
