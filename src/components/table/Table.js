@@ -623,7 +623,7 @@ class Table extends Component {
         let selectedRows = [];
         Object.keys(rows).map(id => {
             if(selected.indexOf(rows[id][keyProp]) > -1){
-                selectedRows.push(rows[id].fields);
+                selectedRows.push(rows[id].fieldsByName);
             }
         });
 
@@ -645,8 +645,8 @@ class Table extends Component {
         // Prepare values of selectedRows to display
         const content = selectedRows.map(row =>
             cols.map(col => {
-                const field =
-                    getItemsByProperty(row, 'field', col.fields[0].field)[0];
+                const field = row[col.fields[0].field];
+                //getItemsByProperty(row, 'field', col.fields[0].field)[0];
                 const value = field ? field.value : '';
 
                 if(typeof value === 'object' && value !== null){
