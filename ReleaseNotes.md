@@ -42,7 +42,8 @@ Here come the actual release notes:
   * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
     * Fix for the new Kanban Board. Now the cards are removed from card selection List, as soon as they are dragged & dropped on the Board.
   * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Fix localization of missing phrases related to attachment upload
-
+  * [#1124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1124) issue in manufacturing won't close
+  
 # metasfresh 5.21 (2017-32)
 
 **release for week 2017-32**
