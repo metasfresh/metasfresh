@@ -34,7 +34,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -117,29 +116,10 @@ public class AD_User_Login
 		// 1.1. Get/Generate a host key
 		// NOTE: we need to create a static HostKey because Admins will be use that in configurations.
 		String hostKey = loginRequest.getHostKey();
-		// check user for hostkey
-		if (Check.isEmpty(loginUsername, true))
+		if (Check.isEmpty(hostKey, true))
 		{
-			if (Check.isEmpty(hostKey, true))
-			{
-				hostKey = Services.get(IHostKeyBL.class).generateHostKey();
-			}
+			hostKey = Services.get(IHostKeyBL.class).generateHostKey();
 		}
-		else
-		{
-			final I_AD_User user = loginRequest.getAD_User();
-			if (user!=null && user.isLoginAsHostKey() )
-			{
-				hostKey = user.getLogin();
-			}
-			else
-			{
-				hostKey = Services.get(IHostKeyBL.class).generateHostKey();
-			}
-				
-		}
-		
-		
 		Check.assumeNotEmpty(hostKey, "hostKey not empty");
 
 		//

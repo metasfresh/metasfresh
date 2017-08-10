@@ -7,13 +7,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Session;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
@@ -228,31 +226,10 @@ public class MFSession
 		{
 			return hostKey; // the host key was already determined. Nothing more to do.
 		}
-		
-		final String newHostKey;
-		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
-		// check user for hostkey
-		final int userId = Env.getAD_User_ID(ctxToUpdate);
-		if (userId > 0)
-		{
-			final I_AD_User user = InterfaceWrapperHelper.create(ctxToUpdate, userId, I_AD_User.class, ITrx.TRXNAME_None);
-			if (user!=null && user.isLoginAsHostKey() )
-			{
-				newHostKey = user.getLogin();
-			}
-			else
-			{
-				newHostKey = hostKeyBL.getCreateHostKey();
-			}
-		}
-		else
-		{
-			newHostKey = hostKeyBL.getCreateHostKey();
-		}
-		
 
 		// get the session's host key
-		
+		final IHostKeyBL hostKeyBL = Services.get(IHostKeyBL.class);
+		final String newHostKey = hostKeyBL.getCreateHostKey();
 		log.info("Setting AD_Session.HostKey={} for sessionPO={}", newHostKey, sessionPO);
 
 		setHostKey(newHostKey, ctxToUpdate);
