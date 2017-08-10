@@ -29,7 +29,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.ISingletonService;
-import org.compiere.util.Env;
 
 public interface IHUContextFactory extends ISingletonService
 {

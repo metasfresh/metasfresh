@@ -180,7 +180,7 @@ public class HUTransformTracingTests
 	@Test
 	public void testAggregateCU_To_NewTUs_1Tomato()
 	{
-		testsBase.testAggregateCU_To_NewTUs_1Tomato_DoIt(false);
+		testsBase.testAggregateCU_To_NewTUs_1Tomato_DoIt(false); // isOwnPackingMaterials = false
 
 		final List<HUTraceEvent> huTraceEvents = huTraceRepository.queryAll();
 		assertThat(huTraceEvents.size(), is(4));
