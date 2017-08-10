@@ -30,6 +30,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
     * Adjusting the Header Names of Grid View Columns in included Subtabs. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
+  * [#1127](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1127) Allow copy to clipboard of selected grid lines
 
 ## Fixes
 * metasfresh-app
