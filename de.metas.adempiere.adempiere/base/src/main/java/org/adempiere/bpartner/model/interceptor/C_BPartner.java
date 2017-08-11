@@ -3,10 +3,14 @@ package org.adempiere.bpartner.model.interceptor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.bpartner.service.IBPartnerStatsDAO;
 import org.adempiere.util.Services;
+import org.compiere.model.ModelValidator;
 
 import de.metas.interfaces.I_C_BPartner;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -41,5 +45,19 @@ public class C_BPartner
 
 		Services.get(IProgramaticCalloutProvider.class)
 				.registerAnnotatedCallout(new org.adempiere.bpartner.callout.C_BPartner());
+	}
+
+	/**
+	 * Makes sure that a new bPartner gets a C_BPartner_Stats record.
+	 * We do this because there is at least one hard-coded inner join between the two (in CalloutOrder).
+	 * Note that in the DB we have an FK-constraint with "on delete cascade".
+	 * 
+	 * @param bpartner
+	 * @task https://github.com/metasfresh/metasfresh/issues/2121
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void createBPartnerStatsRecord(@NonNull final I_C_BPartner bpartner)
+	{
+		Services.get(IBPartnerStatsDAO.class).retrieveBPartnerStats(bpartner);
 	}
 }

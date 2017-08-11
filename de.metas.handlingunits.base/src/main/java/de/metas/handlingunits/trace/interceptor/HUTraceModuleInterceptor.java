@@ -1,12 +1,9 @@
 package de.metas.handlingunits.trace.interceptor;
 
-import java.util.List;
-
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
@@ -14,11 +11,6 @@ import org.compiere.util.Env;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.hutransaction.IHUTrxListener;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
-import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.handlingunits.trace.HUTraceEventsService;
 import lombok.NonNull;
 
@@ -50,6 +42,9 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 
 	public static final HUTraceModuleInterceptor INSTANCE = new HUTraceModuleInterceptor();
 
+	/**
+	 * Only set for testing
+	 */
 	private HUTraceEventsService huTraceEventsService;
 
 	private HUTraceModuleInterceptor()
@@ -70,10 +65,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	/**
-	 * Registers glue code so that {@link HUTraceEventsService#createAndForHuParentChanged(I_M_HU, I_M_HU_Item)} is invoked when an HU parent relation is changed.
-	 * <p>
-	 * Note that I also considered creating appropriate HU transactions for that event, but it turned out to be pretty hard,<br>
-	 * and this is another case where as it turns out I actually don't really need those HU transactions.
+	 * Registers a new {@link TraceHUTrxListener}.
 	 */
 	protected void onAfterInit()
 	{
@@ -83,22 +75,8 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		}
 
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		huTrxBL.addListener(new IHUTrxListener()
-		{
-			@Override
-			public void huParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
-			{
-				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
-				huTraceEventService.createAndForHuParentChanged(hu, parentHUItemOld);
-			}
+		huTrxBL.addListener(new TraceHUTrxListener());
 
-			@Override
-			public void afterTrxProcessed(@NonNull final IReference<I_M_HU_Trx_Hdr> trxHdrRef, @NonNull final List<I_M_HU_Trx_Line> trxLines)
-			{
-				final HUTraceEventsService huTraceEventService = getHUTraceEventsService();
-				huTraceEventService.createAndAddFor(trxHdrRef.getValue(), trxLines);
-			}
-		});
 	}
 
 	/**
@@ -112,7 +90,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		this.huTraceEventsService = huTraceEventsService;
 	}
 
-	private HUTraceEventsService getHUTraceEventsService()
+	public HUTraceEventsService getHUTraceEventsService()
 	{
 		if (huTraceEventsService != null)
 		{
@@ -122,7 +100,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	/**
-	 * Uses {@link ISysConfigBL} to check if tracing shall be enabled. Note that the default value is false, 
+	 * Uses {@link ISysConfigBL} to check if tracing shall be enabled. Note that the default value is false,
 	 * because we don't want this to fire in <i>"unit"</i> tests by default.
 	 * If you want to test against this feature, you can explicitly enable it for your test.
 	 * 

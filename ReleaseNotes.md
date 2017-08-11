@@ -10,30 +10,47 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.23 (2017-34)
+
+**upcoming release for week 2017-34**
+
 # metasfresh 5.22 (2017-33)
 
-**upcoming release for week 2017-33**
+**release for week 2017-33**
 
 ## Features
 * metasfresh-app
   * [#2110](https://github.com/metasfresh/metasfresh/issues/2110) make version/build infos more transparent
+    * Adding the build/ version infos of the metasfresh applications to spring admin and to file build-info.properties (in dist folder), allowing to have a better overview about the configuration.
   * [#2111](https://github.com/metasfresh/metasfresh/issues/2111) Store version number in DB after successful sql remote
+    * Nice improvement of sql remote. Now storning the version number in Database and avoiding unneccesary invocations of sql remote, which speeds up the db migration process a lot.
   * [#2118](https://github.com/metasfresh/metasfresh/issues/2118) ESR - add sysconfig to ignore non-credit lines
+    * Improvement of the ESR Import action, now processing all ESR Lines also when individual Lines fail.
   * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
-
+    * Adding a Transaction control amount to ESR Imports coming from SEPA camt.54 file and presenting to the user.
 
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
+    * Adjusting the Header Names of Grid View Columns in included Subtabs. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
+  * [#1127](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1127) Allow copy to clipboard of selected grid lines
 
 ## Fixes
 * metasfresh-app
+  * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) cant save purchase order
+    * Fixes a minor Bug that occured in Purchase Order under certain circumstances, avoiding the record save.
 
 * metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
+    * Fix for the new Kanban Board. Now the cards are removed from card selection List, as soon as they are dragged & dropped on the Board.
+  * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Fix localization of missing phrases related to attachment upload
+  * [#1124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1124) issue in manufacturing won't close
+
+* others
+  * [metasfresh/metasfresh-dist-orgs#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
 
 # metasfresh 5.21 (2017-32)
 
@@ -56,8 +73,6 @@ Here come the actual release notes:
   * [#2101](https://github.com/metasfresh/metasfresh/issues/2101) webui - allow disabling auto-close of picking candidates
     * New Switch to influence the closing behavior of picking candidates.
 
-* metasfresh-webui-api
-
 * metasfresh-webui-frontend
   * [#977](https://github.com/metasfresh/metasfresh-webui-frontend/issues/977) Add frontend support for modifying the KPI config (caption, offset, etc)
     * New Functionality allowing the user to adjust KPI Settings via Frontend.
@@ -68,11 +83,9 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2106](https://github.com/metasfresh/metasfresh/issues/2106) NullPointerException on CAMT 54 Import
-    * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file. 
+    * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file.
   * [#2107](https://github.com/metasfresh/metasfresh/issues/2107) Error: Missing ESR creditor reference on CAMT 54 Import
     * Fixes a Bug in new camt54 import which failed because mandatory ESR Reference Field is missing in sepa file.
-
-* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1000](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1000) Cursor Missing after [tab] in BPartner Relation Window
@@ -84,7 +97,7 @@ Here come the actual release notes:
   * [#1063](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1063) view: when refreshing the page the data is loaded twice
     * Reducing the load of data after refreshing a page improving the load times of views.
   * [#1077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1077) Sitemap Navigation [arrow-up] not working
-    * Fixes a Bug in the Keyboard Navigation in Sitemap. Now allowing the user to use the arrow-up key again. 
+    * Fixes a Bug in the Keyboard Navigation in Sitemap. Now allowing the user to use the arrow-up key again.
   * [#1089](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1089) Avatar Tooltip opens and stays open after selecting Avatar Settings
     * Fixes a Bug in Avatr Tooltip which remained open after selecting the avatar Settings.
   * [#1095](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1095) Sales Order Batch Entry with Key Shortcut not working

@@ -22,6 +22,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -182,10 +183,13 @@ public class HUTraceEventsService
 		}
 		else
 		{
-			return; // none of the 3 HU fields is set; nothing to do
+			logger.info("Given shipmentScheduleQtyPicked has none of its 3 HU fields set; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
+			return;
 		}
+
 		if (topLevelHuId <= 0)
 		{
+			logger.info("Given shipmentScheduleQtyPicked has HUs, but they are not \"physical\"; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
 			return; // there is no top level HU with the correct status; this means that the HU is still in the planning status.
 		}
 		builder.topLevelHuId(topLevelHuId);
@@ -206,7 +210,7 @@ public class HUTraceEventsService
 		}
 		else
 		{
-			Check.errorIf(true, "None of the three HU fields are set; can't happen because we already checked the all");
+			Check.errorIf(true, "None of the three HU fields are set; can't happen because we already checked them all");
 			return;
 		}
 
@@ -222,12 +226,12 @@ public class HUTraceEventsService
 	/**
 	 * Iterate the given {@link I_M_HU_Trx_Line}s and add events for those lines that
 	 * <ul>
-	 * <li>have a {@code M_HU_ID}
+	 * <li>have a {@link IHandlingUnitsBL#isPhysicalHU(String) physical} {@code M_HU_ID}. We don't care to planned HUs and we assume that destroyed or shipped HUs won't be altered anymore.
 	 * <li>have a partner ({@code Parent_HU_Trx_Line_ID > 0}) which also has a a M_HU_ID
 	 * <li>have {@code Quantity > 0}
 	 * </ul>
 	 *
-	 * @param trxHeader
+	 * @param trxHeader needed because we use its {@code updated} timestamp for our eventTime.
 	 * @param trxLines
 	 * 
 	 * @return a map with two lists that contains all events which were created and given to the repository.<br>
@@ -245,24 +249,27 @@ public class HUTraceEventsService
 
 		// gets the VHU IDs
 		// this code is called twice, but I don't want to pollute the class with a method
-		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine -> {
-			if (huTrxLine.getVHU_Item_ID() > 0)
+		final Function<I_M_HU_Trx_Line, List<I_M_HU>> getVhus = huTrxLine ->
 			{
-				return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
-			}
-			else if (huTrxLine.getM_HU_ID() > 0)
-			{
-				return huAccessService.retrieveVhus(huTrxLine.getM_HU());
-			}
-			else
-			{
-				return ImmutableList.of();
-			}
-		};
+				if (huTrxLine.getVHU_Item_ID() > 0)
+				{
+					return ImmutableList.of(huTrxLine.getVHU_Item().getM_HU());
+				}
+				else if (huTrxLine.getM_HU_ID() > 0)
+				{
+					return huAccessService.retrieveVhus(huTrxLine.getM_HU());
+				}
+				else
+				{
+					return ImmutableList.of();
+				}
+			};
 
 		final Map<Boolean, List<HUTraceEvent>> result = new HashMap<>();
 		result.put(true, new ArrayList<>());
 		result.put(false, new ArrayList<>());
+
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		// iterate the lines and create an every per vhuId and sourceVhuId
 		for (final I_M_HU_Trx_Line trxLine : trxLinesToUse)
@@ -272,15 +279,25 @@ public class HUTraceEventsService
 			final List<I_M_HU> vhus = getVhus.apply(trxLine);
 			for (final I_M_HU vhu : vhus)
 			{
-				final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
-				if (!productAndQty.isPresent())
+				if (!handlingUnitsBL.isPhysicalHU(vhu.getHUStatus()))
 				{
+					logger.info("vhu of the current trxLine has status={}; nothing to do with that trxLine; vhu={}; trxLine={}", vhu.getHUStatus(), vhu, trxLine);
 					continue;
 				}
 
+				final Optional<IPair<I_M_Product, BigDecimal>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
+				if (!productAndQty.isPresent())
+				{
+					logger.info("vhu of the current trxLine has no product and quantity; nothing to do with that trxLine; vhu={}; trxLine={}", vhu, trxLine);
+					continue;
+				}
+
+				final int vhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(vhu);
+				Check.errorIf(vhuTopLevelHuId <= 0, "vhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", vhuTopLevelHuId, vhu);
+
 				builder
 						.vhuId(vhu.getM_HU_ID())
-						.topLevelHuId(huAccessService.retrieveTopLevelHuId(vhu))
+						.topLevelHuId(vhuTopLevelHuId)
 						.productId(productAndQty.get().getLeft().getM_Product_ID())
 						.qty(productAndQty.get().getRight())
 						.vhuStatus(trxLine.getHUStatus()); // we use the trx line's status here, because when creating traces for "old" HUs, the line's HUStatus is as it was at the time
@@ -289,21 +306,33 @@ public class HUTraceEventsService
 				final List<I_M_HU> sourceVhus = getVhus.apply(sourceTrxLine);
 				for (final I_M_HU sourceVhu : sourceVhus)
 				{
+					if (!handlingUnitsBL.isPhysicalHU(sourceVhu.getHUStatus()))
+					{
+						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
+								sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
+						continue;
+					}
+
 					builder.vhuSourceId(sourceVhu.getM_HU_ID());
 
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
+						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) is the same as vhu of the current trxLine itself; nothing to do with that sourceVhu; vhu/sourceVhu={}; sourceTrxLine={}; trxLine={}",
+								sourceVhu, sourceTrxLine, trxLine);
 						continue; // the source-HU might be the same if e.g. only the status was changed
 					}
 
 					// create a trace record for the split's "destination"
 					final HUTraceEvent splitDestEvent = builder.build();
 
+					final int sourceVhuTopLevelHuId = huAccessService.retrieveTopLevelHuId(sourceVhu);
+					Check.errorIf(sourceVhuTopLevelHuId <= 0, "sourceVhuTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; vhu={}", sourceVhuTopLevelHuId, sourceVhu);
+
 					// create a trace record for the split's "source"
 					final HUTraceEvent splitSourceEvent = builder
 							.huTrxLineId(sourceTrxLine.getM_HU_Trx_Line_ID())
 							.vhuId(sourceVhu.getM_HU_ID())
-							.topLevelHuId(huAccessService.retrieveTopLevelHuId(sourceVhu))
+							.topLevelHuId(sourceVhuTopLevelHuId)
 							.vhuSourceId(0)
 							.qty(productAndQty.get().getRight().negate())
 							.build();
@@ -320,9 +349,15 @@ public class HUTraceEventsService
 		return result;
 	}
 
-	private List<I_M_HU_Trx_Line> filterTrxLinesToUse(final List<I_M_HU_Trx_Line> trxLines)
+	/**
+	 * Filters for the trx lines we actually want to create events from.
+	 *  
+	 * @param trxLines
+	 * @return
+	 */
+	@VisibleForTesting
+	List<I_M_HU_Trx_Line> filterTrxLinesToUse(@NonNull final List<I_M_HU_Trx_Line> trxLines)
 	{
-		// filter for the trx lines we actually want to create events from
 		final List<I_M_HU_Trx_Line> trxLinesToUse = new ArrayList<>();
 		for (final I_M_HU_Trx_Line trxLine : trxLines)
 		{
@@ -357,7 +392,7 @@ public class HUTraceEventsService
 	 * @param hu
 	 * @param parentHUItemOld
 	 */
-	public void createAndForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
+	public void createAndAddForHuParentChanged(@NonNull final I_M_HU hu, final I_M_HU_Item parentHUItemOld)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		if (!handlingUnitsBL.isPhysicalHU(hu.getHUStatus()))
@@ -378,10 +413,12 @@ public class HUTraceEventsService
 		{
 			// the given 'hu' had no parent and was therefore our top level HU
 			oldTopLevelHuId = hu.getM_HU_ID();
+			Check.errorIf(oldTopLevelHuId <= 0, "oldTopLevelHuId returned by hu.getM_HU_ID() has to be >0, but is {}; hu={}", oldTopLevelHuId, hu);
 		}
 		else
 		{
 			oldTopLevelHuId = huAccessService.retrieveTopLevelHuId(parentHUItemOld.getM_HU());
+			Check.errorIf(oldTopLevelHuId <= 0, "oldTopLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; parentHUItemOld={}", oldTopLevelHuId, parentHUItemOld);
 		}
 
 		for (final I_M_HU vhu : vhus)
@@ -425,6 +462,8 @@ public class HUTraceEventsService
 			for (final I_M_HU_Assignment huAssignment : huAssignments)
 			{
 				final int topLevelHuId = huAccessService.retrieveTopLevelHuId(huAssignment.getM_HU());
+				Check.errorIf(topLevelHuId <= 0, "topLevelHuId returned by HUAccessService.retrieveTopLevelHuId has to be >0, but is {}; huAssignment={}", topLevelHuId, huAssignment);
+
 				builder.topLevelHuId(topLevelHuId);
 				builder.eventTime(huAssignment.getUpdated().toInstant());
 
