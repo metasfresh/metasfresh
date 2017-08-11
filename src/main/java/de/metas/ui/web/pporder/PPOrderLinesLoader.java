@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.GuavaCollectors;
@@ -43,6 +45,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -251,10 +254,14 @@ public class PPOrderLinesLoader
 	{
 		final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(ppOrderQty.getM_HU_ID());
 		final HUEditorRow parentHUViewRecord = null;
-		return createForHUViewRecordRecursivelly(ppOrderQty, huEditorRow, parentHUViewRecord, readonly);
+		return createForHUViewRecordRecursively(ppOrderQty, huEditorRow, parentHUViewRecord, readonly);
 	}
 
-	private PPOrderLineRow createForHUViewRecordRecursivelly(final I_PP_Order_Qty ppOrderQty, final HUEditorRow huEditorRow, final HUEditorRow parentHUEditorRow, final boolean readonly)
+	private PPOrderLineRow createForHUViewRecordRecursively(
+			@NonNull final I_PP_Order_Qty ppOrderQty, 
+			@NonNull final HUEditorRow huEditorRow, 
+			@Nullable final HUEditorRow parentHUEditorRow, 
+			final boolean readonly)
 	{
 		final PPOrderLineType type = PPOrderLineType.ofHUEditorRowType(huEditorRow.getType());
 
@@ -300,7 +307,7 @@ public class PPOrderLinesLoader
 				.setQtyPlan(null) // always null
 				.setQty(qty)
 				//
-				.addIncludedDocumentFrom(huEditorRow.getIncludedRows(), includedHUEditorRow -> createForHUViewRecordRecursivelly(ppOrderQty, includedHUEditorRow, huEditorRow, readonly))
+				.addIncludedDocumentFrom(huEditorRow.getIncludedRows(), includedHUEditorRow -> createForHUViewRecordRecursively(ppOrderQty, includedHUEditorRow, huEditorRow, readonly))
 				//
 				.build();
 	}

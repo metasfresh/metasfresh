@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -189,9 +191,24 @@ public class HUEditorView implements IView
 		return ImmutableTranslatableString.empty();
 	}
 
+	/**
+	 * Always returns {@link I_M_HU#Table_Name}, even if the underlying {@link HUEditorRow}'s type is {@link HUEditorRowType#HUStorage}.<br>
+	 * (because i don't understand it well enough)
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId documentId)
 	{
+		// commented out for now, see javadoc
+		// if (documentId == null)
+		// {
+		// return null;
+		// }
+		// final HUEditorRow huEditorRow = getById(documentId);
+		// final HUEditorRowType type = huEditorRow.getType();
+		// if (type == HUEditorRowType.HUStorage)
+		// {
+		// return I_M_HU_Storage.Table_Name;
+		// }
 		return I_M_HU.Table_Name;
 	}
 

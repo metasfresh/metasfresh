@@ -194,8 +194,11 @@ public class DefaultView implements IView
 		return referencingDocumentPaths;
 	}
 
+	/**
+	 * Returns the table name as provided by our internal {@link IViewDataRepository}.
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId ignored)
 	{
 		return viewDataRepository.getTableName();
 	}
@@ -410,7 +413,7 @@ public class DefaultView implements IView
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
-		final String viewTableName = getTableName();
+		final String viewTableName = getTableNameOrNull(null);
 
 		final DocumentIdsSelection rowIds = recordRefs.stream()
 				.filter(recordRef -> Objects.equals(viewTableName, recordRef.getTableName()))

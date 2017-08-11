@@ -306,7 +306,11 @@ public class HUEditorViewRepository
 		return productStorage;
 	}
 
-	private HUEditorRow createHUEditorRow(final int parent_HU_ID, final int topLevelHUId, final IHUProductStorage huStorage, final boolean processed)
+	private HUEditorRow createHUEditorRow(
+			final int parent_HU_ID, 
+			final int topLevelHUId, 
+			@NonNull final IHUProductStorage huStorage, 
+			final boolean processed)
 	{
 		final I_M_HU hu = huStorage.getM_HU();
 		final int huId = hu.getM_HU_ID();
