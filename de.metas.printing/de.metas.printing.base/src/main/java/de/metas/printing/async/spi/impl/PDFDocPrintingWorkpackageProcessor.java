@@ -15,8 +15,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.adempiere.util.collections.IteratorUtils;
 import org.adempiere.util.time.SystemTime;
+import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.PrintInfo;
@@ -105,9 +105,9 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final Iterator<I_C_Print_Job_Line> jobLines = dao.retrievePrintJobLines(jobInstructions);
 		final Map<Integer, I_C_Print_Package> printPackages = new LinkedHashMap<Integer, I_C_Print_Package>();
 
-		// TODO : needs to be on true in order to have summary which currently in not working 
+		// needs to be on true in order to have summary which currently in not working 
 		// FIXME in a next working increment see gh2128
-		
+		// TODO in https://github.com/metasfresh/metasfresh/issues/2128
 		boolean isCreateSummary = false; 
 		
 		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(jobLines))

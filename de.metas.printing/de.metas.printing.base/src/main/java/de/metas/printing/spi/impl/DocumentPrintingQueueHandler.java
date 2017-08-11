@@ -162,6 +162,8 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 		{
 			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_VersandWareneingang);
 		}
+		// TODO factor this code out into a AD_Boilerplate/C_Letter specific handler
+		// https://github.com/metasfresh/metasfresh/issues/2128
 		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Letter.class))
 		{
 			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mitgliedsausweis);
