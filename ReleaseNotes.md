@@ -79,6 +79,7 @@ Here come the actual release notes:
   * [#1051](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1051) Cut-Off Header names
     * Adjusting the Header Names of Grid View Columns. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
   * [#1097](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1097) Show progress when uploading big files
+    * New Functionality when uploading Files. Now showing a progress Bar and allowing the user to proceed working during upload.
 
 ## Fixes
 * metasfresh-app
@@ -109,6 +110,7 @@ Here come the actual release notes:
   * [#1111](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1111) Lookup Selection Lists not shown in Sequence anymore
     * Fixes a Bug in Lookup Fields now showing the wanted selection List sequence when defining included Fields in a Lookup.
   * [#1114](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1114) caught in an empties loop when opened from material receipt candidates
+    * Fixes an Navigarion/ Workflow Error that occured when creating empties receive from Material Candidates.
 
 # metasfresh 5.20 (2017-31)
 
