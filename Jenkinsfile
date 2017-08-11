@@ -91,7 +91,6 @@ timestamps
 // https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
 final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
 echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-
 // example version string: 5.20.2-23 with "5.20" == MF_RELEASE_VERSION
 final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
 echo "set MF_VERSION=${MF_VERSION}";
