@@ -10,9 +10,13 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.23 (2017-34)
+
+**upcoming release for week 2017-34**
+
 # metasfresh 5.22 (2017-33)
 
-**upcoming release for week 2017-33**
+**release for week 2017-33**
 
 ## Features
 * metasfresh-app
@@ -44,7 +48,10 @@ Here come the actual release notes:
     * Fix for the new Kanban Board. Now the cards are removed from card selection List, as soon as they are dragged & dropped on the Board.
   * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Fix localization of missing phrases related to attachment upload
   * [#1124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1124) issue in manufacturing won't close
-  
+
+* others
+  * [metasfresh/metasfresh-dist-orgs#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
+
 # metasfresh 5.21 (2017-32)
 
 **release for week 2017-32**
@@ -76,7 +83,7 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2106](https://github.com/metasfresh/metasfresh/issues/2106) NullPointerException on CAMT 54 Import
-    * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file. 
+    * Fixes a NPE Bug that happened in minror cases when importing a camt54 sepa file.
   * [#2107](https://github.com/metasfresh/metasfresh/issues/2107) Error: Missing ESR creditor reference on CAMT 54 Import
     * Fixes a Bug in new camt54 import which failed because mandatory ESR Reference Field is missing in sepa file.
 
@@ -90,7 +97,7 @@ Here come the actual release notes:
   * [#1063](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1063) view: when refreshing the page the data is loaded twice
     * Reducing the load of data after refreshing a page improving the load times of views.
   * [#1077](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1077) Sitemap Navigation [arrow-up] not working
-    * Fixes a Bug in the Keyboard Navigation in Sitemap. Now allowing the user to use the arrow-up key again. 
+    * Fixes a Bug in the Keyboard Navigation in Sitemap. Now allowing the user to use the arrow-up key again.
   * [#1089](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1089) Avatar Tooltip opens and stays open after selecting Avatar Settings
     * Fixes a Bug in Avatr Tooltip which remained open after selecting the avatar Settings.
   * [#1095](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1095) Sales Order Batch Entry with Key Shortcut not working
