@@ -13,6 +13,10 @@ Here come the actual release notes:
 # metasfresh 5.23 (2017-34)
 
 **upcoming release for week 2017-34**
+#Features
+* metasfresh-app
+  * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
+    * Migrating the current static elements from w101 to base.
 
 # metasfresh 5.22 (2017-33)
 
