@@ -15,6 +15,8 @@ Here come the actual release notes:
 **upcoming release for week 2017-34**
 #Features
 * metasfresh-app
+  * [#2048](https://github.com/metasfresh/metasfresh/issues/2048) Window Design WebUI: Sales Order Candidates
+    * New Window Sales Order Candidates for WebUI.
   * [#2084](https://github.com/metasfresh/metasfresh/issues/2084) Window Design WebUI: Vendor Returns
     * Adjusted Window Configuration for Vendor Returns Window in WebUI.
   * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
