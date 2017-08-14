@@ -30,7 +30,7 @@ public class RolloutMigrateManualTest
 {
 	public static final void main(String[] args)
 	{
-		RolloutMigrate.main(new String[] {
+		Main.main(new String[] {
 				//"-h",
 				"-s", "settings_local.properties",
 				"-d", "D:\\workspaces\\rm\\mf_2\\metasfresh\\de.metas.adempiere.adempiere\\migration\\src\\main\\sql\\postgresql\\system",

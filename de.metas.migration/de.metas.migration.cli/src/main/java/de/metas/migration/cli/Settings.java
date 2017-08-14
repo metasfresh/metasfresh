@@ -3,6 +3,8 @@ package de.metas.migration.cli;
 import java.util.HashMap;
 import java.util.Properties;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.migration.IDatabase;
 import lombok.AllArgsConstructor;
 
@@ -16,12 +18,12 @@ import lombok.AllArgsConstructor;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -30,7 +32,7 @@ import lombok.AllArgsConstructor;
 
 /**
  * This class wraps the settings {@link Properties} and provides getters for the different parameters.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -39,17 +41,23 @@ public class Settings
 {
 	private final Properties settings;
 
-	private static final String PROP_DB_NAME = "METASFRESH_DB_NAME";
+	@VisibleForTesting
+	static final String PROP_DB_NAME = "METASFRESH_DB_NAME";
 
-	private static final String PROP_DB_PASSWORD = "METASFRESH_DB_PASSWORD";
+	@VisibleForTesting
+	static final String PROP_DB_PASSWORD = "METASFRESH_DB_PASSWORD";
 
-	private static final String PROP_DB_USER = "METASFRESH_DB_USER";
+	@VisibleForTesting
+	static final String PROP_DB_USER = "METASFRESH_DB_USER";
 
-	private static final String PROP_DB_PORT = "METASFRESH_DB_PORT";
+	@VisibleForTesting
+	static final String PROP_DB_PORT = "METASFRESH_DB_PORT";
 
-	private static final String PROP_DB_SERVER = "METASFRESH_DB_SERVER";
+	@VisibleForTesting
+	static final String PROP_DB_SERVER = "METASFRESH_DB_SERVER";
 
-	private static final String PROP_DB_TYPE = "METASFRESH_DB_TYPE";
+	@VisibleForTesting
+	static final String PROP_DB_TYPE = "METASFRESH_DB_TYPE";
 
 	private String getProperty(final String propertyName, final String defaultValue)
 	{
@@ -96,6 +104,7 @@ public class Settings
 		return dbPassword;
 	}
 
+	@Override
 	public String toString()
 	{
 		final HashMap<Object, Object> result = new HashMap<>(settings);

@@ -30,14 +30,70 @@ import com.github.zafarkhaja.semver.Version;
 
 public class SemverTests
 {
-	/**
-	 * 
-	 */
 	@Test
-	public void test()
+	public void testSimpleaCase()
 	{
 		assertThat(Version.valueOf("5.20.4")).isLessThan(Version.valueOf("5.20.5"));
+	}
+
+	@Test
+	public void testWhichIsWhich()
+	{
+		final Version version = Version.valueOf("5.20.4-1+a");
+
+		assertThat(version.getMajorVersion()).isEqualByComparingTo(5);
+		assertThat(version.getMinorVersion()).isEqualByComparingTo(20);
+		assertThat(version.getPatchVersion()).isEqualByComparingTo(4);
+
+		assertThat(version.getPreReleaseVersion()).isEqualTo("1");
+		assertThat(version.getBuildMetadata()).isEqualTo("a");
+	}
+
+	@Test
+	public void testPreReleaseVersionMatters()
+	{
 		assertThat(Version.valueOf("5.20.4-1")).isLessThan(Version.valueOf("5.20.4-2"));
 		assertThat(Version.valueOf("5.20.4")).isGreaterThan(Version.valueOf("5.20.3"));
+		assertThat(Version.valueOf("5.20.4-1+buid")).isLessThan(Version.valueOf("5.20.4-2+build"));
+	}
+
+	@Test
+	public void testVersionToString()
+	{
+		String versionString = "5.20.4-1+a";
+		final Version version = Version.valueOf(versionString);
+
+		assertThat(version.toString()).isEqualTo(versionString);
+	}
+
+	@Test
+	public void testEmptyStringsNotNull()
+	{
+		assertThat(Version.valueOf("5.20.4+buildMetadata").getPreReleaseVersion()).isNotNull();
+		assertThat(Version.valueOf("5.20.4-preRelease").getBuildMetadata()).isNotNull();
+
+		assertThat(Version.valueOf("5.20.4").getPreReleaseVersion()).isNotNull();
+		assertThat(Version.valueOf("5.20.4").getBuildMetadata()).isNotNull();
+	}
+
+	@Test
+	public void testBuildMetadataDoesntMatter()
+	{
+		assertThat(Version.valueOf("5.20.4-1+a")).isEqualByComparingTo(Version.valueOf("5.20.4-1+b"));
+		assertThat(Version.valueOf("5.20.4-2+a")).isGreaterThan(Version.valueOf("5.20.4-1+b"));
+		assertThat(Version.valueOf("5.20.4-1+a")).isLessThan(Version.valueOf("5.20.4-2+b"));
+	}
+
+	@Test
+	public void testAddMetaInfo()
+	{
+		final Version versionWithoutMetadata = Version.valueOf("1.1.1");
+		final String metadata = "metadata";
+
+		final Version versionWithMetadata = new Version.Builder(versionWithoutMetadata.toString())
+				.setBuildMetadata(versionWithoutMetadata.getBuildMetadata() + "-" + metadata)
+				.build();
+
+		assertThat(versionWithMetadata.toString()).isEqualTo("1.1.1" + "+" + metadata);
 	}
 }
