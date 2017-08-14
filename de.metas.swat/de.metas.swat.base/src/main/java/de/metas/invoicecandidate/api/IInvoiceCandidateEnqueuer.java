@@ -28,6 +28,8 @@ import java.util.Properties;
 
 import org.adempiere.util.ILoggable;
 
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 
 /**
@@ -93,4 +95,18 @@ public interface IInvoiceCandidateEnqueuer
 	 * @param totalNetAmtToInvoiceChecksum
 	 */
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);
+
+	/**
+	 * Sets the asyncBatch that will be used for grouping
+	 * @param asyncBatch
+	 * @return
+	 */
+	IInvoiceCandidateEnqueuer setC_Async_Batch(I_C_Async_Batch asyncBatch);
+
+	/**
+	 * Sets the priority to be used when processing the WPs
+	 * @param priority
+	 * @return
+	 */
+	IInvoiceCandidateEnqueuer setPriority(IWorkpackagePrioStrategy priority);
 }

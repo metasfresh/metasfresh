@@ -47,7 +47,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_PackagingContainer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.apps.ADialog;
 import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.IMiniTable;
 import org.compiere.model.I_M_PackagingTree;
@@ -275,14 +274,6 @@ public abstract class Packing extends MvcGenForm
 		}
 
 		final PackingMd model = getModel();
-		if (model.isDisplayNonDeliverableItems())
-		{
-			// don't allow creation of package details when we preview all items
-			ADialog.warn(getModel().getWindowNo(), null, "ShipmentSchedulePackingAllItemsNotAllowedError");
-
-			// NOTE: only a warning is displayed to user, but we continue the processing
-		}
-
 		final Collection<Integer> shipmentScheduleIds = model.getScheduleIdsForRow(rows);
 
 		if (shipmentScheduleIds.isEmpty())

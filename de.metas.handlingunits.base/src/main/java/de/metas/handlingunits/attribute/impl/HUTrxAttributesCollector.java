@@ -39,11 +39,11 @@ import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.impl.AttributeStorageListenerAdapter;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.impl.MutableHUTransactionAttribute;
 import de.metas.handlingunits.model.X_M_HU_Trx_Attribute;
 import de.metas.logging.LogManager;

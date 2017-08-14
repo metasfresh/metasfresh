@@ -10,12 +10,12 @@ package org.adempiere.archive.api;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -47,13 +47,20 @@ public interface IArchiveDAO extends ISingletonService
 	 */
 	List<I_AD_Archive> retrieveArchives(Properties ctx, String whereClause);
 
+	/**
+	 * Retrieve the latest {@code limit} archives, ordered by their {@code Created} timestamp
+	 * @param ctx
+	 * @param recordRef
+	 * @param limit
+	 * @return
+	 */
 	List<I_AD_Archive> retrieveLastArchives(Properties ctx, ITableRecordReference recordRef, int limit);
-	
+
 	/**
 	 * Retrieves the archive with given ID and which is linked to given recordRef.
-	 * 
+	 *
 	 * NOTE: might look a bit redundant that we require the ID and the recordRef but we do that to make sure that given ID is for that recordRef (validation).
-	 * 
+	 *
 	 * @param ctx
 	 * @param recordRef
 	 * @param archiveId

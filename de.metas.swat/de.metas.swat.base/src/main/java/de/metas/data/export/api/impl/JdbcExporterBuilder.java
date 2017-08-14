@@ -177,6 +177,24 @@ public class JdbcExporterBuilder
 		return dbColumnName;
 	}
 
+	public JdbcExporterBuilder addLikeWhereClause(String dbColumnName, Object value)
+	{
+		final List<Object> sqlParams = new ArrayList<Object>();
+		final StringBuilder whereClause = new StringBuilder();
+		if (value != null)
+		{
+			String search = ((String)value).trim();
+			if (!search.startsWith("%"))
+				search = "%" + search;
+			if (!search.endsWith("%"))
+				search += "%";
+			whereClause.append("UPPER(").append(dbColumnName).append(") LIKE UPPER(?)");
+			sqlParams.add(search);
+		}
+
+		return addWhereClause(whereClause.toString(), sqlParams);
+	}
+	
 	public JdbcExporterBuilder addEqualsWhereClause(String dbColumnName, Object value)
 	{
 		Check.assumeNotNull(dbColumnName, "dbColumnName not null");

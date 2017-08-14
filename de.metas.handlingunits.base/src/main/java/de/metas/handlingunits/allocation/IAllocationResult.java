@@ -25,8 +25,8 @@ package de.metas.handlingunits.allocation;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.handlingunits.IHUTransaction;
-import de.metas.handlingunits.IHUTransactionAttribute;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 
 /**
  * Result of an {@link IAllocationRequest}

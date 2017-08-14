@@ -33,7 +33,7 @@
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
+			<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
 			<version>1.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
@@ -84,15 +84,15 @@
 
 		<!-- Printing Client module -->
 		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.client</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.client</artifactId>
 			<version>1.0.0</version>
 			<type>jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>de.metas.printing.esb</groupId>
-			<artifactId>de.metas.printing.esb.client</artifactId>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.client</artifactId>
 			<version>1.0.0</version>
 			<type>test-jar</type>
 			<scope>test</scope>

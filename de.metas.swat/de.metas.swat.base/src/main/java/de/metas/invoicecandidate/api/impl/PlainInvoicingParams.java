@@ -13,15 +13,14 @@ package de.metas.invoicecandidate.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -44,6 +43,8 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private BigDecimal check_NetAmtToInvoice = null;
 
 	private final IInvoicingParams defaults;
+	private boolean storeInvoicesInResult = false;
+	private boolean assumeOneInvoice = false;
 
 	public PlainInvoicingParams()
 	{
@@ -216,4 +217,29 @@ public class PlainInvoicingParams implements IInvoicingParams
 			return null;
 		}
 	}
+
+	public PlainInvoicingParams setStoreInvoicesInResult(final boolean storeInvoicesInResult)
+	{
+		this.storeInvoicesInResult = storeInvoicesInResult;
+		return this;
+	}
+
+	@Override
+	public boolean isStoreInvoicesInResult()
+	{
+		return storeInvoicesInResult;
+	}
+
+	public PlainInvoicingParams setAssumeOneInvoice(final boolean assumeOneInvoice)
+	{
+		this.assumeOneInvoice = assumeOneInvoice;
+		return this;
+	}
+
+	@Override
+	public boolean isAssumeOneInvoice()
+	{
+		return assumeOneInvoice;
+	}
+
 }

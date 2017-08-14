@@ -66,6 +66,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import lombok.NonNull;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
@@ -561,7 +562,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 	@Override
 	public List<I_M_HU_PI_Item_Product> retrieveTUs(final Properties ctx,
-			final I_M_Product cuProduct,
+			@NonNull final I_M_Product cuProduct,
 			final I_C_BPartner bpartner,
 			final boolean allowInfiniteCapacity)
 	{

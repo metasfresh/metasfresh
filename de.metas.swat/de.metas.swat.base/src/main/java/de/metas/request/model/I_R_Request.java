@@ -45,9 +45,7 @@ public interface I_R_Request extends org.compiere.model.I_R_Request
 	// @formatter:off
 	public static final String COLUMNNAME_PerformanceType = "PerformanceType";
 		
-	@Override
 	public void setPerformanceType(String PerformanceType);
-	@Override
 	public String getPerformanceType();
 	
 	public static final String PerformanceType_DeliveryPerformance = "LP";

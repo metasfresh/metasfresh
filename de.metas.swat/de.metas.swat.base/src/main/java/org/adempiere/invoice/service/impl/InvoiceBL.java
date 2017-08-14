@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.MiscUtils;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
@@ -37,7 +36,7 @@ public final class InvoiceBL extends AbstractInvoiceBL
 			throw new IllegalArgumentException("Param 'inOut' may not be null");
 		}
 
-		final MInOut inOutPO = MiscUtils.asPO(inOut);
+		final MInOut inOutPO = InterfaceWrapperHelper.getPO(inOut);
 		// setting the trxName to be used inside the MInvoice constructor
 		inOutPO.set_TrxName(trxName);
 

@@ -44,7 +44,6 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Role;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_WF_Node_Para;
-import org.compiere.model.MAttachment;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MClient;
 import org.compiere.model.MColumn;
@@ -64,6 +63,9 @@ import org.compiere.util.Trace;
 import org.compiere.util.Trx;
 import org.compiere.util.Util;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.attachments.IAttachmentBL;
 import de.metas.currency.ICurrencyBL;
 import de.metas.email.IMailBL;
 import de.metas.email.IMailTextBuilder;
@@ -1023,10 +1025,7 @@ public class MWFActivity extends X_AD_WF_Activity implements Runnable
 			note.setRecord(getAD_Table_ID(), getRecord_ID());
 			note.save();
 			// Attachment
-			MAttachment attachment = new MAttachment(getCtx(), MNote.Table_ID, note.getAD_Note_ID(), get_TrxName());
-			attachment.addEntry(report);
-			attachment.setTextMsg(m_node.getName(true));
-			attachment.save();
+			Services.get(IAttachmentBL.class).addEntriesFromFiles(note, ImmutableList.of(report));
 			return true;
 		}
 

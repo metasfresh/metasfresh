@@ -229,6 +229,7 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		rolePermissions.addPermissionIfCondition(role.isOverwritePriceLimit(), IUserRolePermissions.PERMISSION_OverwritePriceLimit);
 		rolePermissions.addPermissionIfCondition(role.isChangeLog(), IUserRolePermissions.PERMISSION_ChangeLog);
 		rolePermissions.addPermissionIfCondition(role.isMenuAvailable(), IUserRolePermissions.PERMISSION_MenuAvailable);
+		rolePermissions.addPermissionIfCondition(role.isAutoRoleLogin(), IUserRolePermissions.PERMISSION_AutoRoleLogin);
 		rolePermissions.addPermissionIfCondition(role.isAllowLoginDateOverride(), IUserRolePermissions.PERMISSION_AllowLoginDateOverride);
 		rolePermissions.addPermissionIfCondition(role.isRoleAlwaysUseBetaFunctions() || adClient.isUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
 
@@ -252,6 +253,9 @@ class UserRolePermissionsBuilder implements IUserRolePermissionsBuilder
 		{
 			rolePermissions.addPermissionIfCondition(role.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
 		}
+		rolePermissions.addPermissionIfCondition(role.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
+		rolePermissions.addPermissionIfCondition(role.isAllowedTrlBox(), IUserRolePermissions.PERMISSION_TrlBox);
+		rolePermissions.addPermissionIfCondition(role.isAllowedMigrationScripts() , IUserRolePermissions.PERMISSION_MigrationScripts);
 
 		return rolePermissions.build();
 	}

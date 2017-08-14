@@ -23,10 +23,12 @@ SELECT
 	-- Warehouse
 	w.M_Warehouse_ID,
 	w.Name AS WarehouseName,
+	
 	--
 	-- Shipment schedule
 	s.M_ShipmentSchedule_ID,
 	s.IsDisplayed,
+	prod.C_UOM_ID as C_UOM_ID, -- shipment schedule's UOM (see de.metas.inoutcandidate.api.impl.ShipmentScheduleBL.getC_UOM)
 	COALESCE(s.QtyToDeliver_Override, s.QtyToDeliver) AS QtyToDeliver,
 	COALESCE (s.DeliveryViaRule_Override, o.DeliveryViaRule) AS DeliveryViaRule,
 	COALESCE(s.DeliveryDate_Override, s.DeliveryDate) AS DeliveryDate,
@@ -38,6 +40,24 @@ SELECT
 	-- Product
 	s.M_Product_ID,
 	prod.Name AS ProductName
+	
+	--
+	-- QtyPickedPlanned
+	, (
+		select
+			COALESCE(SUM(uomConvert(
+				prod.M_Product_ID, -- product
+				pc.C_UOM_ID, -- from UOM
+				prod.C_UOM_ID, -- to UOM: shipment schedule's UOM
+				pc.QtyPicked
+			)), 0)
+		from M_Picking_Candidate pc
+		where pc.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID
+			 -- IP means in progress, i.e. not yet covered my M_ShipmentSchedule_QtyPicked
+			 -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
+			and pc.Status='IP'
+	) as QtyPickedPlanned
+	
 	--
 	-- Standard columns
 	, s.AD_Client_ID, s.AD_Org_ID, s.Created, s.CreatedBy, s.Updated, s.UpdatedBy, s.IsActive
@@ -53,6 +73,7 @@ LEFT JOIN C_DocType dt ON (dt.C_DocType_ID=o.C_DocType_ID)
 LEFT JOIN M_Product prod ON (prod.M_Product_ID=s.M_Product_ID)
 WHERE
 	true
+	AND s.QtyToDeliver > 0
 	AND NOT EXISTS (SELECT 1 FROM M_ShipmentSchedule_ShipmentRun sr WHERE sr.M_ShipmentSchedule_ID=s.M_ShipmentSchedule_ID)
 	AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)
 ;

@@ -13,15 +13,14 @@ package org.compiere.model;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 /**
  * Interface which exposes AD_Client_ID and AD_Org_ID properties.
@@ -31,11 +30,13 @@ package org.compiere.model;
  */
 public interface IClientOrgAware
 {
-	public int getAD_Client_ID();
+	// @formatter:off
+	int getAD_Client_ID();
+	I_AD_Client getAD_Client();
 
-	public I_AD_Client getAD_Client();
-
-	public int getAD_Org_ID();
-
-	public I_AD_Org getAD_Org();
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID"; 
+	int getAD_Org_ID();
+	void setAD_Org_ID(int AD_Org_ID);
+	I_AD_Org getAD_Org();
+	// @formatter:on
 }

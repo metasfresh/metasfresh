@@ -19,7 +19,9 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 
 
 /**
@@ -70,9 +72,9 @@ public class M_Registration extends X_AD_Registration
 	@Override
 	protected boolean beforeSave (boolean newRecord)
 	{
-		MSystem system = MSystem.get(getCtx());
-		if (system.getName().equals("?")
-			|| system.getUserName().equals("?"))
+		final I_AD_System system = Services.get(ISystemBL.class).get(getCtx());
+		
+		if (system.getName().equals("?") || system.getUserName().equals("?"))
 		{
 			throw new AdempiereException("Define System first");
 		}

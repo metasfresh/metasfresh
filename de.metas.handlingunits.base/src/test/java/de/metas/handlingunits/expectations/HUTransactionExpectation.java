@@ -32,7 +32,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.Assert;
 
-import de.metas.handlingunits.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 

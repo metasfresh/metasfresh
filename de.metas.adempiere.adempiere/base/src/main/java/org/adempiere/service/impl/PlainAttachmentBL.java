@@ -24,18 +24,20 @@ package org.adempiere.service.impl;
 
 
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
-import org.compiere.model.I_AD_Attachment;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.impl.AttachmentBL;
+import de.metas.logging.LogManager;
 
 public class PlainAttachmentBL extends AttachmentBL
 {
 	private static final transient Logger logger = LogManager.getLogger(PlainAttachmentBL.class);
 
 	@Override
-	public void addEntry(final I_AD_Attachment attachment, final String name, final byte[] data)
+	public AttachmentEntry addEntry(final Object model, final String name, final byte[] data)
 	{
 		logger.warn("NOTE: adding entries to attachments is not supported in test mode");
+		return null;
 	}
 
 }

@@ -16,15 +16,14 @@ package de.metas.adempiere.form;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.io.InputStream;
 
@@ -46,6 +45,31 @@ public abstract class AbstractClientUI implements IClientUI
 	 * @return
 	 */
 	protected abstract IClientUIInstance getCurrentInstance();
+
+	/**
+	 * This method throws an UnsupportedOperationException.
+	 *
+	 * @deprecated please check out the deprecation notice in {@link IClientUIInstance#infoNoWait(int, String)}.
+	 * @throws UnsupportedOperationException
+	 */
+	@Deprecated
+	@Override
+	public void infoNoWait(int WindowNo, String AD_Message)
+	{
+		throw new UnsupportedOperationException("not implemented");
+	}
+
+	/**
+	 * This method does nothing.
+	 *
+	 * @deprecated please check out the deprecation notice in {@link IClientUIInstance#disableServerPush()}.
+	 */
+	@Deprecated
+	@Override
+	public void disableServerPush()
+	{
+		// nothing
+	}
 
 	@Override
 	public void info(final int WindowNo, final String AD_Message)
@@ -143,6 +167,18 @@ public abstract class AbstractClientUI implements IClientUI
 		return getCurrentInstance().getClientInfo();
 	}
 
+	/**
+	 * This method does nothing.
+	 *
+	 * @deprecated please check out the deprecation notice in {@link IClientUIInstance#hideBusyDialog()}.
+	 */
+	@Deprecated
+	@Override
+	public void hideBusyDialog()
+	{
+		// nothing
+	}
+
 	@Override
 	public void showWindow(final Object model)
 	{
@@ -160,7 +196,7 @@ public abstract class AbstractClientUI implements IClientUI
 	{
 		return getCurrentInstance().invoke();
 	}
-	
+
 	@Override
 	public IClientUIAsyncInvoker invokeAsync()
 	{

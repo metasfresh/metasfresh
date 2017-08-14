@@ -3,6 +3,7 @@ package de.metas.payment.esr.api.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -87,6 +88,35 @@ public class ESRImportBLTest extends ESRTestBase
 	}
 
 	// 04220
+
+	/**
+	 * Verifies {@link ESRImportBLTest#testEvaluateTrxQty()}.
+	 * 
+	 * @task https://github.com/metasfresh/metasfresh/issues/2106
+	 */
+	@Test
+	public void testEvaluateTrxQty()
+	{
+		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
+		save(esrImport);
+
+		// https://github.com/metasfresh/metasfresh/issues/2106
+		assertThat(esrImportBL.evaluateTrxQty(esrImport, 23))
+				.as("esrImport has no information, so assume it's OK and return true")
+				.isTrue();
+
+		esrImport.setESR_Control_Trx_Qty(BigDecimal.ZERO);
+		save(esrImport);
+		assertThat(esrImportBL.evaluateTrxQty(esrImport, 23))
+				.as("zero is not 23, so return false")
+				.isFalse();
+
+		esrImport.setESR_Control_Trx_Qty(new BigDecimal("23.000"));
+		save(esrImport);
+		assertThat(esrImportBL.evaluateTrxQty(esrImport, 23))
+				.as("if numbers match, it shall return true")
+				.isTrue();
+	}
 
 	/**
 	 * <ul>
@@ -182,7 +212,7 @@ public class ESRImportBLTest extends ESRTestBase
 		refresh(esrImport, true);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
-		
+
 		assertThat(esrImportLine.getAmount(), comparesEqualTo(new BigDecimal("40"))); // guard
 		// guards
 		assertThat("Invoice not set correctly", esrImportLine.getC_Invoice_ID(), is(invoice.getC_Invoice_ID()));
@@ -316,8 +346,7 @@ public class ESRImportBLTest extends ESRTestBase
 
 		assertThat(esrImportLine.getImportErrorMsg(), nullValue());
 		assertThat("Wrong message", esrImportLine.getMatchErrorMsg(),
-				is(Services.get(IMsgBL.class).getMsg(getCtx(), ESR_NO_HAS_WRONG_ORG_2P, new Object[]
-				{ org2.getValue(), esrImportLine.getAD_Org().getValue() })));
+				is(Services.get(IMsgBL.class).getMsg(getCtx(), ESR_NO_HAS_WRONG_ORG_2P, new Object[] { org2.getValue(), esrImportLine.getAD_Org().getValue() })));
 
 	}
 

@@ -1,6 +1,6 @@
 package de.metas.handlingunits.allocation;
 
-import de.metas.handlingunits.IHUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
 
 /*
  * #%L

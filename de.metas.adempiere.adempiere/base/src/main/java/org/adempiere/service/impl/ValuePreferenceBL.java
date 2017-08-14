@@ -1,5 +1,7 @@
 package org.adempiere.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,10 +13,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IValuePreferenceBL;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Preference;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import com.google.common.base.MoreObjects;
@@ -57,8 +63,8 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 				//
 				.create().stream()
 				.collect(UserValuePreferencesBuilder.byWindowIdCollector())
-				//
-				;
+		//
+		;
 	}
 
 	private static final class UserValuePreference implements IUserValuePreference
@@ -106,6 +112,59 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		public String getValue()
 		{
 			return value;
+		}
+
+		@Override
+		public <T> T getValue(final Class<T> clazz)
+		{
+			final String valueStr = getValue();
+			if (String.class.equals(clazz))
+			{
+				@SuppressWarnings("unchecked")
+				final T value = (T)valueStr;
+				return value;
+			}
+
+			if (Integer.class.equals(clazz))
+			{
+				try
+				{
+					@SuppressWarnings("unchecked")
+					final T value = (T)(Integer)Integer.parseInt(valueStr);
+					return value;
+				}
+				catch (final NumberFormatException e)
+				{
+					@SuppressWarnings("unchecked")
+					final T value = (T)Integer.valueOf(0);
+					return value;
+				}
+			}
+
+			if (Boolean.class.equals(clazz))
+			{
+				@SuppressWarnings("unchecked")
+				final T value = (T)(Boolean)DisplayType.toBoolean(valueStr);
+				return value;
+			}
+
+			final int tableIdOrNull = InterfaceWrapperHelper.getTableIdOrNull(clazz);
+			if (tableIdOrNull > 0)
+			{
+				final int recordId;
+				try
+				{
+					recordId = Integer.parseInt(valueStr);
+				}
+				catch (final NumberFormatException e)
+				{
+					return null;
+				}
+				final T value = create(TableRecordReference.of(tableIdOrNull, recordId).getModel(PlainContextAware.newOutOfTrx()), clazz);
+				return value;
+			}
+
+			return null;
 		}
 	}
 
@@ -161,6 +220,17 @@ public class ValuePreferenceBL implements IValuePreferenceBL
 		public Collection<IUserValuePreference> values()
 		{
 			return name2value.values();
+		}
+
+		@Override
+		public <T> T getValue(final String name, final Class<T> clazz)
+		{
+			final IUserValuePreference userValuePreference = name2value.get(name);
+			if (userValuePreference == null)
+			{
+				return null;
+			}
+			return userValuePreference.getValue(clazz);
 		}
 	}
 

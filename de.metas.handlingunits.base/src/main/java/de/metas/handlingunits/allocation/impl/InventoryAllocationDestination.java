@@ -39,8 +39,8 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
@@ -51,12 +51,12 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransaction;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.impl.HUTransaction;
+import de.metas.handlingunits.hutransaction.IHUTransaction;
+import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -87,7 +87,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	/**
 	 * There will be an inventory entry for each partner
 	 */
-	private final Map<Integer, I_M_Inventory> partnerIdToInventory = new HashMap<Integer, I_M_Inventory>();
+	private final Map<Integer, I_M_Inventory> orderIdToInventory = new HashMap<Integer, I_M_Inventory>();
 
 	private HUPackingMaterialsCollector collector = null;
 
@@ -157,6 +157,12 @@ public class InventoryAllocationDestination implements IAllocationDestination
 					throw new AdempiereException("Document type {0} is not suitable for material disposal" , new Object[]{inout.getC_DocType()});
 				
 				}
+				
+				// #1604: skip inoutlines for other products; request.getProduct() is not null, see AllocationRequest constructor
+				if(inOutLine.getM_Product_ID() != request.getProduct().getM_Product_ID())
+				{
+					continue;
+				}
 
 				// create the inventory line based on the info from inoutline and request
 				final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, topLevelParent, request);
@@ -172,6 +178,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				InterfaceWrapperHelper.save(inventoryLine, trxName);
 
 				result.substractAllocatedQty(qtySource);
+				
 				final IHUTransaction trx = new HUTransaction(
 						inventoryLine, // Reference model
 						null, // HU item
@@ -191,13 +198,17 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		final I_M_InOut inout = inOutLine.getM_InOut();
 
-		final I_C_BPartner partner = inout.getC_BPartner();
+		//final I_C_BPartner partner = inout.getC_BPartner();
+		
+		final I_C_Order order = inout.getC_Order();
+		
+		Check.assumeNotNull(order, "Inout {0} does not have an order", inout);
 
-		final int partnerId = partner.getC_BPartner_ID();
+		final int orderId = order.getC_Order_ID();
 
-		if (partnerIdToInventory.containsKey(partnerId))
+		if (orderIdToInventory.containsKey(orderId))
 		{
-			return partnerIdToInventory.get(partnerId);
+			return orderIdToInventory.get(orderId);
 		}
 
 		// No inventory for the given partner. Create it now.
@@ -206,15 +217,17 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final I_M_Inventory inventory = InterfaceWrapperHelper.newInstance(I_M_Inventory.class, huContext);
 		inventory.setMovementDate(TimeUtil.asTimestamp(request.getDate()));
 		inventory.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
-
+		
+		
 		if (inventoryDocType != null)
 		{
 			inventory.setC_DocType_ID(inventoryDocType.getC_DocType_ID());
 		}
 
+		inventory.setPOReference(order.getPOReference());
 		InterfaceWrapperHelper.save(inventory);
 
-		partnerIdToInventory.put(partnerId, inventory);
+		orderIdToInventory.put(orderId, inventory);
 		inventories.add(inventory);
 
 		return inventory;

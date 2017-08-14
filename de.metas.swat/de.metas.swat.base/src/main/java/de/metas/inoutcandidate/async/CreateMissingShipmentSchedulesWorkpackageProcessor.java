@@ -30,6 +30,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
 
+import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
@@ -53,6 +54,12 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 */
 	public static final void schedule(final Properties ctx, final String trxName)
 	{
+		// don't try to enqueue it if is not active
+		if (!Services.get(IQueueDAO.class).isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
+		{
+			return;
+		}
+				
 		Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
 				.newBlock()

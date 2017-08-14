@@ -1,20 +1,22 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -27,6 +29,7 @@ import javax.swing.ImageIcon;
 
 import org.adempiere.ad.housekeeping.IHouseKeepingBL;
 import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.service.impl.DeveloperModeBL;
 import org.adempiere.context.SwingContextProvider;
 import org.adempiere.context.ThreadLocalContextProvider;
@@ -42,8 +45,8 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
 import org.compiere.db.CConnection;
+import org.compiere.model.I_AD_System;
 import org.compiere.model.MLanguage;
-import org.compiere.model.MSystem;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -56,6 +59,7 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationContext;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.addon.IAddonStarter;
 import de.metas.adempiere.addon.impl.AddonStarter;
 import de.metas.adempiere.util.cache.CacheInterceptor;
@@ -145,7 +149,7 @@ public class Adempiere
 	{
 		this.applicationContext = applicationContext;
 		logger.info("Set application context: {}", applicationContext);
-		
+
 		// gh #427: NOTE: the "Services.setExternalServiceImplProvider" is not called here because it might introduce a deadlock.
 		// we will call it when the spring context was loaded.
 
@@ -166,6 +170,12 @@ public class Adempiere
 		springApplicationContext.getAutowireCapableBeanFactory().autowireBean(bean);
 	}
 
+	/**
+	 * When running this method from within a junit test, we need to fire up spring
+	 * 
+	 * @param requiredType
+	 * @return
+	 */
 	public static final <T> T getBean(final Class<T> requiredType)
 	{
 		final ApplicationContext springApplicationContext = getSpringApplicationContext();
@@ -644,6 +654,10 @@ public class Adempiere
 		{
 			LogManager.updateConfigurationFromIni();
 		}
+		else
+		{
+			LogManager.setLevel(Level.WARN);
+		}
 
 		// Set UI
 		if (runmodeClient)
@@ -707,7 +721,8 @@ public class Adempiere
 			return false;
 		}
 
-		final MSystem system = MSystem.get(Env.getCtx());	// Initializes Base Context too
+		
+		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
 
 		if (system == null)
 		{
@@ -728,7 +743,7 @@ public class Adempiere
 				{
 					SecureEngine.init(className);	// test it
 					system.setEncryptionKey(className);
-					system.save();
+					save(system);
 				}
 			}
 			SecureEngine.init(className);

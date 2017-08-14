@@ -4,7 +4,6 @@ package de.metas.inoutcandidate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Packageable_V
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1962050959L;
+	private static final long serialVersionUID = -1519378230L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
@@ -215,6 +214,43 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public int getC_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
+	}
+
+	@Override
+	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
+	{
+		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
+	}
+
+	/** Set Maßeinheit.
+		@param C_UOM_ID 
+		Maßeinheit
+	  */
+	@Override
+	public void setC_UOM_ID (int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+	}
+
+	/** Get Maßeinheit.
+		@return Maßeinheit
+	  */
+	@Override
+	public int getC_UOM_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -465,18 +501,6 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 		return ii.intValue();
 	}
 
-	@Override
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
-	}
-
 	/** Set Lieferdisposition.
 		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
@@ -660,6 +684,25 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public java.lang.String getProductName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+	}
+
+	/** Set Qty picked (planned).
+		@param QtyPickedPlanned Qty picked (planned)	  */
+	@Override
+	public void setQtyPickedPlanned (java.math.BigDecimal QtyPickedPlanned)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyPickedPlanned, QtyPickedPlanned);
+	}
+
+	/** Get Qty picked (planned).
+		@return Qty picked (planned)	  */
+	@Override
+	public java.math.BigDecimal getQtyPickedPlanned () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPickedPlanned);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Ausliefermenge.

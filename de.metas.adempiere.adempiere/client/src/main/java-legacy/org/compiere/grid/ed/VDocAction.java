@@ -21,7 +21,6 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -30,16 +29,12 @@ import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.plaf.AdempierePLAF;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.apps.ADialog;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ConfirmPanel;
 import org.compiere.model.GridTab;
-import org.compiere.model.X_C_Order;
 import org.compiere.swing.CComboBox;
 import org.compiere.swing.CDialog;
 import org.compiere.swing.CPanel;
@@ -49,10 +44,10 @@ import org.compiere.util.Env;
 import org.compiere.wf.MWFActivity;
 import org.slf4j.Logger;
 
-import com.google.common.base.Objects;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.engine.DefaultDocActionOptionsContext;
+import de.metas.document.engine.IDocActionBL;
+import de.metas.document.engine.IDocActionBL.IDocActionItem;
 import de.metas.document.engine.IDocActionOptionsBL;
 import de.metas.document.engine.IDocActionOptionsContext;
 import de.metas.i18n.IMsgBL;
@@ -68,16 +63,16 @@ public class VDocAction extends CDialog
 		implements ActionListener
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7800828832602048052L;
 
 	/**
 	 * Constructor.
-	 * 
+	 *
 	 * Please note, in case there is a failure, a popup will be displayed but this constructor will never fail.
 	 * To check if this dialog is valid, use {@link #getNumberOfOptions()}.
-	 * 
+	 *
 	 * @param WindowNo window no
 	 * @param mTab tab
 	 * @param Record_ID record id
@@ -105,7 +100,7 @@ public class VDocAction extends CDialog
 			Services.get(IClientUI.class).error(WindowNo, ex);
 		}
 	}	// VDocAction
-	
+
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(VDocAction.class);
 
@@ -115,13 +110,13 @@ public class VDocAction extends CDialog
 	private final GridTab m_mTab;
 
 	private boolean m_OKpressed = false;
-	private Map<String, DocActionItem> docActionItemsByValue = null; // lazy
+	private Map<String, IDocActionItem> docActionItemsByValue = null; // lazy
 
 	//
 	private CPanel mainPanel = new CPanel();
 	private BorderLayout mainLayout = new BorderLayout();
 	private CPanel northPanel = new CPanel();
-	private CComboBox<DocActionItem> actionCombo = new CComboBox<>();
+	private CComboBox<IDocActionItem> actionCombo = new CComboBox<>();
 	private JLabel actionLabel = new JLabel();
 	private JScrollPane centerPane = new JScrollPane();
 	private JTextArea message = new JTextArea();
@@ -130,7 +125,7 @@ public class VDocAction extends CDialog
 
 	/**
 	 * Static Init
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	void jbInit() throws Exception
@@ -160,7 +155,7 @@ public class VDocAction extends CDialog
 
 	/**
 	 * Dynamic Init - determine valid DocActions based on DocStatus for the different documents.
-	 * 
+	 *
 	 * <pre>
 	 *  DocStatus (131)
 	 * 			??                         Unknown
@@ -179,7 +174,7 @@ public class VDocAction extends CDialog
 	 * 			TR *                       Transferred
 	 * 			VO *                       Voided
 	 * 			XX                         Being Processed
-	 * 
+	 *
 	 *   DocAction (135)
 	 * 			--                         <None>
 	 * 			AP *                       Approve
@@ -195,7 +190,7 @@ public class VDocAction extends CDialog
 	 * 			VO *                       Void
 	 * 			XL                         Unlock
 	 * </pre>
-	 * 
+	 *
 	 * @param Record_ID id
 	 */
 	private void dynInit(int Record_ID)
@@ -266,10 +261,10 @@ public class VDocAction extends CDialog
 		/**
 		 * Fill actionCombo
 		 */
-		final Map<String, DocActionItem> docActionItems = getDocActionItemsIndexedByValue();
+		final Map<String, IDocActionItem> docActionItems = getDocActionItemsIndexedByValue();
 		for (final String docAction : docActions)
 		{
-			final DocActionItem docActionItem = docActionItems.get(docAction);
+			final IDocActionItem docActionItem = docActionItems.get(docAction);
 			if (docActionItem == null)
 			{
 				// shall not happen
@@ -285,7 +280,7 @@ public class VDocAction extends CDialog
 			DocAction = org.compiere.process.DocAction.ACTION_Close;
 		}
 
-		final DocActionItem defaultDocActionItem = docActionItems.get(DocAction);
+		final IDocActionItem defaultDocActionItem = docActionItems.get(DocAction);
 		if (defaultDocActionItem != null)
 		{
 			actionCombo.setSelectedItem(defaultDocActionItem);
@@ -311,7 +306,7 @@ public class VDocAction extends CDialog
 
 	/**
 	 * Number of options available (to decide to display it)
-	 * 
+	 *
 	 * @return item count
 	 */
 	public int getNumberOfOptions()
@@ -321,7 +316,7 @@ public class VDocAction extends CDialog
 
 	/**
 	 * Should the process be started?
-	 * 
+	 *
 	 * @return OK pressed
 	 */
 	public boolean isStartProcess()
@@ -330,29 +325,23 @@ public class VDocAction extends CDialog
 	}	// isStartProcess
 
 	/**
-	 * Fill Vector with DocAction Ref_List(135) values
+	 * Fill map with DocAction Ref_List(135) values
 	 */
-	private Map<String, DocActionItem> getDocActionItemsIndexedByValue()
+	private Map<String, IDocActionItem> getDocActionItemsIndexedByValue()
 	{
 		if(docActionItemsByValue == null)
 		{
-			final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
-			final Properties ctx = Env.getCtx();
-			final String adLanguage = Env.getAD_Language(ctx);
-	
-			docActionItemsByValue = referenceDAO.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
-					.stream()
-					.map(adRefListItem -> new DocActionItem(adRefListItem, adLanguage))
-					.sorted(Comparator.comparing(DocActionItem::toString))
-					.collect(GuavaCollectors.toImmutableMapByKey(DocActionItem::getValue));
+			docActionItemsByValue = Services.get(IDocActionBL.class).retrieveDocActionItemsIndexedByValue();
 		}
-		
+
 		return docActionItemsByValue;
 	}
 
+
+
 	/**
 	 * ActionListener
-	 * 
+	 *
 	 * @param e event
 	 */
 	@Override
@@ -376,7 +365,7 @@ public class VDocAction extends CDialog
 		// ActionCombo: display the description for the selection
 		else if (e.getSource() == actionCombo)
 		{
-			final DocActionItem selectedDocAction = actionCombo.getSelectedItem();
+			final IDocActionItem selectedDocAction = actionCombo.getSelectedItem();
 			// Display description
 			if (selectedDocAction != null)
 			{
@@ -387,12 +376,12 @@ public class VDocAction extends CDialog
 
 	/**
 	 * Save to Database
-	 * 
+	 *
 	 * @return true if saved to Tab
 	 */
 	private boolean save()
 	{
-		final DocActionItem selectedDocAction = actionCombo.getSelectedItem();
+		final IDocActionItem selectedDocAction = actionCombo.getSelectedItem();
 		if(selectedDocAction == null)
 		{
 			return false;
@@ -403,59 +392,4 @@ public class VDocAction extends CDialog
 		m_mTab.setValue("DocAction", selectedDocAction.getValue());
 		return true;
 	}	// save
-
-	private static final class DocActionItem
-	{
-		private final String value;
-		private final String caption;
-		private String description;
-
-		private DocActionItem(final ADRefListItem adRefListItem, final String adLanguage)
-		{
-			this.value = adRefListItem.getValue();
-			this.caption = adRefListItem.getName().translate(adLanguage);
-			this.description = adRefListItem.getDescription().translate(adLanguage);
-		}
-
-		@Override
-		public String toString()
-		{
-			// IMPORTANT: this is how it will be displayed to user
-			return caption;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			return Objects.hashCode(value);
-		}
-
-		@Override
-		public boolean equals(final Object obj)
-		{
-			if (this == obj)
-			{
-				return true;
-			}
-			if (obj instanceof DocActionItem)
-			{
-				final DocActionItem other = (DocActionItem)obj;
-				return Objects.equal(value, other.value);
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		public String getValue()
-		{
-			return value;
-		}
-
-		public String getDescription()
-		{
-			return description;
-		}
-	}
 }	// VDocAction

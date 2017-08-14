@@ -24,26 +24,34 @@ package de.metas.document.engine.impl;
 
 import java.sql.Timestamp;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
+import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_C_Order;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocumentEngine;
+import org.compiere.util.Env;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
+
+import com.google.common.base.Objects;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
@@ -422,5 +430,100 @@ public abstract class AbstractDocActionBL implements IDocActionBL
 
 		// Fallback: use toString()
 		return String.valueOf(model);
+	}
+
+	@Override
+	public boolean isReversalDocument(@NonNull final Object model)
+	{
+		// Try Reversal_ID column if available
+		final Integer original_ID = InterfaceWrapperHelper.getValueOrNull(model, DocAction.Reversal_ID);
+		if (original_ID != null && original_ID > 0)
+		{
+			final int reversal_id = InterfaceWrapperHelper.getId(model);
+			if (reversal_id > original_ID)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	@Override
+	public final Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue()
+	{
+		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final Properties ctx = Env.getCtx();
+		final String adLanguage = Env.getAD_Language(ctx);
+
+		final Map<String, IDocActionItem> docActionItemsByValue = referenceDAO.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
+				.stream()
+				.map(adRefListItem -> new DocActionItem(adRefListItem, adLanguage))
+				.sorted(Comparator.comparing(DocActionItem::toString))
+				.collect(GuavaCollectors.toImmutableMapByKey(IDocActionItem::getValue));
+		return docActionItemsByValue;
+	}
+
+	private static final class DocActionItem implements IDocActionItem
+	{
+		private final String value;
+		private final String caption;
+		private String description;
+
+		private DocActionItem(final ADRefListItem adRefListItem, final String adLanguage)
+		{
+			this.value = adRefListItem.getValue();
+			this.caption = adRefListItem.getName().translate(adLanguage);
+			this.description = adRefListItem.getDescription().translate(adLanguage);
+		}
+
+		@Override
+		public String toString()
+		{
+			// IMPORTANT: this is how it will be displayed to user
+			return caption;
+		}
+
+		@Override
+		public int hashCode()
+		{
+			return Objects.hashCode(value);
+		}
+
+		@Override
+		public boolean equals(final Object obj)
+		{
+			if (this == obj)
+			{
+				return true;
+			}
+			if (obj instanceof DocActionItem)
+			{
+				final DocActionItem other = (DocActionItem)obj;
+				return Objects.equal(value, other.value);
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		/* (non-Javadoc)
+		 * @see de.metas.document.engine.impl.IDocActionItem#getValue()
+		 */
+		@Override
+		public String getValue()
+		{
+			return value;
+		}
+
+		/* (non-Javadoc)
+		 * @see de.metas.document.engine.impl.IDocActionItem#getDescription()
+		 */
+		@Override
+		public String getDescription()
+		{
+			return description;
+		}
 	}
 }

@@ -29,16 +29,20 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.MAttachment;
+import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.MImage;
 import org.compiere.model.X_AD_PrintTableFormat;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
+import de.metas.logging.LogManager;
 
 /**
  * Table Print Format
@@ -682,29 +686,25 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 		//
 		if (isImageIsAttached())
 		{
-			MAttachment attachment = MAttachment.get(getCtx(), Table_ID, get_ID());
-			if (attachment == null)
+			final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).getFirstEntry(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
+			if (attachmentEntry == null)
 			{
-				log.warn("No Attachment - ID=" + get_ID());
+				log.warn("No Attachment entry - ID=" + get_ID());
 				return null;
 			}
-			if (attachment.getEntryCount() != 1)
-			{
-				log.warn("Need just 1 Attachment Entry = " + attachment.getEntryCount());
-				return null;
-			}
-			byte[] imageData = attachment.getEntryData(0);
+			
+			byte[] imageData = attachmentEntry.getData();
 			if (imageData != null)
 			{
 				m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 			}
 			if (m_image != null)
 			{
-				log.debug(attachment.getEntryName(0) + " - Size=" + imageData.length);
+				log.debug(attachmentEntry.getFilename() + " - Size=" + imageData.length);
 			}
 			else
 			{
-				log.warn(attachment.getEntryName(0) + " - not loaded (must be gif or jpg) - ID=" + get_ID());
+				log.warn(attachmentEntry.getFilename() + " - not loaded (must be gif or jpg) - ID=" + get_ID());
 			}
 		}
 		else if (getImageURL() != null)

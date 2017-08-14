@@ -58,6 +58,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import lombok.NonNull;
 
 /**
  * Class responsible for allocating given HUs to underlying shipment schedules from {@link IFreshPackingItem}.
@@ -106,9 +107,10 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return huContext;
 	}
 
-	public void setPackingContext(final IPackingContext packingContext)
+	public HU2PackingItemsAllocator setPackingContext(final IPackingContext packingContext)
 	{
 		this._packingContext = packingContext;
+		return this;
 	}
 
 	private IPackingContext getPackingContext()
@@ -117,9 +119,10 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 		return _packingContext;
 	}
 
-	public void setItemToPack(final IFreshPackingItem itemToPack)
+	public HU2PackingItemsAllocator setItemToPack(final IFreshPackingItem itemToPack)
 	{
 		this._itemToPack = itemToPack;
+		return this;
 	}
 
 	private IFreshPackingItem getItemToPack()
@@ -135,7 +138,7 @@ public class HU2PackingItemsAllocator extends AbstractShipmentScheduleQtyPickedB
 	}
 
 	@Override
-	protected void allocateVHU(final I_M_HU vhu)
+	protected void allocateVHU(@NonNull final I_M_HU vhu)
 	{
 		// Make sure we have remaining qty to pack
 		if (!hasRemainingQtyToPack())

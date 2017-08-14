@@ -28,7 +28,6 @@ import de.metas.inoutcandidate.api.IPackageableQuery;
 /* package */class PackageableQuery implements IPackageableQuery
 {
 	private int warehouseId;
-	private boolean displayNonDeliverableItems;
 	private boolean isDisplayTodayEntriesOnly;
 
 	public PackageableQuery()
@@ -41,7 +40,6 @@ import de.metas.inoutcandidate.api.IPackageableQuery;
 	{
 		return getClass().getSimpleName() + "["
 				+ "warehouseId=" + warehouseId
-				+ ", displayNonDeliverableItems=" + displayNonDeliverableItems
 				+ ", isDisplayTodayEntriesOnly=" + isDisplayTodayEntriesOnly
 				+ "]";
 	}
@@ -56,18 +54,6 @@ import de.metas.inoutcandidate.api.IPackageableQuery;
 	public void setWarehouseId(int warehouseId)
 	{
 		this.warehouseId = warehouseId;
-	}
-
-	@Override
-	public boolean isDisplayNonDeliverableItems()
-	{
-		return displayNonDeliverableItems;
-	}
-
-	@Override
-	public void setDisplayNonDeliverableItems(boolean displayNonDeliverableItems)
-	{
-		this.displayNonDeliverableItems = displayNonDeliverableItems;
 	}
 
 	@Override

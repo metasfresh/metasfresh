@@ -41,12 +41,12 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.TimeUtil;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUTransactionAttribute;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeProcessor;
 import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
 import de.metas.handlingunits.attribute.spi.IHUTrxAttributeProcessor;
 import de.metas.handlingunits.attribute.spi.impl.HUTrxAttributeProcessor_ASI;
 import de.metas.handlingunits.attribute.spi.impl.HUTrxAttributeProcessor_HU;
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trx_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;

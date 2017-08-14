@@ -469,7 +469,6 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		return queryBuilder
 				.addNotEqualsFilter(I_M_HU_Assignment.COLUMN_M_TU_HU_ID, null)
 				.create()
-
 				.list(I_M_HU_Assignment.class);
 	}
 }

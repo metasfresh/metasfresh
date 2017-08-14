@@ -90,6 +90,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
+import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.invoicecandidate.model.I_M_ProductGroup;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.process.IADPInstanceDAO;
@@ -1357,6 +1358,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		return defaultFilter.toString();
+	}
+
+	@Override
+	public IQueryBuilder<I_C_Invoice_Candidate> retrieveInvoiceCandidatesForInventoryLineQuery(final I_M_InventoryLine inventoryLine)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
+		int adTableId = InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class);
+		int recordId = inventoryLine.getM_InventoryLine_ID();
+		String trxName = InterfaceWrapperHelper.getTrxName(inventoryLine);
+
+		return retrieveInvoiceCandidatesForRecordQuery(ctx, adTableId, recordId, trxName);
 	}
 
 }

@@ -19,6 +19,7 @@
 	</properties>
 
 	<dependencies>
+		<!-- payment.esr contains e.g. IBPBankAccountBL which is also used in payment.sepa -->
 		<dependency>
 			<groupId>de.metas.payment.esr</groupId>
 			<artifactId>de.metas.payment.esr</artifactId>

@@ -1,5 +1,7 @@
 package de.metas.dunning.api.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.dunning
@@ -30,8 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -42,6 +42,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.collections.IteratorUtils;
+import org.slf4j.Logger;
+
 import de.metas.dunning.api.IDunnableDoc;
 import de.metas.dunning.api.IDunnableSourceFactory;
 import de.metas.dunning.api.IDunningBL;
@@ -61,6 +63,7 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
 import de.metas.dunning.spi.IDunningCandidateSource;
 import de.metas.dunning.spi.IDunningConfigurator;
+import de.metas.logging.LogManager;
 
 public class DunningBL implements IDunningBL
 {
@@ -350,5 +353,25 @@ public class DunningBL implements IDunningBL
 
 		// DunningDate < DunningGrace => candidate is no longer valid
 		return true;
+	}
+	
+
+	@Override
+	public I_C_Dunning_Candidate getLastLevelCandidate(final List<I_C_Dunning_Candidate> candidates)
+	{
+		Check.errorIf(candidates.isEmpty(), "Error: No candidates selected.");
+
+		I_C_Dunning_Candidate result = candidates.get(0);
+		BigDecimal maxDaysAfterDue = result.getC_DunningLevel().getDaysAfterDue();
+
+		for (final I_C_Dunning_Candidate candidate : candidates)
+		{
+			if (maxDaysAfterDue.compareTo(candidate.getC_DunningLevel().getDaysAfterDue()) < 0)
+			{
+				result = candidate;
+				maxDaysAfterDue = candidate.getC_DunningLevel().getDaysAfterDue();
+			}
+		}
+		return result;
 	}
 }

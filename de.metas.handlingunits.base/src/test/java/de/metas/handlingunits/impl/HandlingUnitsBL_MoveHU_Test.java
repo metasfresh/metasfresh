@@ -125,7 +125,7 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		//
 		// Start the model interceptor (which is generating the trx lines)
 		Services.get(IModelInterceptorRegistry.class)
-				.addModelInterceptor(new de.metas.handlingunits.model.validator.M_HU());
+				.addModelInterceptor(de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE);
 
 		//
 		// Change VHU's locator
@@ -133,13 +133,12 @@ public class HandlingUnitsBL_MoveHU_Test extends AbstractHUTest
 		final Date dateTrx = TimeUtil.getDay(1993, 10, 10);
 		Services.get(ITrxManager.class).run(new TrxRunnable()
 		{
-
 			@Override
 			public void run(String localTrxName) throws Exception
 			{
 				InterfaceWrapperHelper.setTrxName(vhu, localTrxName);
 
-				try (ITemporaryDateTrx dateTrxTmp = IHUContext.DateTrxProvider.temporarySet(dateTrx))
+				try (final ITemporaryDateTrx dateTrxTmp = IHUContext.DateTrxProvider.temporarySet(dateTrx))
 				{
 					vhu.setM_Locator(locator2);
 					InterfaceWrapperHelper.save(vhu);

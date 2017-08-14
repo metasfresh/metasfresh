@@ -1,5 +1,9 @@
 package de.metas.invoicecandidate.api.impl;
 
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,15 +17,14 @@ package de.metas.invoicecandidate.api.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -36,7 +39,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -214,7 +216,7 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 	}
 
 	/**
-	 * Test: Invoice candidadates with discount
+	 * Test: Invoice candidates with discount
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
 	 */
@@ -225,7 +227,6 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 
 		final Properties ctx = Env.getCtx();
 		final String trxName = Trx.createTrxName();
-		;
 
 		final I_C_BPartner bpartner = bpartner("test-bp");
 
@@ -269,15 +270,14 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final BigDecimal discount2After = ic2.getDiscount();
 		final BigDecimal discount_override2After = ic2.getDiscount_Override();
 
-		Check.assume(discount1.compareTo(discount1After) == 0, "Discount is not the same with discount after update", ic1.getDescription());
-		Check.assume(discount_override1.compareTo(Env.ZERO) == 0, "Discount Override should be null!");
-		Check.assume(discount_override1After.compareTo(Env.ZERO) == 0, "Discount Override should be null!");
-
+		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
+		assertThat(discount_override1, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount_override1After, comparesEqualTo(BigDecimal.ZERO));
+		
 		//
-		Check.assume(discount2.compareTo(discount2After) == 0, "Discount is not the same with discount after update", ic2.getDescription());
-		Check.assume(discount_override2.compareTo(Env.ZERO) == 0, "Discount Override should be null!");
-		Check.assume(discount_override2After.compareTo(Env.ZERO) == 0, "Disocunt Override should be null!");
-
+		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));
+		assertThat(discount_override2, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount_override2After, comparesEqualTo(BigDecimal.ZERO));
 	}
 
 	/**
@@ -365,14 +365,13 @@ public class InvoiceCandBLCreateInvoicesTest extends AbstractICTestSupport
 		final BigDecimal discount2After = ic2.getDiscount();
 		final BigDecimal discount_override2After = ic2.getDiscount_Override();
 
-		Assert.assertThat("Discount is not the same with discount after update; ic: " + ic1.getDescription(),
-				discount1After, Matchers.comparesEqualTo(discount1));
-		Check.assume(discount_override1.compareTo(Env.ZERO) != 0, "Discount Override should not be null!");
-		Check.assume(discount_override1After.compareTo(Env.ZERO) != 0, "Discount Override should not be null!");
-
-		Check.assume(discount2.compareTo(discount2After) == 0, "Discount is not the same with discount after update; ic: " + ic2.getDescription());
-		Check.assume(discount_override2.compareTo(Env.ZERO) == 0, "Discount Override should be null!");
-		Check.assume(discount_override2After.compareTo(Env.ZERO) == 0, "Disocunt Override should be null!");
-
+		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic1.getDescription(), discount1After, comparesEqualTo(discount1));
+		assertThat(discount_override1, not(comparesEqualTo(BigDecimal.ZERO)));
+		assertThat(discount_override1After, not(comparesEqualTo(BigDecimal.ZERO)));
+		
+		//
+		assertThat("Discount is not the same with discount after update; ic.getdescription()=" + ic2.getDescription(), discount2After, comparesEqualTo(discount2));
+		assertThat(discount_override2, comparesEqualTo(BigDecimal.ZERO));
+		assertThat(discount_override2After, comparesEqualTo(BigDecimal.ZERO));
 	}
 }

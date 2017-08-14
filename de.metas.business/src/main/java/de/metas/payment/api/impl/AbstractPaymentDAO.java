@@ -30,17 +30,20 @@ import java.util.Properties;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.process.DocAction;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_PaySelectionLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -104,8 +107,8 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		// Exclude the entries that don't have either PayAmt or OverUnderAmt. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_Payment> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class).setJoinOr()
-				.addNotEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, Env.ZERO)
-				.addNotEqualsFilter(I_C_Payment.COLUMNNAME_OverUnderAmt, Env.ZERO);
+				.addNotEqualsFilter(I_C_Payment.COLUMNNAME_PayAmt, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_C_Payment.COLUMNNAME_OverUnderAmt, BigDecimal.ZERO);
 
 		queryBuilder.filter(nonZeroFilter);
 
@@ -113,5 +116,51 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.create()
 				.list();
 
+	}
+	
+	@Override
+	public List<I_C_Payment> retrievePayments(de.metas.adempiere.model.I_C_Invoice invoice)
+	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
+		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
+		
+		
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_C_Payment> queryBuilder = queryBL.createQueryBuilder(I_C_Payment.class, ctx, trxName)
+				.addOnlyActiveRecordsFilter();
+
+		final boolean isReceipt = invoice.isSOTrx();
+		
+		queryBuilder
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID()) // C_BPartner_ID
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_Processed, true) // Processed
+				.addInArrayOrAllFilter(I_C_Payment.COLUMN_DocStatus, DocAction.STATUS_Closed, DocAction.STATUS_Completed)  // DocStatus in ('CO', 'CL')
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, isReceipt); // Matching DocType
+				
+	
+		final IQuery<I_C_AllocationLine> allocationsQuery = queryBL.createQueryBuilder(I_C_AllocationLine.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.create();
+
+		final IQueryFilter<I_C_Payment> allocationFilter = queryBL.createCompositeQueryFilter(I_C_Payment.class)
+				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, allocationsQuery);
+		
+
+		final ICompositeQueryFilter<I_C_Payment> linkedPayments = queryBL.createCompositeQueryFilter(I_C_Payment.class).setJoinOr()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.addFilter(allocationFilter);
+
+		queryBuilder.filter(linkedPayments);			
+
+		// ordering by DocumentNo
+		final IQueryOrderBy orderBy = queryBuilder.orderBy().addColumn(I_C_Payment.COLUMNNAME_DocumentNo).createQueryOrderBy();
+		
+		return queryBuilder
+				.create()
+				.setOrderBy(orderBy)
+				.list();
+		
 	}
 }

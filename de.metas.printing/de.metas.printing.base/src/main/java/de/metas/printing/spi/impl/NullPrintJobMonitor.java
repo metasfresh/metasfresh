@@ -25,7 +25,6 @@ package de.metas.printing.spi.impl;
 
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.spi.IPrintJobBatchMonitor;
-import de.metas.printing.spi.IPrintJobMonitor;
 
 /**
  * Null Monitor. A monitor which is doing nothing (pass-through).
@@ -33,7 +32,7 @@ import de.metas.printing.spi.IPrintJobMonitor;
  * @author tsa
  * 
  */
-public final class NullPrintJobMonitor implements IPrintJobMonitor
+public final class NullPrintJobMonitor extends AbstractPrintJobMonitor
 {
 	private final static IPrintJobBatchMonitor NULL_BATCH_MONITOR = new IPrintJobBatchMonitor()
 	{

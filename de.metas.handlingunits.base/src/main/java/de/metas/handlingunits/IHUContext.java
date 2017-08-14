@@ -29,11 +29,14 @@ import org.adempiere.model.IContextAware;
 
 import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /**
- * Immutable Handling Unit Context. Implementations do not propagate anything back to the database. It is supposed to be used to pass already loaded things, transaction names etc. Will be extended as
+ * Immutable Handling Unit Context. Use {@link IHUContextFactory} to create an instance. 
+ * <p>
+ * Implementations do not propagate anything back to the database. It is supposed to be used to pass already loaded things, transaction names etc. Will be extended as
  * required in future (e.g. to also pass on options).
  *
  * @author tsa
@@ -47,11 +50,6 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	 * By default, it's returning the system date, but if you want to temporary override it, use {@link HUContextDateTrxProvider#temporarySet(Date)}.
 	 */
 	HUContextDateTrxProvider DateTrxProvider = new HUContextDateTrxProvider();
-	
-	/**
-	 * {@link IHUContext} null marker.
-	 */
-	IHUContext NULL = null;
 
 	String PROPERTY_Configured = "Configured";
 	

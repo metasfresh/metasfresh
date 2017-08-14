@@ -6,6 +6,7 @@ package de.metas.email.impl;
 import java.util.List;
 import java.util.Properties;
 
+import javax.annotation.Nullable;
 import javax.mail.internet.InternetAddress;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -14,6 +15,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.email.EmailValidator;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
@@ -96,7 +98,7 @@ public class MailBL implements IMailBL
 				{
 					log.debug("Found: {} => {}", toString(config), mailbox);
 				}
-				
+
 				return mailbox;
 			}
 		}
@@ -162,7 +164,7 @@ public class MailBL implements IMailBL
 		Check.assumeNotNull(mailbox, "Param 'mailbox' is not null");
 
 		if (mailbox.getEmail() == null
-				//|| mailbox.getUsername() == null
+				// || mailbox.getUsername() == null
 				// is SMTP authorization and password is null - teo_sarca [ 1723309 ]
 				|| mailbox.isSmtpAuthorization() && mailbox.getPassword() == null)
 		{
@@ -222,7 +224,7 @@ public class MailBL implements IMailBL
 	public void send(final EMail email)
 	{
 		final EMailSentStatus sentStatus = email.send();
-		if(!sentStatus.isSentOK())
+		if (!sentStatus.isSentOK())
 		{
 			throw new EMailSendException(sentStatus);
 		}
@@ -258,5 +260,15 @@ public class MailBL implements IMailBL
 			throw new AdempiereException("@Notfound@ @R_MailText_ID@=" + R_MailText_ID);
 		}
 		return MailTextBuilder.of(mailTextDef);
+	}
+
+	@Override
+	public void validateEmail(@Nullable final String email)
+	{
+		if (!Check.isEmpty(email, true) && !EmailValidator.validate(email))
+		{
+			throw new AdempiereException("@EmailNotValid@");
+
+		}
 	}
 }

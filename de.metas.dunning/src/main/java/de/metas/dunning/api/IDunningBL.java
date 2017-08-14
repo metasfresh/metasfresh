@@ -41,6 +41,9 @@ public interface IDunningBL extends ISingletonService
 {
 	String EVENT_NewDunningCandidate = IDunningBL.class.getName() + "#NewDunningCandidate";
 
+	public static final String MSG_PAID = "Paid";
+	public static final String MSG_OPEN = "Open";
+	
 	void setDunningConfigurator(IDunningConfigurator configurator);
 
 	IDunningConfig getDunningConfig();
@@ -120,4 +123,6 @@ public interface IDunningBL extends ISingletonService
 	 * @return true if candidate is expired.
 	 */
 	boolean isExpired(I_C_Dunning_Candidate candidate, Timestamp dunningGraceDate);
+	
+	I_C_Dunning_Candidate getLastLevelCandidate(List<I_C_Dunning_Candidate> candidates);
 }

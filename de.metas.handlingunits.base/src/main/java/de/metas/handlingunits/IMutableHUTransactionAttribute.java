@@ -28,6 +28,7 @@ import java.util.Date;
 
 import org.compiere.model.I_M_Attribute;
 
+import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 

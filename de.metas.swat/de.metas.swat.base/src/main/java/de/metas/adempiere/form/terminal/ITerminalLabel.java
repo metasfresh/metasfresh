@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package de.metas.adempiere.form.terminal;
 
@@ -24,13 +24,9 @@ package de.metas.adempiere.form.terminal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import java.awt.Color;
-
 /**
  * @author tsa
- * 
+ *
  */
 public interface ITerminalLabel extends IComponent
 {
@@ -41,8 +37,4 @@ public interface ITerminalLabel extends IComponent
 	String getLabel();
 
 	void setFont(float size);
-
-	void setBackgroundColor(Color color);
-
-	Color getBackgroundColor();
 }

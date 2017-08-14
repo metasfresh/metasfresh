@@ -1,18 +1,18 @@
 /******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
+ * Product: Adempiere ERP & CRM Smart Business Solution *
+ * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
+ * This program is free software; you can redistribute it and/or modify it *
+ * under the terms version 2 of the GNU General Public License as published *
+ * by the Free Software Foundation. This program is distributed in the hope *
  * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
+ * See the GNU General Public License for more details. *
+ * You should have received a copy of the GNU General Public License along *
+ * with this program; if not, write to the Free Software Foundation, Inc., *
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
+ * For the text or an alternative of this public license, you may reach us *
+ * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
+ * or via info@compiere.org or http://www.compiere.org/license.html *
  *****************************************************************************/
 package org.compiere.apps;
 
@@ -28,22 +28,23 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
-import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.images.Images;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pdf.Document;
 import org.adempiere.pdf.viewer.PDFViewerBean;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Attachment;
-import org.compiere.model.MAttachment;
-import org.compiere.model.MAttachmentEntry;
 import org.compiere.model.MSysConfig;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CComboBox;
@@ -53,77 +54,39 @@ import org.compiere.swing.CTextArea;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
-import org.slf4j.Logger;
+
+import com.google.common.io.Files;
 
 import de.metas.adempiere.Constants;
 import de.metas.adempiere.form.IClientUI;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.IAttachmentDAO;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-import de.metas.logging.LogManager;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
- *  Attachment Viewer
+ * Attachment Viewer
  *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: Attachment.java,v 1.4 2006/08/10 01:00:27 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: Attachment.java,v 1.4 2006/08/10 01:00:27 jjanke Exp $
  */
-public final class Attachment extends CDialog
-	implements ActionListener
+public final class Attachment extends CDialog implements ActionListener
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2497487523050526742L;
+	private static final long serialVersionUID = -5525529223484103376L;
+	
+	// services
+	private static final Logger log = LogManager.getLogger(Attachment.class);
+	private final transient IAttachmentDAO attachmentsDAO = Services.get(IAttachmentDAO.class);
+	private final transient IAttachmentBL attachmentsBL = Services.get(IAttachmentBL.class);
 
-	/**
-	 *	Constructor.
-	 *	loads Attachment, if ID <> 0
-	 *  @param frame frame
-	 *  @param WindowNo window no
-	 *  @param AD_Attachment_ID attachment
-	 *  @param AD_Table_ID table
-	 *  @param Record_ID record key
-	 *  @param trxName transaction
-	 */
-	public Attachment(Frame frame, int WindowNo, int AD_Attachment_ID, int AD_Table_ID, int Record_ID)
-	{
-		super (frame, Msg.getMsg(Env.getCtx(), "Attachment"), true);
-		//	needs to be modal otherwise APanel does not recognize change.
-		log.info("ID=" + AD_Attachment_ID
-			+ ", Table=" + AD_Table_ID + ", Record=" + Record_ID);
-		//
-		m_WindowNo = WindowNo;
-		//
-		try
-		{
-			staticInit();
-		}
-		catch (Exception ex)
-		{
-			log.error("", ex);
-		}
-		
-		//	Load/Create Model
-		if (AD_Attachment_ID <= 0)
-		{
-			m_attachment = new MAttachment (Env.getCtx(), AD_Table_ID, Record_ID, ITrx.TRXNAME_None);
-		}
-		else
-		{
-			m_attachment = new MAttachment (Env.getCtx(), AD_Attachment_ID, ITrx.TRXNAME_None);
-		}
-		loadAttachments();
-	}	//	Attachment
-	
-	/**	Window No				*/
-	private int				m_WindowNo;
-	/** Attachment				*/
-	private MAttachment		m_attachment;
-	/** Change					*/
-	private boolean			m_change = false;
-	/**	Logger			*/
-	private static Logger log = LogManager.getLogger(Attachment.class);
-	
+	private final int m_WindowNo;
+	private final TableRecordReference _recordRef;
+
 	//
 	private CPanel mainPanel = new CPanel();
 	private CTextArea text = new CTextArea();
@@ -131,44 +94,76 @@ public final class Attachment extends CDialog
 	private CButton bSave = new CButton();
 	private CButton bLoad = new CButton();
 	private ConfirmPanel confirmPanel = ConfirmPanel.newWithOKAndCancel();
-	private CPanel toolBar = new CPanel(new FlowLayout(FlowLayout.LEADING, 5,5));
+	private CPanel toolBar = new CPanel(new FlowLayout(FlowLayout.LEADING, 5, 5));
 	private CButton bDelete = new CButton();
 	private CButton bDeleteAll = null;
-	private CComboBox<String> cbContent = new CComboBox<>();
+	private CComboBox<AttachmentEntryItem> cbAttachmentEntries = new CComboBox<>();
 	private JSplitPane centerPane = new JSplitPane();
 	//
 	private CPanel graphPanel = new CPanel(new BorderLayout());
 	private GImage gifPanel = new GImage();
-	private JScrollPane gifScroll = new JScrollPane (gifPanel);
-	
+	private JScrollPane gifScroll = new JScrollPane(gifPanel);
+
 	// metas: Document.getViewer() may burn a lot of time (Document's static
 	// initializer), so only use it when we have to.
-	private PDFViewerBean pdfViewer = null;	//Document.getViewer();
+	private PDFViewerBean pdfViewer = null;	// Document.getViewer();
 	private CTextArea info = new CTextArea();
 
 	/**
-	 *	Static setup.
-	 *  <pre>
-	 *  - northPanel
-	 *      - toolBar
-	 *      - title
-	 *  - centerPane [split]
-	 * 		- graphPanel (left)
-	 *		  	- gifScroll - gifPanel
-	 *			- pdfViewer
-	 *  	- text (right)
-	 *  - confirmPanel
-	 *  </pre>
-	 *  @throws Exception
+	 * Constructor.
+	 * loads Attachment, if ID <> 0
+	 * 
+	 * @param frame frame
+	 * @param WindowNo window no
+	 * @param AD_Attachment_ID attachment
+	 * @param AD_Table_ID table
+	 * @param Record_ID record key
+	 * @param trxName transaction
 	 */
-	void staticInit() throws Exception
+	public Attachment(final Frame frame, final int WindowNo, final int AD_Attachment_ID_NOTUSED, final int AD_Table_ID, final int Record_ID)
+	{
+		super(
+				frame, // parent frame
+				Services.get(IMsgBL.class).getMsg(Env.getCtx(), "Attachment"), // title
+				true // needs to be modal otherwise APanel does not recognize change.
+		);
+
+		//
+		m_WindowNo = WindowNo;
+		_recordRef = TableRecordReference.of(AD_Table_ID, Record_ID);
+
+		staticInit();
+		loadAttachments();
+	}
+	
+	private TableRecordReference getRecord()
+	{
+		return _recordRef;
+	}
+
+	/**
+	 * Static setup.
+	 * 
+	 * <pre>
+	 * -northPanel
+	 * 		- toolBar
+	 * 		- title
+	 * 		- centerPane[split]
+	 * 		- graphPanel(left)
+	 * 		- gifScroll - gifPanel
+	 * 		- pdfViewer
+	 * 		- text(right)
+	 * 		- confirmPanel
+	 * </pre>
+	 */
+	void staticInit()
 	{
 		final BorderLayout mainLayout = new BorderLayout();
 		mainPanel.setLayout(mainLayout);
 		mainLayout.setHgap(5);
 		mainLayout.setVgap(5);
 		this.getContentPane().add(mainPanel);
-		
+
 		final CPanel northPanel = new CPanel();
 		northPanel.setLayout(new BorderLayout());
 		northPanel.add(toolBar, BorderLayout.CENTER);
@@ -176,7 +171,7 @@ public final class Attachment extends CDialog
 		toolBar.add(bDelete);
 		toolBar.add(bSave);
 		toolBar.add(bOpen);
-		toolBar.add(cbContent);
+		toolBar.add(cbAttachmentEntries);
 		mainPanel.add(northPanel, BorderLayout.NORTH);
 
 		//
@@ -202,12 +197,12 @@ public final class Attachment extends CDialog
 		bDelete.setToolTipText(Msg.getMsg(Env.getCtx(), "Delete"));
 		bDelete.addActionListener(this);
 		//
-		Dimension size = cbContent.getPreferredSize();
+		Dimension size = cbAttachmentEntries.getPreferredSize();
 		size.width = 200;
-		cbContent.setPreferredSize(size);
-	//	cbContent.setToolTipText(text);
-		cbContent.addActionListener(this);
-		cbContent.setLightWeightPopupEnabled(false);	//	Acrobat Panel is heavy
+		cbAttachmentEntries.setPreferredSize(size);
+		// cbAttachmentEntries.setToolTipText(text);
+		cbAttachmentEntries.addActionListener(this);
+		cbAttachmentEntries.setLightWeightPopupEnabled(false);	// Acrobat Panel is heavy
 		//
 		text.setBackground(AdempierePLAF.getInfoBackground());
 		text.setPreferredSize(new Dimension(200, 200));
@@ -226,63 +221,65 @@ public final class Attachment extends CDialog
 		mainPanel.add(centerPane, BorderLayout.CENTER);
 		centerPane.add(graphPanel, JSplitPane.LEFT);
 		centerPane.add(text, JSplitPane.RIGHT);
-		centerPane.setResizeWeight(.75);	//	more to graph
-	}	//	jbInit
+		centerPane.setResizeWeight(.75);	// more to graph
+	}	// jbInit
 
-	
 	/**
-	 * 	Dispose
+	 * Dispose
 	 */
 	@Override
 	public void dispose()
 	{
 		pdfViewer = null;
-		super.dispose ();
-	}	//	dispose
-	
-	
+		super.dispose();
+	}	// dispose
+
 	@Override
 	public void requestFocus()
 	{
-		if(text != null)
+		if (text != null)
 		{
 			text.requestFocus();
 		}
 	}
-	
+
 	/**
-	 *	Load Attachments
+	 * Load Attachments
 	 */
 	private void loadAttachments()
 	{
-		log.info("");
-		//	Set Text/Description
-		String sText = m_attachment.getTextMsg();
+		// Set Text/Description
+		final I_AD_Attachment attachment = attachmentsBL.getAttachment(getRecord());
+		final String sText = attachment.getTextMsg();
 		if (sText == null)
 			text.setText("");
 		else
-			text.setText(sText);
+			text.setText(sText.trim());
 
-		//	Set Combo
-		int size = m_attachment.getEntryCount();
-		for (int i = 0; i < size; i++)
-			cbContent.addItem(m_attachment.getEntryName(i));
-		if (size > 0)
-			cbContent.setSelectedIndex(0);
+		// Set attachment entries combo
+		final List<AttachmentEntry> attachmentEntries = attachmentsBL.getEntries(attachment);
+		for (AttachmentEntry entry : attachmentEntries)
+		{
+			cbAttachmentEntries.addItem(AttachmentEntryItem.of(entry));
+		}
+		if (!attachmentEntries.isEmpty())
+		{
+			cbAttachmentEntries.setSelectedIndex(0);
+		}
 		else
-			displayData(0);
-	}	//	loadAttachment
+		{
+			displayData(null);
+		}
+	}
 
 	/**
-	 *  Display gif or jpg in gifPanel
-	 * 	@param index index
+	 * Display gif or jpg in gifPanel
+	 * 
+	 * @param entryItem
 	 */
-	private void displayData (final int index)
+	private void displayData(@Nullable final AttachmentEntryItem entryItem)
 	{
-		MAttachmentEntry entry = m_attachment.getEntry(index); 
-		log.info("Index=" + index + " - " + entry);
-		
-		//	Reset UI
+		// Reset UI
 		gifPanel.setImage(null);
 		graphPanel.removeAll();
 		//
@@ -290,7 +287,9 @@ public final class Attachment extends CDialog
 		bOpen.setEnabled(false);
 		bSave.setEnabled(false);
 
-		//	no attachment
+		final AttachmentEntry entry = entryItem != null ? attachmentsBL.getEntryById(getRecord(), entryItem.getAttachmentEntryId()) : null;
+
+		// no attachment
 		if (entry == null || entry.getData() == null)
 		{
 			info.setText("-");
@@ -300,35 +299,40 @@ public final class Attachment extends CDialog
 			bOpen.setEnabled(true);
 			bSave.setEnabled(true);
 			bDelete.setEnabled(true);
-			log.info(entry.toStringX());
 			//
 			info.setText(entry.toStringX());
-			if (entry.isPDF()) {
-				
+			if (entry.isPDF())
+			{
+
 				// metas: get the viewer when we need it
-				if (pdfViewer == null) {
+				if (pdfViewer == null)
+				{
 					pdfViewer = Document.getViewer();
 				}
-				if (pdfViewer != null) {
+				if (pdfViewer != null)
+				{
 
-					try {
+					try
+					{
 						pdfViewer.loadPDF(entry.getInputStream());
 						pdfViewer.setScale(50);
 						//
 						graphPanel.add(pdfViewer, BorderLayout.CENTER);
-						
+
 						pdfViewer.invalidate();
 						pdfViewer.revalidate();
 						pdfViewer.repaint(50L);
-						
-					} catch (Exception e) {
+
+					}
+					catch (Exception e)
+					{
 						log.error("(pdf)", e);
 					}
 				}
 			}
 			else if (entry.isGraphic())
 			{
-				//  Can we display it
+				// Can we display it
 				final Image image = Toolkit.getDefaultToolkit().createImage(entry.getData());
 				if (image != null)
 				{
@@ -341,11 +345,11 @@ public final class Attachment extends CDialog
 					}
 					else
 					{
-						//	size.width += 40;
-						//	size.height += 40;
+						// size.width += 40;
+						// size.height += 40;
 						gifPanel.invalidate();
 						graphPanel.add(gifScroll, BorderLayout.CENTER);
-						
+
 						graphPanel.invalidate();
 						graphPanel.revalidate();
 						graphPanel.repaint(50L);
@@ -359,30 +363,17 @@ public final class Attachment extends CDialog
 		{
 			graphPanel.add(info, BorderLayout.CENTER);
 		}
-		
+
 		graphPanel.repaint(50L); // timeout before update (millis)
-	}   //  displayData
-
-
-	/**
-	 * 	Get File Name with index
-	 *	@param index index
-	 *	@return file name or null
-	 */
-	private String getFileName (int index)
-	{
-		String fileName = null;
-		if (cbContent.getItemCount() > index)
-			fileName = cbContent.getItemAt(index);
-		return fileName;
-	}	//	getFileName
+	}   // displayData
 
 	/**
-	 *	Action Listener
-	 *  @param event event
+	 * Action Listener
+	 * 
+	 * @param event event
 	 */
 	@Override
-	public void actionPerformed(ActionEvent event)
+	public void actionPerformed(final ActionEvent event)
 	{
 		try
 		{
@@ -393,70 +384,61 @@ public final class Attachment extends CDialog
 			Services.get(IClientUI.class).error(m_WindowNo, ex);
 		}
 	}
-	
+
 	private void actionPerformed0(final ActionEvent event)
 	{
-		//	Save and Close
+		// Save and Close
 		if (event.getActionCommand().equals(ConfirmPanel.A_OK))
 		{
-			final String newText = Util.coalesce(text.getText(), "");
-			final String oldText = Util.coalesce(m_attachment.getTextMsg(), "");
-			if (!m_change)
-				m_change = !newText.equals(oldText);
-			if (newText.length() > 0 || m_attachment.getEntryCount() > 0)
+
+			if (!attachmentsBL.hasEntries(getRecord()))
 			{
-				if (m_change)
-				{
-					m_attachment.markColumnChanged(I_AD_Attachment.COLUMNNAME_TextMsg); // force saving
-					m_attachment.setTextMsg(text.getText());
-					InterfaceWrapperHelper.save(m_attachment);;
-				}
+				attachmentsBL.deleteAttachment(getRecord());
 			}
 			else
 			{
-				InterfaceWrapperHelper.delete(m_attachment);
+				final String newText = Util.coalesce(text.getText(), "");
+				attachmentsBL.setAttachmentText(getRecord(), newText);
 			}
-			
+
 			dispose();
 		}
-		//	Cancel
+		// Cancel
 		else if (event.getActionCommand().equals(ConfirmPanel.A_CANCEL))
 		{
 			dispose();
 		}
-		//	Delete Attachment
+		// Delete Attachment
 		else if (event.getSource() == bDeleteAll)
 		{
-			if (deleteAttachment()) // metas: tsa:  US1115: dispose only if the user confirmed deletion
+			if (deleteAttachment()) // metas: tsa: US1115: dispose only if the user confirmed deletion
 				dispose();
 		}
-		//	Delete individual entry and Return
+		// Delete individual entry and Return
 		else if (event.getSource() == bDelete)
 			deleteAttachmentEntry();
-		//	Show Data
-		else if (event.getSource() == cbContent)
-			displayData (cbContent.getSelectedIndex());
-		//	Load Attachment
+		// Show Data
+		else if (event.getSource() == cbAttachmentEntries)
+			displayData(cbAttachmentEntries.getSelectedItem());
+		// Load Attachment
 		else if (event.getSource() == bLoad)
 			loadFile();
-		//	Open Attachment
+		// Open Attachment
 		else if (event.getSource() == bSave)
 			saveAttachmentToFile();
-		//	Open Attachment
+		// Open Attachment
 		else if (event.getSource() == bOpen)
 		{
 			if (!openAttachment())
 				saveAttachmentToFile();
 		}
-	}	//	actionPerformed
+	}	// actionPerformed
 
-	
 	/**************************************************************************
-	 *	Load file for attachment
+	 * Load file for attachment
 	 */
 	private void loadFile()
 	{
-		log.info("");
 		JFileChooser chooser = new JFileChooser();
 		chooser.setDialogType(JFileChooser.OPEN_DIALOG);
 		chooser.setDialogTitle(Msg.getMsg(Env.getCtx(), "AttachmentNew"));
@@ -464,154 +446,192 @@ public final class Attachment extends CDialog
 		int returnVal = chooser.showOpenDialog(this);
 		if (returnVal != JFileChooser.APPROVE_OPTION)
 			return;
-		//
-		File[] files = chooser.getSelectedFiles();
-		for (File file : files) {
-			int cnt = m_attachment.getEntryCount();
-			
-			//update
-			boolean add = true;
-			for (int i = 0; i < cnt; i++) 
-			{
-				if (m_attachment.getEntryName(i).equals(file.getName()))
-				{
-					if (m_attachment.updateEntry(i, file)) 
-					{
-						cbContent.setSelectedItem(file.getName());
-						m_change = true;
-					}
-					add = false;
-					break;
-				}
-			}
 
-			if (add)
+		//
+		final File[] files = chooser.getSelectedFiles();
+		for (final File file : files)
+		{
+			final I_AD_Attachment attachment = attachmentsBL.getAttachment(getRecord());
+			final AttachmentEntry existingEntry = attachmentsBL.getEntryByFilename(attachment, file.getName());
+			if (existingEntry != null)
 			{
-				//new
-				if (m_attachment.addEntry(file))
-				{
-					cbContent.addItem(file.getName());
-					cbContent.setSelectedIndex(cbContent.getItemCount()-1);
-					m_change = true;
-				}
+				final byte[] data = Util.readBytes(file);
+				existingEntry.setData(data);
+				attachmentsDAO.saveAttachmentEntry(attachment, existingEntry);
+			}
+			else
+			{
+				final AttachmentEntry newEntry = attachmentsBL.addEntry(attachment, file);
+				// m_change = true; // not needed because it's already saved
+
+				final AttachmentEntryItem newEntryItem = AttachmentEntryItem.of(newEntry);
+				cbAttachmentEntries.addItem(newEntryItem);
+				cbAttachmentEntries.setSelectedItem(newEntryItem);
 			}
 		}
-	}	//	getFileName
+	}	// getFileName
 
 	/**
-	 *	Delete entire Attachment
+	 * Delete entire Attachment
+	 * 
 	 * @return true if attachment was deleted (i.e. user confirmed)
 	 */
-	// metas: tsa:  US1115: changed the return type from void to boolean; true if user confirmed the deletion
+	// metas: tsa: US1115: changed the return type from void to boolean; true if user confirmed the deletion
 	private boolean deleteAttachment()
 	{
-		log.info("");
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDelete?"))
 		{
-			m_attachment.delete(true);
+			attachmentsBL.deleteAttachment(getRecord());
 			return true;
 		}
 		return false;
-	}	//	deleteAttachment
+	}	// deleteAttachment
 
 	/**
-	 *	Delete Attachment Entry
+	 * Delete Attachment Entry
 	 */
 	private void deleteAttachmentEntry()
 	{
-		log.info("");
-		int index = cbContent.getSelectedIndex();
-		String fileName = getFileName(index);
-		if (fileName == null)
+		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
+		if (entryItem == null)
 			return;
 		//
-		if (ADialog.ask(m_WindowNo, this, "AttachmentDeleteEntry?", fileName))
+		if (ADialog.ask(m_WindowNo, this, "AttachmentDeleteEntry?", entryItem.getDisplayName()))
 		{
-			if (m_attachment.deleteEntry(index))
-				cbContent.removeItemAt(index);
-			m_change = true;
+			attachmentsBL.deleteEntryById(getRecord(), entryItem.getAttachmentEntryId());
+			cbAttachmentEntries.removeItem(entryItem);
 		}
-	}	//	deleteAttachment
-
+	}
 
 	/**
-	 *	Save Attachment to File
+	 * Save Attachment to File
 	 */
 	private void saveAttachmentToFile()
 	{
-		int index = cbContent.getSelectedIndex();
-		log.info("index=" + index);
-		if (m_attachment.getEntryCount() < index)
+		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
+		if (entryItem == null)
+		{
 			return;
+		}
 
-		String fileName = getFileName(index);
-		String ext = fileName.substring (fileName.lastIndexOf('.'));
-		log.info( "Ext=" + ext);
-
-		JFileChooser chooser = new JFileChooser();
+		final JFileChooser chooser = new JFileChooser();
 		chooser.setDialogType(JFileChooser.SAVE_DIALOG);
 		chooser.setDialogTitle(Msg.getMsg(Env.getCtx(), "AttachmentSave"));
-		File f = new File(fileName);
-		chooser.setSelectedFile(f);
-		//	Show dialog
-		int returnVal = chooser.showSaveDialog(this);
-		if (returnVal != JFileChooser.APPROVE_OPTION)
+		final File file = new File(entryItem.getFilename());
+		chooser.setSelectedFile(file);
+		// Show dialog
+		if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
+		{
 			return;
-		File saveFile = chooser.getSelectedFile();
+		}
+
+		final File saveFile = chooser.getSelectedFile();
 		if (saveFile == null)
 			return;
 
-		log.info("Save to " + saveFile.getAbsolutePath());
-		m_attachment.getEntryFile(index, saveFile);
-	}	//	saveAttachmentToFile
+		final byte[] data = attachmentsBL.getEntryByIdAsBytes(getRecord(), entryItem.getAttachmentEntryId());
+		try
+		{
+			Files.write(data, saveFile);
+		}
+		catch (IOException ex)
+		{
+			throw new AdempiereException("Failed saving file: " + saveFile, ex);
+		}
+	}	// saveAttachmentToFile
 
 	/**
-	 *	Open the temporary file with the application associated with the extension in the file name
-	 *	@return true if file was opened with third party application
+	 * Open the temporary file with the application associated with the extension in the file name
+	 * 
+	 * @return true if file was opened with third party application
 	 */
-	private boolean openAttachment ()
-    {
-        int index = cbContent.getSelectedIndex();
-        byte[] data = m_attachment.getEntryData(index);
-        if (data == null)
-            return false;
-        
-        try 
-        {
-            String fileName = System.getProperty("java.io.tmpdir") +
-					System.getProperty("file.separator") +
-					m_attachment.getEntryName(index);
-            File tempFile = new File(fileName);
-            m_attachment.getEntryFile(index, tempFile);
-        
-            if (Env.isWindows())
-            {
-            //	Runtime.getRuntime().exec ("rundll32 url.dll,FileProtocolHandler " + url);
-                Process p = Runtime.getRuntime().exec("rundll32 SHELL32.DLL,ShellExec_RunDLL \"" + tempFile + "\"");
-            //	p.waitFor();
-                return true;
-            }
-            else if (Env.isMac())
-            {
-            	String [] cmdArray = new String [] {"open", tempFile.getAbsolutePath()};
-            	Process p = Runtime.getRuntime ().exec (cmdArray);
-            //	p.waitFor();
-                return true;
-            }
-            else	//	other OS
-            {
-            }
-        } 
-        catch (Exception e) 
-        {
-        	log.error("", e);
-        }
-        return false;
-    }    //    openFile
+	private boolean openAttachment()
+	{
+		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
+		final byte[] data = attachmentsBL.getEntryByIdAsBytes(getRecord(), entryItem.getAttachmentEntryId());
+		if (data == null)
+			return false;
 
-	
+		try
+		{
+			final String fileName = System.getProperty("java.io.tmpdir") +
+					System.getProperty("file.separator") +
+					entryItem.getFilename();
+			final File tempFile = new File(fileName);
+
+			Files.write(data, tempFile);
+
+			if (Env.isWindows())
+			{
+				// Runtime.getRuntime().exec ("rundll32 url.dll,FileProtocolHandler " + url);
+				Process p = Runtime.getRuntime().exec("rundll32 SHELL32.DLL,ShellExec_RunDLL \"" + tempFile + "\"");
+				// p.waitFor();
+				return true;
+			}
+			else if (Env.isMac())
+			{
+				String[] cmdArray = new String[] { "open", tempFile.getAbsolutePath() };
+				Process p = Runtime.getRuntime().exec(cmdArray);
+				// p.waitFor();
+				return true;
+			}
+			else	// other OS
+			{
+			}
+		}
+		catch (Exception e)
+		{
+			log.error("", e);
+		}
+		return false;
+	}    // openFile
+
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	@Getter
+	private static final class AttachmentEntryItem
+	{
+		public static final AttachmentEntryItem of(AttachmentEntry entry)
+		{
+			return new AttachmentEntryItem(entry.getId(), entry.getName(), entry.getFilename());
+		}
+
+		private final int attachmentEntryId;
+		private final String displayName;
+		private final String filename;
+
+		@Override
+		public String toString()
+		{
+			return displayName;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return attachmentEntryId;
+		}
+		
+		@Override
+		public boolean equals(Object obj)
+		{
+			if(this == obj)
+			{
+				return true;
+			}
+			if(obj instanceof AttachmentEntryItem)
+			{
+				final AttachmentEntryItem other = (AttachmentEntryItem)obj;
+				return attachmentEntryId == other.attachmentEntryId;
+			}
+			else
+			{
+				return false;
+			}
+		}
+	}
+
 	/**************************************************************************
-	 *  Graphic Image Panel
+	 * Graphic Image Panel
 	 */
 	class GImage extends JPanel
 	{
@@ -621,21 +641,22 @@ public final class Attachment extends CDialog
 		private static final long serialVersionUID = 4991225210651641722L;
 
 		/**
-		 *  Graphic Image
+		 * Graphic Image
 		 */
 		public GImage()
 		{
 			super();
-		}   //  GImage
+		}   // GImage
 
-		/** The Image           */
-		private Image 			m_image = null;
+		/** The Image */
+		private Image m_image = null;
 
 		/**
-		 *  Set Image
-		 *  @param image image
+		 * Set Image
+		 * 
+		 * @param image image
 		 */
-		public void setImage (Image image)
+		public void setImage(Image image)
 		{
 			m_image = image;
 			if (m_image == null)
@@ -643,43 +664,39 @@ public final class Attachment extends CDialog
 
 			MediaTracker mt = new MediaTracker(this);
 			mt.addImage(m_image, 0);
-			try {
+			try
+			{
 				mt.waitForID(0);
-			} catch (Exception e) {}
+			}
+			catch (Exception e)
+			{
+			}
 			Dimension dim = new Dimension(m_image.getWidth(this), m_image.getHeight(this));
 			this.setPreferredSize(dim);
-		}   //  setImage
+		}   // setImage
 
 		/**
-		 *  Paint
-		 *  @param g graphics
+		 * Paint
+		 * 
+		 * @param g graphics
 		 */
 		@Override
-		public void paint (Graphics g)
+		public void paint(Graphics g)
 		{
 			Insets in = getInsets();
 			if (m_image != null)
 				g.drawImage(m_image, in.left, in.top, this);
-		}   //  paint
+		}   // paint
 
 		/**
-		 *  Update
-		 *  @param g graphics
+		 * Update
+		 * 
+		 * @param g graphics
 		 */
 		@Override
-		public void update (Graphics g)
+		public void update(Graphics g)
 		{
 			paint(g);
-		}   //  update
-	}	//	GImage
-
-	
-	/**
-	 * 	Test PDF Viewer
-	 *	@param args ignored
-	 */
-	public static void main (String[] args)
-	{
-	}	//	main
-	
-}	//	Attachment
+		}   // update
+	}	// GImage
+}	// Attachment

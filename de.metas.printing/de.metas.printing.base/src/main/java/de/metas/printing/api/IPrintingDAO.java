@@ -28,11 +28,11 @@ import java.util.Properties;
 
 import javax.print.attribute.standard.MediaSize;
 
-import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Archive;
 
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
@@ -45,10 +45,13 @@ import de.metas.printing.model.I_AD_PrinterTray_Matching;
 import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
+import de.metas.printing.model.I_C_PrintPackageData;
 import de.metas.printing.model.I_C_Print_Job;
 import de.metas.printing.model.I_C_Print_Job_Detail;
 import de.metas.printing.model.I_C_Print_Job_Instructions;
 import de.metas.printing.model.I_C_Print_Job_Line;
+import de.metas.printing.model.I_C_Print_Package;
+import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
 
@@ -108,6 +111,16 @@ public interface IPrintingDAO extends ISingletonService
 
 	I_C_Print_Job_Line retrievePrintJobLine(I_C_Print_Job job, int seqNo);
 
+	/**
+	 * count items
+	 * @param ctx
+	 * @param queueQuery
+	 * @param trxName
+	 * @return
+	 */
+	int countItems(Properties ctx, IPrintingQueueQuery queueQuery, String trxName);
+
+	
 	/**
 	 * Retrieve the print job details for the given job line. Assumes that there is at least one, never returns an empty list.
 	 * 
@@ -259,4 +272,36 @@ public interface IPrintingDAO extends ISingletonService
 	I_AD_Printer_Matching retrievePrinterMatchingOrNull(String hostKey, I_AD_Printer printer);
 
 	I_AD_Print_Clients retrievePrintClientsEntry(Properties ctx, String hostKey);
+	
+	/**
+	 * retrieve print job lines based on printing queue
+	 * 
+	 * @param printingQueue
+	 * @return
+	 */
+	List<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Printing_Queue printingQueue);
+	
+	/**
+	 * Retrieve <b>the latest</b> printing queue for the given {@code archive}.
+	 * @param archive
+	 * @return
+	 */
+	I_C_Printing_Queue retrievePrintingQueue(I_AD_Archive archive);
+	
+	/**
+	 * gets a list of printing package infos
+	 * 
+	 * @param printPackage
+	 * @return
+	 */
+	List<I_C_Print_PackageInfo> retrievePrintPackageInfos(I_C_Print_Package printPackage);
+
+	/**
+	 * retrieve package data
+	 * 
+	 * @param printPackage
+	 * @return
+	 */
+	I_C_PrintPackageData retrievePrintPackageData(I_C_Print_Package printPackage);
+
 }

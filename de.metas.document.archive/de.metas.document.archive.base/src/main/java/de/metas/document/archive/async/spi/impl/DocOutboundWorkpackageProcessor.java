@@ -25,14 +25,17 @@ package de.metas.document.archive.async.spi.impl;
 import java.util.List;
 
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 
 /**
@@ -55,6 +58,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final List<Object> records = queueDAO.retrieveItems(workpackage, Object.class, localTrxName);
 		for (final Object record : records)
 		{
+			if (workpackage.getC_Async_Batch_ID() > 0)
+			{
+				InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, workpackage.getC_Async_Batch());
+			}
 			generateOutboundDocument(record);
 		}
 		return Result.SUCCESS;
@@ -68,9 +75,10 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			return;
 		}
 
-		Services.get(IArchiveEventManager.class).firePdfUpdate(archive, null); // user=null
+		final String action = X_C_Doc_Outbound_Log_Line.ACTION_PdfExport; // this action is ported here. i'm not 100% sure it makes sense
+		Services.get(IArchiveEventManager.class).firePdfUpdate(archive, null, action); // user=null
 	}
-	
+
 	@VisibleForTesting
 	protected DefaultModelArchiver createModelArchiver(final Object record)
 	{

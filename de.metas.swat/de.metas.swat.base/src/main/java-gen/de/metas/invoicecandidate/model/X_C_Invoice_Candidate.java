@@ -2302,6 +2302,45 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd;
 	}
 
+	/** 
+	 * Priority AD_Reference_ID=154
+	 * Reference name: _PriorityRule
+	 */
+	public static final int PRIORITY_AD_Reference_ID=154;
+	/** High = 3 */
+	public static final String PRIORITY_High = "3";
+	/** Medium = 5 */
+	public static final String PRIORITY_Medium = "5";
+	/** Low = 7 */
+	public static final String PRIORITY_Low = "7";
+	/** Urgent = 1 */
+	public static final String PRIORITY_Urgent = "1";
+	/** Minor = 9 */
+	public static final String PRIORITY_Minor = "9";
+
+	/**
+	 * Set Priority.
+	 * 
+	 * @param Priority Indicates if this request is of a high, medium or low priority.
+	 */
+	@Override
+	public void setPriority(java.lang.String Priority)
+	{
+
+		set_Value(COLUMNNAME_Priority, Priority);
+	}
+
+	/**
+	 * Get Priority.
+	 * 
+	 * @return Indicates if this request is of a high, medium or low priority.
+	 */
+	@Override
+	public java.lang.String getPriority()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Priority);
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 

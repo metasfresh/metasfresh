@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.util.Services;
 import org.adempiere.util.time.SystemTime;
@@ -36,13 +35,6 @@ public class PackagingDAO implements IPackagingDAO
 				.addColumn(I_M_Packageable_V.COLUMN_PriorityRule)
 				.addColumn(I_M_Packageable_V.COLUMN_DateOrdered)
 				.endOrderBy();
-
-		//
-		// Filter: DisplayNonDeliverableItems
-		if (!query.isDisplayNonDeliverableItems())
-		{
-			queryBuilder.addCompareFilter(I_M_Packageable_V.COLUMN_QtyToDeliver, Operator.GREATER, 0);
-		}
 
 		//
 		// Filter: M_Warehouse_ID
