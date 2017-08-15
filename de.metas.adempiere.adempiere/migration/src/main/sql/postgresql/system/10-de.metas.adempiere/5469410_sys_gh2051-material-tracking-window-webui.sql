@@ -183,3 +183,33 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 16:52:50'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 16:53:52','YYYY-MM-DD HH24:MI:SS'),Name='Attribute Value' WHERE AD_Field_ID=554704 AND AD_Language='en_US'
 ;
 
+-- 2017-08-15T17:01:44.248
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 17:01:44','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Received' WHERE AD_Tab_ID=540705 AND AD_Language='en_US'
+;
+
+-- 2017-08-15T17:02:03.999
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 17:02:03','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Quality Inspection' WHERE AD_Tab_ID=540611 AND AD_Language='en_US'
+;
+
+-- 2017-08-15T17:04:02.753
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 17:04:02','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Stock Removal' WHERE AD_Tab_ID=540612 AND AD_Language='en_US'
+;
+
+-- 2017-08-15T17:05:00.094
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 17:05:00','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Referenced Documents' WHERE AD_Tab_ID=540613 AND AD_Language='en_US'
+;
+
+-- 2017-08-15T17:05:15.891
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-15 17:05:15','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Handling Units' WHERE AD_Tab_ID=540702 AND AD_Language='en_US'
+;
+
+-- 2017-08-15T17:05:22.945
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Handling Units',Updated=TO_TIMESTAMP('2017-08-15 17:05:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540702
+;
+
