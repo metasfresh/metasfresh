@@ -687,7 +687,10 @@ export function handleProcessResponse(response, type, id, successCallback) {
             if(action){
                 switch(action.type){
                     case 'openView':
+                        dispatch(closeModal());
+
                         dispatch(openRawModal(action.windowId, action.viewId));
+
                         break;
                     case 'openReport':
                         openFile(
@@ -698,6 +701,8 @@ export function handleProcessResponse(response, type, id, successCallback) {
 
                         break;
                     case 'openDocument':
+                        dispatch(closeModal());
+
                         if(action.modal) {
                             dispatch(
                                 openModal(
