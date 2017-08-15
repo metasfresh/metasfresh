@@ -29,7 +29,7 @@ class RawLookup extends Component {
     }
 
     componentDidMount() {
-        const { selected, defaultValue } = this.props;
+        const { selected, defaultValue, initialFocus } = this.props;
 
         this.handleValueChanged();
 
@@ -44,6 +44,10 @@ class RawLookup extends Component {
             let defaultKey = Object.keys(defaultValue)[0];
             this.inputSearch.value = defaultValue[defaultKey];
         }
+
+        if (initialFocus && !this.inputSearch.value) {
+            this.inputSearch.focus();
+        }
     }
 
     componentDidUpdate(prevProps) {
@@ -51,8 +55,7 @@ class RawLookup extends Component {
 
         const {
             autoFocus, defaultValue, fireClickOutside, handleInputEmptyStatus,
-            filterWidget, initialFocus, lookupEmpty, localClearing,
-            resetLocalClearing, fireDropdownList
+            filterWidget, lookupEmpty, localClearing, resetLocalClearing, fireDropdownList
         } = this.props;
 
         const { shouldBeFocused } = this.state;
@@ -67,10 +70,6 @@ class RawLookup extends Component {
             this.setState({
                 shouldBeFocused: false
             });
-        }
-
-        if (initialFocus && !this.inputSearch.value) {
-            this.inputSearch.focus();
         }
 
         defaultValue && prevProps.defaultValue !== defaultValue &&
