@@ -662,12 +662,17 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                         return dispatch(initLayoutSuccess(preparedLayout, 'modal'))
                     }).catch(err => {
                         dispatch(setProcessSaved());
+
                         throw err;
                     });
                 }
             }
         }).catch(err => {
+            // Close process modal in case when process start failed
+            dispatch(closeModal());
+
             dispatch(setProcessSaved());
+
             throw err;
         });
     }
@@ -682,8 +687,13 @@ export function handleProcessResponse(response, type, id, successCallback) {
         if(error){
             dispatch(addNotification('Process error', summary, 5000, 'error'));
             dispatch(setProcessSaved());
+
+            // Close process modal in case when process has failed
+            dispatch(closeModal());
         }
         else {
+            let closeProcessModal = true;
+
             if(action){
                 switch(action.type){
                     case 'openView':
@@ -693,12 +703,12 @@ export function handleProcessResponse(response, type, id, successCallback) {
                         openFile(
                             'process', type, id, 'print', action.filename
                         );
-
-                        dispatch(closeModal());
-
                         break;
                     case 'openDocument':
                         if(action.modal) {
+                            // Do not close process modal, since it will be re-used with document view
+                            closeProcessModal = false;
+
                             dispatch(
                                 openModal(
                                     '', action.windowId, 'window', null, null,
@@ -734,6 +744,10 @@ export function handleProcessResponse(response, type, id, successCallback) {
             }
 
             dispatch(setProcessSaved());
+
+            if (closeProcessModal) {
+                dispatch(closeModal());
+            }
 
             successCallback && successCallback();
         }
