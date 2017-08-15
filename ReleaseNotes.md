@@ -24,6 +24,11 @@ Here come the actual release notes:
   * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
     * Migrating the current static elements from w101 to base.
 
+#Fixes
+* metasfresh-webui-frontend
+  * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
+    * Fixes a focus Bug in lookup Field Workflow.
+
 # metasfresh 5.22 (2017-33)
 
 **release for week 2017-33**
