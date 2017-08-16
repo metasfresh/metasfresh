@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Fix for Bug in Action Receipt o Manufacturing Window in WebUI.
   * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
     * Fixes a focus Bug in lookup Field Workflow.
+  * [#1135](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1135) Browse Whole Tree Caption not refreshed
+    * Fix for the Sitemap Message in Navigation Menu. Now receiving a translated Message when changing the locale in Avatar Settings.
 
 # metasfresh 5.22 (2017-33)
 
