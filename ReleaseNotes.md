@@ -25,6 +25,8 @@ Here come the actual release notes:
     * Migrating the current static elements from w101 to base.
   * [#2140](https://github.com/metasfresh/metasfresh/issues/2140) Window Design WebUI: Shipment Schedule
     * Adjusted Window Configuration for Shipment Schedule in WebUI, including Translations for en_US.
+  * [#2150](https://github.com/metasfresh/metasfresh/issues/2150) Window Design WebUI: Shipment
+    * Adjusted Window Configuration for Shipment Window in WebUI, including Translations for en_US.
 
 #Fixes
 * metasfresh-webui-frontend
