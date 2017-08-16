@@ -55,16 +55,11 @@ class Modal extends Component {
         // but we have to change scope of scrollbar
         document.body.style.overflow = 'hidden';
 
-        const modalContent = document.querySelector('.js-panel-modal-content')
-
-        modalContent &&
-            modalContent.addEventListener('scroll', this.handleScroll);
+        this.initEventListeners();
     }
 
     componentWillUnmount() {
-        const modalContent = document.querySelector('.js-panel-modal-content')
-        modalContent &&
-            modalContent.removeEventListener('scroll', this.handleScroll);
+        this.removeEventListeners();
     }
 
     componentDidUpdate (prevProps) {
@@ -100,6 +95,22 @@ class Modal extends Component {
 
     getChildContext = () => {
         return { shortcuts: shortcutManager }
+    }
+
+    initEventListeners = () => {
+        const modalContent = document.querySelector('.js-panel-modal-content');
+
+        if (modalContent) {
+            modalContent.addEventListener('scroll', this.handleScroll);
+        }
+    }
+
+    removeEventListeners = () => {
+        const modalContent = document.querySelector('.js-panel-modal-content')
+
+        if (modalContent) {
+            modalContent.removeEventListener('scroll', this.handleScroll);
+        }
     }
 
     init = () => {
@@ -138,20 +149,6 @@ class Modal extends Component {
         }
     }
 
-    handleClose = () => {
-        const {
-            modalSaveStatus, modalType
-        } = this.props;
-
-        if(modalType === 'process') {
-            return this.closeModal();
-        }
-
-        if(modalSaveStatus || window.confirm('Do you really want to leave?')){
-            this.closeModal();
-        }
-    }
-
     closeModal = () => {
         const {
             dispatch, closeCallback, dataId, windowType, relativeType,
@@ -173,6 +170,30 @@ class Modal extends Component {
         }else{
             closeCallback && closeCallback(isNew);
             this.removeModal();
+        }
+    }
+
+    removeModal = () => {
+        const {dispatch, rawModalVisible} = this.props;
+
+        dispatch(closeModal());
+
+        if (!rawModalVisible){
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    handleClose = () => {
+        const {
+            modalSaveStatus, modalType
+        } = this.props;
+
+        if(modalType === 'process') {
+            return this.closeModal();
+        }
+
+        if(modalSaveStatus || window.confirm('Do you really want to leave?')){
+            this.closeModal();
         }
     }
 
@@ -227,16 +248,6 @@ class Modal extends Component {
                 });
             });
         });
-    }
-
-    removeModal = () => {
-        const {dispatch, rawModalVisible} = this.props;
-
-        dispatch(closeModal());
-
-        if (!rawModalVisible){
-            document.body.style.overflow = 'auto';
-        }
     }
 
     renderModalBody = () => {

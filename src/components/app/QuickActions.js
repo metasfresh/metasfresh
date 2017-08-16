@@ -25,12 +25,7 @@ class QuickActions extends Component {
     constructor(props){
         super(props);
 
-        this.state = {
-            actions: [],
-            isDropdownOpen: false,
-            isTooltip: false,
-            loading: false
-        }
+        this.clearComponentState();
 
         const {fetchOnInit} = this.props;
 
@@ -40,6 +35,8 @@ class QuickActions extends Component {
     }
 
     componentDidMount = () => {
+        this.clearComponentState();
+
         this.mounted = true;
     }
 
@@ -91,6 +88,15 @@ class QuickActions extends Component {
             this.setState({
                 loading: false
             });
+        }
+    }
+
+    clearComponentState = () => {
+        this.state = {
+            actions: [],
+            isDropdownOpen: false,
+            isTooltip: false,
+            loading: false
         }
     }
 

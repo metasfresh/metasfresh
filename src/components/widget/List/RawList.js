@@ -20,6 +20,10 @@ class RawList extends Component {
         }
     }
 
+    componentWillUnmount() {
+        this.clearComponentState();
+    }
+
     componentDidUpdate = (prevProps, prevState) => {
         const {
             list, mandatory, defaultValue, autofocus, blur, property,
@@ -120,6 +124,14 @@ class RawList extends Component {
 
         if ((selectedIndex * listElementHeight < visibleMin) && (listScrollWrap.scrollTop !== scrollFromDown)) {
             listScrollWrap.scrollTop = scrollFromDown;
+        }
+    }
+
+    clearComponentState = () => {
+        this.state = {
+            selected: 0,
+            dropdownList: [],
+            isOpen: false
         }
     }
 

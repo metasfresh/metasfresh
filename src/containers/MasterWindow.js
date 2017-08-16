@@ -39,7 +39,7 @@ class MasterWindow extends Component {
         const isDocumentNotSaved = !master.saveStatus.saved;
 
         if(isDocumentNotSaved){
-            window.addEventListener('beforeunload', this.confirm);
+            this.initEventListeners();
         }
     }
 
@@ -82,10 +82,10 @@ class MasterWindow extends Component {
         }
 
         if(prevProps.master.saveStatus.saved && isDocumentNotSaved) {
-            window.addEventListener('beforeunload', this.confirm)
+            this.initEventListeners();
         }
         if (!prevProps.master.saveStatus.saved && isDocumentSaved) {
-            window.removeEventListener('beforeunload', this.confirm)
+            this.removeEventListeners();
         }
 
         // When closing modal, we need to update the stale tabs
@@ -107,7 +107,7 @@ class MasterWindow extends Component {
         const isDocumentNotSaved =
             !master.saveStatus.saved && master.saveStatus.saved !== undefined;
 
-        window.removeEventListener('beforeunload', this.confirm);
+        this.removeEventListeners();
 
         if(isDocumentNotSaved && !isDeleted){
             const result = window.confirm('Do you really want to leave?');
@@ -123,6 +123,14 @@ class MasterWindow extends Component {
 
     confirm = (e) => {
         e.returnValue = '';
+    }
+
+    initEventListeners = () => {
+        window.addEventListener('beforeunload', this.confirm);
+    }
+
+    removeEventListeners = () => {
+        window.removeEventListener('beforeunload', this.confirm);
     }
 
     closeModalCallback = (isNew) => {

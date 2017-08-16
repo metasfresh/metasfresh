@@ -37,17 +37,11 @@ class RawModal extends Component {
         // but we have to change scope of scrollbar
         document.body.style.overflow = 'hidden';
 
-        const modalContent = document.querySelector('.js-panel-modal-content')
-
-        modalContent &&
-            modalContent.addEventListener('scroll', this.handleScroll);
+        this.initEventListeners();
     }
 
     componentWillUnmount() {
-        const modalContent = document.querySelector('.js-panel-modal-content');
-
-        modalContent &&
-            modalContent.removeEventListener('scroll', this.handleScroll);
+        this.removeEventListeners();
     }
 
     toggleTooltip = (visible) => {
@@ -58,6 +52,22 @@ class RawModal extends Component {
 
     getChildContext = () => {
         return { shortcuts: shortcutManager }
+    }
+
+    initEventListeners = () => {
+        const modalContent = document.querySelector('.js-panel-modal-content')
+
+        if (modalContent) {
+            modalContent.addEventListener('scroll', this.handleScroll);
+        }
+    }
+
+    removeEventListeners = () => {
+        const modalContent = document.querySelector('.js-panel-modal-content');
+
+        if (modalContent) {
+            modalContent.removeEventListener('scroll', this.handleScroll);
+        }
     }
 
     handleScroll = (event) => {

@@ -37,6 +37,42 @@ import {
 export class DraggableWrapper extends Component {
     constructor(props) {
         super(props);
+
+        this.clearComponentState();
+    }
+
+    componentDidMount = () => {
+        this.getDashboard();
+        this.getIndicators();
+    }
+
+    componentDidUpdate = (prevProps, prevState) => {
+        const {websocketEndpoint} = this.state;
+        if (
+            websocketEndpoint !== null &&
+            prevState.websocketEndpoint !== websocketEndpoint
+        ) {
+            connectWS.call(this, websocketEndpoint, msg => {
+                msg.events.map(event => {
+                    switch (event.widgetType) {
+                        case 'TargetIndicator':
+                            this.getIndicators();
+                            break;
+                        case 'KPI':
+                            this.getDashboard();
+                            break;
+                    }
+                })
+            })
+        }
+    }
+
+    componentWillUnmount = () => {
+        this.clearComponentState();
+        disconnectWS.call(this);
+    }
+
+    clearComponentState = () => {
         this.state = {
             cards: [],
             indicators: [],
@@ -50,37 +86,7 @@ export class DraggableWrapper extends Component {
             isIndicator: ''
         };
     }
-    
-    componentDidMount = () => {
-        this.getDashboard();
-        this.getIndicators();
-    }
-    
-    componentDidUpdate = (prevProps, prevState) => {
-        const {websocketEndpoint} = this.state;
-        if(
-            websocketEndpoint !== null &&
-            prevState.websocketEndpoint !== websocketEndpoint
-        ){
-            connectWS.call(this, websocketEndpoint, msg => {
-                msg.events.map(event => {
-                    switch(event.widgetType){
-                        case 'TargetIndicator':
-                            this.getIndicators();
-                            break;
-                        case 'KPI':
-                            this.getDashboard();
-                            break;
-                    }
-                })
-            })
-        }
-    }
-    
-    componentWillUnmount = () => {
-        disconnectWS.call(this);
-    }
-    
+
     getType = (entity) => entity === 'cards' ? 'kpis' : 'targetIndicators';
     
     getIndicators = () => {

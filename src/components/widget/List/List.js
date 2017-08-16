@@ -12,11 +12,7 @@ class List extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            list: null,
-            loading: false,
-            selectedItem: ''
-        }
+        this.clearComponentState();
 
         this.previousValue = '';
     }
@@ -34,6 +30,18 @@ class List extends Component {
 
         if (isInputEmpty && (prevProps.isInputEmpty !== isInputEmpty)) {
             this.previousValue = '';
+        }
+    }
+
+    componentWillUnmount() {
+        this.clearComponentState();
+    }
+
+    clearComponentState = () => {
+        this.state = {
+            list: null,
+            loading: false,
+            selectedItem: ''
         }
     }
 
