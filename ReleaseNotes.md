@@ -30,6 +30,8 @@ Here come the actual release notes:
 
 #Fixes
 * metasfresh-webui-frontend
+  * [#1071](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1071) Fix frontend memory leaks
+    * Fixes Memory Leaks in WebUI.
   * [#1129](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1129) cannot receive second time
     * Fix for Bug in Action Receipt o Manufacturing Window in WebUI.
   * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
