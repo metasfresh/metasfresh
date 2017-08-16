@@ -22,15 +22,9 @@ import {
 } from '../../actions/WindowActions';
 
 class MenuOverlay extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.state = {
-            queriedResults: [],
-            query: '',
-            deepSubNode: null,
-            path: '',
-            data: {}
-        };
+        this.clearComponentState();
     }
 
     componentDidMount = () => {
@@ -39,7 +33,7 @@ class MenuOverlay extends Component {
             nodeId
         } = this.props;
 
-        if (nodeId == 0){
+        if (nodeId == 0) {
             getRootBreadcrumb().then(response => {
                 this.setState({
                     data: response
@@ -61,6 +55,20 @@ class MenuOverlay extends Component {
             }
         }
 
+    }
+
+    componentWillUnmount = () => {
+        this.clearComponentState();
+    }
+
+    clearComponentState = () => {
+        this.state = {
+            queriedResults: [],
+            query: '',
+            deepSubNode: null,
+            path: '',
+            data: {}
+        };
     }
 
     handleClickOutside = (e) => this.props.onClickOutside(e);

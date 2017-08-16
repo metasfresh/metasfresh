@@ -15,11 +15,7 @@ class MasterWidget extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {
-            updated: false,
-            edited: false,
-            data: ''
-        }
+        this.clearComponentState();
     }
 
     componentDidMount() {
@@ -62,6 +58,16 @@ class MasterWidget extends Component {
 
     componentWillUnmount() {
         clearTimeout(this.timeout);
+
+        this.clearComponentState();
+    }
+
+    clearComponentState = () => {
+        this.state = {
+            updated: false,
+            edited: false,
+            data: ''
+        }
     }
 
     handlePatch = (property, value) => {

@@ -54,12 +54,12 @@ class Header extends Component {
     }
 
     componentDidMount() {
-        document.addEventListener('scroll', this.handleScroll);
+        this.initEventListeners();
     }
 
     componentWillUnmount() {
-        document.removeEventListener('scroll', this.handleScroll);
         this.toggleScrollScope(false);
+        this.removeEventListeners();
     }
 
     componentWillUpdate = (nextProps) => {
@@ -90,6 +90,14 @@ class Header extends Component {
 
     getChildContext = () => {
         return { shortcuts: shortcutManager }
+    }
+
+    initEventListeners = () => {
+        document.addEventListener('scroll', this.handleScroll);
+    }
+
+    removeEventListeners = () => {
+        document.removeEventListener('scroll', this.handleScroll);
     }
 
     handleInboxOpen = (state) => {
