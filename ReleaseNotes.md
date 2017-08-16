@@ -27,7 +27,7 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-webui-frontend
   * [#1129](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1129) cannot receive second time
-    * Fix for Bug in Action Receipt od Manufacturing Window in WebUI.
+    * Fix for Bug in Action Receipt o Manufacturing Window in WebUI.
   * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
     * Fixes a focus Bug in lookup Field Workflow.
 
@@ -45,6 +45,8 @@ Here come the actual release notes:
     * Improvement of the ESR Import action, now processing all ESR Lines also when individual Lines fail.
   * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
     * Adding a Transaction control amount to ESR Imports coming from SEPA camt.54 file and presenting to the user.
+  * [#2122](https://github.com/metasfresh/metasfresh/issues/2122) allow creating requests from B2C window with new button
+    * Now it's able to create Requests from Businesspartner B2C WIndow directly via new Button.
 
 * metasfresh-webui-api
 
