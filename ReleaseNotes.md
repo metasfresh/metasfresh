@@ -15,8 +15,21 @@ Here come the actual release notes:
 **upcoming release for week 2017-34**
 #Features
 * metasfresh-app
+  * [#2048](https://github.com/metasfresh/metasfresh/issues/2048) Window Design WebUI: Sales Order Candidates
+    * New Window Sales Order Candidates for WebUI.
+  * [#2051](https://github.com/metasfresh/metasfresh/issues/2051) Window Design WebUI: Material Tracking
+    * Adjusted Window Configuration for Material Tracking in WebUI, including Translations for en_US.
+  * [#2084](https://github.com/metasfresh/metasfresh/issues/2084) Window Design WebUI: Vendor Returns
+    * Adjusted Window Configuration for Vendor Returns Window in WebUI.
   * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
     * Migrating the current static elements from w101 to base.
+
+#Fixes
+* metasfresh-webui-frontend
+  * [#1129](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1129) cannot receive second time
+    * Fix for Bug in Action Receipt od Manufacturing Window in WebUI.
+  * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
+    * Fixes a focus Bug in lookup Field Workflow.
 
 # metasfresh 5.22 (2017-33)
 
