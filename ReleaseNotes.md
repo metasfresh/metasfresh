@@ -23,6 +23,8 @@ Here come the actual release notes:
     * Adjusted Window Configuration for Vendor Returns Window in WebUI.
   * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
     * Migrating the current static elements from w101 to base.
+  * [#2140](https://github.com/metasfresh/metasfresh/issues/2140) Window Design WebUI: Shipment Schedule
+    * Adjusted Window Configuration for Shipment Schedule in WebUI, including Translations for en_US.
 
 #Fixes
 * metasfresh-webui-frontend
