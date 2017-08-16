@@ -388,3 +388,28 @@ UPDATE AD_Field SET Name='Datum',Updated=TO_TIMESTAMP('2017-08-16 20:44:00','YYY
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-16 20:44:09','YYYY-MM-DD HH24:MI:SS'),Name='Date' WHERE AD_Field_ID=6880 AND AD_Language='en_US'
 ;
 
+-- 2017-08-16T20:51:04.008
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-16 20:51:04','YYYY-MM-DD HH24:MI:SS'),Name='Attributes' WHERE AD_Field_ID=6542 AND AD_Language='en_US'
+;
+
+-- 2017-08-16T20:51:28.905
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-16 20:51:28','YYYY-MM-DD HH24:MI:SS'),Name='Price',Description='',Help='' WHERE AD_Field_ID=555190 AND AD_Language='en_US'
+;
+
+-- 2017-08-16T20:51:56.946
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-16 20:51:56','YYYY-MM-DD HH24:MI:SS'),Name='Packing Instruction' WHERE AD_Field_ID=555194 AND AD_Language='en_US'
+;
+
+-- 2017-08-16T20:53:20.979
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-16 20:53:20','YYYY-MM-DD HH24:MI:SS'),Name='Packing Instruction' WHERE AD_Field_ID=555262 AND AD_Language='en_US'
+;
+
+-- 2017-08-16T21:00:32.161
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Packmaterial ändern',Updated=TO_TIMESTAMP('2017-08-16 21:00:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555193
+;
+
