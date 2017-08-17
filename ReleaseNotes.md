@@ -13,6 +13,31 @@ Here come the actual release notes:
 # metasfresh 5.23 (2017-34)
 
 **upcoming release for week 2017-34**
+#Features
+* metasfresh-app
+  * [#2048](https://github.com/metasfresh/metasfresh/issues/2048) Window Design WebUI: Sales Order Candidates
+    * New Window Sales Order Candidates for WebUI.
+  * [#2051](https://github.com/metasfresh/metasfresh/issues/2051) Window Design WebUI: Material Tracking
+    * Adjusted Window Configuration for Material Tracking in WebUI, including Translations for en_US.
+  * [#2084](https://github.com/metasfresh/metasfresh/issues/2084) Window Design WebUI: Vendor Returns
+    * Adjusted Window Configuration for Vendor Returns Window in WebUI.
+  * [#2134](https://github.com/metasfresh/metasfresh/issues/2134) Export all webui AD_Messages from w101
+    * Migrating the current static elements from w101 to base.
+  * [#2140](https://github.com/metasfresh/metasfresh/issues/2140) Window Design WebUI: Shipment Schedule
+    * Adjusted Window Configuration for Shipment Schedule in WebUI, including Translations for en_US.
+  * [#2150](https://github.com/metasfresh/metasfresh/issues/2150) Window Design WebUI: Shipment
+    * Adjusted Window Configuration for Shipment Window in WebUI, including Translations for en_US.
+
+#Fixes
+* metasfresh-webui-frontend
+  * [#1071](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1071) Fix frontend memory leaks
+    * Fixes Memory Leaks in WebUI.
+  * [#1129](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1129) cannot receive second time
+    * Fix for Bug in Action Receipt o Manufacturing Window in WebUI.
+  * [#1130](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1130) cursor jumps from qty CU to LU field
+    * Fixes a focus Bug in lookup Field Workflow.
+  * [#1135](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1135) Browse Whole Tree Caption not refreshed
+    * Fix for the Sitemap Message in Navigation Menu. Now receiving a translated Message when changing the locale in Avatar Settings.
 
 # metasfresh 5.22 (2017-33)
 
@@ -28,6 +53,8 @@ Here come the actual release notes:
     * Improvement of the ESR Import action, now processing all ESR Lines also when individual Lines fail.
   * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
     * Adding a Transaction control amount to ESR Imports coming from SEPA camt.54 file and presenting to the user.
+  * [#2122](https://github.com/metasfresh/metasfresh/issues/2122) allow creating requests from B2C window with new button
+    * Now it's able to create Requests from Businesspartner B2C WIndow directly via new Button.
 
 * metasfresh-webui-api
 
