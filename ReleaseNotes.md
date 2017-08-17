@@ -30,7 +30,9 @@ Here come the actual release notes:
   * [#2161](https://github.com/metasfresh/metasfresh/issues/2161) Window Design WebUI : Business Partner Group
     * Adjusted Window Configuration for Businesspartner Group Window in WebUI, adopting the current window Guidelines.
   * [#2162](https://github.com/metasfresh/metasfresh/issues/2162) Window Design WebUI : Outbound Documents Config
-    * Adjusted Window Configuration for teh Document Outbound Config Window in WebUI. Adding Translations.
+    * Adjusted Window Configuration for the Document Outbound Config Window in WebUI. Adding Translations.
+  * [#2167](https://github.com/metasfresh/metasfresh/issues/2167) Window Design WebUI : Product
+    * Adjusted Window Configuration for Product Window in WebUI. Main View and Advanced Edit.
 
 #Fixes
 * metasfresh-webui-frontend
