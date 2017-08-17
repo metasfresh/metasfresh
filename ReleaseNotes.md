@@ -27,6 +27,8 @@ Here come the actual release notes:
     * Adjusted Window Configuration for Shipment Schedule in WebUI, including Translations for en_US.
   * [#2150](https://github.com/metasfresh/metasfresh/issues/2150) Window Design WebUI: Shipment
     * Adjusted Window Configuration for Shipment Window in WebUI, including Translations for en_US.
+  * [#2161](https://github.com/metasfresh/metasfresh/issues/2161) Window Design WebUI : Business Partner Group
+    * Adjusted Window Configuration for Businesspartner Group Window in WebUI, adopting the current window Guidelines.
 
 #Fixes
 * metasfresh-webui-frontend
