@@ -82,7 +82,7 @@ Here come the actual release notes:
     * Fix in Window for Manufacturing Issue and Receipt.
 
 * others
-  * [metasfresh/metasfresh-dist-orgs#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
+  * [#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
     * Activation of Role WebUI in dist orgs environment.
 
 # metasfresh 5.21 (2017-32)
