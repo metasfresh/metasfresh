@@ -41,6 +41,7 @@ Here come the actual release notes:
     * Adjusted Window Configuration for Shipment Schedule in WebUI, including Translations for en_US.
   * [#2150](https://github.com/metasfresh/metasfresh/issues/2150) Window Design WebUI: Shipment
     * Adjusted Window Configuration for Shipment Window in WebUI, including Translations for en_US.
+  * [#2159](https://github.com/metasfresh/metasfresh/issues/2159) Add date field to request
   * [#2161](https://github.com/metasfresh/metasfresh/issues/2161) Window Design WebUI : Business Partner Group
     * Adjusted Window Configuration for Businesspartner Group Window in WebUI, adopting the current window Guidelines.
   * [#2162](https://github.com/metasfresh/metasfresh/issues/2162) Window Design WebUI : Outbound Documents Config
@@ -48,7 +49,12 @@ Here come the actual release notes:
   * [#2167](https://github.com/metasfresh/metasfresh/issues/2167) Window Design WebUI : Product
     * Adjusted Window Configuration for Product Window in WebUI. Main View and Advanced Edit.
 
+* metasfresh-webui-frontend
+  * [#1139](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1139) Ellipses when breadcrumb too long & Tooltip
+
 #Fixes
+* metasfresh-app
+  * [#2163](https://github.com/metasfresh/metasfresh/issues/2163) Do not show new button in B2C tab customer
 * metasfresh-webui-frontend
   * [#1071](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1071) Fix frontend memory leaks
     * Fixes Memory Leaks in WebUI.
@@ -58,6 +64,7 @@ Here come the actual release notes:
     * Fixes a focus Bug in lookup Field Workflow.
   * [#1135](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1135) Browse Whole Tree Caption not refreshed
     * Fix for the Sitemap Message in Navigation Menu. Now receiving a translated Message when changing the locale in Avatar Settings.
+  * [#1141](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1141) Sort indicator triangle missing in Grid Header
 
 # metasfresh 5.22 (2017-33)
 
