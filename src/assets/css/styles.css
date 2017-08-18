@@ -755,15 +755,16 @@ body {
 
 .sort-menu .sort-ico {
     position: absolute;
-    right: 0px;
-    top: 5px;
-    height: 15px;
+    right: -12px;
     cursor: pointer;
     color: $brand-font-color;
     opacity: 0;
     display: inline-block;
-    padding: 0 10px;
     vertical-align: middle;
+}
+
+.sort-menu .sort-ico:not(.rotate-90) {
+    top: 3px;
 }
 
 .sort-menu .th-caption {
