@@ -176,6 +176,7 @@ class Breadcrumb extends Component {
                     >
                         <span
                             className="header-breadcrumb-sitename"
+                            title={docSummaryData.value}
                         >
                             {docSummaryData.value}
                         </span>
@@ -188,6 +189,7 @@ class Breadcrumb extends Component {
                     <div>
                         <span
                             className="header-item icon-sm"
+                            title={siteName}
                         >{siteName}</span>
                     </div>
                 }
