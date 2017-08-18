@@ -10,6 +10,20 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.24 (2017-35)
+
+**upcoming release for week 2017-35**
+
+#Features
+* metasfresh-app
+* metasfresh-webui-api
+* metasfresh-webui-frontend
+
+#Fixes
+* metasfresh-app
+* metasfresh-webui-api
+* metasfresh-webui-frontend
+
 # metasfresh 5.23 (2017-34)
 
 **upcoming release for week 2017-34**
