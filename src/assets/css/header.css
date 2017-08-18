@@ -56,18 +56,19 @@
     overflow: hidden;
 }
 
-.header-breadcrumb-line {
+.header-breadcrumb .header-breadcrumb-line {
     color: $brand-font-color-secondary;
     font-size: 0.875rem;
     width: auto;
     display: flex;
-    justify-content: flex-start;
-    flex-wrap: nowrap;
-    flex-direction: row;
-    overflow: hidden;
-
-    position: relative;
     flex:1;
+}
+
+.header-breadcrumb-sitename {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: $breakpoint){
@@ -294,7 +295,16 @@
 }
 
 
-.header-left-side,
+.header-left-side {
+    width: calc(50% - 75px);
+    position: relative;
+    padding-left: 55px;
+}
+.header-left-side > .tooltip-parent {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
 .header-right-side {
     width: calc(50% - 75px);
     display: flex;
