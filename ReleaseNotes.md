@@ -16,7 +16,11 @@ Here come the actual release notes:
 
 #Features
 * metasfresh-app
+  * [#2169](https://github.com/metasfresh/metasfresh/issues/2169) Window Design WebUI : Attributes
+    * Adopting the Attributes Window to the current Design Guidelines.
+
 * metasfresh-webui-api
+
 * metasfresh-webui-frontend
 
 #Fixes
