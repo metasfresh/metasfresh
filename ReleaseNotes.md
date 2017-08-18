@@ -62,8 +62,6 @@ Here come the actual release notes:
   * [#2122](https://github.com/metasfresh/metasfresh/issues/2122) allow creating requests from B2C window with new button
     * Now it's able to create Requests from Businesspartner B2C WIndow directly via new Button.
 
-* metasfresh-webui-api
-
 * metasfresh-webui-frontend
   * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
     * Adjusting the Header Names of Grid View Columns in included Subtabs. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
@@ -74,8 +72,6 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) cant save purchase order
     * Fixes a minor Bug that occured in Purchase Order under certain circumstances, avoiding the record save.
-
-* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
