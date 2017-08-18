@@ -70,7 +70,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
-  * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) cant save purchase order
+  * [#2121](https://github.com/metasfresh/metasfresh/issues/2121) Can't save purchase order
     * Fixes a minor Bug that occured in Purchase Order under certain circumstances, avoiding the record save.
 
 * metasfresh-webui-frontend
