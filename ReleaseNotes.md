@@ -58,7 +58,7 @@ Here come the actual release notes:
   * [#2118](https://github.com/metasfresh/metasfresh/issues/2118) ESR - add sysconfig to ignore non-credit lines
     * Improvement of the ESR Import action, now processing all ESR Lines also when individual Lines fail.
   * [#2119](https://github.com/metasfresh/metasfresh/issues/2119) ESR - Show actual number of transactions
-    * Adding a Transaction control amount to ESR Imports coming from SEPA camt.54 file and presenting to the user.
+    * Adding a Transaction control amount to ESR Imports coming from SEPA camt54 file and presenting to the user.
   * [#2122](https://github.com/metasfresh/metasfresh/issues/2122) allow creating requests from B2C window with new button
     * Now it's able to create Requests from Businesspartner B2C WIndow directly via new Button.
 
@@ -68,6 +68,7 @@ Here come the actual release notes:
   * [#1117](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1117) Cut-Off Header Names in Subtabs
     * Adjusting the Header Names of Grid View Columns in included Subtabs. Now adding elipses when Header Names are too long. Via Hover the user is able to read the Full Name via Tooltip.
   * [#1127](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1127) Allow copy to clipboard of selected grid lines
+    * New feature to select Grid View lines and copy/ paste as comma seperated data.
 
 ## Fixes
 * metasfresh-app
@@ -79,11 +80,14 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1066](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1066) board: when adding a new card, the card does not vanish from new cards view
     * Fix for the new Kanban Board. Now the cards are removed from card selection List, as soon as they are dragged & dropped on the Board.
-  * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Fix localization of missing phrases related to attachment upload
+  * [#1121](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1121) Localize remaining static elements
+    * Fix localization of missing phrases related to attachment upload
   * [#1124](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1124) issue in manufacturing won't close
+    * Fix in Window for Manufacturing Issue and Receipt.
 
 * others
   * [metasfresh/metasfresh-dist-orgs#17](https://github.com/metasfresh/metasfresh-dist-orgs/issues/17) activate role webui
+    * Activation of Role WebUI in dist orgs environment.
 
 # metasfresh 5.21 (2017-32)
 
