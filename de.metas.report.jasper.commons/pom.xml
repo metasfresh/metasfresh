@@ -61,6 +61,20 @@
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
+		
+		<dependency>
+			<groupId>net.sf.barcode4j</groupId>
+			<artifactId>barcode4j-fop-ext-complete</artifactId>
+			<version>2.0</version>
+			<type>jar</type>			
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
 
 <!--
 Our swing client is currently an uber-jar, and by copying this stuff into it, we run into trouble as described here: 
