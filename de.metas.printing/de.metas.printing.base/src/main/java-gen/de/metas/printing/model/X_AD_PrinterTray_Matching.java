@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
@@ -30,7 +14,7 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -418452548L;
+	private static final long serialVersionUID = 1004374184L;
 
     /** Standard Constructor */
     public X_AD_PrinterTray_Matching (Properties ctx, int AD_PrinterTray_Matching_ID, String trxName)
@@ -38,8 +22,8 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
       super (ctx, AD_PrinterTray_Matching_ID, trxName);
       /** if (AD_PrinterTray_Matching_ID == 0)
         {
-			setAD_PrinterHW_MediaTray_ID (0);
 			setAD_Printer_Tray_ID (0);
+			setAD_PrinterHW_MediaTray_ID (0);
 			setAD_PrinterTray_Matching_ID (0);
         } */
     }
@@ -58,40 +42,6 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
-	}
-
-	@Override
-	public void setAD_PrinterHW_MediaTray(de.metas.printing.model.I_AD_PrinterHW_MediaTray AD_PrinterHW_MediaTray)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class, AD_PrinterHW_MediaTray);
-	}
-
-	/** Set Hardware-Schacht.
-		@param AD_PrinterHW_MediaTray_ID Hardware-Schacht	  */
-	@Override
-	public void setAD_PrinterHW_MediaTray_ID (int AD_PrinterHW_MediaTray_ID)
-	{
-		if (AD_PrinterHW_MediaTray_ID < 1) 
-			set_Value (COLUMNNAME_AD_PrinterHW_MediaTray_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_PrinterHW_MediaTray_ID, Integer.valueOf(AD_PrinterHW_MediaTray_ID));
-	}
-
-	/** Get Hardware-Schacht.
-		@return Hardware-Schacht	  */
-	@Override
-	public int getAD_PrinterHW_MediaTray_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_MediaTray_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public de.metas.printing.model.I_AD_Printer_Matching getAD_Printer_Matching() throws RuntimeException
@@ -156,6 +106,40 @@ public class X_AD_PrinterTray_Matching extends org.compiere.model.PO implements 
 	public int getAD_Printer_Tray_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Printer_Tray_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public de.metas.printing.model.I_AD_PrinterHW_MediaTray getAD_PrinterHW_MediaTray() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class);
+	}
+
+	@Override
+	public void setAD_PrinterHW_MediaTray(de.metas.printing.model.I_AD_PrinterHW_MediaTray AD_PrinterHW_MediaTray)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_MediaTray_ID, de.metas.printing.model.I_AD_PrinterHW_MediaTray.class, AD_PrinterHW_MediaTray);
+	}
+
+	/** Set Hardware-Schacht.
+		@param AD_PrinterHW_MediaTray_ID Hardware-Schacht	  */
+	@Override
+	public void setAD_PrinterHW_MediaTray_ID (int AD_PrinterHW_MediaTray_ID)
+	{
+		if (AD_PrinterHW_MediaTray_ID < 1) 
+			set_Value (COLUMNNAME_AD_PrinterHW_MediaTray_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PrinterHW_MediaTray_ID, Integer.valueOf(AD_PrinterHW_MediaTray_ID));
+	}
+
+	/** Get Hardware-Schacht.
+		@return Hardware-Schacht	  */
+	@Override
+	public int getAD_PrinterHW_MediaTray_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_MediaTray_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

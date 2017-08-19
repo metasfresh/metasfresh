@@ -1,28 +1,11 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.printing.model;
 
-import org.compiere.model.I_C_BPartner;
 
 /** Generated Interface for C_Printing_Queue
- *  @author Adempiere (generated)
+ *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Printing_Queue
+public interface I_C_Printing_Queue 
 {
 
     /** TableName=C_Printing_Queue */
@@ -87,7 +70,7 @@ public interface I_C_Printing_Queue
 
 	/**
 	 * Set Sprache.
-	 * Language for this entity
+	 * Sprache für diesen Eintrag
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -97,7 +80,7 @@ public interface I_C_Printing_Queue
 
 	/**
 	 * Get Sprache.
-	 * Language for this entity
+	 * Sprache für diesen Eintrag
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -106,7 +89,7 @@ public interface I_C_Printing_Queue
 	public java.lang.String getAD_Language();
 
     /** Column definition for AD_Language */
-    public static final org.adempiere.model.ModelColumn<I_C_BPartner, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_C_BPartner, Object>(I_C_BPartner.class, "AD_Language", null);
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "AD_Language", null);
     /** Column name AD_Language */
     public static final String COLUMNNAME_AD_Language = "AD_Language";
 
@@ -227,31 +210,6 @@ public interface I_C_Printing_Queue
     public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Batch-Gruppe.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setBatchGroup (java.lang.String BatchGroup);
-
-	/**
-	 * Get Batch-Gruppe.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getBatchGroup();
-
-    /** Column definition for BatchGroup */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_BatchGroup = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "BatchGroup", null);
-    /** Column name BatchGroup */
-    public static final String COLUMNNAME_BatchGroup = "BatchGroup";
-
-	/**
-    
-	/**
 	 * Set Rechnungspartner.
 	 * Geschäftspartners für die Rechnungsstellung
 	 *
@@ -335,7 +293,7 @@ public interface I_C_Printing_Queue
     public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, de.metas.async.model.I_C_Async_Batch> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, de.metas.async.model.I_C_Async_Batch>(I_C_Printing_Queue.class, "C_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
     /** Column name C_Async_Batch_ID */
     public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
-    
+
 	/**
 	 * Set Geschäftspartner.
 	 * Bezeichnet einen Geschäftspartner
@@ -424,6 +382,29 @@ public interface I_C_Printing_Queue
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
+	 * Set Druck-Warteschlangendatensatz.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID);
+
+	/**
+	 * Get Druck-Warteschlangendatensatz.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Printing_Queue_ID();
+
+    /** Column definition for C_Printing_Queue_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Printing_Queue_ID", null);
+    /** Column name C_Printing_Queue_ID */
+    public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
+
+	/**
 	 * Set Kopien.
 	 * Anzahl der zu erstellenden/zu druckenden Exemplare
 	 *
@@ -447,29 +428,6 @@ public interface I_C_Printing_Queue
     public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "Copies", null);
     /** Column name Copies */
     public static final String COLUMNNAME_Copies = "Copies";
-
-	/**
-	 * Set Druck-Warteschlangendatensatz.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID);
-
-	/**
-	 * Get Druck-Warteschlangendatensatz.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Printing_Queue_ID();
-
-    /** Column definition for C_Printing_Queue_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_C_Printing_Queue_ID = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "C_Printing_Queue_ID", null);
-    /** Column name C_Printing_Queue_ID */
-    public static final String COLUMNNAME_C_Printing_Queue_ID = "C_Printing_Queue_ID";
 
 	/**
 	 * Get Erstellt.
@@ -555,7 +513,9 @@ public interface I_C_Printing_Queue
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setIsDifferentInvoicingPartner (boolean IsDifferentInvoicingPartner);
 
 	/**
@@ -594,6 +554,29 @@ public interface I_C_Printing_Queue
     public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_IsPrintoutForOtherUser = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "IsPrintoutForOtherUser", null);
     /** Column name IsPrintoutForOtherUser */
     public static final String COLUMNNAME_IsPrintoutForOtherUser = "IsPrintoutForOtherUser";
+
+	/**
+	 * Set Print Item Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setItemName (java.lang.String ItemName);
+
+	/**
+	 * Get Print Item Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getItemName();
+
+    /** Column definition for ItemName */
+    public static final org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object> COLUMN_ItemName = new org.adempiere.model.ModelColumn<I_C_Printing_Queue, Object>(I_C_Printing_Queue.class, "ItemName", null);
+    /** Column name ItemName */
+    public static final String COLUMNNAME_ItemName = "ItemName";
 
 	/**
 	 * Set Warteschlangen-Aggregationsmerkmal.

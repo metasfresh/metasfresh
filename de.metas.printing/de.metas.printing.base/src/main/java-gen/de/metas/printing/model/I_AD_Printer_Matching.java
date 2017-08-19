@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.printing.model;
 
 
@@ -112,33 +96,6 @@ public interface I_AD_Printer_Matching
     public static final String COLUMNNAME_AD_Printer_Config_ID = "AD_Printer_Config_ID";
 
 	/**
-	 * Set Hardware-Drucker.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID);
-
-	/**
-	 * Get Hardware-Drucker.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getAD_PrinterHW_ID();
-
-	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW();
-
-	public void setAD_PrinterHW(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW);
-
-    /** Column definition for AD_PrinterHW_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, de.metas.printing.model.I_AD_PrinterHW> COLUMN_AD_PrinterHW_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, de.metas.printing.model.I_AD_PrinterHW>(I_AD_Printer_Matching.class, "AD_PrinterHW_ID", de.metas.printing.model.I_AD_PrinterHW.class);
-    /** Column name AD_PrinterHW_ID */
-    public static final String COLUMNNAME_AD_PrinterHW_ID = "AD_PrinterHW_ID";
-
-	/**
 	 * Set Logischer Drucker.
 	 *
 	 * <br>Type: TableDir
@@ -187,6 +144,33 @@ public interface I_AD_Printer_Matching
     public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object> COLUMN_AD_Printer_Matching_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, Object>(I_AD_Printer_Matching.class, "AD_Printer_Matching_ID", null);
     /** Column name AD_Printer_Matching_ID */
     public static final String COLUMNNAME_AD_Printer_Matching_ID = "AD_Printer_Matching_ID";
+
+	/**
+	 * Set Hardware-Drucker.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID);
+
+	/**
+	 * Get Hardware-Drucker.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_PrinterHW_ID();
+
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW();
+
+	public void setAD_PrinterHW(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW);
+
+    /** Column definition for AD_PrinterHW_ID */
+    public static final org.adempiere.model.ModelColumn<I_AD_Printer_Matching, de.metas.printing.model.I_AD_PrinterHW> COLUMN_AD_PrinterHW_ID = new org.adempiere.model.ModelColumn<I_AD_Printer_Matching, de.metas.printing.model.I_AD_PrinterHW>(I_AD_Printer_Matching.class, "AD_PrinterHW_ID", de.metas.printing.model.I_AD_PrinterHW.class);
+    /** Column name AD_PrinterHW_ID */
+    public static final String COLUMNNAME_AD_PrinterHW_ID = "AD_PrinterHW_ID";
 
 	/**
 	 * Set AD_Tray_Matching_IncludedTab.
@@ -269,7 +253,7 @@ public interface I_AD_Printer_Matching
 	 * Unique identifier of a host
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public void setHostKey (java.lang.String HostKey);
@@ -279,7 +263,7 @@ public interface I_AD_Printer_Matching
 	 * Unique identifier of a host
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	public java.lang.String getHostKey();
