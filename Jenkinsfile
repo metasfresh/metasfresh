@@ -3,7 +3,7 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
+@Library('misc@gh2102-mf') // use the issue branch's library
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
@@ -56,8 +56,8 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 							// do the actual building and deployment
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
             }
-		}
-	}
+		} // withMaven
+	} // configFileProvider
 } // node
 
 stage('Invoke downstream job')
