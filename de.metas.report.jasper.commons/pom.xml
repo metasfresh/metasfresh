@@ -66,7 +66,13 @@
 			<groupId>net.sf.barcode4j</groupId>
 			<artifactId>barcode4j-fop-ext-complete</artifactId>
 			<version>2.0</version>
-			<type>jar</type>
+			<type>jar</type>			
+			<exclusions>
+				<exclusion>
+					<groupId>commons-logging</groupId>
+					<artifactId>commons-logging</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		
 
