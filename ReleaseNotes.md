@@ -20,6 +20,8 @@ Here come the actual release notes:
     * Adopting the Attributes Window to the current Design Guidelines.
   * [#2170](https://github.com/metasfresh/metasfresh/issues/2170) Window Design WebUI : Bill of Materials
     * Adopting the Bill of Material Window to the current Design Guidelines.
+  * [#2173](https://github.com/metasfresh/metasfresh/issues/2173) Window Design WebUI : Discount Schema
+    * Adopting the Discount Schema Window to the current Design Guidelines.
   * [#2174](https://github.com/metasfresh/metasfresh/issues/2174) Window Design WebUI : Unit of Measure
     * Adopting the Product Unit of measure Window to the current Design Guidelines.
   * #[2175](https://github.com/metasfresh/metasfresh/issues/2175) Window Design WebUI : Product Category
