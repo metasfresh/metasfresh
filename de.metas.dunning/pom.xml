@@ -29,6 +29,19 @@
 			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- 2103: this is required for a printing handler for dunning -->
+		<dependency>
+			<groupId>de.metas.printing</groupId>
+			<artifactId>de.metas.printing.base</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
