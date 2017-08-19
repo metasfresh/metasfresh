@@ -218,22 +218,20 @@ public class ESRDataLoaderUtil
 
 		if (bPartner != null)
 		{
-			// check organization
-			// we should not allow matching form other org
-			if (bPartner.getAD_Org_ID() > 0 // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
-					&& bPartner.getAD_Org_ID() != importLine.getAD_Org_ID())
-			{
-				addMatchErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
-
-				importLine.setC_BPartner(null);
-				bPartnerId = -1;
-			}
-			else
+			final boolean match = Services.get(IESRLineHandlersService.class).applyESRMatchingBPartner(bPartner, importLine);
+			
+			// check the org: should not match with invoices from other orgs
+			if (match)
 			{
 				bPartnerId = bPartner.getC_BPartner_ID();
 				importLine.setC_BPartner(bPartner);
 				importLine.setESR_Document_Status(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched);
+				
+			}
+			else
+			{
+				importLine.setC_BPartner(null);
+				bPartnerId = -1;
 			}
 		}
 		else
@@ -262,13 +260,7 @@ public class ESRDataLoaderUtil
 						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
 			}
 			// check the org: should not match with invoices which have the partner from other org
-			else if (invoicePartner.getAD_Org_ID() > 0  // task 09852: a partner that has no org at all does not mean an inconsistency and is therefore OK
-					&& invoicePartner.getAD_Org_ID() != importLine.getAD_Org_ID())
-			{
-				addMatchErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
-			}
-			else
+			else if (Services.get(IESRLineHandlersService.class).applyESRMatchingBPartnerOfTheInvoice(invoice, importLine))
 			{
 				if (!invoicePartner.getValue().equals(bpValue))
 				{
@@ -310,7 +302,11 @@ public class ESRDataLoaderUtil
 									documentNo
 							}));
 				}
-
+			}
+			else
+			{
+				addMatchErrorMsg(importLine,
+						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
 			}
 
 		}
