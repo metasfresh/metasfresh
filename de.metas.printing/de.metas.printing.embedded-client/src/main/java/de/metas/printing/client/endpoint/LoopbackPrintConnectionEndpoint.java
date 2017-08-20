@@ -41,6 +41,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
 import org.adempiere.server.rpl.api.IImportHelper;
 import org.adempiere.util.Services;
@@ -48,6 +49,7 @@ import org.compiere.util.Env;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.client.IPrintConnectionEndpoint;
 import de.metas.printing.esb.api.LoginRequest;
 import de.metas.printing.esb.api.LoginResponse;
@@ -66,6 +68,7 @@ import de.metas.printing.esb.base.jaxb.generated.PRTADPrinterHWType;
 import de.metas.printing.esb.base.jaxb.generated.PRTCPrintJobInstructionsConfirmType;
 import de.metas.printing.esb.base.jaxb.generated.PRTCPrintPackageDataType;
 import de.metas.printing.esb.base.jaxb.generated.PRTCPrintPackageType;
+import de.metas.printing.model.I_C_Print_Job_Instructions;
 
 /**
  * Implementation of {@link IPrintConnectionEndpoint} which calls the replication module (i.e. {@link IImportHelper}) directly.
@@ -136,9 +139,20 @@ public class LoopbackPrintConnectionEndpoint implements IPrintConnectionEndpoint
 
 		final PRTCPrintPackageType xmlRequest = converterPRTCPrintPackageType.createPRTCPrintPackageTypeRequest(sessionId, transactionId);
 		final PRTCPrintPackageType xmlResponse = sendXmlObject(xmlRequest);
+		
 		if (xmlResponse == null)
 		{
 			return null;
+		}
+		else if (xmlResponse.getCPrintJobInstructionsID()!= null && xmlResponse.getCPrintJobInstructionsID().intValue()>0) 
+		{
+			// check if we deal with a pdf printing
+			final I_C_Print_Job_Instructions pji = InterfaceWrapperHelper.create(Env.getCtx(), xmlResponse.getCPrintJobInstructionsID().intValue(), I_C_Print_Job_Instructions.class, ITrx.TRXNAME_None);
+			// the HW printer is set in instruction only when the printer is PDF type
+			if (pji!= null && pji.getAD_PrinterHW_ID() > 0 && Services.get(IPrinterBL.class).isPDFPrinter(pji.getAD_PrinterHW_ID()))
+			{
+				return null;
+			}
 		}
 
 		final PrintPackage printPackage = converterPRTCPrintPackageType.createPackageTypeResponse(xmlResponse);

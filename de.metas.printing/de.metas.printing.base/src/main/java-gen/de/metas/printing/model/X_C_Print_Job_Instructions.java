@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
@@ -30,7 +14,7 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1291392169L;
+	private static final long serialVersionUID = 1631078398L;
 
     /** Standard Constructor */
     public X_C_Print_Job_Instructions (Properties ctx, int C_Print_Job_Instructions_ID, String trxName)
@@ -39,16 +23,13 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
       /** if (C_Print_Job_Instructions_ID == 0)
         {
 			setAD_User_ToPrint_ID (0);
-			setCopies (0);
-// 1
 			setC_Print_Job_ID (0);
 			setC_Print_Job_Instructions_ID (0);
 			setC_PrintJob_Line_From_ID (0);
 			setC_PrintJob_Line_To_ID (0);
-			setStatus (null);
-// P
-			setUserOK (false);
-// N
+			setCopies (0); // 1
+			setStatus (null); // P
+			setUserOK (false); // N
         } */
     }
 
@@ -66,6 +47,40 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	@Override
+	public de.metas.printing.model.I_AD_PrinterHW getAD_PrinterHW() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class);
+	}
+
+	@Override
+	public void setAD_PrinterHW(de.metas.printing.model.I_AD_PrinterHW AD_PrinterHW)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_PrinterHW_ID, de.metas.printing.model.I_AD_PrinterHW.class, AD_PrinterHW);
+	}
+
+	/** Set Hardware-Drucker.
+		@param AD_PrinterHW_ID Hardware-Drucker	  */
+	@Override
+	public void setAD_PrinterHW_ID (int AD_PrinterHW_ID)
+	{
+		if (AD_PrinterHW_ID < 1) 
+			set_Value (COLUMNNAME_AD_PrinterHW_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_PrinterHW_ID, Integer.valueOf(AD_PrinterHW_ID));
+	}
+
+	/** Get Hardware-Drucker.
+		@return Hardware-Drucker	  */
+	@Override
+	public int getAD_PrinterHW_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PrinterHW_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_AD_User getAD_User_ToPrint() throws RuntimeException
@@ -96,28 +111,6 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	public int getAD_User_ToPrint_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ToPrint_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kopien.
-		@param Copies 
-		Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public void setCopies (int Copies)
-	{
-		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
-	}
-
-	/** Get Kopien.
-		@return Anzahl der zu erstellenden/zu druckenden Exemplare
-	  */
-	@Override
-	public int getCopies () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -242,6 +235,28 @@ public class X_C_Print_Job_Instructions extends org.compiere.model.PO implements
 	public int getC_PrintJob_Line_To_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PrintJob_Line_To_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kopien.
+		@param Copies 
+		Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public void setCopies (int Copies)
+	{
+		set_Value (COLUMNNAME_Copies, Integer.valueOf(Copies));
+	}
+
+	/** Get Kopien.
+		@return Anzahl der zu erstellenden/zu druckenden Exemplare
+	  */
+	@Override
+	public int getCopies () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Copies);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

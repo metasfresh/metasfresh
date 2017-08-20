@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.printing.model;
 
 
@@ -56,31 +40,6 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setAddress1 (java.lang.String Address1);
-
-	/**
-	 * Get Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getAddress1();
-
-    /** Column definition for Address1 */
-    public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "Address1", null);
-    /** Column name Address1 */
-    public static final String COLUMNNAME_Address1 = "Address1";
-
-	/**
 	 * Set Sektion.
 	 * Organisatorische Einheit des Mandanten
 	 *
@@ -108,6 +67,31 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, org.compiere.model.I_AD_Org>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
     /** Column name AD_Org_ID */
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAddress1 (java.lang.String Address1);
+
+	/**
+	 * Get Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAddress1();
+
+    /** Column definition for Address1 */
+    public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object> COLUMN_Address1 = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "Address1", null);
+    /** Column name Address1 */
+    public static final String COLUMNNAME_Address1 = "Address1";
 
 	/**
 	 * Set Anschrift-Text.
@@ -160,29 +144,6 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, org.compiere.model.I_C_Invoice>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
     /** Column name C_Invoice_ID */
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/**
-	 * Set Firmenname.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCompanyname (java.lang.String Companyname);
-
-	/**
-	 * Get Firmenname.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCompanyname();
-
-    /** Column definition for Companyname */
-    public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object> COLUMN_Companyname = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "Companyname", null);
-    /** Column name Companyname */
-    public static final String COLUMNNAME_Companyname = "Companyname";
 
 	/**
 	 * Set Druck-Job.
@@ -287,6 +248,29 @@ public interface I_RV_Prt_Bericht_Statistik_List_Per_Org
     public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, de.metas.printing.model.I_C_Print_Package> COLUMN_C_Print_Package_ID = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, de.metas.printing.model.I_C_Print_Package>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "C_Print_Package_ID", de.metas.printing.model.I_C_Print_Package.class);
     /** Column name C_Print_Package_ID */
     public static final String COLUMNNAME_C_Print_Package_ID = "C_Print_Package_ID";
+
+	/**
+	 * Set Firmenname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCompanyname (java.lang.String Companyname);
+
+	/**
+	 * Get Firmenname.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCompanyname();
+
+    /** Column definition for Companyname */
+    public static final org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object> COLUMN_Companyname = new org.adempiere.model.ModelColumn<I_RV_Prt_Bericht_Statistik_List_Per_Org, Object>(I_RV_Prt_Bericht_Statistik_List_Per_Org.class, "Companyname", null);
+    /** Column name Companyname */
+    public static final String COLUMNNAME_Companyname = "Companyname";
 
 	/**
 	 * Get Erstellt.

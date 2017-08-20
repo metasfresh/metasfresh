@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.printing.model;
 
 
@@ -88,7 +72,7 @@ public interface I_C_Printing_Queue_Recipient
 	 * Set Ausdruck für.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public void setAD_User_ToPrint_ID (int AD_User_ToPrint_ID);
@@ -97,7 +81,7 @@ public interface I_C_Printing_Queue_Recipient
 	 * Get Ausdruck für.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	public int getAD_User_ToPrint_ID();
@@ -140,6 +124,7 @@ public interface I_C_Printing_Queue_Recipient
 
 	/**
 	 * Set Druck-Empfänger.
+	 * Bei einem automatischer Druck über das "Massendruck" Framework ist nicht der eigenentlich druckende Nutzer, sondern der jeweils als Druck-Empfänger eingerichtete Nutzer der Empfänger der Druckstücke.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -149,6 +134,7 @@ public interface I_C_Printing_Queue_Recipient
 
 	/**
 	 * Get Druck-Empfänger.
+	 * Bei einem automatischer Druck über das "Massendruck" Framework ist nicht der eigenentlich druckende Nutzer, sondern der jeweils als Druck-Empfänger eingerichtete Nutzer der Empfänger der Druckstücke.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

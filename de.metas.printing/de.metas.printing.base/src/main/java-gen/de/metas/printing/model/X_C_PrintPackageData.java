@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
@@ -30,7 +14,7 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1415655726L;
+	private static final long serialVersionUID = -1296457514L;
 
     /** Standard Constructor */
     public X_C_PrintPackageData (Properties ctx, int C_PrintPackageData_ID, String trxName)
@@ -38,8 +22,8 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
       super (ctx, C_PrintPackageData_ID, trxName);
       /** if (C_PrintPackageData_ID == 0)
         {
-			setC_PrintPackageData_ID (0);
 			setC_Print_Package_ID (0);
+			setC_PrintPackageData_ID (0);
         } */
     }
 
@@ -57,28 +41,6 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	/** Set Print package data.
-		@param C_PrintPackageData_ID Print package data	  */
-	@Override
-	public void setC_PrintPackageData_ID (int C_PrintPackageData_ID)
-	{
-		if (C_PrintPackageData_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_PrintPackageData_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_PrintPackageData_ID, Integer.valueOf(C_PrintPackageData_ID));
-	}
-
-	/** Get Print package data.
-		@return Print package data	  */
-	@Override
-	public int getC_PrintPackageData_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PrintPackageData_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	@Override
 	public de.metas.printing.model.I_C_Print_Package getC_Print_Package() throws RuntimeException
@@ -109,6 +71,28 @@ public class X_C_PrintPackageData extends org.compiere.model.PO implements I_C_P
 	public int getC_Print_Package_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_Package_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Print package data.
+		@param C_PrintPackageData_ID Print package data	  */
+	@Override
+	public void setC_PrintPackageData_ID (int C_PrintPackageData_ID)
+	{
+		if (C_PrintPackageData_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_PrintPackageData_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_PrintPackageData_ID, Integer.valueOf(C_PrintPackageData_ID));
+	}
+
+	/** Get Print package data.
+		@return Print package data	  */
+	@Override
+	public int getC_PrintPackageData_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_PrintPackageData_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

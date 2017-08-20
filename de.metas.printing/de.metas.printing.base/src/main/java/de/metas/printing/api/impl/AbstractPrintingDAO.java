@@ -63,6 +63,7 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.printing.model.X_AD_PrinterHW;
 import lombok.NonNull;
 
 public abstract class AbstractPrintingDAO implements IPrintingDAO
@@ -414,6 +415,31 @@ public abstract class AbstractPrintingDAO implements IPrintingDAO
 				.endOrderBy()
 				.create()
 				.first(); // note: right now IDK why it's first an not firstOnly
+	}
+	
+	@Override
+	public I_AD_PrinterHW retrieveVirtualPrinter(final Properties ctx, String hostkey, final String trxName)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		
+		final IQuery<I_AD_Printer_Config> queryConfig = queryBL.createQueryBuilder(I_AD_Printer_Config.class)
+				.addEqualsFilter(I_AD_Printer_Config.COLUMNNAME_HostKey, hostkey)
+				.create();
+		
+		final IQuery<I_AD_Printer_Matching> queryMatchings = queryBL.createQueryBuilder(I_AD_Printer_Matching.class)
+				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_Printer_Config_ID, I_AD_Printer_Config.COLUMNNAME_AD_Printer_Config_ID, queryConfig)
+				.create();
+		
+		return queryBL.createQueryBuilder(I_AD_PrinterHW.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_PrinterHW.COLUMNNAME_OutputType, X_AD_PrinterHW.OUTPUTTYPE_PDF)
+				.addInArrayFilter(I_AD_PrinterHW.COLUMN_HostKey, hostkey, null)
+				.addInSubQueryFilter(I_AD_Printer_Matching.COLUMNNAME_AD_PrinterHW_ID, I_AD_PrinterHW.COLUMNNAME_AD_PrinterHW_ID, queryMatchings)
+				.orderBy()
+				.addColumn(I_AD_PrinterHW.COLUMNNAME_HostKey, false).endOrderBy()
+				.create()
+				.first(I_AD_PrinterHW.class);
 	}
 
 }

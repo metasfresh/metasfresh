@@ -35,7 +35,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_InOut;
 import org.compiere.process.DocAction;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
+
 import com.google.common.base.Optional;
 
 import de.metas.adempiere.model.I_C_Invoice;
@@ -44,7 +44,11 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.letters.model.I_C_Letter;
+import de.metas.logging.LogManager;
+import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Printing_Queue;
+import de.metas.printing.model.X_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 
 /**
@@ -134,8 +138,42 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 			final I_M_InOut inout = InterfaceWrapperHelper.create(archiveRerencedModel, I_M_InOut.class);
 			handleInOuts(queueItem, inout);
 		}
+		
+		handleItemName(queueItem, archiveRerencedModel);
 	}
 
+	/**
+	 * Sets the ItemName for each document that we process
+	 * @param queueItem
+	 * @param archiveRerencedModel
+	 */
+	private void handleItemName(final I_C_Printing_Queue queueItem, Object archiveRerencedModel)
+	{
+		// Handles operations specific for invoices.
+		if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Invoice.class))
+		{
+			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Rechnung);
+		}
+		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Print_Package.class))
+		{
+			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_PDF);
+		}
+		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_M_InOut.class))
+		{
+			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_VersandWareneingang);
+		}
+		// TODO factor this code out into a AD_Boilerplate/C_Letter specific handler
+		// https://github.com/metasfresh/metasfresh/issues/2128
+		else if (InterfaceWrapperHelper.isInstanceOf(archiveRerencedModel, I_C_Letter.class))
+		{
+			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Mitgliedsausweis);
+		}
+		else
+		{
+			queueItem.setItemName(X_C_Printing_Queue.ITEMNAME_Sofort_DruckPDF);
+		}
+	}
+	
 	private void handleInOuts(final I_C_Printing_Queue queueItem, final I_M_InOut inout)
 	{
 		// services

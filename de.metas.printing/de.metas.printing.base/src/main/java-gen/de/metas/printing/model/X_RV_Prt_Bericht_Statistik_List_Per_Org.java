@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_Prt_Bericht_Statistik_List_Per_Org
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1715881748L;
+	private static final long serialVersionUID = -583390157L;
 
     /** Standard Constructor */
     public X_RV_Prt_Bericht_Statistik_List_Per_Org (Properties ctx, int RV_Prt_Bericht_Statistik_List_Per_Org_ID, String trxName)
@@ -128,22 +111,6 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Firmenname.
-		@param Companyname Firmenname	  */
-	@Override
-	public void setCompanyname (java.lang.String Companyname)
-	{
-		set_ValueNoCheck (COLUMNNAME_Companyname, Companyname);
-	}
-
-	/** Get Firmenname.
-		@return Firmenname	  */
-	@Override
-	public java.lang.String getCompanyname () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
 	}
 
 	@Override
@@ -264,6 +231,22 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 		return ii.intValue();
 	}
 
+	/** Set Firmenname.
+		@param Companyname Firmenname	  */
+	@Override
+	public void setCompanyname (java.lang.String Companyname)
+	{
+		set_ValueNoCheck (COLUMNNAME_Companyname, Companyname);
+	}
+
+	/** Get Firmenname.
+		@return Firmenname	  */
+	@Override
+	public java.lang.String getCompanyname () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
+	}
+
 	/** Set Rechnungsdatum.
 		@param DateInvoiced 
 		Datum auf der Rechnung
@@ -355,7 +338,7 @@ public class X_RV_Prt_Bericht_Statistik_List_Per_Org extends org.compiere.model.
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GrandTotal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
