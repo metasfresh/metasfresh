@@ -39,11 +39,7 @@ Map invokeDownStreamJobs(
 	return buildResult.getBuildVariables();
 }
 
-//
-// setup: we'll need the following variables in different stages, that's we we create them here
-//
-
-/ keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
+// keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
