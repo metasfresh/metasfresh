@@ -10,12 +10,11 @@ import de.metas.jenkins.Misc
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
 	parameters([
-		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger downstream builds.''',
+		booleanParam(defaultValue: true, description: '''Set to true if this build shall trigger downstream builds and wait for them to succeed orr fail''',
 			name: 'MF_TRIGGER_DOWNSTREAM_BUILDS')
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '100')) // keep the last 100 builds
-	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_UPSTREAM_BUILDNO in each snapshot artifact's version
 ])
 
 timestamps
