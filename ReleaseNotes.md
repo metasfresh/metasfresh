@@ -26,6 +26,8 @@ Here come the actual release notes:
     * Adopting the Product Unit of measure Window to the current Design Guidelines.
   * #[2175](https://github.com/metasfresh/metasfresh/issues/2175) Window Design WebUI : Product Category
     * Adopting the Product Category Window to the current Design Guidelines.
+  * [#2183](https://github.com/metasfresh/metasfresh/issues/2183) Window Design WebUI : Sales Order
+    * Adopting the Sales Order Window to the current Design Guidelines.
 
 * metasfresh-webui-api
 
