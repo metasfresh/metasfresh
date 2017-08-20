@@ -63,8 +63,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 			nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
     	// env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
-    	withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
-    	{
+
       	withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
             stage('Set versions and build metasfresh-admin')
@@ -95,7 +94,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 							}
             } // stage
 		   } // withMaven
-       } // withEnv
 		}
 	// clean up the work space after (successfull) builds, including the local maven repositories that the withMaven steps created
 	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
