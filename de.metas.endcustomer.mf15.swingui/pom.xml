@@ -25,7 +25,7 @@
 		<spring.jarLauncherClass>org.springframework.boot.loader.PropertiesLauncher</spring.jarLauncherClass>
 
 		<!-- AFAIK, only digits and dots are allowed with launch4j  -->
-		<launch4j.versionInfo>${env.MF_RELEASE_VERSION}.0.0</launch4j.versionInfo>
+		<launch4j.versionInfo>0.0.0.0</launch4j.versionInfo>
 		<launch4j.preCp></launch4j.preCp>
 		
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
