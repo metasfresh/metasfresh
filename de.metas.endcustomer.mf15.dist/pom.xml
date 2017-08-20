@@ -471,7 +471,6 @@ note: when adding new records, please roughly order them by alphabet.
 						<configuration>
 							<outputFile>${project.build.directory}/build-info/build-info.properties</outputFile>
 							<additionalProperties>
-								<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
 								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
 								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
 								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>

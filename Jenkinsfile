@@ -7,21 +7,6 @@
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
-//
-// setup: we'll need the following variables in different stages, that's we we create them here
-//
-final MF_UPSTREAM_BRANCH;
-if(params.MF_UPSTREAM_BRANCH)
-{
-	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
-}
-
 // always offer deployment, because there might be different tasks/branches to roll out
 final skipDeploymentParamDefaultValue = false;
 
@@ -90,8 +75,8 @@ node('agent && linux && libc6-i386')
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 		withEnv([
-				"MF_RELEASE_VERSION=${MF_RELEASE_VERSION}",
-				"MF_BUILD_VERSION=${MF_BUILD_VERSION}",
+				"MF_VERSION=${MF_VERSION}",
+				"MF_BUILD_DATE=${mkReleaseDate()}",
 				"MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}",
 				"CHANGE_URL=${env.CHANGE_URL}",
 				"BUILD_NUMBER=${env.BUILD_NUMBER}"])
