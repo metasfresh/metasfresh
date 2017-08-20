@@ -109,7 +109,6 @@ node('agent && linux')
 				}
 				else
 				{
-
         nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
 				checkout scm; // i hope this to do all the magic we need
@@ -156,9 +155,9 @@ node('agent && linux')
 				docker.withRegistry('https://index.docker.io/v1/', 'dockerhub_metasfresh')
 				{
 					// note: we ommit the "-service" in the docker image name, because we also don't have "-service" in the webui-api and backend and it's pretty clear that it is a service
-					def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
+					final def app = docker.build 'metasfresh/metasfresh-material-dispo', "${dockerWorkDir}";
 
-          			def misc = new de.metas.jenkins.Misc();
+          final def misc = new de.metas.jenkins.Misc();
 					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-latest");
 					app.push misc.mkDockerTag("${MF_UPSTREAM_BRANCH}-${MF_VERSION}");
           if(MF_UPSTREAM_BRANCH=='release')
