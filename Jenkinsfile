@@ -3,7 +3,7 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
+@Library('misc@gh2102-mf') // use the issue branch's library
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
@@ -11,8 +11,8 @@ import de.metas.jenkins.Misc
 properties([
 	parameters([
 		string(defaultValue: '',
-			description: '''If this job is invoked via an updstream build job, than that job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
-This build will then attempt to use maven dependencies from that branch, and it will sets its own name to reflect the given value.
+			description: '''If this job is invoked via an updstream build job, than that upstream job can provide either its branch or the respective <code>MF_UPSTREAM_BRANCH</code> that was passed to it.<br>
+This build will then attempt to use maven dependencies from that branch, and it will set its own version name to reflect the given value.
 <p>
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
@@ -31,80 +31,41 @@ Set to false if this build is called from elsewhere and the orchestrating also t
 	// , disableConcurrentBuilds() // concurrent builds are ok now. we still work with "-SNAPSHOTS" bit there is a unique MF_BUILD_ID in each snapshot artifact's version
 ])
 
-//
-// setup: we'll need the following variables in different stages, that's we we create them here
-//
-final MF_UPSTREAM_BRANCH;
-if(params.MF_UPSTREAM_BRANCH)
-{
-	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
-}
-if(params.MF_BUILD_ID)
-{
-	echo "Setting MF_BUILD_ID from params.MF_BUILD_ID=${params.MF_BUILD_ID}"
-	MF_BUILD_ID=params.MF_BUILD_ID
-}
-else
-{
-	echo "Setting MF_BUILD_ID from env.BUILD_NUMBER=${env.BUILD_NUMBER}"
-	MF_BUILD_ID=env.BUILD_NUMBER
-}
-
-// set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
-
-// the artifacts we build in this pipeline will have a version that ends with this string
-final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
-echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
-
-currentBuild.displayName="#" + currentBuild.number + "-" + MF_UPSTREAM_BRANCH + "-" + MF_BUILD_ID
-
 timestamps
 {
-// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
-echo "set MF_VERSION=${MF_VERSION}";
+	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
+	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
-// shown in jenkins, for each build
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	currentBuild.displayName="artifact-version ${MF_VERSION}";
 
-node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent with linux
+node('agent && linux') // shall only run on a jenkins agent with linux
 {
 	stage('Preparation') // for display purposes
 	{
 		// checkout our code
-		// note that we do not know if the stuff we checked out in the other node is available here, so we somehow need to make sure by checking out (again).
-		// see: https://groups.google.com/forum/#!topic/jenkinsci-users/513qLiYlXHc
 		checkout scm; // i hope this to do all the magic we need
 		sh 'git clean -d --force -x' // clean the workspace
 	}
 
     configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
     {
-		// create our config instance to be used further on
-		final MvnConf mvnConf = new MvnConf(
-			'pom.xml', // pomFile
-			MAVEN_SETTINGS, // settingsFile
-			"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-			'https://repo.metasfresh.com' // mvnRepoBaseURL
-		)
-		echo "mvnConf=${mvnConf}"
+			// create our config instance to be used further on
+			final MvnConf mvnConf = new MvnConf(
+				'pom.xml', // pomFile
+				MAVEN_SETTINGS, // settingsFile
+				"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
+				'https://repo.metasfresh.com' // mvnRepoBaseURL
+			)
+			echo "mvnConf=${mvnConf}"
 
-		nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+			nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-      	// env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
-      	withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
-      	{
-        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
+    	// env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
+    	withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
+    	{
+      	withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
             stage('Set versions and build metasfresh-admin')
             {
@@ -136,7 +97,7 @@ node('agent && linux && dejenkinsnode001') // shall only run on a jenkins agent 
 		   } // withMaven
        } // withEnv
 		}
-	// clean up the work space, including the local maven repositories that the withMaven steps created
-	step([$class: 'WsCleanup', cleanWhenFailure: false])
+	// clean up the work space after (successfull) builds, including the local maven repositories that the withMaven steps created
+	cleanWs cleanWhenAborted: false, cleanWhenFailure: false
 } // node
 } // timestamps
