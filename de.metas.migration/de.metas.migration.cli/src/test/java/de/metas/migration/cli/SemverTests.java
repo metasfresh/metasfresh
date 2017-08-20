@@ -83,17 +83,4 @@ public class SemverTests
 		assertThat(Version.valueOf("5.20.4-2+a")).isGreaterThan(Version.valueOf("5.20.4-1+b"));
 		assertThat(Version.valueOf("5.20.4-1+a")).isLessThan(Version.valueOf("5.20.4-2+b"));
 	}
-
-	@Test
-	public void testAddMetaInfo()
-	{
-		final Version versionWithoutMetadata = Version.valueOf("1.1.1");
-		final String metadata = "metadata";
-
-		final Version versionWithMetadata = new Version.Builder(versionWithoutMetadata.toString())
-				.setBuildMetadata(versionWithoutMetadata.getBuildMetadata() + "-" + metadata)
-				.build();
-
-		assertThat(versionWithMetadata.toString()).isEqualTo("1.1.1" + "+" + metadata);
-	}
 }
