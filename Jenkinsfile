@@ -3,7 +3,7 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
+@Library('misc@gh2102-mf') // use the issue branch's library
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
@@ -35,21 +35,27 @@ This build will then attempt to use maven dependencies from that branch, and it 
 So if this is a "master" build, but it was invoked by a "feature-branch" build then this build will try to get the feature-branch\'s build artifacts annd will set its
 <code>currentBuild.displayname</code> and <code>currentBuild.description</code> to make it obvious that the build contains code from the feature branch.''',
 			name: 'MF_UPSTREAM_BRANCH'),
+
 		string(defaultValue: '',
 			description: 'Build number of the upstream job that called us, if any.',
 			name: 'MF_UPSTREAM_BUILDNO'),
+
 		string(defaultValue: '',
 			description: 'Version of the metasfresh "main" code we shall use when resolving dependencies. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_VERSION'),
+
 		string(defaultValue: '',
 				description: 'Version of the metasfresh-admin (spring-boot-admin) webui to include in the distribution. Leave empty and this build will use the latest.',
 				name: 'MF_METASFRESH_ADMIN_VERSION'),
+
 		string(defaultValue: '',
 			description: 'Version of the metasfresh procurement webui to include in the distribution. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION'),
+
 		string(defaultValue: '',
 			description: 'Version of the metasfresh-webui(-API) service to include in the distribution. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_WEBUI_API_VERSION'),
+
 		string(defaultValue: '',
 			description: 'Version of the metasfresh-webui-frontend webui to include in the distribution. Leave empty and this build will use the latest.',
 			name: 'MF_METASFRESH_WEBUI_FRONTEND_VERSION')
@@ -57,25 +63,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
-
-if(params.MF_UPSTREAM_BUILDNO)
-{
-	echo "Setting MF_UPSTREAM_BUILDNO from params.MF_UPSTREAM_BUILDNO=${params.MF_UPSTREAM_BUILDNO}"
-	MF_UPSTREAM_BUILDNO=params.MF_UPSTREAM_BUILDNO
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BUILDNO from env.BUILD_NUMBER=${env.BUILD_NUMBER}"
-	MF_UPSTREAM_BUILDNO=env.BUILD_NUMBER
-}
-
-// set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
-
-// the artifacts we build in this pipeline will have a version that ends with this string
-final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
-echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
 
 // gh #968 make create a map equal to the one we create in metasfresh/Jenkinsfile. The way we used it further down is also similar
 final MF_ARTIFACT_VERSIONS = [:];
@@ -88,15 +75,12 @@ MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = params.MF_METASFRESH_WEBUI_F
 
 timestamps
 {
-// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-// example version string: 5.20.2-23 with "5.20" == MF_RELEASE_VERSION
-final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
-echo "set MF_VERSION=${MF_VERSION}";
+	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
+	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
-// shown in jenkins, for each build
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	currentBuild.displayName="artifact-version ${MF_VERSION}";
 
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
@@ -112,7 +96,7 @@ node('agent && linux && libc6-i386')
 				"CHANGE_URL=${env.CHANGE_URL}",
 				"BUILD_NUMBER=${env.BUILD_NUMBER}"])
 		{
-		withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
+		withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
 		{
 			// create our config instance to be used further on
 			final MvnConf mvnConf = new MvnConf(
