@@ -377,7 +377,6 @@
 						</goals>
 						<configuration>
 								<additionalProperties>
-									<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
 									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
 									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
 									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
@@ -458,7 +457,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-				<version>2.3</version>
+				<version>2.4</version>
 				<configuration>
 					<properties>
 						<property>
