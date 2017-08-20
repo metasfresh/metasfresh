@@ -116,3 +116,86 @@ UPDATE AD_Field SET Name='Nur Beschreibung',Updated=TO_TIMESTAMP('2017-08-20 12:
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET Name='Abo Vertragsbedingungen',Updated=TO_TIMESTAMP('2017-08-20 12:34:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=540003
 ;
+
+-- 2017-08-20T13:20:20.343
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Steuer Ausschließlich',Updated=TO_TIMESTAMP('2017-08-20 13:20:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000059
+;
+
+-- 2017-08-20T13:21:18.850
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Ausschließlich',Updated=TO_TIMESTAMP('2017-08-20 13:21:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=74293
+;
+
+-- 2017-08-20T13:21:44.915
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Steuer Ausschließlich', PrintName='Steuer Ausschließlich',Updated=TO_TIMESTAMP('2017-08-20 13:21:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413
+;
+
+-- 2017-08-20T13:21:44.923
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsWholeTax', Name='Steuer Ausschließlich', Description='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount', Help='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount.
+
+Using this feature is useful when you have to create invoices/orders that contain only taxes on a line (e.g. custom authorities invoices).' WHERE AD_Element_ID=57413
+;
+
+-- 2017-08-20T13:21:44.954
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsWholeTax', Name='Steuer Ausschließlich', Description='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount', Help='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount.
+
+Using this feature is useful when you have to create invoices/orders that contain only taxes on a line (e.g. custom authorities invoices).', AD_Element_ID=57413 WHERE UPPER(ColumnName)='ISWHOLETAX' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-08-20T13:21:44.956
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsWholeTax', Name='Steuer Ausschließlich', Description='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount', Help='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount.
+
+Using this feature is useful when you have to create invoices/orders that contain only taxes on a line (e.g. custom authorities invoices).' WHERE AD_Element_ID=57413 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-08-20T13:21:44.965
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Ausschließlich', Description='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount', Help='If this flag is set, in a tax aware document (e.g. Invoice, Order) this tax will absorb the whole amount, leaving 0 for base amount.
+
+Using this feature is useful when you have to create invoices/orders that contain only taxes on a line (e.g. custom authorities invoices).' WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=57413) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-08-20T13:21:44.982
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Steuer Ausschließlich', Name='Steuer Ausschließlich' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=57413)
+;
+
+-- 2017-08-20T13:23:29.052
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Verpackungsmaterial',Updated=TO_TIMESTAMP('2017-08-20 13:23:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556921
+;
+
+-- 2017-08-20T13:24:08.479
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET Name='Steuer Verpackungsmaterial', PrintName='Steuer Verpackungsmaterial',Updated=TO_TIMESTAMP('2017-08-20 13:24:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543076
+;
+
+-- 2017-08-20T13:24:08.480
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='IsPackagingTax', Name='Steuer Verpackungsmaterial', Description=NULL, Help=NULL WHERE AD_Element_ID=543076
+;
+
+-- 2017-08-20T13:24:08.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsPackagingTax', Name='Steuer Verpackungsmaterial', Description=NULL, Help=NULL, AD_Element_ID=543076 WHERE UPPER(ColumnName)='ISPACKAGINGTAX' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2017-08-20T13:24:08.491
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='IsPackagingTax', Name='Steuer Verpackungsmaterial', Description=NULL, Help=NULL WHERE AD_Element_ID=543076 AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-08-20T13:24:08.492
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Verpackungsmaterial', Description=NULL, Help=NULL WHERE AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=543076) AND IsCentrallyMaintained='Y'
+;
+
+-- 2017-08-20T13:24:08.504
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Steuer Verpackungsmaterial', Name='Steuer Verpackungsmaterial' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=543076)
+;
