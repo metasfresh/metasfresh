@@ -3,13 +3,9 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
+@Library('misc@gh2102-mf') // use the issue branch's library
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
-
-//
-// setup: we'll need the following variables in different stages, that's we we create them here
-//
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the paramters
 properties([
@@ -37,54 +33,14 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '20')) // keep the last 20 builds
 ])
 
-final MF_UPSTREAM_BRANCH;
-if(params.MF_UPSTREAM_BRANCH)
-{
-	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
-}
-if(params.MF_UPSTREAM_BUILDNO)
-{
-	echo "Setting MF_UPSTREAM_BUILDNO from params.MF_UPSTREAM_BUILDNO=${params.MF_UPSTREAM_BUILDNO}"
-	MF_UPSTREAM_BUILDNO=params.MF_UPSTREAM_BUILDNO
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BUILDNO from env.BUILD_NUMBER=${env.BUILD_NUMBER}"
-	MF_UPSTREAM_BUILDNO=env.BUILD_NUMBER
-}
-
-// set the version prefix, 1 for "master", 2 for "not-master" a.k.a. feature
-final MF_BUILD_VERSION_PREFIX = MF_UPSTREAM_BRANCH.equals('master') ? "1" : "2"
-echo "Setting MF_BUILD_VERSION_PREFIX=$MF_BUILD_VERSION_PREFIX"
-
-// the artifacts we build in this pipeline will have a version that ends with this string
-final MF_BUILD_VERSION=MF_BUILD_VERSION_PREFIX + "-" + env.BUILD_NUMBER;
-echo "Setting MF_BUILD_VERSION=$MF_BUILD_VERSION"
-
-
 timestamps
 {
-// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
-echo "set MF_VERSION=${MF_VERSION}";
+	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
+	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
-
-// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-final String MF_RELEASE_VERSION = retrieveReleaseInfo(MF_UPSTREAM_BRANCH);
-echo "Retrieved MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"
-final String MF_VERSION="${MF_RELEASE_VERSION}.${MF_BUILD_VERSION}";
-echo "set MF_VERSION=${MF_VERSION}";
-
-// shown in jenkins, for each build
-currentBuild.displayName="${MF_UPSTREAM_BRANCH} - build #${currentBuild.number} - artifact-version ${MF_VERSION}";
+	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
+	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	currentBuild.displayName="artifact-version ${MF_VERSION}";
 
 node('agent && linux') // shall only run on a jenkins agent with linux
 {
@@ -102,7 +58,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         // env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
         withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
         {
-        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
         {
@@ -110,7 +66,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
         checkout scm; // i hope this to do all the magic we need
         sh 'git clean -d --force -x' // clean the workspace
 
-        nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
+				nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
         // update the parent pom version
         mvnUpdateParentPomVersion mvnConf
