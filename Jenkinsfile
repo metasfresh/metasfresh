@@ -66,7 +66,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
         nexusCreateRepoIfNotExists mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName
 
-        withMaven(jdk: 'java-8', maven: 'maven-3.3.9', mavenLocalRepo: '.repository')
+        withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
         stage('Set versions and build metasfresh-procurement-webui')
         {
@@ -126,7 +126,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 	     parameters: [
 	       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 	       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
-	       string(name: 'MF_UPSTREAM_VERSION', value: BUILD_VERSION),
+	       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
 	       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui'),
 	       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
 	       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
