@@ -3,15 +3,12 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc')
+@Library('misc@gh2102-mf') // use the issue branch's library
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
 /**
  * This method will be used further down to call additional jobs such as metasfresh-procurement and metasfresh-webui.
- *
- * TODO: move it into a shared library
- * IMPORTANT: i'm now wrapping up this work (i.e. https://github.com/metasfresh/metasfresh/issues/968) to do other things! it's not yet finsined or tested!
  *
  * @return the the build result's buildVariables (a map) which ususally also contain (to be set by our Jenkinsfiles):
  * <li>{@code MF_BUILD_VERSION}: the version the maven artifacts were deployed with
@@ -27,9 +24,7 @@ Map invokeDownStreamJobs(
           final String jobFolderName
         )
 {
-	echo "Invoking downstream job from folder=${jobFolderName} with preferred branch=${upstreamBranch}"
-
-  def misc = new de.metas.jenkins.Misc();
+  final def misc = new de.metas.jenkins.Misc();
 	final String jobName = misc.getEffectiveDownStreamJobName(jobFolderName, upstreamBranch);
 
 	final buildResult = build job: jobName,
@@ -48,20 +43,8 @@ Map invokeDownStreamJobs(
 // setup: we'll need the following variables in different stages, that's we we create them here
 //
 
-final MF_UPSTREAM_BRANCH;
-if(params.MF_UPSTREAM_BRANCH)
-{
-	echo "Setting MF_UPSTREAM_BRANCH from params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}"
-	MF_UPSTREAM_BRANCH=params.MF_UPSTREAM_BRANCH
-}
-else
-{
-	echo "Setting MF_UPSTREAM_BRANCH from env.BRANCH_NAME=${env.BRANCH_NAME}"
-	MF_UPSTREAM_BRANCH=env.BRANCH_NAME
-}
-
-// keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
-final numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
+/ keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
+final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
@@ -95,7 +78,7 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 
 timestamps
 {
-  MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
+  final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent

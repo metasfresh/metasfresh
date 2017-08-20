@@ -152,7 +152,6 @@
 						</goals>
 						<configuration>
 							<additionalProperties>
-								<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
 								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
 								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
 								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
