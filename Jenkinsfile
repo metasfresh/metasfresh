@@ -55,9 +55,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     	)
     	echo "mvnConf=${mvnConf}"
 
-        // env.MF_RELEASE_VERSION is used by spring-boot's build-info goal
-        withEnv(["MF_RELEASE_VERSION=${MF_RELEASE_VERSION}"])
-        {
         withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
@@ -145,7 +142,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				junit '**/target/surefire-reports/*.xml'
       } // stage
 		  } // withMaven
-	    } // withEnv
    } // configFileProvider
  } // node
 
