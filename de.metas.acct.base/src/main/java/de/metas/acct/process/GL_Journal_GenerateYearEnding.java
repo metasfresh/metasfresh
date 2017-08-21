@@ -201,6 +201,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 
 		final IQueryAggregateBuilder<I_Fact_Acct, I_C_ElementValue> aggregateOnAccountBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, this)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Client_ID, getAD_Client_ID())
+				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Org_ID, p_GL_JournalBatch.getAD_Org_ID())
 				.addBetweenFilter(I_Fact_Acct.COLUMN_DateAcct, p_DateFrom, p_DateTo)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, X_Fact_Acct.POSTINGTYPE_Actual)
 				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, p_C_AcctSchema.getC_AcctSchema_ID())

@@ -1,0 +1,1 @@
+update c_currency set ad_client_id = 1000000 where ad_client_id != 1000000;
