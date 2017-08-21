@@ -478,3 +478,68 @@ UPDATE AD_UI_Element SET SeqNo=240,Updated=TO_TIMESTAMP('2017-08-21 10:46:14','Y
 UPDATE AD_UI_Element SET SeqNo=250,Updated=TO_TIMESTAMP('2017-08-21 10:46:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543089
 ;
 
+-- 2017-08-21T10:50:03.632
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Auszug Summe',Updated=TO_TIMESTAMP('2017-08-21 10:50:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543102
+;
+
+-- 2017-08-21T10:50:09.944
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Auszug Summe',Updated=TO_TIMESTAMP('2017-08-21 10:50:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=4125
+;
+
+-- 2017-08-21T10:50:18.354
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Bewegungs Betrag',Updated=TO_TIMESTAMP('2017-08-21 10:50:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543104
+;
+
+-- 2017-08-21T10:50:25.829
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Bewegungs Betrag',Updated=TO_TIMESTAMP('2017-08-21 10:50:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=4126
+;
+
+-- 2017-08-21T10:50:58.948
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Mehrfach Zahlungen/ Rechnungen',Updated=TO_TIMESTAMP('2017-08-21 10:50:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543096
+;
+
+-- 2017-08-21T10:51:06.228
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mehrfach Zahlungen/ Rechnungen',Updated=TO_TIMESTAMP('2017-08-21 10:51:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54558
+;
+
+-- 2017-08-21T10:51:32.290
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Transfer Bank/ Kassenbuch',Updated=TO_TIMESTAMP('2017-08-21 10:51:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543117
+;
+
+-- 2017-08-21T10:51:39.875
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Transfer Bank/ Kassenbuch',Updated=TO_TIMESTAMP('2017-08-21 10:51:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=61695
+;
+
+-- 2017-08-21T10:51:57.339
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Mahr als eine Zahlung',Updated=TO_TIMESTAMP('2017-08-21 10:51:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543097
+;
+
+-- 2017-08-21T10:52:05.020
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Mehr als eine Zahlung',Updated=TO_TIMESTAMP('2017-08-21 10:52:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543097
+;
+
+-- 2017-08-21T10:52:11.695
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Mehr als eine Zahlung',Updated=TO_TIMESTAMP('2017-08-21 10:52:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=54557
+;
+
+-- 2017-08-21T10:52:52.345
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET Name='Verknüpfte Auszugzeile',Updated=TO_TIMESTAMP('2017-08-21 10:52:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=543118
+;
+
+-- 2017-08-21T10:52:59.237
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verknüpfte Auszugzeile',Updated=TO_TIMESTAMP('2017-08-21 10:52:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=61696
+;
+
