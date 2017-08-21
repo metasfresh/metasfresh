@@ -61,11 +61,10 @@ class List extends Component {
             dataId, tabId, rowId, entity, subentity, subentityId, viewId,
             attribute
         ).then( (res) => {
-            let values = res.data.values;
+            let values = res.data.values || [];
+            let singleOption = values && (values.length === 1);
 
-            if (forceSelection && values && (values.length === 1)) {
-                let value = values[0];
-
+            if (forceSelection && singleOption) {
                 this.previousValue = '';
 
                 this.setState({
@@ -73,9 +72,11 @@ class List extends Component {
                     loading: false
                 });
 
-                this.handleSelect(value);
-            }
-            else {
+                let firstListValue = values[0];
+                if (firstListValue) {
+                    this.handleSelect(firstListValue);
+                }
+            } else {
                 this.setState({
                     list: values,
                     loading: false
