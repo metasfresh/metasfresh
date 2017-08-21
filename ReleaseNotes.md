@@ -35,7 +35,9 @@ Here come the actual release notes:
   * [#2194](https://github.com/metasfresh/metasfresh/issues/2194) Shipment Candidates dropship vendor ID missing
     * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
   * [#2196](https://github.com/metasfresh/metasfresh/issues/2196) Window Design WebUI : Bank Statement
-    * Minor detail and adjustoments and adding missing Translations to the Product window.
+    * Minor detail and adjustments and adding missing Translations to the Product window.
+  * [#2202](https://github.com/metasfresh/metasfresh/issues/2202) Window Design WebUI : Tour Version
+    * Minor detail adjustments, missing Translations to the Tour Version Window in WebUI.
   * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
     * Adding adjustments to the Product window in WebUI adopting it to our current design guidelines.
 
