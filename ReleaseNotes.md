@@ -34,6 +34,8 @@ Here come the actual release notes:
     * Minor change in Order Candidates Window removing processed Flag from Advanced Edit.
   * [#2194](https://github.com/metasfresh/metasfresh/issues/2194) Shipment Candidates dropship vendor ID missing
     * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
+  * [#2196](https://github.com/metasfresh/metasfresh/issues/2196) Window Design WebUI : Bank Statement
+    * Minor detail and adjustoments and adding missing Translations to the Product window.
 
 * metasfresh-webui-api
 
