@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.printing.model;
 
 
@@ -139,52 +123,6 @@ public interface I_C_Print_PackageInfo
     public static final String COLUMNNAME_AD_PrinterHW_MediaTray_ID = "AD_PrinterHW_MediaTray_ID";
 
 	/**
-	 * Set Kalibrierung-X.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCalX (int CalX);
-
-	/**
-	 * Get Kalibrierung-X.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCalX();
-
-    /** Column definition for CalX */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalX = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalX", null);
-    /** Column name CalX */
-    public static final String COLUMNNAME_CalX = "CalX";
-
-	/**
-	 * Set Kalibrierung-Y.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCalY (int CalY);
-
-	/**
-	 * Get Kalibrierung-Y.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCalY();
-
-    /** Column definition for CalY */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalY = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalY", null);
-    /** Column name CalY */
-    public static final String COLUMNNAME_CalY = "CalY";
-
-	/**
 	 * Set Druckpaket.
 	 *
 	 * <br>Type: Search
@@ -235,6 +173,52 @@ public interface I_C_Print_PackageInfo
     public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_C_Print_PackageInfo_ID = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "C_Print_PackageInfo_ID", null);
     /** Column name C_Print_PackageInfo_ID */
     public static final String COLUMNNAME_C_Print_PackageInfo_ID = "C_Print_PackageInfo_ID";
+
+	/**
+	 * Set Kalibrierung-X.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCalX (int CalX);
+
+	/**
+	 * Get Kalibrierung-X.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCalX();
+
+    /** Column definition for CalX */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalX = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalX", null);
+    /** Column name CalX */
+    public static final String COLUMNNAME_CalX = "CalX";
+
+	/**
+	 * Set Kalibrierung-Y.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCalY (int CalY);
+
+	/**
+	 * Get Kalibrierung-Y.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCalY();
+
+    /** Column definition for CalY */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object> COLUMN_CalY = new org.adempiere.model.ModelColumn<I_C_Print_PackageInfo, Object>(I_C_Print_PackageInfo.class, "CalY", null);
+    /** Column name CalY */
+    public static final String COLUMNNAME_CalY = "CalY";
 
 	/**
 	 * Get Erstellt.
@@ -342,8 +326,10 @@ public interface I_C_Print_PackageInfo
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPrintServiceName (java.lang.String PrintServiceName);
 
 	/**
@@ -351,8 +337,10 @@ public interface I_C_Print_PackageInfo
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getPrintServiceName();
 
     /** Column definition for PrintServiceName */
@@ -366,8 +354,10 @@ public interface I_C_Print_PackageInfo
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPrintServiceTray (java.lang.String PrintServiceTray);
 
 	/**
@@ -376,8 +366,10 @@ public interface I_C_Print_PackageInfo
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getPrintServiceTray();
 
     /** Column definition for PrintServiceTray */
@@ -390,8 +382,10 @@ public interface I_C_Print_PackageInfo
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setTrayNumber (int TrayNumber);
 
 	/**
@@ -399,8 +393,10 @@ public interface I_C_Print_PackageInfo
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public int getTrayNumber();
 
     /** Column definition for TrayNumber */

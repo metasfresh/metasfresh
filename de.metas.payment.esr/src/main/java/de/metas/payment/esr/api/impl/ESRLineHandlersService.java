@@ -12,6 +12,7 @@ import org.compiere.model.I_C_Invoice;
 import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.spi.IESRLineHandler;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -48,11 +49,13 @@ public class ESRLineHandlersService implements IESRLineHandlersService
 	}
 
 	@Override
-	public boolean applyESRMatchingBPartner(I_C_BPartner bpartner, I_ESR_ImportLine esrLine)
+	public boolean applyESRMatchingBPartner(
+			@NonNull final I_C_BPartner bPartner, 
+			@NonNull final I_ESR_ImportLine esrLine)
 	{
 		for (final IESRLineHandler l : handlers)
 		{
-			boolean match = l.matchBPartner(bpartner, esrLine);
+			boolean match = l.matchBPartner(bPartner, esrLine);
 			if (!match)
 			{
 				return false;

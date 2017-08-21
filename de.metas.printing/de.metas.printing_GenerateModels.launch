@@ -2,7 +2,7 @@
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
 <stringAttribute key="bad_container_name" value="\de"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/de.metas.adempiere.adempiere.base/src/main/java/org/adempiere/util/GenerateModel.java"/>
+<listEntry value="/de.metas.adempiere.adempiere.base/src/main/java-legacy/org/adempiere/util/GenerateModel.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
