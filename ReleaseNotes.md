@@ -36,6 +36,8 @@ Here come the actual release notes:
     * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
   * [#2196](https://github.com/metasfresh/metasfresh/issues/2196) Window Design WebUI : Bank Statement
     * Minor detail and adjustoments and adding missing Translations to the Product window.
+  * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
+    * Adding adjustments to the Product window in WebUI adopting it to our current design guidelines.
 
 * metasfresh-webui-api
 
