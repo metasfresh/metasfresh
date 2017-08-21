@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for RV_Printing_Bericht_List_Per_Print_Job
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -464155564L;
+	private static final long serialVersionUID = 1455181475L;
 
     /** Standard Constructor */
     public X_RV_Printing_Bericht_List_Per_Print_Job (Properties ctx, int RV_Printing_Bericht_List_Per_Print_Job_ID, String trxName)
@@ -185,56 +168,6 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 		return ii.intValue();
 	}
 
-	/** Set Firmenname.
-		@param Companyname Firmenname	  */
-	@Override
-	public void setCompanyname (java.lang.String Companyname)
-	{
-		set_Value (COLUMNNAME_Companyname, Companyname);
-	}
-
-	/** Get Firmenname.
-		@return Firmenname	  */
-	@Override
-	public java.lang.String getCompanyname () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
-	}
-
-	@Override
-	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
-	}
-
-	@Override
-	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
-	}
-
-	/** Set Druck-Warteschlangendatensatz.
-		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
-	@Override
-	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
-	{
-		if (C_Printing_Queue_ID < 1) 
-			set_Value (COLUMNNAME_C_Printing_Queue_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
-	}
-
-	/** Get Druck-Warteschlangendatensatz.
-		@return Druck-Warteschlangendatensatz	  */
-	@Override
-	public int getC_Printing_Queue_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public de.metas.printing.model.I_C_Print_Job getC_Print_Job() throws RuntimeException
 	{
@@ -283,6 +216,56 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	public java.lang.String getc_print_job_name () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_c_print_job_name);
+	}
+
+	@Override
+	public de.metas.printing.model.I_C_Printing_Queue getC_Printing_Queue() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class);
+	}
+
+	@Override
+	public void setC_Printing_Queue(de.metas.printing.model.I_C_Printing_Queue C_Printing_Queue)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Printing_Queue_ID, de.metas.printing.model.I_C_Printing_Queue.class, C_Printing_Queue);
+	}
+
+	/** Set Druck-Warteschlangendatensatz.
+		@param C_Printing_Queue_ID Druck-Warteschlangendatensatz	  */
+	@Override
+	public void setC_Printing_Queue_ID (int C_Printing_Queue_ID)
+	{
+		if (C_Printing_Queue_ID < 1) 
+			set_Value (COLUMNNAME_C_Printing_Queue_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Printing_Queue_ID, Integer.valueOf(C_Printing_Queue_ID));
+	}
+
+	/** Get Druck-Warteschlangendatensatz.
+		@return Druck-Warteschlangendatensatz	  */
+	@Override
+	public int getC_Printing_Queue_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Printing_Queue_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Firmenname.
+		@param Companyname Firmenname	  */
+	@Override
+	public void setCompanyname (java.lang.String Companyname)
+	{
+		set_Value (COLUMNNAME_Companyname, Companyname);
+	}
+
+	/** Get Firmenname.
+		@return Firmenname	  */
+	@Override
+	public java.lang.String getCompanyname () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_Companyname);
 	}
 
 	/** Set document.
@@ -357,7 +340,7 @@ public class X_RV_Printing_Bericht_List_Per_Print_Job extends org.compiere.model
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_GrandTotal);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
