@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Adopting the Sales Order Window to the current Design Guidelines.
   * [#2184](https://github.com/metasfresh/metasfresh/issues/2184) Window Design WebUI : Order Candidates
     * Minor change in Order Candidates Window removing processed Flag from Advanced Edit.
+  * [#2194](https://github.com/metasfresh/metasfresh/issues/2194) Shipment Candidates dropship vendor ID missing
+    * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
 
 * metasfresh-webui-api
 
