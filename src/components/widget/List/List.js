@@ -83,7 +83,7 @@ class List extends Component {
                 });
             }
 
-            if (forceFocus && values && (values.length > 1)) {
+            if (forceFocus && values && (values.length > 0)) {
                 this.focus();
             }
         });
