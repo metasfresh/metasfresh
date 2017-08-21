@@ -64,20 +64,23 @@ timestamps
 	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
-	final String MF_VERSION=retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
-	currentBuild.displayName="artifact-version ${MF_VERSION}";
+	final String MF_VERSION = retrieveArtifactVersion(MF_UPSTREAM_BRANCH, env.BUILD_NUMBER)
+	currentBuild.displayName = "artifact-version ${MF_VERSION}";
+
+	final def misc = new de.metas.jenkins.Misc();
+	final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
 
 // to build the client-exe on linux, we need 32bit libs!
 node('agent && linux && libc6-i386')
 {
 	configFileProvider([configFile(fileId: 'metasfresh-global-maven-settings', replaceTokens: true, variable: 'MAVEN_SETTINGS')])
 	{
-		final def misc = new de.metas.jenkins.Misc();
 
 		// as of now, /de.metas.endcustomer.mf15.base/src/main/resources/org/adempiere/version.properties contains "env.MF_BUILD_VERSION", "env.MF_UPSTREAM_BRANCH" and others,
 		// which needs to be replaced when version.properties is dealt with by the ressources plugin, see https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html
 		withEnv([
 				"MF_VERSION=${MF_VERSION}",
+				"MF_RELEASE_VERSION=${MF_RELEASE_VERSION}",
 				"MF_BUILD_DATE=${misc.mkReleaseDate()}",
 				"MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}",
 				"CHANGE_URL=${env.CHANGE_URL}",
