@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package de.metas.printing.model;
 
 
@@ -139,31 +123,6 @@ public interface I_C_Print_Package
     public static final String COLUMNNAME_BinaryFormat = "BinaryFormat";
 
 	/**
-	 * Set Kopien.
-	 * Anzahl der zu erstellenden/zu druckenden Exemplare
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setCopies (int Copies);
-
-	/**
-	 * Get Kopien.
-	 * Anzahl der zu erstellenden/zu druckenden Exemplare
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCopies();
-
-    /** Column definition for Copies */
-    public static final org.adempiere.model.ModelColumn<I_C_Print_Package, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Print_Package, Object>(I_C_Print_Package.class, "Copies", null);
-    /** Column name Copies */
-    public static final String COLUMNNAME_Copies = "Copies";
-
-	/**
 	 * Set Druck-Job Anweisung.
 	 *
 	 * <br>Type: Search
@@ -212,6 +171,31 @@ public interface I_C_Print_Package
     public static final org.adempiere.model.ModelColumn<I_C_Print_Package, Object> COLUMN_C_Print_Package_ID = new org.adempiere.model.ModelColumn<I_C_Print_Package, Object>(I_C_Print_Package.class, "C_Print_Package_ID", null);
     /** Column name C_Print_Package_ID */
     public static final String COLUMNNAME_C_Print_Package_ID = "C_Print_Package_ID";
+
+	/**
+	 * Set Kopien.
+	 * Anzahl der zu erstellenden/zu druckenden Exemplare
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setCopies (int Copies);
+
+	/**
+	 * Get Kopien.
+	 * Anzahl der zu erstellenden/zu druckenden Exemplare
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getCopies();
+
+    /** Column definition for Copies */
+    public static final org.adempiere.model.ModelColumn<I_C_Print_Package, Object> COLUMN_Copies = new org.adempiere.model.ModelColumn<I_C_Print_Package, Object>(I_C_Print_Package.class, "Copies", null);
+    /** Column name Copies */
+    public static final String COLUMNNAME_Copies = "Copies";
 
 	/**
 	 * Get Erstellt.
@@ -275,7 +259,9 @@ public interface I_C_Print_Package
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setPackageInfoCount (int PackageInfoCount);
 
 	/**

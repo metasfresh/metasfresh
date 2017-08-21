@@ -16,9 +16,11 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.spi.IESRLineHandler;
+import lombok.NonNull;
 
 /**
- * @author cg
+ * 
+ * @author metas-dev <dev@metasfresh.com>
  *
  */
 public class DefaultESRLineHandler implements IESRLineHandler
@@ -57,7 +59,9 @@ public class DefaultESRLineHandler implements IESRLineHandler
 	}
 
 	@Override
-	public boolean matchBPartner(I_C_BPartner bPartner, I_ESR_ImportLine esrLine)
+	public boolean matchBPartner(
+			@NonNull final I_C_BPartner bPartner, 
+			@NonNull final I_ESR_ImportLine esrLine)
 	{
 		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_MATCH_ORG, true))
 		{
@@ -65,8 +69,10 @@ public class DefaultESRLineHandler implements IESRLineHandler
 					&& bPartner.getAD_Org_ID() != esrLine.getAD_Org_ID())
 			{
 				final Properties ctx = InterfaceWrapperHelper.getCtx(esrLine);
+				final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 				ESRDataLoaderUtil.addMatchErrorMsg(esrLine,
-						Services.get(IMsgBL.class).getMsg(ctx, ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
+						msgBL.getMsg(ctx, ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
 
 				return false;
 			}

@@ -31,6 +31,8 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 
 import de.metas.dunning.invoice.model.validator.InvoiceDunningValidator;
+import de.metas.printing.api.IPrintingQueueBL;
+import de.metas.printing.spi.impl.DunningPrintingQueueHandler;
 
 /**
  * Module activator (model validator)
@@ -68,6 +70,8 @@ public class DunningValidator implements ModelValidator
 		//
 		// Register dunning modules
 		engine.addModelValidator(new InvoiceDunningValidator(), client); // invoice
+		
+		Services.get(IPrintingQueueBL.class).registerHandler(DunningPrintingQueueHandler.instance);
 	}
 
 	@Override

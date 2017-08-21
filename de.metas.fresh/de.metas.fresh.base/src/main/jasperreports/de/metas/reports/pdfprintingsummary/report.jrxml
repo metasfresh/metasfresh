@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" columnCount="3" pageWidth="595" pageHeight="842" columnWidth="197" leftMargin="2" rightMargin="2" topMargin="2" bottomMargin="2" uuid="182b4c16-42d7-4506-97fa-5459b824c09f">
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="C_Print_Job_Instructions_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Title" class="java.lang.String">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select pq.ItemName as type, a.Name as documentno,
+	bp.name
+	, bpl.address bpartneraddress
+	, pc.PrinterName
+from C_Print_Job_line pjl
+join C_Print_Job_Instructions pji on (pjl.C_Print_Job_ID = pji.C_Print_Job_ID)
+join C_Printing_Queue pq on (pq.C_Printing_Queue_ID = pjl.C_Printing_Queue_ID )
+join AD_Archive a on (a.AD_Archive_ID = pq.AD_Archive_ID)
+join c_bpartner bp ON (coalesce(pq.bill_bpartner_id, pq.c_bpartner_id) = bp.c_bpartner_id)
+join c_bpartner_location bpl ON (coalesce(pq.bill_location_id, pq.c_bpartner_location_id) = bpl.c_bpartner_location_ID)
+left join C_Print_Job_Detail pjd  on (pjd.C_Print_Job_line_ID = pjl.C_Print_Job_line_ID)
+left join AD_PrinterRouting pr  on (pjd.AD_PrinterRouting_ID = pr.AD_PrinterRouting_ID)
+left join AD_Printer_Matching pm on (pji.HostKey = pm.HostKey and pji.AD_PrinterHW_ID = pm.AD_PrinterHW_ID)
+left join AD_PrinterTray_Matching ptm on (ptm.AD_Printer_Matching_ID = pm.AD_Printer_Matching_ID and ptm.AD_Printer_Tray_ID = pr.AD_Printer_Tray_ID)
+left join ad_printerhw_calibration pc ON (pc.AD_PrinterHW_MediaTray_ID = ptm.AD_PrinterHW_MediaTray_ID and pc.AD_PrinterHW_ID = pji.AD_PrinterHW_ID)
+where true
+and pji.C_Print_Job_Instructions_ID= $P{C_Print_Job_Instructions_ID}
+order by a.Name]]>
+	</queryString>
+	<field name="type" class="java.lang.String"/>
+	<field name="documentno" class="java.lang.String"/>
+	<field name="name" class="java.lang.String"/>
+	<field name="bpartneraddress" class="java.lang.String"/>
+	<field name="printername" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="23" splitType="Stretch">
+			<textField>
+				<reportElement uuid="64f8c545-5abb-4657-82c8-112add8a1f07" x="0" y="0" width="589" height="13"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{Title}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="01fb9a8a-56ba-45bf-ab4b-887b936e0ada" x="0" y="12" width="589" height="11"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{printername}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="31">
+			<textField>
+				<reportElement uuid="f701cb3e-d321-4a8b-82d5-41efc3917428" x="56" y="14" width="71" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="c0ffa914-cade-4e34-92da-2cd3efa81e36" x="267" y="14" width="322" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="ccae3001-687e-4728-8aec-6cba40788e3e" x="127" y="14" width="140" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="4a864cb7-e127-4e1d-8d14-12f5d43ca1de" x="0" y="14" width="56" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="f0663d7c-172e-4e5f-acdb-792e44e163a1" x="0" y="1" width="68" height="13"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Erster Beleg:]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="e1e22fdd-28fb-4623-848f-7c0ee095e2a1" x="0" y="28" width="589" height="1"/>
+			</line>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="13">
+			<staticText>
+				<reportElement uuid="8c1db13b-7f4f-43a8-9d8e-10b6165b2b60" x="0" y="0" width="50" height="11"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Art]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="c6cff21e-e0b7-414c-8e93-b90b985aa036" x="88" y="0" width="107" height="11"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement uuid="b91bf953-4c1a-431c-8305-c8600e7664ac" x="50" y="0" width="38" height="11"/>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nummer]]></text>
+			</staticText>
+			<line>
+				<reportElement uuid="c19adf7d-8bd9-45e2-a377-ebe23a7676f9" x="0" y="11" width="589" height="1"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="10" splitType="Stretch">
+			<textField>
+				<reportElement uuid="fcb55058-239a-480c-8f57-160a3d16ca50" x="0" y="0" width="50" height="9"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="747ccbd1-9b54-4a75-bd9d-a0efce6dfdb9" x="50" y="0" width="38" height="9"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="25929fe3-2bf3-42e1-a78c-7d3da3af6aa1" x="88" y="0" width="107" height="9"/>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="30">
+			<textField>
+				<reportElement uuid="3697b591-851e-4913-9969-151fc0ec51ad" x="56" y="16" width="71" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement uuid="476b1280-ce8e-4d63-9015-f9a1c00be725" x="0" y="3" width="68" height="13"/>
+				<textElement>
+					<font size="10" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Letzer Beleg:]]></text>
+			</staticText>
+			<textField>
+				<reportElement uuid="620666cc-33c0-4d37-9e94-461074ede087" x="127" y="16" width="140" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement uuid="50de6efd-6fad-4d3c-bc5a-ff2d5456d462" x="0" y="16" width="56" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement uuid="0469df71-cb89-4f34-a478-f9d5bb5b7ddc" x="267" y="16" width="322" height="13"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartneraddress}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement uuid="3fcad216-217d-41d1-b393-7c7eca3e88e1" x="0" y="3" width="589" height="1"/>
+			</line>
+		</band>
+	</pageFooter>
+</jasperReport>
