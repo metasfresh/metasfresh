@@ -54,6 +54,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 
 @Validator(I_M_InOut.class)
@@ -277,6 +278,12 @@ public class M_InOut
 			// do nothing if the inout is not a customer return
 			return;
 		}
+		
+		if(Services.get(IInOutBL.class).isReversal(customerReturn))
+		{
+			// nothing to do
+			return;
+		}
 
 		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
 
@@ -292,33 +299,35 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
-	public void reverseVendorReturn(final de.metas.handlingunits.model.I_M_InOut vendorReturn)
+	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
 
-		if (!Services.get(IHUInOutBL.class).isVendorReturn(vendorReturn))
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+		
+		if (!(huInOutBL.isVendorReturn(returnInOut) || huInOutBL.isCustomerReturn(returnInOut)))
 		{
 			return; // nothing to do
 		}
 
-		final String snapshotId = vendorReturn.getSnapshot_UUID();
+		final String snapshotId = returnInOut.getSnapshot_UUID();
 		if (Check.isEmpty(snapshotId, true))
 		{
-			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + vendorReturn + ")");
+			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
 		}
 		
-		final List<I_M_HU> hus = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUsForModel(vendorReturn);
+		final List<I_M_HU> hus = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUsForModel(returnInOut);
 		
 		if(hus.isEmpty())
 		{
 			// nothing to do.
 		}
 
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(vendorReturn);
+		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
 		Services.get(IHUSnapshotDAO.class).restoreHUs()
 				.setContext(context)
 				.setSnapshotId(snapshotId)
-				.setDateTrx(vendorReturn.getMovementDate())
-				.setReferencedModel(vendorReturn)
+				.setDateTrx(returnInOut.getMovementDate())
+				.setReferencedModel(returnInOut)
 				.addModels(hus)
 				.restoreFromSnapshot();
 	}
