@@ -40,6 +40,8 @@ Here come the actual release notes:
     * Minor detail adjustments, missing Translations to the Tour Version Window in WebUI.
   * [#2203](https://github.com/metasfresh/metasfresh/issues/2203) Window Design WebUI : Delivery Days
     * Adopting the Delivery Days Window to the current Design Guidelines.
+  * [#2204](https://github.com/metasfresh/metasfresh/issues/2204) Window Design WebUI : Contract
+    * Adopting the Contract Window in Webui to the current Design Guidelines.
   * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
     * Adding adjustments to the Product window in WebUI adopting it to our current design guidelines.
 
