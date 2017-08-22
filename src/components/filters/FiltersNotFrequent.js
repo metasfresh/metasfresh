@@ -49,12 +49,25 @@ class FiltersNotFrequent extends Component {
             applyFilters, clearFilters, active
         } = this.props;
 
-        const {isOpenDropdown, openFilterId} = this.state;
+        const { isOpenDropdown, openFilterId } = this.state;
 
         const openFilter =
             getItemsByProperty(data, 'filterId', openFilterId)[0];
-        const activeFilter = active &&
-            getItemsByProperty(data, 'filterId', active.filterId)[0];
+
+        let activeFilter, activeFilterModel;
+        let activeFilterCaption = openFilter && openFilter.caption;
+        if (active && data) {
+            activeFilter = active.find( (item) => {
+                return data.find( (dataItem) => {
+                    if (dataItem.filterId === item.filterId) {
+                        activeFilterModel = dataItem;
+                        activeFilterCaption = dataItem.caption;
+                    }
+
+                    return (dataItem.filterId === item.filterId);
+                });
+            });
+        }
         const isActive = !!activeFilter;
 
         return (
@@ -69,7 +82,7 @@ class FiltersNotFrequent extends Component {
                     }
                 >
                     <i className="meta-icon-preview" />
-                    { isActive ? 'Filter: ' + activeFilter.caption : 'Filter'}
+                    { activeFilter ? 'Filter: ' + activeFilterCaption : 'Filter'}
                 </button>
 
                 { isOpenDropdown &&
@@ -90,7 +103,7 @@ class FiltersNotFrequent extends Component {
                             :
                             <FiltersItem
                                 windowType={windowType}
-                                data={openFilter || activeFilter}
+                                data={activeFilterModel || openFilter}
                                 closeFilterMenu={() =>
                                     this.toggleDropdown(false)
                                 }

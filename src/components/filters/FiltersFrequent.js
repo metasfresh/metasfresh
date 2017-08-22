@@ -30,19 +30,31 @@ class FiltersFrequent extends Component {
         dropdownToggled();
     }
 
+    isActive(filterId) {
+        const { active } = this.props;
+        let result = false;
+
+        if (active) {
+            let activeFilter = active.find( (item) => item.filterId === filterId );
+            result = (typeof activeFilter !== 'undefined') && activeFilter;
+        }
+
+        return result;
+    }
+
     render() {
         const {
             data, windowType, notValidFields, viewId, handleShow,
             applyFilters, clearFilters, active
         } = this.props;
 
-        const {openFilterId} = this.state;
+        const { openFilterId } = this.state;
 
         return (
             <div className="filter-wrapper">
                 {data.map((item, index) => {
-                    const isActive =
-                        active && (active.filterId == item.filterId);
+                    const isActive = this.isActive(item.filterId);
+
                     return (
                         <div className="filter-wrapper" key={index}>
                             <button
