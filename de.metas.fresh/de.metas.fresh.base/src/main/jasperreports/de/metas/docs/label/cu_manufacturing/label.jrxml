@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-08-14T18:23:44 -->
+<!-- 2017-08-21T10:20:10 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="156" pageHeight="284" columnWidth="156" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/cu_manufacturing/report" uuid="76f10556-26bf-42e7-b375-0391b4cedd84">
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
@@ -125,7 +125,7 @@
 				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="115" y="192" width="10" height="70" isPrintWhenDetailOverflows="true" uuid="91ebce25-a8dd-4be8-805a-617a8684eb9e">
+				<reportElement x="115" y="192" width="10" height="71" isPrintWhenDetailOverflows="true" uuid="91ebce25-a8dd-4be8-805a-617a8684eb9e">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement rotation="Left">
@@ -147,23 +147,12 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{p_name_trl}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="8" y="263" width="100" height="8" uuid="b4e1f7b6-1250-47ee-956d-1054587a46b7">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement textAlignment="Center">
-					<font size="6" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{upc}]]></textFieldExpression>
-			</textField>
-			<image scaleImage="FillFrame" hAlign="Left">
-				<reportElement x="8" y="237" width="100" height="26" uuid="ad43b0b4-4e6c-416d-bcf9-b00044c935dd">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<imageExpression><![CDATA[new java.net.URL( $P{barcodeURL} + "?Content=" +
-$F{upc} +
-"&Format=CODE_128&Width=570&Height=140" )]]></imageExpression>
-			</image>
+			<componentElement>
+				<reportElement x="8" y="237" width="100" height="26" uuid="79c7b69b-f78d-4c95-bd44-070092e0bf73"/>
+				<jr:EAN13 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<jr:codeExpression><![CDATA[$F{upc}]]></jr:codeExpression>
+				</jr:EAN13>
+			</componentElement>
 		</band>
 	</detail>
 </jasperReport>
