@@ -65,11 +65,15 @@ class Lookup extends Component {
 
                     if (nextProp.source === 'list') {
                         this.linkedList.map( (listComponent) => {
-                            if (listComponent && listComponent.props && (propValue.source !== 'lookup')) {
+                            if (listComponent && listComponent.props) {
                                 let listProp = listComponent.props.mainProperty;
 
-                                if (listProp && (listProp[0].field === nextProp.field) && listComponent.activate) {
-                                    listComponent.activate();
+                                if (listProp && Array.isArray(listProp) && (listProp.length > 0)) {
+                                    const listPropField = listProp[0].field;
+
+                                    if (listComponent.activate && (listPropField === nextProp.field)) {
+                                        listComponent.activate();
+                                    }
                                 }
                             }
                         });
