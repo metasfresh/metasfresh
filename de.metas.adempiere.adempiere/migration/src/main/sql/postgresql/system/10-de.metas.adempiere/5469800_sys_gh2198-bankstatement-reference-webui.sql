@@ -300,3 +300,105 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=14, Updated=now(), UpdatedBy=1
 UPDATE AD_Menu_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-22 14:50:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Bankstatement Reference',WEBUI_NameBrowse='Bankstatement Reference' WHERE AD_Menu_ID=540904 AND AD_Language='en_US'
 ;
 
+-- 2017-08-22T14:56:03.842
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,540853,540417,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2017-08-22T14:56:03.845
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540417 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2017-08-22T14:56:03.881
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540557,540417,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:03.915
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540558,540417,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:03.962
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540557,540981,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.022
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559480,0,540853,540981,547371,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100,'Position auf einem Bankauszug zu dieser Bank','Die "Auszugs-Position" bezeichnet eine eindeutige Transaktion (Einzahlung, Auszahlung, Auslage/Gebühr) für den definierten Zeitraum bei dieser Bank.','Y','N','Y','Y','N','Auszugs-Position',10,10,0,TO_TIMESTAMP('2017-08-22 14:56:03','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.055
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559481,0,540853,540981,547372,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Einzelne Zeile in dem Dokument','Indicates the unique line for a document.  It will also control the display order of the lines within a document.','Y','N','Y','Y','N','Zeile Nr.',20,20,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.090
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559482,0,540853,540981,547373,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','Y','N','Aktiv',30,30,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.128
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559483,0,540853,540981,547374,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Betrag einer Transaktion','"Bewegungs-Betrag" gibt den Betrag für einen einzelnen Vorgang an.','Y','N','Y','Y','N','Bewegungs-Betrag',40,40,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.165
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559484,0,540853,540981,547375,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','Y','Y','N','Währung',50,50,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.202
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559485,0,540853,540981,547376,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Calculated amount of discount','The Discount Amount indicates the discount amount for a document or line.','Y','N','Y','Y','N','Skonto',60,60,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.245
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559486,0,540853,540981,547377,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Amount to write-off','The Write Off Amount indicates the amount to be written off as uncollectible.','Y','N','Y','Y','N','Write-off Amount',70,70,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.281
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559487,0,540853,540981,547378,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Over-Payment (unallocated) or Under-Payment (partial payment)','Overpayments (negative) are unallocated amounts and allow you to receive money for more than the particular invoice. 
+Underpayments (positive) is a partial payment for the invoice. You do not write off the unpaid amount.','Y','N','Y','Y','N','Over/Under Payment',80,80,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.317
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559488,0,540853,540981,547379,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Over-Payment (unallocated) or Under-Payment (partial payment) Amount','Overpayments (negative) are unallocated amounts and allow you to receive money for more than the particular invoice. 
+Underpayments (positive) is a partial payment for the invoice. You do not write off the unpaid amount.','Y','N','Y','Y','N','Over/Under Payment',90,90,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.347
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559489,0,540853,540981,547380,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Zahlung','Bei einer Zahlung handelt es sich um einen Zahlungseingang oder Zahlungsausgang (Bar, Bank, Kreditkarte).','Y','N','Y','Y','N','Zahlung',100,100,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.378
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559490,0,540853,540981,547381,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Zahlung erstellen',110,110,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.408
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559491,0,540853,540981,547382,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnet einen Geschäftspartner','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','N','Y','Y','N','Geschäftspartner',120,120,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.438
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559492,0,540853,540981,547383,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Invoice Identifier','The Invoice Document.','Y','N','Y','Y','N','Rechnung',130,130,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.468
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559493,0,540853,540981,547384,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Ihre Kunden- oder Lieferantennummer beim Geschäftspartner','Die "Referenznummer" kann auf Bestellungen und Rechnungen gedruckt werden um Ihre Dokumente beim Geschäftspartner einfacher zuordnen zu können.','Y','N','Y','Y','N','Referenznummer',140,140,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-08-22T14:56:04.503
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559494,0,540853,540981,547385,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.','Y','N','Y','Y','N','Verarbeitet',150,150,0,TO_TIMESTAMP('2017-08-22 14:56:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
