@@ -16,14 +16,36 @@ Here come the actual release notes:
 
 #Features
 * metasfresh-app
+  * [#2050](https://github.com/metasfresh/metasfresh/issues/2050) Window Design WebUI : Purchase candidate
+    * Adopting the Purchase Candidate Window to the current Design Guidelines.
   * [#2169](https://github.com/metasfresh/metasfresh/issues/2169) Window Design WebUI : Attributes
     * Adopting the Attributes Window to the current Design Guidelines.
   * [#2170](https://github.com/metasfresh/metasfresh/issues/2170) Window Design WebUI : Bill of Materials
     * Adopting the Bill of Material Window to the current Design Guidelines.
+  * [#2173](https://github.com/metasfresh/metasfresh/issues/2173) Window Design WebUI : Discount Schema
+    * Adopting the Discount Schema Window to the current Design Guidelines.
   * [#2174](https://github.com/metasfresh/metasfresh/issues/2174) Window Design WebUI : Unit of Measure
     * Adopting the Product Unit of measure Window to the current Design Guidelines.
   * #[2175](https://github.com/metasfresh/metasfresh/issues/2175) Window Design WebUI : Product Category
     * Adopting the Product Category Window to the current Design Guidelines.
+  * [#2183](https://github.com/metasfresh/metasfresh/issues/2183) Window Design WebUI : Sales Order
+    * Adopting the Sales Order Window to the current Design Guidelines.
+  * [#2184](https://github.com/metasfresh/metasfresh/issues/2184) Window Design WebUI : Order Candidates
+    * Minor change in Order Candidates Window removing processed Flag from Advanced Edit.
+  * [#2194](https://github.com/metasfresh/metasfresh/issues/2194) Shipment Candidates dropship vendor ID missing
+    * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
+  * [#2196](https://github.com/metasfresh/metasfresh/issues/2196) Window Design WebUI : Bank Statement
+    * Minor detail and adjustments and adding missing Translations to the Product window.
+  * [#2198](https://github.com/metasfresh/metasfresh/issues/2198) New Window for filtered Bank Statement Line References
+    * New prototype Window for filtered Bank Statement References.
+  * [#2202](https://github.com/metasfresh/metasfresh/issues/2202) Window Design WebUI : Tour Version
+    * Minor detail adjustments, missing Translations to the Tour Version Window in WebUI.
+  * [#2203](https://github.com/metasfresh/metasfresh/issues/2203) Window Design WebUI : Delivery Days
+    * Adopting the Delivery Days Window to the current Design Guidelines.
+  * [#2204](https://github.com/metasfresh/metasfresh/issues/2204) Window Design WebUI : Contract
+    * Adopting the Contract Window in Webui to the current Design Guidelines.
+  * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
+    * Adding adjustments to the Product window in WebUI adopting it to our current design guidelines.
 
 * metasfresh-webui-api
 
