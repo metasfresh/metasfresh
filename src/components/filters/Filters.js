@@ -19,12 +19,12 @@ class Filters extends Component {
     componentWillReceiveProps(props) {
         const {filtersActive} = props;
 
-        this.init(filtersActive ? filtersActive[0] : null);
+        this.init(filtersActive ? filtersActive : null);
     }
 
     componentDidMount() {
         const {filtersActive} = this.props;
-        filtersActive && this.init(filtersActive[0]);
+        filtersActive && this.init(filtersActive);
     }
 
     init = (filter) => {
@@ -44,24 +44,36 @@ class Filters extends Component {
         this.setState({
             notValidFields: !valid
         }, () => {
-            if (valid){
+            if (valid) {
                 const parsedFilter = filter.parameters ?
                     Object.assign({}, filter, {
                         parameters: this.parseToPatch(filter.parameters)
                     }) : filter;
-                this.setFilterActive([parsedFilter]);
+
+                this.setFilterActive(parsedFilter);
+
                 cb && cb();
             }
         });
     }
 
-    setFilterActive = (filter) => {
-        const {updateDocList} = this.props;
+    setFilterActive = (filterToAdd) => {
+        const { updateDocList } = this.props;
+        const { filter } = this.state;
+
+        let newFilter;
+        if (filter) {
+            newFilter = filter.filter( (item) => item.filterId !== filterToAdd.filterId );
+            newFilter.push(filterToAdd);
+        }
+        else {
+            newFilter = [filterToAdd];
+        }
 
         this.setState({
-            filter: filter
+            filter: newFilter
         }, () => {
-            updateDocList(filter);
+            updateDocList(newFilter);
         })
     }
 
@@ -75,8 +87,19 @@ class Filters extends Component {
         })
     }
 
-    clearFilters = () => {
-        this.setFilterActive(null)
+    clearFilters = (filterToClear) => {
+        const { updateDocList } = this.props;
+        const { filter } = this.state;
+
+        if (filter) {
+            let newFilter = filter.filter( (item) => item.filterId !== filterToClear.filterId );
+
+            this.setState({
+                filter: newFilter
+            }, () => {
+                updateDocList(newFilter);
+            })
+        }
     }
 
     dropdownToggled = () => {
@@ -97,13 +120,13 @@ class Filters extends Component {
     }
 
     isFilterValid = (filters) => {
-        if(filters.parameters){
+        if (filters.parameters) {
             return !(filters.parameters.filter(
                 item => item.mandatory && !item.value
             ).length);
-        }else{
-            return true;
         }
+
+        return true;
     }
 
     parseToPatch = (params) => {
