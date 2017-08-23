@@ -44,9 +44,11 @@ class RawList extends Component {
             if (prevState.selected !== this.state.selected) {
                 list.length === 1 && this.handleSelect(list[0]);
 
-                !doNotOpenOnFocus && list.length > 1 && this.setState({
-                    isOpen: true
-                });
+                if (!doNotOpenOnFocus && list.length > 1) {
+                    this.setState({
+                        isOpen: true
+                    });
+                }
             }
         }
 
@@ -75,10 +77,22 @@ class RawList extends Component {
             }
 
             if (list.length > 0) {
-                this.setState({
-                    dropdownList: dropdown.concat(list),
-                    selected: defaultValue ? defaultValue : list[0]
-                });
+                let openDropdownState = {};
+
+                if (this.openDropdown && (list.length > 1)) {
+                    this.openDropdown = false;
+                    openDropdownState.isOpen = true;
+                }
+
+                this.setState(
+                    Object.assign(
+                        {
+                            dropdownList: dropdown.concat(list),
+                            selected: defaultValue ? defaultValue : list[0],
+                        },
+                        openDropdownState
+                    )
+                );
             }
         }
 
@@ -150,7 +164,7 @@ class RawList extends Component {
         }
 
         let baseIndex = list.indexOf(selected);
-        if (baseIndex < 0) {
+        if (selected && (baseIndex < 0)) {
             let selectedKey = Object.keys(selected)[0];
 
             baseIndex = list.findIndex( (item) => Object.keys(item)[0] === selectedKey );
@@ -268,19 +282,15 @@ class RawList extends Component {
      * on focus.
      */
     handleClick = (e) => {
-        const {lookupList} = this.props;
+        e.preventDefault();
 
-        if (!lookupList) {
-            e.preventDefault();
+        const { onFocus } = this.props;
 
-            const {onFocus, doNotOpenOnFocus} = this.props;
+        onFocus && onFocus();
 
-            onFocus && onFocus();
-
-            doNotOpenOnFocus && this.setState({
-                isOpen: true
-            })
-        }
+        this.setState({
+            isOpen: true
+        });
     }
 
     handleFocus = (e) => {
@@ -292,9 +302,9 @@ class RawList extends Component {
 
         onFocus && onFocus();
 
-        !doNotOpenOnFocus && !autofocus && this.setState({
-            isOpen: true
-        })
+        if (!doNotOpenOnFocus && !autofocus) {
+            this.openDropdown = true;
+        }
     }
 
     handleChange = (e) => {
