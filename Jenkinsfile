@@ -171,9 +171,9 @@ node('agent && linux && libc6-i386')
   <li>metasfresh-procurement-webui: version <b>${mavenProps['metasfresh-procurement-webui.version']}</b></li>
   <li>metasfresh base: version <b>${mavenProps['metasfresh.version']}</b></li>
   <li>metasfresh admin webui: version <b>${mavenProps['metasfresh-admin.version']}</b></li>
-  <li><ul>
+  <ul>
 		<li>metasfresh-material-dispo (always the same as metasfresh base): version <b>${mavenProps['metasfresh.version']}</b></li>
-	</ul></li>
+  </ul>
 </ul>
 <p>
 <h3>Deployable artifacts</h3>
@@ -281,7 +281,7 @@ stage('Test SQL-Migration')
 
 				final invokeRemoteInInstallDir = invokeRemote.curry(sshTargetHost, sshTargetUser, "${deployDir}/dist/install");
 				final VALIDATE_MIGRATION_TEMPLATE_DB='mf15_template';
-			final VALIDATE_MIGRATION_TEST_DB="tmp-metasfresh-dist-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${MF_VERSION}"
+				final VALIDATE_MIGRATION_TEST_DB="tmp-metasfresh-dist-${MF_UPSTREAM_BRANCH}-${env.BUILD_NUMBER}-${MF_VERSION}"
 						.replaceAll('[^a-zA-Z0-9]', '_') // // postgresql is in a way is allergic to '-' and '.' and many other characters in in DB names
 						.toLowerCase(); // also, DB names are generally in lowercase
 
