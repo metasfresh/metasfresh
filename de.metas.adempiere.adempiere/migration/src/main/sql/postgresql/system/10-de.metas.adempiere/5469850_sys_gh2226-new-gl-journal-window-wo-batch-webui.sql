@@ -2274,3 +2274,53 @@ UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-08-24 07:31:
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-08-24 07:31:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=547486
 ;
 
+-- 2017-08-24T07:35:06.851
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Konto Soll',Updated=TO_TIMESTAMP('2017-08-24 07:35:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559553
+;
+
+-- 2017-08-24T07:35:15.255
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Steuer Konto Haben',Updated=TO_TIMESTAMP('2017-08-24 07:35:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559558
+;
+
+-- 2017-08-24T07:35:59.691
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Automatik Steuer Konto Soll',Updated=TO_TIMESTAMP('2017-08-24 07:35:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559531
+;
+
+-- 2017-08-24T07:36:10.252
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Automatik Steuer Konto Haben',Updated=TO_TIMESTAMP('2017-08-24 07:36:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559530
+;
+
+-- 2017-08-24T07:36:19.364
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Verarbeitet',Updated=TO_TIMESTAMP('2017-08-24 07:36:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559537
+;
+
+-- 2017-08-24T07:36:28.100
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anlageverwaltung',Updated=TO_TIMESTAMP('2017-08-24 07:36:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559535
+;
+
+-- 2017-08-24T07:36:39.789
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anlagegut',Updated=TO_TIMESTAMP('2017-08-24 07:36:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559534
+;
+
+-- 2017-08-24T07:36:51.140
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anlagegut Gruppe',Updated=TO_TIMESTAMP('2017-08-24 07:36:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559533
+;
+
+-- 2017-08-24T07:37:04.037
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Erstellt',Updated=TO_TIMESTAMP('2017-08-24 07:37:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559545
+;
+
+-- 2017-08-24T07:37:31.215
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Gedruckt',Updated=TO_TIMESTAMP('2017-08-24 07:37:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559497
+;
+
