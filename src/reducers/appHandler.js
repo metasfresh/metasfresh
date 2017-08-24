@@ -70,6 +70,11 @@ export default function appHandler(state = initialState, action) {
                 }, {})
             });
 
+        case types.CLEAR_NOTIFICATIONS:
+            return Object.assign({}, state, {
+                notifications: {}
+            });
+
         // END OF NOTIFICATION ACTIONS
         case types.GET_NOTIFICATIONS_SUCCESS:
             return Object.assign({}, state, {

@@ -14,7 +14,8 @@ import {
     logoutRequest,
     logoutSuccess,
     loginSuccess,
-    localLoginRequest
+    localLoginRequest,
+    clearNotifications
 } from './actions/AppActions';
 
 import {
@@ -35,7 +36,10 @@ export const getRoutes = (store, auth) => {
                 }
             })
         }else{
+            store.dispatch(clearNotifications());
+
             store.dispatch(loginSuccess(auth));
+
             callback();
         }
     }
