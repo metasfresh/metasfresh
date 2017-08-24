@@ -73,10 +73,9 @@ public interface IUserDAO extends ISingletonService
 	String retrieveUserFullname(int adUserId);
 
 	/**
-	 * fetch all system users
+	 * Fetch all system(login) user IDs
 	 * @param ctx
-	 * @return
+	 * @return AD_User_IDs
 	 */
-	List<I_AD_User> retrieveSystemUsers();
-
+	List<Integer> retrieveSystemUserIds();
 }
