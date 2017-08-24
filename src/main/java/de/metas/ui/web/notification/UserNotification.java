@@ -94,6 +94,7 @@ public class UserNotification
 			final String id,
 			final long timestamp,
 			final boolean important,
+			final boolean read,
 			final int recipientUserId,
 			//
 			final String detailPlain,
@@ -110,6 +111,7 @@ public class UserNotification
 		this.id = id;
 		this.timestamp = timestamp;
 		this.important = important;
+		this.read.set(read);
 		this.recipientUserId = recipientUserId;
 		
 		this.detailPlain = detailPlain;

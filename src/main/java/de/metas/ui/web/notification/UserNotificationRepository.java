@@ -217,7 +217,8 @@ public class UserNotificationRepository
 				.id(String.valueOf(notificationPO.getAD_Note_ID()))
 				.timestamp(notificationPO.getCreated().getTime())
 				.important(notificationPO.isImportant())
-				.recipientUserId(notificationPO.getAD_User_ID());
+				.recipientUserId(notificationPO.getAD_User_ID())
+				.read(notificationPO.isProcessed());
 
 		//
 		// detailADMessage
@@ -292,9 +293,9 @@ public class UserNotificationRepository
 		return true;
 	}
 
-	public void delete(final UserNotification notification)
+	public void delete(final String notificationId)
 	{
-		final I_AD_Note notificationPO = retrieveAD_Note(notification);
+		final I_AD_Note notificationPO = retrieveAD_Note(notificationId);
 		if (notificationPO == null)
 		{
 			return;
@@ -306,12 +307,22 @@ public class UserNotificationRepository
 
 	private I_AD_Note retrieveAD_Note(final UserNotification notification)
 	{
-		final int adNoteId = Integer.parseInt(notification.getId());
+		return retrieveAD_Note(notification.getId());
+	}
+	
+	private I_AD_Note retrieveAD_Note(final String notificationId)
+	{
+		final int adNoteId = extractAD_Note_ID(notificationId);
 		if (adNoteId <= 0)
 		{
-			throw new IllegalArgumentException("No AD_Note_ID found for " + notification);
+			throw new IllegalArgumentException("No AD_Note_ID found for " + notificationId);
 		}
 
 		return InterfaceWrapperHelper.load(adNoteId, I_AD_Note.class);
+	}
+
+	private static final int extractAD_Note_ID(final String notificationId)
+	{
+		return Integer.parseInt(notificationId);
 	}
 }
