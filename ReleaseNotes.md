@@ -38,6 +38,8 @@ Here come the actual release notes:
     * Minor detail and adjustments and adding missing Translations to the Product window.
   * [#2198](https://github.com/metasfresh/metasfresh/issues/2198) New Window for filtered Bank Statement Line References
     * New prototype Window for filtered Bank Statement References.
+  * [#2200](https://github.com/metasfresh/metasfresh/issues/2200) Window Design WebUI : Payment
+    * Additional detailed adjustments to the Payment Window in WebUI, adopting to current design Guidelines.
   * [#2201](https://github.com/metasfresh/metasfresh/issues/2201) Window Design WebUI : GL Journal
     * Adding the GL Journal Window Layout to WebUI.
   * [#2202](https://github.com/metasfresh/metasfresh/issues/2202) Window Design WebUI : Tour Version
