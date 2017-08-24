@@ -48,6 +48,8 @@ Here come the actual release notes:
     * Adopting the Contract Window in Webui to the current Design Guidelines.
   * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
     * Adding adjustments to the Product window in WebUI adopting it to our current design guidelines.
+  * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
+    * New Window for GL Journal in WebUI, without Journal Batch level.
 
 * metasfresh-webui-api
 
