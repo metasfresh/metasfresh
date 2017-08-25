@@ -58,6 +58,8 @@ Here come the actual release notes:
     * New Window for GL Journal in WebUI, without Journal Batch level.
 
 * metasfresh-webui-api
+  * [#545](https://github.com/metasfresh/metasfresh-webui-api/issues/545) Notification Persisting
+    * Now persisting the User Notifications.
 
 * metasfresh-webui-frontend
 
