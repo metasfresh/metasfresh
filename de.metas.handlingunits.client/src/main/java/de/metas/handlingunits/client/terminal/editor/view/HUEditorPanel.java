@@ -62,6 +62,7 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUFilterPropertiesModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
+import de.metas.handlingunits.client.terminal.editor.model.impl.MovementsAnyWarehouseModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.QualityReturnsWarehouseModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssignTULUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
@@ -552,10 +553,10 @@ public class HUEditorPanel
 	 */
 	protected void doMoveToAnotherWarehouse()
 	{
-		model.doMoveToAnotherWarehouse(new Predicate<QualityReturnsWarehouseModel>()
+		model.doMoveToAnotherWarehouse(new Predicate<MovementsAnyWarehouseModel>()
 		{
 			@Override
-			public boolean evaluate(final QualityReturnsWarehouseModel returnWarehouseModel)
+			public boolean evaluate(final MovementsAnyWarehouseModel returnWarehouseModel)
 			{
 				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
 

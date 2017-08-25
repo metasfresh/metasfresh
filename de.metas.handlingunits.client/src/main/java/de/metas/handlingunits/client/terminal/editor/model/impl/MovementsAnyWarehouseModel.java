@@ -5,10 +5,10 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Movement;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
@@ -35,13 +35,13 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
  * #L%
  */
 
-public class QualityReturnsWarehouseModel extends AbstractMovementsWarehouseModel
+public class MovementsAnyWarehouseModel extends AbstractMovementsWarehouseModel
 {
+	private static final String MSG_NoWarehouseFound = "NoWarehouseFound";
 
-	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
-	public QualityReturnsWarehouseModel(final ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
+	public MovementsAnyWarehouseModel(final ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
 	{
 		super(terminalContext, warehouseFrom, hus);
 
@@ -50,10 +50,17 @@ public class QualityReturnsWarehouseModel extends AbstractMovementsWarehouseMode
 	@Override
 	protected void load()
 	{
-		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
+		if (hus.isEmpty())
+		{
+			// should never happen
+			return;
+		}
+
+		final int orgId = hus.get(0).getAD_Org_ID();
+		final List<org.compiere.model.I_M_Warehouse> warehouses = Services.get(IWarehouseDAO.class).retrieveForOrg(getCtx(), orgId);
 
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
-		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
+		Check.assumeNotEmpty(warehouses, MSG_NoWarehouseFound);
 		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
 
 	}
@@ -61,19 +68,19 @@ public class QualityReturnsWarehouseModel extends AbstractMovementsWarehouseMode
 	@Override
 	protected void createMovements()
 	{
-		setMovements(doMoveToQualityWarehouse());
+		setMovements(doMoveToWarehouse());
 
 	}
 
 	/**
 	 * Move the selected HUs to quality warehouse
-	 * task #1065
+	 * task #2144
 	 */
-	private List<I_M_Movement> doMoveToQualityWarehouse()
+	private List<I_M_Movement> doMoveToWarehouse()
 	{
-		final I_M_Warehouse qualityReturnsWarehouse = getM_WarehouseTo();
+		final I_M_Warehouse warehouse = getM_WarehouseTo();
 		final List<I_M_HU> hus = getHUs();
-		final List<I_M_Movement> qualityMovements = huMovementBL.moveHUsToWarehouse(hus, qualityReturnsWarehouse)
+		final List<I_M_Movement> qualityMovements = huMovementBL.moveHUsToWarehouse(hus, warehouse)
 				.getMovements();
 
 		return qualityMovements;

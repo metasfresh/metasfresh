@@ -1345,8 +1345,8 @@ public class HUEditorModel implements IDisposable
 		}
 		else
 		{
-			// Update parent's name recursivelly up to the top
-			// FIXME: this is a workaround because even though the name is updated, it's not udpated recursivelly up to the top
+			// Update parent's name recursively up to the top
+			// FIXME: this is a workaround because even though the name is updated, it's not updated recursively up to the top
 			IHUKey p = parentKey;
 			while (p != null)
 			{
@@ -1414,7 +1414,7 @@ public class HUEditorModel implements IDisposable
 
 	}
 
-	public List<I_M_Movement> doMoveToAnotherWarehouse(final Predicate<QualityReturnsWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
+	public List<I_M_Movement> doMoveToAnotherWarehouse(final Predicate<MovementsAnyWarehouseModel> editorCallback, final I_M_Warehouse warehouseFrom)
 	{
 		Check.assumeNotNull(editorCallback, "editorCallback not null");
 
@@ -1427,7 +1427,7 @@ public class HUEditorModel implements IDisposable
 		}
 
 		final de.metas.handlingunits.model.I_M_Warehouse warehouse = InterfaceWrapperHelper.create(warehouseFrom, de.metas.handlingunits.model.I_M_Warehouse.class);
-		final QualityReturnsWarehouseModel returnsWarehouseModel = new QualityReturnsWarehouseModel(_terminalContext, warehouse, hus);
+		final MovementsAnyWarehouseModel returnsWarehouseModel = new MovementsAnyWarehouseModel(_terminalContext, warehouse, hus);
 
 		//
 		// Do nothing & keep selection if the user cancelled

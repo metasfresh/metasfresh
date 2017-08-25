@@ -44,7 +44,7 @@ import de.metas.movement.event.MovementProcessedEventBus;
  * #L%
  */
 
-public abstract class AbstractReturnsWarehouseModel extends AbstractMaterialMovementModel
+public abstract class AbstractMovementsWarehouseModel extends AbstractMaterialMovementModel
 {
 
 	protected List<I_M_HU> hus;
@@ -59,7 +59,7 @@ public abstract class AbstractReturnsWarehouseModel extends AbstractMaterialMove
 	 */
 	private ITerminalKey selectedKey = null;
 
-	public AbstractReturnsWarehouseModel(ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
+	public AbstractMovementsWarehouseModel(ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
 	{
 		super(terminalContext);
 
