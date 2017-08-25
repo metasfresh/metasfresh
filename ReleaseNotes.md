@@ -68,7 +68,7 @@ Here come the actual release notes:
 
 # metasfresh 5.23 (2017-34)
 
-**upcoming release for week 2017-34**
+**release for week 2017-34**
 #Features
 * metasfresh-app
   * [#2048](https://github.com/metasfresh/metasfresh/issues/2048) Window Design WebUI: Sales Order Candidates
@@ -99,6 +99,7 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
   * [#2163](https://github.com/metasfresh/metasfresh/issues/2163) Do not show new button in B2C tab customer
+    * Minor Fix in the new Businesspartner B2C window, now not showing the new Button for Included Tab Customer/ Vendor anymore.
 * metasfresh-webui-frontend
   * [#1071](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1071) Fix frontend memory leaks
     * Fixes Memory Leaks in WebUI.
