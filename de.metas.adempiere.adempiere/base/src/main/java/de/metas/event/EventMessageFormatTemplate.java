@@ -1,6 +1,9 @@
 package de.metas.event;
 
+import java.util.Map;
+
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.text.MapFormat;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
@@ -20,11 +23,11 @@ import de.metas.logging.LogManager;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -51,9 +54,9 @@ public abstract class EventMessageFormatTemplate extends MapFormat
 	@Override
 	protected final String formatObject(final Object obj)
 	{
-		if (obj instanceof ITableRecordReference)
+		final ITableRecordReference modelRef = extractTableRecordReferenceOrNull(obj);
+		if (modelRef != null)
 		{
-			final ITableRecordReference modelRef = (ITableRecordReference)obj;
 			try
 			{
 				return formatTableRecordReference(modelRef);
@@ -64,10 +67,32 @@ public abstract class EventMessageFormatTemplate extends MapFormat
 				return "?";
 			}
 		}
-		else
+		
+		// Default/fallback
+		return super.formatObject(obj);
+	}
+	
+	private static final ITableRecordReference extractTableRecordReferenceOrNull(final Object obj)
+	{
+		if(obj == null)
 		{
-			return super.formatObject(obj);
+			return null;
 		}
+
+		if (obj instanceof ITableRecordReference)
+		{
+			return (ITableRecordReference)obj;
+		}
+
+		// Extract the TableRecordReference from Map.
+		// Usually that's the case when the parameters were deserialized and the the TableRecordRefererence was deserialized as Map.
+		if(obj instanceof Map)
+		{
+			final Map<?, ?> map = (Map<?, ?>)obj;
+			return TableRecordReference.ofMapOrNull(map);
+		}
+
+		return null;
 	}
 
 	protected abstract String formatTableRecordReference(final ITableRecordReference recordRef);

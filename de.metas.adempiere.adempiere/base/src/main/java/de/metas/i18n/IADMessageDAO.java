@@ -28,6 +28,7 @@ import java.util.function.Consumer;
 
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_AD_Message;
+import org.compiere.util.Env;
 
 public interface IADMessageDAO extends ISingletonService
 {
@@ -41,6 +42,12 @@ public interface IADMessageDAO extends ISingletonService
 	I_AD_Message retrieveByValue(Properties ctx, String value);
 
 	I_AD_Message retrieveById(Properties ctx, int adMessageId);
+	
+	default String retrieveValueById(final int adMessageId)
+	{
+		final I_AD_Message adMessage = retrieveById(Env.getCtx(), adMessageId);
+		return adMessage != null ? adMessage.getValue() : null;
+	}
 
 	/**
 	 * Gets AD_Message_ID
@@ -50,6 +57,11 @@ public interface IADMessageDAO extends ISingletonService
 	 * @return AD_Message_ID
 	 */
 	int retrieveIdByValue(Properties ctx, String value);
+	
+	default int retrieveIdByValue(final String value)
+	{
+		return retrieveIdByValue(Env.getCtx(), value);
+	}
 	
 	boolean isMessageExists(String adMessage);
 
