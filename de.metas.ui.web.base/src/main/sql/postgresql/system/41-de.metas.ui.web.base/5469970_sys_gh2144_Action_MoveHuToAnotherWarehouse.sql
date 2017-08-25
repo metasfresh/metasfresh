@@ -13,3 +13,13 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 UPDATE AD_Process SET Name='Lagerbewegung',Updated=TO_TIMESTAMP('2017-08-25 14:50:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540820
 ;
 
+-- 2017-08-25T15:41:47.148
+-- URL zum Konzept
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,540820,540516,TO_TIMESTAMP('2017-08-25 15:41:47','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y',TO_TIMESTAMP('2017-08-25 15:41:47','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+;
+
+-- 2017-08-25T15:42:06.961
+-- URL zum Konzept
+UPDATE AD_Table_Process SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2017-08-25 15:42:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540820 AND AD_Table_ID=540516
+;
+
