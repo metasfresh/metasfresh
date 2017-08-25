@@ -32,6 +32,8 @@ Here come the actual release notes:
     * Adopting the Sales Order Window to the current Design Guidelines.
   * [#2184](https://github.com/metasfresh/metasfresh/issues/2184) Window Design WebUI : Order Candidates
     * Minor change in Order Candidates Window removing processed Flag from Advanced Edit.
+  * [#2193](https://github.com/metasfresh/metasfresh/issues/2193) Window Design WebUI: Vendor Returns Improvements
+    * Adaption of Vendor Returns Window to current WebUI Guidelines.
   * [#2194](https://github.com/metasfresh/metasfresh/issues/2194) Shipment Candidates dropship vendor ID missing
     * Detail Adjustments to Shipment Schedule Window, improving to guidelines adoption.
   * [#2196](https://github.com/metasfresh/metasfresh/issues/2196) Window Design WebUI : Bank Statement
@@ -45,11 +47,11 @@ Here come the actual release notes:
   * [#2202](https://github.com/metasfresh/metasfresh/issues/2202) Window Design WebUI : Tour Version
     * Minor detail adjustments, missing Translations to the Tour Version Window in WebUI.
   * [#2203](https://github.com/metasfresh/metasfresh/issues/2203) Window Design WebUI : Delivery Days
-    * Adopting the Delivery Days Window to the current Design Guidelines.
+    * Adapting the Delivery Days Window to the current Design Guidelines.
   * [#2204](https://github.com/metasfresh/metasfresh/issues/2204) Window Design WebUI : Contract
     * Adopting the Contract Window in Webui to the current Design Guidelines.
   * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
-    * Adding adjustments to the Product window in WebUI adopting it to our current design guidelines.
+    * Adding adjustments to the Product window in WebUI adapting it to our current design guidelines.
   *[#2217](https://github.com/metasfresh/metasfresh/issues/2217) Window Design WebUI : Tour Version Improvements
     * Improvement of the Tour Version Window in WebUI, details changed to fit better to design guidlelines.
   * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
