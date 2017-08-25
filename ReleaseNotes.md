@@ -66,7 +66,9 @@ Here come the actual release notes:
 #Fixes
 * metasfresh-app
   * [#2112](https://github.com/metasfresh/metasfresh/issues/2112) Reversing a vendor-return-InOut needs to reverse the HU states
-    * Now recreating the initial Handling Unit state after reversing a vendor return
+    * Now recreating the initial Handling Unit state after reverting a vendor return
+  * [#2143](https://github.com/metasfresh/metasfresh/issues/2143) Disposal reverse-correct does not recreate the HU
+    * Now recreating the initial Handling Unit state after reverting a Disposal Document.
 * metasfresh-webui-api
 * metasfresh-webui-frontend
 
