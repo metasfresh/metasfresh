@@ -40,6 +40,8 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private static final String MSG_NoSelectedHU = "NoHUSelected";
+	
 	private List<I_M_HU> husToReturn = null;
 
 	@Override
@@ -48,7 +50,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 		final Set<Integer> huIds = getSelectedHUIds();
 		if (huIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject("No HUs selected");
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NoSelectedHU));
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -44,6 +44,8 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private static final String MSG_NoSelectedHU = "NoHUSelected";
+	
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
@@ -57,7 +59,7 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 		final Set<Integer> huIds = getSelectedHUIds();
 		if (huIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject("No HUs selected");
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NoSelectedHU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
