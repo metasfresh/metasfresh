@@ -33,11 +33,11 @@ import de.metas.ui.web.websocket.WebsocketSender;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,23 +48,42 @@ public class UserNotificationsQueue
 
 	private final int adUserId;
 	private String adLanguage;
-	private final WebsocketSender websocketSender;
-	private final String websocketEndpoint;
 
 	private final Set<String> activeSessions = ConcurrentHashMap.newKeySet();
 
+	private final UserNotificationRepository notificationsRepo;
 	private final ConcurrentHashMap<String, UserNotification> id2notification = new ConcurrentHashMap<>();
 	private final ConcurrentLinkedDeque<UserNotification> notifications = new ConcurrentLinkedDeque<>();
 	private final AtomicInteger unreadCount = new AtomicInteger(0);
 
-	/* package */ UserNotificationsQueue(final int adUserId, final String adLanguage, final WebsocketSender websocketSender)
+	private final WebsocketSender websocketSender;
+	private final String websocketEndpoint;
+
+	/* package */ UserNotificationsQueue(final int adUserId,
+			final String adLanguage,
+			final UserNotificationRepository notificationsRepo,
+			final WebsocketSender websocketSender)
 	{
 		super();
 		this.adUserId = adUserId;
 		this.adLanguage = adLanguage;
+
+		//
+		// Load notifications from repository
+		this.notificationsRepo = notificationsRepo;
+		notificationsRepo.getByUser(adUserId)
+				.forEach(notification -> {
+					notifications.addFirst(notification);
+					id2notification.put(notification.getId(), notification);
+					if (!notification.isRead())
+					{
+						unreadCount.incrementAndGet();
+					}
+				});
+
 		this.websocketSender = websocketSender;
 		websocketEndpoint = WebSocketConfig.buildNotificationsTopicName(adUserId);
-		
+
 		logger.trace("Created notifications queue: {}", this); // keep it last
 	}
 
@@ -131,6 +150,12 @@ public class UserNotificationsQueue
 	{
 		Check.assumeNotNull(notification, "Parameter notification is not null");
 
+		if (notification.getRecipientUserId() != getAD_User_ID())
+		{
+			logger.warn("Skip adding notification to queue because the recipient user does not match: notification={}, queue={}", notification, this);
+			return;
+		}
+
 		//
 		// Add notification to list and map
 		final UserNotification notificationOld = id2notification.put(notification.getId(), notification);
@@ -176,18 +201,15 @@ public class UserNotificationsQueue
 
 	private void markAsRead(final UserNotification notification)
 	{
-		final boolean alreadyRead = notification.setRead(true);
-		if (alreadyRead)
+		final boolean changed = notificationsRepo.markAsRead(notification);
+		if (!changed)
 		{
-			logger.trace("Skip marking notification as read because it's already read: {}", notification);
 			return;
 		}
 
 		//
 		// Update unreadCount
 		unreadCount.decrementAndGet();
-
-		logger.trace("Marked notification as read on {}: {}", notification); // NOTE: log after updating unreadCount
 
 		//
 		// Notify on websocket
@@ -206,4 +228,24 @@ public class UserNotificationsQueue
 		this.adLanguage = adLanguage;
 	}
 
+	public void delete(final String notificationId)
+	{
+		notificationsRepo.delete(notificationId);
+
+		final UserNotification notification = id2notification.remove(notificationId);
+		if(notification != null)
+		{
+			notifications.remove(notification);
+		}
+
+		// Update unread count
+		if (notification != null && !notification.isRead())
+		{
+			unreadCount.decrementAndGet();
+		}
+
+		//
+		// Notify on websocket
+		fireEventOnWebsocket(JSONNotificationEvent.eventDeleted(notificationId, unreadCount.get()));
+	}
 }

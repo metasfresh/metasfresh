@@ -1,5 +1,6 @@
 package de.metas.ui.web.notification;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -44,6 +45,9 @@ public class UserNotificationsService
 	private static final Logger logger = LogManager.getLogger(UserNotificationsService.class);
 
 	@Autowired
+	private UserNotificationRepository notificationsRepo;
+
+	@Autowired
 	private WebsocketSender websocketSender;
 
 	private final ConcurrentHashMap<Integer, UserNotificationsQueue> adUserId2notifications = new ConcurrentHashMap<>();
@@ -54,7 +58,7 @@ public class UserNotificationsService
 	private void onUserLanguageChanged(final LanguagedChangedEvent event)
 	{
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(event.getAdUserId());
-		if(notificationsQueue != null)
+		if (notificationsQueue != null)
 		{
 			notificationsQueue.setLanguage(event.getAdLanguage());
 		}
@@ -76,8 +80,7 @@ public class UserNotificationsService
 	{
 		logger.trace("Enabling for sessionId={}, adUserId={}, adLanguage={}", sessionId, adUserId, adLanguage);
 
-		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId,
-				theSessionId -> new UserNotificationsQueue(adUserId, adLanguage, websocketSender));
+		final UserNotificationsQueue notificationsQueue = adUserId2notifications.computeIfAbsent(adUserId, k -> new UserNotificationsQueue(adUserId, adLanguage, notificationsRepo, websocketSender));
 		notificationsQueue.addActiveSessionId(sessionId);
 
 		subscribeToEventTopicsIfNeeded();
@@ -93,9 +96,14 @@ public class UserNotificationsService
 		return getNotificationsQueue(adUserId).getWebsocketEndpoint();
 	}
 
+	private UserNotificationsQueue getNotificationsQueueOrNull(final int adUserId)
+	{
+		return adUserId2notifications.get(adUserId);
+	}
+
 	private UserNotificationsQueue getNotificationsQueue(final int adUserId)
 	{
-		final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(adUserId);
+		final UserNotificationsQueue notificationsQueue = getNotificationsQueueOrNull(adUserId);
 		if (notificationsQueue == null)
 		{
 			throw new IllegalArgumentException("No notifications queue found for AD_User_ID=" + adUserId);
@@ -112,27 +120,19 @@ public class UserNotificationsService
 	{
 		logger.trace("Got event from {}: {}", eventBus, event);
 
-		final UserNotification notification = UserNotification.of(event);
-		if (event.isAllRecipients())
-		{
-			logger.trace("Sending event to ALL: {}", adUserId2notifications);
-			adUserId2notifications.forEachValue(100, notificationsQueue -> notificationsQueue.addNotification(notification.copy()));
-		}
-		else
-		{
-			logger.trace("Sending event to event's recipients");
-			for (final int recipientUserId : event.getRecipientUserIds())
-			{
-				final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(recipientUserId);
-				if (notificationsQueue == null)
-				{
-					logger.trace("No notification queue was found for recipientUserId={}", recipientUserId);
-					continue;
-				}
+		final List<UserNotification> notifications = notificationsRepo.save(event);
 
-				notificationsQueue.addNotification(notification.copy());
+		notifications.forEach(notification -> {
+			final int recipientUserId = notification.getRecipientUserId();
+			final UserNotificationsQueue notificationsQueue = getNotificationsQueueOrNull(recipientUserId);
+			if (notificationsQueue == null)
+			{
+				logger.trace("No notification queue was found for recipientUserId={}", recipientUserId);
+				return;
 			}
-		}
+
+			notificationsQueue.addNotification(notification);
+		});
 	}
 
 	public void markNotificationAsRead(final int adUserId, final String notificationId)
@@ -147,8 +147,12 @@ public class UserNotificationsService
 
 	public int getNotificationsUnreadCount(final int adUserId)
 	{
-		return getNotificationsQueue(adUserId)
-				.getUnreadCount();
+		return getNotificationsQueue(adUserId).getUnreadCount();
+	}
+	
+	public void deleteNotification(final int adUserId, final String notificationId)
+	{
+		getNotificationsQueue(adUserId).delete(notificationId);
 	}
 
 }
