@@ -31,7 +31,9 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -42,6 +44,7 @@ import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
@@ -49,7 +52,9 @@ import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 
 @Validator(I_M_InOut.class)
@@ -273,6 +278,12 @@ public class M_InOut
 			// do nothing if the inout is not a customer return
 			return;
 		}
+		
+		if(Services.get(IInOutBL.class).isReversal(customerReturn))
+		{
+			// nothing to do
+			return;
+		}
 
 		final List<I_M_HU> existingHandlingUnits = Services.get(IHUInOutDAO.class).retrieveHandlingUnits(customerReturn);
 
@@ -285,6 +296,40 @@ public class M_InOut
 		// create HUs based on the lines in the customer return inout
 		huInOutBL.createHUsForCustomerReturn(InterfaceWrapperHelper.create(customerReturn, de.metas.handlingunits.model.I_M_InOut.class));
 
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
+	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
+	{
+
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+		
+		if (!(huInOutBL.isVendorReturn(returnInOut) || huInOutBL.isCustomerReturn(returnInOut)))
+		{
+			return; // nothing to do
+		}
+
+		final String snapshotId = returnInOut.getSnapshot_UUID();
+		if (Check.isEmpty(snapshotId, true))
+		{
+			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
+		}
+		
+		final List<I_M_HU> hus = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUsForModel(returnInOut);
+		
+		if(hus.isEmpty())
+		{
+			// nothing to do.
+		}
+
+		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
+		Services.get(IHUSnapshotDAO.class).restoreHUs()
+				.setContext(context)
+				.setSnapshotId(snapshotId)
+				.setDateTrx(returnInOut.getMovementDate())
+				.setReferencedModel(returnInOut)
+				.addModels(hus)
+				.restoreFromSnapshot();
 	}
 
 }

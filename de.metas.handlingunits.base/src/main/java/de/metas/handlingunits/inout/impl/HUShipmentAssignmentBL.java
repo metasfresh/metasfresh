@@ -213,7 +213,7 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 			// Calling this method with huContext null
 			// To Be Changed in case the requirements change
 
-			Services.get(IHandlingUnitsBL.class).setHUStatus(null, hu, X_M_HU.HUSTATUS_Shipped);
+			Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Shipped);
 			hu.setIsActive(false); // deactivate it because it shall not be available in our system anymore
 		}
 
