@@ -56,6 +56,8 @@ Here come the actual release notes:
     * Adding adjustments to the Product window in WebUI adapting it to our current design guidelines.
   *[#2217](https://github.com/metasfresh/metasfresh/issues/2217) Window Design WebUI : Tour Version Improvements
     * Improvement of the Tour Version Window in WebUI, details changed to fit better to design guidlelines.
+  * [#2223](https://github.com/metasfresh/metasfresh/issues/2223) Support longer numbers on documents
+    * Order and Invoice Jasper Resports now allow prices with up to 6 digits.
   * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
     * New Window for GL Journal in WebUI, without Journal Batch level.
 
