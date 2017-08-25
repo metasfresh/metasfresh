@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2050](https://github.com/metasfresh/metasfresh/issues/2050) Window Design WebUI : Purchase candidate
     * Adopting the Purchase Candidate Window to the current Design Guidelines.
+  * [#2144](https://github.com/metasfresh/metasfresh/issues/2144) Action for Warehouse Movements
+    * New Action in handling Unit Editory, allowing the User to fast move selected Handling Units to another Warehouses. Material Movement Documents are created automatically on the fly.
   * [#2169](https://github.com/metasfresh/metasfresh/issues/2169) Window Design WebUI : Attributes
     * Adopting the Attributes Window to the current Design Guidelines.
   * [#2170](https://github.com/metasfresh/metasfresh/issues/2170) Window Design WebUI : Bill of Materials
