@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -207,15 +206,15 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public List<I_AD_User> retrieveSystemUsers()
+	public List<Integer> retrieveSystemUserIds()
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_AD_User.class, PlainContextAware.newOutOfTrx())
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
 				.orderBy().addColumn(I_AD_User.COLUMNNAME_AD_User_ID, false).endOrderBy()
 				.create()
-				.list(I_AD_User.class);
+				.listIds();
 	}
 }
