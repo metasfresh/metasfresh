@@ -228,4 +228,24 @@ public class UserNotificationsQueue
 		this.adLanguage = adLanguage;
 	}
 
+	public void delete(final String notificationId)
+	{
+		notificationsRepo.delete(notificationId);
+
+		final UserNotification notification = id2notification.remove(notificationId);
+		if(notification != null)
+		{
+			notifications.remove(notification);
+		}
+
+		// Update unread count
+		if (notification != null && !notification.isRead())
+		{
+			unreadCount.decrementAndGet();
+		}
+
+		//
+		// Notify on websocket
+		fireEventOnWebsocket(JSONNotificationEvent.eventDeleted(notificationId, unreadCount.get()));
+	}
 }

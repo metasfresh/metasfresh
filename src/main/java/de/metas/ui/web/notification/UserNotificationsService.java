@@ -149,5 +149,10 @@ public class UserNotificationsService
 	{
 		return getNotificationsQueue(adUserId).getUnreadCount();
 	}
+	
+	public void deleteNotification(final int adUserId, final String notificationId)
+	{
+		getNotificationsQueue(adUserId).delete(notificationId);
+	}
 
 }
