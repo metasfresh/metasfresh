@@ -38,6 +38,7 @@
     "d3": "^4.4.0",
     "file-loader": "~0.8.5",
     "immutability-helper": "^2.1.2",
+    "lodash": "^4.17.4",
     "moment": "~2.16.0",
     "prop-types": "^15.5.6",
     "react": "~15.5.4",

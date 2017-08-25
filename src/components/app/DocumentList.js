@@ -12,6 +12,8 @@ import FiltersStatic from '../filters/FiltersStatic';
 import SelectionAttributes from './SelectionAttributes';
 import DataLayoutWrapper from '../DataLayoutWrapper';
 
+import * as _ from 'lodash';
+
 import {
     initLayout,
     getDataByIds
@@ -60,11 +62,11 @@ class DocumentList extends Component {
             clickOutsideLock: false,
             refresh: null,
 
-            cachedSelection: null,
-
             isShowIncluded: false,
             hasShowIncluded: false
-        }
+        };
+
+        this.cachedSelection = null;
 
         this.fetchLayoutAndData();
     }
@@ -92,7 +94,10 @@ class DocumentList extends Component {
             inBackground, dispatch, includedView, selectedWindowType,
             disconnectFromState, refId
         } = props;
-        const {page, sort, viewId, cachedSelection, layout} = this.state;
+
+        const {
+            page, sort, viewId, layout
+        } = this.state;
 
         /*
          * If we browse list of docs, changing type of Document
@@ -103,11 +108,10 @@ class DocumentList extends Component {
          * OR
          * The reference ID is changed
          */
-        if(
-            windowType !== this.props.windowType ||
-            (defaultViewId === undefined &&
-                defaultViewId !== this.props.defaultViewId) ||
-            refId !== this.props.refId
+        if (
+            (windowType !== this.props.windowType) ||
+            ((defaultViewId === undefined) && (defaultViewId !== this.props.defaultViewId)) ||
+            (refId !== this.props.refId)
         ) {
             this.setState({
                 data:null,
@@ -115,32 +119,35 @@ class DocumentList extends Component {
                 filters: null,
                 viewId: null
             }, () => {
-                !disconnectFromState && dispatch(selectTableItems([], null))
+                if (!disconnectFromState) {
+                    dispatch(selectTableItems([], null));
+                }
+
                 this.fetchLayoutAndData();
             });
         }
 
-        if(
-            defaultSort != this.props.defaultSort &&
-            defaultSort != sort
-        ){
+        if (
+            (defaultSort !== this.props.defaultSort) &&
+            (defaultSort !== sort)
+        ) {
             this.setState({
                 sort: defaultSort
             });
         }
 
-        if(
-            defaultPage != this.props.defaultPage &&
-            defaultPage != page
-        ){
+        if (
+            (defaultPage !== this.props.defaultPage) &&
+            (defaultPage !== page)
+        ) {
             this.setState({
                 page: defaultPage || 1
             });
         }
 
-        if(
-            defaultViewId != this.props.defaultViewId &&
-            defaultViewId != viewId
+        if (
+            (defaultViewId !== this.props.defaultViewId) &&
+            (defaultViewId !== viewId)
         ) {
             this.setState({
                 viewId: defaultViewId
@@ -154,22 +161,25 @@ class DocumentList extends Component {
          * After opening modal cache current selection
          * After closing modal with gridview, refresh selected.
          */
-        if(
-            inBackground != this.props.inBackground
+        if (
+            (inBackground !== this.props.inBackground)
         ) {
-            if(!inBackground){
+            if (!inBackground) {
                 // In case of preventing cached selection restore
-                cachedSelection && !disconnectFromState &&
-                    dispatch(selectTableItems(cachedSelection, windowType))
-                this.setState({
-                    refreshSelection: true
-                }, () => this.setState({
-                    refreshSelection: false
-                }))
-            }else{
-                this.setState({
-                    cachedSelection: selected
-                })
+                if (
+                    !disconnectFromState &&
+                    this.cachedSelection
+                ) {
+                    dispatch(
+                        selectTableItems(
+                            this.cachedSelection,
+                            this.props.windowType
+                        )
+                    );
+                }
+            }
+            else {
+                this.cachedSelection = selected;
             }
         }
 
@@ -177,29 +187,9 @@ class DocumentList extends Component {
             (selectedWindowType === windowType) &&
             (includedView && includedView.windowType && includedView.viewId) &&
             (layout && layout.supportIncludedView) &&
-            JSON.stringify(this.props.selected) !== JSON.stringify(selected)
+            !_.isEqual(this.props.selected, selected)
         ) {
             dispatch(setListIncludedView());
-        }
-
-        /*
-         * When the selection of unfocused table changes
-         */
-        if(
-            selectedWindowType === windowType &&
-            cachedSelection !== null &&
-            cachedSelection !== undefined &&
-            layout && layout.supportIncludedView &&
-            includedView && includedView.windowType && includedView.viewId
-        ){
-            // There is no need to restore cached selection in that case
-            this.setState({
-                cachedSelection: null
-            }, () => {
-                if (includedView.windowType === 'pickingSlot') {
-                    dispatch(setListIncludedView());
-                }
-            })
         }
     }
 
@@ -276,7 +266,7 @@ class DocumentList extends Component {
             clickOutsideLock: !!value
         })
     }
-    
+
     clearStaticFilters = (filterId) => {
         const {dispatch, windowType} = this.props;
         const {viewId} = this.state;
@@ -381,7 +371,7 @@ class DocumentList extends Component {
 
     getData = (id, page, sortingQuery, refresh) => {
         const {
-            dispatch, windowType, updateUri, setNotFound
+            dispatch, windowType, updateUri, setNotFound, type, isIncluded
         } = this.props;
 
         setNotFound && setNotFound(false);
@@ -396,13 +386,13 @@ class DocumentList extends Component {
         return browseViewRequest(
             id, page, this.pageLength, sortingQuery, windowType
         ).then( (response) => {
-            let selectionState = {};
             let forceSelection = false;
+
             if (
-                ((this.props.type === 'includedView') || this.props.isIncluded) &&
-                response.data && response.data.result && (response.data.result.length > 0)
+                ((type === 'includedView') || isIncluded) &&
+                response.data && response.data.result &&
+                (response.data.result.length > 0)
             ) {
-                selectionState.cachedSelection = null;
                 forceSelection = true;
             }
 
@@ -410,11 +400,23 @@ class DocumentList extends Component {
                 Object.assign({}, {
                     data: response.data,
                     filters: response.data.filters
-                }, selectionState),
+                }),
                 () => {
-                    if (forceSelection) {
-                        dispatch(selectTableItems([ response.data.result[0].id ], windowType))
+                    if (
+                        forceSelection &&
+                        response.data && response.data.result
+                    ) {
+                        const selection = [
+                            response.data.result[0].id
+                        ];
+
+                        this.cachedSelection = null;
+
+                        dispatch(
+                            selectTableItems(selection, windowType)
+                        );
                     }
+
                     this.connectWS(response.data.viewId);
                 }
             );
@@ -482,13 +484,13 @@ class DocumentList extends Component {
         } = this.props;
         const {page, viewId, sort} = this.state;
 
-        if(isModal){
+        if (isModal) {
             return;
         }
 
         dispatch(push('/window/' + windowType + '/' + id));
 
-        if(!isSideListShow){
+        if (!isSideListShow) {
             // Caching last settings
             dispatch(setPagination(page, windowType));
             dispatch(setSorting(sort, windowType));
@@ -505,14 +507,16 @@ class DocumentList extends Component {
             isShowIncluded: showIncludedView ? true : false,
             hasShowIncluded: showIncludedView ? true : false
         }, ()=> {
-            showIncludedView && dispatch(setListIncludedView(data.windowId, data.viewId));
+            if (showIncludedView) {
+                dispatch(setListIncludedView(data.windowId, data.viewId));
+            }
         });
     }
 
     render() {
         const {
             layout, data, viewId, clickOutsideLock, refresh, page, filters,
-            cachedSelection, isShowIncluded, hasShowIncluded, refreshSelection
+            isShowIncluded, hasShowIncluded, refreshSelection
         } = this.state;
 
         const {
@@ -528,9 +532,11 @@ class DocumentList extends Component {
         const selectionValid = this.doesSelectionExist(selected, hasIncluded);
 
         if(notfound || layout === 'notfound' || data === 'notfound'){
-            return <BlankPage 
-                what={counterpart.translate('view.error.windowName')}
-            />
+            return (
+                <BlankPage
+                    what={counterpart.translate('view.error.windowName')}
+                />
+            );
         }
 
         let showQuickActions = true;
@@ -538,20 +544,22 @@ class DocumentList extends Component {
             showQuickActions = false;
         }
 
-        if(layout && data) {
+        if (layout && data) {
             return (
                 <div
                     className={
                         'document-list-wrapper ' +
-                        (isShowIncluded || isIncluded ? 'document-list-included ' : '') +
-                        (hasShowIncluded || hasIncluded ? 'document-list-has-included ' : '')
+                        ((isShowIncluded || isIncluded) ?
+                            'document-list-included ' : '') +
+                        ((hasShowIncluded || hasIncluded) ?
+                            'document-list-has-included ' : '')
                     }
                 >
                         {!readonly && <div
                             className="panel panel-primary panel-spaced panel-inline document-list-header"
                         >
                             <div className={hasIncluded ? 'disabled' : ''}>
-                                {layout.supportNewRecord && !isModal &&
+                                {layout.supportNewRecord && !isModal && (
                                     <button
                                         className="btn btn-meta-outline-secondary btn-distance btn-sm hidden-sm-down btn-new-document"
                                         onClick={() =>
@@ -561,18 +569,24 @@ class DocumentList extends Component {
                                         <i className="meta-icon-add" />
                                         {layout.newRecordCaption}
                                     </button>
-                                }
-                                {layout.filters && <Filters
-                                    {...{windowType, viewId}}
-                                    filterData={layout.filters}
-                                    filtersActive={filters}
-                                    updateDocList={this.handleFilterChange}
-                                />}
-                                {data.staticFilters && <FiltersStatic
-                                    {...{windowType, viewId}}
-                                    data={data.staticFilters}
-                                    clearFilters={this.clearStaticFilters}
-                                />}
+                                )}
+
+                                {layout.filters && (
+                                    <Filters
+                                        {...{windowType, viewId}}
+                                        filterData={layout.filters}
+                                        filtersActive={filters}
+                                        updateDocList={this.handleFilterChange}
+                                    />
+                                )}
+
+                                {data.staticFilters && (
+                                    <FiltersStatic
+                                        {...{windowType, viewId}}
+                                        data={data.staticFilters}
+                                        clearFilters={this.clearStaticFilters}
+                                    />
+                                )}
                             </div>
 
                             {showQuickActions && (
@@ -582,13 +596,19 @@ class DocumentList extends Component {
                                         refresh,
                                         processStatus
                                     }}
-                                    ref={ (c) => this.quickActionsComponent = (c && c.getWrappedInstance()) }
+                                    ref={ (c) => {
+                                        this.quickActionsComponent = (
+                                            c && c.getWrappedInstance()
+                                        );
+                                    }}
                                     selected={selected}
                                     viewId={viewId}
                                     windowType={windowType}
                                     fetchOnInit={fetchQuickActionsOnInit}
                                     disabled={hasIncluded}
-                                    shouldNotUpdate={inBackground && !hasIncluded}
+                                    shouldNotUpdate={
+                                        inBackground && !hasIncluded
+                                    }
                                     inBackground={disablePaginationShortcuts}
                                     inModal={inModal}
                                 />
@@ -624,13 +644,17 @@ class DocumentList extends Component {
                                 tabIndex={0}
                                 indentSupported={layout.supportTree}
                                 disableOnClickOutside={clickOutsideLock}
-                                defaultSelected={cachedSelection ?
-                                    cachedSelection : selected}
+                                defaultSelected={this.cachedSelection ?
+                                    this.cachedSelection : selected}
                                 refreshSelection={refreshSelection}
                                 queryLimitHit={data.queryLimitHit}
                                 doesSelectionExist={this.doesSelectionExist}
-                                showIncludedViewOnSelect={this.showIncludedViewOnSelect}
-                                supportIncludedViewOnSelect={layout.supportIncludedViewOnSelect}
+                                showIncludedViewOnSelect={
+                                    this.showIncludedViewOnSelect
+                                }
+                                supportIncludedViewOnSelect={
+                                    layout.supportIncludedViewOnSelect
+                                }
                                 {...{isIncluded, disconnectFromState, autofocus,
                                     open, page, closeOverlays, inBackground,
                                     disablePaginationShortcuts, isModal,
