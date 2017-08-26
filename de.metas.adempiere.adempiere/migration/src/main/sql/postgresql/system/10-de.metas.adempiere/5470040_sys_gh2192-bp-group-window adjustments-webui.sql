@@ -57,3 +57,12 @@ UPDATE AD_Field SET Name='Priorität',Updated=TO_TIMESTAMP('2017-08-26 16:29:46'
 UPDATE AD_Tab SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2017-08-26 16:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=778
 ;
 
+-- 2017-08-26T16:49:51.350
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2017-08-26 16:49:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540478
+;
+
+-- 2017-08-26T16:50:56.842
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2017-08-26 16:50:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544659
+;
