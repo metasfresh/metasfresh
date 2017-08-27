@@ -64,6 +64,8 @@ Here come the actual release notes:
     * Order and Invoice Jasper Resports now allow prices with up to 6 digits.
   * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
     * New Window for GL Journal in WebUI, without Journal Batch level.
+  * [#2255](https://github.com/metasfresh/metasfresh/issues/2255) Revamp Validcombination Window
+    * Adjustments done to Validcombination Window in WebUI, adapting to current design Guidelines.
 
 * metasfresh-webui-api
   * [#545](https://github.com/metasfresh/metasfresh-webui-api/issues/545) Notification Persisting
