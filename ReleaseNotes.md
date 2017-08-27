@@ -21,7 +21,8 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-35**
 
-#Features
+## Features
+
 * metasfresh-app
   * [#2036](https://github.com/metasfresh/metasfresh/issues/2036) Picking Slot Label
   * [#2050](https://github.com/metasfresh/metasfresh/issues/2050) Window Design WebUI : Purchase candidate
@@ -86,7 +87,8 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1021) Combined Filter Functionality
 
-#Fixes
+## Fixes
+
 * metasfresh-app
   * [#2112](https://github.com/metasfresh/metasfresh/issues/2112) Reversing a vendor-return-InOut needs to reverse the HU states
     * Now recreating the initial Handling Unit state after reverting a vendor return
@@ -102,7 +104,8 @@ Here come the actual release notes:
 # metasfresh 5.23 (2017-34)
 
 **release for week 2017-34**
-#Features
+
+## Features
 * metasfresh-app
   * [#2048](https://github.com/metasfresh/metasfresh/issues/2048) Window Design WebUI: Sales Order Candidates
     * New Window Sales Order Candidates for WebUI.
@@ -129,7 +132,7 @@ Here come the actual release notes:
   * [#1139](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1139) Ellipses when breadcrumb too long & Tooltip
     * Adjustment to the Breadcrumb navigation. Now adding ellipses when the header exceeds the possible space.
 
-#Fixes
+## Fixes
 * metasfresh-app
   * [#2163](https://github.com/metasfresh/metasfresh/issues/2163) Do not show new button in B2C tab customer
     * Minor Fix in the new Businesspartner B2C window, now not showing the new Button for Included Tab Customer/ Vendor anymore.
