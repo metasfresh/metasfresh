@@ -6,7 +6,6 @@
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
 		<version>1.0.0</version>
-		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
 	<groupId>de.metas.dist</groupId>
