@@ -10,14 +10,25 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.25 (2017-36)
+
+**upcoming release for week 2017-36**
+
+#Features
+* metasfresh-app
+
 # metasfresh 5.24 (2017-35)
 
 **upcoming release for week 2017-35**
 
 #Features
 * metasfresh-app
+  * [#2036](https://github.com/metasfresh/metasfresh/issues/2036) Picking Slot Label
   * [#2050](https://github.com/metasfresh/metasfresh/issues/2050) Window Design WebUI : Purchase candidate
     * Adopting the Purchase Candidate Window to the current Design Guidelines.
+  * [#2103](https://github.com/metasfresh/metasfresh/issues/2103) Create and implement the usage of a pdf printer
+  * [#2109](https://github.com/metasfresh/metasfresh/issues/2109) Move Currency Records from System to Client level so user can edit them
+  * [#2116](https://github.com/metasfresh/metasfresh/issues/2116) Use handler when matching partner in ESR import
   * [#2144](https://github.com/metasfresh/metasfresh/issues/2144) Action for Warehouse Movements
     * New Action in handling Unit Editory, allowing the User to fast move selected Handling Units to another Warehouses. Material Movement Documents are created automatically on the fly.
   * [#2154](https://github.com/metasfresh/metasfresh/issues/2154) Window Design WebUI: Customer Returns Improvements
@@ -30,7 +41,7 @@ Here come the actual release notes:
     * Adopting the Discount Schema Window to the current Design Guidelines.
   * [#2174](https://github.com/metasfresh/metasfresh/issues/2174) Window Design WebUI : Unit of Measure
     * Adopting the Product Unit of measure Window to the current Design Guidelines.
-  * #[2175](https://github.com/metasfresh/metasfresh/issues/2175) Window Design WebUI : Product Category
+  * [#2175](https://github.com/metasfresh/metasfresh/issues/2175) Window Design WebUI : Product Category
     * Adopting the Product Category Window to the current Design Guidelines.
   * [#2183](https://github.com/metasfresh/metasfresh/issues/2183) Window Design WebUI : Sales Order
     * Adopting the Sales Order Window to the current Design Guidelines.
@@ -58,27 +69,35 @@ Here come the actual release notes:
     * Adopting the Contract Window in Webui to the current Design Guidelines.
   * [#2207](https://github.com/metasfresh/metasfresh/issues/2207) Window Design WebUI : Product
     * Adding adjustments to the Product window in WebUI adapting it to our current design guidelines.
-  *[#2217](https://github.com/metasfresh/metasfresh/issues/2217) Window Design WebUI : Tour Version Improvements
+  * [#2217](https://github.com/metasfresh/metasfresh/issues/2217) Window Design WebUI : Tour Version Improvements
     * Improvement of the Tour Version Window in WebUI, details changed to fit better to design guidlelines.
   * [#2223](https://github.com/metasfresh/metasfresh/issues/2223) Support longer numbers on documents
     * Order and Invoice Jasper Resports now allow prices with up to 6 digits.
   * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
     * New Window for GL Journal in WebUI, without Journal Batch level.
+  * [#2231](https://github.com/metasfresh/metasfresh/issues/2231) Add Import Partner and Product Processes Available in Import Windows
+  * [#2136](https://github.com/metasfresh/metasfresh/issues/2136) add history to B2C window
 
 * metasfresh-webui-api
   * [#545](https://github.com/metasfresh/metasfresh-webui-api/issues/545) Notification Persisting
     * Now persisting the User Notifications.
+  * [#546](https://github.com/metasfresh/metasfresh-webui-api/issues/546) Notification Deleting
 
 * metasfresh-webui-frontend
+  * [#1021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1021) Combined Filter Functionality
 
 #Fixes
 * metasfresh-app
   * [#2112](https://github.com/metasfresh/metasfresh/issues/2112) Reversing a vendor-return-InOut needs to reverse the HU states
     * Now recreating the initial Handling Unit state after reverting a vendor return
+  * [#2142](https://github.com/metasfresh/metasfresh/issues/2142) Customer Returns error w/ create from Shipment in WebUI
   * [#2143](https://github.com/metasfresh/metasfresh/issues/2143) Disposal reverse-correct does not recreate the HU
     * Now recreating the initial Handling Unit state after reverting a Disposal Document.
 * metasfresh-webui-api
+
 * metasfresh-webui-frontend
+  * [#1140](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1140) Lookup Workflow for Batch Entry not correct
+  * [#1150](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1150) error reappears after you changed window
 
 # metasfresh 5.23 (2017-34)
 
