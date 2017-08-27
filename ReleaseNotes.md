@@ -14,8 +14,9 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-36**
 
-#Features
-* metasfresh-app
+## Features
+
+## Fixes
 
 # metasfresh 5.24 (2017-35)
 
