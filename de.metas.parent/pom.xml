@@ -541,7 +541,8 @@
 							<dependency>
 								<groupId>de.metas</groupId>
 								<artifactId>metasfresh-assemblies</artifactId>
-								<version>[1.0.0,)</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,10.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>
@@ -654,7 +655,8 @@
 							<dependency>
 								<groupId>de.metas</groupId>
 								<artifactId>metasfresh-assemblies</artifactId>
-								<version>[1.0.0,)</version>
+								<!-- version>${metasfresh.assembly.descriptor.version}</version -->
+								<version>[1.0.0,10.0.0]</version>
 							</dependency>
 						</dependencies>
 						<executions>

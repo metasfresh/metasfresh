@@ -158,26 +158,13 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 					else
 					{
 						list = new HashSet<>();
-								//new TreeSet<HUPackingMaterialDocumentLineCandidate>(Comparator.comparing(HUPackingMaterialDocumentLineCandidate::getM_Product_ID));
+						// new TreeSet<HUPackingMaterialDocumentLineCandidate>(Comparator.comparing(HUPackingMaterialDocumentLineCandidate::getM_Product_ID));
 					}
 					pmCandidates.put(entry.getKey(), list);
 				}
 
 				list.add(entry.getValue());
 			}
-			// pmCandidates.putAll(key2candidates);
-
-			// for (final Object key : pmCandidates.keySet())
-			// {
-			// HUPackingMaterialDocumentLineCandidate huPackingMaterialDocumentLineCandidate = key2candidates.get(key);
-			//
-			// if(huPackingMaterialDocumentLineCandidate != null)
-			// {
-			// huPackingMaterialDocumentLineCandidate.getQty()
-			// }
-			// }
-
-			// huPIPToInOutLines.putAll(huPIPToOriginInOutLinesMap);
 
 			for (final HUpipToInOutLine key : huPIPToOriginInOutLinesMap.keySet())
 			{
@@ -194,14 +181,16 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 					huPIPToInOutLines.put(key, existingQtyTU + newQtyTU);
 				}
 			}
-			
+
+			huSnapshotProducer.addModel(hu);
+
 		}
 
 		for (final Object key : pmCandidates.keySet())
 		{
 			for (final HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates.get(key))
 			{
-				
+
 				final I_M_HU_PackingMaterial packingMaterial = huPackingMaterialDAO.retrivePackingMaterialOfProduct(pmCandidate.getM_Product());
 
 				addPackingMaterial(packingMaterial, pmCandidate.getQty().intValueExact());
@@ -209,10 +198,6 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 		}
 		// Create the packing material lines that were prepared
 		packingMaterialInoutLinesBuilder.create();
-		
-	
-		
-
 
 		final Map<ArrayKey, I_M_InOutLine> newInOutLinesMap = inoutLinesBuilder.get_inOutLines();
 

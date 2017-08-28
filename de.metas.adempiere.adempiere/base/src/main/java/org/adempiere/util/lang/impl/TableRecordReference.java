@@ -3,6 +3,7 @@ package org.adempiere.util.lang.impl;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -108,7 +109,7 @@ public final class TableRecordReference implements ITableRecordReference
 				.map(model -> of(model))
 				.collect(GuavaCollectors.toImmutableList());
 	}
-	
+
 	public static final List<TableRecordReference> ofRecordIds(final String tableName, final Collection<Integer> recordIds)
 	{
 		if (recordIds == null || recordIds.isEmpty())
@@ -121,7 +122,6 @@ public final class TableRecordReference implements ITableRecordReference
 				.map(recordId -> of(tableName, recordId))
 				.collect(GuavaCollectors.toImmutableList());
 	}
-
 
 	public static final Set<TableRecordReference> ofSet(final Collection<?> models)
 	{
@@ -192,11 +192,56 @@ public final class TableRecordReference implements ITableRecordReference
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
+	public static final TableRecordReference ofMapOrNull(final Map<?, ?> map)
+	{
+		final Object tableNameObj = map.get(PROP_TableName);
+		if (tableNameObj == null)
+		{
+			return null;
+		}
+
+		final String tableName = tableNameObj.toString().trim();
+		if (Check.isEmpty(tableName, true))
+		{
+			return null;
+		}
+
+		final Object recordIdObj = map.get(PROP_RecordId);
+		if (recordIdObj == null)
+		{
+			return null;
+		}
+
+		final int recordId;
+		if (recordIdObj instanceof Number)
+		{
+			recordId = ((Number)recordIdObj).intValue();
+		}
+		else
+		{
+			try
+			{
+				recordId = Integer.parseInt(recordIdObj.toString());
+			}
+			catch (Exception e)
+			{
+				return null;
+			}
+		}
+		
+		return new TableRecordReference(tableName, recordId);
+	}
+
 	private final transient int adTableId;
-	@JsonProperty("tableName")
+	
+	private static final String PROP_TableName = "tableName";
+	@JsonProperty(PROP_TableName)
 	private final String tableName;
-	@JsonProperty("recordId")
+	
+	private static final String PROP_RecordId = "recordId";
+	@JsonProperty(PROP_RecordId)
 	private final int recordId;
+	
 	private transient Integer _hashcode;
 
 	/**
