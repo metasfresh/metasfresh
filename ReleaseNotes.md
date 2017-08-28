@@ -18,6 +18,8 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
     * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
+  * [#2230](https://github.com/metasfresh/metasfresh/issues/2230) New Window for Fact_Acct_ActivityChangeRequest
+    * New Window in WebUI for the maintenance of Activity ID changes in Documents.
   * [#2232](https://github.com/metasfresh/metasfresh/issues/2232) New Window for c_activity in WebUI
     * New Window added to WebUI Menu that allows the maintenance of Cost Center.
 
