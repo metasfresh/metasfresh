@@ -746,7 +746,7 @@
 								<!--  these are the de.metas.assemblies:de.metas.assemblies:1.0.0 of ye olden days. they contain the webapp_dir which our modern assemblies do not contain anymore -->
 								<groupId>de.metas</groupId>
 								<artifactId>metasfresh-legacy-assemblies</artifactId>
-								<version>10.0.0</version>
+								<version>1.0.0</version>
 							</dependency>
 						</dependencies>
 						<executions>
