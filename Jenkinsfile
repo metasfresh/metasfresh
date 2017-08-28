@@ -55,6 +55,10 @@ node('agent && linux') // shall only run on a jenkins agent with linux
     	)
     	echo "mvnConf=${mvnConf}"
 
+				// we need to provide MF_VERSION because otherwise  the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
+				// and therefore, the jenkins information would not be added to the build.properties info file.
+				withEnv(["MF_VERSION=${MF_VERSION}"])
+				{
         withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository')
         {
 				stage('Set versions and build metasfresh-webui-api')
@@ -143,6 +147,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				junit '**/target/surefire-reports/*.xml'
       } // stage
 		  } // withMaven
+			} // withEnv
    } // configFileProvider
  } // node
 
