@@ -60,7 +60,7 @@ echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
 
 timestamps
 {
-	MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
+	final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 	echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
 	// https://github.com/metasfresh/metasfresh/issues/2110 make version/build infos more transparent
@@ -76,9 +76,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				'pom.xml', // pomFile
 				MAVEN_SETTINGS, // settingsFile
 				"mvn-${MF_UPSTREAM_BRANCH}", // mvnRepoName
-				'https://repo.metasfresh.com' // mvnRepoBaseURL
+				'https://repo.metasfresh.com' // mvnRepoBaseURL - for resolve and deploy
 			)
-			echo "mvnConf=${mvnConf}"
+			echo "mvnConf=${mvnConf.toString()}"
 
 			stage('Set versions and build metasfresh-webui-frontend')
 			{
