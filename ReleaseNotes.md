@@ -15,6 +15,9 @@ Here come the actual release notes:
 **upcoming release for week 2017-36**
 
 ## Features
+* metasfresh-app
+  * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
+    * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
 
 ## Fixes
 
@@ -77,8 +80,13 @@ Here come the actual release notes:
     * Order and Invoice Jasper Resports now allow prices with up to 6 digits.
   * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
     * New Window for GL Journal in WebUI, without Journal Batch level.
+<<<<<<< HEAD
+  * [#2255](https://github.com/metasfresh/metasfresh/issues/2255) Revamp Validcombination Window
+    * Adjustments done to Validcombination Window in WebUI, adapting to current design Guidelines.
+=======
   * [#2231](https://github.com/metasfresh/metasfresh/issues/2231) Add Import Partner and Product Processes Available in Import Windows
   * [#2136](https://github.com/metasfresh/metasfresh/issues/2136) add history to B2C window
+>>>>>>> origin/master
 
 * metasfresh-webui-api
   * [#545](https://github.com/metasfresh/metasfresh-webui-api/issues/545) Notification Persisting
