@@ -307,11 +307,11 @@ public class Login
 		{
 			final ISystemBL systemBL = Services.get(ISystemBL.class);
 
-			if (systemBL.isSwingRememberUserAllowed())
+			if (systemBL.isRememberUserAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
 				Ini.setProperty(Ini.P_UID, username);
 			else
 				Ini.setProperty(Ini.P_UID, "");
-			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && systemBL.isSwingRememberPasswordAllowed())
+			if (Ini.isPropertyBool(Ini.P_STORE_PWD) && systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
 				Ini.setProperty(Ini.P_PWD, password);
 		}
 		

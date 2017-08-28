@@ -235,20 +235,22 @@ public class SystemBL implements ISystemBL
 	 *   
 	 *	@return boolean representing if remember me feature is allowed
 	 */
-	private static final String SYSTEM_ALLOW_REMEMBER_USER = "U";
-	private static final String SYSTEM_ALLOW_REMEMBER_PASSWORD = "P";
+	public static final String SYSTEM_ALLOW_REMEMBER_USER = "U";
+	public static final String SYSTEM_ALLOW_REMEMBER_PASSWORD = "P";
 
 	@Override
-	public boolean isSwingRememberUserAllowed() {
-		String ca = Services.get(ISysConfigBL.class).getValue("SWING_LOGIN_ALLOW_REMEMBER_ME", SYSTEM_ALLOW_REMEMBER_PASSWORD);
+	public boolean isRememberUserAllowed(@NonNull final String sysConfigKey) {
+		String ca = Services.get(ISysConfigBL.class).getValue(sysConfigKey, SYSTEM_ALLOW_REMEMBER_PASSWORD);
 		return (ca.equalsIgnoreCase(SYSTEM_ALLOW_REMEMBER_USER) || ca.equalsIgnoreCase(SYSTEM_ALLOW_REMEMBER_PASSWORD));
 	}
 
 	@Override
-	public boolean isSwingRememberPasswordAllowed() {
-		String ca = Services.get(ISysConfigBL.class).getValue("SWING_LOGIN_ALLOW_REMEMBER_ME", SYSTEM_ALLOW_REMEMBER_PASSWORD);
+	public boolean isRememberPasswordAllowed(@NonNull final String sysConfigKey) {
+		String ca = Services.get(ISysConfigBL.class).getValue(sysConfigKey, SYSTEM_ALLOW_REMEMBER_PASSWORD);
 		return (ca.equalsIgnoreCase(SYSTEM_ALLOW_REMEMBER_PASSWORD));
 	}
+	
+	
 	
 	@Override
 	public boolean isValid()

@@ -327,6 +327,7 @@ stage('Invoke downstream jobs')
 
 	// Run the downstream dist jobs in parallel.
 	// Wait for their result, because they will apply our SQL migration scripts and when one fails, we want this job to also fail.
+
 	parallel (
 		metasfresh_dist: {
 			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
@@ -339,5 +340,5 @@ stage('Invoke downstream jobs')
 			wait: true;
 		}
 	)
-}
+} // stage
 } // timestamps

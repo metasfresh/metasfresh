@@ -13,15 +13,14 @@ package org.adempiere.ad.service;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -42,10 +41,26 @@ public interface ISystemBL extends ISingletonService
 
 	boolean isLDAP(String userName, String password);
 
-	boolean isSwingRememberUserAllowed();
+	/**
+	 * Evaluate a sysconfig value and check it's value:
+	 * <ul>
+	 * <li>U - Allow remember the username
+	 * <li>P - Allow remember the username and password (default for swing)
+	 * <li>N - None
+	 * </ul>
+	 * 
+	 * @param sysConfigKey currently known/used values are {@code "SWING_LOGIN_ALLOW_REMEMBER_ME"} and {@code "ZK_LOGIN_ALLOW_REMEMBER_ME"} in a private legacy ZK UI.
+	 * @return
+	 */
+	boolean isRememberUserAllowed(String sysConfigKey);
 
-	boolean isSwingRememberPasswordAllowed();
+	/**
+	 * See {@link #isRememberUserAllowed(String)}.
+	 * 
+	 * @param sysConfigKey
+	 * @return
+	 */
+	boolean isRememberPasswordAllowed(String sysConfigKey);
 
 	boolean isValid();
 }
-
