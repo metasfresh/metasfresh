@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import update from 'immutability-helper';
 
+import * as _ from 'lodash';
+
 import {
     openModal,
     selectTableItems,
@@ -60,87 +62,94 @@ class Table extends Component {
     }
 
     componentDidMount(){
-        const {rows} = this.state;
-        
-        this.getIndentData(true); //selecting first table elem while getting indent data
+        //selecting first table elem while getting indent data
+        this.getIndentData(true);
 
-        const {autofocus} = this.props;
-
-        autofocus && this.table.focus();
+        if (this.props.autofocus) {
+            this.table.focus();
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
         const {
-            mainTable, open, rowData, defaultSelected, disconnectFromState,
-            dispatch, type, refreshSelection, supportIncludedViewOnSelect,
-            showIncludedViewOnSelect, viewId, isModal
+            dispatch, mainTable, open, rowData, defaultSelected,
+            disconnectFromState, type, refreshSelection,
+            supportIncludedViewOnSelect, viewId, isModal,
+            inBackground, selectedWindowType, isIncluded, hasIncluded
         } = this.props;
 
         const {
             selected, rows
         } = this.state;
 
-        if((JSON.stringify(prevState.rows) !==
-            JSON.stringify(rows))){
-                if(isModal){
-                    supportIncludedViewOnSelect &&
-                        this.showSelectedIncludedView([rows[0].id]);
-                    rows[0].id && this.selectOneProduct(rows[0].id);
+        if (
+            !_.isEqual(prevState.rows, rows)
+        ) {
+            if (isModal && !hasIncluded) {
+                let firstRow = rows[0];
+
+                if (firstRow) {
+                    if (supportIncludedViewOnSelect) {
+                        this.showSelectedIncludedView([firstRow.id]);
+                    }
+
+                    if (firstRow.id) {
+                        this.selectOneProduct(firstRow.id);
+                    }
                 }
+            }
         }
-        
-        if(mainTable && open){
+
+        if (mainTable && open) {
             this.table.focus();
         }
 
-        if(
+        if (
             !disconnectFromState &&
-            (JSON.stringify(prevState.selected) !==
-            JSON.stringify(selected))
-        ){
+            !_.isEqual(prevState.selected, selected)
+        ) {
             dispatch(selectTableItems(selected, type));
         }
 
-        if(
-            JSON.stringify(prevProps.rowData) !=
-            JSON.stringify(rowData)
-        ){
+        if (!_.isEqual(prevProps.rowData, rowData)) {
             this.getIndentData();
         }
 
-        if(
-            JSON.stringify(prevProps.defaultSelected) !==
-            JSON.stringify(defaultSelected) ||
-            JSON.stringify(prevProps.refreshSelection) !==
-            JSON.stringify(refreshSelection) && refreshSelection
-        ){
+        if (
+            !_.isEqual(prevProps.defaultSelected, defaultSelected) ||
+            (prevProps.refreshSelection !== refreshSelection) &&
+            refreshSelection
+        ) {
             this.setState({
                 selected: defaultSelected
-            })
+            });
         }
 
-        if(
-            JSON.stringify(prevProps.viewId) !==
-            JSON.stringify(viewId)
-        ){
+        if (prevProps.viewId !== viewId) {
             this.setState({
                 selected: []
-            })
+            });
         }
     }
 
     showSelectedIncludedView = (selected) => {
-        const {showIncludedViewOnSelect, supportIncludedViewOnSelect} = this.props;
-        const {rows} = this.state;
-        selected.length === 1 && supportIncludedViewOnSelect && rows.map(item=>{
-            if(item.id === selected[0]){
-                showIncludedViewOnSelect(item.supportIncludedViews, item.includedView)
+        const {
+            showIncludedViewOnSelect, supportIncludedViewOnSelect
+        } = this.props;
+
+        const { rows } = this.state;
+
+        (selected.length === 1) && rows.map( (item) => {
+            if (item.id === selected[0]) {
+                showIncludedViewOnSelect(item.supportIncludedViews, item.includedView);
             }
         });
     }
 
     getChildContext = () => {
-        return { shortcuts: shortcutManager }
+        return {
+            shortcuts: shortcutManager
+        };
     }
 
     getIndentData = (selectFirst) => {

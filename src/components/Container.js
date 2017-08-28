@@ -7,7 +7,6 @@ import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import DocumentList from './app/DocumentList';
 
-
 class Container extends Component {
     constructor(props){
         super(props);
@@ -83,52 +82,54 @@ class Container extends Component {
                      />
                  }
 
-                     {rawModal.visible &&
-                         <RawModal
-                             modalTitle={modalTitle}
-                             modalDescription={modalDescription}
-                             windowType={rawModal.type}
-                             viewId={rawModal.viewId}
-                         >
-                            <div className="document-lists-wrapper">
+                 {rawModal.visible && (
+                     <RawModal
+                         modalTitle={modalTitle}
+                         modalDescription={modalDescription}
+                         windowType={rawModal.type}
+                         viewId={rawModal.viewId}
+                     >
+                        <div className="document-lists-wrapper">
+                             <DocumentList
+                                 type="grid"
+                                 windowType={rawModal.type}
+                                 defaultViewId={rawModal.viewId}
+                                 selected={selected}
+                                 selectedWindowType={selectedWindowType}
+                                 setModalTitle={setModalTitle}
+                                 setModalDescription={setModalDescription}
+                                 fetchQuickActionsOnInit={!(includedView.windowType && includedView.viewId)}
+                                 modalDescription={this.modalDescription}
+                                 isModal={true}
+                                 processStatus={processStatus}
+                                 includedView={includedView}
+                                 inBackground={
+                                     includedView.windowType &&
+                                        includedView.viewId
+                                 }
+                                 inModal={modal.visible}
+                             >
+                             </DocumentList>
+
+                             {(includedView && includedView.windowType && includedView.viewId) && (
                                  <DocumentList
-                                     type="grid"
-                                     windowType={rawModal.type}
-                                     defaultViewId={rawModal.viewId}
+                                     type="includedView"
                                      selected={selected}
                                      selectedWindowType={selectedWindowType}
-                                     setModalTitle={setModalTitle}
-                                     setModalDescription={setModalDescription}
-                                     fetchQuickActionsOnInit={!(includedView.windowType && includedView.viewId)}
-                                     modalDescription={this.modalDescription}
+                                     windowType={includedView.windowType}
+                                     defaultViewId={includedView.viewId}
+                                     fetchQuickActionsOnInit={true}
                                      isModal={true}
+                                     isIncluded={true}
                                      processStatus={processStatus}
-                                     includedView={includedView}
-                                     inBackground={
-                                         includedView.windowType &&
-                                            includedView.viewId
-                                     }
+                                     inBackground={false}
                                      inModal={modal.visible}
-                                 >
-                                 </DocumentList>
-                                 {includedView.windowType && includedView.viewId && (
-                                     <DocumentList
-                                         type="includedView"
-                                         selected={selected}
-                                         selectedWindowType={selectedWindowType}
-                                         windowType={includedView.windowType}
-                                         defaultViewId={includedView.viewId}
-                                         fetchQuickActionsOnInit={true}
-                                         isModal={true}
-                                         isIncluded={true}
-                                         processStatus={processStatus}
-                                         inBackground={false}
-                                         inModal={modal.visible}
-                                     />
-                                 )}
-                            </div>
-                         </RawModal>
-                     }
+                                 />
+                             )}
+                        </div>
+                     </RawModal>
+                 )}
+
                     {children}
                 </div>
             </div>
