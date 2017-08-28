@@ -119,19 +119,19 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
 {
 	stage('Invoke downstream job')
 	{
-		def misc = new de.metas.jenkins.Misc();
-		final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
+   def misc = new de.metas.jenkins.Misc();
+   final String jobName = misc.getEffectiveDownStreamJobName('metasfresh', MF_UPSTREAM_BRANCH);
 
-		build job: 'metasfresh',
-			parameters: [
-				string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-				string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
-				string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
-				string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
-				booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: false), // the job shall just run but not trigger further builds because we are doing all the orchestration
-				booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
-			], wait: false
-		}
+   build job: jobName,
+     parameters: [
+       string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
+       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
+       string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
+       string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
+       booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
+       booleanParam(name: 'MF_SKIP_TO_DIST', value: true) // this param is only recognised by metasfresh
+     ], wait: false
+	}
 }
 else
 {
