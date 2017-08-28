@@ -198,3 +198,13 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,7060,0,513,541018,547688,TO_TIMESTAMP('2017-08-28 16:06:17','YYYY-MM-DD HH24:MI:SS'),100,'Receiving Region','The To Region indicates the receiving region on a document','Y','N','N','Y','N','An',0,120,0,TO_TIMESTAMP('2017-08-28 16:06:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2017-08-28T16:12:47.761
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000075, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540909 AND AD_Tree_ID=10
+;
+
+-- 2017-08-28T16:12:47.763
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_TreeNodeMM SET Parent_ID=1000075, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540821 AND AD_Tree_ID=10
+;
+
