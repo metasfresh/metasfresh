@@ -15,6 +15,9 @@ Here come the actual release notes:
 **upcoming release for week 2017-36**
 
 ## Features
+* metasfresh-app
+  * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
+    * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
 
 ## Fixes
 
