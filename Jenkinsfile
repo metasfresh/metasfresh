@@ -39,6 +39,58 @@ Map invokeDownStreamJobs(
 	return buildResult.getBuildVariables();
 }
 
+void invokeZapier(
+  final String upstreamBuildNo,
+  final String upstreamBranch,
+  final String metasfreshVersion,
+  final String metasfreshProcurementWebuiVersion,
+  final String metasfreshWebuiApiVersion,
+  final String metasfreshWebuiFrontendVersion
+    )
+{
+  // now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
+  // note: even with "skiptodist=true we do this, because we still want to make the notifcations
+
+  echo "Going to notify external systems via zapier webhook"
+  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')])
+  {
+    // the zapier secret contains a trailing slash and one that is somewhere in the middle.
+  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+
+    //input id: 'Zapier-input-ok', message: 'Were the external donstream builds OK?'
+    final def hook = registerWebhook()
+    echo "Waiting for POST to ${hook.getURL()}"
+
+  	/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
+  	final jsonPayload = """{
+  			\"MF_UPSTREAM_BUILDNO\":\"${upstreamBuildNo}\",
+  			\"MF_UPSTREAM_BRANCH\":\"${upstreamBranch}\",
+  			\"MF_METASFRESH_VERSION\":\"${metasfreshVersion}\",
+  			\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${metasfreshProcurementWebuiVersion}\",
+  			\"MF_METASFRESH_WEBUI_API_VERSION\":\"${metasfreshWebuiApiVersion}\",
+  			\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${metasfreshWebuiFrontendVersion}\",
+  			\"MF_WEBHOOK_CALLBACK_URL\":\"${hook.getURL()}\"
+  	}"""
+
+  	nodeIfNeeded('linux')
+  	{
+  			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
+  	}
+
+    echo "Wait 30 minutes for the zappier-triggered downstream jobs to succeed or fail"
+    timeout(time: 30, unit: 'MINUTES')
+    {
+      final def data = waitForWebhook hook // to stop the wait, do e.g. curl -X POST -d 'OK' <hook-URL>
+
+      echo "Webhook called with data: ${data}"
+      if(data != 'OK')
+      {
+        error "An external job that was invoked by zapper failed; hook-URL=${hook.getURL()}"
+      }
+    }
+  } // withCredentials
+}
+
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
@@ -287,32 +339,7 @@ stage('Invoke downstream jobs')
 	MF_ARTIFACT_VERSIONS['metasfresh-webui'] = MF_ARTIFACT_VERSIONS['metasfresh-webui'] ?: "LATEST";
 	MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] = MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] ?: "LATEST";
 
-	// now that the "basic" build is done, notify zapier so we can do further things external to this jenkins instance
-	// note: even with "skiptodist=true we do this, because we still want to make the notifcations
-	echo "Going to notify external systems via zapier webhook"
-	node('linux')
-	{
-		withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')])
-		{
-      // the zapier secret contains a trailing slash and one that is somewhere in the middle.
-			final webhookUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
-
-			/* we need to make sure we know "our own" MF_METASFRESH_VERSION, also if we were called by e.g. metasfresh-webui-api or metasfresh-webui--frontend */
-			final jsonPayload = """{
-				\"MF_UPSTREAM_BUILDNO\":\"${MF_BUILD_ID}\",
-				\"MF_UPSTREAM_BRANCH\":\"${MF_UPSTREAM_BRANCH}\",
-				\"MF_METASFRESH_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh']}\",
-				\"MF_METASFRESH_PROCUREMENT_WEBUI_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']}\",
-				\"MF_METASFRESH_WEBUI_API_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui']}\",
-				\"MF_METASFRESH_WEBUI_FRONTEND_VERSION\":\"${MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend']}\"
-			}""";
-			// echo "jsonPayload=${jsonPayload}";
-
-			sh "curl -X POST -d \'${jsonPayload}\' ${webhookUrl}";
-		}
-	}
-
-	echo "Invoking downstream jobs 'metasfresh-dist' with preferred branch=${MF_UPSTREAM_BRANCH}"
+	echo "Invoking downstream jobs 'metasfresh-dist' and 'metasfresh-dist-orgs' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
 	final List distJobParameters = [
 			string(name: 'MF_UPSTREAM_BUILDNO', value: MF_BUILD_ID), // can be used together with the upstream branch name to construct this upstream job's URL
@@ -331,14 +358,23 @@ stage('Invoke downstream jobs')
 	parallel (
 		metasfresh_dist: {
 			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist', MF_UPSTREAM_BRANCH),
-			parameters: distJobParameters,
-			wait: true;
+			  parameters: distJobParameters,
+			  wait: true
 		},
 		metasfresh_dist_orgs: {
 			build job: misc.getEffectiveDownStreamJobName('metasfresh-dist-orgs', MF_UPSTREAM_BRANCH),
-			parameters: distJobParameters,
-			wait: true;
-		}
+			  parameters: distJobParameters,
+			  wait: true
+		},
+    zapier: {
+      invokeZapier(MF_BUILD_ID, // upstreamBuildNo
+        MF_UPSTREAM_BRANCH, // upstreamBranch
+        MF_ARTIFACT_VERSIONS['metasfresh'], // metasfreshVersion
+        MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'], // metasfreshProcurementWebuiVersion
+        MF_ARTIFACT_VERSIONS['metasfresh-webui'], // metasfreshWebuiApiVersion
+        MF_ARTIFACT_VERSIONS['metasfresh-webui-frontend'] // metasfreshWebuiFrontendVersion
+      )
+    }
 	)
 } // stage
 } // timestamps
