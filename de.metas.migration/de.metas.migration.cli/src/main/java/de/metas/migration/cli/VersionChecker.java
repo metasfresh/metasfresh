@@ -89,6 +89,22 @@ public class VersionChecker
 			return true;
 		}
 
+		// Check if we have the special case of issue https://github.com/metasfresh/metasfresh/issues/2260
+		final boolean sameMajorVersion = dbVersion.getMajorVersion() == rolloutVersion.getMajorVersion();
+		final boolean sameMinorVersion = dbVersion.getMinorVersion() == rolloutVersion.getMinorVersion();
+		final boolean patchVersionSwitchBetweenOneAndTwo = //
+				dbVersion.getPatchVersion() == 1 && rolloutVersion.getPatchVersion() == 2 //
+						|| dbVersion.getPatchVersion() == 2 && rolloutVersion.getPatchVersion() == 1;
+
+		if (sameMajorVersion
+				&& sameMinorVersion
+				&& patchVersionSwitchBetweenOneAndTwo)
+		{
+			logger.info("Detected a version swich between master (=> patchVersion=1) and release, issue etc (=> patchVersion=2). Assuming that the DB needs migration. Also see https://github.com/metasfresh/metasfresh/issues/2260");
+			return true;
+		}
+		
+		// Issue https://github.com/metasfresh/metasfresh/issues/2260 does not apply..
 		// dbVersion higher....uh-ooh
 		final String msg = "The code has version " + rolloutVersionStr + " but the DB already has version " + dbVersionStr;
 
@@ -111,7 +127,7 @@ public class VersionChecker
 		}
 		catch (final SQLException e)
 		{
-			
+
 			logger.info("Could not retrieve the DB version");
 			if ("42703".equals(e.getSQLState())) // 42703 => undefined_column, see https://www.postgresql.org/docs/9.5/static/errcodes-appendix.html
 			{
