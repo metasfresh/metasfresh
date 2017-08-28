@@ -37,27 +37,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 final NODEJS_TOOL_NAME="nodejs-default"
 echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 
-// metasfresh-task-repo is a constrant (does not depent or the task/branch name) so that maven can find the credentials in our provided settings.xml file
-final MF_MAVEN_REPO_ID = "metasfresh-task-repo";
-echo "Setting MF_MAVEN_REPO_ID=$MF_MAVEN_REPO_ID";
-
-// name of the task/branch specific maven nexus-repository that we will create if it doesn't exist and and resolve from
-final MF_MAVEN_REPO_NAME = "mvn-${MF_UPSTREAM_BRANCH}";
-echo "Setting MF_MAVEN_REPO_NAME=$MF_MAVEN_REPO_NAME";
-
-final MF_MAVEN_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}";
-echo "Setting MF_MAVEN_REPO_URL=$MF_MAVEN_REPO_URL";
-
-
-// IMPORTANT: the Dtask-repo-id and task-repo-url properties which we set in MF_MAVEN_TASK_RESOLVE_PARAMS are used within the settings.xml that our jenkins provides to the build.
-// That's why we need it in the mvn parameters, also if all we want to do is deploying
-final MF_MAVEN_TASK_RESOLVE_PARAMS="-Dtask-repo-id=${MF_MAVEN_REPO_ID} -Dtask-repo-name=\"${MF_MAVEN_REPO_NAME}\" -Dtask-repo-url=\"${MF_MAVEN_REPO_URL}\"";
-echo "Setting MF_MAVEN_TASK_RESOLVE_PARAMS=$MF_MAVEN_TASK_RESOLVE_PARAMS";
-
-// the repository to which we are going to deploy
-final MF_MAVEN_DEPLOY_REPO_URL = "https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}-releases";
-echo "Setting MF_MAVEN_DEPLOY_REPO_URL=$MF_MAVEN_DEPLOY_REPO_URL";
-
 timestamps
 {
 	final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
@@ -117,9 +96,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				writeFile encoding: 'UTF-8', file: 'dist/info.json', text: version_info_json;
 
 				sh "tar cvzf webui-dist-${MF_VERSION}.tar.gz dist"
-				sh "mvn --settings ${MAVEN_SETTINGS} deploy:deploy-file ${MF_MAVEN_TASK_RESOLVE_PARAMS} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${MF_MAVEN_DEPLOY_REPO_URL} -DrepositoryId=${MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true"
+				sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=webui-dist-${MF_VERSION}.tar.gz -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=de.metas.ui.web -DartifactId=metasfresh-webui-frontend -Dversion=${MF_VERSION} -Dpackaging=tar.gz -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
 
-				final BUILD_ARTIFACT_URL="https://repo.metasfresh.com/content/repositories/${MF_MAVEN_REPO_NAME}/de/metas/ui/web/metasfresh-webui-frontend/${MF_VERSION}/metasfresh-webui-frontend-${MF_VERSION}.tar.gz";
+				final BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-frontend-${misc.urlEncode(MF_VERSION)}.tar.gz";
 
 				// IMPORTANT: we might parse this build description's href value in downstream builds!
 				currentBuild.description="""artifacts (if not yet cleaned up)
