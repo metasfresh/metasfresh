@@ -94,6 +94,10 @@ node('agent && linux')
 		)
 		echo "mvnConf=${mvnConf}"
 
+		// we need to provide MF_VERSION because otherwise  the profile "MF_VERSION-env-missing" would be activated from the metasfresh-parent pom.xml
+		// and therefore, the jenkins information would not be added to the build.properties info file.
+		withEnv(["MF_VERSION=${MF_VERSION}"])
+		{
 		withMaven(jdk: 'java-8', maven: 'maven-3.5.0', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M')
 		{
 			// Note: we can't build the "main" and "esb" stuff in parallel, because the esb stuff depends on (at least!) de.metas.printing.api
@@ -201,6 +205,7 @@ node('agent && linux')
 			}
 
 		} // withMaven
+    } // withEnv
 	} // configFileProvider
 
 	// clean up the workspace after (successfull) builds
