@@ -151,12 +151,12 @@ node('agent && linux && libc6-i386')
 				def mavenProps = readProperties  file: 'de.metas.endcustomer.mf15.dist/app.properties'
 
 				final MF_ARTIFACT_URLS = [:];
-				MF_ARTIFACT_URLS['metasfresh-admin'] = "${mvnConf.deployRepoURL}" + misc.encodeURL("/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar")
-				MF_ARTIFACT_URLS['metasfresh-dist'] =  "${mvnConf.deployRepoURL}" + misc.encodeURL("/de/metas/dist/de.metas.endcustomer.mf15.dist/${MF_VERSION}/de.metas.endcustomer.mf15.dist-${MF_VERSION}-dist.tar.gz")
-				MF_ARTIFACT_URLS['metasfresh-material-dispo']=  "${mvnConf.deployRepoURL}" + misc.encodeURL("/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar")
-				MF_ARTIFACT_URLS['metasfresh-procurement-webui']=  "${mvnConf.deployRepoURL}" + misc.encodeURL("/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar")
-				MF_ARTIFACT_URLS['metasfresh-webui'] =  "${mvnConf.deployRepoURL}" + misc.encodeURL("/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar")
-				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = "${mvnConf.deployRepoURL}" + misc.encodeURL("/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz")
+				MF_ARTIFACT_URLS['metasfresh-admin'] = mvnConf.deployRepoURL + misc.encodeURL("/de/metas/admin/metasfresh-admin/${mavenProps['metasfresh-admin.version']}/metasfresh-admin-${mavenProps['metasfresh-admin.version']}.jar")
+				MF_ARTIFACT_URLS['metasfresh-dist'] =  mvnConf.deployRepoURL + misc.encodeURL("/de/metas/dist/de.metas.endcustomer.mf15.dist/${MF_VERSION}/de.metas.endcustomer.mf15.dist-${MF_VERSION}-dist.tar.gz")
+				MF_ARTIFACT_URLS['metasfresh-material-dispo']=  mvnConf.deployRepoURL + misc.encodeURL("/de/metas/material/metasfresh-material-dispo/${mavenProps['metasfresh.version']}/metasfresh-material-dispo-${mavenProps['metasfresh.version']}.jar")
+				MF_ARTIFACT_URLS['metasfresh-procurement-webui']=  mvnConf.deployRepoURL + misc.encodeURL("/de/metas/procurement/de.metas.procurement.webui/${mavenProps['metasfresh-procurement-webui.version']}/de.metas.procurement.webui-${mavenProps['metasfresh-procurement-webui.version']}.jar")
+				MF_ARTIFACT_URLS['metasfresh-webui'] =  mvnConf.deployRepoURL + misc.encodeURL("/de/metas/ui/web/metasfresh-webui-api/${mavenProps['metasfresh-webui-api.version']}/metasfresh-webui-api-${mavenProps['metasfresh-webui-api.version']}.jar")
+				MF_ARTIFACT_URLS['metasfresh-webui-frontend'] = mvnConf.deployRepoURL + misc.encodeURL("/de/metas/ui/web/metasfresh-webui-frontend/${mavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${mavenProps['metasfresh-webui-frontend.version']}.tar.gz")
 
 				// Note: for the rollout-job's URL with the 'parambuild' to work on this pipelined jenkins, we need the https://wiki.jenkins-ci.org/display/JENKINS/Build+With+Parameters+Plugin, and *not* version 1.3, but later.
 				// See
