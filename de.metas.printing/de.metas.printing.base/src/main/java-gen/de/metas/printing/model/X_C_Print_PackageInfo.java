@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package de.metas.printing.model;
 
@@ -30,7 +14,7 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -921409508L;
+	private static final long serialVersionUID = 1634844680L;
 
     /** Standard Constructor */
     public X_C_Print_PackageInfo (Properties ctx, int C_Print_PackageInfo_ID, String trxName)
@@ -129,44 +113,6 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 		return ii.intValue();
 	}
 
-	/** Set Kalibrierung-X.
-		@param CalX Kalibrierung-X	  */
-	@Override
-	public void setCalX (int CalX)
-	{
-		set_Value (COLUMNNAME_CalX, Integer.valueOf(CalX));
-	}
-
-	/** Get Kalibrierung-X.
-		@return Kalibrierung-X	  */
-	@Override
-	public int getCalX () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CalX);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Kalibrierung-Y.
-		@param CalY Kalibrierung-Y	  */
-	@Override
-	public void setCalY (int CalY)
-	{
-		set_Value (COLUMNNAME_CalY, Integer.valueOf(CalY));
-	}
-
-	/** Get Kalibrierung-Y.
-		@return Kalibrierung-Y	  */
-	@Override
-	public int getCalY () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CalY);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	@Override
 	public de.metas.printing.model.I_C_Print_Package getC_Print_Package() throws RuntimeException
 	{
@@ -221,6 +167,44 @@ public class X_C_Print_PackageInfo extends org.compiere.model.PO implements I_C_
 	public int getC_Print_PackageInfo_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Print_PackageInfo_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kalibrierung-X.
+		@param CalX Kalibrierung-X	  */
+	@Override
+	public void setCalX (int CalX)
+	{
+		set_Value (COLUMNNAME_CalX, Integer.valueOf(CalX));
+	}
+
+	/** Get Kalibrierung-X.
+		@return Kalibrierung-X	  */
+	@Override
+	public int getCalX () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CalX);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Kalibrierung-Y.
+		@param CalY Kalibrierung-Y	  */
+	@Override
+	public void setCalY (int CalY)
+	{
+		set_Value (COLUMNNAME_CalY, Integer.valueOf(CalY));
+	}
+
+	/** Get Kalibrierung-Y.
+		@return Kalibrierung-Y	  */
+	@Override
+	public int getCalY () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_CalY);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

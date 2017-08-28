@@ -75,6 +75,8 @@ import lombok.Value;
  */
 class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 {
+	
+	
 	public static final VendorReturnsInOutProducer newInstance()
 	{
 		return new VendorReturnsInOutProducer();
@@ -130,6 +132,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
+			
+		
 
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
@@ -162,6 +166,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			}
 
 			huPIPToInOutLines.putAll(huPIPToOriginInOutLinesMap);
+			
+			huSnapshotProducer.addModel(hu);
 		}
 
 		for (final HUPackingMaterialDocumentLineCandidate pmCandidate : pmCandidates.values())
@@ -210,6 +216,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	protected void afterInOutProcessed(final I_M_InOut inout)
 	{
 		huAssignmentBL.setAssignedHandlingUnits(inout, getHUsReturned(), ITrx.TRXNAME_ThreadInherited);
+		
+		createHUSnapshots();
 	}
 
 	@Override
