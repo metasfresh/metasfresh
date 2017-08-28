@@ -17,7 +17,6 @@ class FiltersItem extends Component {
             filter: props.data,
             isTooltipShow: false
         }
-
     }
 
     componentWillMount() {
@@ -36,14 +35,19 @@ class FiltersItem extends Component {
     }
 
     init = () => {
-        const {active} = this.props;
-        const {filter} = this.state;
+        const { active, data } = this.props;
+        const { filter } = this.state;
+        let activeFilter;
+
+        if (active) {
+            activeFilter = active.find( (item) => item.filterId === data.filterId );
+        }
 
         if(
-            filter.parameters && active && active.parameters &&
-            (active.filterId === filter.filterId)
+            filter.parameters && activeFilter && activeFilter.parameters &&
+            (activeFilter.filterId === filter.filterId)
         ){
-            active.parameters.map(item => {
+            activeFilter.parameters.map(item => {
                 this.mergeData(
                     item.parameterName,
                     item.value != null ? item.value : '',
@@ -120,8 +124,11 @@ class FiltersItem extends Component {
         const {
             clearFilters, closeFilterMenu, returnBackToDropdown
         } = this.props;
+        const {
+            filter
+        } = this.state;
 
-        clearFilters();
+        clearFilters(filter);
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
     }

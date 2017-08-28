@@ -322,6 +322,12 @@ export function deleteNotification(key){
     }
 }
 
+export function clearNotifications() {
+    return {
+        type: types.CLEAR_NOTIFICATIONS,
+    }
+}
+
 export function updateUri(pathname, query, prop, value) {
     return (dispatch) => {
         let url = pathname + '?';

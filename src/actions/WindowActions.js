@@ -646,7 +646,10 @@ export function createProcess(processType, viewId, type, ids, tabId, rowId) {
                     startProcess(processType, pid).then(response => {
                         dispatch(handleProcessResponse(response, processType, pid));
                     }).catch(err => {
+                        dispatch(closeModal());
+
                         dispatch(setProcessSaved());
+
                         throw err;
                     });
                 }
