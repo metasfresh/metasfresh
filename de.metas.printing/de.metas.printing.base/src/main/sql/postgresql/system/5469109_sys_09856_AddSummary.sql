@@ -21,15 +21,15 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 
 
 
--- 25.02.2016 19:01:02 OEZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540661,1000038,TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- 25.02.2016 19:01:02 OEZ
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540661,1000038,TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
--- 25.02.2016 19:01:02 OEZ
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540661,1000000,TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- 25.02.2016 19:01:02 OEZ
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Process_Access (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Role_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (1000000,0,540661,1000000,TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2016-02-25 19:01:02','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
 -- 25.02.2016 19:01:46 OEZ
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
