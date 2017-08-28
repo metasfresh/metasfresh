@@ -94,7 +94,7 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 
 		final def misc = new de.metas.jenkins.Misc();
 
-		final String BUILD_ARTIFACT_URL = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-api-${misc.urlEncode(MF_VERSION)}.jar")
+		final String BUILD_ARTIFACT_URL = "${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${misc.urlEncode(MF_VERSION)}/metasfresh-webui-api-${misc.urlEncode(MF_VERSION)}.jar"
 
 		// do the actual building and deployment
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
