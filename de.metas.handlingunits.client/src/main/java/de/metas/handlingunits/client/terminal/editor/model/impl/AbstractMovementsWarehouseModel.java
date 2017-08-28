@@ -7,7 +7,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_M_Movement;
 import org.compiere.util.TrxRunnable2;
@@ -15,14 +14,12 @@ import org.compiere.util.TrxRunnable2;
 import de.metas.adempiere.form.terminal.ITerminalKey;
 import de.metas.adempiere.form.terminal.TerminalKeyListenerAdapter;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.client.terminal.mmovement.exception.MaterialMovementException;
 import de.metas.handlingunits.client.terminal.mmovement.model.impl.AbstractMaterialMovementModel;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKey;
 import de.metas.handlingunits.client.terminal.select.model.WarehouseKeyLayout;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.movement.event.MovementProcessedEventBus;
 
 /*
@@ -47,26 +44,22 @@ import de.metas.movement.event.MovementProcessedEventBus;
  * #L%
  */
 
-public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
+public abstract class AbstractMovementsWarehouseModel extends AbstractMaterialMovementModel
 {
 
-	private static final String MSG_NoQualityWarehouse = "NoQualityWarehouse";
-	
-	private List<I_M_HU> hus;
-	private List<I_M_Movement> movements;
+	protected List<I_M_HU> hus;
+	protected List<I_M_Movement> movements;
 
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
-
-	private WarehouseKeyLayout warehouseKeyLayout;
+	protected WarehouseKeyLayout warehouseKeyLayout;
 
 	/**
 	 * Selected key (used when {@link #allowKeySelection} is false)
 	 */
 	private ITerminalKey selectedKey = null;
 
-	public ReturnsWarehouseModel(ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
+	public AbstractMovementsWarehouseModel(ITerminalContext terminalContext, final I_M_Warehouse warehouseFrom, final List<I_M_HU> hus)
 	{
 		super(terminalContext);
 
@@ -93,16 +86,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		return warehouseKeyLayout;
 	}
 
-	private void load()
-	{
-
-		final List<I_M_Warehouse> warehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(getCtx());
-
-		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = InterfaceWrapperHelper.createList(warehouses, org.compiere.model.I_M_Warehouse.class);
-		Check.assumeNotEmpty(warehouses, MSG_NoQualityWarehouse);
-		warehouseKeyLayout.createAndSetKeysFromWarehouses(warehousesToLoad);
-
-	}
+	protected abstract void load();
 
 	public ITerminalKey getSelectedKeyOrNull()
 	{
@@ -121,7 +105,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 		_disposed = true;
 	}
 
-	protected void onWarehouseKeyPressed(WarehouseKey warehouseKey)
+	protected void onWarehouseKeyPressed(final WarehouseKey warehouseKey)
 	{
 		setSelectedKey(warehouseKey, true);
 
@@ -143,27 +127,12 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 
 	}
 
-	/**
-	 * Move the selected HUs to the quality returns warehouse
-	 * task #1065
-	 */
-	private List<I_M_Movement> doMoveToQualityWarehouse()
-	{
-		final I_M_Warehouse qualityReturnsWarehouse = getM_WarehouseTo();
-		final List<I_M_HU> hus = getHUs();
-		movements = huMovementBL.moveHUsToWarehouse(hus, qualityReturnsWarehouse)
-				.getMovements();
-
-		return movements;
-
-	}
-
 	public List<I_M_Movement> getMovements()
 	{
 		return movements;
 	}
 
-	public void setMovements(List<I_M_Movement> movements)
+	public void setMovements(final List<I_M_Movement> movements)
 	{
 		this.movements = movements;
 	}
@@ -178,8 +147,7 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 			public void run(final String localTrxName) throws Exception
 			{
 
-				// final List<de.metas.handlingunits.model.I_M_Warehouse> qualityWarehouses = Services.get(IHUWarehouseDAO.class).retrieveQualityReturnWarehouse(ctx);
-				final List<I_M_Movement> movements = doMoveToQualityWarehouse();
+				createMovements();
 
 				MovementProcessedEventBus.newInstance()
 						.queueEventsUntilTrxCommit(trxManager.getThreadInheritedTrxName())
@@ -199,6 +167,8 @@ public class ReturnsWarehouseModel extends AbstractMaterialMovementModel
 			}
 		});
 	}
+
+	protected abstract void createMovements();
 
 	/**
 	 * Warehouse that was selected to move the quality HUs to

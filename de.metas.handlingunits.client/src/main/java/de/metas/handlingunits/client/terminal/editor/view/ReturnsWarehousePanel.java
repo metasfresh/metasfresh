@@ -8,7 +8,7 @@ import de.metas.adempiere.form.terminal.ITerminalFactory;
 import de.metas.adempiere.form.terminal.ITerminalKeyPanel;
 import de.metas.adempiere.form.terminal.ITerminalScrollPane;
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.client.terminal.editor.model.impl.ReturnsWarehouseModel;
+import de.metas.handlingunits.client.terminal.editor.model.impl.AbstractMovementsWarehouseModel;
 import de.metas.handlingunits.client.terminal.mmovement.view.impl.AbstractMaterialMovementPanel;
 
 /*
@@ -33,10 +33,10 @@ import de.metas.handlingunits.client.terminal.mmovement.view.impl.AbstractMateri
  * #L%
  */
 
-public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<ReturnsWarehouseModel>
+public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<AbstractMovementsWarehouseModel>
 {
 
-	public ReturnsWarehousePanel(final ITerminalContext terminalContext, final ReturnsWarehouseModel model)
+	public ReturnsWarehousePanel(final ITerminalContext terminalContext, final AbstractMovementsWarehouseModel model)
 	{
 		super(model);
 
@@ -59,7 +59,7 @@ public class ReturnsWarehousePanel extends AbstractMaterialMovementPanel<Returns
 	{
 		final ITerminalFactory factory = getTerminalFactory();
 
-		final ReturnsWarehouseModel model = getModel();
+		final AbstractMovementsWarehouseModel model = getModel();
 		//
 		// warehouse
 		final IKeyLayout warehouseKeyLayout = model.getWarehouseKeyLayout();

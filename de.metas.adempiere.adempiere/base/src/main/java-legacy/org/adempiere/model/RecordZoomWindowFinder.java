@@ -264,6 +264,11 @@ public class RecordZoomWindowFinder
 	{
 		return _tableName;
 	}
+	
+	public int getAD_Table_ID()
+	{
+		return Services.get(IADTableDAO.class).retrieveTableId(getTableName());
+	}
 
 	public int getRecord_ID()
 	{

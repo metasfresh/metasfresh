@@ -40,4 +40,13 @@ public interface IHUInventoryBL extends ISingletonService
 	 */
 	List<I_M_Inventory> moveToGarbage(Collection<I_M_HU> husToDestroy, Timestamp movementDate);
 
+	/**
+	 * Check if the given inventory is a material disposal
+	 * It must have <code>X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory</code> and <code>X_C_DocType.DOCSUBTYPE_MaterialDisposal</code>
+	 * 
+	 * @param inventory
+	 * @return
+	 */
+	boolean isMaterialDisposal(I_M_Inventory inventory);
+
 }
