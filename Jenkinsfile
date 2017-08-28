@@ -88,7 +88,9 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 				// set the artifact version of everything below the webui's ${mvnConf.pomFile}
 				sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=false -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas.ui.web*:*\" ${mvnConf.resolveParams} versions:set"
 
-		final BUILD_ARTIFACT_URL="${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${MF_VERSION}/metasfresh-webui-api-${MF_VERSION}.jar";
+		final def misc = new de.metas.jenkins.Misc();
+
+		final BUILD_ARTIFACT_URL=misc.encodeURL("${mvnConf.deployRepoURL}/de/metas/ui/web/metasfresh-webui-api/${MF_VERSION}/metasfresh-webui-api-${MF_VERSION}.jar")
 
 		// do the actual building and deployment
 		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
@@ -98,7 +100,6 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 		final dockerWorkDir='docker-build/metasfresh-webui-api'
 		sh "mkdir -p ${dockerWorkDir}"
 
-		def misc = new de.metas.jenkins.Misc();
 
 		final BUILD_DOCKER_REPOSITORY='metasfresh';
 		final BUILD_DOCKER_NAME='metasfresh-webapi-dev';

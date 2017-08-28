@@ -293,14 +293,14 @@
 						<goals>
 							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
 						</goals>
-							<configuration>
-								<additionalProperties>
-									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
-									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
-									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
-									<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
-								</additionalProperties>
-							</configuration>
+						<configuration>
+							<additionalProperties>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+							</additionalProperties>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
