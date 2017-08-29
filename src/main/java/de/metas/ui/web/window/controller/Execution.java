@@ -94,7 +94,7 @@ public class Execution implements IAutoCloseable
 	}
 
 	/**
-	 * @return actual {@link IDocumentChangesCollector} or {@link NullDocumentChangesCollector}
+	 * @return actual {@link IDocumentChangesCollector} or {@link NullDocumentChangesCollector}. Never returns {@code null}.
 	 */
 	public static IDocumentChangesCollector getCurrentDocumentChangesCollectorOrNull()
 	{

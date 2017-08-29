@@ -219,8 +219,11 @@ public class ProcessRestController
 		final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 		return Execution.callInNewExecution("", () -> {
-			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+
+			final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull(); // get our collector to fill with the changes that we will record
+
 			instancesRepository.forProcessInstanceWritable(pinstanceId, changesCollector, processInstance -> {
+				
 				processInstance.processParameterValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 				return null; // void
 			});

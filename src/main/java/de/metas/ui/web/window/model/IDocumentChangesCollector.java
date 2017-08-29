@@ -36,7 +36,7 @@ public interface IDocumentChangesCollector
 	/**
 	 * Mark the changes of given document path as primary changes.
 	 * 
-	 * Primary changes are those changes which are on a document which was directly references by REST endpoint.
+	 * Primary changes are those changes which are on a document which was directly referenced by REST endpoint.
 	 * 
 	 * @param documentPath
 	 */
