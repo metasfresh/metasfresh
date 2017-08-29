@@ -33,7 +33,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +40,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 import java.util.Vector;
+import java.util.stream.IntStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -70,7 +70,6 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.TableInfoVO;
 import org.adempiere.plaf.AdempierePLAF;
@@ -3434,38 +3433,24 @@ public class APanel extends CPanel
 	 */
 	private final List<TableInfoVO> getSuggestedChildTablesToCopyWithDetails()
 	{
-		final JPanel messagePanel = new JPanel();
+		final Properties ctx = m_ctx;
+		final String tableName = m_curTab.getTableName();
+		final int recordId = m_curTab.getRecord_ID();
+		
+		final PO po = TableModelLoader.instance.getPO(ctx, tableName, recordId, ITrx.TRXNAME_None);
+		final List<TableInfoVO> tiList = CopyRecordFactory.getCopyRecordSupport(tableName).getSuggestedChildren(po);
+		
+		//
 		final JList<String> list = new JList<String>();
-		final JScrollPane scrollPane = new JScrollPane(list);
-		final Vector<String> data = new Vector<String>();
-		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(m_curTab.getTableName());
-		PO po = TableModelLoader.instance.getPO(m_ctx, m_curTab.getTableName(), m_curTab.getRecord_ID(), ITrx.TRXNAME_None);
-		final List<TableInfoVO> tiList = new ArrayList<TableInfoVO>();
-		for (final TableInfoVO ti : childCRS.getSuggestedChildren(po, m_curTab))
-		{
-			tiList.add(ti);
-			final StringBuilder displayValue = new StringBuilder();
-			displayValue.append(ti.getName());
-			//
-			data.add(displayValue.toString());
-		}
-		//
-		list.setListData(data);
-		//
+		list.setListData(tiList.stream().map(TableInfoVO::getName).toArray(size -> new String[size]));
 		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		// select entire list
-		int[] rv = new int[data.size()];
-		for (int i = 0; i < data.size(); i++)
-			rv[i] = i;
-		list.setSelectedIndices(rv);
+		list.setSelectedIndices(IntStream.range(0, tiList.size()).toArray()); // select entire list
 		//
-		messagePanel.add(scrollPane);
-
 		final JOptionPane pane = new JOptionPane(
-				messagePanel,   // message
+				new JScrollPane(list),   // message
 				JOptionPane.QUESTION_MESSAGE,   // messageType
 				JOptionPane.OK_CANCEL_OPTION); // optionType
-		final JDialog deleteDialog = pane.createDialog(this.getParent(), Services.get(IMsgBL.class).getMsg(m_ctx, "CopyDetailsSelection"));
+		final JDialog deleteDialog = pane.createDialog(this.getParent(), Services.get(IMsgBL.class).getMsg(ctx, "CopyDetailsSelection"));
 		deleteDialog.setVisible(true);
 		final Integer okCancel = (Integer)pane.getValue();
 		if (okCancel != null && okCancel == JOptionPane.OK_OPTION)
