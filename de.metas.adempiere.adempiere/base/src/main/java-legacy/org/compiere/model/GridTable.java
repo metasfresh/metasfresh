@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
@@ -1114,7 +1115,7 @@ public class GridTable extends AbstractTableModel
 				Collections.reverse(toremove);
 				for(Integer row : toremove)
 				{
-					m_sort.remove(row);
+					m_sort.remove((int)row);
 					m_buffer.remove(row - m_cacheStart);
 				}
 			}
@@ -2125,12 +2126,13 @@ public class GridTable extends AbstractTableModel
 		if (isCopyWithDetails())
 		{
 			final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(m_tableName);
-			childCRS.setGridTab(m_gridTab);
+			childCRS.setSuggestedChildrenToCopy(m_gridTab.getSuggestedCopyWithDetailsList());
 			childCRS.setFromPO_ID(m_oldPO_id);
 			childCRS.setParentKeyColumn(null);
-			po.setDynAttribute(PO.DYNATTR_CopyRecordSupport, childCRS);
 			childCRS.setBase(true);
-			childCRS.setSpecialColumnsName(po);
+			childCRS.updateSpecialColumnsName(po);
+			
+			po.setDynAttribute(PO.DYNATTR_CopyRecordSupport, childCRS);
 		}
 		// end: c.ghita@metas.ro
 		
@@ -2491,7 +2493,18 @@ public class GridTable extends AbstractTableModel
 
 		// Handle copy mode:
 		setDataNewCopyMode(copyMode);
-		final CopyRecordSupport copyRecordSupport = DataNewCopyMode.isCopyWithDetails(copyMode) ? CopyRecordFactory.getCopyRecordSupport(getTableName()) : null;
+		
+		//
+		final Function<GridField, Object> fieldCalculatedValueSupplier;
+		if(DataNewCopyMode.isCopyWithDetails(copyMode))
+		{
+			final CopyRecordSupport crs = CopyRecordFactory.getCopyRecordSupport(getTableName());
+			fieldCalculatedValueSupplier = gridField -> crs.getValueToCopy(gridField);
+		}
+		else
+		{
+			fieldCalculatedValueSupplier = gridField -> gridField.getDefault();
+		}
 
 		//  Read only
 		if (m_readOnly)
@@ -2564,15 +2577,7 @@ public class GridTable extends AbstractTableModel
 				// metas: begin: us215
 				else if (field.getVO().IsCalculated)
 				{
-					if (copyRecordSupport != null)
-					{
-						rowData[i] = copyRecordSupport.getValueToCopy(field);
-					}
-					else
-					{
-						rowData[i] = field.getDefault();
-					}
-					field.setValue(rowData[i], m_inserting);
+					rowData[i] = fieldCalculatedValueSupplier.apply(field);
 				}
 				// metas: end: us215
 				else if (field.isKey()
