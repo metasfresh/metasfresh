@@ -1,5 +1,6 @@
 package org.compiere.report.email.service.impl;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -19,7 +20,7 @@ public class EMailParamsFactory implements IEmailParamsFactory
 
 		final int tableId = pi.getTable_ID();
 
-		if (tableId == I_C_Order.Table_ID || tableId == I_C_Invoice.Table_ID || tableId == I_M_InOut.Table_ID)
+		if (tableId == I_C_Order.Table_ID || tableId == InterfaceWrapperHelper.getTableId(I_C_Invoice.class) || tableId == I_M_InOut.Table_ID)
 		{
 			return new DocumentEmailParams(pi);
 		}

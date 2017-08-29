@@ -27,6 +27,7 @@ import java.util.ArrayList;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.bpartner.service.IBPartnerDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_User;
@@ -75,7 +76,7 @@ public final class DocumentEmailParams implements IEmailParameters {
 		final int tableId = pi.getTable_ID();
 		final boolean isOrder = I_C_Order.Table_ID == tableId;
 		final boolean isInOut = I_M_InOut.Table_ID == tableId;
-		final boolean isInvoice = I_C_Invoice.Table_ID == tableId;
+		final boolean isInvoice = InterfaceWrapperHelper.getTableId(I_C_Invoice.class) == tableId;
 
 		if (!isOrder && !isInOut && !isInvoice) {
 			throw new IllegalArgumentException(
