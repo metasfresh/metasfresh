@@ -28,6 +28,8 @@ Here come the actual release notes:
     * New Shipper Window in Webui to allow the maintenance of Businesspartners for Shipper Transportations.
   * [#2236](https://github.com/metasfresh/metasfresh/issues/2236) New Window for Printing Queue in WebUI
     * New window for Printing Queue maintenance in WebUI.
+  * [#2267](https://github.com/metasfresh/metasfresh/issues/2267) New Window for Hardware drucker in WebUI
+    * New Widnow for Printer Configuration and Maintenance in WebUI.
 
 ## Fixes
 
