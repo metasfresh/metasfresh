@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -254,7 +255,7 @@ public class WindowRestController
 	/**
 	 * 
 	 * @param windowIdStr
-	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created. 
+	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
 	 * @param advanced
 	 * @param events
 	 * @return
@@ -310,8 +311,8 @@ public class WindowRestController
 	{
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		documentCollection.forDocumentWritable(
-				documentPath, 
-				changesCollector, 
+				documentPath,
+				changesCollector,
 				document -> {
 					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
 					changesCollector.setPrimaryChange(document.getDocumentPath());
@@ -324,6 +325,20 @@ public class WindowRestController
 		JSONDocumentChangedWebSocketEvent.extractAndSendWebsocketEvents(jsonDocumentEvents, websocketSender);
 
 		return jsonDocumentEvents;
+	}
+
+	@PostMapping("/{windowId}/{documentId}/duplicate")
+	public JSONDocument duplicate(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
+	{
+		userSession.assertLoggedIn();
+		
+		final DocumentPath fromDocumentPath = DocumentPath.rootDocumentPath(WindowId.fromJson(windowIdStr), DocumentId.of(documentIdStr));
+		
+		final Document documentCopy = documentCollection.duplicateDocument(fromDocumentPath);
+		return JSONDocument.ofDocument(documentCopy, newJSONOptions().setShowAdvancedFields(advanced).build());
 	}
 
 	@DeleteMapping("/{windowId}/{documentId}")
@@ -617,7 +632,6 @@ public class WindowRestController
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
 	}
-
 
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/references")
 	public JSONDocumentReferencesGroup getDocumentReferences(
