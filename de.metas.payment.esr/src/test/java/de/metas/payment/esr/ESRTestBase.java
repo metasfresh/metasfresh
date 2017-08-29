@@ -100,6 +100,7 @@ public class ESRTestBase
 	protected ITrxManager trxManager;
 	protected IContextAware contextProvider;
 	private I_C_Invoice invoice;
+	private I_C_BPartner partner;
 
 	protected ESRImportBL esrImportBL;
 
@@ -162,6 +163,11 @@ public class ESRTestBase
 	public I_C_Invoice getC_Invoice()
 	{
 		return invoice;
+	}
+	
+	public I_C_BPartner getBPartner()
+	{
+		return partner;
 	}
 
 	protected void init()
@@ -233,6 +239,7 @@ public class ESRTestBase
 		save(adSequence);
 	}
 
+	
 	protected I_ESR_ImportLine setupESR_ImportLine(
 			@NonNull final String invDocNo,
 			@NonNull final String invAmount,
@@ -244,13 +251,33 @@ public class ESRTestBase
 			@NonNull final String payAmt,
 			final boolean createAllocation)
 	{
+		return setupESR_ImportLine(invDocNo, invAmount, invPaid, fullRefNo, refNo, ESR_RenderedAccountNo, partnerValue, payAmt, createAllocation, false);
+	}
+	
+	protected I_ESR_ImportLine setupESR_ImportLine(
+			@NonNull final String invDocNo,
+			@NonNull final String invAmount,
+			final boolean invPaid,
+			@NonNull final String fullRefNo,
+			@NonNull final String refNo,
+			@NonNull final String ESR_RenderedAccountNo,
+			@NonNull final String partnerValue,
+			@NonNull final String payAmt,
+			final boolean createAllocation,
+			final boolean differentInvoiceOrg)
+	{
 		// org
 		final I_AD_Org org = getAD_Org();
 		org.setValue("106");
 		save(org);
 
+		// second org
+		final I_AD_Org org1 = newInstance(I_AD_Org.class);
+		org1.setValue("105");
+		save(org1);
+		
 		// partner
-		final I_C_BPartner partner = newInstance(I_C_BPartner.class, contextProvider);
+		partner = newInstance(I_C_BPartner.class, contextProvider);
 		partner.setValue(partnerValue);
 		partner.setAD_Org_ID(org.getAD_Org_ID());
 		save(partner);
@@ -284,11 +311,17 @@ public class ESRTestBase
 		// invoice
 		final BigDecimal invoiceGrandTotal = new BigDecimal(invAmount);
 		invoice = newInstance(I_C_Invoice.class, contextProvider);
-		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		if (differentInvoiceOrg)
+		{
+			invoice.setAD_Org_ID(org1.getAD_Org_ID());
+		}
+		else
+		{
+			invoice.setAD_Org_ID(org.getAD_Org_ID());
+		}
 		invoice.setGrandTotal(invoiceGrandTotal);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setDocumentNo(invDocNo);
-		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
 		invoice.setC_Currency_ID(currencyEUR.getC_Currency_ID());
 		invoice.setIsPaid(invPaid);
@@ -301,7 +334,14 @@ public class ESRTestBase
 		referenceNo.setReferenceNo(refNo);
 		referenceNo.setC_ReferenceNo_Type(refNoType);
 		referenceNo.setIsManual(true);
-		referenceNo.setAD_Org(getAD_Org());
+		if (differentInvoiceOrg)
+		{
+			referenceNo.setAD_Org_ID(org1.getAD_Org_ID());
+		}
+		else
+		{
+			referenceNo.setAD_Org_ID(org.getAD_Org_ID());
+		}
 		save(referenceNo);
 
 		// reference nodoc
