@@ -89,7 +89,7 @@ public class ProcessPreconditionChecker
 		{
 			try
 			{
-				IProcessPreconditionsContext preconditionsContext = getPreconditionsContext();
+				final IProcessPreconditionsContext preconditionsContext = getPreconditionsContext();
 				final IProcessPrecondition preconditions = createProcessPreconditions(preconditionsClass, preconditionsContext);
 
 				try (final IAutoCloseable currentInstanceRestorer = JavaProcess.temporaryChangeCurrentInstance(preconditions))
@@ -100,7 +100,6 @@ public class ProcessPreconditionChecker
 						return resolution;
 					}
 				}
-
 			}
 			catch (final Exception ex)
 			{
@@ -114,10 +113,12 @@ public class ProcessPreconditionChecker
 		return resolution != null ? resolution : ProcessPreconditionsResolution.accept();
 	}
 
-	private static final IProcessPrecondition createProcessPreconditions(final Class<? extends IProcessPrecondition> preconditionsClass, IProcessPreconditionsContext context) throws Exception
+	private static final IProcessPrecondition createProcessPreconditions(
+			final Class<? extends IProcessPrecondition> preconditionsClass, 
+			final IProcessPreconditionsContext context) throws Exception
 	{
 		final IProcessPrecondition processPreconditions = preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
-		if(processPreconditions instanceof JavaProcess)
+		if (processPreconditions instanceof JavaProcess)
 		{
 			((JavaProcess)processPreconditions).init(context);
 		}
@@ -158,7 +159,7 @@ public class ProcessPreconditionChecker
 	public ProcessPreconditionChecker setProcess(final RelatedProcessDescriptor relatedProcess)
 	{
 		final I_AD_Process adProcess = InterfaceWrapperHelper.create(Env.getCtx(), relatedProcess.getProcessId(), I_AD_Process.class, ITrx.TRXNAME_None);
-		
+
 		_processClass = null;
 		_preconditionsClass = null;
 		_processClassInfo = null;
@@ -214,11 +215,11 @@ public class ProcessPreconditionChecker
 
 	private final Class<?> loadClass(final String classname, final boolean isServerProcess)
 	{
-		if(classname == null)
+		if (classname == null)
 		{
 			return null;
 		}
-		
+
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		if (classLoader == null)
 		{

@@ -122,7 +122,12 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 	private IHUProducerAllocationDestination createLUTUProducerDestination(final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
 		// Make sure configuration is saved, else HUBuilder will fail
 		Services.get(ILUTUConfigurationFactory.class).save(lutuConfiguration);
@@ -166,7 +171,13 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 	public void test_NULL_PIItemProduct()
 	{
 		final I_M_HU_PI_Item_Product tuPIItemProduct = null;
-		lutuFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+
+		lutuFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 	}
 
 	/**

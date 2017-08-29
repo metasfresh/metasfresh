@@ -219,7 +219,12 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final int bpartnerLocationId = -1;
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, getCUProduct(), getCUUOM(), bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				getCUProduct(),
+				getCUUOM(),
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
@@ -316,7 +321,12 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 		final int bpartnerLocationId = -1;
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, getCUProduct(), getCUUOM(), bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				getCUProduct(), 
+				getCUUOM(), 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);

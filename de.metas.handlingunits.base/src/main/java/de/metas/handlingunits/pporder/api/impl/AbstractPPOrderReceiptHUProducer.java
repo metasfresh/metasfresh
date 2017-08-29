@@ -73,10 +73,10 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.pporder.api.impl.AbstractPPOrderReceiptHUProducer.CreateReceiptCandidateRequest;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
@@ -138,6 +138,7 @@ import lombok.Data;
 	public final List<I_M_HU> createReceiptCandidatesAndPlanningHUs()
 	{
 		return trxManager.call(() -> {
+
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())
@@ -385,7 +386,7 @@ import lombok.Data;
 					.filter(candidate -> !candidate.isZeroQty());
 		}
 
-		public void addAllocationResults(final IHUContext huContext, final List<IAllocationResult> loadResults)
+		public void addAllocationResults(final IHUContext IGNORED, @NonNull final List<IAllocationResult> loadResults)
 		{
 			loadResults.stream()
 					.flatMap(loadResult -> loadResult.getTransactions().stream())

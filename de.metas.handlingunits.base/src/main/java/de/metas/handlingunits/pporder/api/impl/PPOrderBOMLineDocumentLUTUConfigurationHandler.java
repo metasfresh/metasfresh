@@ -69,7 +69,12 @@ import lombok.NonNull;
 		//
 		// LU/TU COnfiguration
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 		updateLUTUConfiguration(lutuConfiguration, ppOrderBOMLine);
 
 		return lutuConfiguration;
@@ -82,32 +87,34 @@ import lombok.NonNull;
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrderBOMLine);
 
 		//
-		// try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
+		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
 		if (ppOrderBOMLine.getM_HU_LUTU_Configuration_ID() > 0 && ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
 		{
 			final I_M_HU_PI_Item_Product pip = ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
 			return pip;
 		}
 
+		//
+		// Fallback: return the virtual PI Item Product
 		final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		return pipVirtual;
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_PP_Order_BOMLine documentLine)
+	public void updateLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order_BOMLine documentLine)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(documentLine.getPP_Order(), I_PP_Order.class);
 		PPOrderDocumentLUTUConfigurationHandler.instance.updateLUTUConfiguration(lutuConfiguration, ppOrder);
 	}
 
 	@Override
-	public void setCurrentLUTUConfiguration(final I_PP_Order_BOMLine documentLine, final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public void setCurrentLUTUConfiguration(@NonNull final I_PP_Order_BOMLine documentLine, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		documentLine.setM_HU_LUTU_Configuration(lutuConfiguration);
 	}
 
 	@Override
-	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(final I_PP_Order_BOMLine documentLine)
+	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(@NonNull final I_PP_Order_BOMLine documentLine)
 	{
 		final I_M_HU_LUTU_Configuration lutuConfiguration = documentLine.getM_HU_LUTU_Configuration();
 		if (lutuConfiguration == null || lutuConfiguration.getM_HU_LUTU_Configuration_ID() <= 0)
