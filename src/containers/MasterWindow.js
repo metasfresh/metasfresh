@@ -273,7 +273,7 @@ class MasterWindow extends Component {
     render() {
         const {
             master, modal, breadcrumb, params, rawModal, selected,
-            selectedWindowType, includedView, processStatus
+            selectedWindowType, includedView, processStatus, enableTutorial
         } = this.props;
 
         const {
@@ -344,7 +344,7 @@ class MasterWindow extends Component {
                     />
                 }
 
-                { (introSteps && (introSteps.length > 0)) && (
+                { (enableTutorial && introSteps && (introSteps.length > 0)) && (
                     <Steps
                         enabled={introEnabled}
                         steps={introSteps}
@@ -353,7 +353,7 @@ class MasterWindow extends Component {
                     />
                 )}
 
-                { (introHints && (introHints.length > 0)) && (
+                { (enableTutorial && introHints && (introHints.length > 0)) && (
                     <Hints
                         enabled={hintsEnabled}
                         hints={introHints}
@@ -400,9 +400,11 @@ function mapStateToProps(state) {
     }
 
     const {
+        enableTutorial,
         processStatus,
         me
     } = appHandler || {
+        enableTutorial: false,
         processStatus: '',
         me: {}
     }
@@ -423,6 +425,7 @@ function mapStateToProps(state) {
         selectedWindowType,
         includedView,
         processStatus,
+        enableTutorial,
         me
     }
 }

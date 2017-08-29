@@ -5,6 +5,7 @@ const initialState = {
 	notifications: {},
     me: {},
     isLogged: false,
+    enableTutorial: false,
     processStatus: 'saved',
     inbox: {
         notifications: [],
@@ -30,6 +31,11 @@ export default function appHandler(state = initialState, action) {
         case types.LOGOUT_SUCCESS:
             return Object.assign({}, state, {
                 isLogged: false
+            })
+
+        case types.ENABLE_TUTORIAL:
+            return Object.assign({}, state, {
+                enableTutorial: action.flag
             })
 
         // NOTIFICATION ACTIONS

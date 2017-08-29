@@ -15,15 +15,23 @@ import {
     logoutSuccess,
     loginSuccess,
     localLoginRequest,
-    clearNotifications
+    clearNotifications,
+    enableTutorial
 } from './actions/AppActions';
 
 import {
     createWindow
 } from './actions/WindowActions';
 
+let hasTutorial = false;
+
 export const getRoutes = (store, auth) => {
     const authRequired = (nextState, replace, callback) => {
+        hasTutorial = (
+            nextState && nextState.location && nextState.location.query &&
+            (typeof nextState.location.query.tutorial !== 'undefined')
+        );
+
         if( !localStorage.isLogged ){
             localLoginRequest().then((resp) => {
                 if(resp.data){
@@ -36,13 +44,17 @@ export const getRoutes = (store, auth) => {
                 }
             })
         }else{
+            if (hasTutorial) {
+                store.dispatch(enableTutorial());
+            }
+
             store.dispatch(clearNotifications());
 
             store.dispatch(loginSuccess(auth));
 
             callback();
         }
-    }
+    };
 
     const logout = () => {
         logoutRequest().then(()=>
@@ -50,7 +62,7 @@ export const getRoutes = (store, auth) => {
         ).then(()=>
             store.dispatch(push('/login'))
         );
-    }
+    };
 
     return (
         <Route path="/">

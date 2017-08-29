@@ -40,8 +40,8 @@ export class Dashboard extends Component {
     render() {
         const {
             location, modal, selected, rawModal, indicator, processStatus,
-            includedView
-        } = this.props;
+            includedView, enableTutorial
+    } = this.props;
 
         const { editmode, hintsEnabled, introHints } = this.state;
 
@@ -61,7 +61,7 @@ export class Dashboard extends Component {
                     />
                 </div>
 
-                { (introHints && (introHints.length > 0)) && (
+                { (enableTutorial && introHints && (introHints.length > 0)) && (
                     <Hints
                         enabled={hintsEnabled}
                         hints={introHints}
@@ -100,9 +100,11 @@ function mapStateToProps(state) {
     }
 
     const {
+        enableTutorial,
         processStatus,
         me
     } = appHandler || {
+        enableTutorial: false,
         processStatus: '',
         me: {}
     }
@@ -114,6 +116,7 @@ function mapStateToProps(state) {
         rawModal,
         processStatus,
         includedView,
+        enableTutorial,
         me
     }
 }
