@@ -238,7 +238,11 @@ public class WebuiHUTransformParametersFiller
 		final I_M_Product product = cuRow.getM_Product();
 		final I_C_BPartner bPartner = cuRow.getM_HU().getC_BPartner();
 
-		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(Env.getCtx(), product, bPartner);
+		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(
+				Env.getCtx(), 
+				product, 
+				bPartner,
+				false); // includeVirtualItem = false..moving a cu onto a "virtual" TU makes no sense. Instead, the user can just leave the CU as it is, or take it out of a physical TU 
 	}
 
 	/**

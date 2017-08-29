@@ -73,6 +73,12 @@ public class WEBUI_M_HU_ReverseReceipt extends JavaProcess implements IProcessPr
 			return ProcessPreconditionsResolution.rejectWithInternalReason("webui view not available");
 		}
 
+		final boolean isHUView = viewContext.getView() instanceof HUEditorView;
+		if (!isHUView)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("The current view is not an HUEditorView; view=" + viewContext.getView() + ";");
+		}
+
 		if (viewContext.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();

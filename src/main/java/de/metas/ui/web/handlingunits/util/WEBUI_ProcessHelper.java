@@ -55,15 +55,18 @@ public class WEBUI_ProcessHelper
 	 * 
 	 * @param ctx
 	 * @param product
-	 * @param bPartner optional, may be null
+	 * @param bPartner optional, may be {@code null}
+	 * @param includeVirtualItem if {@code true}, then the resulting list also contains the "virtual" PiiP.
+	 * 
 	 * @return
 	 */
 	public LookupValuesList retrieveHUPIItemProducts(
 			@NonNull final Properties ctx,
 			@NonNull final I_M_Product product,
-			@Nullable final I_C_BPartner bPartner)
+			@Nullable final I_C_BPartner bPartner,
+			final boolean includeVirtualItem)
 	{
-		final List<I_M_HU_PI_Item_Product> list = retrieveHUPIItemProductRecords(ctx, product, bPartner);
+		final List<I_M_HU_PI_Item_Product> list = retrieveHUPIItemProductRecords(ctx, product, bPartner, includeVirtualItem);
 
 		return list.stream()
 				.sorted(Comparator.comparing(I_M_HU_PI_Item_Product::getName))
@@ -74,7 +77,8 @@ public class WEBUI_ProcessHelper
 	public List<I_M_HU_PI_Item_Product> retrieveHUPIItemProductRecords(
 			@NonNull final Properties ctx,
 			@NonNull final I_M_Product product,
-			@Nullable final I_C_BPartner bPartner)
+			@Nullable final I_C_BPartner bPartner,
+			final boolean includeVirtualItem)
 	{
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -84,14 +88,27 @@ public class WEBUI_ProcessHelper
 
 		final List<I_M_HU_PI_Item_Product> list = hupiItemProductDAO
 				.retrieveTUs(ctx, product, bPartner, allowInfiniteCapacity);
+
+		if (includeVirtualItem)
+		{
+			list.add(hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx));
+		}
 		return list;
 	}
-	
-	public String buildHUPIItemString(final I_M_HU_PI_Item huPIItem)
+
+	/**
+	 * Creates a string of the form "PI-Version-Name (Qty x Included-PI)", e.g. "Palette (20 x IFCO)".
+	 * 
+	 * @param huPIItem may not be {@code null}
+	 * @return
+	 */
+	public String buildHUPIItemString(@NonNull final I_M_HU_PI_Item huPIItem)
 	{
-		return StringUtils.formatMessage("{} ({} x {})",
+		final String result = StringUtils.formatMessage("{} ({} x {})",
 				huPIItem.getM_HU_PI_Version().getName(),
 				huPIItem.getQty().setScale(0, RoundingMode.HALF_UP), // it's always integer quantities
 				huPIItem.getIncluded_HU_PI().getName());
+		
+		return result;
 	}
 }

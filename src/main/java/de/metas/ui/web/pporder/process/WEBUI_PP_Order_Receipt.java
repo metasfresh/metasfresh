@@ -79,25 +79,36 @@ public class WEBUI_PP_Order_Receipt
 
 	private transient PackingInfoProcessParams _packingInfoParams;
 
+	/**
+	 * Makes sure that an instance exists and is in sync with this processe's parameters.
+	 * 
+	 * @return
+	 */
 	private PackingInfoProcessParams getPackingInfoParams()
 	{
 		if (_packingInfoParams == null)
 		{
 			_packingInfoParams = PackingInfoProcessParams.builder()
 					.defaultLUTUConfigManager(createDefaultLUTUConfigManager(getSingleSelectedRow()))
-					.enforcePhysicalTU(true) // https://github.com/metasfresh/metasfresh-webui-api/issues/528
+					.enforcePhysicalTU(false) // allow to to produce just the CU, without a TU etc..maybe later we'll add a sysconfig for this
 					.build();
 		}
 
-		// Update it
+		// Update it from the user-selected process parameters
 		if (p_M_HU_PI_Item_Product != null)
 		{
 			_packingInfoParams.setTU_HU_PI_Item_Product_ID(p_M_HU_PI_Item_Product.getM_HU_PI_Item_Product_ID());
 		}
-		if (p_M_HU_PI_Item != null)
+
+		if (p_M_HU_PI_Item != null) // this parameter is not mandatory
 		{
 			_packingInfoParams.setLuPiItemId(p_M_HU_PI_Item.getM_HU_PI_Item_ID());
 		}
+		else
+		{
+			_packingInfoParams.setLuPiItemId(0);
+		}
+
 		_packingInfoParams.setQtyLU(p_QtyLU);
 		_packingInfoParams.setQtyTU(p_QtyTU);
 		_packingInfoParams.setQtyCU(p_QtyCU);
@@ -225,7 +236,7 @@ public class WEBUI_PP_Order_Receipt
 
 		//
 		// Calculate and set the LU/TU config from packing info params and defaults
-		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createNewLUTUConfig();
+		final I_M_HU_LUTU_Configuration lutuConfig = getPackingInfoParams().createAndSaveNewLUTUConfig();
 		receiptCandidatesProducer.setM_HU_LUTU_Configuration(lutuConfig);
 
 		//
