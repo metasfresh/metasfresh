@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -128,8 +130,11 @@ public class PickingSlotView implements IView
 		return ImmutableSet.of();
 	}
 
+	/**
+	 * Always returns {@link I_M_PickingSlot#Table_Name}
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId ignored)
 	{
 		return I_M_PickingSlot.Table_Name;
 	}

@@ -9,6 +9,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -121,8 +123,11 @@ public class PackageableView implements IView
 		return ImmutableSet.of();
 	}
 
+	/**
+	 * Always returns {@link I_M_Packageable_V#Table_Name}.
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId ignored)
 	{
 		return I_M_Packageable_V.Table_Name;
 	}

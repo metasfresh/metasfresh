@@ -1,15 +1,16 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
-import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.movement.api.HUMovementResult;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 
 /*
@@ -22,29 +23,34 @@ import de.metas.process.ProcessPreconditionsResolution;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 /**
- * Return the selected HUs back to vendor.
- *
+ * #2144
+ * HU editor: Move selected HUs to another warehouse
  * @author metas-dev <dev@metasfresh.com>
- * @task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
+ *
  */
-public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implements IProcessPrecondition
+public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private static final String MSG_NoSelectedHU = "NoHUSelected";
-	
-	private List<I_M_HU> husToReturn = null;
+
+	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+
+	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
+	private I_M_Warehouse warehouse;
+
+	private HUMovementResult movementResult = null;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -61,19 +67,21 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 	@Override
 	protected String doIt() throws Exception
 	{
-		husToReturn = getSelectedHUs();
-		final Timestamp movementDate = Env.getDate(getCtx());
-		Services.get(IHUInOutBL.class).createVendorReturnInOutForHUs(husToReturn, movementDate);
+		
+		final List<I_M_HU> hus = getSelectedHUs();
+		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
+
 		return MSG_OK;
 	}
 
 	@Override
 	protected void postProcess(final boolean success)
 	{
-		if (husToReturn != null && !husToReturn.isEmpty())
+		// Invalidate the view
+		// On refresh we expect the HUs we moved, to not be present here anymore.
+		if (movementResult != null)
 		{
-			getView().removeHUsAndInvalidate(getSelectedHUs());
+			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
 		}
 	}
-
 }

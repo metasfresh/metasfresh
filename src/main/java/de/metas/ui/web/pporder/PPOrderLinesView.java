@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -93,8 +95,7 @@ public class PPOrderLinesView implements IView
 			@NonNull final JSONViewDataType viewType,
 			final Set<DocumentPath> referencingDocumentPaths,
 			final int ppOrderId,
-			final ASIViewRowAttributesProvider asiAttributesProvider
-	)
+			final ASIViewRowAttributesProvider asiAttributesProvider)
 	{
 		this.parentViewId = parentViewId; // might be null
 		this.parentRowId = parentRowId; // might be null
@@ -140,7 +141,7 @@ public class PPOrderLinesView implements IView
 	{
 		return parentViewId;
 	}
-	
+
 	@Override
 	public DocumentId getParentRowId()
 	{
@@ -165,10 +166,23 @@ public class PPOrderLinesView implements IView
 		return referencingDocumentPaths;
 	}
 
+	/**
+	 * @param may be {@code null}; in that case, the method also returns {@code null}
+	 * @return the table name for the given row
+	 */
 	@Override
-	public String getTableName()
+	public String getTableNameOrNull(@Nullable final DocumentId documentId)
 	{
-		return null; // no particular table (i.e. we have more)
+		if (documentId == null)
+		{
+			return null;
+		}
+		final PPOrderLineRow ppOrderLine = getById(documentId);
+		if (ppOrderLine == null)
+		{
+			return null; // just be sure to avoid an NPE in here
+		}
+		return ppOrderLine.getType().getTableName();
 	}
 
 	public int getPP_Order_ID()

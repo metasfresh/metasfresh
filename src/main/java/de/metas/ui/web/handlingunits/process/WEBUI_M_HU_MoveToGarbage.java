@@ -44,6 +44,8 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private static final String MSG_NoSelectedHU = "NoHUSelected";
+	
 	private final transient IHUInventoryBL huInventoryBL = Services.get(IHUInventoryBL.class);
 
 	private Set<Integer> huIdsDestroyed;
@@ -54,7 +56,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		final Set<Integer> huIds = getSelectedHUIds();
 		if (huIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject("No HUs selected");
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NoSelectedHU));
 		}
 
 		return ProcessPreconditionsResolution.accept();

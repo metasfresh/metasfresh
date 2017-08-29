@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Evaluatee;
 
@@ -54,8 +56,12 @@ public interface IView
 
 	Set<DocumentPath> getReferencingDocumentPaths();
 
-	/** @return table name or null */
-	String getTableName();
+	/**
+	 * @param documentId can be used by multi-table implementations to return the correct table name for a given row.
+	 * 
+	 * @return table name for the given row; might also return {@code null}.
+	 */
+	String getTableNameOrNull(@Nullable DocumentId documentId);
 
 	/**
 	 * @return In case this is an included view, this method will return the parent's viewId. Else null will be returned.
@@ -115,15 +121,15 @@ public interface IView
 	List<DocumentFilter> getFilters();
 
 	List<DocumentQueryOrderBy> getDefaultOrderBys();
-	
+
 	default TableRecordReference getTableRecordReferenceOrNull(@NonNull final DocumentId rowId)
 	{
 		final int recordId = rowId.toIntOr(-1);
-		if(recordId < 0)
+		if (recordId < 0)
 		{
 			return null;
 		}
-		return TableRecordReference.of(getTableName(), recordId);
+		return TableRecordReference.of(getTableNameOrNull(rowId), recordId);
 	}
 
 	String getSqlWhereClause(DocumentIdsSelection rowIds);

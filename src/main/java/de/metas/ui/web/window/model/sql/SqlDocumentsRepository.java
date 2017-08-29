@@ -367,6 +367,12 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				idAquired = true;
 				return id;
 			}
+			else if (idObj instanceof String)
+			{
+				id = DocumentId.of(idObj.toString());
+				idAquired = true;
+				return id;
+			}
 			else
 			{
 				throw new IllegalStateException("Cannot convert id value '" + idObj + "' (" + idObj.getClass() + ") to DocumentId");

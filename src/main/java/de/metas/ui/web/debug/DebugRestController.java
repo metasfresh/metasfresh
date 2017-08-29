@@ -45,8 +45,8 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
-import de.metas.ui.web.notification.UserNotification;
 import de.metas.ui.web.notification.UserNotification.TargetType;
+import de.metas.ui.web.notification.UserNotificationRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.view.IViewsRepository;
@@ -208,7 +208,7 @@ public class DebugRestController
 		final Builder eventBuilder = Event.builder()
 				.setSummary("summary")
 				.setDetailPlain(message)
-				.putProperty(UserNotification.EVENT_PARAM_Important, important);
+				.putProperty(UserNotificationRepository.EVENT_PARAM_Important, important);
 		if (toUserId > 0)
 		{
 			eventBuilder.addRecipient_User_ID(toUserId);
