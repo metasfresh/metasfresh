@@ -42,12 +42,14 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
+import org.compiere.model.X_C_Invoice_Reference;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.invoice.api.IInvoiceReferenceDAO;
 
 /**
  *
@@ -279,7 +281,8 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 		// task 08906: link the credit memo with the parent invoice
 		if (creditCtx.isReferenceInvoice())
 		{
-			invoice.setRef_CreditMemo_ID(creditMemo.getC_Invoice_ID());
+			Services.get(IInvoiceReferenceDAO.class).createReferencedInvoice(invoice, creditMemo, X_C_Invoice_Reference.C_INVOICE_REFERENCE_TYPE_CreditMemo);
+			
 			InterfaceWrapperHelper.save(invoice);
 		}
 

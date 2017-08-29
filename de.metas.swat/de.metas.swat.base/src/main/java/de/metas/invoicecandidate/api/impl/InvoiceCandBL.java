@@ -110,6 +110,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.impl.IQtyAndQuality;
 import de.metas.inoutcandidate.spi.impl.MutableQtyAndQuality;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.api.IInvoiceReferenceDAO;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -1274,9 +1275,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final boolean creditedInvoiceReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
 		final boolean creditedInvoiceIsReversed;
-		if (creditMemo && invoiceExt.getRef_CreditMemo_ID() > 0)
+		
+		final Iterator<I_C_Invoice> creditMemosForInvoice = Services.get(IInvoiceReferenceDAO.class).retrieveCreditMemosForInvoice(invoiceExt);
+		if (creditMemo && creditMemosForInvoice.hasNext())
 		{
-			final org.compiere.model.I_C_Invoice originalInvoice = invoiceExt.getRef_CreditMemo();
+			final org.compiere.model.I_C_Invoice originalInvoice = creditMemosForInvoice.next();
 			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isDocumentStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
 		}
 		else

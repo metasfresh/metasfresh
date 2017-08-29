@@ -23,9 +23,7 @@ package org.adempiere.invoice.service.impl;
  */
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -35,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -43,7 +40,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.Env;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -100,8 +96,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.orderBy()
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line)
 				.endOrderBy()
-				//
-				;
+		//
+		;
 	}
 
 	@Override
@@ -142,46 +138,6 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public Iterator<I_C_Invoice> retrieveParentInvoiceForCreditMemo(final I_C_Invoice creditMemo)
-	{
-		// services
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		if (!invoiceBL.isCreditMemo(creditMemo))
-		{
-			// nothing to do
-			return Collections.emptyIterator();
-		}
-
-		return queryBL.createQueryBuilder(I_C_Invoice.class, creditMemo)
-				.filterByClientId()
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_CreditMemo_ID, creditMemo.getC_Invoice_ID())
-				.create()
-				.iterate(I_C_Invoice.class);
-	}
-
-	@Override
-	public Iterator<I_C_Invoice> retrieveParentInvoiceForAdjustmentCharge(final I_C_Invoice adjustmentCharge)
-	{
-		// services
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		if (!invoiceBL.isAdjustmentCharge(adjustmentCharge))
-		{
-			// nothing to do
-			return Collections.emptyIterator();
-		}
-
-		return queryBL.createQueryBuilder(I_C_Invoice.class, adjustmentCharge)
-				.filterByClientId()
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_AdjustmentCharge_ID, adjustmentCharge.getC_Invoice_ID())
-				.create()
-				.iterate(I_C_Invoice.class);
-	}
-
-	@Override
 	public List<I_C_Invoice> retrievePostedWithoutFactAcct(final Properties ctx, final Date startTime)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -198,8 +154,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		// Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
 		final ICompositeQueryFilter<I_C_Invoice> nonZeroFilter = queryBL.createCompositeQueryFilter(I_C_Invoice.class).setJoinOr()
-				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_GrandTotal, Env.ZERO)
-				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_TotalLines, Env.ZERO);
+				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_GrandTotal, BigDecimal.ZERO)
+				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_TotalLines, BigDecimal.ZERO);
 
 		queryBuilder.filter(nonZeroFilter);
 
@@ -215,7 +171,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
-				;
+		;
 
 		return queryBuilder
 				.create()

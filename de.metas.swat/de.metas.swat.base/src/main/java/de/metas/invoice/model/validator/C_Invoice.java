@@ -43,12 +43,14 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_Invoice_Reference;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.invoice.api.IInvoiceReferenceDAO;
 
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice
@@ -69,9 +71,9 @@ public class C_Invoice
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
 	// exclude columns which are not relevant if they change
-	, ignoreColumnsChanged = {
-			I_C_Invoice.COLUMNNAME_IsPaid
-	})
+			, ignoreColumnsChanged = {
+					I_C_Invoice.COLUMNNAME_IsPaid
+			})
 	public void updateIsReadOnly(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceBL.class).updateInvoiceLineIsReadOnlyFlags(invoice);
@@ -102,7 +104,7 @@ public class C_Invoice
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice, trxName);
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
-			if(!ProductPriceQuery.mainProductPriceExists(priceListVersion, invoiceLine.getM_Product_ID()))
+			if (!ProductPriceQuery.mainProductPriceExists(priceListVersion, invoiceLine.getM_Product_ID()))
 			{
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
@@ -203,7 +205,7 @@ public class C_Invoice
 	{
 		// services
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInvoiceReferenceDAO invoiceReferenceDAO = Services.get(IInvoiceReferenceDAO.class);
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(creditMemo);
@@ -214,7 +216,7 @@ public class C_Invoice
 			return;
 		}
 
-		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceDAO.retrieveParentInvoiceForCreditMemo(creditMemo);
+		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceReferenceDAO.retrieveParentInvoiceForCreditMemo(creditMemo);
 
 		if (!parentInvoiceIterator.hasNext())
 		{
@@ -295,7 +297,7 @@ public class C_Invoice
 	private void unlinkAdjustmentChargeReferences(I_C_Invoice adjustmentCharge)
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInvoiceReferenceDAO invoiceReferenceDAO = Services.get(IInvoiceReferenceDAO.class);
 
 		final boolean isAdjustmentCharge = invoiceBL.isAdjustmentCharge(adjustmentCharge);
 
@@ -305,7 +307,7 @@ public class C_Invoice
 			return;
 		}
 
-		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceDAO.retrieveParentInvoiceForAdjustmentCharge(adjustmentCharge);
+		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceReferenceDAO.retrieveParentInvoiceForAdjustmentCharge(adjustmentCharge);
 
 		if (!parentInvoiceIterator.hasNext())
 		{
@@ -317,8 +319,10 @@ public class C_Invoice
 		while (parentInvoiceIterator.hasNext())
 		{
 			final I_C_Invoice parentInvoice = parentInvoiceIterator.next();
-			parentInvoice.setRef_AdjustmentCharge_ID(0);
-			InterfaceWrapperHelper.save(parentInvoice);
+
+			Services.get(IInvoiceReferenceDAO.class).deleteInvoiceReferences(parentInvoice, adjustmentCharge);
+			// parentInvoice.setRef_AdjustmentCharge_ID(0);
+			// InterfaceWrapperHelper.save(parentInvoice);
 		}
 	}
 
@@ -332,7 +336,7 @@ public class C_Invoice
 		// services
 
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInvoiceReferenceDAO invoiceReferenceDAO = Services.get(IInvoiceReferenceDAO.class);
 
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(creditMemo);
 
@@ -342,7 +346,7 @@ public class C_Invoice
 			return;
 		}
 
-		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceDAO.retrieveParentInvoiceForCreditMemo(creditMemo);
+		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceReferenceDAO.retrieveParentInvoiceForCreditMemo(creditMemo);
 
 		if (!parentInvoiceIterator.hasNext())
 		{
@@ -353,8 +357,10 @@ public class C_Invoice
 		// unlink the credit memo from all the parent invoices
 		while (parentInvoiceIterator.hasNext())
 		{
+
 			final I_C_Invoice parentInvoice = parentInvoiceIterator.next();
-			parentInvoice.setRef_CreditMemo_ID(0);
+			Services.get(IInvoiceReferenceDAO.class).deleteInvoiceReferences(parentInvoice, creditMemo);
+
 			InterfaceWrapperHelper.save(parentInvoice);
 		}
 	}
