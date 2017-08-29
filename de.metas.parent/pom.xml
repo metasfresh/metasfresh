@@ -644,20 +644,19 @@
 							</dependency>
 
 							<!-- required to compile reports with barcodes -->
-							<!-- FRESH-397: see if we can remove it, too <dependency> <groupId>net.sf.barcode4j</groupId>
-								<artifactId>barcode4j-fop-ext-complete</artifactId> <version>2.0</version>
-								<type>jar</type> <scope>compile</scope> </dependency> -->
+							<!-- FRESH-397: see if we can remove it, too.  -->
+							<!-- 1876 It's needed to be able to run jaspers with barcodes-->
 							<dependency>
 								<groupId>net.sf.barcode4j</groupId>
 								<artifactId>barcode4j-fop-ext-complete</artifactId>
 								<version>2.0</version>
 								<type>jar</type>			
-							<exclusions>
-								<exclusion>
-								<groupId>commons-logging</groupId>
-								<artifactId>commons-logging</artifactId>
-								</exclusion>
-							</exclusions>
+								<exclusions>
+									<exclusion>
+										<groupId>commons-logging</groupId>
+										<artifactId>commons-logging</artifactId>
+									</exclusion>
+								</exclusions>
 							</dependency>		
 								
 						</dependencies>
