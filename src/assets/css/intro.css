@@ -3,30 +3,13 @@
     box-sizing: content-box;
     z-index: 999999;
     background-color: rgba(0, 0, 0, 0.2);
-    opacity: 0;
-    background: -moz-radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
-    background: -webkit-gradient(radial,center center,0px,center center,100%,color-stop(0%,rgba(0,0,0,0.4)),color-stop(100%,rgba(0,0,0,0.9)));
-    background: -webkit-radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
-    background: -o-radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
-    background: -ms-radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
-    background: radial-gradient(center,ellipse cover,rgba(0,0,0,0.4) 0,rgba(0,0,0,0.9) 100%);
-    filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#66000000',endColorstr='#e6000000',GradientType=1)";
-    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";
-    filter: alpha(opacity=50);
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -ms-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
+    opacity: 0.5;
     transition: all 0.3s ease-out;
 }
 
 .introjs-fixParent {
     z-index: auto !important;
     opacity: 1.0 !important;
-    -webkit-transform: none !important;
-    -moz-transform: none !important;
-    -ms-transform: none !important;
-    -o-transform: none !important;
     transform: none !important;
 }
 
@@ -54,16 +37,10 @@ tr.introjs-showElement > th {
     box-sizing: content-box;
     position: absolute;
     z-index: 9999998;
-    background-color: #FFF;
     background-color: rgba(255,255,255,.9);
-    border: 1px solid #777;
     border: 1px solid rgba(0,0,0,.5);
     border-radius: 4px;
     box-shadow: 0 2px 15px rgba(0,0,0,.4);
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -ms-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
     transition: all 0.3s ease-out;
 }
 
@@ -73,20 +50,12 @@ tr.introjs-showElement > th {
     visibility: hidden;
     z-index: 10000000;
     background-color: transparent;
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -ms-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
     transition: all 0.3s ease-out;
 }
 
 .introjs-helperLayer *,
 .introjs-helperLayer *:before,
 .introjs-helperLayer *:after {
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    -ms-box-sizing: content-box;
-    -o-box-sizing: content-box;
     box-sizing: content-box;
 }
 
@@ -104,20 +73,12 @@ tr.introjs-showElement > th {
     color: white;
     text-align: center;
     text-shadow: 1px 1px 1px rgba(0,0,0,.3);
-    background: #ff3019; /* Old browsers */
-    background: -webkit-linear-gradient(top, #ff3019 0%, #cf0404 100%); /* Chrome10+,Safari5.1+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #ff3019), color-stop(100%, #cf0404)); /* Chrome,Safari4+ */
-    background:    -moz-linear-gradient(top, #ff3019 0%, #cf0404 100%); /* FF3.6+ */
-    background:     -ms-linear-gradient(top, #ff3019 0%, #cf0404 100%); /* IE10+ */
-    background:      -o-linear-gradient(top, #ff3019 0%, #cf0404 100%); /* Opera 11.10+ */
-    background:         linear-gradient(to bottom, #ff3019 0%, #cf0404 100%);  /* W3C */
+    background: linear-gradient(to bottom, #ff3019 0%, #cf0404 100%);  /* W3C */
     width: 20px;
     height:20px;
     line-height: 20px;
     border: 3px solid white;
     border-radius: 50%;
-    filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff3019', endColorstr='#cf0404', GradientType=0)"; /* IE6-9 */
-    filter: "progid:DXImageTransform.Microsoft.Shadow(direction=135, strength=2, color=ff0000)"; /* IE10 text shadows */
     box-shadow: 0 2px 5px rgba(0,0,0,.4);
 }
 
@@ -200,10 +161,6 @@ tr.introjs-showElement > th {
     max-width: 300px;
     border-radius: 3px;
     box-shadow: 0 1px 10px rgba(0,0,0,.4);
-    -webkit-transition: opacity 0.1s ease-out;
-    -moz-transition: opacity 0.1s ease-out;
-    -ms-transition: opacity 0.1s ease-out;
-    -o-transition: opacity 0.1s ease-out;
     transition: opacity 0.1s ease-out;
 }
 
@@ -232,9 +189,6 @@ tr.introjs-showElement > th {
     cursor: pointer;
     outline: none;
     background-color: #ececec;
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f4f4f4), to(#ececec));
-    background-image: -moz-linear-gradient(#f4f4f4, #ececec);
-    background-image: -o-linear-gradient(#f4f4f4, #ececec);
     background-image: linear-gradient(#f4f4f4, #ececec);
     -webkit-background-clip: padding;
     -moz-background-clip: padding;
@@ -257,9 +211,6 @@ tr.introjs-showElement > th {
 
 .introjs-button:focus,
 .introjs-button:active {
-    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#ececec), to(#f4f4f4));
-    background-image: -moz-linear-gradient(#ececec, #f4f4f4);
-    background-image: -o-linear-gradient(#ececec, #f4f4f4);
     background-image: linear-gradient(#ececec, #f4f4f4);
 }
 
@@ -276,28 +227,20 @@ tr.introjs-showElement > th {
 }
 
 .introjs-prevbutton {
-    -webkit-border-radius: 0.2em 0 0 0.2em;
-    -moz-border-radius: 0.2em 0 0 0.2em;
     border-radius: 0.2em 0 0 0.2em;
     border-right: none;
 }
 
 .introjs-prevbutton.introjs-fullbutton {
     border: 1px solid #d4d4d4;
-    -webkit-border-radius: 0.2em;
-    -moz-border-radius: 0.2em;
     border-radius: 0.2em;
 }
 
 .introjs-nextbutton {
-    -webkit-border-radius: 0 0.2em 0.2em 0;
-    -moz-border-radius: 0 0.2em 0.2em 0;
     border-radius: 0 0.2em 0.2em 0;
 }
 
 .introjs-nextbutton.introjs-fullbutton {
-    -webkit-border-radius: 0.2em;
-    -moz-border-radius: 0.2em;
     border-radius: 0.2em;
 }
 
@@ -338,8 +281,6 @@ tr.introjs-showElement > th {
     height: 6px;
     background: #ccc;
     border-radius: 10px;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
     text-decoration: none;
     cursor: pointer;
 }
@@ -411,37 +352,23 @@ tr.introjs-showElement > th {
     width: 10px;
     height: 10px;
     border: 5px solid rgba(60, 60, 60, 0.27);
-    -webkit-border-radius: 30px;
-    -moz-border-radius: 30px;
     border-radius: 30px;
     background-color: rgba(136, 136, 136, 0.24);
     z-index: 10;
     position: absolute;
-    -webkit-transition: all 0.2s ease-out;
-    -moz-transition: all 0.2s ease-out;
-    -ms-transition: all 0.2s ease-out;
-    -o-transition: all 0.2s ease-out;
     transition: all 0.2s ease-out;
 }
 .introjs-hint-no-anim .introjs-hint-dot {
-    -webkit-animation: none;
-    -moz-animation: none;
     animation: none;
 }
 .introjs-hint-dot {
     box-sizing: content-box;
     border: 10px solid rgba(146, 146, 146, 0.36);
     background: transparent;
-    -webkit-border-radius: 60px;
-    -moz-border-radius: 60px;
     border-radius: 60px;
     height: 50px;
     width: 50px;
-    -webkit-animation: introjspulse 3s ease-out;
-    -moz-animation: introjspulse 3s ease-out;
     animation: introjspulse 3s ease-out;
-    -webkit-animation-iteration-count: infinite;
-    -moz-animation-iteration-count: infinite;
     animation-iteration-count: infinite;
     position: absolute;
     top: -25px;
