@@ -30,6 +30,8 @@ Here come the actual release notes:
     * New window for Printing Queue maintenance in WebUI.
   * [#2267](https://github.com/metasfresh/metasfresh/issues/2267) New Window for Hardware drucker in WebUI
     * New Widnow for Printer Configuration and Maintenance in WebUI.
+  * [#2268](https://github.com/metasfresh/metasfresh/issues/2268) New Window for Drucker-Zuordnung in WebUI
+    * New Window for Printer Matching Configuration and Maintenance in WebUI.
 
 ## Fixes
 
