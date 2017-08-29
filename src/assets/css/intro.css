@@ -199,14 +199,13 @@ tr.introjs-showElement > th {
     border-radius: 0.2em;
     /* IE hacks */
     zoom: 1;
-    *display: inline;
     margin-top: 10px;
 }
 
 .introjs-button:hover {
     border-color: #bcbcbc;
     text-decoration: none;
-    box-shadow: 0px 1px 1px #e3e3e3;
+    box-shadow: 0 1px 1px #e3e3e3;
 }
 
 .introjs-button:focus,
