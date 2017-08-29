@@ -62,7 +62,8 @@ import de.metas.handlingunits.client.terminal.editor.model.IHUPOSLayoutConstants
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUEditorModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUFilterPropertiesModel;
 import de.metas.handlingunits.client.terminal.editor.model.impl.HUKey;
-import de.metas.handlingunits.client.terminal.editor.model.impl.ReturnsWarehouseModel;
+import de.metas.handlingunits.client.terminal.editor.model.impl.MovementsAnyWarehouseModel;
+import de.metas.handlingunits.client.terminal.editor.model.impl.QualityReturnsWarehouseModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.assign.impl.HUAssignTULUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.distribute.impl.HUDistributeCUTUModel;
 import de.metas.handlingunits.client.terminal.mmovement.model.join.impl.HUJoinModel;
@@ -176,18 +177,21 @@ public class HUEditorPanel
 	 * button for moving HUs to quality Warehouse (task #1065)
 	 */
 	protected ITerminalButton bMoveToQualityWarehouse;
-	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse"; 
+	private static final String ACTION_MoveToQualityWarehouse = "MoveToQualityWarehouse";
+
+	protected ITerminalButton bMoveToAnotherWarehouse;
+	private static final String ACTION_MoveToAnotherWarehouse = "MoveToAnotherWarehouse";
 
 	/**
 	 * button to create Vendor Return inout (task #1062)
 	 */
 	protected ITerminalButton bCreateVendorReturn;
-	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn"; 
+	private static final String ACTION_CreateVendorReturn = "CreateVendorReturn";
 	/**
 	 * boton to move HUs + products to garbage (task #1064)
 	 */
 	protected ITerminalButton bMoveToGarbage;
-	private static final String ACTION_MoveToGarbage = "MoveToGarbage"; 
+	private static final String ACTION_MoveToGarbage = "MoveToGarbage";
 
 	/**
 	 * Barcode search field
@@ -408,6 +412,25 @@ public class HUEditorPanel
 
 			}
 
+			// task #2144
+			// MoveToAnotherWarehouse button
+			{
+				this.bMoveToAnotherWarehouse = factory.createButton(ACTION_MoveToAnotherWarehouse);
+
+				this.bMoveToAnotherWarehouse.setTextAndTranslate(ACTION_MoveToAnotherWarehouse);
+				bMoveToAnotherWarehouse.setEnabled(true);
+				bMoveToAnotherWarehouse.setVisible(true);
+				bMoveToAnotherWarehouse.addListener(new UIPropertyChangeListener(factory, bMoveToAnotherWarehouse)
+				{
+					@Override
+					public void propertyChangeEx(final PropertyChangeEvent evt)
+					{
+						doMoveToAnotherWarehouse();
+					}
+				});
+
+			}
+
 			// task #1062
 			// CreateVendorReturn button
 			{
@@ -495,10 +518,45 @@ public class HUEditorPanel
 	 */
 	protected void doMoveToQualityWarehouse()
 	{
-		model.doMoveToQualityWarehouse(new Predicate<ReturnsWarehouseModel>()
+		model.doMoveToQualityWarehouse(new Predicate<QualityReturnsWarehouseModel>()
 		{
 			@Override
-			public boolean evaluate(final ReturnsWarehouseModel returnWarehouseModel)
+			public boolean evaluate(final QualityReturnsWarehouseModel returnWarehouseModel)
+			{
+				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
+
+				final ITerminalFactory factory = getTerminalFactory();
+
+				// The dialog can't maintain its own context references, because its model is basically this editor's model.
+				// It's going to create new HUKeys which are the result of the split and which will be displayed in this editor.
+				// For that reason we don't want to dispose them once the split editor is closed.
+				final ITerminalDialog selectWarehouseDialog = factory.createModalDialog(HUEditorPanel.this, HUEditorPanel.ACTION_MoveToQualityWarehouse, returnsWarehousePanel);
+
+				//
+				// Activate TU->LU Assignment Dialog and wait for user answer
+				selectWarehouseDialog.activate();
+
+				//
+				// Return true if user really pressed OK
+				final boolean edited = !selectWarehouseDialog.isCanceled();
+				return edited;
+			}
+		},
+				getCurrentWarehouse());
+
+	}
+	
+	
+	/**
+	 * #2144
+	 * Move the HUs to a quality warehouse
+	 */
+	protected void doMoveToAnotherWarehouse()
+	{
+		model.doMoveToAnotherWarehouse(new Predicate<MovementsAnyWarehouseModel>()
+		{
+			@Override
+			public boolean evaluate(final MovementsAnyWarehouseModel returnWarehouseModel)
 			{
 				final ReturnsWarehousePanel returnsWarehousePanel = new ReturnsWarehousePanel(getTerminalContext(), returnWarehouseModel);
 

@@ -3,13 +3,15 @@ package de.metas.logging;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.exceptions.IssueReportableExceptions;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.NullAutoCloseable;
 import org.compiere.model.I_AD_Issue;
-import org.compiere.model.MSystem;
+import org.compiere.model.I_AD_System;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
@@ -290,7 +292,7 @@ public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILogging
 			}
 			// Skip creating the issue if database connection is not available or if the system was not configured to AutoReportError
 			final Properties ctx = Env.getCtx();
-			final MSystem system = MSystem.get(ctx);
+			final I_AD_System system = Services.get(ISystemBL.class).get(ctx);
 			if (system == null || !system.isAutoErrorReport())
 			{
 				return;
