@@ -43,8 +43,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Check;
 import org.adempiere.util.Constants;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Period;
@@ -197,10 +197,10 @@ public class CommissionValidator implements ModelValidator
 
 			Services.get(ICopyHandlerBL.class).registerCopyHandler(
 					org.compiere.model.I_C_Order.class, 
-					new IQueryFilter<Pair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order>>()
+					new IQueryFilter<ImmutablePair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order>>()
 					{
 						@Override
-						public boolean accept(Pair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order> model)
+						public boolean accept(ImmutablePair<org.compiere.model.I_C_Order, org.compiere.model.I_C_Order> model)
 						{
 							return true;
 						}
@@ -209,10 +209,10 @@ public class CommissionValidator implements ModelValidator
 			
 			Services.get(ICopyHandlerBL.class).registerCopyHandler(
 					org.compiere.model.I_C_Invoice.class, 
-					new IQueryFilter<Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
+					new IQueryFilter<ImmutablePair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
 					{
 						@Override
-						public boolean accept(Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
+						public boolean accept(ImmutablePair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
 						{
 							return true;
 						}

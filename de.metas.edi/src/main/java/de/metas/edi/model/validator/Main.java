@@ -24,8 +24,8 @@ package de.metas.edi.model.validator;
 
 
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -69,10 +69,10 @@ public class Main implements ModelValidator
 
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(
 				org.compiere.model.I_C_Invoice.class,
-				new IQueryFilter<Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
+				new IQueryFilter<ImmutablePair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>>()
 				{
 					@Override
-					public boolean accept(Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
+					public boolean accept(ImmutablePair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice> model)
 					{
 						return true;
 					}

@@ -56,8 +56,8 @@ import org.adempiere.process.rpl.model.I_EXP_ReplicationTrxLine;
 import org.adempiere.scheduler.housekeeping.spi.impl.ResetSchedulerState;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidationRule;
 import org.compiere.db.CConnection;
 import org.compiere.model.I_AD_Menu;
@@ -217,8 +217,8 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new de.metas.picking.modelvalidator.M_PickingSlot(), client); // 06178
 
 		engine.addModelValidator(new M_ShipperTransportation(), client); // 06899
-		
-		//task #1064
+
+		// task #1064
 		engine.addModelValidator(new M_Inventory(), client);
 
 		// task 09700
@@ -286,20 +286,20 @@ public class SwatValidator implements ModelValidator
 		// this, we had to extend the API and register the default handlers whose invocation used to be hardcoded in the IInvoiceBL impl.
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		invoiceBL.registerCopyHandler(
-				new IQueryFilter<Pair<I_C_Invoice, I_C_Invoice>>()
+				new IQueryFilter<ImmutablePair<I_C_Invoice, I_C_Invoice>>()
 				{
 					@Override
-					public boolean accept(Pair<I_C_Invoice, I_C_Invoice> model)
+					public boolean accept(ImmutablePair<I_C_Invoice, I_C_Invoice> model)
 					{
 						return true;
 					}
 				},
 				AbstractInvoiceBL.defaultDocCopyHandler);
 		invoiceBL.registerLineCopyHandler(
-				new IQueryFilter<Pair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>>()
+				new IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>>()
 				{
 					@Override
-					public boolean accept(Pair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine> model)
+					public boolean accept(ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine> model)
 					{
 						return true;
 					}
@@ -368,7 +368,7 @@ public class SwatValidator implements ModelValidator
 	@Override
 	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
 	{
-		if(Ini.isClient())
+		if (Ini.isClient())
 		{
 			configDatabase(); // run it again here because ModelValidator.initialize is run only once
 		}

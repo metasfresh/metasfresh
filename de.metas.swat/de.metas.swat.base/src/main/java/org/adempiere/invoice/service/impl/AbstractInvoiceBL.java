@@ -48,9 +48,9 @@ import org.adempiere.pricing.api.IPricingResult;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
 import org.adempiere.util.Services;
 import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
@@ -64,6 +64,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Invoice;
+import org.compiere.model.X_C_Invoice_Reference;
 import org.compiere.model.X_C_Tax;
 import org.compiere.process.DocAction;
 import org.compiere.util.TimeUtil;
@@ -86,6 +87,7 @@ import de.metas.document.IDocumentPA;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.invoice.IMatchInvBL;
 import de.metas.invoice.IMatchInvDAO;
+import de.metas.invoice.api.IInvoiceReferenceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -1191,11 +1193,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
 				+ invoice.getDescription());
 
-		adjustmentCharge.setRef_AdjustmentCharge_ID(invoice.getC_Invoice_ID());
+		// adjustmentCharge.setRef_AdjustmentCharge_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
 		final I_C_Invoice i = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
-		i.setRef_AdjustmentCharge_ID(adjustmentCharge.getC_Invoice_ID());
-		InterfaceWrapperHelper.save(invoice);
+		// i.setRef_AdjustmentCharge_ID(adjustmentCharge.getC_Invoice_ID());
+		// InterfaceWrapperHelper.save(invoice);
+
+		Services.get(IInvoiceReferenceDAO.class).createReferencedInvoice(i, adjustmentCharge, X_C_Invoice_Reference.C_INVOICE_REFERENCE_TYPE_AdjustmentCharge);
 
 		return adjustmentCharge;
 	}
@@ -1204,7 +1208,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public final void updateInvoiceLineIsReadOnlyFlags(final I_C_Invoice invoice, final I_C_InvoiceLine... invoiceLines)
 	{
 		Check.assumeNotNull(invoice, "Param 'invoice' is not null");
-
 		final boolean saveLines;
 		final List<I_C_InvoiceLine> linesToUpdate;
 		if (Check.isEmpty(invoiceLines))
@@ -1273,7 +1276,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void registerCopyHandler(
-			final IQueryFilter<Pair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>> filter,
+			final IQueryFilter<ImmutablePair<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_Invoice>> filter,
 			final IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine> copyhandler)
 	{
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(org.compiere.model.I_C_Invoice.class, filter, copyhandler);
@@ -1281,7 +1284,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void registerLineCopyHandler(
-			final IQueryFilter<Pair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
+			final IQueryFilter<ImmutablePair<org.compiere.model.I_C_InvoiceLine, org.compiere.model.I_C_InvoiceLine>> filter,
 			final IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler)
 	{
 		Services.get(ICopyHandlerBL.class).registerCopyHandler(org.compiere.model.I_C_InvoiceLine.class, filter, copyhandler);
