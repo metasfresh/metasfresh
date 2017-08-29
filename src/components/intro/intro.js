@@ -1,6 +1,6 @@
 export const introSteps = {
     53100: {
-        2188396: [
+        'all': [
             {
                 element: '.form-field-AD_Language',
                 intro: 'You can change default language in this field'
@@ -24,7 +24,7 @@ export const introHints = {
     ],
 
     53100: {
-        2188396: [
+        'all': [
         ]
     }
 };

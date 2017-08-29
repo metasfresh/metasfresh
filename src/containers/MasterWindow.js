@@ -64,7 +64,15 @@ class MasterWindow extends Component {
 
             const windowIntroSteps = introSteps[master.layout.windowId];
             if (windowIntroSteps) {
-                docIntroSteps = windowIntroSteps[master.docId];
+                docIntroSteps = [];
+
+                if (windowIntroSteps['all']) {
+                    docIntroSteps = docIntroSteps.concat(windowIntroSteps['all']);
+                }
+
+                if (master.docId && windowIntroSteps[master.docId]) {
+                    docIntroSteps = docIntroSteps.concat(windowIntroSteps[master.docId]);
+                }
             }
 
             if (Array.isArray(introHints['default'])) {
@@ -73,11 +81,14 @@ class MasterWindow extends Component {
 
             const windowIntroHints = introHints[master.layout.windowId];
             if (windowIntroHints) {
-                if (Array.isArray(docIntroHints)) {
-                    docIntroHints = docIntroHints.concat(windowIntroHints[master.docId]);
+                docIntroHints = [];
+
+                if (windowIntroHints['all']) {
+                    docIntroHints = docIntroHints.concat(windowIntroHints['all']);
                 }
-                else {
-                    docIntroHints = windowIntroHints[master.docId];
+
+                if (master.docId && windowIntroHints[master.docId]) {
+                    docIntroHints = docIntroHints.concat(windowIntroHints[master.docId]);
                 }
             }
 
