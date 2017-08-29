@@ -22,6 +22,8 @@ Here come the actual release notes:
     * New Window in WebUI for the maintenance of Activity ID changes in Documents.
   * [#2232](https://github.com/metasfresh/metasfresh/issues/2232) New Window for c_activity in WebUI
     * New Window added to WebUI Menu that allows the maintenance of Cost Center.
+  * [#2234](https://github.com/metasfresh/metasfresh/issues/2234) New Window for Payment Selection in WebUI
+    * New Window for the Payment Selection workflow, allowing to pay due Vendor Invoices in Batch like mode.
   * [#2235](https://github.com/metasfresh/metasfresh/issues/2235) New window for Shipper in WebUI
     * New Shipper Window in Webui to allow the maintenance of Businesspartners for Shipper Transportations.
 
