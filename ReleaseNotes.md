@@ -34,6 +34,8 @@ Here come the actual release notes:
     * New Window for Printer Matching Configuration and Maintenance in WebUI.
   * [#2269](https://github.com/metasfresh/metasfresh/issues/2269) New Window for Async Batch in WebUI
     * New Window for Async Batch maintenance in WebUI.
+  *[#2270](https://github.com/metasfresh/metasfresh/issues/2270) New Window for Async Batch Type in WebUI
+    * New Window for the maintenance of Async Batch Types.
 
 ## Fixes
 
