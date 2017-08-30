@@ -1193,14 +1193,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
 				+ invoice.getDescription());
 
-		// adjustmentCharge.setRef_AdjustmentCharge_ID(invoice.getC_Invoice_ID());
+		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
-		final I_C_Invoice i = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
-		// i.setRef_AdjustmentCharge_ID(adjustmentCharge.getC_Invoice_ID());
-		// InterfaceWrapperHelper.save(invoice);
-
-		Services.get(IInvoiceReferenceDAO.class).createReferencedInvoice(i, adjustmentCharge, X_C_Invoice_Reference.C_INVOICE_REFERENCE_TYPE_AdjustmentCharge);
-
+				
 		return adjustmentCharge;
 	}
 
