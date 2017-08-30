@@ -46,4 +46,5 @@ public final class PickingConstants
 	public static final String MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = "WEBUI_Picking_Already_Shipped";
 	public static final String MSG_WEBUI_PICKING_DIVERGING_LOCATIONS = "WEBUI_Picking_Diverging_Locations";
 	public static final String MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P = "WEBUI_Picking_Too_Many_Packageables";
+	public static final String MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS = "WEBUI_Picking_CannotPickIncludedRows";
 }

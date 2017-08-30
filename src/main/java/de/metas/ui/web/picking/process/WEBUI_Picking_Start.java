@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_DIVERGING_LOCATIONS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS;
 
 import java.util.List;
 import java.util.Set;
@@ -83,20 +84,27 @@ public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IPr
 
 	private ProcessPreconditionsResolution verifySelectedDocuments()
 	{
-		if (getSelectedDocumentIds().isEmpty())
+		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		
+		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (getSelectedDocumentIds().size() > 50)
+		if (selectedRowIds.size() > 50)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P, 50));
 		}
+		
+		final boolean hasNonIntegerIds = selectedRowIds.stream().anyMatch(rowId -> !rowId.isInt());
+		if(hasNonIntegerIds)
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS));
+		}
 
-		if (getSelectedDocumentIds().size() > 1)
+		if (selectedRowIds.size() > 1)
 		{
 			// make sure that they all have the same C_BPartner and location.
-			final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
 			final Set<Integer> flatMap = getView().getByIds(selectedRowIds)
 					.stream()
 					.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
