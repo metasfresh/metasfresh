@@ -97,7 +97,7 @@ public class UserNotificationRepository
 					}
 					catch (Exception ex)
 					{
-						logger.warn("Failed converting event to notification for recipientUserId={}: {}", recipientUserId, event);
+						logger.warn("Failed converting event to notification for recipientUserId={}: {}", recipientUserId, event, ex);
 						return null;
 					}
 				})
