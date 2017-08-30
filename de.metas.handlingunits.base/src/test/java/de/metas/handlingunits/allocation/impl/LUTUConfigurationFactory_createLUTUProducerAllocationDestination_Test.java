@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -167,13 +166,11 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		HUAssert.assertStorageLevel(huContext, hu, cuProduct, expectedQty);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test(expected = NullPointerException.class)
 	public void test_NULL_PIItemProduct()
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = null;
-
 		lutuFactory.createLUTUConfiguration(
-				tuPIItemProduct, 
+				null, // tuPIItemProduct
 				cuProduct, 
 				cuUOM, 
 				bpartner,
