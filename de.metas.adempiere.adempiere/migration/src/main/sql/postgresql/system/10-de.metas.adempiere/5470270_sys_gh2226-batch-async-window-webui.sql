@@ -1138,3 +1138,28 @@ UPDATE AD_UI_Element SET SeqNo=90,Updated=TO_TIMESTAMP('2017-08-30 16:20:27','YY
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-08-30 16:20:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=547887
 ;
 
+-- 2017-08-30T16:35:37.659
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Statistiken',Updated=TO_TIMESTAMP('2017-08-30 16:35:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540636
+;
+
+-- 2017-08-30T16:35:43.302
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Parameter',Updated=TO_TIMESTAMP('2017-08-30 16:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540633
+;
+
+-- 2017-08-30T16:35:58.906
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Arbeitspaket informiert',Updated=TO_TIMESTAMP('2017-08-30 16:35:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=540728
+;
+
+-- 2017-08-30T16:36:28.696
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitspaket Prozessor',Updated=TO_TIMESTAMP('2017-08-30 16:36:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=555011
+;
+
+-- 2017-08-30T16:37:15.558
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Arbeitspaket Verarbeitungswarteschlange',Updated=TO_TIMESTAMP('2017-08-30 16:37:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556714
+;
+
