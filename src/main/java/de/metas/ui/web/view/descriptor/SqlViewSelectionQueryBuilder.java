@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -75,11 +77,6 @@ public final class SqlViewSelectionQueryBuilder
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
 
-	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
-	{
-		return new SqlViewSelectionQueryBuilder(viewBinding);
-	}
-
 	//
 	// Paging constants
 	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
@@ -89,7 +86,12 @@ public final class SqlViewSelectionQueryBuilder
 	public static final CtxName Paging_Record_IDsPlaceholder = CtxName.parse("_sel_Record_IDs");
 
 	private final SqlViewBinding _viewBinding;
-	private SqlDocumentFilterConverter _sqlDocumentFieldConverters; // lazy
+	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
+	
+	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
+	{
+		return new SqlViewSelectionQueryBuilder(viewBinding);
+	}
 
 	private SqlViewSelectionQueryBuilder(@NonNull final SqlViewBinding viewBinding)
 	{
@@ -126,13 +128,13 @@ public final class SqlViewSelectionQueryBuilder
 		return _viewBinding.getFieldOrderBy(fieldName);
 	}
 
-	private SqlDocumentFilterConverter getSqlDocumentFilterConverters()
+	private SqlDocumentFilterConverter getSqlDocumentFilterConverter()
 	{
-		if (_sqlDocumentFieldConverters == null)
+		if (_sqlDocumentFieldConverter == null)
 		{
-			_sqlDocumentFieldConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(_viewBinding);
+			_sqlDocumentFieldConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(_viewBinding);
 		}
-		return _sqlDocumentFieldConverters;
+		return _sqlDocumentFieldConverter;
 	}
 
 	private SqlViewRowIdsConverter getRowIdsConverter()
@@ -437,7 +439,7 @@ public final class SqlViewSelectionQueryBuilder
 		return new SqlAndParams(sqlCreateSelectionFromLines, sqlCreateSelectionFromLinesParams);
 	}
 
-	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, final List<DocumentFilter> filters)
+	private final IStringExpression buildSqlWhereClause(final SqlParamsCollector sqlParams, @Nullable final List<DocumentFilter> filters)
 	{
 		final CompositeStringExpression.Builder sqlWhereClauseBuilder = IStringExpression.composer();
 
@@ -456,7 +458,7 @@ public final class SqlViewSelectionQueryBuilder
 		// Document filters
 		if (filters != null && !filters.isEmpty())
 		{
-			final String sqlFilters = getSqlDocumentFilterConverters().getSql(sqlParams, filters);
+			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
