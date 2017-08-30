@@ -13,15 +13,14 @@ package org.adempiere.invoice.service.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -31,10 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
+import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -193,9 +195,68 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 		{
 			result.add(tax);
 		}
-		
+
 		// NOTE: make sure we are returning a read-write list because some API rely on this (doing sorting)
 
 		return result;
+	}
+
+	@Override
+	public Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(final I_C_Invoice invoice)
+	{
+		List<I_C_Invoice> acreditMemos = new ArrayList<>();
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final Iterator<I_C_Invoice> referencesForInvoice = retrieveReferencesForInvoice(invoice);
+
+		while (referencesForInvoice.hasNext())
+		{
+			final I_C_Invoice referencedInvoice = referencesForInvoice.next();
+
+			if (invoiceBL.isCreditMemo(referencedInvoice))
+			{
+				acreditMemos.add(referencedInvoice);
+			}
+		}
+
+		return acreditMemos.iterator();
+	}
+
+	@Override
+	public Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(final I_C_Invoice invoice)
+	{
+		List<I_C_Invoice> adjustmentCharges = new ArrayList<>();
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final Iterator<I_C_Invoice> referencesForInvoice = retrieveReferencesForInvoice(invoice);
+
+		while (referencesForInvoice.hasNext())
+		{
+			final I_C_Invoice referencedInvoice = referencesForInvoice.next();
+
+			if (invoiceBL.isAdjustmentCharge(referencedInvoice))
+			{
+				adjustmentCharges.add(referencedInvoice);
+			}
+		}
+
+		return adjustmentCharges.iterator();
+	}
+
+	
+	private Iterator<I_C_Invoice> retrieveReferencesForInvoice(final I_C_Invoice invoice)
+	{
+		// services
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_C_Invoice.class, invoice)
+				.filterByClientId()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoice.getC_Invoice_ID())
+
+				.create()
+				.iterate(I_C_Invoice.class);
 	}
 }

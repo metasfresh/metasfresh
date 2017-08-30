@@ -122,4 +122,20 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Invoice> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+
+	/**
+	 * Retrieve all Adjustment Charge entries that were created based on the given invoice
+	 * 
+	 * @param invoice
+	 * @return
+	 */
+	Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(I_C_Invoice invoice);
+
+	/**
+	 * Retrieve all Credit Memo entries that were created based on the given invoice
+	 * 
+	 * @param invoice
+	 * @return
+	 */
+	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 }
