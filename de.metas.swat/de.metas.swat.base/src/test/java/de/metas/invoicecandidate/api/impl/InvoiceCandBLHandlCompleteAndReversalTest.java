@@ -41,13 +41,11 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Invoice_Reference;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.invoice.api.IInvoiceReferenceDAO;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;

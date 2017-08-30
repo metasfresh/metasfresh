@@ -23,7 +23,9 @@ package org.adempiere.invoice.service.impl;
  */
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
@@ -33,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -177,5 +180,65 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list();
 
+	}
+	
+	
+	@Override
+	public Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(final I_C_Invoice invoice)
+	{
+		List<I_C_Invoice> creditMemos = new ArrayList<>();
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final Iterator<I_C_Invoice> referencesForInvoice = retrieveReferencesForInvoice(invoice);
+
+		while (referencesForInvoice.hasNext())
+		{
+			final I_C_Invoice referencedInvoice = referencesForInvoice.next();
+
+			if (invoiceBL.isCreditMemo(referencedInvoice))
+			{
+				creditMemos.add(referencedInvoice);
+			}
+		}
+
+		return creditMemos.iterator();
+	}
+
+	@Override
+	public Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(final I_C_Invoice invoice)
+	{
+		List<I_C_Invoice> adjustmentCharges = new ArrayList<>();
+
+		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
+		final Iterator<I_C_Invoice> referencesForInvoice = retrieveReferencesForInvoice(invoice);
+
+		while (referencesForInvoice.hasNext())
+		{
+			final I_C_Invoice referencedInvoice = referencesForInvoice.next();
+
+			if (invoiceBL.isAdjustmentCharge(referencedInvoice))
+			{
+				adjustmentCharges.add(referencedInvoice);
+			}
+		}
+
+		return adjustmentCharges.iterator();
+	}
+
+	
+	private Iterator<I_C_Invoice> retrieveReferencesForInvoice(final I_C_Invoice invoice)
+	{
+		// services
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_C_Invoice.class, invoice)
+				.filterByClientId()
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoice.getC_Invoice_ID())
+
+				.create()
+				.iterate(I_C_Invoice.class);
 	}
 }

@@ -241,16 +241,4 @@ public class PlainInvoiceDAO extends AbstractInvoiceDAO
 
 		});
 	}
-
-	@Override
-	public Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(I_C_Invoice invoice)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice)
-	{
-		throw new UnsupportedOperationException();
-	}
 }
