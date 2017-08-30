@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.dist</groupId>
 		<artifactId>metasfresh-dist</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.endcustomer.mf15.serverRoot</artifactId>
@@ -15,7 +15,7 @@
 		<!-- See http://www.mojohaus.org/versions-maven-plugin/examples/update-properties.html 
 		and http://stackoverflow.com/questions/3628471/maven-versions-plugin-not-picking-up-properties-from-parent
 		-->
-		<metasfresh.version>1.0.0</metasfresh.version>
+		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 
 		<start-class>de.metas.ServerBoot</start-class>
 	</properties>
@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>de.metas.endcustomer.mf15.base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 		
 		<!-- 
@@ -81,6 +81,14 @@
 						<goals>
 							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
 						</goals>
+						<configuration>
+							<additionalProperties>
+								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+								<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+							</additionalProperties>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
