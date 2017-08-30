@@ -3,7 +3,7 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
-@Library('misc@gh2102-mf') // use the issue branch's library
+@Library('misc')
 import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
 
