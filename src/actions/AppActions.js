@@ -132,6 +132,10 @@ export function markAsRead(id) {
     return axios.put(config.API_URL + '/notifications/' + id + '/read');
 }
 
+export function deleteUserNotification(id) {
+    return axios.delete(config.API_URL + `/notifications?ids=${id}`);
+}
+
 export function getAttributesInstance(
     attrType, tmpId, docType, docId, tabId, rowId, fieldName, entity
 ) {

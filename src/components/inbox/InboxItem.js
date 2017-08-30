@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Moment from 'moment';
+import counterpart from 'counterpart';
 
 class InboxItem extends Component {
     constructor(props){
@@ -19,7 +20,7 @@ class InboxItem extends Component {
         document.getElementsByClassName('js-inbox-wrapper')[0].focus();
     }
 
-     handleKeyDown = (e) => {
+    handleKeyDown = (e) => {
         const {close} = this.props;
         switch(e.key){
             case 'ArrowDown':
@@ -46,7 +47,7 @@ class InboxItem extends Component {
     }
 
     render() {
-        const {item, onClick} = this.props;
+        const {item, onClick, onDelete} = this.props;
         return (
             <div
                 onClick={onClick}
@@ -75,15 +76,25 @@ class InboxItem extends Component {
                         {item.message}
                     </div>
                     <div className="inbox-item-footer">
-                        <span
+                        <div
                             title={
                                 Moment(item.timestamp)
                                     .format('DD.MM.YYYY HH:mm:ss')
                             }
                         >
                             {Moment(item.timestamp).fromNow()}
-                        </span>
-                        <span>Notification</span>
+                        </div>
+                        <div>
+                            <a
+                                href="javascript:void(0)"
+                                className="inbox-item-delete"
+                                onClick={onDelete}
+                            >
+                                {counterpart.translate('window.Delete.caption')}
+                            </a>
+
+                            <span>Notification</span>
+                        </div>
                     </div>
                 </div>
             </div>

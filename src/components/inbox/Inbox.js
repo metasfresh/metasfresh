@@ -10,7 +10,10 @@ import InboxItem from './InboxItem';
 
 import {
     markAllAsRead,
-    markAsRead
+    markAsRead,
+    getNotifications,
+    getNotificationsSuccess,
+    deleteUserNotification
 } from '../../actions/AppActions';
 
 class Inbox extends Component {
@@ -54,6 +57,22 @@ class Inbox extends Component {
         const {close, dispatch} = this.props;
         dispatch(push('/inbox'));
         close && close();
+    }
+
+    handleDelete = (e, item) => {
+        const { dispatch } = this.props;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        deleteUserNotification(item.id).then( () => {
+            getNotifications().then(response => {
+                dispatch(getNotificationsSuccess(
+                    response.data.notifications,
+                    response.data.unreadCount
+                ));
+            });
+        });
     }
 
     componentDidUpdate() {
@@ -128,6 +147,7 @@ class Inbox extends Component {
                                     item={item}
                                     close={close}
                                     onClick={() => this.handleClick(item)}
+                                    onDelete={(e) => this.handleDelete(e, item)}
                                 />
                             )}
                             {inbox && inbox.notifications.length == 0 &&
