@@ -69,8 +69,6 @@ import lombok.NonNull;
 public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	
-
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
@@ -136,7 +134,8 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
 				shipmentSchedule.getM_Product(),
-				shipmentSchedule.getC_BPartner());
+				shipmentSchedule.getC_BPartner(),
+				true); // includeVirtualItem = true..similar case as with production
 	}
 
 	/**
