@@ -1137,7 +1137,7 @@ public final class Document
 		}
 	}
 
-	public void processValueChanges(final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{
@@ -1451,6 +1451,21 @@ public final class Document
 			final boolean lookupValuesStaled = documentField.setLookupValuesStaled(triggeringFieldName);
 			if (lookupValuesStaled && !lookupValuesStaledOld)
 			{
+				// https://github.com/metasfresh/metasfresh-webui-api/issues/551 check if we can leave the old value as it is
+				final Object valueOld = documentField.getValue();
+				if (valueOld != null)
+				{
+					final boolean currentValueStillValid = documentField.getLookupValues() // because we did setLookupValuesStaled(), this causes a reload
+							.stream()
+							.anyMatch(value -> Objects.equals(value, valueOld)); // check if the current value is still value after we reloaded the list
+					if(!currentValueStillValid)
+					{
+						documentField.setValue(null, changesCollector);
+						changesCollector.collectValueIfChanged(documentField, valueOld, reason);
+					}
+				}
+
+				// https://github.com/metasfresh/metasfresh-webui-frontend/issues/1165 - the value was not stale, but now it is => notify the frontend so it shall invalidate its cache
 				changesCollector.collectLookupValuesStaled(documentField, reason);
 			}
 		}

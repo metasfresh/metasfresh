@@ -68,6 +68,12 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 
 	void setDisplayed(LogicExpressionResult displayed);
 
+	/**
+	 * Notify this instance that it's lookup values are staled. So next time they are needed, they need to be reloaded.
+	 * 
+	 * @param triggeringFieldName
+	 * @return
+	 */
 	boolean setLookupValuesStaled(String triggeringFieldName);
 
 	LookupValuesList getLookupValues();
