@@ -94,6 +94,9 @@ void invokeZapier(
 final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
+final String MF_BUILD_ID = params.MF_BUILD_ID ?: env.BUILD_NUMBER
+echo "params.MF_BUILD_ID=${params.MF_BUILD_ID}; env.BUILD_NUMBER=${env.BUILD_NUMBER}; => MF_BUILD_ID=${MF_BUILD_ID}"
+
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
