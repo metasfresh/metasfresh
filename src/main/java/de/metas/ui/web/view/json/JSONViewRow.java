@@ -109,10 +109,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 
 		//
 		// Attributes
-		if (row.hasAttributes())
-		{
-			jsonRow.supportAttributes = true;
-		}
+		jsonRow.supportAttributes = row.hasAttributes();
 
 		//
 		// Included views

@@ -252,13 +252,13 @@ public class PPOrderLineRow implements IViewRow
 	{
 		if (attributesSupplier == null)
 		{
-			throw new EntityNotFoundException("Document does not support attributes");
+			throw new EntityNotFoundException("This PPOrderLineRow does not support attributes; this=" + this);
 		}
 
 		final IViewRowAttributes attributes = attributesSupplier.get();
 		if (attributes == null)
 		{
-			throw new EntityNotFoundException("Document does not support attributes");
+			throw new EntityNotFoundException("This PPOrderLineRow does not support attributes; this=" + this);
 		}
 		return attributes;
 	}

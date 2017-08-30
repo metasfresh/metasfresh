@@ -13,11 +13,19 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.model.RecordZoomWindowFinder;
 import org.adempiere.util.Check;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -576,6 +584,29 @@ public class DocumentCollection
 			final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 			websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
 		});
+	}
+	
+	public Document duplicateDocument(final DocumentPath fromDocumentPath)
+	{
+		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
+		
+		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
+		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
+		final PO fromPO = InterfaceWrapperHelper.getPO(fromModel);
+		
+		
+		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
+		PO.copyValues(fromPO, toPO, true);
+		InterfaceWrapperHelper.save(toPO);
+		
+		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(tableName);
+		childCRS.setAD_Window_ID(fromDocumentPath.getAD_Window_ID(-1));
+		childCRS.setParentPO(toPO);
+		childCRS.setBase(true);
+		childCRS.copyRecord(fromPO, ITrx.TRXNAME_ThreadInherited);
+
+		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
+		return forDocumentReadonly(toDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
 	}
 
 	@Immutable

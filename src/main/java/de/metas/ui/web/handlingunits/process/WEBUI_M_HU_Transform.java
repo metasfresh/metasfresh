@@ -155,7 +155,7 @@ public class WEBUI_M_HU_Transform
 	 *
 	 * @return a list of HU PI items that link the currently selected TU with a TUperLU-qty and a LU packing instruction.
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = { PARAM_Action }, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_HU_PI_Item_ID, dependsOn = PARAM_Action , numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
 	private LookupValuesList getM_HU_PI_Item_ID()
 	{
 		return newParametersFiller().getM_HU_PI_Item_IDs();
