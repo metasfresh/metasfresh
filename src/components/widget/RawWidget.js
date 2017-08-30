@@ -714,10 +714,15 @@ class RawWidget extends Component {
             return false;
         }
 
+        const widgetFieldsName = fields.map(
+            (field) => 'form-field-' + field.field
+        ).join(' ');
+
         return (
             <div className={
                 'form-group row ' +
-                ((rowId && !isModal) ? 'form-group-table ' : ' ')
+                ((rowId && !isModal) ? 'form-group-table ' : ' ') +
+                widgetFieldsName
             }>
                 {(!noLabel && caption) &&
                     <div

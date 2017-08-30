@@ -4,12 +4,34 @@ import {connect} from 'react-redux';
 import Container from '../components/Container';
 import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 
+import { Steps, Hints } from 'intro.js-react';
+import { introSteps, introHints } from '../components/intro/intro';
+
 export class Dashboard extends Component {
     constructor(props){
         super(props);
         
         this.state = {
-            editmode: false
+            editmode: false,
+            hintsEnabled: null,
+            introHints: null
+        };
+    }
+
+    componentDidUpdate() {
+        const {me} = this.props;
+
+        if (me) {
+            let docIntroHints;
+
+            if (Array.isArray(introHints['default'])) {
+                docIntroHints = introHints['default'];
+            }
+
+            this.setState({
+                hintsEnabled: (docIntroHints && (docIntroHints.length > 0)),
+                introHints: docIntroHints
+            });
         }
     }
 
@@ -18,10 +40,10 @@ export class Dashboard extends Component {
     render() {
         const {
             location, modal, selected, rawModal, indicator, processStatus,
-            includedView
-        } = this.props;
-        
-        const {editmode} = this.state;
+            includedView, enableTutorial
+    } = this.props;
+
+        const { editmode, hintsEnabled, introHints } = this.state;
 
         return (
             <Container
@@ -38,6 +60,13 @@ export class Dashboard extends Component {
                         dashboard={location.pathname}
                     />
                 </div>
+
+                { (enableTutorial && introHints && (introHints.length > 0)) && (
+                    <Hints
+                        enabled={hintsEnabled}
+                        hints={introHints}
+                    />
+                )}
             </Container>
         );
     }
@@ -71,13 +100,24 @@ function mapStateToProps(state) {
     }
 
     const {
-        processStatus
+        enableTutorial,
+        processStatus,
+        me
     } = appHandler || {
-        processStatus: ''
+        enableTutorial: false,
+        processStatus: '',
+        me: {}
     }
 
     return {
-        modal, selected, indicator, rawModal, processStatus, includedView
+        modal,
+        selected,
+        indicator,
+        rawModal,
+        processStatus,
+        includedView,
+        enableTutorial,
+        me
     }
 }
 

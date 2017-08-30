@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import {connect} from 'react-redux';
 import {push, replace} from 'react-router-redux';
 
+import { Steps, Hints } from 'intro.js-react';
+import { introSteps, introHints } from '../components/intro/intro';
+
 import {
     attachFileAction,
     clearMasterData,
@@ -30,8 +33,12 @@ class MasterWindow extends Component {
             newRow: false,
             modalTitle: null,
             isDeleted: false,
-            dropzoneFocused: false
-        }
+            dropzoneFocused: false,
+            introEnabled: null,
+            hintsEnabled: null,
+            introSteps: null,
+            introHints: null
+        };
     }
 
     componentDidMount(){
@@ -44,9 +51,54 @@ class MasterWindow extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {master, modal, params, dispatch} = this.props;
+        const {master, modal, params, dispatch, me} = this.props;
         const isDocumentNotSaved = !master.saveStatus.saved;
         const isDocumentSaved = master.saveStatus.saved;
+
+        if (
+            me && master && master.docId &&
+            master.layout && master.layout.windowId &&
+            (this.state.introEnabled === null)
+        ) {
+            let docIntroSteps, docIntroHints;
+
+            const windowIntroSteps = introSteps[master.layout.windowId];
+            if (windowIntroSteps) {
+                docIntroSteps = [];
+
+                if (windowIntroSteps['all']) {
+                    docIntroSteps = docIntroSteps.concat(windowIntroSteps['all']);
+                }
+
+                if (master.docId && windowIntroSteps[master.docId]) {
+                    docIntroSteps = docIntroSteps.concat(windowIntroSteps[master.docId]);
+                }
+            }
+
+            if (Array.isArray(introHints['default'])) {
+                docIntroHints = introHints['default'];
+            }
+
+            const windowIntroHints = introHints[master.layout.windowId];
+            if (windowIntroHints) {
+                docIntroHints = [];
+
+                if (windowIntroHints['all']) {
+                    docIntroHints = docIntroHints.concat(windowIntroHints['all']);
+                }
+
+                if (master.docId && windowIntroHints[master.docId]) {
+                    docIntroHints = docIntroHints.concat(windowIntroHints[master.docId]);
+                }
+            }
+
+            this.setState({
+                introEnabled: (docIntroSteps && (docIntroSteps.length > 0)),
+                hintsEnabled: (docIntroHints && (docIntroHints.length > 0)),
+                introSteps: docIntroSteps,
+                introHints: docIntroHints
+            });
+        }
 
         if(prevProps.master.websocket !== master.websocket && master.websocket){
             connectWS.call(this, master.websocket, msg => {
@@ -212,14 +264,21 @@ class MasterWindow extends Component {
         });
     }
 
+    handleIntroExit = () => {
+        this.setState({
+            introEnabled: false
+        });
+    }
+
     render() {
         const {
             master, modal, breadcrumb, params, rawModal, selected,
-            selectedWindowType, includedView, processStatus
+            selectedWindowType, includedView, processStatus, enableTutorial
         } = this.props;
 
         const {
-            dropzoneFocused, newRow, modalTitle
+            dropzoneFocused, newRow, modalTitle,
+            introEnabled, hintsEnabled, introSteps, introHints
         } = this.state;
 
         const {
@@ -284,6 +343,22 @@ class MasterWindow extends Component {
                         }
                     />
                 }
+
+                { (enableTutorial && introSteps && (introSteps.length > 0)) && (
+                    <Steps
+                        enabled={introEnabled}
+                        steps={introSteps}
+                        initialStep={0}
+                        onExit={this.handleIntroExit}
+                    />
+                )}
+
+                { (enableTutorial && introHints && (introHints.length > 0)) && (
+                    <Hints
+                        enabled={hintsEnabled}
+                        hints={introHints}
+                    />
+                )}
             </Container>
         );
     }
@@ -325,9 +400,11 @@ function mapStateToProps(state) {
     }
 
     const {
+        enableTutorial,
         processStatus,
         me
     } = appHandler || {
+        enableTutorial: false,
         processStatus: '',
         me: {}
     }
@@ -348,6 +425,7 @@ function mapStateToProps(state) {
         selectedWindowType,
         includedView,
         processStatus,
+        enableTutorial,
         me
     }
 }

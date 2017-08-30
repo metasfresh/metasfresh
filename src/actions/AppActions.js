@@ -295,6 +295,13 @@ export function logoutSuccess(auth) {
     localStorage.removeItem('isLogged');
 }
 
+export function enableTutorial(flag = true) {
+    return {
+        type: types.ENABLE_TUTORIAL,
+        flag: flag
+    }
+}
+
 export function addNotification(title, msg, time, notifType, shortMsg){
     return {
         type: types.ADD_NOTIFICATION,
