@@ -1083,3 +1083,13 @@ UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-08-30 19:33:
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2017-08-30 19:33:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=547971
 ;
 
+-- 2017-08-30T19:36:41.490
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 19:36:41','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Language',Description='Language',Help='' WHERE AD_Field_ID=557446 AND AD_Language='en_US'
+;
+
+-- 2017-08-30T19:36:55.498
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 19:36:55','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Role' WHERE AD_Field_ID=557445 AND AD_Language='en_US'
+;
+
