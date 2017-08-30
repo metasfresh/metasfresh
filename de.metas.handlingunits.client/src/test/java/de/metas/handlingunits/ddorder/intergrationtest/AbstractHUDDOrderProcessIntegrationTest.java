@@ -336,7 +336,8 @@ public abstract class AbstractHUDDOrderProcessIntegrationTest extends AbstractHU
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct,
 				cuProduct,
 				cuUOM,
-				bpartner);
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
