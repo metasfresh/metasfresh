@@ -74,19 +74,23 @@ import de.metas.logging.LogManager;
  */
 public class Adempiere
 {
+	/**
+	 * The "raw" unsubstituted version string from <code>/de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties</code>
+	 */
+	public static final String CLIENT_VERSION_UNPROCESSED = "${env.MF_VERSION}";
+
+	/**
+	 * The <code>env.MF_VERSION</code> value set by maven if run locally (as opposed to the CI system).<br>
+	 * Please keep it in sync with the <code>build-version-env-missing</code> profile of the <a href="https://github.com/metasfresh/metasfresh-parent">metasfresh-parent</a> <code>pom.xml</code>.
+	 */
+	public static final String CLIENT_VERSION_LOCAL_BUILD = "LOCAL-NO-RELEASE";
+	
 	public static final transient Adempiere instance = new Adempiere();
 
 	/**
 	 * Client language to use. If set as a system property, then. no language combo box is show on startup and the given language is used instead. Task 06664.
 	 */
 	public final static String PROPERTY_DefaultClientLanguage = "org.adempiere.client.lang";
-
-	/**
-	 * The version string set by maven if run locally (as opposed to the CI system). Please keep it in sync with the <code>build-version-env-missing</code> profile de.metas.parent project <code>pom.xml</code>.
-	 */
-	public static final String CLIENT_VERSION_LOCAL_BUILD = "1.0.0";
-
-	public static final String CLIENT_BRANCH_LOCAL_BUILD = "LOCAL-BUILD";
 
 	/** Main Version String */
 	private static String _mainVersion = "";
@@ -721,7 +725,6 @@ public class Adempiere
 			return false;
 		}
 
-		
 		final I_AD_System system = Services.get(ISystemBL.class).get(Env.getCtx());	// Initializes Base Context too
 
 		if (system == null)
