@@ -52,16 +52,8 @@ import de.metas.logging.LogManager;
  */
 public class ClientUpdateValidator extends AbstractModuleInterceptor
 {
-	/**
-	 * The "raw" unsubstituted version string from /de.metas.endcustomer..base/src/main/resources/org/adempiere/version.properties
-	 */
-	private static final String CLIENT_VERSION_UNPROCESSED = "${env.BUILD_VERSION}";
-
-	public static final String PROP_adempiereJNLP = "adempiereJNLP";
-
 	public static final String SYSCONFIG_Enabled = "de.metas.clientcheck.Enabled";
 	public static final String SYSCONFIG_CheckInterval = "de.metas.clientcheck.CheckInterval";
-	public static final String SYSCONFIG_RestartClient = "de.metas.clientcheck.RestartClient";
 	public static final String MSG_ErrorMessage = "de.metas.clientcheck.ErrorMessage";
 	public static final int DEFAULT_CheckInterval = 10; // mins
 
@@ -140,9 +132,8 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 	{
 		final String clientVersion = Adempiere.getImplementationVersion();
 		Check.assumeNotNull(clientVersion, "Adempiere.getImplementationVersion() is not null");
-		if (clientVersion.endsWith(CLIENT_VERSION_UNPROCESSED)
-				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD)
-				|| clientVersion.endsWith(Adempiere.CLIENT_BRANCH_LOCAL_BUILD))
+		if (clientVersion.endsWith(Adempiere.CLIENT_VERSION_UNPROCESSED)
+				|| clientVersion.endsWith(Adempiere.CLIENT_VERSION_LOCAL_BUILD))
 		{
 			log.info("Adempiere ImplementationVersion=" + clientVersion + "! Not checking against DB");
 			return;
@@ -152,10 +143,9 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 		log.info("Build Cl=" + clientVersion);
 		// Identical DB version
 		if (clientVersion != null && clientVersion.equals(newVersion))
+		{
 			return;
-
-		final String adempiereJNLP = getAdempiereJNLP();
-		log.info("Adempiere JNLP: " + adempiereJNLP);
+		}
 
 		final String title = org.compiere.Adempiere.getName() + " " + Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ErrorMessage, true);
 		// Client version {} is available (current version is {}).
@@ -166,34 +156,9 @@ public class ClientUpdateValidator extends AbstractModuleInterceptor
 				title,
 				JOptionPane.ERROR_MESSAGE);
 
-		final boolean restart = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_RestartClient, true, Env.getAD_Client_ID(Env.getCtx()));
-		if (adempiereJNLP != null && restart)
-		{
-			Env.startBrowser(adempiereJNLP);
-		}
 		Env.exitEnv(1);
 	}
 
-	private String getAdempiereJNLP()
-	{
-		String adempiereJNLP = System.getProperty(PROP_adempiereJNLP);
-		if (!Check.isEmpty(adempiereJNLP, true))
-		{
-			adempiereJNLP = adempiereJNLP.trim();
-			if (!adempiereJNLP.toLowerCase().endsWith("jnlp"))
-			{
-				if (!adempiereJNLP.endsWith("/"))
-					adempiereJNLP += "/";
-				adempiereJNLP += "adempiere.jnlp";
-			}
-			log.info("Restarting ADempiere from " + adempiereJNLP);
-		}
-		else
-		{
-			adempiereJNLP = null;
-		}
-		return adempiereJNLP;
-	}
 
 	@Override
 	public void beforeLogout(final MFSession session)

@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.material</groupId>
 		<artifactId>metasfresh-material</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -25,18 +25,18 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -48,12 +48,12 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.business</groupId>
 			<artifactId>de.metas.business</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -61,7 +61,7 @@ Not sure if this shall be a dedicated service..it depends on how well we will be
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 		<!--

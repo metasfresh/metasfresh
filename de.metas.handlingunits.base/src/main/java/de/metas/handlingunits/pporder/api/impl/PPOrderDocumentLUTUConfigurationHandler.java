@@ -13,15 +13,14 @@ package de.metas.handlingunits.pporder.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -41,7 +40,14 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
+import lombok.NonNull;
 
+/**
+ * This class has the job of managing a {@link I_M_HU_LUTU_Configuration} for a particular {@link I_PP_Order}..it might retrieve that ppOrder's lutuConfig or create a new default one.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 /* package */class PPOrderDocumentLUTUConfigurationHandler extends AbstractDocumentLUTUConfigurationHandler<I_PP_Order>
 {
 	public static final transient PPOrderDocumentLUTUConfigurationHandler instance = new PPOrderDocumentLUTUConfigurationHandler();
@@ -52,7 +58,7 @@ import de.metas.handlingunits.model.X_M_HU;
 	}
 
 	@Override
-	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(final I_PP_Order ppOrder)
+	public I_M_HU_LUTU_Configuration createNewLUTUConfiguration(@NonNull final I_PP_Order ppOrder)
 	{
 		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrder);
@@ -62,7 +68,12 @@ import de.metas.handlingunits.model.X_M_HU;
 		//
 		// LU/TU COnfiguration
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				cuProduct,
+				cuUOM,
+				bpartner,
+				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 
 		//
 		// Update LU/TU configuration
@@ -74,6 +85,17 @@ import de.metas.handlingunits.model.X_M_HU;
 	@Override
 	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(final I_PP_Order ppOrder)
 	{
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
+
+		//
+		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
+		if (ppOrder.getM_HU_LUTU_Configuration_ID() > 0 && ppOrder.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
+		{
+			final I_M_HU_PI_Item_Product pip = ppOrder.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
+			return pip;
+		}
+
 		//
 		// Try getting the M_HU_Item_Product from directly linked Sales Order
 		final I_C_OrderLine directOrderLine = Services.get(IPPOrderBL.class).getDirectOrderLine(ppOrder);
@@ -90,13 +112,12 @@ import de.metas.handlingunits.model.X_M_HU;
 
 		//
 		// Fallback: return the virtual PI Item Product
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrder);
-		final I_M_HU_PI_Item_Product pipVirtual = Services.get(IHUPIItemProductDAO.class).retrieveVirtualPIMaterialItemProduct(ctx);
+		final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		return pipVirtual;
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_PP_Order ppOrder)
+	public void updateLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order ppOrder)
 	{
 		final I_C_BPartner bpartner = ppOrder.getC_BPartner();
 		final I_M_Locator ppOrderReceiptLocator = ppOrder.getM_Locator();
