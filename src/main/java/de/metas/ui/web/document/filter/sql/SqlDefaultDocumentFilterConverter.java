@@ -213,7 +213,9 @@ import lombok.NonNull;
 		}
 
 		return new StringBuilder()
-				.append(sqlColumnExpr).append(negate ? " <> ?" : " = ").append(sqlParams.placeholder(sqlValue))
+				.append(sqlColumnExpr)
+				.append(negate ? " <> " : " = ")
+				.append(sqlParams.placeholder(sqlValue))
 				.toString();
 	}
 
@@ -233,13 +235,13 @@ import lombok.NonNull;
 
 	private static final String buildSqlWhereClause_InArray(final String sqlColumnExpr, final List<Object> sqlValues, final SqlParamsCollector sqlParams)
 	{
-		if(sqlValues == null || sqlValues.isEmpty())
+		if (sqlValues == null || sqlValues.isEmpty())
 		{
 			// TODO log a warning or throw exception?!
 			return null;
 		}
-		
-		if(sqlParams.isCollecting())
+
+		if (sqlParams.isCollecting())
 		{
 			final List<Object> sqlValuesEffective = new ArrayList<>();
 			final String sql = DB.buildSqlList(sqlColumnExpr, sqlValues, sqlValuesEffective);

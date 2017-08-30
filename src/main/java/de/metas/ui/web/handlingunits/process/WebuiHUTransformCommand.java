@@ -71,12 +71,12 @@ public class WebuiHUTransformCommand
 	public static enum ActionType
 	{
 		/**
-		 * Invokes {@link HUTransferService#cuToNewCU(I_M_HU, BigDecimal)}.
+		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, BigDecimal)}.
 		 */
 		CU_To_NewCU,
 
 		/**
-		 * Invokes {@link HUTransferService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
+		 * Invokes {@link HUTransformService#cuToNewTUs(I_M_HU, BigDecimal, I_M_HU_PI_Item_Product, boolean)}.
 		 */
 		CU_To_NewTUs,
 
@@ -92,22 +92,22 @@ public class WebuiHUTransformCommand
 		TU_Set_Ownership,
 
 		/**
-		 * Invokes {@link HUTransferService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
+		 * Invokes {@link HUTransformService#cuToExistingTU(I_M_HU, BigDecimal, I_M_HU)}.
 		 */
 		CU_To_ExistingTU,
 
 		/**
-		 * Invokes {@link HUTransferService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
+		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal, boolean)}.
 		 */
 		TU_To_NewTUs,
 
 		/**
-		 * Invokes {@link HUTransferService#tuToNewLUs(I_M_HU, BigDecimal, I_M_HU_PI_Item, boolean)}.
+		 * Invokes {@link HUTransformService#tuToNewLUs(I_M_HU, BigDecimal, I_M_HU_PI_Item, boolean)}.
 		 */
 		TU_To_NewLUs,
 
 		/**
-		 * Invokes {@link HUTransferService#tuToExistingLU(I_M_HU, BigDecimal, I_M_HU).
+		 * Invokes {@link HUTransformService#tuToExistingLU(I_M_HU, BigDecimal, I_M_HU).
 		 */
 		TU_To_ExistingLU,
 

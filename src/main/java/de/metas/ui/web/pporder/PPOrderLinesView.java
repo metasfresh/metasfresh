@@ -1,7 +1,11 @@
 package de.metas.ui.web.pporder;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
@@ -12,6 +16,8 @@ import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.Evaluatee;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
 import com.google.common.base.Preconditions;
@@ -275,9 +281,47 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection documentIds, final Class<T> modelClass)
+	public <T> List<T> retrieveModelsByIds(
+			@NonNull final DocumentIdsSelection documentIds,
+			@NonNull final Class<T> modelClass)
 	{
-		throw new UnsupportedOperationException();
+		return streamByIds(documentIds)
+				.map(ppOrderLineRow -> getModel(ppOrderLineRow, modelClass))
+				.filter(optional -> optional.isPresent())
+				.map(optional -> optional.get())
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * loads and returns the given {@code ppOrderLineRow}'s {@code PP_Order} or {@code P_Order_BOMLine}, if available.
+	 * 
+	 * @param ppOrderLineRow
+	 * @param modelClass
+	 * @return
+	 */
+	private <T> Optional<T> getModel(
+			@NonNull final PPOrderLineRow ppOrderLineRow,
+			@NonNull final Class<T> modelClass)
+	{
+		if (I_PP_Order.class.isAssignableFrom(modelClass))
+		{
+			if (ppOrderLineRow.getPP_Order_ID() <= 0)
+			{
+				return Optional.empty();
+			}
+			return Optional.of(load(ppOrderLineRow.getPP_Order_ID(), modelClass));
+		}
+
+		if (I_PP_Order_BOMLine.class.isAssignableFrom(modelClass))
+		{
+			if (ppOrderLineRow.getPP_Order_BOMLine_ID() <= 0)
+			{
+				return Optional.empty();
+			}
+			return Optional.of(load(ppOrderLineRow.getPP_Order_BOMLine_ID(), modelClass));
+		}
+
+		return Optional.empty();
 	}
 
 	@Override
