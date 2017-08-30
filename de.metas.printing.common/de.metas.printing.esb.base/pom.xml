@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.printing</groupId>
 		<artifactId>de.metas.printing.common</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -20,7 +20,7 @@
 		<dependency>
 			<groupId>de.metas.printing</groupId>
 			<artifactId>de.metas.printing.api</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 	</dependencies>

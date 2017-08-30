@@ -45,12 +45,19 @@ import org.compiere.util.TimeUtil;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.document.engine.IDocActionBL;
+import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import lombok.NonNull;
 
 public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProducer
 {
+	protected final ISnapshotProducer<I_M_HU> huSnapshotProducer;
+
 	//
 	// Services
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -77,6 +84,12 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 
 	protected AbstractReturnsInOutProducer(@NonNull final Properties ctx)
 	{
+		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(trxManager.createThreadContextAware(ctx));
+
+		huSnapshotProducer = Services.get(IHUSnapshotDAO.class)
+				.createSnapshot()
+				.setContext(huContext);
+
 		this._ctx = ctx;
 	}
 
@@ -128,8 +141,11 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 				// nothing created
 				return null;
 			}
-			
-		
+
+			// create snapshot
+
+			createHUSnapshots();
+
 			docActionBL.processEx(inout, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
 			afterInOutProcessed(inout);
@@ -142,9 +158,26 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 		{
 			createLines();
 			final I_M_InOut inout = inoutRef.getValue();
+
+			// create snapshot
+
+			createHUSnapshots();
+
 			InterfaceWrapperHelper.save(inout);
+
 			return inout;
 		}
+	}
+
+	protected final void createHUSnapshots()
+	{
+		// Create the snapshots for all enqueued HUs so far.
+		huSnapshotProducer.createSnapshots();
+
+		// Set the Snapshot_UUID to current receipt (for later recall and reporting).
+		final de.metas.handlingunits.model.I_M_InOut inout = InterfaceWrapperHelper.create(inoutRef.getValue(), de.metas.handlingunits.model.I_M_InOut.class);
+		inout.setSnapshot_UUID(huSnapshotProducer.getSnapshotId());
+		InterfaceWrapperHelper.save(inout);
 	}
 
 	protected void afterInOutProcessed(final I_M_InOut inout)
@@ -187,12 +220,12 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 
 	protected I_M_InOut createInOutHeader()
 	{
-		// #1306: If the inout was already manually created ( customer return case)  return it as it is, do not create a new document/
+		// #1306: If the inout was already manually created ( customer return case) return it as it is, do not create a new document/
 		if (_manualReturnInOut != null)
 		{
 			return _manualReturnInOut;
 		}
-		
+
 		final IContextAware contextProvider = getContextProvider();
 
 		final I_M_InOut emptiesInOut = InterfaceWrapperHelper.newInstance(I_M_InOut.class, contextProvider);

@@ -13,6 +13,7 @@ import org.compiere.model.Null;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -133,7 +134,7 @@ public final class ProcessDefaultParametersUpdater
 	 *
 	 * @param parameter
 	 */
-	public void updateDefaultValue(final IProcessDefaultParameter parameter)
+	public void updateDefaultValue(@NonNull final IProcessDefaultParameter parameter)
 	{
 		for (final IProcessDefaultParametersProvider provider : defaultParametersProviders)
 		{

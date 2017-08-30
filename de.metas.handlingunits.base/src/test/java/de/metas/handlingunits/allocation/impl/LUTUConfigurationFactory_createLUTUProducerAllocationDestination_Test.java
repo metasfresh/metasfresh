@@ -31,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
@@ -122,7 +121,12 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 
 	private IHUProducerAllocationDestination createLUTUProducerDestination(final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
 		// Make sure configuration is saved, else HUBuilder will fail
 		Services.get(ILUTUConfigurationFactory.class).save(lutuConfiguration);
@@ -162,11 +166,15 @@ public class LUTUConfigurationFactory_createLUTUProducerAllocationDestination_Te
 		HUAssert.assertStorageLevel(huContext, hu, cuProduct, expectedQty);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test(expected = NullPointerException.class)
 	public void test_NULL_PIItemProduct()
 	{
-		final I_M_HU_PI_Item_Product tuPIItemProduct = null;
-		lutuFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		lutuFactory.createLUTUConfiguration(
+				null, // tuPIItemProduct
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 	}
 
 	/**

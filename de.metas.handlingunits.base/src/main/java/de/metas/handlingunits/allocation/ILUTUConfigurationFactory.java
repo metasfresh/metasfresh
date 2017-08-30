@@ -35,7 +35,17 @@ import de.metas.quantity.Quantity;
 
 public interface ILUTUConfigurationFactory extends ISingletonService
 {
-	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, I_M_Product cuProduct, I_C_UOM cuUOM, I_C_BPartner bpartner);
+	/**
+	 * 
+	 * @param tuPIItemProduct may not be {@code null}
+	 * @param cuProduct
+	 * @param cuUOM
+	 * @param bpartner
+	 * @param noLUForVirtualTU determines if the method shall attempt to configure the lutuConfig with an LU if the given {@code tuPIItemProduct} is the virtual one.<br>
+	 *            Depending on the use case (and only if the packing instructions permit it!), the option to place a CU directly on a LU might or might not be what the user wants.<br>
+	 * @return
+	 */
+	I_M_HU_LUTU_Configuration createLUTUConfiguration(I_M_HU_PI_Item_Product tuPIItemProduct, I_M_Product cuProduct, I_C_UOM cuUOM, I_C_BPartner bpartner, boolean noLUForVirtualTU);
 
 	/**
 	 * Create and configure a {@link ILUTUProducerAllocationDestination} for the given {@code lutuConfiguration} record

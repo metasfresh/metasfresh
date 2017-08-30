@@ -13,15 +13,14 @@ package org.adempiere.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -31,24 +30,21 @@ import java.sql.Timestamp;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.security.TableAccessLevel;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.user.api.IUserDAO;
 import org.adempiere.util.Services;
 import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
-import org.compiere.model.GridWindow;
-import org.compiere.model.MTab;
-import org.compiere.model.MTable;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.Query;
@@ -60,6 +56,9 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.Evaluator;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 
@@ -73,70 +72,90 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	public static final String COLUMNNAME_Name = "Name";
 	public static final String COLUMNNAME_IsActive = "IsActive";
 
-	private String m_keyColumn = null;
-	private int m_parent_ID = -1;
-	private PO parentPO = null;
+	private String _keyColumn = null;
+	private PO _parentPO = null;
 
-	private GridTab m_gTab = null;
-	private int m_oldPO_ID = -1;
-	private boolean m_base = false;
-	private int AD_Window_ID = -1;
+	private List<TableInfoVO> _suggestedChildrenToCopy = ImmutableList.of();
+	private int _fromPOId = -1;
+	private boolean _base = false;
+	private int _adWindowId = -1;
 
 	private static final transient Logger log = LogManager.getLogger(GeneralCopyRecordSupport.class);
 
 	@Override
-	public void copyRecord(PO po, String trxName)
+	public void copyRecord(final PO po, final String trxName)
 	{
+		final PO fromPO;
 		if (getFromPO_ID() > 0)
 		{
-			po = TableModelLoader.instance.getPO(getCtx(), po.get_TableName(), getFromPO_ID(), trxName);
+			fromPO = TableModelLoader.instance.getPO(getCtx(), po.get_TableName(), getFromPO_ID(), trxName);
+		}
+		else
+		{
+			fromPO = po;
 		}
 
-		m_base = true;
+		//
+		// Copy this level
+		setBase(true);
+		final PO toPO;
 		if (getParentKeyColumn() != null && getParentID() > 0)
 		{
-			final PO to = TableModelLoader.instance.newPO(getCtx(), po.get_TableName(), trxName);
-			to.setDynAttribute(PO.DYNATTR_CopyRecordSupport, this); // need this for getting defaultValues at copy in PO
-			PO.copyValues(po, to, true);
+			toPO = TableModelLoader.instance.newPO(getCtx(), fromPO.get_TableName(), trxName);
+			toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, this); // need this for getting defaultValues at copy in PO
+			PO.copyValues(fromPO, toPO, true);
 			// reset for avoiding copy same object twice
-			to.setDynAttribute(PO.DYNATTR_CopyRecordSupport, null);
-			m_base = false;
+			toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, null);
+			setBase(false);
 
-			to.set_CustomColumn(getParentKeyColumn(), getParentID());
+			// Parent link:
+			toPO.set_CustomColumn(getParentKeyColumn(), getParentID());
+			
 			// needs refresh
-			for (final String columnName : to.get_KeyColumns())
+			// not sure if this is still needed
+			for (final String columnName : toPO.get_KeyColumns())
 			{
-				to.set_CustomColumn(columnName, to.get_Value(columnName));
+				toPO.set_CustomColumn(columnName, toPO.get_Value(columnName));
 			}
+			
 			// needs to set IsActive because is not copied
-			if (to.get_ColumnIndex(COLUMNNAME_IsActive) >= 0)
+			if (toPO.get_ColumnIndex(COLUMNNAME_IsActive) >= 0)
 			{
-				to.set_CustomColumn(COLUMNNAME_IsActive, po.get_Value(COLUMNNAME_IsActive));
+				toPO.set_CustomColumn(COLUMNNAME_IsActive, fromPO.get_Value(COLUMNNAME_IsActive));
 			}
+			
+			// Make sure the columns which are required to be unique they have unique values.
+			updateSpecialColumnsName(toPO);
+			
+			
+			// Notify listeners
+			onRecordCopied(toPO, fromPO);
+			
 			//
-			setSpecialColumnsName(to);
-			onRecordCopied(to, po);
-			//
-			to.setDynAttribute(PO.DYNATTR_CopyRecordSupport_OldValue, po.get_ID()); // need this for changelog
-			//
-			to.saveEx(trxName);
-			setParentID(to.get_ID());
-			setParentPO(to);
+			toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport_OldValue, fromPO.get_ID()); // need this for changelog
+			toPO.saveEx(trxName);
+			// setParentPO(toPO); // TODO: remove it, not needed
+		}
+		else
+		{
+			toPO = getParentPO();
 		}
 
-		for (final TableInfoVO childTableInfo : getSuggestedChildren(po, getGridTab()))
+		//
+		// Copy children
+		for (final TableInfoVO childTableInfo : getSuggestedChildren(fromPO, getSuggestedChildrenToCopy()))
 		{
-			for (Iterator<?> it = getPOForParent(childTableInfo.tableName, po); it.hasNext();)
+			for (final Iterator<? extends PO> it = retrieveChildPOsForParent(childTableInfo.getTableName(), fromPO); it.hasNext();)
 			{
-				final PO childPO = (PO)it.next();
-				CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(childTableInfo.tableName);
-				childCRS.setGridTab(childTableInfo.gridTab);
+				final PO childPO = it.next();
+
+				final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(childTableInfo.getTableName());
+				childCRS.setParentKeyColumn(childTableInfo.getLinkColumnName());
 				childCRS.setAD_Window_ID(getAD_Window_ID());
-				childCRS.setParentID(getParentID());
-				childCRS.setParentPO(getParentPO());
-				childCRS.setParentKeyColumn(childTableInfo.linkColumnName);
+				childCRS.setParentPO(toPO);
+
 				childCRS.copyRecord(childPO, trxName);
-				log.info("Copied " + childPO);
+				log.info("Copied {}", childPO);
 			}
 		}
 	}
@@ -149,7 +168,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 */
 	protected final void onRecordCopied(final PO to, final PO from)
 	{
-		for(final IOnRecordCopiedListener listener: onRecordCopiedListeners)
+		for (final IOnRecordCopiedListener listener : onRecordCopiedListeners)
 		{
 			listener.onRecordCopied(to, from);
 		}
@@ -157,18 +176,17 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public void setSpecialColumnsName(PO to)
+	public void updateSpecialColumnsName(final PO to)
 	{
-		if (this.isBase() == false)
+		if (!isBase())
 		{
-			int idxName = to.get_ColumnIndex(COLUMNNAME_Name);
-			if (idxName >= 0)
+			final POInfo poInfo = to.getPOInfo();
+			if (poInfo.hasColumnName(COLUMNNAME_Name) && DisplayType.isText(poInfo.getColumnDisplayType(COLUMNNAME_Name)))
 			{
-				POInfo poInfo = POInfo.getPOInfo(to.getCtx(), to.get_Table_ID());
-				if (DisplayType.isText(poInfo.getColumnDisplayType(idxName)))
-					makeUnique(to, COLUMNNAME_Name);
+				makeUnique(to, COLUMNNAME_Name);
 			}
-			if (to.get_ColumnIndex(COLUMNNAME_Value) >= 0)
+
+			if (poInfo.hasColumnName(COLUMNNAME_Value))
 			{
 				makeUnique(to, COLUMNNAME_Value);
 			}
@@ -176,161 +194,103 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 
 	}
 
-	@Override
-	public final boolean isBase()
+	private final boolean isBase()
 	{
-		return m_base;
+		return _base;
 	}
 
 	@Override
 	public final void setBase(boolean base)
 	{
-		m_base = base;
+		_base = base;
 	}
 
-	void makeUnique(PO to, String column)
+	private static final void makeUnique(final PO to, final String columnName)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final Properties ctx = Env.getCtx();
 
 		final Format formatter = new SimpleDateFormat("yyyyMMdd:HH:mm:ss");
 
-		Timestamp ts = new Timestamp(System.currentTimeMillis());
-		String s = formatter.format(ts);
-		String name = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(getCtx()));
+		final Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		final String timestampStr = formatter.format(timestamp);
+		final String username = Services.get(IUserDAO.class).retrieveUserFullname(Env.getAD_User_ID(ctx));
 
-		final String language = Env.getAD_Language(getCtx());
-		String msg = "(" + msgBL.getMsg(language, "CopiedOn", new String[] { s }) + " " + name + ")";
+		final String language = Env.getAD_Language(ctx);
+		final String msg = "(" + msgBL.getMsg(language, "CopiedOn", new String[] { timestampStr }) + " " + username + ")";
 
-		String oldValue = (String)to.get_Value(column);
-		to.set_CustomColumn(column, oldValue + msg);
+		final String oldValue = (String)to.get_Value(columnName);
+		to.set_CustomColumn(columnName, oldValue + msg);
 	}
 
-	private Iterator<? extends PO> getPOForParent(String childTableName, PO po)
+	private Iterator<? extends PO> retrieveChildPOsForParent(final String childTableName, final PO parentPO)
 	{
-		String whereClause = getParentKeyColumn() + " = ? ";
-		return new Query(getCtx(), childTableName, whereClause, null)
-				.setParameters(new Object[] { po.get_ID() })
+		final int parentId = parentPO.get_ID();
+
+		final String whereClause = getParentKeyColumn() + "=?";
+		return new Query(getCtx(), childTableName, whereClause, ITrx.TRXNAME_None)
+				.setParameters(new Object[] { parentId })
 				.iterate(null, false); // guaranteed = false because we are just fetching without changing
 	}
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public List<TableInfoVO> getSuggestedChildren(PO po, GridTab gt)
+	public List<TableInfoVO> getSuggestedChildren(final PO po, final List<TableInfoVO> suggestedChildren)
 	{
-		final List<TableInfoVO> listFromTables = new ArrayList<TableInfoVO>();
+		//
+		// Check if this record has a single primary key
+		final POInfo poInfo = po.getPOInfo();
+		final String tableName = poInfo.getTableName();
+		final String keyColumnName = poInfo.getKeyColumnName();
+		// if we have multiple keys return empty list because there are no children for sure...
+		if (keyColumnName == null)
+		{
+			return ImmutableList.of();
+		}
+		setParentKeyColumn(keyColumnName);
 
 		//
 		// Check user suggested list (if any)
-		final List<TableInfoVO> suggestedCopyWithDetailsList = gt == null ? null : gt.getSuggestedCopyWithDetailsList();
-		if (suggestedCopyWithDetailsList != null && !suggestedCopyWithDetailsList.isEmpty())
+		if (suggestedChildren != null && !suggestedChildren.isEmpty())
 		{
-			setParentKeyColumn(gt.getKeyColumnName());
-			return suggestedCopyWithDetailsList;
+			return suggestedChildren;
 		}
-
-		//
-		MTable table = MTable.get(getCtx(), po.get_Table_ID());
-		String[] keyColumns = table.getKeyColumns();
-		if (keyColumns == null || keyColumns.length > 1)
+		else
 		{
-			// if we have multiple keys return empty list
+			final List<TableInfoVO> listFromTables = new ArrayList<>();
+
+			// search tables where exist the key column
+			final String adLanguage = Env.getAD_Language();
+			for (final I_AD_Table tableSuggested : retrieveChildTablesForParentColumn(keyColumnName))
+			{
+				final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(tableSuggested);
+				final TableInfoVO ti = TableInfoVO.builder()
+						.name(trlMap.getColumnTrl(I_AD_Table.COLUMNNAME_Name, tableSuggested.getName()).translate(adLanguage))
+						.tableName(tableSuggested.getTableName())
+						.linkColumnName(keyColumnName)
+						.parentTableName(tableName)
+						// .parentColumnName(keyColumnName)
+						.build();
+				listFromTables.add(ti);
+			}
+
 			return listFromTables;
 		}
-
-		// search tables where exist the key column
-		setParentKeyColumn(keyColumns[0]);
-		List<MTable> tableList = getTablesForColumn(getParentKeyColumn());
-		for (MTable tableSuggested : tableList)
-		{
-			final TableInfoVO ti = new TableInfoVO();
-			ti.setName(tableSuggested.get_Translation(MTable.COLUMNNAME_Name));
-			ti.tableName = tableSuggested.getTableName();
-			ti.linkColumnName = getParentKeyColumn();
-			ti.parentTableName = table.getTableName();
-			ti.parentColumnName = getParentKeyColumn();
-			ti.gridTab = null;
-			listFromTables.add(ti);
-		}
-
-		final Set<TableInfoVO> set = new HashSet<TableInfoVO>(listFromTables);
-
-		GridTab currentGridTab = gt;
-		if (currentGridTab != null)
-		{
-			GridWindow gridWindow = GridWindow.get(getCtx(), currentGridTab.getWindowNo(), currentGridTab.getAD_Window_ID());
-
-			// search in the window, in tabs, where you find the link column
-			for (int t = 0; t < gridWindow.getTabCount(); t++)
-			{
-				GridTab gridTab = gridWindow.getTab(t);
-				if (gridTab.getAD_Tab_ID() == currentGridTab.getAD_Tab_ID())
-					continue;
-
-				int tab_id = gridTab.getAD_Tab_ID();
-				MTab tab = new MTab(getCtx(), tab_id, null);
-				String parentColumnName = "";
-				String linkColumnName = "";
-				if (gridTab != null)
-				{
-					parentColumnName = tab.getParent_Column() == null ? "" : tab.getParent_Column().getColumnName();
-					linkColumnName = tab.getAD_Column() == null ? "" : tab.getAD_Column().getColumnName();
-					if (parentColumnName == null)
-						parentColumnName = "";
-					if (linkColumnName == null)
-						linkColumnName = "";
-				}
-				if (gridTab != null && (getParentKeyColumn().compareTo(linkColumnName) == 0
-						|| (getParentKeyColumn().compareTo(linkColumnName) != 0
-						&& getParentKeyColumn().compareTo(parentColumnName) == 0)
-
-						)
-						&& gridTab.isDisplayed()
-						&& isCopyTable(gridTab.getTableName())
-						&& gridTab.getField("Processed") == null
-						&& !gridTab.isReadOnly()
-						&& gridTab.isInsertRecord())
-				{
-					final TableInfoVO ti = new TableInfoVO();
-					ti.setName(gridTab.getName());
-					// ti.name = (MTable.get(getCtx(),
-					// parent.getAD_Table_ID())).get_Translation(MTable.COLUMNNAME_Name);
-					ti.tableName = gridTab.getTableName();
-					ti.linkColumnName = linkColumnName;
-					ti.parentTableName = table.getTableName();
-					ti.parentColumnName = parentColumnName;
-					ti.gridTab = gridTab;
-					if (set.contains(ti))
-						continue;
-					set.add(ti);
-				}
-			}
-		}
-		return new ArrayList<TableInfoVO>(set);
 	}
 
-	private final List<MTable> getTablesForColumn(String column)
+	private static final List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
 	{
-		final String whereClause = " EXISTS (SELECT 1 FROM AD_Column c WHERE c.columnname = ? "
-				+ " AND c.ad_table_id = ad_table.ad_table_id "
-				+ " AND c.IsParent = 'Y')"
-				+ " AND NOT EXISTS (SELECT 1 FROM AD_Column c WHERE c.columnname = ? "
-				+ " AND c.ad_table_id = ad_table.ad_table_id "
-				+ " AND c.ColumnName = ?)"
-				+ " AND " + MTable.COLUMNNAME_IsView + " = 'N' "
+		final String whereClause = " EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id  AND c.IsParent = 'Y')"
+				+ " AND NOT EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id AND c.ColumnName = ?)"
+				+ " AND " + I_AD_Table.COLUMNNAME_IsView + " = 'N' "
 				+ " AND IsActive='Y'";
 
-		List<MTable> tableList = new Query(getCtx(), MTable.Table_Name, whereClause, null)
+		return new Query(Env.getCtx(), I_AD_Table.Table_Name, whereClause, ITrx.TRXNAME_None)
 				.setOnlyActiveRecords(true)
-				.setParameters(new Object[] { column, column, "Processed" })
-				.list();
-		List<MTable> finalList = new ArrayList<MTable>();
-		for (MTable t : tableList)
-		{
-			if (isCopyTable(t.getTableName()))
-				finalList.add(t);
-		}
-
-		return finalList;
+				.setParameters(new Object[] { columnName, columnName, "Processed" })
+				.stream(I_AD_Table.class)
+				.filter(table -> isCopyTable(table.getTableName()))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -339,9 +299,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param tableName
 	 * @return true if the table can be copied
 	 */
-	private static final boolean isCopyTable(String tableName)
+	private static final boolean isCopyTable(final String tableName)
 	{
-		String upperTableName = tableName.toUpperCase();
+		final String upperTableName = tableName.toUpperCase();
 		boolean isCopyTable = !upperTableName.endsWith("_ACCT") // acct table
 				&& !upperTableName.startsWith("I_") // import tables
 				&& !upperTableName.endsWith("_TRL") // translation tables
@@ -349,8 +309,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 				&& !upperTableName.startsWith("T_") // temporary tables
 				&& !upperTableName.equals("M_PRODUCT_COSTING") // product costing
 				&& !upperTableName.equals("M_STORAGE") // storage table
-				&& !upperTableName.equals("C_BP_WITHHOLDING") // at Patrick's request, this was removed, because is not
-				// used
+				&& !upperTableName.equals("C_BP_WITHHOLDING") // at Patrick's request, this was removed, because is not used
 				&& !(upperTableName.startsWith("M_") && upperTableName.endsWith("MA"));
 
 		return isCopyTable;
@@ -361,52 +320,37 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return Env.getCtx();
 	}
 
-	@Override
-	public final GridTab getGridTab()
+	private final String getParentKeyColumn()
 	{
-		return m_gTab;
-	}
-
-	@Override
-	public final int getParentID()
-	{
-		return m_parent_ID;
-	}
-
-	@Override
-	public final String getParentKeyColumn()
-	{
-		return m_keyColumn;
-	}
-
-	@Override
-	public final void setGridTab(GridTab gt)
-	{
-		m_gTab = gt;
-	}
-
-	@Override
-	public final void setParentID(int parentId)
-	{
-		m_parent_ID = parentId;
+		return _keyColumn;
 	}
 
 	@Override
 	public final void setParentKeyColumn(String parentKeyColumn)
 	{
-		m_keyColumn = parentKeyColumn;
+		_keyColumn = parentKeyColumn;
 	}
 
 	@Override
-	public final int getFromPO_ID()
+	public void setSuggestedChildrenToCopy(final List<TableInfoVO> suggestedChildrenToCopy)
 	{
-		return m_oldPO_ID;
+		this._suggestedChildrenToCopy = suggestedChildrenToCopy != null ? ImmutableList.copyOf(suggestedChildrenToCopy) : ImmutableList.of();
+	}
+
+	private List<TableInfoVO> getSuggestedChildrenToCopy()
+	{
+		return _suggestedChildrenToCopy;
+	}
+
+	private final int getFromPO_ID()
+	{
+		return _fromPOId;
 	}
 
 	@Override
-	public final void setFromPO_ID(int oldPOId)
+	public final void setFromPO_ID(final int fromPOId)
 	{
-		m_oldPO_ID = oldPOId;
+		_fromPOId = fromPOId;
 	}
 
 	/**
@@ -417,7 +361,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param columnName
 	 * @return
 	 */
-	private Object createDefault(final String value, final PO po, final String columnName)
+	private static Object createDefault(final String value, final PO po, final String columnName)
 	{
 		// true NULL
 		if (value == null || value.toString().length() == 0)
@@ -481,9 +425,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 		catch (Exception e)
 		{
-			log.error(columnName + " - " + e.getMessage());
+			log.error("Failed creating default for {}. Returning null.", columnName, e);
+			return null;
 		}
-		return null;
 	}
 
 	/**
@@ -503,8 +447,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 *
 	 * @return default value or null
 	 */
-	protected Object getDefault(final PO po, final String columnName)
+	private final Object getDefault(final PO po, final String columnName)
 	{
+		@Nullable
+		final PO parentPO = getParentPO();
+		final int AD_Window_ID = getAD_Window_ID();
+
 		// TODO: until refactoring, keep in sync with org.compiere.model.GridField.getDefaultNoCheck()
 		// Object defaultValue = null;
 
@@ -562,7 +510,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		{
 			String sql = defaultLogic.substring(5); // w/o tag
 
-			final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, getParentPO());
+			final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, parentPO);
 			sql = Evaluator.parseContext(evaluatee, sql);
 			if (sql.equals(""))
 			{
@@ -592,9 +540,9 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 					pstmt = null;
 				}
 			}
-			if (defStr == null && getParentPO() != null && getParentPO().get_ColumnIndex(columnName) >= 0)
+			if (defStr == null && parentPO != null && parentPO.get_ColumnIndex(columnName) >= 0)
 			{
-				return getParentPO().get_Value(columnName);
+				return parentPO.get_Value(columnName);
 			}
 			if (defStr != null && defStr.length() > 0)
 			{
@@ -618,7 +566,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 					return new Timestamp(System.currentTimeMillis());
 				else if (defStr.indexOf('@') != -1) // it is a variable
 				{
-					final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, getParentPO());
+					final Evaluatee evaluatee = Evaluatees.composeNotNulls(po, parentPO);
 					defStr = Evaluator.parseContext(evaluatee, defStr.trim());
 				}
 				else if (defStr.indexOf("'") != -1) // it is a 'String'
@@ -681,8 +629,8 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			return createDefault("0", po, columnName);
 		}
 
-		if (getParentPO() != null)
-			return getParentPO().get_Value(columnName);
+		if (parentPO != null)
+			return parentPO.get_Value(columnName);
 		return null;
 	}
 
@@ -698,28 +646,32 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		return gridField.getDefault();
 	}
 
-	@Override
-	public final int getAD_Window_ID()
+	private final int getAD_Window_ID()
 	{
-		return AD_Window_ID;
+		return _adWindowId;
 	}
 
 	@Override
-	public final void setAD_Window_ID(int aDWindowID)
+	public final void setAD_Window_ID(int adWindowId)
 	{
-		AD_Window_ID = aDWindowID;
+		this._adWindowId = adWindowId;
 	}
 
 	@Override
-	public final PO getParentPO()
+	public final void setParentPO(final PO parentPO)
 	{
-		return parentPO;
+		this._parentPO = parentPO;
 	}
 
-	@Override
-	public final void setParentPO(PO parentPO)
+	private final PO getParentPO()
 	{
-		this.parentPO = parentPO;
+		return _parentPO;
+	}
+
+	private final int getParentID()
+	{
+		final PO parentPO = getParentPO();
+		return parentPO != null ? parentPO.get_ID() : -1;
 	}
 
 	private final List<IOnRecordCopiedListener> onRecordCopiedListeners = new ArrayList<>();
