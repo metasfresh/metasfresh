@@ -20,12 +20,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,7 +34,7 @@ import lombok.NonNull;
 
 /**
  * This class loads the local settings properties file and return a {@link Settings} instance.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -43,13 +43,13 @@ public class SettingsLoader
 {
 	private static final transient Logger logger = LoggerFactory.getLogger(SettingsLoader.class);
 
-	private final Config config;
-
+	@NonNull
 	private final DirectoryChecker directoryChecker;
 
+	@NonNull
 	private final PropertiesFileLoader propertiesFileLoader;
 
-	public Settings loadSettings()
+	public Settings loadSettings(@NonNull final Config config)
 	{
 		final File settingsDir;
 		final Settings settings;
@@ -73,7 +73,7 @@ public class SettingsLoader
 		{
 			fileProperties = propertiesFileLoader.loadFromFile(dir, settingsFilename);
 		}
-		catch (CantLoadPropertiesException e)
+		catch (final CantLoadPropertiesException e)
 		{
 			throw new CantLoadSettingsException(e);
 		}
@@ -103,7 +103,7 @@ public class SettingsLoader
 	{
 		private static final long serialVersionUID = 7752453224987748740L;
 
-		private CantLoadSettingsException(Exception e)
+		private CantLoadSettingsException(final Exception e)
 		{
 			super("Unable to load the settings file. It shall be a properties file that looks as follows:\n\n" +
 					"METASFRESH_DB_SERVER=localhost\n" +

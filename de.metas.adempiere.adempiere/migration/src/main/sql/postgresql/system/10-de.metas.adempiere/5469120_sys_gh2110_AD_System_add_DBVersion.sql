@@ -28,8 +28,8 @@ INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Refe
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=557043 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- Creating the column in a migration script makes no senese, becase the rollout tool needs this column to function
--- Therefor the rollout tool takes care of creating this column my itself if it needs to
+-- Creating the column in a migration script makes no sense, becase the rollout tool needs this column to function
+-- Therefor the rollout tool takes care of creating this column by itself if it needs to
 -- 2017-08-04T16:21:01.305
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 --/* DDL */ SELECT public.db_alter_table('ad_system','ALTER TABLE public.AD_System ADD COLUMN DBVersion VARCHAR(50)')

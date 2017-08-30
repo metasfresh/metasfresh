@@ -201,7 +201,10 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public AttachmentEntry addEntry(final Object model, final String name, final byte[] data)
+	public AttachmentEntry addEntry(
+			@NonNull final Object model, 
+			@NonNull final String name, 
+			@NonNull final byte[] data)
 	{
 		return addEntry(model, AttachmentEntryCreateRequest.builder()
 				.filename(name)
