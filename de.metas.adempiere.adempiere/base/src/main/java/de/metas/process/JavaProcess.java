@@ -46,6 +46,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.ShowProcessLogs;
+import lombok.NonNull;
 
 /**
  * Java Process base class.
@@ -136,22 +137,39 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 		return currentInstance();
 	}
 
+	/**
+	 * Set the current process instance, assuming that none is set right now. If one is already set, then throw an exception.
+	 * 
+	 * @param instance
+	 * @return
+	 */
 	public static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance)
 	{
 		final boolean overrideCurrentInstance = false;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
 	}
 
+	/**
+	 * Set the current process instance. If one is already set, then overwrite it.
+	 * 
+	 * @param instance
+	 * @return
+	 */
 	public static final IAutoCloseable temporaryChangeCurrentInstanceOverriding(final Object instance)
 	{
 		final boolean overrideCurrentInstance = true;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
 	}
 
-	private static final IAutoCloseable temporaryChangeCurrentInstance(final Object instance, final boolean overrideCurrentInstance)
+	/**
+	 * 
+	 * @param instance
+	 * @param overrideCurrentInstance of {@code false} and there is already an instance set, then throw an exception.
+	 * 
+	 * @return
+	 */
+	private static final IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
 	{
-		Check.assumeNotNull(instance, "Parameter instance is not null");
-
 		final Object previousInstance = currentInstanceHolder.get();
 		if (!overrideCurrentInstance && previousInstance != null && !Util.same(previousInstance, instance))
 		{
@@ -744,14 +762,13 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	{
 		return getProcessInfo().getResult();
 	}
-	
+
 	protected final ProcessExecutionResult getResultOrNull()
 	{
 		final ProcessInfo processInfo = getProcessInfoOrNull();
 		return processInfo != null ? processInfo.getResult() : null;
 	}
 
-	
 	/**
 	 * @return context; never returns <code>null</code>
 	 */

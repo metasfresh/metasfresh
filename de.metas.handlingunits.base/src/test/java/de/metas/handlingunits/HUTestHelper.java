@@ -1595,7 +1595,12 @@ public class HUTestHelper
 		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);

@@ -13,15 +13,14 @@ package de.metas.handlingunits.pporder.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Properties;
 
@@ -39,6 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import lombok.NonNull;
 
 /**
  * Handles {@link I_PP_Order_BOMLine} lines from which we are able to receive materials
@@ -69,35 +69,52 @@ import de.metas.material.planning.pporder.PPOrderUtil;
 		//
 		// LU/TU COnfiguration
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				true); // noLUForVirtualTU == true => for a "virtual" TU, we want the LU-part of the lutuconfig to be empty by default
 		updateLUTUConfiguration(lutuConfiguration, ppOrderBOMLine);
 
 		return lutuConfiguration;
 	}
 
 	@Override
-	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(final I_PP_Order_BOMLine ppOrderBOMLine)
+	public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine)
 	{
+		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ppOrderBOMLine);
-		final I_M_HU_PI_Item_Product pipVirtual = Services.get(IHUPIItemProductDAO.class).retrieveVirtualPIMaterialItemProduct(ctx);
+
+		//
+		// First, try getting the M_HU_Item_Product the ppOrder's M_HU_LUTU_Configuration
+		if (ppOrderBOMLine.getM_HU_LUTU_Configuration_ID() > 0 && ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product_ID() > 0)
+		{
+			final I_M_HU_PI_Item_Product pip = ppOrderBOMLine.getM_HU_LUTU_Configuration().getM_HU_PI_Item_Product();
+			return pip;
+		}
+
+		//
+		// Fallback: return the virtual PI Item Product
+		final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);
 		return pipVirtual;
 	}
 
 	@Override
-	public void updateLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfiguration, final I_PP_Order_BOMLine documentLine)
+	public void updateLUTUConfiguration(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_PP_Order_BOMLine documentLine)
 	{
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(documentLine.getPP_Order(), I_PP_Order.class);
 		PPOrderDocumentLUTUConfigurationHandler.instance.updateLUTUConfiguration(lutuConfiguration, ppOrder);
 	}
 
 	@Override
-	public void setCurrentLUTUConfiguration(final I_PP_Order_BOMLine documentLine, final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public void setCurrentLUTUConfiguration(@NonNull final I_PP_Order_BOMLine documentLine, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		documentLine.setM_HU_LUTU_Configuration(lutuConfiguration);
 	}
 
 	@Override
-	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(final I_PP_Order_BOMLine documentLine)
+	public I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(@NonNull final I_PP_Order_BOMLine documentLine)
 	{
 		final I_M_HU_LUTU_Configuration lutuConfiguration = documentLine.getM_HU_LUTU_Configuration();
 		if (lutuConfiguration == null || lutuConfiguration.getM_HU_LUTU_Configuration_ID() <= 0)

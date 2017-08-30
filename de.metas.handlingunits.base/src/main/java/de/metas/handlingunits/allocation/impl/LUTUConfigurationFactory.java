@@ -13,15 +13,14 @@ package de.metas.handlingunits.allocation.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -45,6 +44,7 @@ import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUCapacityDefinition;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -57,6 +57,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
 
 public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 {
@@ -148,15 +149,12 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 
 	@Override
 	public I_M_HU_LUTU_Configuration createLUTUConfiguration(
-			final I_M_HU_PI_Item_Product tuPIItemProduct,
-			final I_M_Product cuProduct,
-			final I_C_UOM cuUOM,
-			final org.compiere.model.I_C_BPartner bpartner)
+			@NonNull final I_M_HU_PI_Item_Product tuPIItemProduct,
+			@NonNull final I_M_Product cuProduct,
+			@NonNull final I_C_UOM cuUOM,
+			final org.compiere.model.I_C_BPartner bpartner,
+			final boolean noLUForVirtualTU)
 	{
-		Check.assumeNotNull(tuPIItemProduct, "tuPIItemProduct not null");
-		Check.assumeNotNull(cuProduct, "cuProduct not null");
-		Check.assumeNotNull(cuUOM, "cuUOM not null");
-
 		// Services used:
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -202,9 +200,19 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			lutuConfiguration.setQtyCU(tuCapacity.getCapacity());
 		}
 
+		
 		//
 		// LU Configuration
-		final I_M_HU_PI_Item luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner);
+		final I_M_HU_PI_Item luPIItem;
+		if (noLUForVirtualTU && IHUPIItemProductDAO.VIRTUAL_HU_PI_Item_Product_ID == tuPIItemProduct.getM_HU_PI_Item_Product_ID())
+		{
+			luPIItem = null; // we don't care if there is a matching PIItem, because with noLUForVirtualTU we don't want to put the virtual HU onto an LU
+		}
+		else
+		{
+			luPIItem = handlingUnitsDAO.retrieveDefaultParentPIItem(tuPI, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, bpartner);
+		}
+
 		if (luPIItem != null)
 		{
 			final I_M_HU_PI luPI = luPIItem.getM_HU_PI_Version().getM_HU_PI();
@@ -464,7 +472,7 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 		}
 
 		//
-		// Convert the total QtyCU to our internal capacity UOM, to be able to compute using same UOM. 
+		// Convert the total QtyCU to our internal capacity UOM, to be able to compute using same UOM.
 		final Quantity qtyCUsTotal_Converted = convertQtyToLUTUConfigurationUOM(qtyCUsTotal, qtyCUsTotalUOM, lutuConfiguration);
 
 		//
@@ -477,20 +485,20 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	public Quantity calculateQtyCUsTotal(final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
 		final I_C_UOM uom = lutuConfiguration.getC_UOM();
-		
+
 		//
 		// CU
-		if(lutuConfiguration.isInfiniteQtyCU())
+		if (lutuConfiguration.isInfiniteQtyCU())
 		{
 			return Quantity.infinite(uom);
 		}
-		
+
 		final BigDecimal qtyCU = lutuConfiguration.getQtyCU();
-		if(qtyCU.signum() <= 0)
+		if (qtyCU.signum() <= 0)
 		{
 			return Quantity.zero(uom);
 		}
-		
+
 		//
 		// TU
 		if (lutuConfiguration.isInfiniteQtyTU())
@@ -498,25 +506,25 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 			return Quantity.infinite(uom);
 		}
 		final BigDecimal qtyTU = lutuConfiguration.getQtyTU();
-		if(qtyTU.signum() <= 0)
+		if (qtyTU.signum() <= 0)
 		{
 			return Quantity.zero(uom);
 		}
-		
+
 		//
 		//
 		final BigDecimal qtyCUsPerLU = qtyCU.multiply(qtyTU);
 
 		//
 		// LU
-		if(isNoLU(lutuConfiguration))
+		if (isNoLU(lutuConfiguration))
 		{
 			return new Quantity(qtyCUsPerLU, uom);
 		}
 		else
 		{
 			final BigDecimal qtyLU = lutuConfiguration.getQtyLU();
-			if(qtyLU.signum() <= 0)
+			if (qtyLU.signum() <= 0)
 			{
 				return Quantity.zero(uom);
 			}
@@ -540,11 +548,11 @@ public class LUTUConfigurationFactory implements ILUTUConfigurationFactory
 	}
 
 	@Override
-	public void adjustForTotalQtyTUsAndCUs(final I_M_HU_LUTU_Configuration lutuConfiguration, final BigDecimal qtyTUsTotal, final BigDecimal qtyCUsTotal)
+	public void adjustForTotalQtyTUsAndCUs(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, 
+			@NonNull final BigDecimal qtyTUsTotal, 
+			@NonNull final BigDecimal qtyCUsTotal)
 	{
-		Check.assumeNotNull(qtyTUsTotal, "qtyTUsTotal not null");
-		Check.assumeNotNull(qtyCUsTotal, "qtyCUsTotal not null");
-
 		//
 		// Case: Infinite Qty CU
 		// e.g. we are receiving virtual PIs
