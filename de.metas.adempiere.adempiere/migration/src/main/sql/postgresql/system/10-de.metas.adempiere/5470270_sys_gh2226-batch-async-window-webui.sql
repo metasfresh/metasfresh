@@ -1163,3 +1163,33 @@ UPDATE AD_Field SET Name='Arbeitspaket Prozessor',Updated=TO_TIMESTAMP('2017-08-
 UPDATE AD_Field SET Name='Arbeitspaket Verarbeitungswarteschlange',Updated=TO_TIMESTAMP('2017-08-30 16:37:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556714
 ;
 
+-- 2017-08-30T16:40:45.158
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 16:40:45','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Description' WHERE AD_Field_ID=554957 AND AD_Language='en_US'
+;
+
+-- 2017-08-30T16:41:06.720
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 16:41:06','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Process Instance',Description='Process Instance' WHERE AD_Field_ID=554962 AND AD_Language='en_US'
+;
+
+-- 2017-08-30T16:41:42.364
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 16:41:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Parent Async Batch No.' WHERE AD_Field_ID=556938 AND AD_Language='en_US'
+;
+
+-- 2017-08-30T16:42:15.379
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 16:42:15','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Processed',Description='',Help='' WHERE AD_Field_ID=555018 AND AD_Language='en_US'
+;
+
+-- 2017-08-30T16:43:08.709
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 16:43:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Amount Processed' WHERE AD_Field_ID=555017 AND AD_Language='en_US'
+;
+
+-- 2017-08-30T16:43:42.821
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-08-30 16:43:42','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='SeqNo' WHERE AD_Field_ID=556715 AND AD_Language='en_US'
+;
+
