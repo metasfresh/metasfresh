@@ -38,6 +38,12 @@ public interface IAttachmentDAO extends ISingletonService
 
 	AttachmentEntry retrieveAttachmentEntryById(int attachmentId, int attachmentEntryId);
 
+	/**
+	 * 
+	 * @param attachmentId
+	 * @param filename
+	 * @return the retrieved entry of {@code null}, if there is none.
+	 */
 	AttachmentEntry retrieveAttachmentEntryByFilename(int attachmentId, String filename);
 
 	byte[] retrieveFirstAttachmentEntryAsBytes(int attachmentId);

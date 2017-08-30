@@ -171,7 +171,7 @@ public class InterfaceWrapperHelper
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		return create(ctx, modelClass, trxName);
 	}
-	
+
 	/**
 	 * Convenient method to create a new instance of given class, using current context and no transaction.
 	 *
@@ -183,7 +183,6 @@ public class InterfaceWrapperHelper
 		final String trxName = ITrx.TRXNAME_None;
 		return create(ctx, modelClass, trxName);
 	}
-
 
 	/**
 	 * This method is heavily used throughout metasfresh and allows us to do the following things:
@@ -515,7 +514,7 @@ public class InterfaceWrapperHelper
 			setTrxName(model, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
-	
+
 	public static void save(final Object model)
 	{
 		final Object modelToSave;
@@ -1299,8 +1298,10 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Sets the dynanamic attribute {@link #DYNATTR_SaveDeleteDisabled} to the given <code>disabled</code> value if <code>true</code> or resets if if <code>false</code>. If set to <code>true</code>,
-	 * both {@link PO} and {@link POJOLookupMap} will throw an {@link AdempiereException} on save/delete invocations for the given <code>model</code>.
+	 * Sets the dynamic attribute {@link #DYNATTR_SaveDeleteDisabled} to the given <code>disabled</code> value if <code>true</code> or resets it if <code>false</code>.<br>
+	 * If set to <code>true</code>, both {@link PO} and {@link POJOLookupMap} will throw an {@link AdempiereException} on save/delete invocations for the given <code>model</code>.
+	 * <p>
+	 * this feature can be used when the given model shall be just a temporary "pojo" that may not be persisted.
 	 *
 	 * @param model
 	 * @param disabled

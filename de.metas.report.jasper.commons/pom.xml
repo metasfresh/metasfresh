@@ -3,7 +3,7 @@
 	<parent>
 		<artifactId>de.metas.parent</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 		<relativePath>../de.metas.parent/pom.xml</relativePath>
 	</parent>
 
@@ -13,6 +13,13 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+	
+	  <!-- See https://github.com/metasfresh/metasfresh/issues/1918 -->
+        <dependency>
+            <groupId>xerces</groupId>
+            <artifactId>xercesImpl</artifactId>
+            <version>2.11.0</version>
+        </dependency>
 		<dependency>
 			<groupId>batik</groupId>
 			<artifactId>batik-bridge</artifactId>

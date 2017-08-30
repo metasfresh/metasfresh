@@ -13,21 +13,21 @@ package org.adempiere.model;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.util.List;
 
 import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
 import org.compiere.model.PO;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Cristina Ghita, METAS.RO
@@ -55,27 +55,12 @@ public interface CopyRecordSupport
 	 *            tab
 	 * @return a list of tables with info
 	 */
-	List<TableInfoVO> getSuggestedChildren(PO po, GridTab gt);
-
-	void setParentKeyColumn(String parentKeyColumn);
-
-	String getParentKeyColumn();
-
-	void setParentID(int parent_id);
-
-	int getParentID();
-
-	PO getParentPO();
-
-	void setParentPO(PO parentPO);
-
-	void setGridTab(GridTab gt);
-
-	GridTab getGridTab();
-
-	void setFromPO_ID(int oldPO_id);
-
-	int getFromPO_ID();
+	List<TableInfoVO> getSuggestedChildren(PO po, List<TableInfoVO> suggestedChildren);
+	
+	default List<TableInfoVO> getSuggestedChildren(final PO po)
+	{
+		return getSuggestedChildren(po, ImmutableList.of());
+	}
 
 	/**
 	 * Updates given <code>po</code> and sets the right values for columns that needs special handling.
@@ -84,9 +69,15 @@ public interface CopyRecordSupport
 	 *
 	 * @param to
 	 */
-	void setSpecialColumnsName(PO to);
+	void updateSpecialColumnsName(PO to);
 
-	boolean isBase();
+	void setParentKeyColumn(String parentKeyColumn);
+
+	void setParentPO(PO parentPO);
+
+	void setSuggestedChildrenToCopy(List<TableInfoVO> suggestedChildrenToCopy);
+
+	void setFromPO_ID(int oldPO_id);
 
 	void setBase(boolean base);
 
@@ -107,8 +98,6 @@ public interface CopyRecordSupport
 	 * @return copied value which needs to be set
 	 */
 	Object getValueToCopy(final GridField gridField);
-
-	int getAD_Window_ID();
 
 	void setAD_Window_ID(int aDWindowID);
 

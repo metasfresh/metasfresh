@@ -50,7 +50,7 @@ public interface IAttachmentBL extends ISingletonService
 	/**
 	 * Gets attachment of given model.
 	 *
-	 * @param model see class documentation
+	 * @param model that is referenced by an {@link I_AD_Attachment} via {@code AD_Table_ID} and {@code Record_ID}, or the attachment instance itself.
 	 * @return attachment; never return null
 	 */
 	I_AD_Attachment getAttachment(Object model);

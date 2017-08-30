@@ -88,6 +88,7 @@ public class ReceiptCorrectHUEditorPanel extends HUEditorPanel
 	protected void createAndAddActionButtons(IContainer buttonsPanel)
 	{
 		buttonsPanel.add(bMoveToQualityWarehouse, "newline");
+		buttonsPanel.add(bMoveToAnotherWarehouse, "");
 		buttonsPanel.add(bCreateVendorReturn, "");
 		buttonsPanel.add(bMoveToGarbage, "");
 	}

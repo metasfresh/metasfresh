@@ -51,6 +51,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
  */
 public interface IHUPIItemProductDAO extends ISingletonService
 {
+	int VIRTUAL_HU_PI_Item_Product_ID = 101;
+
 	IHUPIItemProductQuery createHUPIItemProductQuery();
 
 	List<I_M_HU_PI_Item_Product> retrievePIMaterialItemProducts(I_M_HU_PI_Item itemDef);

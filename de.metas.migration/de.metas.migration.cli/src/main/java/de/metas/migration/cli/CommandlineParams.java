@@ -27,12 +27,12 @@ import de.metas.migration.cli.Config.ConfigBuilder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,13 +55,13 @@ public class CommandlineParams
 	private static final String OPTION_DoNotCheckVersions = "v";
 	private static final String OPTION_DoNotStoreVersion = "u";
 
-	private static final String OPTION_DoNotFailIfRolloutIsGreaterThanDB = "i";
+	public static final String OPTION_DoNotFailIfRolloutIsGreaterThanDB = "i";
 
 	private final Options options;
 
 	public CommandlineParams()
 	{
-		this.options = createOptions();
+		options = createOptions();
 	}
 
 	private final Options createOptions()
@@ -119,7 +119,7 @@ public class CommandlineParams
 		}
 		//
 		{
-			final Option option = new Option(OPTION_Interactive, "In case of script errors, (a)sk what to do");
+			final Option option = new Option(OPTION_Interactive, "In case of script errors, (a)sk what to do.");
 			option.setArgs(0);
 			option.setRequired(false);
 			options.addOption(option);
@@ -141,8 +141,10 @@ public class CommandlineParams
 		}
 
 		{
-			final Option option = new Option(OPTION_DoNotStoreVersion, "If the migration ran successfully, then by default, the tool will (u)pdate the DB's AD_System.DBVersion value with this package's version."
-					+ " With this parameter set it won't.");
+			final Option option = new Option(OPTION_DoNotStoreVersion, "By default, the tool will work with the DB and update AD_System.DBVersion.\n"
+					+ "First, before applying the migration scripts, the tool will update AD_System.DBVersion to <former-value>-" + RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX + "\n"
+					+ "Then, if the migration ran successfully, the tool will (u)pdate the DB's AD_System.DBVersion value with this package's version."
+					+ "With this parameter set, the tool won't do any of that.");
 			option.setArgs(0);
 			option.setRequired(false);
 			options.addOption(option);

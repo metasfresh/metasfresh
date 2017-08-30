@@ -37,6 +37,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -84,6 +86,7 @@ import de.metas.handlingunits.model.I_M_HU_Status;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
@@ -614,7 +617,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(final I_M_HU_PI huPI, final String huUnitType, final I_C_BPartner bpartner)
+	public List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
+			@NonNull final I_M_HU_PI huPI, 
+			@Nullable final String huUnitType, 
+			@Nullable final I_C_BPartner bpartner)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(huPI);
 		final String trxName = InterfaceWrapperHelper.getTrxName(huPI);
@@ -628,7 +634,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	List<I_M_HU_PI_Item> retrieveParentPIItemsForParentPI(
 			@CacheCtx final Properties ctx,
 			final int huPIId,
-			final String huUnitType,
+			@Nullable final String huUnitType,
 			final int bpartnerId,
 			@CacheTrx final String trxName)
 	{
@@ -832,7 +838,10 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public I_M_HU_PI_Item retrieveDefaultParentPIItem(final I_M_HU_PI huPI, final String huUnitType, final I_C_BPartner bpartner)
+	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
+			@NonNull final I_M_HU_PI huPI, 
+			@Nullable final String huUnitType, 
+			@Nullable final I_C_BPartner bpartner)
 	{
 		//
 		// Fetch all eligible parent PI Items

@@ -55,7 +55,6 @@ import de.metas.adempiere.ait.test.IntegrationTestSuite;
 		test.integration.swat.sales.ui.SalesOrderUITests.class,
 		
 		test.integration.swat.ad.CacheInterceptorTests.class,
-		test.integration.swat.ad.CopyRecordTests.class
 })
 public class AllTests
 {

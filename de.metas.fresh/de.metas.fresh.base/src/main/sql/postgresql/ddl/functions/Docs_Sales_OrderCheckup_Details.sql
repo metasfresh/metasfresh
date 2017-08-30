@@ -80,7 +80,7 @@ FROM
 	LEFT OUTER JOIN	LATERAL(
 		SELECT 	String_agg ( ai_value, ', ' ) AS Attributes, M_AttributeSetInstance_ID
 		FROM 	Report.fresh_Attributes
-		WHERE	at_Value IN ( '1000015', '1000001' ) -- Marke (ADR), task 08891: also Herkunft
+		WHERE	at_Value IN ( '1000015', '1000001', '1000002' ) -- Marke (ADR), task 08891: also Herkunft, task 2237: also Label
 			AND M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID AND  ol.M_AttributeSetInstance_ID != 0
 		GROUP BY	M_AttributeSetInstance_ID
 	) att ON TRUE

@@ -24,7 +24,7 @@ import lombok.NonNull;
  * @author Cristina Ghita, METAS.RO
  */
 @ThreadSafe
-public class CopyRecordFactory
+public final class CopyRecordFactory
 {
 	private static final String SYSCONFIG_ENABLE_COPY_WITH_DETAILS = "ENABLE_COPY_WITH_DETAILS";
 
@@ -57,7 +57,7 @@ public class CopyRecordFactory
 			}
 			catch (Exception ex)
 			{
-				throw new AdempiereException("Failed creating " + CopyRecordSupport.class + " instance for " + tableName, ex);
+				throw new AdempiereException("Failed creating " + copyRecordSupportClass + " instance for " + tableName, ex);
 			}
 		}
 
@@ -129,4 +129,47 @@ public class CopyRecordFactory
 		staticOnRecordCopiedListeners.add(listener);
 	}
 
+	
+//	public static final class CopyRecordSupportBuilder
+//	{
+//		private String tableName;
+//
+//		private CopyRecordSupportBuilder(final String tableName)
+//		{
+//			this.tableName = tableName;
+//		}
+//		
+//		public CopyRecordSupport build()
+//		{
+//			final CopyRecordSupport result;
+//			final Class<? extends CopyRecordSupport> copyRecordSupportClass = tableName2copyRecordSupportClass.get(tableName);
+//			if (copyRecordSupportClass == null)
+//			{
+//				result = new GeneralCopyRecordSupport(this);
+//			}
+//			else
+//			{
+//				try
+//				{
+//					result = copyRecordSupportClass.newInstance();
+//				}
+//				catch (Exception ex)
+//				{
+//					throw new AdempiereException("Failed creating " + copyRecordSupportClass + " instance for " + tableName, ex);
+//				}
+//			}
+//
+//			for (final IOnRecordCopiedListener listener : staticOnRecordCopiedListeners)
+//			{
+//				result.addOnRecordCopiedListener(listener);
+//			}
+//			
+//			return result;
+//		}
+//		
+//		public String getTableName()
+//		{
+//			return tableName;
+//		}
+//	}
 }

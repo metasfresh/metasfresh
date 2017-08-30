@@ -15,10 +15,13 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_Inventory;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUContextFactory;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -64,6 +67,7 @@ public class HUInternalUseInventoryProducer
 
 	// services
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	//
 	// Parameters
@@ -105,7 +109,7 @@ public class HUInternalUseInventoryProducer
 		final HUListAllocationSourceDestination husSource = HUListAllocationSourceDestination.of(hus);
 
 		husSource.setCreateHUSnapshots(true);
-		husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
+		 husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
 
 		//
 		// Create and setup context
@@ -117,6 +121,7 @@ public class HUInternalUseInventoryProducer
 
 		// Inventory allocation destination
 		final InventoryAllocationDestination inventoryAllocationDestination = new InventoryAllocationDestination(warehouse, materialDisposalDocType);
+
 		//
 		// Create and configure Loader
 		final HULoader loader = HULoader.of(husSource, inventoryAllocationDestination);
@@ -126,8 +131,26 @@ public class HUInternalUseInventoryProducer
 		// Unload everything from source (our HUs)
 		loader.unloadAllFromSource(huContext);
 
+		// destroy empty hus
+
+		{
+			for (final I_M_HU hu : hus)
+			{
+				// Skip it if already destroyed
+				if (handlingUnitsBL.isDestroyed(hu))
+				{
+					continue;
+				}
+
+				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
+			}
+		}
 		final List<I_M_Inventory> inventories = inventoryAllocationDestination.getInventories();
 
+		for (final I_M_Inventory inventory : inventories)
+		{
+			Services.get(IDocActionBL.class).processEx(inventory, X_M_Inventory.DOCACTION_Complete, X_M_Inventory.DOCSTATUS_Completed);
+		}
 		//
 		// Send notifications
 		InventoryProcessedEventBus.newInstance()

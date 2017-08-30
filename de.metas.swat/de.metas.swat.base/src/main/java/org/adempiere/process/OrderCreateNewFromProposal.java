@@ -36,10 +36,11 @@ import org.compiere.model.PO;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
+
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public final class OrderCreateNewFromProposal extends JavaProcess 
 {
@@ -84,9 +85,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		InterfaceWrapperHelper.save(newOrder);
 		
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name);
-		childCRS.setGridTab(null);
 		childCRS.setParentPO(to);
-		childCRS.setParentID(to.get_ID());
 		childCRS.setBase(true);
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
