@@ -223,7 +223,6 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		final ImmutablePair<I_C_Invoice, I_C_InvoiceLine> creditMemoAndLine = creatInvoiceWithOneLine(contextProvider, CREDI_MEMO_QTY_INVOICE_NINE, DocAction.STATUS_Completed, creditmemoDocTypeBaseName);
 		creditMemoAndLine.getLeft().setIsCreditedInvoiceReinvoicable(true);
 
-		Services.get(IInvoiceReferenceDAO.class).createReferencedInvoice(invoiceAndLine.getLeft(), creditMemoAndLine.getLeft(), X_C_Invoice_Reference.C_INVOICE_REFERENCE_TYPE_CreditMemo);
 		//creditMemoAndLine.getLeft().setRef_CreditMemo_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
 
 		creditMemoAndLine.getLeft().setRef_Invoice_ID(invoiceAndLine.getLeft().getC_Invoice_ID());
