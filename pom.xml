@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0.0</version>
+		<version>[1,10.0.0]</version>
 	</parent>
 
 	<groupId>de.metas.admin</groupId>
@@ -89,7 +89,6 @@
 						</goals>
 							<configuration>
 								<additionalProperties>
-									<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
 									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
 									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
 									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
