@@ -77,11 +77,6 @@ public final class SqlViewSelectionQueryBuilder
 {
 	private static final transient Logger logger = LogManager.getLogger(SqlViewSelectionQueryBuilder.class);
 
-	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
-	{
-		return new SqlViewSelectionQueryBuilder(viewBinding);
-	}
-
 	//
 	// Paging constants
 	public static final String COLUMNNAME_Paging_UUID = "_sel_UUID";
@@ -92,6 +87,11 @@ public final class SqlViewSelectionQueryBuilder
 
 	private final SqlViewBinding _viewBinding;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy
+	
+	public static final SqlViewSelectionQueryBuilder newInstance(final SqlViewBinding viewBinding)
+	{
+		return new SqlViewSelectionQueryBuilder(viewBinding);
+	}
 
 	private SqlViewSelectionQueryBuilder(@NonNull final SqlViewBinding viewBinding)
 	{

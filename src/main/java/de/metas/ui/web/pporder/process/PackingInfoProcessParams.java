@@ -64,8 +64,8 @@ public class PackingInfoProcessParams
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID)
 	private int tu_HU_PI_Item_Product_ID;
 	//
-	public static final String PARAM_PARAM_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
-	@Param(parameterName = PARAM_PARAM_M_HU_PI_Item_ID)
+	public static final String PARAM_M_HU_PI_Item_ID = "M_HU_PI_Item_ID";
+	@Param(parameterName = PARAM_M_HU_PI_Item_ID)
 	private int lu_PI_Item_ID;
 	//
 	public static final String PARAM_QtyCU = "QtyCU";
@@ -108,7 +108,7 @@ public class PackingInfoProcessParams
 		{
 			case PARAM_M_HU_PI_Item_Product_ID:
 				return defaultLUTUConfig.getM_HU_PI_Item_Product_ID();
-			case PARAM_PARAM_M_HU_PI_Item_ID:
+			case PARAM_M_HU_PI_Item_ID:
 				return defaultLUTUConfig.getM_LU_HU_PI_Item_ID();
 			case PARAM_QtyCU:
 				return defaultLUTUConfig.getQtyCU();
@@ -380,17 +380,34 @@ public class PackingInfoProcessParams
 		lutuConfigNew.setQtyCU(qtyCU);
 		lutuConfigNew.setIsInfiniteQtyCU(false);
 
-		//
 		// TU
+		configureLUTUConfigTU(lutuConfigNew, M_HU_PI_Item_Product_ID, qtyTU);
+
+		// LU
+		configureLUTUConfigLU(lutuConfigNew, lu_PI_Item_ID);
+
+		lutuConfigurationFactory.save(lutuConfigNew);
+		return lutuConfigNew;
+	}
+
+	private void configureLUTUConfigTU(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfigNew,
+			final int M_HU_PI_Item_Product_ID,
+			@NonNull final BigDecimal qtyTU)
+	{
 		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), M_HU_PI_Item_Product_ID, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
+
 		lutuConfigNew.setM_HU_PI_Item_Product(tuPIItemProduct);
 		lutuConfigNew.setM_TU_HU_PI(tuPI);
 		lutuConfigNew.setQtyTU(qtyTU);
 		lutuConfigNew.setIsInfiniteQtyTU(false);
+	}
 
-		//
-		// LU
+	private void configureLUTUConfigLU(
+			@NonNull final I_M_HU_LUTU_Configuration lutuConfigNew,
+			final int lu_PI_Item_ID)
+	{
 		if (lu_PI_Item_ID > 0)
 		{
 			final BigDecimal qtyLU = getQtyLU();
@@ -412,9 +429,6 @@ public class PackingInfoProcessParams
 			lutuConfigNew.setM_LU_HU_PI_Item(null);
 			lutuConfigNew.setQtyLU(BigDecimal.ZERO);
 		}
-
-		lutuConfigurationFactory.save(lutuConfigNew);
-		return lutuConfigNew;
 	}
 
 	public int getLuPiItemId()

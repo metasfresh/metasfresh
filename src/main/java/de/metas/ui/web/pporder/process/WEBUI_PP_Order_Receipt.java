@@ -65,7 +65,7 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_PARAM_M_HU_PI_Item_ID, mandatory = false)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, mandatory = false)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU, mandatory = true)
@@ -211,7 +211,7 @@ public class WEBUI_PP_Order_Receipt
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
-	private LookupValuesList getM_HU_PI_Item_Products()
+	public LookupValuesList getM_HU_PI_Item_Products()
 	{
 		return getPackingInfoParams().getM_HU_PI_Item_Products();
 	}
@@ -221,8 +221,8 @@ public class WEBUI_PP_Order_Receipt
 	 * 
 	 * @return
 	 */
-	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
-	private LookupValuesList getM_HU_PI_Item_IDs()
+	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
+	public LookupValuesList getM_HU_PI_Item_IDs()
 	{
 		return getPackingInfoParams().getM_HU_PI_Item_IDs(p_M_HU_PI_Item_Product);
 	}

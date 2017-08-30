@@ -38,13 +38,19 @@ public class WEBUI_PP_Order_IssueReceipt_Launcher extends JavaProcess implements
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
+		if (WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt.toInt() == context.getAD_Window_ID())
+		{
+			// we did already launch the IssueReceipt window
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Already within the window " + WebPPOrderConfig.AD_WINDOW_ID_IssueReceipt);
+		}
+
 		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		
+
 		final I_PP_Order ppOrder = context.getSelectedModel(I_PP_Order.class);
-		if(!X_PP_Order.DOCSTATUS_Completed.equals(ppOrder.getDocStatus()))
+		if (!X_PP_Order.DOCSTATUS_Completed.equals(ppOrder.getDocStatus()))
 		{
 			return ProcessPreconditionsResolution.reject("not completed");
 		}
