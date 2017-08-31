@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -127,7 +129,12 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	private final Map<Integer, HUAttributeQueryFilterVO> _barcodeAttributesIds2Value = new HashMap<>();
 	private final Set<String> _huStatusesToInclude = new HashSet<>();
 	private final Set<String> _huStatusesToExclude = new HashSet<>();
-	private final Set<Integer> _onlyHUIds = new HashSet<>();
+
+	/**
+	 * {@code null} means "no restriction". Empty means that no HU matches.
+	 */
+	private Set<Integer> _onlyHUIds = null;
+
 	private final Set<Integer> _huIdsToExclude = new HashSet<>();
 	private final Set<Integer> _huPIVersionIdsToInclude = new HashSet<>();
 	private boolean _excludeHUsOnPickingSlot = false;
@@ -190,11 +197,13 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		copy._huStatusesToInclude.addAll(_huStatusesToInclude);
 		copy._huStatusesToExclude.addAll(_huStatusesToExclude);
-		copy._onlyHUIds.addAll(_onlyHUIds);
+
+		copy._onlyHUIds = _onlyHUIds == null ? null : new HashSet<>(_onlyHUIds);
+
 		copy._huIdsToExclude.addAll(_huIdsToExclude);
 		copy._huPIVersionIdsToInclude.addAll(_huPIVersionIdsToInclude);
 		copy._excludeHUsOnPickingSlot = _excludeHUsOnPickingSlot;
-		
+
 		copy.huSubQueryFilter = huSubQueryFilter == null ? null : huSubQueryFilter.copy();
 
 		copy.otherFilters = otherFilters == null ? null : otherFilters.copy();
@@ -525,9 +534,9 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		//
 		// Include only specific HUs
-		if (_onlyHUIds != null && !_onlyHUIds.isEmpty())
+		if (_onlyHUIds != null)
 		{
-			filters.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
+			filters.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, _onlyHUIds);
 		}
 
 		//
@@ -548,7 +557,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		//
 		// Filter locked option
 		final Boolean locked = this.locked;
-		if(locked != null)
+		if (locked != null)
 		{
 			// only locked
 			if (locked)
@@ -667,7 +676,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	@Override
 	public IHUQueryBuilder setContext(final Properties ctx, final String trxName)
 	{
-		final PlainContextAware contextProvider = new PlainContextAware(ctx, trxName);
+		final PlainContextAware contextProvider = PlainContextAware.newWithTrxName(ctx, trxName);
 		return setContext(contextProvider);
 	}
 
@@ -1083,14 +1092,13 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		this.locked = true;
 		return this;
 	}
-	
+
 	@Override
 	public IHUQueryBuilder onlyNotLocked()
 	{
 		this.locked = false;
 		return this;
 	}
-
 
 	@Override
 	public IHUQueryBuilder setErrorIfNoHUs(final String errorADMessage)
@@ -1145,13 +1153,17 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	}
 
 	@Override
-	public HUQueryBuilder addOnlyHUIds(final Collection<Integer> onlyHUIds)
+	public HUQueryBuilder addOnlyHUIds(@Nullable final Collection<Integer> onlyHUIds)
 	{
-		if (onlyHUIds == null || onlyHUIds.isEmpty())
+		if (onlyHUIds == null)
 		{
 			return this;
 		}
 
+		if(_onlyHUIds == null)
+		{
+			_onlyHUIds = new HashSet<>();
+		}
 		_onlyHUIds.addAll(onlyHUIds);
 
 		return this;
