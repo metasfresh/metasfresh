@@ -59,6 +59,7 @@ public final class HUIdsFilterHelper
 	public static final class HUIdsFilterData
 	{
 		/**
+		 * Creates a new instance with the given {@code huIds} as {@link #getInitialHUIds()}.
 		 * 
 		 * @param huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
 		 * @return
@@ -191,6 +192,7 @@ public final class HUIdsFilterHelper
 	}
 
 	/**
+	 * 
 	 * @param huIds huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
 	 * 
 	 * @return

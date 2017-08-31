@@ -98,7 +98,7 @@ public class HUEditorViewRepository
 	{
 		return sqlViewBinding;
 	}
-	
+
 	SqlViewRowIdsConverter getRowIdsConverter()
 	{
 		return getSqlViewBinding().getRowIdsConverter();
@@ -186,7 +186,7 @@ public class HUEditorViewRepository
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProvider)
 				//
-				//.setHUId(huId)
+				// .setHUId(huId)
 				.setCode(hu.getValue())
 				.setHUUnitType(huUnitTypeLookupValue)
 				.setHUStatus(huStatus)
@@ -307,9 +307,9 @@ public class HUEditorViewRepository
 	}
 
 	private HUEditorRow createHUEditorRow(
-			final int parent_HU_ID, 
-			final int topLevelHUId, 
-			@NonNull final IHUProductStorage huStorage, 
+			final int parent_HU_ID,
+			final int topLevelHUId,
+			@NonNull final IHUProductStorage huStorage,
 			final boolean processed)
 	{
 		final I_M_HU hu = huStorage.getM_HU();
@@ -324,7 +324,7 @@ public class HUEditorViewRepository
 				.setProcessed(processed)
 				.setAttributesProvider(attributesProviderEffective)
 				//
-				//.setHUId(huId)
+				// .setHUId(huId)
 				// .setCode(hu.getValue()) // NOTE: don't show value on storage level
 				.setHUUnitType(JSONLookupValue.of(X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI, "CU"))
 				.setHUStatus(createHUStatusLookupValue(hu))
@@ -364,16 +364,19 @@ public class HUEditorViewRepository
 		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
-	public List<Integer> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final List<DocumentFilter> filters)
+	public List<Integer> retrieveHUIdsEffective(
+			@NonNull final HUIdsFilterData huIdsFilter, 
+			@NonNull final List<DocumentFilter> filters)
 	{
-		final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+		
+		final ImmutableList<Integer> onlyHUIds = createListOfCombinedIDs(huIdsFilter);
 
-		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery())
+		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery() && onlyHUIds != null)
 		{
+			// shortcut: don't bother the DB but return the list of IDs that we already have
 			return onlyHUIds;
 		}
 
-		//
 		// Create HU query
 		IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
 		if (huQuery == null)
@@ -383,7 +386,7 @@ public class HUEditorViewRepository
 		huQuery.setContext(PlainContextAware.newOutOfTrx());
 
 		// Only HUs
-		if (!onlyHUIds.isEmpty())
+		if (onlyHUIds != null)
 		{
 			huQuery.addOnlyHUIds(onlyHUIds);
 		}
@@ -402,5 +405,27 @@ public class HUEditorViewRepository
 		}
 
 		return huQuery.createQuery().listIds();
+	}
+
+	private ImmutableList<Integer> createListOfCombinedIDs(@NonNull final HUIdsFilterData huIdsFilter)
+	{
+		final ImmutableList<Integer> onlyHUIds;
+		if (huIdsFilter.getInitialHUIds() != null && huIdsFilter.getMustHUIds() != null)
+		{
+			onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+		}
+		else if (huIdsFilter.getInitialHUIds() != null)
+		{
+			onlyHUIds = ImmutableList.copyOf(huIdsFilter.getInitialHUIds());
+		}
+		else if (huIdsFilter.getMustHUIds() != null)
+		{
+			onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds());
+		}
+		else
+		{
+			onlyHUIds = null; // both are null => no restriction
+		}
+		return onlyHUIds;
 	}
 }
