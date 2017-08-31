@@ -1274,9 +1274,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final boolean creditedInvoiceReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
 		final boolean creditedInvoiceIsReversed;
-		if (creditMemo && invoiceExt.getRef_CreditMemo_ID() > 0)
+		
+		final Iterator<I_C_Invoice> creditMemosForInvoice = invoiceDAO.retrieveCreditMemosForInvoice(invoiceExt);
+		if (creditMemo && creditMemosForInvoice.hasNext())
 		{
-			final org.compiere.model.I_C_Invoice originalInvoice = invoiceExt.getRef_CreditMemo();
+			final org.compiere.model.I_C_Invoice originalInvoice = creditMemosForInvoice.next();
 			creditedInvoiceIsReversed = Services.get(IDocActionBL.class).isDocumentStatusOneOf(originalInvoice, DocAction.STATUS_Reversed);
 		}
 		else

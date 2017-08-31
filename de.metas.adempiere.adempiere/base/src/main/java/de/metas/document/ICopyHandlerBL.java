@@ -26,7 +26,7 @@ package de.metas.document;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.ISingletonService;
-import org.adempiere.util.Pair;
+import org.adempiere.util.lang.ImmutablePair;
 
 /**
  * Generic service that allows us do add handlers (could also be called listeners for all I know) which add module specific aspects to the copying of records.
@@ -45,7 +45,7 @@ public interface ICopyHandlerBL extends ISingletonService
 	 * @param handler the given implementation will do some kind of copying.
 	 * @see InterfaceWrapperHelper#getTableNameOrNull(Class)
 	 */
-	<T> void registerCopyHandler(Class<T> clazz, IQueryFilter<Pair<T, T>> filter, ICopyHandler<? extends T> handler);
+	<T> void registerCopyHandler(Class<T> clazz, IQueryFilter<ImmutablePair<T, T>> filter, ICopyHandler<? extends T> handler);
 
 	/**
 	 * Invokes {@link ICopyHandler#copyPreliminaryValues(Object, Object)} for all applicable handlers, in the order of their registration.

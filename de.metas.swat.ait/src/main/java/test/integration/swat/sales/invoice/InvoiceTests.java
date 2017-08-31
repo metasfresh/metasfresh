@@ -13,15 +13,14 @@ package test.integration.swat.sales.invoice;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -29,10 +28,12 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.invoice.service.IInvoiceBL;
 import org.adempiere.invoice.service.IInvoiceCreditContext;
+import org.adempiere.invoice.service.IInvoiceDAO;
 import org.adempiere.invoice.service.impl.InvoiceCreditContext;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
@@ -40,6 +41,7 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.DocAction;
 import org.compiere.util.TrxRunnable;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -61,9 +63,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 		return new Helper();
 	}
 
-	@IntegrationTest(
-			tasks = "04054",
-			desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
+	@IntegrationTest(tasks = "04054", desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
 	@Test
 	public void testCreditPartiallyPaidInvoice_1_TaxIncl()
 	{
@@ -86,9 +86,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 		testCreditPartiallyPaidInvoice(true, new BigDecimal("-0.01"), 1);
 	}
 
-	@IntegrationTest(
-			tasks = "04054",
-			desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
+	@IntegrationTest(tasks = "04054", desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
 	@Test
 	public void testCreditPartiallyPaidInvoice_1_TaxExcl()
 	{
@@ -111,9 +109,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 		testCreditPartiallyPaidInvoice(false, new BigDecimal("-0.01"), 1);
 	}
 
-	@IntegrationTest(
-			tasks = "04054",
-			desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
+	@IntegrationTest(tasks = "04054", desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
 	@Test
 	public void testCreditPartiallyPaidInvoice_2_TaxIncl()
 	{
@@ -136,9 +132,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 		testCreditPartiallyPaidInvoice(true, new BigDecimal("-0.01"), 2);
 	}
 
-	@IntegrationTest(
-			tasks = "04054",
-			desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
+	@IntegrationTest(tasks = "04054", desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
 	@Test
 	public void testCreditPartiallyPaidInvoice_2_TaxExcl()
 	{
@@ -161,9 +155,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 		testCreditPartiallyPaidInvoice(false, new BigDecimal("-0.01"), 2);
 	}
 
-	@IntegrationTest(
-			tasks = "04054",
-			desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
+	@IntegrationTest(tasks = "04054", desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
 	@Test
 	public void testCreditPartiallyPaidInvoice_3_TaxIncl()
 	{
@@ -186,9 +178,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 		testCreditPartiallyPaidInvoice(true, new BigDecimal("-0.01"), 3);
 	}
 
-	@IntegrationTest(
-			tasks = "04054",
-			desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
+	@IntegrationTest(tasks = "04054", desc = "Creates an invoice, creates a partial payment and then a credit memo for the invoice")
 	@Test
 	public void testCreditPartiallyPaidInvoice_3_TaxExcl()
 	{
@@ -257,8 +247,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 				true, // completeAndAllocate
 				true, // isReferenceOriginalOrder
 				true, // isReferenceInvoice
-				isCreditedInvoiceReinvoicable 
-		);
+				isCreditedInvoiceReinvoicable);
 
 		final Mutable<I_C_Invoice> creditMemoRef = new Mutable<I_C_Invoice>();
 		Services.get(ITrxManager.class).run(new TrxRunnable()
@@ -273,7 +262,7 @@ public class InvoiceTests extends AIntegrationTestDriver
 			}
 		});
 		final I_C_Invoice creditMemo = creditMemoRef.getValue();
-		
+
 		InterfaceWrapperHelper.refresh(invoice);
 		InterfaceWrapperHelper.refresh(creditMemo);
 
@@ -282,7 +271,19 @@ public class InvoiceTests extends AIntegrationTestDriver
 		if (creditCtx.isReferenceInvoice())
 		{
 			assertThat(creditMemo.getRef_Invoice_ID(), is(invoice.getC_Invoice_ID()));
-			assertThat(invoice.getRef_CreditMemo_ID(), is(creditMemo.getC_Invoice_ID()));
+
+			final Iterator<I_C_Invoice> creditMemosForInvoice = Services.get(IInvoiceDAO.class).retrieveCreditMemosForInvoice(invoice);
+
+			boolean found = false;
+			while (creditMemosForInvoice.hasNext())
+			{
+				if (creditMemosForInvoice.next().getC_Invoice_ID() == creditMemo.getC_Invoice_ID())
+				{
+					found = true;
+					break;
+				}
+			}
+			Assert.assertTrue(found);
 		}
 		assertThat(invoice.isPaid(), is(true));
 		assertThat(creditMemo.isPaid(), is(true));
@@ -309,7 +310,8 @@ public class InvoiceTests extends AIntegrationTestDriver
 	 * 3	 10	 	8%	 		0.01
 	 * 3	 20	 	2,5%		179.99
 	 * 3	 30	 	2,5%		309.99
-	 * </pre>
+	 *            </pre>
+	 * 
 	 * @return
 	 */
 	private I_C_Invoice mkInvoice(final boolean taxIncluded, final int invoiceNo)
