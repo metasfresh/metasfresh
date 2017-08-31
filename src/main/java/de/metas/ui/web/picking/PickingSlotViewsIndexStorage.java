@@ -89,7 +89,9 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 		pickingView.setPickingSlotView(rowId, PickingSlotView.cast(pickingSlotView));
 	}
 
-	public static ViewId createViewId(final ViewId pickingViewId, final DocumentId pickingRowId)
+	public static ViewId createViewId(
+			@NonNull final ViewId pickingViewId, 
+			@NonNull final DocumentId pickingRowId)
 	{
 		if (!PickingConstants.WINDOWID_PickingView.equals(pickingViewId.getWindowId()))
 		{
