@@ -278,14 +278,16 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public I_AD_Tab retrieveFirstTab(final I_AD_Window window)
+	public I_AD_Tab retrieveFirstTab(final int adWindowId)
 	{
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Tab.class, window)
+				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, window.getAD_Window_ID())
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_SeqNo, 10)
 				.create()
 				.firstOnly(I_AD_Tab.class);
 	}
+	
+	
 }

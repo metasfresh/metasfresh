@@ -270,7 +270,7 @@ public final class AMenu extends CFrame
 	private final WindowListener mainWindowListener = new WindowAdapter()
 	{
 		@Override
-		public void windowClosing(WindowEvent e)
+		public void windowClosing(final WindowEvent e)
 		{
 			if (mainWindow == null || e.getWindow() != mainWindow)
 			{
@@ -284,7 +284,7 @@ public final class AMenu extends CFrame
 		}
 
 		@Override
-		public void windowClosed(WindowEvent e)
+		public void windowClosed(final WindowEvent e)
 		{
 			// NOTE: here we are handling the case when user closes the window from a programatically button
 			if (mainWindow == null || e.getWindow() != mainWindow)
@@ -304,7 +304,7 @@ public final class AMenu extends CFrame
 	 *
 	 * @param splash splash window
 	 */
-	private void initSystem(Splash splash)
+	private void initSystem(final Splash splash)
 	{
 		// Default Image
 		this.setIconImage(Adempiere.getProductIconSmall());
@@ -601,7 +601,7 @@ public final class AMenu extends CFrame
 	 *
 	 * @param value true if busy
 	 */
-	protected final void setBusy(boolean value)
+	protected final void setBusy(final boolean value)
 	{
 		this.busy = value;
 		if (value)
@@ -617,7 +617,7 @@ public final class AMenu extends CFrame
 	 * @param e PropertyChangeEvent
 	 */
 	@Override
-	public void propertyChange(PropertyChangeEvent e)
+	public void propertyChange(final PropertyChangeEvent e)
 	{
 		final MTreeNode node = (MTreeNode)e.getNewValue();
 		// ignore if no node (shall not happen)
@@ -647,7 +647,7 @@ public final class AMenu extends CFrame
 	 * @param e ActionEvent
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e)
+	public void actionPerformed(final ActionEvent e)
 	{
 		// Buttons
 		if (e.getSource() == bNotes)
@@ -724,7 +724,7 @@ public final class AMenu extends CFrame
 			throw new AdempiereException("No window found for menu " + m_request_Menu_ID);
 		}
 
-		final I_AD_Tab requestTab = Services.get(IADWindowDAO.class).retrieveFirstTab(requestWindow);
+		final I_AD_Tab requestTab = Services.get(IADWindowDAO.class).retrieveFirstTab(requestWindow.getAD_Window_ID());
 
 		if (requestTab == null)
 		{
