@@ -10,8 +10,11 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Tab;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
@@ -102,13 +105,28 @@ public class HUEditorViewFactory implements IViewFactory
 		final DocumentEntityDescriptor huEntityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(WEBUI_HU_Constants.WEBUI_HU_Window_ID);
 
 		//
+		// Static where clause
+		final StringBuilder sqlWhereClause = new StringBuilder();
+		{
+			sqlWhereClause.append(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null"); // top level
+			sqlWhereClause.append("\n AND " + I_M_HU.COLUMNNAME_IsActive + "=" + DB.TO_BOOLEAN(Boolean.TRUE)); // active
+
+			// Consider window tab's where clause if any
+			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt());
+			if(!Check.isEmpty(huTab.getWhereClause(), true))
+			{
+				sqlWhereClause.append("\n AND (").append(huTab.getWhereClause()).append(")");
+			}
+		}
+
+		//
 		// Start preparing the sqlViewBinding builder
 		final List<String> displayFieldNames = ImmutableList.of(I_M_HU.COLUMNNAME_M_HU_ID);
+
 		final SqlViewBinding.Builder sqlViewBinding = SqlViewBinding.builder()
 				.setTableName(I_M_HU.Table_Name)
 				.setDisplayFieldNames(displayFieldNames)
-				.setSqlWhereClause(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null" // top level
-						+ " AND " + I_M_HU.COLUMNNAME_IsActive + "=" + DB.TO_BOOLEAN(Boolean.TRUE)) // active
+				.setSqlWhereClause(sqlWhereClause.toString())
 				.setRowIdsConverter(HUSqlViewRowIdsConverter.instance);
 
 		//
