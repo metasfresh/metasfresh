@@ -9,6 +9,9 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorRow;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
 
 /*
@@ -49,8 +52,20 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		// TODO
-		return super.checkPreconditionsApplicable();
+		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
+		if (!selectedRowIds.isSingleDocumentId())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+		}
+
+		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
+		final HUEditorRow huRow = getView().getById(rowId);
+		if (!huRow.isLU() && !huRow.isTU())
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a LU or TU");
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
