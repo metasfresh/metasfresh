@@ -578,7 +578,6 @@ public class HUPickingSlotBL
 
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 
 		//

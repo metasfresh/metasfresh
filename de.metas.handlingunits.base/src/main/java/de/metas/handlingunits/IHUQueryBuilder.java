@@ -434,7 +434,7 @@ public interface IHUQueryBuilder
 	/**
 	 * Adds HUs which shall be selected. No other HUs, beside those ones will be considered.
 	 *
-	 * If the given list is empty, this method will do nothing.
+	 * If the given list {@code null} this method will do nothing. If it is empty, no HUs will be considered.
 	 *
 	 * @param onlyHUIds
 	 */

@@ -8,13 +8,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.wrapper.POJOInterfaceWrapperHelper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.IContextAware;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
-import org.codehaus.groovy.runtime.wrappers.PojoWrapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -170,7 +167,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		tu.setM_Locator_ID(LOCATOR_ID);
 		save(tu);
 		POJOWrapper.setInstanceName(tu, "tu");
-		
+
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setM_HU(tu);
 		save(pickingCandidate);
@@ -186,7 +183,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		vhu.setM_HU_Item_Parent(item);
 		save(vhu);
 		POJOWrapper.setInstanceName(vhu, "vhu");
-		
+
 		final List<I_M_HU> result = common(vhu);
 		assertThat(result)
 				.as("TUs referenced by a picking candidate should be filtered out, together with their child-HUs")
@@ -291,12 +288,12 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		tu.setM_HU_Item_Parent(luItem);
 		save(tu);
 		POJOWrapper.setInstanceName(tu, "tu");
-		
+
 		final I_M_HU_Item tuItem = newInstance(I_M_HU_Item.class);
 		tuItem.setItemType(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 		tuItem.setM_HU(tu);
 		save(tuItem);
-		
+
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		vhu.setM_Locator_ID(LOCATOR_ID);
@@ -317,6 +314,12 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 
 	private final int LOCATOR_ID = 10;
 
+	/**
+	 * Set up the storage engine to return the given {@code vhu} and call the method under test.
+	 * 
+	 * @param vhu
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	private List<I_M_HU> common(final I_M_HU vhu)
 	{
