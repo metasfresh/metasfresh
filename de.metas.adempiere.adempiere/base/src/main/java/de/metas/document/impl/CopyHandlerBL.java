@@ -29,7 +29,7 @@ import java.util.Map;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
-import org.adempiere.util.Pair;
+import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.util.Util;
 
 import de.metas.document.ICopyHandler;
@@ -46,7 +46,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 	final Map<ICopyHandler<?>, Class<?>> handler2Class = new LinkedHashMap<ICopyHandler<?>, Class<?>>();
 
 	@Override
-	public <T> void registerCopyHandler(final Class<T> clazz, final IQueryFilter<Pair<T, T>> filter, final ICopyHandler<? extends T> handler)
+	public <T> void registerCopyHandler(final Class<T> clazz, final IQueryFilter<ImmutablePair<T, T>> filter, final ICopyHandler<? extends T> handler)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableNameOrNull(clazz);
 		if (Check.isEmpty(tableName))
@@ -152,7 +152,7 @@ public class CopyHandlerBL implements ICopyHandlerBL
 
 		@SuppressWarnings("unchecked")
 		// if reached this point we made sure that the cast won't fail.
-		final IQueryFilter<Pair<T, T>> filter = (IQueryFilter<Pair<T, T>>)handler2Filter.get(handler);
+		final IQueryFilter<ImmutablePair<T, T>> filter = (IQueryFilter<ImmutablePair<T, T>>)handler2Filter.get(handler);
 
 		if (!filter.accept(mkTuple(from, to)))
 		{
@@ -162,9 +162,9 @@ public class CopyHandlerBL implements ICopyHandlerBL
 		return true;
 	}
 
-	private <T> Pair<T, T> mkTuple(final T from, final T to)
+	private <T> ImmutablePair<T, T> mkTuple(final T from, final T to)
 	{
-		return new Pair<T, T>(from, to);
+		return new ImmutablePair<T, T>(from, to);
 	}
 
 	@SuppressWarnings("unchecked")

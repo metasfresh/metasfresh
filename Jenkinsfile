@@ -94,9 +94,6 @@ void invokeZapier(
 final String MF_UPSTREAM_BRANCH = params.MF_UPSTREAM_BRANCH ?: env.BRANCH_NAME
 echo "params.MF_UPSTREAM_BRANCH=${params.MF_UPSTREAM_BRANCH}; env.BRANCH_NAME=${env.BRANCH_NAME}; => MF_UPSTREAM_BRANCH=${MF_UPSTREAM_BRANCH}"
 
-final String MF_BUILD_ID = params.MF_BUILD_ID ?: env.BUILD_NUMBER
-echo "params.MF_BUILD_ID=${params.MF_BUILD_ID}; env.BUILD_NUMBER=${env.BUILD_NUMBER}; => MF_BUILD_ID=${MF_BUILD_ID}"
-
 // keep the last 20 builds for master and stable, but onkly the last 5 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (MF_UPSTREAM_BRANCH == 'master' || MF_UPSTREAM_BRANCH == 'stable') ? '20' : '5'
 
@@ -121,10 +118,6 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 
 		booleanParam(defaultValue: false, description: '''Set to true to only create the distributable files and assume that the underlying jars were already created and deployed''',
 			name: 'MF_SKIP_TO_DIST'),
-
-		string(defaultValue: '',
-			description: 'Will be forwarded to jobs triggered by this job. Leave empty to go with <code>env.BUILD_NUMBER</code>',
-			name: 'MF_BUILD_ID')
 	]),
 	pipelineTriggers([]),
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
@@ -310,7 +303,7 @@ stage('Invoke downstream jobs')
 			metasfresh_webui: {
 				// TODO: rename the build job to metasfresh-webui-api
 				final webuiDownStreamJobMap = invokeDownStreamJobs(
-          MF_BUILD_ID,
+          env.BUILD_NUMBER,
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
@@ -321,7 +314,7 @@ stage('Invoke downstream jobs')
 			metasfresh_procurement_webui: {
 				// yup, metasfresh-procurement-webui does share *some* code with this repo
 				final procurementWebuiDownStreamJobMap = invokeDownStreamJobs(
-          MF_BUILD_ID,
+          env.BUILD_NUMBER,
           MF_UPSTREAM_BRANCH,
           MF_ARTIFACT_VERSIONS['metasfresh-parent'],
           MF_VERSION,
@@ -346,7 +339,7 @@ stage('Invoke downstream jobs')
 	echo "Invoking downstream jobs 'metasfresh-dist' and 'metasfresh-dist-orgs' with preferred branch=${MF_UPSTREAM_BRANCH}"
 
 	final List distJobParameters = [
-			string(name: 'MF_UPSTREAM_BUILDNO', value: MF_BUILD_ID), // can be used together with the upstream branch name to construct this upstream job's URL
+			string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER), // can be used together with the upstream branch name to construct this upstream job's URL
 			string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
 			string(name: 'MF_METASFRESH_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh']), // the downstream job shall use *this* metasfresh.version, as opposed to whatever is the latest at the time it runs
 			string(name: 'MF_METASFRESH_PROCUREMENT_WEBUI_VERSION', value: MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui']),
@@ -371,7 +364,7 @@ stage('Invoke downstream jobs')
 			  wait: true
 		},
     zapier: {
-      invokeZapier(MF_BUILD_ID, // upstreamBuildNo
+      invokeZapier(env.BUILD_NUMBER, // upstreamBuildNo
         MF_UPSTREAM_BRANCH, // upstreamBranch
         MF_ARTIFACT_VERSIONS['metasfresh'], // metasfreshVersion
         MF_ARTIFACT_VERSIONS['metasfresh-procurement-webui'], // metasfreshProcurementWebuiVersion

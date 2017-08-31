@@ -3,6 +3,7 @@ package de.metas.handlingunits;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
@@ -22,6 +23,8 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Status;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import lombok.Builder.Default;
+import lombok.NonNull;
 
 public interface IHandlingUnitsBL extends ISingletonService
 {
@@ -93,7 +96,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
-	
+
 	/**
 	 * @param hu
 	 * @return true if HU was shipped
@@ -217,10 +220,35 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
-	 * @param hu
-	 * @return top level HUs; never return null
+	 * @param request see {@link TopLevelHusRequest}.
+	 * 
+	 * @return top level HUs; never return {@code null}
 	 */
-	List<I_M_HU> getTopLevelHUs(List<I_M_HU> hus);
+	List<I_M_HU> getTopLevelHUs(TopLevelHusRequest request);
+
+	@lombok.Builder
+	@lombok.Value
+	final static class TopLevelHusRequest
+	{
+		/**
+		 * May be empty, but not {@code null}
+		 */
+		@NonNull
+		List<I_M_HU> hus;
+
+		/**
+		 * If {@code true} then e.g. for a CU, not only the LU will be returned, but also the intermediate TU and the CU itself.<br>
+		 * If {@code false}, then any hu will only be returned if it is a top level HU itself.
+		 */
+		boolean includeAll;
+
+		/**
+		 * Optional, if not provided, then every hu passes the default filter.<br>
+		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
+		 */
+		@Default
+		Predicate<I_M_HU> filter = (hu -> true);
+	}
 
 	/**
 	 * Gets top level parent of given HU (i.e. the top of hierarchy) or given HU if that HU does not have a parent.
@@ -347,7 +375,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	boolean isPhysicalHU(String huStatus);
 
-
 	/**
 	 * Set the status of the HU. <br>
 	 * In case we are dealing with a status that implies moving to/from Gebindelager, also do the collection of HUs in the huContext given as parameter (task 07617).<br>
@@ -371,7 +398,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @param forceFetchPackingMaterial
 	 */
 	void setHUStatus(IHUContext huContext, I_M_HU hu, String huStatus, boolean forceFetchPackingMaterial);
-	
+
 	/**
 	 * Activate the HU (assuming it was Planning)
 	 * 
