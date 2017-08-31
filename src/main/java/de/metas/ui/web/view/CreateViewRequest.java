@@ -65,7 +65,9 @@ public final class CreateViewRequest
 		return new Builder(windowId, viewType);
 	}
 
-	public static final Builder filterViewBuilder(@NonNull final IView view, @NonNull final JSONFilterViewRequest filterViewRequest)
+	public static final Builder filterViewBuilder(
+			@NonNull final IView view,
+			@NonNull final JSONFilterViewRequest filterViewRequest)
 	{
 		final List<JSONDocumentFilter> jsonFilters = filterViewRequest.getFilters();
 
@@ -77,11 +79,12 @@ public final class CreateViewRequest
 				.setFiltersFromJSON(jsonFilters)
 				// .setFilterOnlyIds(filterOnlyIds) // N/A on this level.
 				.addActions(view.getActions())
-				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors())
-				;
+				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
-	public static final Builder deleteStickyFilterBuilder(@NonNull final IView view, @NonNull final String stickyFilterIdToDelete)
+	public static final Builder deleteStickyFilterBuilder(
+			@NonNull final IView view,
+			@NonNull final String stickyFilterIdToDelete)
 	{
 		final List<DocumentFilter> stickyFilters = view.getStickyFilters()
 				.stream()
@@ -89,9 +92,9 @@ public final class CreateViewRequest
 				.collect(ImmutableList.toImmutableList());
 
 		// FIXME: instead of removing all referencing document paths (to prevent creating sticky filters from them),
-		// we shall remove only those is are related to "stickyFilterIdToDelete". 
+		// we shall remove only those is are related to "stickyFilterIdToDelete".
 		final Set<DocumentPath> referencingDocumentPaths = ImmutableSet.of(); // view.getReferencingDocumentPaths();
-		
+
 		return builder(view.getViewId().getWindowId(), view.getViewType())
 				.setParentViewId(view.getParentViewId())
 				.setParentRowId(view.getParentRowId())
@@ -110,13 +113,33 @@ public final class CreateViewRequest
 	private final DocumentId parentRowId;
 
 	private final Set<DocumentPath> referencingDocumentPaths;
+
+	/**
+	 * Sticky filters can't be changed by the user.<br>
+	 * Use them to e.g. restrict the available HUs to a particular warehouse if it doesn't make sense to select HUs from foreign WHs in a given window.
+	 * <p>
+	 * Multiple sticky filters are always <code>AND</code>ed.
+	 */
 	private final List<DocumentFilter> stickyFilters;
+
+	/**
+	 * Filters can be changed by the user.
+	 * <p>
+	 * Multiple filters are always <code>AND</code>ed.
+	 */
 	private final DocumentFiltersList filters;
+
+	/**
+	 * This one is becoming king of legacy.... it's a particular kind of sticky filter which filters by given IDs.
+	 * 
+	 * @deprecated please rather use {@link #getFilters()} {@link #getStickyFilters()}.
+	 */
+	@Deprecated
 	private final Set<Integer> filterOnlyIds;
 
 	private final ViewActionDescriptorsList actions;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
-	
+
 	private CreateViewRequest(final Builder builder)
 	{
 		windowId = builder.getWindowId();
@@ -186,7 +209,7 @@ public final class CreateViewRequest
 		private final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors = new ArrayList<>();
 
 		private Builder(
-				@NonNull final WindowId windowId, 
+				@NonNull final WindowId windowId,
 				@NonNull final JSONViewDataType viewType)
 		{
 			this.windowId = windowId;
@@ -218,13 +241,13 @@ public final class CreateViewRequest
 		{
 			return parentViewId;
 		}
-		
+
 		public Builder setParentRowId(DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
 		}
-		
+
 		private DocumentId getParentRowId()
 		{
 			return parentRowId;
@@ -327,12 +350,12 @@ public final class CreateViewRequest
 		{
 			return actions;
 		}
-		
+
 		private List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 		{
 			return additionalRelatedProcessDescriptors;
 		}
-		
+
 		public Builder addAdditionalRelatedProcessDescriptor(@NonNull final RelatedProcessDescriptor relatedProcessDescriptor)
 		{
 			additionalRelatedProcessDescriptors.add(relatedProcessDescriptor);

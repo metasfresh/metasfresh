@@ -17,7 +17,6 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
-import de.metas.ui.web.picking.process.WEBUI_Picking_AddHUToPickingSlot;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
@@ -157,11 +156,6 @@ public class PickingSlotViewFactory implements IViewFactory
 						.webuiQuickAction(true)
 						.build(),
 
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_AddHUToPickingSlot.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_OpenHUsToPick.class))
 						.anyTable().anyWindow()

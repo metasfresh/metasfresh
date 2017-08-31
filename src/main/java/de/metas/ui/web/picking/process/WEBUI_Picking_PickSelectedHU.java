@@ -50,6 +50,7 @@ public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate imple
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
+
 	@Autowired
 	private IViewsRepository viewsRepo;
 

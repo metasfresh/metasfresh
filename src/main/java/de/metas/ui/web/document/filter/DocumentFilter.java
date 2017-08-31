@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.util.Check;
@@ -102,7 +103,7 @@ public final class DocumentFilter
 		return filterId;
 	}
 	
-	public String getCaption(final String adLanguage)
+	public String getCaption(@Nullable final String adLanguage)
 	{
 		return caption != null ? caption.translate(adLanguage) : null;
 	}

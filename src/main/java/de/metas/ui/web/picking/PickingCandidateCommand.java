@@ -187,11 +187,13 @@ public class PickingCandidateCommand
 	{
 		I_M_Picking_Candidate pickingCandidatePO = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
 				.firstOnly(I_M_Picking_Candidate.class);
+
 		if (pickingCandidatePO == null)
 		{
 			pickingCandidatePO = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
