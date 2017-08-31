@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import org.adempiere.util.lang.IMutable;
 
@@ -67,6 +66,9 @@ public interface IHUIteratorListener
 
 	Result beforeHU(IMutable<I_M_HU> hu);
 
+	/**
+	 * Method is called after a the given <code>hu</code> has been visited by the iterator. May not return {@link Result#SKIP_DOWNSTREAM}.
+	 */
 	Result afterHU(I_M_HU hu);
 
 	Result beforeHUItem(IMutable<I_M_HU_Item> item);

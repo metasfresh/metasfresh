@@ -504,7 +504,7 @@ public class FreshSwingPackageItems extends SwingPackageBoxesItems
 		//
 		// Find out which are the available HUs from which we can take
 		final FreshProductKey productKey = getSelectedProduct();
-		final List<I_M_HU> availableSourceHUs = productKey.findAvailableHUs();
+		final List<I_M_HU> availableSourceHUs = productKey.findAvailableHUs(true); // considerAttributes = true
 
 		availableSourceHUs.remove(targetHU); // remove target from source, just to be sure
 

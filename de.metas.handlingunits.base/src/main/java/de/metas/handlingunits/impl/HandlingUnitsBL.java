@@ -588,32 +588,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public List<I_M_HU> getTopLevelHUs(final List<I_M_HU> hus)
+	public List<I_M_HU> getTopLevelHUs(@NonNull final TopLevelHusRequest request)
 	{
-		Check.assumeNotNull(hus, "hus not null");
-
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final Set<Integer> seenM_HU_IDs = new HashSet<>();
-		final List<I_M_HU> husTopLevel = new ArrayList<>();
+		final List<I_M_HU> husResult = new ArrayList<>();
 
-		for (final I_M_HU hu : hus)
+		for (final I_M_HU hu : request.getHus())
 		{
 			I_M_HU parent = hu;
-
 			while (parent != null && seenM_HU_IDs.add(parent.getM_HU_ID()))
 			{
-				final I_M_HU parentNew = handlingUnitsDAO.retrieveParent(parent);
-				if (parentNew == null)
+				if (!request.getFilter().test(parent))
 				{
-					husTopLevel.add(parent);
+					break; // don't go up any further
 				}
 
+				final I_M_HU parentNew = handlingUnitsDAO.retrieveParent(parent);
+				final boolean parentIsTopLevel = parentNew == null;
+
+				if (request.isIncludeAll() || parentIsTopLevel)
+				{
+					husResult.add(parent);
+				}
 				parent = parentNew;
 			}
 		}
-
-		return husTopLevel;
+		return husResult;
 	}
 
 	@Override
