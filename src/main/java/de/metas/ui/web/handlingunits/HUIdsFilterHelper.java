@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -57,13 +58,18 @@ public final class HUIdsFilterHelper
 	@ToString
 	public static final class HUIdsFilterData
 	{
-		public static HUIdsFilterData ofHUIds(final Collection<Integer> huIds)
+		/**
+		 * 
+		 * @param huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
+		 * @return
+		 */
+		public static HUIdsFilterData ofHUIds(@NonNull final Collection<Integer> huIds)
 		{
 			final IHUQueryBuilder initialFilter = null;
 			return new HUIdsFilterData(huIds, initialFilter);
 		}
 
-		public static HUIdsFilterData ofHUQuery(final IHUQueryBuilder initialHUQuery)
+		public static HUIdsFilterData ofHUQuery(@NonNull final IHUQueryBuilder initialHUQuery)
 		{
 			final Collection<Integer> huIds = null;
 			return new HUIdsFilterData(huIds, initialHUQuery);
@@ -76,17 +82,21 @@ public final class HUIdsFilterHelper
 			return new HUIdsFilterData(huIds, initialHUQuery);
 		}
 
+		/**
+		 * Important: {@code null} means "no restriction" (i.e. we can select allHUs) whereas empty means that no HU matches the filter.
+		 */
 		private final ImmutableSet<Integer> initialHUIds;
+
 		private final IHUQueryBuilder initialHUQuery;
 
 		private final Set<Integer> mustHUIds;
 		private final Set<Integer> shallNotHUIds;
 
 		private HUIdsFilterData(
-				@Nullable final Collection<Integer> initialHUIds, 
+				@Nullable final Collection<Integer> initialHUIds,
 				@Nullable final IHUQueryBuilder initialHUQuery)
 		{
-			this.initialHUIds = initialHUIds != null ? ImmutableSet.copyOf(initialHUIds) : ImmutableSet.of();
+			this.initialHUIds = initialHUIds == null ? null : ImmutableSet.copyOf(initialHUIds);
 			this.initialHUQuery = initialHUQuery;
 			mustHUIds = new HashSet<>();
 			shallNotHUIds = new HashSet<>();
@@ -165,9 +175,8 @@ public final class HUIdsFilterHelper
 
 	public static final String FILTER_ID = "huIds";
 	private static final String FILTER_PARAM_Data = "$data";
-	
-	public static final transient HUIdsSqlDocumentFilterConverter SQL_DOCUMENT_FILTER_CONVERTER = new HUIdsSqlDocumentFilterConverter();
 
+	public static final transient HUIdsSqlDocumentFilterConverter SQL_DOCUMENT_FILTER_CONVERTER = new HUIdsSqlDocumentFilterConverter();
 
 	public static final DocumentFilter findExistingOrNull(final Collection<DocumentFilter> filters)
 	{
@@ -181,7 +190,12 @@ public final class HUIdsFilterHelper
 				.findFirst().orElse(null);
 	}
 
-	public static final DocumentFilter createFilter(final Collection<Integer> huIds)
+	/**
+	 * @param huIds huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
+	 * 
+	 * @return
+	 */
+	public static final DocumentFilter createFilter(@NonNull final Collection<Integer> huIds)
 	{
 		final HUIdsFilterData filterData = HUIdsFilterData.ofHUIds(huIds);
 		return DocumentFilter.singleParameterFilter(FILTER_ID, FILTER_PARAM_Data, Operator.EQUAL, filterData);
@@ -233,6 +247,9 @@ public final class HUIdsFilterHelper
 
 	public static final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterConverter
 	{
+		@VisibleForTesting
+		static final String SQL_TRUE = "1=1";
+
 		private HUIdsSqlDocumentFilterConverter()
 		{
 		}
@@ -243,9 +260,9 @@ public final class HUIdsFilterHelper
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
 			final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
 
-			if (onlyHUIds.isEmpty() && !huIdsFilter.hasInitialHUQuery())
+			if (onlyHUIds == null && !huIdsFilter.hasInitialHUQuery())
 			{
-				return "1=1"; // pass through
+				return SQL_TRUE; // no restrictions were specified; pass through
 			}
 
 			//
@@ -258,7 +275,7 @@ public final class HUIdsFilterHelper
 			huQuery.setContext(PlainContextAware.newOutOfTrx());
 
 			// Only HUs
-			if (!onlyHUIds.isEmpty())
+			if (onlyHUIds != null)
 			{
 				huQuery.addOnlyHUIds(onlyHUIds);
 			}

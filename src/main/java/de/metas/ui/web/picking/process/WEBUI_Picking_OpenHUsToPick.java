@@ -92,7 +92,7 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 				.build();
 
 		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(request);
-		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu->hu.getM_HU_ID()).collect(Collectors.toList());
+		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu -> hu.getM_HU_ID()).collect(Collectors.toList());
 
 		final RelatedProcessDescriptor processToPickSelectedHU = RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))

@@ -130,7 +130,7 @@ public final class CreateViewRequest
 	private final DocumentFiltersList filters;
 
 	/**
-	 * This one is becoming king of legacy.... it's a particular filter which filters by given IDs.
+	 * This one is becoming king of legacy.... it's a particular kind of sticky filter which filters by given IDs.
 	 * 
 	 * @deprecated please rather use {@link #getFilters()} {@link #getStickyFilters()}.
 	 */

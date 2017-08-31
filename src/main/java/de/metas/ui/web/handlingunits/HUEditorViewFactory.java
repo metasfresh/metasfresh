@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
@@ -44,6 +46,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -106,8 +109,7 @@ public class HUEditorViewFactory implements IViewFactory
 				.setDisplayFieldNames(displayFieldNames)
 				.setSqlWhereClause(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null" // top level
 						+ " AND " + I_M_HU.COLUMNNAME_IsActive + "=" + DB.TO_BOOLEAN(Boolean.TRUE)) // active
-				.setRowIdsConverter(HUSqlViewRowIdsConverter.instance)
-		;
+				.setRowIdsConverter(HUSqlViewRowIdsConverter.instance);
 
 		//
 		// View Fields
@@ -133,7 +135,7 @@ public class HUEditorViewFactory implements IViewFactory
 					.addViewFilterConverter(HUBarcodeSqlDocumentFilterConverter.FILTER_ID, HUBarcodeSqlDocumentFilterConverter.instance)
 					.addViewFilterConverter(HUIdsFilterHelper.FILTER_ID, HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER);
 		}
-		
+
 		//
 		return sqlViewBinding.build();
 	}
@@ -223,7 +225,9 @@ public class HUEditorViewFactory implements IViewFactory
 			referencingTableName = null;
 		}
 
+		@SuppressWarnings("deprecation") // as long as the deprecated getFilterOnlyIds() is around we can't ignore it
 		final List<DocumentFilter> stickyFilters = extractStickyFilters(request.getStickyFilters(), request.getFilterOnlyIds());
+
 		final List<DocumentFilter> filters = request.getOrUnwrapFilters(getSqlViewBinding().getViewFilterDescriptors());
 
 		final HUEditorView.Builder huViewBuilder = HUEditorView.builder(getSqlViewBinding())
@@ -248,13 +252,22 @@ public class HUEditorViewFactory implements IViewFactory
 		return huViewBuilder.build();
 	}
 
-	private static List<DocumentFilter> extractStickyFilters(final List<DocumentFilter> requestStickyFilters, final Set<Integer> huIds)
+	/**
+	 * 
+	 * @param requestStickyFilters
+	 * @param huIds {@code null} means "no restriction". Empty means "select none"
+	 * @return
+	 */
+	private static List<DocumentFilter> extractStickyFilters(
+			@NonNull final List<DocumentFilter> requestStickyFilters,
+			@Nullable final Set<Integer> huIds)
 	{
-		List<DocumentFilter> stickyFilters = new ArrayList<>(requestStickyFilters);
+		final List<DocumentFilter> stickyFilters = new ArrayList<>(requestStickyFilters);
 
 		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExistingOrNull(stickyFilters);
+
 		// Create the sticky filter by HUIds from builder's huIds (if any huIds)
-		if (stickyFilter_HUIds_Existing == null && !huIds.isEmpty())
+		if (stickyFilter_HUIds_Existing == null && huIds != null)
 		{
 			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(huIds);
 			stickyFilters.add(0, stickyFilter_HUIds_New);
