@@ -125,7 +125,7 @@ if(params.MF_TRIGGER_DOWNSTREAM_BUILDS)
    build job: jobName,
      parameters: [
        string(name: 'MF_UPSTREAM_BRANCH', value: MF_UPSTREAM_BRANCH),
-       string(name: 'MF_UPSTREAM_BUILDNO', value: MF_UPSTREAM_BUILDNO),
+       string(name: 'MF_UPSTREAM_BUILDNO', value: env.BUILD_NUMBER),
        string(name: 'MF_UPSTREAM_VERSION', value: MF_VERSION),
        string(name: 'MF_UPSTREAM_JOBNAME', value: 'metasfresh-webui-frontend'),
        booleanParam(name: 'MF_TRIGGER_DOWNSTREAM_BUILDS', value: true), // metasfresh shall trigger the "-dist" jobs
