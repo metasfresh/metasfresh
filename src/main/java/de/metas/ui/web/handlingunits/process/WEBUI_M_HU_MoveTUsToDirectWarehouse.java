@@ -1,13 +1,14 @@
 package de.metas.ui.web.handlingunits.process;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.Iterators;
-
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -36,15 +37,17 @@ import de.metas.ui.web.window.model.DocumentCollection;
  */
 
 /**
- * HU Editor: Move selected HU to direct warehouse (aka Materialentnahme)
+ * HU Editor: Extract requested amount of TUs and move them to direct warehouse (aka Materialentnahme)
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
+public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	@Autowired
 	private DocumentCollection documentsCollection;
+
+	@Param(parameterName = "QtyTU")
+	private int p_QtyTU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -57,20 +60,24 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 
 		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
 		final HUEditorRow huRow = getView().getById(rowId);
-		if (!huRow.isTopLevel())
+		if (!huRow.isLU() && !huRow.isTU())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("not a top level HU");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("not a LU or TU");
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	@RunOutOfTrx
+	// @RunOutOfTrx // run in transaction!
 	protected String doIt()
 	{
-		final I_M_HU hu = getRecord(I_M_HU.class);
-		
+		final I_M_HU topLevelHU = getRecord(I_M_HU.class);
+
+		final boolean isOwnPackingMaterials = true;
+		final List<I_M_HU> tus = HUTransformService.getWithThreadInheritedTrx()
+				.huExtractTUs(topLevelHU, p_QtyTU, isOwnPackingMaterials);
+
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
 				.setHUView(getView())
@@ -78,7 +85,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
 				.setLoggable(this)
-				.move(Iterators.singletonIterator(hu));
+				.move(tus.iterator());
 
 		return MSG_OK;
 	}
