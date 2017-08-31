@@ -130,7 +130,8 @@ public final class CreateViewRequest
 	private final DocumentFiltersList filters;
 
 	/**
-	 * This one is becoming king of legacy.... it's a particular kind of sticky filter which filters by given IDs.
+	 * This one is becoming kind of legacy.... it's a particular kind of sticky filter which filters by given IDs.<br>
+	 * <b>Important:</b> empty means "no restriction"
 	 * 
 	 * @deprecated please rather use {@link #getFilters()} {@link #getStickyFilters()}.
 	 */
@@ -201,7 +202,13 @@ public final class CreateViewRequest
 		private DocumentId parentRowId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
+
+		/**
+		 * @deprecated see {@link CreateViewRequest#filterOnlyIds}
+		 */
+		@Deprecated
 		private Set<Integer> filterOnlyIds;
+
 		private List<DocumentFilter> stickyFilters;
 		private DocumentFiltersList filters;
 

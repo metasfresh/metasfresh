@@ -260,16 +260,16 @@ public class HUEditorViewFactory implements IViewFactory
 	 */
 	private static List<DocumentFilter> extractStickyFilters(
 			@NonNull final List<DocumentFilter> requestStickyFilters,
-			@Nullable final Set<Integer> huIds)
+			@Nullable final Set<Integer> filterOnlyIds)
 	{
 		final List<DocumentFilter> stickyFilters = new ArrayList<>(requestStickyFilters);
 
 		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExistingOrNull(stickyFilters);
 
 		// Create the sticky filter by HUIds from builder's huIds (if any huIds)
-		if (stickyFilter_HUIds_Existing == null && huIds != null)
+		if (stickyFilter_HUIds_Existing == null && filterOnlyIds != null && !filterOnlyIds.isEmpty())
 		{
-			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(huIds);
+			final DocumentFilter stickyFilter_HUIds_New = HUIdsFilterHelper.createFilter(filterOnlyIds);
 			stickyFilters.add(0, stickyFilter_HUIds_New);
 		}
 
