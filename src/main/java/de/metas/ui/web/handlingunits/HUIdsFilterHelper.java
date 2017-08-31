@@ -5,10 +5,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -81,7 +82,9 @@ public final class HUIdsFilterHelper
 		private final Set<Integer> mustHUIds;
 		private final Set<Integer> shallNotHUIds;
 
-		private HUIdsFilterData(final Collection<Integer> initialHUIds, final IHUQueryBuilder initialHUQuery)
+		private HUIdsFilterData(
+				@Nullable final Collection<Integer> initialHUIds, 
+				@Nullable final IHUQueryBuilder initialHUQuery)
 		{
 			this.initialHUIds = initialHUIds != null ? ImmutableSet.copyOf(initialHUIds) : ImmutableSet.of();
 			this.initialHUQuery = initialHUQuery;
@@ -264,10 +267,9 @@ public final class HUIdsFilterHelper
 			huQuery.addHUIdsToExclude(huIdsFilter.getShallNotHUIds());
 
 			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(huQuery.createQueryFilter());
-
 			final String sql = sqlQueryFilter.getSql();
-			final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
-			sqlParamsOut.collectAll(sqlParams);
+
+			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
 

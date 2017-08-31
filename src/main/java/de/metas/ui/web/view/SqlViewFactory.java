@@ -106,7 +106,10 @@ public class SqlViewFactory implements IViewFactory
 	@Override
 	public IView createView(final CreateViewRequest request)
 	{
-		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(request.getWindowId(), request.getViewTypeRequiredFieldCharacteristic());
+		final SqlViewBindingKey sqlViewBindingKey = new SqlViewBindingKey(
+				request.getWindowId(),
+				request.getViewTypeRequiredFieldCharacteristic());
+
 		final SqlViewBinding sqlViewBinding = getViewBinding(sqlViewBindingKey);
 		final SqlViewDataRepository sqlViewDataRepository = new SqlViewDataRepository(sqlViewBinding);
 
@@ -118,9 +121,9 @@ public class SqlViewFactory implements IViewFactory
 				.setParentRowId(request.getParentRowId())
 				.addStickyFilters(request.getStickyFilters())
 				.addStickyFilter(extractReferencedDocumentFilter(request.getWindowId(), request.getSingleReferencingDocumentPathOrNull()));
-		
+
 		final DocumentFiltersList filters = request.getFilters();
-		if(filters.isJson())
+		if (filters.isJson())
 		{
 			viewBuilder.setFiltersFromJSON(filters.getJsonFilters());
 		}

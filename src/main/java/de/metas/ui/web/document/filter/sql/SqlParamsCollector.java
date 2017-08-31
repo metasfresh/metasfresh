@@ -1,15 +1,17 @@
 package de.metas.ui.web.document.filter.sql;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -84,14 +86,26 @@ public final class SqlParamsCollector
 	}
 
 	/**
-	 * Directly append all sqlParams.
+	 * Directly append all sqlParams from the given {@code sqlQueryFilter}.
 	 * 
-	 * @deprecated Please avoid using it. It's used mainly to adapt with old code
+	 * @param sqlQueryFilter
+	 * 
+	 */
+	public void collectAll(@NonNull final ISqlQueryFilter sqlQueryFilter)
+	{
+		final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
+		collectAll(sqlParams);
+	}
+
+	/**
+	 * Directly append the given {@code sqlParams}. Please prefer using {@link #placeholder(Object)} instead.<br>
+	 * "Package" scope because currently this method is needed only by {@link SqlDefaultDocumentFilterConverter}.
+	 * 
+	 * Please avoid using it. It's used mainly to adapt with old code
 	 * 
 	 * @param sqlParams
 	 */
-	@Deprecated
-	public void collectAll(final Collection<? extends Object> sqlParams)
+	/* package */ void collectAll(final List<Object> sqlParams)
 	{
 		if (sqlParams == null || sqlParams.isEmpty())
 		{
@@ -102,7 +116,6 @@ public final class SqlParamsCollector
 		{
 			throw new IllegalStateException("Cannot append " + sqlParams + " to not collecting params");
 		}
-
 		params.addAll(sqlParams);
 	}
 

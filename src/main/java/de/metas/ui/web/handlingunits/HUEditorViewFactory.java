@@ -12,7 +12,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.util.CCache;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -315,9 +314,8 @@ public class HUEditorViewFactory implements IViewFactory
 
 			final ISqlQueryFilter sqlQueryFilter = ISqlQueryFilter.cast(queryFilter);
 			final String sql = sqlQueryFilter.getSql();
-			final List<Object> sqlParams = sqlQueryFilter.getSqlParams(Env.getCtx());
 
-			sqlParamsOut.collectAll(sqlParams);
+			sqlParamsOut.collectAll(sqlQueryFilter);
 			return sql;
 		}
 	}
