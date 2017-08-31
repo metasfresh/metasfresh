@@ -60,6 +60,9 @@ public class UserNotificationRepository
 
 	public static final String EVENT_PARAM_Important = "important";
 
+	/** AD_Message to be used when there was no AD_Message provided */
+	private static final String DEFAULT_AD_MESSAGE = "webui.window.notification.caption";
+
 	@Autowired
 	private ObjectMapper jsonMapper;
 
@@ -95,7 +98,7 @@ public class UserNotificationRepository
 						final UserNotification notification = save(event, recipientUserId);
 						return notification;
 					}
-					catch (Exception ex)
+					catch (final Exception ex)
 					{
 						logger.warn("Failed converting event to notification for recipientUserId={}: {}", recipientUserId, event, ex);
 						return null;
@@ -125,7 +128,7 @@ public class UserNotificationRepository
 		}
 		if (adMessageId <= 0)
 		{
-
+			adMessageId = Services.get(IADMessageDAO.class).retrieveIdByValue(DEFAULT_AD_MESSAGE);
 		}
 		notificationPO.setAD_Message_ID(adMessageId);
 
