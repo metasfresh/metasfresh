@@ -38,6 +38,8 @@ Here come the actual release notes:
     * New Window for the maintenance of Async Batch Types.
   * [#2289](https://github.com/metasfresh/metasfresh/issues/2289) New Window for Async Batch Parameters/ Process Audit
     * New Window for Process Audit in WebUI.
+  * [#2294](https://github.com/metasfresh/metasfresh/issues/2294) Window Layout for Picking Window in WebUI
+    * New generic Layout for the Picking Window in WebUI.
 
 ## Fixes
 

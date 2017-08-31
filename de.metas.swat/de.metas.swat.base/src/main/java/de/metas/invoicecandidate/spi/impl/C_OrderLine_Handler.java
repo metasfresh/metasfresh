@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -13,11 +15,11 @@ package de.metas.invoicecandidate.spi.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -136,7 +138,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setDiscount(orderLine.getDiscount()); // cg: 04868
 		ic.setC_Currency_ID(orderLine.getC_Currency_ID());
 
-		ic.setQtyToInvoice(Env.ZERO); // to be computed
+		ic.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		ic.setDescription(orderLine.getDescription()); // 03439
 
@@ -165,28 +167,28 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setQtyOrderedOverUnder(orderLine.getQtyOrderedOverUnder());
 
 		// 07442 activity and tax
-		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(orderLine);
 
-		// final I_M_Product product = InterfaceWrapperHelper.create(ctx, orderLine.getM_Product_ID(), I_M_Product.class, trxName);
-		final I_C_Activity activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, orderLine.getAD_Org(), orderLine.getM_Product());
-
+		final I_C_Activity activity;
+		if (orderLine.getC_Activity_ID() > 0)
+		{
+			// https://github.com/metasfresh/metasfresh/issues/2299
+			activity = orderLine.getC_Activity();
+		}
+		else
+		{
+			final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(orderLine);
+			activity = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(contextProvider, orderLine.getAD_Org(), orderLine.getM_Product());
+		}
 		ic.setC_Activity(activity);
 
 		final int taxId = Services.get(ITaxBL.class).getTax(
-				ctx
-				, ic
-				, orderLine.getC_TaxCategory_ID()
-				, orderLine.getM_Product_ID()
-				, orderLine.getC_Charge_ID() // chargeId
+				ctx, ic, orderLine.getC_TaxCategory_ID(), orderLine.getM_Product_ID(), orderLine.getC_Charge_ID() // chargeId
 				, order.getDatePromised() // billDate
 				, order.getDatePromised() // shipDate
-				, order.getAD_Org_ID()
-				, order.getM_Warehouse()
-				, order.getBill_Location_ID() // bill location id
+				, order.getAD_Org_ID(), order.getM_Warehouse(), order.getBill_Location_ID() // bill location id
 				, order.getC_BPartner_Location_ID() // ship location id
 				, order.isSOTrx() // isSOTrx
-				, trxName
-				);
+				, trxName);
 
 		ic.setC_Tax_ID(taxId);
 
