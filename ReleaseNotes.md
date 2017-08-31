@@ -51,11 +51,15 @@ Here come the actual release notes:
 
 * metasfresh-app
   * [#2036](https://github.com/metasfresh/metasfresh/issues/2036) Picking Slot Label
+    * New Feature, allowing to create a temporary Label for a dynamicly reserved Picking Slot.
   * [#2050](https://github.com/metasfresh/metasfresh/issues/2050) Window Design WebUI : Purchase candidate
     * Adopting the Purchase Candidate Window to the current Design Guidelines.
   * [#2103](https://github.com/metasfresh/metasfresh/issues/2103) Create and implement the usage of a pdf printer
+    * New Functionality that allows to create PDF Files w/ more than 1 document per File.
   * [#2109](https://github.com/metasfresh/metasfresh/issues/2109) Move Currency Records from System to Client level so user can edit them
+    * Making the Currency Records editable w/ moving them from System to Client Level.
   * [#2116](https://github.com/metasfresh/metasfresh/issues/2116) Use handler when matching partner in ESR import
+    * Improvement of ESR Payment Handler when matching a Businesspartner during Import process.
   * [#2144](https://github.com/metasfresh/metasfresh/issues/2144) Action for Warehouse Movements
     * New Action in handling Unit Editory, allowing the User to fast move selected Handling Units to another Warehouses. Material Movement Documents are created automatically on the fly.
   * [#2154](https://github.com/metasfresh/metasfresh/issues/2154) Window Design WebUI: Customer Returns Improvements
@@ -102,18 +106,18 @@ Here come the actual release notes:
     * Order and Invoice Jasper Resports now allow prices with up to 6 digits.
   * [#2226](https://github.com/metasfresh/metasfresh/issues/2226) New Window for GL_Journal in WebUI
     * New Window for GL Journal in WebUI, without Journal Batch level.
-<<<<<<< HEAD
   * [#2255](https://github.com/metasfresh/metasfresh/issues/2255) Revamp Validcombination Window
     * Adjustments done to Validcombination Window in WebUI, adapting to current design Guidelines.
-=======
   * [#2231](https://github.com/metasfresh/metasfresh/issues/2231) Add Import Partner and Product Processes Available in Import Windows
+    * Now allowing to use the Import Partner and Import Product processes in Import windows in WebUI via action Menu.
   * [#2136](https://github.com/metasfresh/metasfresh/issues/2136) add history to B2C window
->>>>>>> origin/master
+    * New Communication history in B2C Businesspartner included Tab.
 
 * metasfresh-webui-api
   * [#545](https://github.com/metasfresh/metasfresh-webui-api/issues/545) Notification Persisting
     * Now persisting the User Notifications.
   * [#546](https://github.com/metasfresh/metasfresh-webui-api/issues/546) Notification Deleting
+    * Functionality to delete your own User Notifications.
 
 * metasfresh-webui-frontend
   * [#1021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1021) Combined Filter Functionality
@@ -124,13 +128,15 @@ Here come the actual release notes:
   * [#2112](https://github.com/metasfresh/metasfresh/issues/2112) Reversing a vendor-return-InOut needs to reverse the HU states
     * Now recreating the initial Handling Unit state after reverting a vendor return
   * [#2142](https://github.com/metasfresh/metasfresh/issues/2142) Customer Returns error w/ create from Shipment in WebUI
+    * Fix for the Customer Returns Functionality, when creating it from Shipment window.
   * [#2143](https://github.com/metasfresh/metasfresh/issues/2143) Disposal reverse-correct does not recreate the HU
     * Now recreating the initial Handling Unit state after reverting a Disposal Document.
-* metasfresh-webui-api
 
 * metasfresh-webui-frontend
   * [#1140](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1140) Lookup Workflow for Batch Entry not correct
+    * Fix for the Lookup Workflow in Batch Entry mode.
   * [#1150](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1150) error reappears after you changed window
+    * Fix for the case that errors from one window also appeared again when switching to another one.
 
 # metasfresh 5.23 (2017-34)
 
