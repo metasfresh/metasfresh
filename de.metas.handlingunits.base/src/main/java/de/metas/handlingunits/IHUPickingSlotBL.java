@@ -169,18 +169,18 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 * If true we shall consider the HU attributes while searching for matching HUs.
 		 */
 		@Default
-		final boolean considerAttributes = true;
+		boolean considerAttributes = true;
 
 		/**
 		 * ShipmentSchedules for which the HUs shall be picked. May not be {@code null}.
 		 */
 		@NonNull
-		final List<I_M_ShipmentSchedule> shipmentSchedules;
+		List<I_M_ShipmentSchedule> shipmentSchedules;
 
 		/**
 		 * {@code true} by default, for backwards compatibility.
 		 */
 		@Default
-		final boolean onlyTopLevelHUs = true;
+		boolean onlyTopLevelHUs = true;
 	}
 }

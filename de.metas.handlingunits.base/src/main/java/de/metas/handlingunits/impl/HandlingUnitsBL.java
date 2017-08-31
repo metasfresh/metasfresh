@@ -598,13 +598,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		for (final I_M_HU hu : request.getHus())
 		{
 			I_M_HU parent = hu;
-			while (parent != null && seenM_HU_IDs.add(parent.getM_HU_ID()))
+			while (parent != null
+					// don't go up any further if...
+					&& seenM_HU_IDs.add(parent.getM_HU_ID()) // we already reached this parent from another low-level-HU
+					&& request.getFilter().test(parent) // our filter rejects the HU
+			)
 			{
-				if (!request.getFilter().test(parent))
-				{
-					break; // don't go up any further
-				}
-
 				final I_M_HU parentNew = handlingUnitsDAO.retrieveParent(parent);
 				final boolean parentIsTopLevel = parentNew == null;
 

@@ -576,7 +576,15 @@ public class HUPickingSlotBL
 			return Collections.emptyList();
 		}
 
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request);
+
+		final List<I_M_HU> result = retrieveFullTreeAndFilterForAlreadyPickedHUs(vhus);
+
+		return result;
+	}
+
+	private List<I_M_HU> retrieveVHUsFromStorage(final AvailableHUsToPickRequest request)
+	{
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 
@@ -622,7 +630,12 @@ public class HUPickingSlotBL
 
 			vhus.add(vhu);
 		}
+		return vhus;
+	}
 
+	private List<I_M_HU> retrieveFullTreeAndFilterForAlreadyPickedHUs(final List<I_M_HU> vhus)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		//
 		// get the the top level HUs from for our VHUs
 		final TopLevelHusRequest topLevelHusRequest = TopLevelHusRequest.builder()
@@ -657,7 +670,7 @@ public class HUPickingSlotBL
 		}
 		return result;
 	}
-
+	
 	private boolean isPicked(@NonNull final I_M_HU hu)
 	{
 		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
