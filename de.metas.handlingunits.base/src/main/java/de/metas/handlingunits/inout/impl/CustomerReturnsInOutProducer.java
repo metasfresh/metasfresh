@@ -40,7 +40,8 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector.HUpipToInOutLine;
+import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector.HUpipToHUPackingMaterialCollectorSource;
+import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -97,8 +98,8 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 	private final Set<HUToReturn> _husToReturn = new TreeSet<>(Comparator.comparing(HUToReturn::getM_HU_ID)
 			.thenComparing(HUToReturn::getOriginalReceiptInOutLineId));
 
-	private final Map<HUpipToInOutLine, Integer> huPIPToInOutLines = new TreeMap<>(Comparator.comparing(HUpipToInOutLine::getM_HU_PI_Item_Product_ID)
-			.thenComparing(HUpipToInOutLine::getOriginalInOutLineID));
+	private final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToInOutLines = new TreeMap<>(Comparator.comparing(HUpipToHUPackingMaterialCollectorSource::getM_HU_PI_Item_Product_ID)
+			.thenComparing(HUpipToHUPackingMaterialCollectorSource::getOriginalSourceID));
 
 	Map<Object, Collection<HUPackingMaterialDocumentLineCandidate>> pmCandidates = new HashMap<>();
 
@@ -124,7 +125,10 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
-			collector.addHURecursively(hu, inOutLine);
+			
+			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = new InOutLineHUPackingMaterialCollectorSource(inOutLine);
+			inOutLineSource.setIsCollectHUPipToSource(false);
+			collector.addHURecursively(hu, inOutLineSource);
 
 			// Create product (non-packing material) lines
 			{
@@ -138,7 +142,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 				}
 			}
 
-			final Map<HUpipToInOutLine, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
+			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
 			for (Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
@@ -166,7 +170,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 				list.add(entry.getValue());
 			}
 
-			for (final HUpipToInOutLine key : huPIPToOriginInOutLinesMap.keySet())
+			for (final HUpipToHUPackingMaterialCollectorSource key : huPIPToOriginInOutLinesMap.keySet())
 			{
 				final int newQtyTU = huPIPToOriginInOutLinesMap.get(key);
 				final Integer existingQtyTU = huPIPToInOutLines.get(key);
@@ -213,9 +217,9 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 				continue;
 			}
 
-			for (HUpipToInOutLine huPipToInOutLine : huPIPToInOutLines.keySet())
+			for (HUpipToHUPackingMaterialCollectorSource huPipToInOutLine : huPIPToInOutLines.keySet())
 			{
-				if (huPipToInOutLine.getOriginalInOutLineID() == returnOriginInOutLine.getM_InOutLine_ID())
+				if (huPipToInOutLine.getOriginalSourceID() == returnOriginInOutLine.getM_InOutLine_ID())
 				{
 					final Integer qtyTU = huPIPToInOutLines.get(huPipToInOutLine);
 					if (qtyTU == null)

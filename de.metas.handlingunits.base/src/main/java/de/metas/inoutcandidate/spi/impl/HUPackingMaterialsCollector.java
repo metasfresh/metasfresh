@@ -58,7 +58,6 @@ import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.impl.HUIterator;
-import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -68,8 +67,6 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import lombok.NonNull;
@@ -81,7 +78,7 @@ import lombok.Value;
  * @author tsa
  *
  */
-public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector<I_M_InOutLine>
+public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource>
 {
 	//
 	// Services
@@ -106,12 +103,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = new HashMap<>();
 	private int countTUs = 0;
 
-	private final Map<HUpipToInOutLine, Integer> huPIPToInOutLine = new TreeMap<>(Comparator.comparing(HUpipToInOutLine::getM_HU_PI_Item_Product_ID)
-			.thenComparing(HUpipToInOutLine::getOriginalInOutLineID));
+	private final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToSource = new TreeMap<>(Comparator.comparing(HUpipToHUPackingMaterialCollectorSource::getM_HU_PI_Item_Product_ID)
+			.thenComparing(HUpipToHUPackingMaterialCollectorSource::getOriginalSourceID));
 
-	public Map<HUpipToInOutLine, Integer> getHuPIPToInOutLine()
+	public Map<HUpipToHUPackingMaterialCollectorSource, Integer> getHuPIPToInOutLine()
 	{
-		return huPIPToInOutLine;
+		return huPIPToSource;
 	}
 
 	private final IHUContext huContext;
@@ -158,7 +155,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addTU(final I_M_HU tuHU, final I_M_InOutLine source)
+	public void addTU(final I_M_HU tuHU, final IHUPackingMaterialCollectorSource source)
 	{
 		final boolean remove = false;
 		addOrRemoveHU(remove, tuHU, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, source);
@@ -168,12 +165,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	public void removeTU(final I_M_HU tuHU)
 	{
 		final boolean remove = true;
-		final I_M_InOutLine source = null; // N/A
+		final IHUPackingMaterialCollectorSource source = null; // N/A
 		addOrRemoveHU(remove, tuHU, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, source);
 	}
 
 	@Override
-	public void addLU(final I_M_HU luHU, final I_M_InOutLine source)
+	public void addLU(final I_M_HU luHU, final IHUPackingMaterialCollectorSource source)
 	{
 		final boolean remove = false;
 		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, source);
@@ -183,7 +180,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	public void removeLU(final I_M_HU luHU)
 	{
 		final boolean remove = true;
-		final I_M_InOutLine source = null; // N/A
+		final IHUPackingMaterialCollectorSource source = null; // N/A
 		addOrRemoveHU(remove, luHU, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit, source);
 	}
 
@@ -201,7 +198,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private boolean addOrRemoveHU(final boolean remove,
 			final I_M_HU hu,
 			final String huUnitTypeOverride,
-			final I_M_InOutLine source)
+			final IHUPackingMaterialCollectorSource huPackingMaterialCollectorsource)
 	{
 		// Make sure we are dealing with an existing handling unit
 		if (hu == null)
@@ -287,22 +284,22 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			}
 			else
 			{
-				candidate.addSourceIfNotNull(source);
+				candidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
 				candidate.addQty(qty);
 
-				if (materialItemProduct == null || source == null)
+				if (materialItemProduct == null || huPackingMaterialCollectorsource == null)
 				{
 					continue;
 				}
 
-				if (materialItemProduct.getM_Product_ID() != source.getM_Product_ID())
+				if (materialItemProduct.getM_Product_ID() != huPackingMaterialCollectorsource.getM_Product_ID())
 				{
 					continue;
 				}
 
-				final HUpipToInOutLine currentHUPipToOrigin = new HUpipToInOutLine(materialItemProduct, source.getM_InOutLine_ID());
+				final HUpipToHUPackingMaterialCollectorSource currentHUPipToOrigin = new HUpipToHUPackingMaterialCollectorSource(materialItemProduct, huPackingMaterialCollectorsource.getRecord_ID());
 
-				Integer qtyTU = huPIPToInOutLine.get(currentHUPipToOrigin);
+				Integer qtyTU = huPIPToSource.get(currentHUPipToOrigin);
 				if (qtyTU == null)
 				{
 					qtyTU = 0;
@@ -310,7 +307,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 				if (isCollectTUNumberPerOrigin && !handlingUnitsBL.isLoadingUnit(hu))
 				{
-					huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + qty);
+					huPIPToSource.put(currentHUPipToOrigin, qtyTU + qty);
 
 				}
 
@@ -321,36 +318,30 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 						if (innerCandidate != null)
 						{
-							innerCandidate.addSourceIfNotNull(source);
+							innerCandidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
 							innerCandidate.addQty(qty);
 						}
 					}
 
-					
 					else
 					{
-						// Only applied to customer returns that are build from HUs (non-manual)
-						if (!source.getM_InOut().isSOTrx())
-						{
-							continue;
-						}
 
-						if (Services.get(IHUInOutBL.class).isCustomerReturn(source.getM_InOut()))
+						if (huPackingMaterialCollectorsource.isCollectHUPipToSource())
 						{
-							continue;
-						}
-						// check for the qty in the aggregated HU (if exists)
-						final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
 
-						if (huItem != null && handlingUnitsBL.isLoadingUnit(hu))
-						{
-							final BigDecimal includedQty = huItem.getQty();
-							huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + includedQty.intValueExact());
+							// check for the qty in the aggregated HU (if exists)
+							final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
 
-							if (innerCandidate != null)
+							if (huItem != null)
 							{
-								innerCandidate.addSourceIfNotNull(source);
-								innerCandidate.addQty(includedQty.intValueExact());
+								final BigDecimal includedQty = huItem.getQty();
+								huPIPToSource.put(currentHUPipToOrigin, qtyTU + includedQty.intValueExact());
+
+								if (innerCandidate != null)
+								{
+									innerCandidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
+									innerCandidate.addQty(includedQty.intValueExact());
+								}
 							}
 						}
 					}
@@ -403,7 +394,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * @param count how many to add
 	 * @param inOutLine
 	 */
-	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, I_M_InOutLine inOutLine)
+	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
 		if (count <= 0)
 		{
@@ -425,7 +416,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 			final HUPackingMaterialDocumentLineCandidate candidate = key2candidates.computeIfAbsent(key, k -> createHUPackingMaterialDocumentLineCandidate(huPackingMaterial, materialTrackingId, hu));
 
-			candidate.addSourceIfNotNull(inOutLine);
+			candidate.addSourceIfNotNull(huPackingMaterialCollectorSource);
 			candidate.addQty(count);
 		}
 
@@ -511,7 +502,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Override
-	public void addHURecursively(final Collection<I_M_HU> hus, final I_M_InOutLine source)
+	public void addHURecursively(final Collection<I_M_HU> hus, final IHUPackingMaterialCollectorSource source)
 	{
 		if (hus == null || hus.isEmpty())
 		{
@@ -543,21 +534,22 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			}
 			if (hu != null)
 			{
-				I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_InOutLine.class);
-				
-				if(iol==null)
-				{
-					final I_M_MovementLine movementLine = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_MovementLine.class);
-					
-					if(movementLine != null)
-					{
-						iol = InterfaceWrapperHelper.create(movementLine.getM_InOutLine(), I_M_InOutLine.class);
-					}
-				}
-				addHURecursively(hu, iol);
-			}
+				final Object referencedModel = TableRecordCacheLocal.getReferencedValue(huAssignment, Object.class);
+				final IHUPackingMaterialCollectorSource source = HUPackingMaterialCollectorSourceFactory.fromNullable(referencedModel);
+				//
+				// if(iol==null)
+				// {
+				// final I_M_MovementLine movementLine = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_MovementLine.class);
+				//
+				// if(movementLine != null)
+				// {
+				// iol = InterfaceWrapperHelper.create(movementLine.getM_InOutLine(), I_M_InOutLine.class);
+				// }
+				// }
+				addHURecursively(hu, source);
 
-			addLUIfNotAlreadyAssignedElsewhere(huAssignment);
+				addLUIfNotAlreadyAssignedElsewhere(huAssignment, source);
+			}
 		}
 	}
 
@@ -574,14 +566,18 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		for (final I_M_HU_Assignment tuAssignment : tuAssignments)
 		{
+			final Object referencedModel = TableRecordCacheLocal.getReferencedValue(tuAssignment, Object.class);
+			final IHUPackingMaterialCollectorSource source = HUPackingMaterialCollectorSourceFactory.fromNullable(referencedModel);
+
 			final I_M_HU tuHU = tuAssignment.getM_TU_HU();
 			if (tuHU != null)
 			{
-				final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(tuAssignment, I_M_InOutLine.class);
-				addHURecursively(tuHU, iol);
+
+				// final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(tuAssignment, I_M_InOutLine.class);
+				addHURecursively(tuHU, source);
 			}
 
-			addLUIfNotAlreadyAssignedElsewhere(tuAssignment);
+			addLUIfNotAlreadyAssignedElsewhere(tuAssignment, source);
 		}
 	}
 
@@ -590,7 +586,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 *
 	 * @param luAssignment
 	 */
-	public void addLUIfNotAlreadyAssignedElsewhere(final I_M_HU_Assignment luAssignment)
+	public void addLUIfNotAlreadyAssignedElsewhere(final I_M_HU_Assignment luAssignment, final IHUPackingMaterialCollectorSource source)
 	{
 		final I_M_HU luHU = luAssignment.getM_LU_HU();
 		if (luHU == null)
@@ -606,12 +602,14 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		// Collect the LU, but don't to it recursively
 		// because we don't want to collect the other TUs which are included in this LU
-		final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(luAssignment, I_M_InOutLine.class);
-		addLU(luHU, iol);
+
+		// final IHUPackingMaterialCollectorSource source = new IHUPackingMaterialCollectorSource(luAssignment);
+		// final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(luAssignment, I_M_InOutLine.class);
+		addLU(luHU, source);
 	}
 
 	@Override
-	public void addHURecursively(final I_M_HU hu, final I_M_InOutLine source)
+	public void addHURecursively(final I_M_HU hu, final IHUPackingMaterialCollectorSource source)
 	{
 		addOrRemoveHURecursively(hu, source, false);
 	}
@@ -630,7 +628,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 * @param remove In case the boolean value is true, the HU will be removed (decremented qty); otherwise, it will be added (its qty will be incremented)
 	 */
 	private void addOrRemoveHURecursively(final I_M_HU hu,
-			final I_M_InOutLine source,
+			final IHUPackingMaterialCollectorSource source,
 			final boolean remove)
 	{
 		if (hu == null)
@@ -829,10 +827,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	}
 
 	@Value
-	public static final class HUpipToInOutLine
+	public static final class HUpipToHUPackingMaterialCollectorSource
 	{
 		private @NonNull final I_M_HU_PI_Item_Product hupip;
-		private final int originalInOutLineID;
+		private final int originalSourceID;
 
 		public int getM_HU_PI_Item_Product_ID()
 		{

@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -372,10 +373,16 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			}
 
 			// task 09502: set the reference from line to packing-line
-			for (final I_M_InOutLine sourceReceiptLine : candidate.getSources())
+			for (final IHUPackingMaterialCollectorSource source : candidate.getSources())
 			{
-				sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
-				InterfaceWrapperHelper.save(sourceReceiptLine);
+				if (InterfaceWrapperHelper.isInstanceOf(candidate, InOutLineHUPackingMaterialCollectorSource.class))
+				{
+
+					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
+					final I_M_InOutLine sourceReceiptLine = inOutLineSource.getM_InOutLine();
+					sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
+					InterfaceWrapperHelper.save(sourceReceiptLine);
+				}
 			}
 
 			receiptLines.add(packagingReceiptLine);
@@ -589,11 +596,14 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			//
 			// Collect packing materials
+
+			final IHUPackingMaterialCollectorSource receiptLineSource = new InOutLineHUPackingMaterialCollectorSource(receiptLine);
+
 			//
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
 			if (!tuHU.isHUPlanningReceiptOwnerPM())
 			{
-				packingMaterialsCollector.addTU(tuHU, receiptLine);
+				packingMaterialsCollector.addTU(tuHU, receiptLineSource);
 			}
 			else
 			{
@@ -605,7 +615,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				final I_M_HU luHU = rsa.getM_LU_HU();
 				if (!luHU.isHUPlanningReceiptOwnerPM())
 				{
-					packingMaterialsCollector.addLU(luHU, receiptLine);
+					packingMaterialsCollector.addLU(luHU, receiptLineSource);
 				}
 				else
 				{
