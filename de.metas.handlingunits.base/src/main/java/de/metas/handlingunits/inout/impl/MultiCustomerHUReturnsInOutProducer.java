@@ -25,6 +25,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -36,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 
 /*
@@ -172,6 +174,17 @@ public class MultiCustomerHUReturnsInOutProducer
 				if (!inout.isSOTrx())
 				{
 					// do not allow HUs from receipts to get into customer returns
+					continue;
+				}
+				
+				if(! Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
+				{
+					// do not allow HUs from uncompleted inouts to get into customer returns
+					continue;
+				}
+				
+				if(Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+				{
 					continue;
 				}
 
