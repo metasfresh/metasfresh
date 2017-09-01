@@ -132,7 +132,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
@@ -141,6 +140,7 @@ import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 import de.metas.interfaces.I_M_Warehouse;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import lombok.Builder;
@@ -339,7 +339,7 @@ public class HUTestHelper
 	public String trxName;
 	private Timestamp today;
 
-	private IHUPackingMaterialsCollector<I_M_InOutLine> contextPackingMaterialsCollector;
+	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> contextPackingMaterialsCollector;
 
 	public final IContextAware contextProvider = new IContextAware()
 	{
@@ -383,7 +383,7 @@ public class HUTestHelper
 		this.initAdempiere = initAdempiere;
 	}
 
-	public void setContextPackingMaterialsCollector(final IHUPackingMaterialsCollector<I_M_InOutLine> contextPackingMaterialsCollector)
+	public void setContextPackingMaterialsCollector(final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> contextPackingMaterialsCollector)
 	{
 		this.contextPackingMaterialsCollector = contextPackingMaterialsCollector;
 	}
@@ -1732,7 +1732,7 @@ public class HUTestHelper
 		@NonNull
 		final I_C_UOM loadCuUOM;
 
-		final IHUPackingMaterialsCollector<I_M_InOutLine> huPackingMaterialsCollector;
+		final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> huPackingMaterialsCollector;
 	}
 
 	/**

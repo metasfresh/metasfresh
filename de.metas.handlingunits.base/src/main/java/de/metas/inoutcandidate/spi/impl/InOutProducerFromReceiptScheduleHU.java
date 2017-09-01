@@ -132,8 +132,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		// the HU-context shall use the tread-inherited trx because it is executed by ITrxItemProcessorExecutorService and instantiated before the executor-services internal trxName is known.
 		_huContext = handlingUnitsBL.createMutableHUContext(trxManager.createThreadContextAware(ctx));
+		
+		
 		packingMaterialsCollector = new HUPackingMaterialsCollector(_huContext);
-
+	
 		huSnapshotProducer = Services.get(IHUSnapshotDAO.class)
 				.createSnapshot()
 				.setContext(_huContext);
@@ -372,10 +374,16 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			}
 
 			// task 09502: set the reference from line to packing-line
-			for (final I_M_InOutLine sourceReceiptLine : candidate.getSources())
+			for (final IHUPackingMaterialCollectorSource source : candidate.getSources())
 			{
-				sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
-				InterfaceWrapperHelper.save(sourceReceiptLine);
+				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
+				{
+
+					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
+					final I_M_InOutLine sourceReceiptLine = inOutLineSource.getM_InOutLine();
+					sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
+					InterfaceWrapperHelper.save(sourceReceiptLine);
+				}
 			}
 
 			receiptLines.add(packagingReceiptLine);
@@ -589,11 +597,15 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			//
 			// Collect packing materials
+
+			final IHUPackingMaterialCollectorSource receiptLineSource = new InOutLineHUPackingMaterialCollectorSource(receiptLine);
+			receiptLineSource.setIsCollectHUPipToSource(false);
+
 			//
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
 			if (!tuHU.isHUPlanningReceiptOwnerPM())
 			{
-				packingMaterialsCollector.addTU(tuHU, receiptLine);
+				packingMaterialsCollector.addTU(tuHU, receiptLineSource);
 			}
 			else
 			{
@@ -605,7 +617,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				final I_M_HU luHU = rsa.getM_LU_HU();
 				if (!luHU.isHUPlanningReceiptOwnerPM())
 				{
-					packingMaterialsCollector.addLU(luHU, receiptLine);
+					packingMaterialsCollector.addLU(luHU, receiptLineSource);
 				}
 				else
 				{
