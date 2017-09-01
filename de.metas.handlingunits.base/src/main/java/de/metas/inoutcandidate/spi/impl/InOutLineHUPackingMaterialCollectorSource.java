@@ -30,7 +30,7 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMaterialCollectorSource
 {
 	private I_M_InOutLine inOutLine;
-	private boolean isCollectHUPipToSource = false;
+	private boolean isCollectHUPipToSource = true;
 
 	public InOutLineHUPackingMaterialCollectorSource(I_M_InOutLine inOutLine)
 	{
