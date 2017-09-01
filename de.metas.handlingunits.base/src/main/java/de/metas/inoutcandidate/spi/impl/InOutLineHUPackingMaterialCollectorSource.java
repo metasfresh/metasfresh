@@ -1,6 +1,8 @@
 package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
+import lombok.Builder;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -26,56 +28,44 @@ import de.metas.handlingunits.model.I_M_InOutLine;
 
 public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMaterialCollectorSource
 {
-	private I_M_InOutLine inOutLine;
-	private boolean isCollectHUPipToSource = true;
-
-	public InOutLineHUPackingMaterialCollectorSource(I_M_InOutLine inOutLine)
+	public static InOutLineHUPackingMaterialCollectorSource of(final I_M_InOutLine inoutLine)
 	{
-		this.inOutLine = inOutLine;
+		return builder()
+				.inoutLine(inoutLine)
+				.collectHUPipToSource(true)
+				.build();
+	}
+
+	private final I_M_InOutLine inoutLine;
+	private final boolean collectHUPipToSource;
+
+	@Builder
+	private InOutLineHUPackingMaterialCollectorSource(@NonNull final I_M_InOutLine inoutLine, final boolean collectHUPipToSource)
+	{
+		this.inoutLine = inoutLine;
+		this.collectHUPipToSource = collectHUPipToSource;
 	}
 
 	@Override
 	public int getM_Product_ID()
 	{
-		return inOutLine.getM_Product_ID();
+		return inoutLine.getM_Product_ID();
 	}
 
 	@Override
 	public int getRecord_ID()
 	{
-		return inOutLine.getM_InOutLine_ID();
+		return inoutLine.getM_InOutLine_ID();
 	}
 
 	@Override
 	public boolean isCollectHUPipToSource()
 	{
-		// // Only applied to customer returns that are build from HUs (non-manual)
-		// if (!inOutLine.getM_InOut().isSOTrx())
-		// {
-		// return false;
-		// }
-		//
-		// if (Services.get(IHUInOutBL.class).isCustomerReturn(inOutLine.getM_InOut()))
-		// {
-		// return false;
-		// }
-		//
-		// return true;
-
-		return isCollectHUPipToSource;
+		return collectHUPipToSource;
 	}
 
 	public I_M_InOutLine getM_InOutLine()
 	{
-		return inOutLine;
+		return inoutLine;
 	}
-
-
-	public void setIsCollectHUPipToSource(boolean isCollectHUPipToSource)
-	{
-		this.isCollectHUPipToSource = isCollectHUPipToSource;
-	}
-
-	
-
 }

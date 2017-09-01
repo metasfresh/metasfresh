@@ -42,13 +42,13 @@ public final class HUPackingMaterialCollectorSourceFactory
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_InOutLine.class))
 		{
-			I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
-			return new InOutLineHUPackingMaterialCollectorSource(inoutLine);
+			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.create(model, I_M_InOutLine.class);
+			return InOutLineHUPackingMaterialCollectorSource.of(inoutLine);
 		}
 		else if (InterfaceWrapperHelper.isInstanceOf(model, I_M_MovementLine.class))
 		{
-			I_M_MovementLine movementLine = InterfaceWrapperHelper.create(model, I_M_MovementLine.class);
-			return new MovementLineHUPackingMaterialCollectorSource(movementLine);
+			final I_M_MovementLine movementLine = InterfaceWrapperHelper.create(model, I_M_MovementLine.class);
+			return MovementLineHUPackingMaterialCollectorSource.of(movementLine);
 		}
 		else
 		{
