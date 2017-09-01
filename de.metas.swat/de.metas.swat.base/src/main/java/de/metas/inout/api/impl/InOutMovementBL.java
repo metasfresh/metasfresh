@@ -13,15 +13,14 @@ package de.metas.inout.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -54,6 +53,14 @@ import de.metas.interfaces.I_M_MovementLine;
 
 public class InOutMovementBL implements IInOutMovementBL
 {
+
+	@Override
+	public I_M_Movement generateMovementToInOutWarehouse(final I_M_InOut inout, final I_M_Warehouse warehouseFrom, final List<I_M_InOutLine> inOutLines)
+	{
+		Check.assumeNotNull(inout, "inOut not null");
+
+		return generateMovement(inout, true, warehouseFrom, inOutLines);
+	}
 
 	@Override
 	public List<I_M_Movement> generateMovementFromReceipt(final I_M_InOut receipt)
@@ -143,7 +150,7 @@ public class InOutMovementBL implements IInOutMovementBL
 			final List<I_M_InOutLine> linesForWarehouse = movementCandidate.getValue();
 			Check.assumeNotEmpty(linesForWarehouse, "linesForWarehouse not empty");
 
-			final I_M_Movement movement = generateMovement(receipt, warehouseTarget, linesForWarehouse);
+			final I_M_Movement movement = generateMovement(receipt, false, warehouseTarget, linesForWarehouse);
 			if (movement != null)
 			{
 				movements.add(movement);
@@ -153,13 +160,13 @@ public class InOutMovementBL implements IInOutMovementBL
 		return movements;
 	}
 
-	private I_M_Movement generateMovement(final I_M_InOut inOut, final I_M_Warehouse warehouseTo, final List<I_M_InOutLine> lines)
+	private I_M_Movement generateMovement(final I_M_InOut inOut, final boolean moveToInOutWarehouse, final I_M_Warehouse warehouse, final List<I_M_InOutLine> lines)
 	{
 		Check.assume(!lines.isEmpty(), "lines not empty");
 
 		final I_M_Movement movement = generateMovementHeader(inOut);
 
-		generateMovementLines(movement, warehouseTo, lines);
+		generateMovementLines(movement, moveToInOutWarehouse,  warehouse, lines);
 
 		Services.get(IDocActionBL.class).processEx(movement, DocAction.ACTION_Complete, DocAction.STATUS_Completed);
 
@@ -186,20 +193,21 @@ public class InOutMovementBL implements IInOutMovementBL
 		return movement;
 	}
 
-	private void generateMovementLines(final I_M_Movement movement, final I_M_Warehouse warehouseTo, final List<I_M_InOutLine> inoutLines)
+	private void generateMovementLines(final I_M_Movement movement, final boolean moveToInOutWarehouse, final I_M_Warehouse warehouse, final List<I_M_InOutLine> inoutLines)
 	{
-		final I_M_Locator locatorTo = Services.get(IWarehouseBL.class).getDefaultLocator(warehouseTo);
-		Check.assumeNotNull(locatorTo, "Destination warehouse {} has a default locator", warehouseTo);
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+		Check.assumeNotNull(locator, "Destination warehouse {} has a default locator", warehouse);
 
 		for (final I_M_InOutLine inoutLine : inoutLines)
 		{
-			generateMovementLine(movement, locatorTo, inoutLine);
+			generateMovementLine(movement, moveToInOutWarehouse,  locator, inoutLine);
 		}
 	}
 
 	private I_M_MovementLine generateMovementLine(
 			final I_M_Movement movement,
-			final I_M_Locator locatorTo,
+			final boolean moveToInOutWarehouse,
+			final I_M_Locator locator,
 			final I_M_InOutLine inoutLineFrom)
 	{
 		final I_M_MovementLine movementLine = InterfaceWrapperHelper.newInstance(I_M_MovementLine.class, movement);
@@ -214,11 +222,22 @@ public class InOutMovementBL implements IInOutMovementBL
 
 		movementLine.setMovementQty(inoutLineFrom.getMovementQty());
 
-		movementLine.setM_Locator_ID(inoutLineFrom.getM_Locator_ID());
-		movementLine.setM_LocatorTo(locatorTo);
+		if (moveToInOutWarehouse)
+		{
+			movementLine.setM_Locator_ID(locator.getM_Locator_ID());
+			movementLine.setM_LocatorTo(inoutLineFrom.getM_Locator());
+		}
+		else
+			// move from inout warehouse
+		{
+			movementLine.setM_Locator_ID(inoutLineFrom.getM_Locator_ID());
+			movementLine.setM_LocatorTo(locator);
+		}
+		
 
 		InterfaceWrapperHelper.save(movementLine);
 
+		
 		Services.get(IMovementBL.class).setC_Activities(movementLine);
 		return movementLine;
 	}

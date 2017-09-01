@@ -69,6 +69,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import lombok.NonNull;
@@ -341,7 +342,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 						// check for the qty in the aggregated HU (if exists)
 						final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
 
-						if (huItem != null)
+						if (huItem != null && handlingUnitsBL.isLoadingUnit(hu))
 						{
 							final BigDecimal includedQty = huItem.getQty();
 							huPIPToInOutLine.put(currentHUPipToOrigin, qtyTU + includedQty.intValueExact());
@@ -542,7 +543,17 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			}
 			if (hu != null)
 			{
-				final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_InOutLine.class);
+				I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_InOutLine.class);
+				
+				if(iol==null)
+				{
+					final I_M_MovementLine movementLine = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_MovementLine.class);
+					
+					if(movementLine != null)
+					{
+						iol = InterfaceWrapperHelper.create(movementLine.getM_InOutLine(), I_M_InOutLine.class);
+					}
+				}
 				addHURecursively(hu, iol);
 			}
 
