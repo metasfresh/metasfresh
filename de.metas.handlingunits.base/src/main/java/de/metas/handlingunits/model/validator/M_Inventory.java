@@ -9,7 +9,6 @@ import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
 
@@ -17,6 +16,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 
 /*
