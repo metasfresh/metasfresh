@@ -532,10 +532,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				// don't retrieve again those HUs which were already added
 				continue;
 			}
+			
+			final Object referencedModel = TableRecordCacheLocal.getReferencedValue(huAssignment, Object.class);
+			final IHUPackingMaterialCollectorSource source = HUPackingMaterialCollectorSourceFactory.fromNullable(referencedModel);
 			if (hu != null)
 			{
-				final Object referencedModel = TableRecordCacheLocal.getReferencedValue(huAssignment, Object.class);
-				final IHUPackingMaterialCollectorSource source = HUPackingMaterialCollectorSourceFactory.fromNullable(referencedModel);
+				
 				//
 				// if(iol==null)
 				// {
@@ -547,9 +549,9 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				// }
 				// }
 				addHURecursively(hu, source);
-
-				addLUIfNotAlreadyAssignedElsewhere(huAssignment, source);
 			}
+			addLUIfNotAlreadyAssignedElsewhere(huAssignment, source);
+
 		}
 	}
 
