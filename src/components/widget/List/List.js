@@ -100,7 +100,6 @@ class List extends Component {
     }
 
     focus = () => {
-        //console.log('focus', this.props.properties[0]);
         if (this.rawList) {
             this.rawList.focus();
         }

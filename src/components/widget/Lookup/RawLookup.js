@@ -67,6 +67,7 @@ class RawLookup extends Component {
 
         if (autoFocus && !this.inputSearch.value && shouldBeFocused) {
             this.inputSearch.focus();
+
             this.setState({
                 shouldBeFocused: false
             });

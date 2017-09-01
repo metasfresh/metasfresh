@@ -54,7 +54,9 @@ class RawList extends Component {
 
         if (this.dropdown) {
             if (autofocus) {
-                this.dropdown.focus();
+                if (list && list.length > 0) {
+                    this.dropdown.focus();
+                }
             }
             else {
                 if (prevProps.defaultValue !== defaultValue && property) {
@@ -66,7 +68,6 @@ class RawList extends Component {
                     }
                 }
             }
-
         }
 
         if (prevProps.list !== list) {
