@@ -1,8 +1,5 @@
 package de.metas.inoutcandidate.spi.impl;
 
-import org.adempiere.util.Services;
-
-import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 
 /*
