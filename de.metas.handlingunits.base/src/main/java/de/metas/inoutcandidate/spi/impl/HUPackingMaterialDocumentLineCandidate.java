@@ -42,7 +42,6 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
 
