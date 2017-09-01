@@ -76,9 +76,13 @@ class RawLookup extends Component {
         handleInputEmptyStatus(false);
 
         if (fireClickOutside && (prevProps.fireClickOutside !== fireClickOutside)) {
-            let defaultValueKey = Object.keys(defaultValue)[0];
-            if (defaultValue && defaultValue[defaultValueKey] !== this.inputSearch.value) {
-                this.inputSearch.value = defaultValue[defaultValueKey];
+            if (
+                (defaultValue !== null) && (typeof defaultValue !== 'undefined')
+            ) {
+                let defaultValueKey = Object.keys(defaultValue)[0];
+                if (defaultValue[defaultValueKey] !== this.inputSearch.value) {
+                    this.inputSearch.value = defaultValue[defaultValueKey] || '';
+                }
             }
         }
 
@@ -170,7 +174,10 @@ class RawLookup extends Component {
 
             }
 
-            this.inputSearch.value = select[Object.keys(select)[0]];
+            if (select) {
+                this.inputSearch.value = select[Object.keys(select)[0]];
+            }
+
             handleInputEmptyStatus(false);
             this.handleBlur();
         });
@@ -225,13 +232,15 @@ class RawLookup extends Component {
                 this.inputSearch.value,
                 (filterWidget ? viewId : dataId), tabId, rowId, entity,
                 subentity, subentityId
-            ).then( (response)=>{
+            ).then( (response) => {
+                let values = response.data.values || [];
+
                 this.setState({
-                    list: response.data.values,
+                    list: values,
                     loading: false,
                     selected: 0,
-                    validLocal: response.data.values.length === 0 &&
-                                handleChangeOnFocus!==true ? false : true
+                    validLocal: (values.length === 0) &&
+                                (handleChangeOnFocus !== true) ? false : true
                 });
             });
         } else {
@@ -294,11 +303,11 @@ class RawLookup extends Component {
         const {defaultValue, filterWidget} = this.props;
         const {oldValue, isInputEmpty} = this.state;
 
-        if(!filterWidget && !!defaultValue && this.inputSearch) {
+        if (!filterWidget && !!defaultValue && this.inputSearch) {
             const init = defaultValue;
             const inputValue = init[Object.keys(init)[0]];
 
-            if(inputValue !== oldValue){
+            if (inputValue !== oldValue) {
                 this.inputSearch.value = inputValue;
 
                 this.setState({
@@ -307,18 +316,19 @@ class RawLookup extends Component {
                     validLocal: true,
                     list: [init]
                 });
-            } else if(isInputEmpty){
+            } else if (isInputEmpty) {
                 this.setState({
                     isInputEmpty: false,
                     list: [init]
                 });
             }
 
-        } else if(oldValue && !defaultValue && this.inputSearch) {
+        } else if (oldValue && !defaultValue && this.inputSearch) {
             const inputEmptyValue = defaultValue;
 
-            if(inputEmptyValue !== oldValue){
+            if (inputEmptyValue !== oldValue) {
                 this.inputSearch.value = inputEmptyValue;
+
                 this.setState({
                     oldValue: inputEmptyValue,
                     isInputEmpty: true

@@ -84,10 +84,12 @@ class RawList extends Component {
                     openDropdownState.isOpen = true;
                 }
 
+                let dropdownList = dropdown.concat(list);
+
                 this.setState(
                     Object.assign(
                         {
-                            dropdownList: dropdown.concat(list),
+                            dropdownList: dropdownList,
                             selected: defaultValue ? defaultValue : list[0],
                         },
                         openDropdownState
@@ -152,6 +154,22 @@ class RawList extends Component {
     focus() {
         if (this.dropdown) {
             this.dropdown.focus();
+        }
+    }
+
+    openDropdownList() {
+        this.setState({
+            isOpen: true
+        }, () => {
+            this.focus();
+        });
+    }
+
+    closeDropdownList() {
+        if (this.state && this.state.isOpen) {
+            this.setState({
+                isOpen: false
+            });
         }
     }
 

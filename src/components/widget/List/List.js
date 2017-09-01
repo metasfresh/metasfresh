@@ -52,6 +52,7 @@ class List extends Component {
         } = this.props;
 
         this.setState({
+            list: [],
             loading: true
         });
 
@@ -83,7 +84,10 @@ class List extends Component {
                 });
             }
 
-            if (forceFocus && values && (values.length > 0)) {
+            if (
+                forceFocus && values &&
+                (values.length > 0)
+            ) {
                 this.focus();
             }
         });
@@ -96,14 +100,24 @@ class List extends Component {
     }
 
     focus = () => {
+        //console.log('focus', this.props.properties[0]);
         if (this.rawList) {
             this.rawList.focus();
         }
     }
 
+    closeDropdownList = () => {
+        if (this.rawList) {
+            this.rawList.closeDropdownList();
+        }
+    }
+
     activate = () => {
         if (this.state.list && this.state.list.length > 1) {
-            this.focus();
+            if (this.rawList) {
+                this.rawList.openDropdownList();
+                this.rawList.focus();
+            }
         }
     }
 
