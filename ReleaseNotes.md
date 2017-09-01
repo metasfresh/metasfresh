@@ -10,12 +10,20 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.26 (2017-37)
+
+**upcoming release for week 2017-37**
+
 # metasfresh 5.25 (2017-36)
 
-**upcoming release for week 2017-36**
+**release for week 2017-36**
 
 ## Features
 * metasfresh-app
+  * [#529](https://github.com/metasfresh/metasfresh/issues/529) Possibility to easily create more than 1 referenced Doc per Invoice
+  * [#1876](https://github.com/metasfresh/metasfresh/issues/1876) New CU Labels
+  * [#2102](https://github.com/metasfresh/metasfresh/issues/2102) maven change "local" version from 1.0.0 to 10.0.0
+  * [#2145](https://github.com/metasfresh/metasfresh/issues/2145) Partial Internal usage action in Handling Unit Editor
   * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
     * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
   * [#2230](https://github.com/metasfresh/metasfresh/issues/2230) New Window for Fact_Acct_ActivityChangeRequest
@@ -28,24 +36,49 @@ Here come the actual release notes:
     * New Shipper Window in Webui to allow the maintenance of Businesspartners for Shipper Transportations.
   * [#2236](https://github.com/metasfresh/metasfresh/issues/2236) New Window for Printing Queue in WebUI
     * New window for Printing Queue maintenance in WebUI.
+  * [#2245](https://github.com/metasfresh/metasfresh/issues/2245) Replace description field by memo in B2C
+  * [#2247](https://github.com/metasfresh/metasfresh/issues/2247) Make Request Type a search field
+  * [#2258](https://github.com/metasfresh/metasfresh/issues/2258) add due date to request grid view
   * [#2267](https://github.com/metasfresh/metasfresh/issues/2267) New Window for Hardware drucker in WebUI
     * New Widnow for Printer Configuration and Maintenance in WebUI.
   * [#2268](https://github.com/metasfresh/metasfresh/issues/2268) New Window for Drucker-Zuordnung in WebUI
     * New Window for Printer Matching Configuration and Maintenance in WebUI.
   * [#2269](https://github.com/metasfresh/metasfresh/issues/2269) New Window for Async Batch in WebUI
     * New Window for Async Batch maintenance in WebUI.
-  *[#2270](https://github.com/metasfresh/metasfresh/issues/2270) New Window for Async Batch Type in WebUI
+  * [#2270](https://github.com/metasfresh/metasfresh/issues/2270) New Window for Async Batch Type in WebUI
     * New Window for the maintenance of Async Batch Types.
   * [#2289](https://github.com/metasfresh/metasfresh/issues/2289) New Window for Async Batch Parameters/ Process Audit
     * New Window for Process Audit in WebUI.
   * [#2294](https://github.com/metasfresh/metasfresh/issues/2294) Window Layout for Picking Window in WebUI
     * New generic Layout for the Picking Window in WebUI.
 
+* metasfresh-webui-api
+  * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
+  * [#549](https://github.com/metasfresh/metasfresh-webui-api/issues/549) Validcombination Window does not allow NEW in WebUI
+  * [#556](https://github.com/metasfresh/metasfresh-webui-api/issues/556) Picking Window Main View adjustments
+  * [#557](https://github.com/metasfresh/metasfresh-webui-api/issues/557) Picking Window: Open HU Selection window filtering
+  * [#560](https://github.com/metasfresh/metasfresh-webui-api/issues/560) Picking: don't allow picking included rows
+
+* metasfresh-webui-frontend
+  * [#1157](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1157) Delete User Notifications
+
 ## Fixes
+* metasfresh-app
+  * [#2237](https://github.com/metasfresh/metasfresh/issues/2237) Order Control Report Attribute missing
+  * [#2260](https://github.com/metasfresh/metasfresh/issues/2260) SQL - problem to rollout master build to DB with issue-build
+
+* metasfresh-webui-api
+  * [#528](https://github.com/metasfresh/metasfresh-webui-api/issues/528) Exception when opening PP Order issue / receipt
+  * [#551](https://github.com/metasfresh/metasfresh-webui-api/issues/551) verify if lookup value is still valid
+  * [#553](https://github.com/metasfresh/metasfresh-webui-api/issues/553) webui notification-test fails
+  * [#561](https://github.com/metasfresh/metasfresh-webui-api/issues/561) Handling Unit Editor Materialentnahme Bug
+
+* metasfresh-webui-frontend
+  * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product
 
 # metasfresh 5.24 (2017-35)
 
-**upcoming release for week 2017-35**
+**release for week 2017-35**
 
 ## Features
 
