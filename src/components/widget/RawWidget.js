@@ -26,7 +26,7 @@ class RawWidget extends Component {
     }
 
     componentDidMount(){
-        const {autoFocus, textSelected} = this.props
+        const {autoFocus, textSelected} = this.props;
 
         if(this.rawWidget && autoFocus){
             this.rawWidget.focus();
@@ -34,6 +34,12 @@ class RawWidget extends Component {
 
         if(textSelected){
             this.rawWidget.select();
+        }
+    }
+
+    focus = () => {
+        if (this.rawWidget && this.rawWidget.focus) {
+            this.rawWidget.focus();
         }
     }
 

@@ -51,16 +51,10 @@ class Lookup extends Component {
             defaultValue.map( (item, index) => {
                 const nextIndex = index + 1;
 
-                const propValue = properties[index];
-                if ((propValue.field === prop) && (propValue.source === 'lookup') && this.linkedList) {
-                    this.linkedList.map( (listComponent, listIndex) => {
-                        if (listComponent && listComponent.requestListData) {
-                            listComponent.requestListData(true, !listIndex);
-                        }
-                    });
-                }
-
-                if ((nextIndex < defaultValue.length) && (defaultValue[index].field === prop)) {
+                if (
+                    (nextIndex < defaultValue.length) &&
+                    (defaultValue[index].field === prop)
+                ) {
                     let nextProp = properties[nextIndex];
 
                     if (nextProp.source === 'list') {
@@ -68,14 +62,28 @@ class Lookup extends Component {
                             if (listComponent && listComponent.props) {
                                 let listProp = listComponent.props.mainProperty;
 
-                                if (listProp && Array.isArray(listProp) && (listProp.length > 0)) {
+                                if (
+                                    listProp && Array.isArray(listProp) &&
+                                    (listProp.length > 0)
+                                ) {
                                     const listPropField = listProp[0].field;
 
-                                    if (listComponent.activate && (listPropField === nextProp.field)) {
+                                    if (
+                                        listComponent.activate &&
+                                        (listPropField === nextProp.field)
+                                    ) {
+                                        listComponent.requestListData(
+                                            true,
+                                            true
+                                        );
                                         listComponent.activate();
                                     }
                                 }
                             }
+                        });
+
+                        this.setState({
+                            property: nextProp.field
                         });
                     } else {
                         this.setState({

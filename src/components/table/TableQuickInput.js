@@ -41,16 +41,25 @@ class TableQuickInput extends Component {
 
     componentDidUpdate() {
         const {data, layout, editedField} = this.state;
-        if(data && layout){
-            for(let i = 0; i < layout.length; i++){
-                const item =
-                    layout[i].fields.map(elem => data[elem.field] || -1);
 
-                if(!item[0].value){
-                    if(editedField !== i){
+        if (data && layout) {
+            for(let i = 0; i < layout.length; i++){
+                const item = layout[i].fields.map(
+                    (elem) => data[elem.field] || -1
+                );
+
+                if (!item[0].value) {
+                    if (editedField !== i) {
                         this.setState({
                             editedField: i
-                        })
+                        }, () => {
+                            if (this.rawWidgets) {
+                                let curWidget = this.rawWidgets[i];
+                                if (curWidget && curWidget.focus) {
+                                    curWidget.focus();
+                                }
+                            }
+                        });
                     }
 
                     break;
@@ -134,33 +143,47 @@ class TableQuickInput extends Component {
         });
     }
 
+    handleBlurWidget = () => {
+    }
+
     renderFields = (layout, data, dataId, attributeType, quickInputId) => {
         const {tabId, docType} = this.props;
+
+        this.rawWidgets = [];
 
         if(data && layout){
             return layout.map((item, id) => {
                 const widgetData =
                     item.fields.map(elem => data[elem.field] || -1);
-                return (<RawWidget
-                    entity={attributeType}
-                    subentity="quickInput"
-                    subentityId={quickInputId}
-                    tabId={tabId}
-                    windowType={docType}
-                    widgetType={item.widgetType}
-                    fields={item.fields}
-                    dataId={dataId}
-                    widgetData={widgetData}
-                    gridAlign={item.gridAlign}
-                    key={id}
-                    caption={item.caption}
-                    handlePatch={(prop, value, callback) =>
-                        this.handlePatch(prop, value, callback)}
-                    handleFocus={() => {}}
-                    handleChange={this.handleChange}
-                    type="secondary"
-                    autoFocus={id === 0}
-                />)
+
+                return (
+                    <RawWidget
+                        ref={ (c) => {
+                            if (c) {
+                                this.rawWidgets.push(c);
+                            }
+                        } }
+                        entity={attributeType}
+                        subentity="quickInput"
+                        subentityId={quickInputId}
+                        tabId={tabId}
+                        windowType={docType}
+                        widgetType={item.widgetType}
+                        fields={item.fields}
+                        dataId={dataId}
+                        widgetData={widgetData}
+                        gridAlign={item.gridAlign}
+                        key={id}
+                        caption={item.caption}
+                        handlePatch={(prop, value, callback) =>
+                            this.handlePatch(prop, value, callback)}
+                        handleFocus={() => {}}
+                        handleChange={this.handleChange}
+                        onBlurWidget={this.handleBlurWidget}
+                        type="secondary"
+                        autoFocus={id === 0}
+                    />
+                );
             })
         }
     }
