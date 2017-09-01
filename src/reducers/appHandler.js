@@ -96,6 +96,16 @@ export default function appHandler(state = initialState, action) {
                     unreadCount: {$set: action.unreadCount}
                 }
             })
+        case types.REMOVE_NOTIFICATION:
+            return update(state, {
+                inbox: {
+                    notifications: { $set:
+                        state.inbox.notifications.filter(item =>
+                            item.id !== action.notification
+                        )},
+                    unreadCount: {$set: action.unreadCount}
+                }
+            })
         case types.UPDATE_NOTIFICATION:
             return update(state, {
                 inbox: {

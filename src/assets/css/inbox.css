@@ -129,3 +129,13 @@
     color: $brand-font-color-weak;
     padding-top: .3rem;
 }
+
+.inbox-item-delete {
+    color: $brand-danger-color !important;
+    text-decoration: none;
+    margin-right: 1em;
+}
+
+.inbox-item-delete:hover {
+    text-decoration: underline;
+}
