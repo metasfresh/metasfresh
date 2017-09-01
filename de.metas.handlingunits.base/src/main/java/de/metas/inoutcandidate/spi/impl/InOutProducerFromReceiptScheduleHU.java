@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -133,8 +132,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		// the HU-context shall use the tread-inherited trx because it is executed by ITrxItemProcessorExecutorService and instantiated before the executor-services internal trxName is known.
 		_huContext = handlingUnitsBL.createMutableHUContext(trxManager.createThreadContextAware(ctx));
+		
+		
 		packingMaterialsCollector = new HUPackingMaterialsCollector(_huContext);
-
+	
 		huSnapshotProducer = Services.get(IHUSnapshotDAO.class)
 				.createSnapshot()
 				.setContext(_huContext);
@@ -375,7 +376,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// task 09502: set the reference from line to packing-line
 			for (final IHUPackingMaterialCollectorSource source : candidate.getSources())
 			{
-				if (InterfaceWrapperHelper.isInstanceOf(candidate, InOutLineHUPackingMaterialCollectorSource.class))
+				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
 				{
 
 					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
@@ -598,6 +599,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			// Collect packing materials
 
 			final IHUPackingMaterialCollectorSource receiptLineSource = new InOutLineHUPackingMaterialCollectorSource(receiptLine);
+			receiptLineSource.setIsCollectHUPipToSource(false);
 
 			//
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager

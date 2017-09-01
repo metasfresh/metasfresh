@@ -206,7 +206,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final List<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
 			for (final IHUPackingMaterialCollectorSource source : sourceIols)
 			{
-				if (InterfaceWrapperHelper.isInstanceOf(source, InOutLineHUPackingMaterialCollectorSource.class))
+				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
 				{
 					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
 					final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
@@ -240,7 +240,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 */
 	private final void collectHUs(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
-		Check.assume(InterfaceWrapperHelper.isInstanceOf(huPackingMaterialCollectorSource, InOutLineHUPackingMaterialCollectorSource.class), huPackingMaterialCollectorSource + "must be a instance of " + InOutLineHUPackingMaterialCollectorSource.class);
+		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource, huPackingMaterialCollectorSource + "must be a instance of " + InOutLineHUPackingMaterialCollectorSource.class);
 		
 		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {}", packingMaterialsCollector);
 
