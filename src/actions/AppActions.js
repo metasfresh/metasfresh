@@ -264,6 +264,10 @@ export function loginSuccess(auth) {
                     dispatch(updateNotification(
                         notification.notification, notification.unreadCount
                     ));
+                }else if(notification.eventType === 'Delete') {
+                    dispatch(removeNotification(
+                        notification.notificationId, notification.unreadCount
+                    ));
                 }else if(notification.eventType === 'New'){
                     dispatch(newNotification(
                         notification.notification, notification.unreadCount
@@ -326,7 +330,7 @@ export function setNotificationProgress(key, progress){
     }
 }
 
-export function deleteNotification(key){
+export function deleteNotification(key) {
     return {
         type: types.DELETE_NOTIFICATION,
         key: key
@@ -376,6 +380,14 @@ export function updateNotification(msg, count) {
 export function newNotification(msg, count) {
     return {
         type: types.NEW_NOTIFICATION,
+        notification: msg,
+        unreadCount: count
+    }
+}
+
+export function removeNotification(msg, count) {
+    return {
+        type: types.REMOVE_NOTIFICATION,
         notification: msg,
         unreadCount: count
     }

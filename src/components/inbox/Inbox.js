@@ -65,14 +65,7 @@ class Inbox extends Component {
         e.preventDefault();
         e.stopPropagation();
 
-        deleteUserNotification(item.id).then( () => {
-            getNotifications().then(response => {
-                dispatch(getNotificationsSuccess(
-                    response.data.notifications,
-                    response.data.unreadCount
-                ));
-            });
-        });
+        deleteUserNotification(item.id).then( () => {});
     }
 
     componentDidUpdate() {
