@@ -140,7 +140,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
 			
-			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = new InOutLineHUPackingMaterialCollectorSource(inOutLine);
+			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inOutLine);
 			collector.addHURecursively(hu, inOutLineSource);
 
 			// Create product (non-packing material) lines

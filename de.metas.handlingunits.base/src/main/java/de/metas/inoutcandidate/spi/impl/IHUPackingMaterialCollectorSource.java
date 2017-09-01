@@ -24,16 +24,9 @@ package de.metas.inoutcandidate.spi.impl;
 
 public interface IHUPackingMaterialCollectorSource
 {
-
-	//public HUPackingMaterialCollectorSource(final I_M_HU_Assignment huAssignment);
-
 	int getM_Product_ID();
 
 	int getRecord_ID();
 
 	boolean isCollectHUPipToSource();
-	
-	void setIsCollectHUPipToSource(boolean isCollectHUPipToSource);
-
-	
 }

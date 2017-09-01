@@ -210,7 +210,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		// The receipt lines created.
 		// Could be maximum 2: one with QtyWithoutIssues, one with QtyWithIssues
-		final List<I_M_InOutLine> receiptLines = new ArrayList<I_M_InOutLine>(2);
+		final List<I_M_InOutLine> receiptLines = new ArrayList<>(2);
 
 		//
 		// Create receipt line for QtyWithoutIssues
@@ -364,7 +364,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// Create one receipt line for each candidate
-		final List<I_M_InOutLine> receiptLines = new ArrayList<I_M_InOutLine>();
+		final List<I_M_InOutLine> receiptLines = new ArrayList<>();
 		for (final HUPackingMaterialDocumentLineCandidate candidate : candidates)
 		{
 			final I_M_InOutLine packagingReceiptLine = createPackingMaterialReceiptLine(candidate);
@@ -597,9 +597,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			//
 			// Collect packing materials
-
-			final IHUPackingMaterialCollectorSource receiptLineSource = new InOutLineHUPackingMaterialCollectorSource(receiptLine);
-			receiptLineSource.setIsCollectHUPipToSource(false);
+			final IHUPackingMaterialCollectorSource receiptLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
+					.inoutLine(receiptLine)
+					.collectHUPipToSource(false)
+					.build();
 
 			//
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
