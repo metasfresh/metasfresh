@@ -144,6 +144,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 					.collectHUPipToSource(false)
 					.build();
 			
+			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inOutLine);
 			collector.addHURecursively(hu, inOutLineSource);
 
 			// Create product (non-packing material) lines
