@@ -52,10 +52,10 @@ void invokeZapier(
   // note: even with "skiptodist=true we do this, because we still want to make the notifcations
 
   echo "Going to notify external systems via zapier webhook"
-  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'ZAPPIER_WEBHOOK_SECRET')])
+  withCredentials([string(credentialsId: 'zapier-metasfresh-build-notification-webhook', variable: 'zapier_WEBHOOK_SECRET')])
   {
     // the zapier secret contains a trailing slash and one that is somewhere in the middle.
-  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${ZAPPIER_WEBHOOK_SECRET}"
+  	final zapierUrl = "https://hooks.zapier.com/hooks/catch/${zapier_WEBHOOK_SECRET}"
 
     //input id: 'Zapier-input-ok', message: 'Were the external donstream builds OK?'
     final def hook = registerWebhook()
@@ -77,15 +77,13 @@ void invokeZapier(
   			sh "curl -X POST -d \'${jsonPayload}\' ${zapierUrl}";
   	}
 
-    echo "Wait 30 minutes for the zappier-triggered downstream jobs to succeed or fail"
+    echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
     timeout(time: 30, unit: 'MINUTES')
     {
-      final def data = waitForWebhook hook // to stop the wait, do e.g. curl -X POST -d 'OK' <hook-URL>
-
-      echo "Webhook called with data: ${data}"
+      final def data = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
       if(data != 'OK')
       {
-        error "An external job that was invoked by zapper failed; hook-URL=${hook.getURL()}"
+        error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
       }
     }
   } // withCredentials

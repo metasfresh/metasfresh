@@ -66,6 +66,7 @@ import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.product.IProductBL;
 
 /**
@@ -153,6 +154,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			{
 
 			//	collector.addHURecursively(hu, inOutLine);
+				
+				final InOutLineHUPackingMaterialCollectorSource inOutLineSource = new InOutLineHUPackingMaterialCollectorSource(inOutLine);
 
 				final I_M_InOut inout = inOutLine.getM_InOut();
 
@@ -176,7 +179,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				final BigDecimal qtyInternalUseNew = qtyInternalUseOld.add(qty);
 				inventoryLine.setQtyInternalUse(qtyInternalUseNew);
 
-				collector.addHURecursively(hu, inOutLine);
+				collector.addHURecursively(hu, inOutLineSource);
 				final int countTUs = collector.getAndResetCountTUs();
 
 				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(new BigDecimal(countTUs));
