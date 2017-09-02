@@ -14,6 +14,11 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-37**
 
+## Features
+* metasfresh-app
+  * [#2300](https://github.com/metasfresh/metasfresh/issues/2300) Doc Outbound missing Columns
+    * Adjustments to Document Outbound Window, adapting to current Design Guidelines, making it more user friendly with more functionality.
+
 # metasfresh 5.25 (2017-36)
 
 **release for week 2017-36**
