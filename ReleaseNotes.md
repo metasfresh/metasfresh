@@ -154,6 +154,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1021) Combined Filter Functionality
+    * New Functionality that allows the combination of different Filters as search queries in generic grid view Windows.
 
 ## Fixes
 
