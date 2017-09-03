@@ -20,6 +20,8 @@ Here come the actual release notes:
     * Adjustments to Document Outbound Window, adapting to current Design Guidelines, making it more user friendly with more functionality.
   * [#2307](https://github.com/metasfresh/metasfresh/issues/2307) Window Period adjustments, add missing Translations
     * Translation for en_US and further refinements of Calendar Period Window in WebUI.
+  * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
+    * Further detailed improvements of Sales Order Window in WebUI, adding Fields and Translations.
 
 # metasfresh 5.25 (2017-36)
 
