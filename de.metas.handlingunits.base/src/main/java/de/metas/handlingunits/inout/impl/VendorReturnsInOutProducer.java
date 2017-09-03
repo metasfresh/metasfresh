@@ -157,7 +157,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 					inoutLinesBuilder.addHUProductStorage(productStorage, inOutLine);
 				}
 			}
-			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
+			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToSource();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
 			for (final Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())

@@ -103,10 +103,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = new HashMap<>();
 	private int countTUs = 0;
 
+	/**
+	 * 
+	 */
 	private final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToSource = new TreeMap<>(Comparator.comparing(HUpipToHUPackingMaterialCollectorSource::getM_HU_PI_Item_Product_ID)
 			.thenComparing(HUpipToHUPackingMaterialCollectorSource::getOriginalSourceID));
 
-	public Map<HUpipToHUPackingMaterialCollectorSource, Integer> getHuPIPToInOutLine()
+	public Map<HUpipToHUPackingMaterialCollectorSource, Integer> getHuPIPToSource()
 	{
 		return huPIPToSource;
 	}
@@ -339,8 +342,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 								if (innerCandidate != null)
 								{
-									innerCandidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
-									innerCandidate.addQty(includedQty.intValueExact());
+									if (!innerCandidate.getSources().contains(huPackingMaterialCollectorsource))
+									{
+										innerCandidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
+										innerCandidate.addQty(includedQty.intValueExact());
+									}
 								}
 							}
 						}
@@ -392,7 +398,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 *
 	 * @param huPI PI for packing materials
 	 * @param count how many to add
-	 * @param inOutLine
+	 * @param huPackingMaterialCollectorSource
 	 */
 	public void addM_HU_PI(final I_M_HU_PI huPI, final int count, IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
@@ -532,22 +538,11 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 				// don't retrieve again those HUs which were already added
 				continue;
 			}
-			
+
 			final Object referencedModel = TableRecordCacheLocal.getReferencedValue(huAssignment, Object.class);
 			final IHUPackingMaterialCollectorSource source = HUPackingMaterialCollectorSourceFactory.fromNullable(referencedModel);
 			if (hu != null)
 			{
-				
-				//
-				// if(iol==null)
-				// {
-				// final I_M_MovementLine movementLine = TableRecordCacheLocal.getReferencedValue(huAssignment, I_M_MovementLine.class);
-				//
-				// if(movementLine != null)
-				// {
-				// iol = InterfaceWrapperHelper.create(movementLine.getM_InOutLine(), I_M_InOutLine.class);
-				// }
-				// }
 				addHURecursively(hu, source);
 			}
 			addLUIfNotAlreadyAssignedElsewhere(huAssignment, source);
@@ -574,8 +569,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 			final I_M_HU tuHU = tuAssignment.getM_TU_HU();
 			if (tuHU != null)
 			{
-
-				// final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(tuAssignment, I_M_InOutLine.class);
 				addHURecursively(tuHU, source);
 			}
 
@@ -604,9 +597,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 
 		// Collect the LU, but don't to it recursively
 		// because we don't want to collect the other TUs which are included in this LU
-
-		// final IHUPackingMaterialCollectorSource source = new IHUPackingMaterialCollectorSource(luAssignment);
-		// final I_M_InOutLine iol = TableRecordCacheLocal.getReferencedValue(luAssignment, I_M_InOutLine.class);
 		addLU(luHU, source);
 	}
 
