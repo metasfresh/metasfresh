@@ -104,13 +104,13 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Optional<IExpression<?>> defaultValueExpression;
 	private final ImmutableList<IDocumentFieldCallout> callouts;
 
+	
 	public static enum Characteristic
 	{
 		PublicField //
 		, AdvancedField //
 		, SideListField //
 		, GridViewField //
-		, AllowFiltering //
 		//
 		, SpecialField_DocumentNo //
 		, SpecialField_DocStatus //
@@ -136,6 +136,11 @@ public final class DocumentFieldDescriptor implements Serializable
 	private final Optional<DocumentFieldDataBindingDescriptor> dataBinding;
 
 	private final DocumentFieldDependencyMap dependencies;
+
+	//
+	// Default filtering options
+	private final boolean defaultFilterField;
+	private final int defaultFilterFieldSeqNo;
 
 	private DocumentFieldDescriptor(final Builder builder)
 	{
@@ -173,6 +178,18 @@ public final class DocumentFieldDescriptor implements Serializable
 		dependencies = builder.buildDependencies();
 
 		callouts = builder.buildCallouts();
+
+		//
+		// Default filtering
+		defaultFilterField = builder.defaultFilterField;
+		if(defaultFilterField)
+		{
+			this.defaultFilterFieldSeqNo = builder.defaultFilterFieldSeqNo > 0 ? builder.defaultFilterFieldSeqNo : Integer.MAX_VALUE;
+		}
+		else
+		{
+			this.defaultFilterFieldSeqNo = -1; // N/A
+		}
 	}
 
 	@Override
@@ -636,6 +653,16 @@ public final class DocumentFieldDescriptor implements Serializable
 	{
 		return callouts;
 	}
+	
+	public boolean isDefaultFilterField()
+	{
+		return defaultFilterField;
+	}
+	
+	public int getDefaultFilterFieldSeqNo()
+	{
+		return defaultFilterFieldSeqNo;
+	}
 
 	/**
 	 * Builder
@@ -679,6 +706,11 @@ public final class DocumentFieldDescriptor implements Serializable
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
 		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
+		
+		//
+		// Default filtering options
+		private boolean defaultFilterField = false;
+		private int defaultFilterFieldSeqNo = -1;
 
 		private Builder(final String fieldName)
 		{
@@ -875,7 +907,7 @@ public final class DocumentFieldDescriptor implements Serializable
 			return _widgetType;
 		}
 		
-		public Builder setAllowShowPassword(boolean allowShowPassword)
+		public Builder setAllowShowPassword(final boolean allowShowPassword)
 		{
 			this._allowShowPassword = allowShowPassword;
 			return this;
@@ -1321,6 +1353,18 @@ public final class DocumentFieldDescriptor implements Serializable
 			}
 
 			return true;
+		}
+		
+		public Builder setDefaultFilterField(final boolean defaultFilterField)
+		{
+			this.defaultFilterField = defaultFilterField;
+			return this;
+		}
+		
+		public Builder setDefaultFilterFieldSeqNo(final int defaultFilterFieldSeqNo)
+		{
+			this.defaultFilterFieldSeqNo = defaultFilterFieldSeqNo;
+			return this;
 		}
 	}
 }
