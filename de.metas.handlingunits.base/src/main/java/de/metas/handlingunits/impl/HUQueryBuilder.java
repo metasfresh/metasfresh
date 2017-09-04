@@ -94,7 +94,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
-
+	
 	/**
 	 * Shall we select only those HUs which are top level (i.e. not included in other HUs)?
 	 *
@@ -127,8 +127,10 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} for barcode */
 	private final Map<Integer, HUAttributeQueryFilterVO> _barcodeAttributesIds2Value = new HashMap<>();
+	
 	private final Set<String> _huStatusesToInclude = new HashSet<>();
 	private final Set<String> _huStatusesToExclude = new HashSet<>();
+	private boolean onlyActiveHUs = true;
 
 	/**
 	 * {@code null} means "no restriction". Empty means that no HU matches.
@@ -197,6 +199,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		copy._huStatusesToInclude.addAll(_huStatusesToInclude);
 		copy._huStatusesToExclude.addAll(_huStatusesToExclude);
+		copy.onlyActiveHUs = onlyActiveHUs;
 
 		copy._onlyHUIds = _onlyHUIds == null ? null : new HashSet<>(_onlyHUIds);
 
@@ -237,6 +240,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(_barcodeAttributesIds2Value)
 				.append(_huStatusesToInclude)
 				.append(_huStatusesToExclude)
+				.append(onlyActiveHUs)
 				.append(_onlyHUIds)
 				.append(_huIdsToExclude)
 				.append(_huPIVersionIdsToInclude)
@@ -279,6 +283,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(_barcodeAttributesIds2Value, other._barcodeAttributesIds2Value)
 				.append(_huStatusesToInclude, other._huStatusesToInclude)
 				.append(_huStatusesToExclude, other._huStatusesToExclude)
+				.append(onlyActiveHUs, other.onlyActiveHUs)
 				.append(_onlyHUIds, other._onlyHUIds)
 				.append(_huIdsToExclude, other._huIdsToExclude)
 				.append(_huPIVersionIdsToInclude, other._huPIVersionIdsToInclude)
@@ -361,7 +366,10 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		//
 		// Only Active HUs
-		filters.addOnlyActiveRecordsFilter();
+		if(onlyActiveHUs)
+		{
+			filters.addOnlyActiveRecordsFilter();
+		}
 
 		//
 		// Filter by Warehouses
@@ -759,7 +767,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			return addOnlyInWarehouseIds(Collections.<Integer> emptyList());
 		}
 
-		final Set<Integer> warehouseIds = new HashSet<Integer>(warehouses.size());
+		final Set<Integer> warehouseIds = new HashSet<>(warehouses.size());
 		for (final I_M_Warehouse warehouse : warehouses)
 		{
 			if (warehouse == null)
@@ -836,6 +844,13 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	public IHUQueryBuilder setNotEmptyStorageOnly()
 	{
 		_emptyStorage = false;
+		return this;
+	}
+
+	@Override
+	public IHUQueryBuilder setOnlyActiveHUs(final boolean onlyActiveHUs)
+	{
+		this.onlyActiveHUs = onlyActiveHUs;
 		return this;
 	}
 
