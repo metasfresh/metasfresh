@@ -387,8 +387,6 @@ public class HUInOutBL implements IHUInOutBL
 			lineToHus.put(customerReturnLine.getM_InOutLine_ID(), currentHUs);
 		}
 
-		moveHUsForCustomerReturn(ctxAware.getCtx(), hus);
-
 		updateManualCustomerReturnInOutForHUs(customerReturn, lineToHus);
 
 		return hus;
