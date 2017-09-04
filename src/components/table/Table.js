@@ -86,15 +86,17 @@ class Table extends Component {
             !_.isEqual(prevState.rows, rows)
         ) {
             if (isModal && !hasIncluded) {
-                let firstRow = rows[0];
+                if (rows) {
+                    let firstRow = rows[0];
 
-                if (firstRow) {
-                    if (supportIncludedViewOnSelect) {
-                        this.showSelectedIncludedView([firstRow.id]);
-                    }
+                    if (firstRow) {
+                        if (supportIncludedViewOnSelect) {
+                            this.showSelectedIncludedView([firstRow.id]);
+                        }
 
-                    if (firstRow.id) {
-                        this.selectOneProduct(firstRow.id);
+                        if (firstRow.id) {
+                            this.selectOneProduct(firstRow.id);
+                        }
                     }
                 }
             }
