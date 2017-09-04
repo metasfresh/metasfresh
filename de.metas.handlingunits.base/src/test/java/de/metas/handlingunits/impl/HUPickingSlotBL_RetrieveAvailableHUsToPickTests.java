@@ -14,6 +14,9 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.Services;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.theories.Theories;
+import org.junit.experimental.theories.Theory;
+import org.junit.runner.RunWith;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -55,7 +58,7 @@ import mockit.Mocked;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@RunWith(Theories.class)
 public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 {
 	@Injectable
@@ -78,20 +81,23 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		assertThat(result).isEmpty();
 	}
 
-	@Test
-	public void testNoExistingPickingCandidate()
+	/**
+	 * There is a HU but no picking candidate, so the HU shall be returned.
+	 */
+	@Theory
+	public void testNoPickingCandidate(final boolean onlyTopLevelHUs)
 	{
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		vhu.setM_Locator_ID(LOCATOR_ID);
 		save(vhu);
 
-		final List<I_M_HU> result = common(vhu);
+		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result).isNotEmpty();
 	}
 
-	@Test
-	public void testExistingPickingCandidate()
+	@Theory
+	public void testExistingPickingCandidate(final boolean onlyTopLevelHUs)
 	{
 		final I_M_HU vhu = newInstance(I_M_HU.class);
 		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -102,14 +108,14 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		pickingCandidate.setM_HU(vhu);
 		save(pickingCandidate);
 
-		final List<I_M_HU> result = common(vhu);
+		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result)
 				.as("HUs referenced by a picking candidate should be filtered out")
 				.isEmpty();
 	}
 
-	@Test
-	public void testVhuWithTuNoExistingPickingCandidate()
+	@Theory
+	public void testVhuWithTuNoExistingPickingCandidate(final boolean onlyTopLevelHUs)
 	{
 		final I_M_HU tu = newInstance(I_M_HU.class);
 		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -127,12 +133,19 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		vhu.setM_HU_Item_Parent(item);
 		save(vhu);
 
-		final List<I_M_HU> result = common(vhu);
-		assertThat(result).hasSize(2);
+		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
+		if (onlyTopLevelHUs)
+		{
+			assertThat(result).containsExactly(tu);
+		}
+		else
+		{
+			assertThat(result).hasSize(2);
+		}
 	}
 
-	@Test
-	public void testVhuWithTuExistingPickingCandidateForVhu()
+	@Theory
+	public void testVhuWithTuExistingPickingCandidateForVhu(final boolean onlyTopLevelHUs)
 	{
 		final I_M_HU tu = newInstance(I_M_HU.class);
 		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -153,14 +166,14 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		pickingCandidate.setM_HU(vhu);
 		save(pickingCandidate);
 
-		final List<I_M_HU> result = common(vhu);
+		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result)
 				.as("VHUs referenced by a picking candidate should be filtered out, just like TUs, if no children are left")
 				.isEmpty();
 	}
 
-	@Test
-	public void testTuWithVhuExistingPickingCandidateForTu()
+	@Theory
+	public void testTuWithVhuExistingPickingCandidateForTu(final boolean onlyTopLevelHUs)
 	{
 		final I_M_HU tu = newInstance(I_M_HU.class);
 		tu.setHUStatus(X_M_HU.HUSTATUS_Active);
@@ -184,14 +197,14 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		save(vhu);
 		POJOWrapper.setInstanceName(vhu, "vhu");
 
-		final List<I_M_HU> result = common(vhu);
+		final List<I_M_HU> result = common(vhu, onlyTopLevelHUs);
 		assertThat(result)
 				.as("TUs referenced by a picking candidate should be filtered out, together with their child-HUs")
 				.isEmpty();
 	}
 
-	@Test
-	public void testLuWithTuAndVhuAndPickingCandidateForVhu()
+	@Theory
+	public void testLuWithTuAndVhuAndPickingCandidateForVhu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
 
@@ -199,12 +212,12 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		pickingCandidate.setM_HU(luTuVhu.getVhu());
 		save(pickingCandidate);
 
-		final List<I_M_HU> result = common(luTuVhu.getVhu());
+		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
 	}
 
-	@Test
-	public void testLuWithTuAndVhuAndPickingCandidateForTu()
+	@Theory
+	public void testLuWithTuAndVhuAndPickingCandidateForTu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
 
@@ -212,12 +225,12 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		pickingCandidate.setM_HU(luTuVhu.getTu());
 		save(pickingCandidate);
 
-		final List<I_M_HU> result = common(luTuVhu.getTu());
+		final List<I_M_HU> result = common(luTuVhu.getTu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
 	}
 
-	@Test
-	public void testVhuWithTuAndLuAndPickingCandidateForLu()
+	@Theory
+	public void testVhuWithTuAndLuAndPickingCandidateForLu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
 
@@ -225,15 +238,15 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		pickingCandidate.setM_HU(luTuVhu.getLu());
 		save(pickingCandidate);
 
-		final List<I_M_HU> result = common(luTuVhu.getVhu());
+		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
 	}
 
 	/**
 	 * Creates a LU with two TUs. One of the two TUs is already picked. Verifies that the LU, the not-picked TU and the not-picked TU's VHU are returned.
 	 */
-	@Test
-	public void testLuWithTwoTusAndVhusAndPickingCandidateForOneTu()
+	@Theory
+	public void testLuWithTwoTusAndVhusAndPickingCandidateForOneTu(final boolean onlyTopLevelHUs)
 	{
 		final LuTuVhu luTuVhu = createLuTuVhu();
 
@@ -263,10 +276,17 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		pickingCandidate.setM_HU(secondTu);
 		save(pickingCandidate);
 
-		final List<I_M_HU> result = common(luTuVhu.getVhu());
-		assertThat(result)
-				// .as("TUs referenced by a picking candidate should be filtered out, together with their child-HUs")
-				.containsExactlyInAnyOrder(luTuVhu.getLu(), luTuVhu.getTu(), luTuVhu.getVhu());
+		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
+		if (onlyTopLevelHUs)
+		{
+			assertThat(result)
+					.containsExactlyInAnyOrder(luTuVhu.getLu());
+		}
+		else
+		{
+			assertThat(result)
+					.containsExactlyInAnyOrder(luTuVhu.getLu(), luTuVhu.getTu(), luTuVhu.getVhu());
+		}
 	}
 
 	private LuTuVhu createLuTuVhu()
@@ -318,10 +338,13 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	 * Set up the storage engine to return the given {@code vhu} and call the method under test.
 	 * 
 	 * @param vhu
+	 * @param onlyTopLevelHUs TODO
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	private List<I_M_HU> common(final I_M_HU vhu)
+	private List<I_M_HU> common(
+			final I_M_HU vhu,
+			final boolean onlyTopLevelHUs)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = newInstance(I_M_ShipmentSchedule.class);
 		save(shipmentSchedule);
@@ -340,6 +363,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final List<I_M_HU> result = new HUPickingSlotBL()
 				.retrieveAvailableHUsToPick(AvailableHUsToPickRequest.builder()
 						.shipmentSchedules(ImmutableList.of(shipmentSchedule))
+						.onlyTopLevelHUs(onlyTopLevelHUs)
 						.build());
 		return result;
 	}
