@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.handlingunits.spi.impl;
 
 import javax.annotation.Nullable;
 
@@ -7,6 +7,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.handlingunits.movement.spi.impl.MovementLineHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import lombok.experimental.UtilityClass;
 
 /*
@@ -31,6 +34,13 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ * 
+ * Serves as source for HUPackingMaterialCollector.
+ * Must be a document line ( at leas for now).
+ *
+ */
 @UtilityClass
 public final class HUPackingMaterialCollectorSourceFactory
 {

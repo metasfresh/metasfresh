@@ -1,6 +1,7 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.handlingunits.movement.spi.impl;
 
 import de.metas.handlingunits.model.I_M_MovementLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import lombok.Builder;
 import lombok.NonNull;
 
