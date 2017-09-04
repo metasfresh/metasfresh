@@ -14,6 +14,17 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-37**
 
+## Features
+* metasfresh-app
+  * [#2300](https://github.com/metasfresh/metasfresh/issues/2300) Doc Outbound missing Columns
+    * Adjustments to Document Outbound Window, adapting to current Design Guidelines, making it more user friendly with more functionality.
+  * [#2307](https://github.com/metasfresh/metasfresh/issues/2307) Window Period adjustments, add missing Translations
+    * Translation for en_US and further refinements of Calendar Period Window in WebUI.
+  * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
+    * Further detailed improvements of Sales Order Window in WebUI, adding Fields and Translations.
+  * [#2317](https://github.com/metasfresh/metasfresh/issues/2317) Improvement of Delivery Days Window in WebUI
+    * Further detailed improvements done in Delivery Days Window.
+
 # metasfresh 5.25 (2017-36)
 
 **release for week 2017-36**
@@ -154,6 +165,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1021](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1021) Combined Filter Functionality
+    * New Functionality that allows the combination of different Filters as search queries in generic grid view Windows.
 
 ## Fixes
 
