@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.handlingunits.spi.impl;
 
 /*
  * #%L
@@ -42,6 +42,7 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
 
@@ -253,11 +254,11 @@ public final class HUPackingMaterialDocumentLineCandidate
 		qty = qty.add(candidateToAdd.qty);
 	}
 
-	public void addSourceIfNotNull(final IHUPackingMaterialCollectorSource iol)
+	public void addSourceIfNotNull(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
-		if (iol != null)
+		if (huPackingMaterialCollectorSource != null)
 		{
-			sources.add(iol);
+			sources.add(huPackingMaterialCollectorSource);
 		}
 	}
 
