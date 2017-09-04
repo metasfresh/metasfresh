@@ -25,6 +25,7 @@ package org.adempiere.mmovement.api;
 
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_MovementLine;
@@ -49,4 +50,6 @@ public interface IMovementDAO extends ISingletonService
 	 * @return movement lines
 	 */
 	<MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(I_M_Movement movement, final Class<MovementLineType> movementLineClass);
+
+	IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(int inventoryId);
 }
