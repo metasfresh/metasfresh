@@ -52,6 +52,7 @@ import de.metas.logging.LogManager;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+import lombok.NonNull;
 
 public class HUStorageEngine implements IStorageEngine
 {
@@ -87,7 +88,9 @@ public class HUStorageEngine implements IStorageEngine
 	}
 
 	@Override
-	public Set<IStorageRecord> retrieveStorageRecords(final IContextAware context, final Set<IStorageQuery> storageQueries)
+	public Set<IStorageRecord> retrieveStorageRecords(
+			@NonNull final IContextAware context, 
+			@NonNull final Set<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
 

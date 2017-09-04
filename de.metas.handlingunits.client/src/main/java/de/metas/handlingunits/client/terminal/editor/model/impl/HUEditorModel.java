@@ -48,7 +48,6 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.beans.WeakPropertyChangeSupport;
 import org.adempiere.util.collections.Predicate;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Movement;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -86,6 +85,7 @@ import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.materialtracking.IQualityInspectionSchedulable;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -119,7 +119,7 @@ public class HUEditorModel implements IDisposable
 	 *
 	 * Map: "HU Key Id" to {@link IHUKey}.
 	 */
-	private final Map<String, IHUKey> _selectedKeyIds = new HashMap<String, IHUKey>();
+	private final Map<String, IHUKey> _selectedKeyIds = new HashMap<>();
 
 	private boolean displayBarcode = true;
 	private boolean updateHUAllocationsOnSave = true;
@@ -456,7 +456,7 @@ public class HUEditorModel implements IDisposable
 
 	private void cleanupBreadcrumbGroupingKeys()
 	{
-		final List<ITerminalKey> oldKeys = new ArrayList<ITerminalKey>(breadcrumbKeyLayout.getKeys());
+		final List<ITerminalKey> oldKeys = new ArrayList<>(breadcrumbKeyLayout.getKeys());
 		final Iterator<ITerminalKey> oldKeysIterator = oldKeys.iterator();
 
 		boolean changed = false;
@@ -896,7 +896,7 @@ public class HUEditorModel implements IDisposable
 
 		//
 		// Iterate through all our IHUKeys and pick those who match our given HU (shall be only one)
-		final List<IHUKey> huKeysForId = new ArrayList<IHUKey>();
+		final List<IHUKey> huKeysForId = new ArrayList<>();
 		rootKey.iterate(new HUKeyVisitorAdapter()
 		{
 			@Override
@@ -971,7 +971,7 @@ public class HUEditorModel implements IDisposable
 
 	public List<IHUProductStorage> getSelectedHUProductStorages(final I_M_Product product)
 	{
-		final List<IHUProductStorage> productStorages = new ArrayList<IHUProductStorage>();
+		final List<IHUProductStorage> productStorages = new ArrayList<>();
 		for (final HUKey huKey : getSelectedHUKeys())
 		{
 			final IHUProductStorage productStorage = huKey.getProductStorageOrNull(product);
@@ -1012,8 +1012,8 @@ public class HUEditorModel implements IDisposable
 	 */
 	public Set<HUKey> getSelectedHUKeys(final Predicate<IHUKey> filter)
 	{
-		final Set<Integer> huIds = new HashSet<Integer>();
-		final Set<HUKey> huKeys = new HashSet<HUKey>();
+		final Set<Integer> huIds = new HashSet<>();
+		final Set<HUKey> huKeys = new HashSet<>();
 		for (final IHUKey key : _selectedKeyIds.values())
 		{
 			if (!isSelected(key))
@@ -1107,7 +1107,7 @@ public class HUEditorModel implements IDisposable
 			@Override
 			public Collection<IPropertiesPanelModel> get()
 			{
-				final List<IPropertiesPanelModel> childPropertiesPanelModels = new ArrayList<IPropertiesPanelModel>();
+				final List<IPropertiesPanelModel> childPropertiesPanelModels = new ArrayList<>();
 
 				//
 				// Attribute Set Model

@@ -13,11 +13,11 @@ package de.metas.process;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -38,7 +38,8 @@ public interface IProcessPrecondition
 	 * Determines if a process should be displayed in current context.
 	 * <p>
 	 * <b>IMPORTANT:</b> this method will not be invoked on the same instance that shall later execute <code>prepare()</code> {@link JavaProcess#doIt(String, String, Object[])},
-	 * so it does not make any sense to set any values to be used later.
+	 * so it does not make any sense to set any values to be used later. Also, when this method is called, there is no process info instance yet, so e.g.
+	 * {@link JavaProcess#getRecord_ID()} won't work.
 	 *
 	 * @param context
 	 * @return precondition resolution

@@ -351,7 +351,7 @@ public class PartitionerServiceCreatePartitionTests
 
 				// invoice -> credit-memo
 				.line(I_C_Invoice.Table_Name)
-				.ref().setReferencingColumnName(I_C_Invoice.COLUMNNAME_Ref_CreditMemo_ID).setReferencedTableName(I_C_Invoice.Table_Name)
+				.ref().setReferencingColumnName(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID).setReferencedTableName(I_C_Invoice.Table_Name)
 				.newRef().setReferencingColumnName(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID).setReferencedTableName(I_C_Invoice.Table_Name)
 				.endRef()
 				.endLine().build();
@@ -364,7 +364,7 @@ public class PartitionerServiceCreatePartitionTests
 		POJOWrapper.setInstanceName(invoice, "creditmemo");
 		InterfaceWrapperHelper.save(creditmemo);
 
-		invoice.setRef_CreditMemo(creditmemo);
+		invoice.setRef_Invoice(creditmemo);
 		InterfaceWrapperHelper.save(invoice);
 
 		creditmemo.setRef_Invoice(invoice);
@@ -382,7 +382,7 @@ public class PartitionerServiceCreatePartitionTests
 		assertThat(partitions.get(0).getConfig(), is(config));
 
 		assertThat(partitions.get(0).getConfig().getLines().size(), is(1)); // the config has no more or less lines than it had before
-		assertThat(partitions.get(0).getConfig().getLines().get(0).getReferences().size(), is(2)); // the single config line has no more or less references than it had before.
+		assertThat(partitions.get(0).getConfig().getLines().get(0).getReferences().size(), is(1)); // the single config line has no more or less references than it had before.
 
 		assertNotNull(partitions.get(0).getRecordsFlat());
 		assertThat(partitions.get(0).getRecordsFlat().size(), is(2));

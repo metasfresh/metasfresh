@@ -44,6 +44,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 import lombok.NonNull;
 
@@ -62,7 +63,7 @@ import lombok.NonNull;
 	private CompositeHUTrxListener _trxListeners = null;
 
 	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
-	private IHUPackingMaterialsCollector<I_M_InOutLine> _destroyedHUPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
+	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> _destroyedHUPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
 
 	public MutableHUContext(final Object contextProvider)
 	{
@@ -244,14 +245,14 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IHUPackingMaterialsCollector<I_M_InOutLine> getHUPackingMaterialsCollector()
+	public IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> getHUPackingMaterialsCollector()
 	{
 
 		return _destroyedHUPackingMaterialsCollector;
 	}
 
 	@Override
-	public IMutableHUContext setHUPackingMaterialsCollector(@NonNull final IHUPackingMaterialsCollector<I_M_InOutLine> huPackingMaterialsCollector)
+	public IMutableHUContext setHUPackingMaterialsCollector(@NonNull final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> huPackingMaterialsCollector)
 	{
 		this._destroyedHUPackingMaterialsCollector = huPackingMaterialsCollector;
 		return this;

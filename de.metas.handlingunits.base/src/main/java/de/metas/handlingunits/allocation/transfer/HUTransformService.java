@@ -9,6 +9,7 @@ import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -107,6 +108,12 @@ public class HUTransformService
 	public static HUTransformService get()
 	{
 		return get(Env.getCtx());
+	}
+	
+	public static HUTransformService getWithThreadInheritedTrx()
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		return get(huContextFactory.createMutableHUContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited));
 	}
 
 	/**
@@ -642,6 +649,11 @@ public class HUTransformService
 				final List<I_M_HU> newTUs = tuToNewTUs(tu, BigDecimal.valueOf(qtyTUsToExtract), isOwnPackingMaterials);
 				extractedTUs.addAll(newTUs);
 				qtyTUsRemaining -= newTUs.size();
+			}
+			else if (handlingUnitsBL.isVirtual(tu))
+			{
+				// Skip VHUs which are directly set on LU
+				continue;
 			}
 			else
 			{

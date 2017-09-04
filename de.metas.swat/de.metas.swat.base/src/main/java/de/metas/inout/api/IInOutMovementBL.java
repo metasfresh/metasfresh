@@ -26,6 +26,7 @@ package de.metas.inout.api;
 import java.util.List;
 
 import org.adempiere.util.ISingletonService;
+import org.compiere.model.I_M_Warehouse;
 
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -52,4 +53,6 @@ public interface IInOutMovementBL extends ISingletonService
 	 * @param inout
 	 */
 	void reverseMovements(I_M_InOut inout);
+
+	I_M_Movement generateMovementToInOutWarehouse(I_M_InOut inout, I_M_Warehouse warehouseFrom, List<I_M_InOutLine> inOutLines);
 }

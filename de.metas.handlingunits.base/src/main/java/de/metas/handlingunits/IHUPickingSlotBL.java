@@ -13,15 +13,14 @@ package de.metas.handlingunits;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -35,6 +34,8 @@ import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
+import lombok.Builder.Default;
+import lombok.NonNull;
 
 /**
  * Note: Please use this interface in this module instead of {@link IPickingSlotBL}.
@@ -152,11 +153,34 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	}
 
 	/**
-	 * Search for available HUs to be picked.
+	 * Search for available (top level) HUs to be picked.
 	 *
-	 * @param shipmentSchedules for which the HUs shall be picked
-	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
+	 * @param request
+	 * 
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(List<I_M_ShipmentSchedule> shipmentSchedules, boolean considerAttributes);
+	List<I_M_HU> retrieveAvailableHUsToPick(AvailableHUsToPickRequest request);
+
+	@lombok.Builder
+	@lombok.Value
+	public static final class AvailableHUsToPickRequest
+	{
+		/**
+		 * If true we shall consider the HU attributes while searching for matching HUs.
+		 */
+		@Default
+		boolean considerAttributes = true;
+
+		/**
+		 * ShipmentSchedules for which the HUs shall be picked. May not be {@code null}.
+		 */
+		@NonNull
+		List<I_M_ShipmentSchedule> shipmentSchedules;
+
+		/**
+		 * {@code true} by default, for backwards compatibility.
+		 */
+		@Default
+		boolean onlyTopLevelHUs = true;
+	}
 }

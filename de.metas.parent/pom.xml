@@ -5,14 +5,14 @@
 	<parent>
 		<artifactId>de.metas.parent.general</artifactId>
 		<groupId>de.metas</groupId>
-		<version>1.0.0</version>
+		<version>[1,10.0.0]</version>
 	</parent>
 
 	<artifactId>de.metas.parent</artifactId>
 
 	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
 		can't set it to another version it -->
-	<version>1.0.0</version>
+	<version>10.0.0</version>
 
 	<packaging>pom</packaging>
 
@@ -22,6 +22,7 @@
 		from this pom. It will instead be handled by adempiereJasper-parent -->
 
 	<properties>
+
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -55,15 +56,6 @@
 		<!-- The version to be used by metasfresh, as opposed to the ESB's. The
 			two versions might clash in ait modules -->
 		<metasfresh.cxf.version>3.1.6</metasfresh.cxf.version>
-
-		<!-- this version can't be updated by the versions plugin, but we can pass it through our pipeline and set this property in downstream jobs -->
-		<metasfresh.assembly.descriptor.version>1.0.0</metasfresh.assembly.descriptor.version>
-
-		<!-- Tells SonarQube to run the unit tests -->
-		<sonar.dynamicAnalysis>true</sonar.dynamicAnalysis>
-		<!-- Tells SonarQube to use JaCoCo (formerly EclEmma) as our unit test
-			coverage tool -->
-		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 
 		<license.name>gpl_v2</license.name>
 
@@ -644,9 +636,21 @@
 							</dependency>
 
 							<!-- required to compile reports with barcodes -->
-							<!-- FRESH-397: see if we can remove it, too <dependency> <groupId>net.sf.barcode4j</groupId>
-								<artifactId>barcode4j-fop-ext-complete</artifactId> <version>2.0</version>
-								<type>jar</type> <scope>compile</scope> </dependency> -->
+							<!-- FRESH-397: see if we can remove it, too.  -->
+							<!-- 1876 It's needed to be able to run jaspers with barcodes-->
+							<dependency>
+								<groupId>net.sf.barcode4j</groupId>
+								<artifactId>barcode4j-fop-ext-complete</artifactId>
+								<version>2.0</version>
+								<type>jar</type>			
+								<exclusions>
+									<exclusion>
+										<groupId>commons-logging</groupId>
+										<artifactId>commons-logging</artifactId>
+									</exclusion>
+								</exclusions>
+							</dependency>		
+								
 						</dependencies>
 						<executions>
 							<execution>

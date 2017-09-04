@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.material</groupId>
 		<artifactId>metasfresh-material</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -65,20 +65,20 @@
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-dispo-commons</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
@@ -86,7 +86,7 @@
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-event</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 		<!--
@@ -152,7 +152,6 @@
 						</goals>
 						<configuration>
 							<additionalProperties>
-								<releaseVersion>${env.MF_RELEASE_VERSION}</releaseVersion>
 								<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
 								<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
 								<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>

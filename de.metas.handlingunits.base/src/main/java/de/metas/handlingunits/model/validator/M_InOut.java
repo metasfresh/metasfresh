@@ -52,6 +52,7 @@ import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
@@ -278,8 +279,8 @@ public class M_InOut
 			// do nothing if the inout is not a customer return
 			return;
 		}
-		
-		if(Services.get(IInOutBL.class).isReversal(customerReturn))
+
+		if (Services.get(IInOutBL.class).isReversal(customerReturn))
 		{
 			// nothing to do
 			return;
@@ -301,9 +302,9 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseReturn(final de.metas.handlingunits.model.I_M_InOut returnInOut)
 	{
-
+		final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-		
+
 		if (!(huInOutBL.isVendorReturn(returnInOut) || huInOutBL.isCustomerReturn(returnInOut)))
 		{
 			return; // nothing to do
@@ -314,12 +315,18 @@ public class M_InOut
 		{
 			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + returnInOut + ")");
 		}
-		
+
 		final List<I_M_HU> hus = Services.get(IHUAssignmentDAO.class).retrieveTopLevelHUsForModel(returnInOut);
-		
-		if(hus.isEmpty())
+
+		if (hus.isEmpty())
 		{
 			// nothing to do.
+			return;
+		}
+
+		if (huInOutBL.isCustomerReturn(returnInOut))
+		{
+			huMovementBL.moveHUsToWarehouse(hus, returnInOut.getM_Warehouse());
 		}
 
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(returnInOut);
@@ -330,6 +337,9 @@ public class M_InOut
 				.setReferencedModel(returnInOut)
 				.addModels(hus)
 				.restoreFromSnapshot();
+
 	}
+
+
 
 }

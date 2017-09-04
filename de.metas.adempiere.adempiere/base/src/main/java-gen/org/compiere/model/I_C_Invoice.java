@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -28,7 +12,7 @@ public interface I_C_Invoice
     public static final String Table_Name = "C_Invoice";
 
     /** AD_Table_ID=318 */
-    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
@@ -483,29 +467,6 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
-	 * Set Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
-
-	/**
-	 * Get Gebühr.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getChargeAmt();
-
-    /** Column definition for ChargeAmt */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "ChargeAmt", null);
-    /** Column name ChargeAmt */
-    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
-
-	/**
 	 * Set Rechnung.
 	 * Invoice Identifier
 	 *
@@ -529,31 +490,6 @@ public interface I_C_Invoice
     public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_C_Invoice_ID = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "C_Invoice_ID", null);
     /** Column name C_Invoice_ID */
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
-
-	/**
-	 * Set Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCopyFrom (java.lang.String CopyFrom);
-
-	/**
-	 * Get Copy From.
-	 * Copy From Record
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getCopyFrom();
-
-    /** Column definition for CopyFrom */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "CopyFrom", null);
-    /** Column name CopyFrom */
-    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Auftrag.
@@ -614,8 +550,8 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_C_Payment_ID = "C_Payment_ID";
 
 	/**
-	 * Set Zahlungskondition.
-	 * The terms of Payment (timing, discount)
+	 * Set Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -624,8 +560,8 @@ public interface I_C_Invoice
 	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungskondition.
-	 * The terms of Payment (timing, discount)
+	 * Get Zahlungsbedingung.
+	 * Die Bedingungen für die Bezahlung dieses Vorgangs
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -670,6 +606,54 @@ public interface I_C_Invoice
     public static final org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Project>(I_C_Invoice.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
     /** Column name C_Project_ID */
     public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setChargeAmt (java.math.BigDecimal ChargeAmt);
+
+	/**
+	 * Get Gebühr.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getChargeAmt();
+
+    /** Column definition for ChargeAmt */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "ChargeAmt", null);
+    /** Column name ChargeAmt */
+    public static final String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCopyFrom (java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy From.
+	 * Copy From Record
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getCopyFrom();
+
+    /** Column definition for CopyFrom */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "CopyFrom", null);
+    /** Column name CopyFrom */
+    public static final String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
 	 * Set Nachbelastung.
@@ -990,23 +974,25 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Document BaseType.
-	 * Logical type of document
+	 * Set Dokument Basis Typ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDocBaseType (java.lang.String DocBaseType);
 
 	/**
-	 * Get Document BaseType.
-	 * Logical type of document
+	 * Get Dokument Basis Typ.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	public java.lang.String getDocBaseType();
 
     /** Column definition for DocBaseType */
@@ -1188,6 +1174,29 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
+	 * Set Invoice_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInvoice_includedTab (java.lang.String Invoice_includedTab);
+
+	/**
+	 * Get Invoice_includedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInvoice_includedTab();
+
+    /** Column definition for Invoice_includedTab */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "Invoice_includedTab", null);
+    /** Column name Invoice_includedTab */
+    public static final String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
+
+	/**
 	 * Set Inkasso-Status.
 	 * Invoice Collection Status
 	 *
@@ -1211,29 +1220,6 @@ public interface I_C_Invoice
     public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceCollectionType = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "InvoiceCollectionType", null);
     /** Column name InvoiceCollectionType */
     public static final String COLUMNNAME_InvoiceCollectionType = "InvoiceCollectionType";
-
-	/**
-	 * Set Invoice_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setInvoice_includedTab (java.lang.String Invoice_includedTab);
-
-	/**
-	 * Get Invoice_includedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getInvoice_includedTab();
-
-    /** Column definition for Invoice_includedTab */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "Invoice_includedTab", null);
-    /** Column name Invoice_includedTab */
-    public static final String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
 
 	/**
 	 * Set Aktiv.
@@ -1386,7 +1372,7 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_IsPayScheduleValid = "IsPayScheduleValid";
 
 	/**
-	 * Set Gedruckt.
+	 * Set andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1396,7 +1382,7 @@ public interface I_C_Invoice
 	public void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get Gedruckt.
+	 * Get andrucken.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -1715,60 +1701,6 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Referenz Rechnung/Nachbelastung.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRef_AdjustmentCharge_ID (int Ref_AdjustmentCharge_ID);
-
-	/**
-	 * Get Referenz Rechnung/Nachbelastung.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRef_AdjustmentCharge_ID();
-
-	public org.compiere.model.I_C_Invoice getRef_AdjustmentCharge();
-
-	public void setRef_AdjustmentCharge(org.compiere.model.I_C_Invoice Ref_AdjustmentCharge);
-
-    /** Column definition for Ref_AdjustmentCharge_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Invoice> COLUMN_Ref_AdjustmentCharge_ID = new org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Invoice>(I_C_Invoice.class, "Ref_AdjustmentCharge_ID", org.compiere.model.I_C_Invoice.class);
-    /** Column name Ref_AdjustmentCharge_ID */
-    public static final String COLUMNNAME_Ref_AdjustmentCharge_ID = "Ref_AdjustmentCharge_ID";
-
-	/**
-	 * Set Referenz Gutschrift.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setRef_CreditMemo_ID (int Ref_CreditMemo_ID);
-
-	/**
-	 * Get Referenz Gutschrift.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getRef_CreditMemo_ID();
-
-	public org.compiere.model.I_C_Invoice getRef_CreditMemo();
-
-	public void setRef_CreditMemo(org.compiere.model.I_C_Invoice Ref_CreditMemo);
-
-    /** Column definition for Ref_CreditMemo_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Invoice> COLUMN_Ref_CreditMemo_ID = new org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_Invoice>(I_C_Invoice.class, "Ref_CreditMemo_ID", org.compiere.model.I_C_Invoice.class);
-    /** Column name Ref_CreditMemo_ID */
-    public static final String COLUMNNAME_Ref_CreditMemo_ID = "Ref_CreditMemo_ID";
-
-	/**
 	 * Set Referenced Invoice.
 	 *
 	 * <br>Type: Search
@@ -1825,8 +1757,7 @@ public interface I_C_Invoice
     public static final String COLUMNNAME_Reversal_ID = "Reversal_ID";
 
 	/**
-	 * Set Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Set Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1835,8 +1766,7 @@ public interface I_C_Invoice
 	public void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Vertriebsbeauftragter.
-	 * Sales Representative or Company Agent
+	 * Get Aussendienst.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1990,4 +1920,29 @@ public interface I_C_Invoice
     public static final org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue>(I_C_Invoice.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
     /** Column name User2_ID */
     public static final String COLUMNNAME_User2_ID = "User2_ID";
+
+	/**
+	 * Set UserFlag.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setUserFlag (java.lang.String UserFlag);
+
+	/**
+	 * Get UserFlag.
+	 * Can be used to flag records and thus make them selectable from the UI via advanced search.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getUserFlag();
+
+    /** Column definition for UserFlag */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice, Object> COLUMN_UserFlag = new org.adempiere.model.ModelColumn<I_C_Invoice, Object>(I_C_Invoice.class, "UserFlag", null);
+    /** Column name UserFlag */
+    public static final String COLUMNNAME_UserFlag = "UserFlag";
 }

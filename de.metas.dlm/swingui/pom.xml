@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.dlm</groupId>
 		<artifactId>metasfresh-dlm</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -24,13 +24,13 @@
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.client</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>de.metas.dlm</groupId>
 			<artifactId>metasfresh-dlm-base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 	</dependencies>

@@ -1,10 +1,10 @@
-package de.metas.handlingunits.movement.process;
+package de.metas.inoutcandidate.spi.impl;
 
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +22,11 @@ package de.metas.handlingunits.movement.process;
  * #L%
  */
 
-
-import java.util.Iterator;
-
-import org.adempiere.ad.trx.api.ITrx;
-
-import com.google.common.collect.Iterators;
-
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-
-/**
- * Move selected {@link I_M_HU} to {@link IHUMovementBL#getDirectMove_Warehouse(java.util.Properties, boolean)}.
- */
-public class M_Movement_CreateForHUs extends M_Movement_CreateForHUs_Mass
+public interface IHUPackingMaterialCollectorSource
 {
-	@Override
-	protected Iterator<I_M_HU> retrieveHUs()
-	{
-		final I_M_HU hu = getProcessInfo().getRecord(I_M_HU.class, ITrx.TRXNAME_None);
-		return Iterators.singletonIterator(hu);
-	}
+	int getM_Product_ID();
+
+	int getRecord_ID();
+
+	boolean isCollectHUPipToSource();
 }

@@ -5,23 +5,48 @@ import java.util.Date;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
+
 import de.metas.migration.IDatabase;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
+/**
+ * This is the too's"main" class. To learn about the tool's command line parameters etc, check out {@link CommandlineParams}.
+ *
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+@AllArgsConstructor
 public final class RolloutMigrate
 {
+	/**
+	 * May contain only characters. No underscores, dots etc.
+	 */
+	public static final String UPDATE_IN_PROGRESS_VERSION_SUFFIX = "UpdateInProgress";
+
 	private static final transient Logger logger = LoggerFactory.getLogger(RolloutMigrate.class);
 
-	private void log(final String msg)
-	{
-		final Throwable e = null;
-		log(msg, e);
-	}
+	@NonNull
+	private final DirectoryChecker directoryChecker;
 
-	private void log(final String msg, final Throwable e)
-	{
-		logger.info(msg, e);
-	}
+	@NonNull
+	private final PropertiesFileLoader propertiesFileLoader;
+
+	@NonNull
+	private final SettingsLoader settingsLoader;
+
+	@NonNull
+	private final RolloutVersionLoader rolloutVersionLoader;
+
+	@NonNull
+	private final DBConnectionMaker dbConnectionMaker;
+
+	@NonNull
+	private final DBVersionGetter dbVersionGetter;
+
+	@NonNull
+	private final MigrationScriptApplier migrationScriptApplier;
 
 	public final void run(@NonNull final Config config)
 	{
@@ -33,35 +58,31 @@ public final class RolloutMigrate
 		finally
 		{
 			final long ts2 = System.currentTimeMillis();
-			log("Duration: " + (ts2 - ts) + "ms (" + new Date(ts2) + ")");
-			log("Done.");
+			logger.info("Duration: " + (ts2 - ts) + "ms (" + new Date(ts2) + ")");
+			logger.info("Done.");
 		}
 	}
 
-	private void run0(@NonNull final Config config)
+	@VisibleForTesting
+	void run0(@NonNull final Config config)
 	{
-		final DirectoryChecker directoryChecker = new DirectoryChecker();
-		final PropertiesFileLoader propertiesFileLoader = new PropertiesFileLoader(directoryChecker);
-
-		final Settings settings = new SettingsLoader(config, directoryChecker, propertiesFileLoader).loadSettings();
-		log("Settings=" + settings);
-
-		final DBConnectionMaker dbConnectionMaker = new DBConnectionMaker(settings);
-
-		final RolloutVersionLoader rolloutVersionLoader = new RolloutVersionLoader(propertiesFileLoader, config.getRolloutDirName());
+		final Settings settings = settingsLoader.loadSettings(config);
+		logger.info("Settings=" + settings);
 
 		final boolean copyTemplateToNewDB = config.getNewDBName() != null && !config.getNewDBName().isEmpty();
 		//
 		// check versions if that's wanted
 		if (config.isCheckVersions())
 		{
-			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString();
+			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString(config.getRolloutDirName());
 
 			// if we are asked to copy, then we check the version of the original (a.k.a. template) DB
 			final String dbName = copyTemplateToNewDB ? config.getTemplateDBName() : settings.getDbName();
 
+			final String dbVersionStr = dbVersionGetter.retrieveDBVersion(settings, dbName);
+
 			final boolean dbNeedsMigration = VersionChecker.builder()
-					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
+					.dbVersionStr(dbVersionStr)
 					.rolloutVersionStr(rolloutVersionString)
 					.failIfRolloutIsGreaterThanDB(config.isFailIfRolloutIsGreaterThanDB())
 					.build()
@@ -78,7 +99,7 @@ public final class RolloutMigrate
 		{
 			final String dbName = "postgres"; // connecting to the "maintainance-DB, since we can't be connected to the DB we want to clone
 			DBCopyMaker.builder()
-					.dbConnection(dbConnectionMaker.createDummyDatabase(dbName))
+					.dbConnection(dbConnectionMaker.createDummyDatabase(settings, dbName))
 					.orgiginalDbName(config.getTemplateDBName())
 					.copyDbName(config.getNewDBName())
 					.copyDbOwner(settings.getDbUser())
@@ -89,49 +110,36 @@ public final class RolloutMigrate
 		//
 		// peform our "core" job, i.e. apply migration scripts
 		final String dbName = copyTemplateToNewDB ? config.getNewDBName() : settings.getDbName();
-		final IDatabase db = dbConnectionMaker.createDb(dbName);
+		final IDatabase db = dbConnectionMaker.createDb(settings, dbName);
 
 		//
 		// update the DB's version info if that's wanted
 		if (config.isStoreVersion())
 		{
-			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString();
-			new VersionSetter(db, rolloutVersionString + "+inProgress")
-					.setVersion();
+			final String dBVersion = dbVersionGetter.retrieveDBVersion(settings, dbName);
+			updateDbVersion(db, dBVersion, UPDATE_IN_PROGRESS_VERSION_SUFFIX);
 		}
 
-		MigrationScriptApplier.builder()
-				.db(db)
-				.listener(config.getScriptsApplierListener())
-				.justMarkScriptAsExecuted(config.isJustMarkScriptAsExecuted())
-				.rolloutDirName(config.getRolloutDirName())
-				.scriptFileName(config.getScriptFileName())
-				.directoryChecker(directoryChecker)
-				.build()
-				.applyMigrationScripts();
+		migrationScriptApplier.applyMigrationScripts(config, settings, dbName);
 
 		//
 		// update the DB's version info if that's wanted
 		if (config.isStoreVersion())
 		{
-			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString();
-			new VersionSetter(db, rolloutVersionString)
-					.setVersion();
+			final String rolloutVersionString = rolloutVersionLoader.loadRolloutVersionString(config.getRolloutDirName());
+			updateDbVersion(db, rolloutVersionString, ""); // update with just the rollout version; no suffix
 		}
 	}
 
-	public static final void main(final String[] args)
+	private void updateDbVersion(
+			@NonNull final IDatabase db,
+			@NonNull final String versionStr,
+			final String additionalMetaDataSuffix)
 	{
-		logger.info("RolloutMigrate (" + BinaryVersion.instance + ")");
-
-		final RolloutMigrate main = new RolloutMigrate();
-
-		final CommandlineParams commandlineParams = new CommandlineParams();
-		final Config config = commandlineParams.init(args);
-
-		if (config.isCanRun())
-		{
-			main.run(config);
-		}
+		DBVersionSetter.builder()
+				.db(db)
+				.newVersion(versionStr)
+				.additionalMetaDataSuffix(additionalMetaDataSuffix)
+				.build().setVersion();
 	}
 }

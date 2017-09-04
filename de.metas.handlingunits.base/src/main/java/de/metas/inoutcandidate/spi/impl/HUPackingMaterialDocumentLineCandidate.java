@@ -42,7 +42,6 @@ import org.compiere.model.I_M_Product;
 import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
 
@@ -100,7 +99,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 	private BigDecimal qty = BigDecimal.ZERO;
 	private final I_M_Locator locator;
 	private final I_M_Material_Tracking materialTracking;
-	private final List<I_M_InOutLine> sources = new ArrayList<I_M_InOutLine>();
+	private final List<IHUPackingMaterialCollectorSource> sources = new ArrayList<IHUPackingMaterialCollectorSource>();
 
 	/**
 	 *
@@ -254,7 +253,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 		qty = qty.add(candidateToAdd.qty);
 	}
 
-	public void addSourceIfNotNull(final I_M_InOutLine iol)
+	public void addSourceIfNotNull(final IHUPackingMaterialCollectorSource iol)
 	{
 		if (iol != null)
 		{
@@ -262,8 +261,8 @@ public final class HUPackingMaterialDocumentLineCandidate
 		}
 	}
 
-	public List<I_M_InOutLine> getSources()
+	public List<IHUPackingMaterialCollectorSource> getSources()
 	{
-		return new UnmodifiableList<I_M_InOutLine>(sources);
+		return new UnmodifiableList<IHUPackingMaterialCollectorSource>(sources);
 	}
 }

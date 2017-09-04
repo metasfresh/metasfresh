@@ -39,6 +39,7 @@ import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPickingSlotBL;
+import de.metas.handlingunits.IHUPickingSlotBL.AvailableHUsToPickRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -225,17 +226,6 @@ public class FreshProductKey extends ProductKey
 	/**
 	 * Search for available HUs to be picked.
 	 * 
-	 * @return matching HUs
-	 */
-	public List<I_M_HU> findAvailableHUs()
-	{
-		final boolean considerAttributes = true;
-		return findAvailableHUs(considerAttributes);
-	}
-
-	/**
-	 * Search for available HUs to be picked.
-	 * 
 	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
 	 * @return matching HUs
 	 */
@@ -244,6 +234,11 @@ public class FreshProductKey extends ProductKey
 		final IFreshPackingItem unallocatedPackingItem = getUnAllocatedPackingItem();
 		final List<I_M_ShipmentSchedule> shipmentSchedules = unallocatedPackingItem.getShipmentSchedules();
 
-		return Services.get(IHUPickingSlotBL.class).retrieveAvailableHUsToPick(shipmentSchedules, considerAttributes);
+		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+		return huPickingSlotBL.retrieveAvailableHUsToPick(AvailableHUsToPickRequest.builder()
+				.shipmentSchedules(shipmentSchedules)
+				.considerAttributes(considerAttributes)
+				.onlyTopLevelHUs(true)
+				.build());
 	}
 }

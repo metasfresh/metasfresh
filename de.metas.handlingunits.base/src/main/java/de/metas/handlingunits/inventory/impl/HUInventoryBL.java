@@ -7,13 +7,13 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Inventory;
 
 /*
  * #%L

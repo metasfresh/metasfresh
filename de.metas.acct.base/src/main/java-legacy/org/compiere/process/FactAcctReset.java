@@ -28,12 +28,12 @@ import org.adempiere.util.Services;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.model.MCash;
 import org.compiere.model.MInOut;
-import org.compiere.model.MInvoice;
 import org.compiere.model.MJournal;
 import org.compiere.model.MMovement;
 import org.compiere.model.MOrder;
@@ -206,7 +206,7 @@ public class FactAcctReset extends JavaProcess
 		m_countReset = 0;
 		//
 		String docBaseType = null;
-		if (AD_Table_ID == MInvoice.Table_ID)
+		if (AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
 			docBaseType = "IN ('" + X_C_DocType.DOCBASETYPE_APInvoice 
 				+ "','" + X_C_DocType.DOCBASETYPE_APCreditMemo
 				+ "','" + X_C_DocType.DOCBASETYPE_ARInvoice

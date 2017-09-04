@@ -79,8 +79,6 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public InArrayQueryFilter(final String columnName, final Object... values)
 	{
-		super();
-
 		Check.assumeNotNull(columnName, "columnName not null");
 		this.columnName = columnName;
 
@@ -106,8 +104,6 @@ public class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	 */
 	public InArrayQueryFilter(final String columnName, final Collection<? extends Object> values)
 	{
-		super();
-
 		Check.assumeNotNull(columnName, "columnName not null");
 		this.columnName = columnName;
 
