@@ -375,6 +375,11 @@ public final class HUEditorRow implements IViewRow
 	{
 		return getType() == HUEditorRowType.LU;
 	}
+	
+	public boolean hasIncludedTUs()
+	{
+		return getIncludedRows().stream().anyMatch(HUEditorRow::isTU);
+	}
 
 	public boolean isTopLevel()
 	{
