@@ -13,15 +13,14 @@ package org.adempiere.mmovement.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -44,7 +43,7 @@ public class MovementDAO implements IMovementDAO
 	}
 
 	@Override
-	public <MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(I_M_Movement movement, final Class<MovementLineType> movementLineClass)
+	public <MovementLineType extends I_M_MovementLine> List<MovementLineType> retrieveLines(final I_M_Movement movement, final Class<MovementLineType> movementLineClass)
 	{
 		Check.assumeNotNull(movement, "movement not null");
 		Check.assumeNotNull(movementLineClass, "movementLineClass not null");
@@ -61,5 +60,12 @@ public class MovementDAO implements IMovementDAO
 		return queryBuilder
 				.create()
 				.list(movementLineClass);
+	}
+
+	@Override
+	public IQueryBuilder<I_M_Movement> retrieveMovementsForInventoryQuery(final int inventoryId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_M_Movement.class)
+				.addEqualsFilter(I_M_Movement.COLUMN_M_Inventory_ID, inventoryId);
 	}
 }
