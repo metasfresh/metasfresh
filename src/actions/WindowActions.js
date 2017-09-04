@@ -425,6 +425,8 @@ export function patch(
             ));
 
             dispatch(indicatorState('saved'));
+
+            return response.data;
         }).catch(() => {
             getData(
                 entity, windowType, id, tabId, rowId, null, null, isAdvanced

@@ -32,7 +32,9 @@ class RawList extends Component {
         } = this.props;
 
         if (prevProps.blur !== blur) {
-            blur && this.handleBlur();
+            if (blur) {
+                this.handleBlur();
+            }
         }
 
         if (list.length === 0 && (prevProps.loading !== loading) &&
@@ -42,7 +44,9 @@ class RawList extends Component {
 
         if (this.dropdown && autofocus) {
             if (prevState.selected !== this.state.selected) {
-                list.length === 1 && this.handleSelect(list[0]);
+                if (list.length === 1) {
+                    this.handleSelect(list[0]);
+                }
 
                 if (!doNotOpenOnFocus && list.length > 1) {
                     this.setState({
@@ -54,12 +58,12 @@ class RawList extends Component {
 
         if (this.dropdown) {
             if (autofocus) {
-                if (list && list.length > 0) {
+                if (list && (list.length > 0)) {
                     this.dropdown.focus();
                 }
             }
             else {
-                if (prevProps.defaultValue !== defaultValue && property) {
+                if (property && (prevProps.defaultValue !== defaultValue)) {
                     this.dropdown.focus();
                 }
                 else {
@@ -112,35 +116,39 @@ class RawList extends Component {
             return;
         }
 
-        const { listScrollWrap, items } = this.refs;
+        const { listScroll, items } = this.refs;
 
-        const listElementHeight = this.optionElement.offsetHeight;
-        const listVisibleElements = Math.floor(listScrollWrap.offsetHeight / listElementHeight);
-        const shouldListScrollUpdate = (listVisibleElements <= items.childNodes.length);
+        const listElHeight = this.optionElement.offsetHeight;
+        const listVisible = Math.floor(listScroll.offsetHeight / listElHeight);
+        const shouldListScrollUpdate = (listVisible <= items.childNodes.length);
 
         if (!shouldListScrollUpdate) {
             return;
         }
 
         const selectedIndex = this.getSelectedIndex();
-        const visibleMin = listScrollWrap.scrollTop;
-        const visibleMax = visibleMin + listVisibleElements * listElementHeight;
+        const visibleMin = listScroll.scrollTop;
+        const visibleMax = visibleMin + listVisible * listElHeight;
 
         //not visible from down
-        const scrollFromUp = listElementHeight * (selectedIndex - listVisibleElements + 1);
+        const scrollFromUp = listElHeight * (selectedIndex - listVisible + 1);
 
         if (
-            (selectedIndex + 1) * listElementHeight > visibleMax &&
-            listScrollWrap.scrollTop !== scrollFromUp
+            (selectedIndex + 1) * listElHeight > visibleMax &&
+            listScroll.scrollTop !== scrollFromUp
         ) {
-            return listScrollWrap.scrollTop = scrollFromUp;
+            listScroll.scrollTop = scrollFromUp;
+            return;
         }
 
         //not visible from above
-        const scrollFromDown = selectedIndex * listElementHeight;
+        const scrollFromDown = selectedIndex * listElHeight;
 
-        if ((selectedIndex * listElementHeight < visibleMin) && (listScrollWrap.scrollTop !== scrollFromDown)) {
-            listScrollWrap.scrollTop = scrollFromDown;
+        if (
+            (selectedIndex * listElHeight < visibleMin) &&
+            (listScroll.scrollTop !== scrollFromDown)
+        ) {
+            listScroll.scrollTop = scrollFromDown;
         }
     }
 
@@ -152,13 +160,13 @@ class RawList extends Component {
         }
     }
 
-    focus() {
+    focus = () => {
         if (this.dropdown) {
             this.dropdown.focus();
         }
     }
 
-    openDropdownList() {
+    openDropdownList = () => {
         this.setState({
             isOpen: true
         }, () => {
@@ -166,7 +174,7 @@ class RawList extends Component {
         });
     }
 
-    closeDropdownList() {
+    closeDropdownList = () => {
         if (this.state && this.state.isOpen) {
             this.setState({
                 isOpen: false
@@ -186,7 +194,9 @@ class RawList extends Component {
         if (selected && (baseIndex < 0)) {
             let selectedKey = Object.keys(selected)[0];
 
-            baseIndex = list.findIndex( (item) => Object.keys(item)[0] === selectedKey );
+            baseIndex = list.findIndex(
+                (item) => Object.keys(item)[0] === selectedKey
+            );
         }
 
         if (!mandatory) {
@@ -203,29 +213,29 @@ class RawList extends Component {
         }
 
         // option and selected are not objects
-        if(
-            typeof option !== 'object' &&
-            typeof selected !== 'object' &&
-            selected === option
-        ){
+        if (
+            (typeof option !== 'object') &&
+            (typeof selected !== 'object') &&
+            (selected === option)
+        ) {
             return true;
         }
 
         const optionKeys = Object.keys(option);
         const selectedKeys = selected && Object.keys(selected);
         const firstOption = option[optionKeys[0]];
-        const firstSelected = selected && selected[selectedKeys[0]];
+        const firstSelectedKey = selectedKeys[0];
+        const firstSelected = selected && selected[firstSelectedKey];
 
         // objects, and first elements are not
         if (
-            typeof option === 'object' &&
-            typeof selected === 'object' &&
-            typeof firstOption !== 'object' &&
-            typeof firstSelected !== 'object'
-        )
-        {
-            return optionKeys[0] === selectedKeys[0] &&
-                firstOption === firstSelected;
+            (typeof option === 'object') &&
+            (typeof selected === 'object') &&
+            (typeof firstOption !== 'object') &&
+            (typeof firstSelected !== 'object')
+        ) {
+            return (optionKeys[0] === firstSelectedKey) &&
+                   (firstOption === firstSelected);
         }
 
         // first elements are nested objects, repeat checking
@@ -279,7 +289,9 @@ class RawList extends Component {
         const next = up ? selectedIndex + 1 : selectedIndex - 1;
 
         this.setState({
-            selected: ((next >= 0) && (next <= dropdownList.length - 1)) ? dropdownList[next] : selected
+            selected: (
+                (next >= 0) && (next <= dropdownList.length - 1)
+            ) ? dropdownList[next] : selected
         });
     }
 
@@ -343,13 +355,13 @@ class RawList extends Component {
 
         this.setState({
             selected: (option || 0)
-        }, () => this.handleBlur())
+        }, () => this.handleBlur());
     }
 
     handleSwitch = (option) => {
         this.setState({
             selected: (option || 0)
-        })
+        });
     }
 
     handleKeyDown = (e) => {
@@ -425,18 +437,24 @@ class RawList extends Component {
                     {label ? label : option[Object.keys(option)[0]]}
                 </p>
             </div>
-        )
+        );
     }
 
     renderOptions = () => {
-        const {list, mandatory, emptyText} = this.props;
+        const { list, mandatory, emptyText } = this.props;
 
-        return <div ref="items">{[
-            // if field is not mandatory add extra empty row
-            ...(!mandatory && emptyText ? [this.getRow(0, 0, emptyText)] : []),
-            // fill with options
-            ...list.map((option, index) => this.getRow(index + 1, option))
-        ]}</div>;
+        return (
+            <div ref="items">
+            {[
+                // if field is not mandatory add extra empty row
+                ...(!mandatory && emptyText ?
+                    [this.getRow(0, 0, emptyText)] : []
+                ),
+                // fill with options
+                ...list.map((option, index) => this.getRow(index + 1, option))
+            ]}
+            </div>
+        );
     }
 
     render() {
@@ -477,11 +495,7 @@ class RawList extends Component {
                     (updated ? ' pulse ' : ' ') +
                     ((mandatory && !selected) ? 'input-mandatory ' : '') +
                     (validStatus &&
-                        (
-                            !validStatus.valid &&
-                            !validStatus.initialValue
-
-                        ) &&
+                        (!validStatus.valid && !validStatus.initialValue) &&
                         !isOpen ? 'input-error ' : '')
                 }>
                     <div className={
@@ -514,7 +528,7 @@ class RawList extends Component {
                 {isOpen && (
                     <div
                         className="input-dropdown-list"
-                        ref="listScrollWrap"
+                        ref="listScroll"
                     >
                         {(isListEmpty && loading === false) && (
                             <div className="input-dropdown-list-header">
