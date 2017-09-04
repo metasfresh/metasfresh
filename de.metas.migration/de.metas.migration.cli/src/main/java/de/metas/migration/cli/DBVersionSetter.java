@@ -79,8 +79,9 @@ public class DBVersionSetter
 			final String suffix)
 	{
 		final Version version;
-		if (suffix == null || "".equals(suffix))
+		if (suffix == null || "".equals(suffix) || versionStr.endsWith(suffix))
 		{
+			// there is no suffix, or the same suffix was already added earlier when a migration was not completed
 			version = Version.valueOf(versionStr);
 		}
 		else
