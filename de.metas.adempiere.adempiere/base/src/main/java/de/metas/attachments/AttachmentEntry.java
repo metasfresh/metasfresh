@@ -81,9 +81,4 @@ public final class AttachmentEntry
 		final String name = getName().trim().toLowerCase();
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
 	}
-
-	public File getStorageFile()
-	{
-		return new File(getName());
-	}
 }
