@@ -650,6 +650,11 @@ public class HUTransformService
 				extractedTUs.addAll(newTUs);
 				qtyTUsRemaining -= newTUs.size();
 			}
+			else if (handlingUnitsBL.isVirtual(tu))
+			{
+				// Skip VHUs which are directly set on LU
+				continue;
+			}
 			else
 			{
 				// Extract the single TU
