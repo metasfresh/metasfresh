@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Comparator;
 import java.util.List;
@@ -93,7 +92,11 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU.class, ctx)
 				.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, parentItem.getM_HU_Item_ID())
-				.addOnlyActiveRecordsFilter();
+		// Retrieve all HUs, even if they are not active.
+		// We need this because in case of shipped HUs (HUStatus=E) those are also inactivated (IsActive=N).
+		// see https://github.com/metasfresh/metasfresh-webui-api/issues/567.
+		// .addOnlyActiveRecordsFilter()
+		;
 
 		final List<I_M_HU> hus = queryBuilder
 				.create()
