@@ -1,6 +1,9 @@
 package de.metas.ui.web.attachments;
 
+import org.adempiere.util.Services;
+
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.IAttachmentDAO;
 import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
@@ -62,7 +65,7 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	@Override
 	public byte[] getData()
 	{
-		return entry.getData();
+		return Services.get(IAttachmentDAO.class).retrieveData(entry);
 	}
 
 	@Override
