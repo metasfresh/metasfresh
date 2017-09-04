@@ -30,9 +30,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
 /**
  * Collects HUs for a particular locator from/to and creates {@link HUPackingMaterialDocumentLineCandidate}s.

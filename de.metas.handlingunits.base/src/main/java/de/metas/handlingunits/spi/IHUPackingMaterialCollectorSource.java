@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.handlingunits.spi;
 
 /*
  * #%L
