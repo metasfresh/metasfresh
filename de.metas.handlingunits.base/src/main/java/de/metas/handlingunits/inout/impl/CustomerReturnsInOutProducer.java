@@ -126,8 +126,10 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
 			
-			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = new InOutLineHUPackingMaterialCollectorSource(inOutLine);
-			inOutLineSource.setIsCollectHUPipToSource(false);
+			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
+					.inoutLine(inOutLine)
+					.collectHUPipToSource(false)
+					.build();
 			collector.addHURecursively(hu, inOutLineSource);
 
 			// Create product (non-packing material) lines
@@ -142,7 +144,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 				}
 			}
 
-			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
+			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToSource();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
 			for (Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())
@@ -155,7 +157,7 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 					// list if customer return from HU
 					if (_manualReturnInOut == null)
 					{
-						list = new ArrayList<HUPackingMaterialDocumentLineCandidate>();
+						list = new ArrayList<>();
 					}
 
 					// set if manual customer return

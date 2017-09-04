@@ -139,8 +139,11 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			// we know for sure the huAssignments are for inoutlines
 			final I_M_InOutLine inOutLine = InterfaceWrapperHelper.create(getCtx(), huToReturnInfo.getOriginalReceiptInOutLineId(), I_M_InOutLine.class, ITrx.TRXNAME_None);
 
+			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
+					.inoutLine(inOutLine)
+					.collectHUPipToSource(false)
+					.build();
 			
-			final InOutLineHUPackingMaterialCollectorSource inOutLineSource = new InOutLineHUPackingMaterialCollectorSource(inOutLine);
 			collector.addHURecursively(hu, inOutLineSource);
 
 			// Create product (non-packing material) lines
@@ -154,7 +157,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 					inoutLinesBuilder.addHUProductStorage(productStorage, inOutLine);
 				}
 			}
-			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToInOutLine();
+			final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToOriginInOutLinesMap = collector.getHuPIPToSource();
 			final Map<Object, HUPackingMaterialDocumentLineCandidate> key2candidates = collector.getKey2candidates();
 
 			for (final Entry<Object, HUPackingMaterialDocumentLineCandidate> entry : key2candidates.entrySet())

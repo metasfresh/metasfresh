@@ -46,10 +46,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
-import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
+import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 
 /**
  * Builder class to generate packing material shipment lines for a given shipment.
@@ -160,7 +160,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		for (final I_M_InOutLine inoutLineHU : inoutLines)
 		{
-			final IHUPackingMaterialCollectorSource inOutLineSource = new InOutLineHUPackingMaterialCollectorSource(inoutLineHU);
+			final IHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inoutLineHU);
 			collectHUs(inOutLineSource);
 		}
 	}
