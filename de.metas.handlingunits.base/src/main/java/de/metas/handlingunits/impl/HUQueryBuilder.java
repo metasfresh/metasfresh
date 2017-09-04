@@ -1174,6 +1174,10 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			return this;
 		}
 
+		if(_onlyHUIds == null)
+		{
+			_onlyHUIds = new HashSet<>();
+		}
 		_onlyHUIds.addAll(onlyHUIds);
 
 		return this;
