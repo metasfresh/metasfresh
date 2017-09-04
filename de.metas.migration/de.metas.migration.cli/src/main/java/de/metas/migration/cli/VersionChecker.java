@@ -1,5 +1,7 @@
 package de.metas.migration.cli;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +89,15 @@ public class VersionChecker
 				&& sameMinorVersion
 				&& patchVersionSwitchBetweenOneAndTwo)
 		{
-			logger.info("Detected a version swich between master (=> patchVersion=1) and release, issue etc (=> patchVersion=2). Assuming that the DB needs migration. Also see https://github.com/metasfresh/metasfresh/issues/2260");
+			logger.info("Detected a version switch between master (=> patchVersion=1) and release, issue etc (=> patchVersion=2). Assuming that the DB needs migration. Also see https://github.com/metasfresh/metasfresh/issues/2260");
+			return true;
+		}
+		
+		// check if we have a switch between two non-master branches
+		if(!Objects.equals(dbVersion.getBuildMetadata(), rolloutVersion.getBuildMetadata()))
+		{
+			logger.info("Detected a version switch between \"branches\" dbVersion={} and rolloutVersion={}. Assuming that the DB needs migration. Also see https://github.com/metasfresh/metasfresh/issues/2260",
+					dbVersion.getPreReleaseVersion(), rolloutVersion.getPreReleaseVersion());
 			return true;
 		}
 		
@@ -98,7 +108,7 @@ public class VersionChecker
 		if (!failIfRolloutIsGreaterThanDB)
 		{
 			// let's ignore the problem
-			logger.info(msg + ". *Not* throwning exception because of the +" + CommandlineParams.OPTION_DoNotFailIfRolloutIsGreaterThanDB + " parameter; but not going to attempt migration either.");
+			logger.info(msg + ". *Not* throwing exception because of the +" + CommandlineParams.OPTION_DoNotFailIfRolloutIsGreaterThanDB + " parameter; but not going to attempt migration either.");
 			return false;
 		}
 

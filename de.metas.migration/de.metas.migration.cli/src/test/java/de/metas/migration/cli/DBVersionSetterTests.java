@@ -56,6 +56,16 @@ public class DBVersionSetterTests
 
 		assertThat(DBVersionSetter.createVersionWithOptionalSuffix("1.0.0-rc+md", "suffix")).isEqualTo("1.0.0-rc+mdxsuffix");
 
-		assertThat(DBVersionSetter.createVersionWithOptionalSuffix("1.1.1", RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX)).isEqualTo("1.1.1" + "+x" + RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX);
+		assertThat(DBVersionSetter.createVersionWithOptionalSuffix("1.1.1", RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX))
+				.isEqualTo("1.1.1" + "+x" + RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX);
+	}
+
+	@Test
+	public void testAvoidDuplictingSuffix()
+	{
+		final String existingVersionWithSuffix = "1.1.1" + "+x" + RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX;
+		assertThat(DBVersionSetter.createVersionWithOptionalSuffix(existingVersionWithSuffix, RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX))
+				.isEqualTo("1.1.1" + "+x" + RolloutMigrate.UPDATE_IN_PROGRESS_VERSION_SUFFIX);
+
 	}
 }
