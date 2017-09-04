@@ -18,10 +18,14 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2300](https://github.com/metasfresh/metasfresh/issues/2300) Doc Outbound missing Columns
     * Adjustments to Document Outbound Window, adapting to current Design Guidelines, making it more user friendly with more functionality.
+  * [#2306](https://github.com/metasfresh/metasfresh/issues/2306) Period mass actions missing in WebUI
+    * New Action "Open all/ Close all" in Period Window, allowing to change the Perdion status of all Doctype in few clicks.
   * [#2307](https://github.com/metasfresh/metasfresh/issues/2307) Window Period adjustments, add missing Translations
     * Translation for en_US and further refinements of Calendar Period Window in WebUI.
   * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
     * Further detailed improvements of Sales Order Window in WebUI, adding Fields and Translations.
+  * [#2317](https://github.com/metasfresh/metasfresh/issues/2317) Improvement of Delivery Days Window in WebUI
+    * Further detailed improvements done in Delivery Days Window.
 
 # metasfresh 5.25 (2017-36)
 
