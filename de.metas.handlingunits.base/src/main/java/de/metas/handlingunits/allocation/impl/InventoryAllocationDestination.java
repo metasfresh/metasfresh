@@ -10,12 +10,12 @@ package de.metas.handlingunits.allocation.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -25,9 +25,11 @@ package de.metas.handlingunits.allocation.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -49,8 +51,12 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Inventory;
 import org.compiere.util.TimeUtil;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -58,6 +64,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
+import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
@@ -68,6 +75,7 @@ import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 import de.metas.product.IProductBL;
 import lombok.NonNull;
@@ -86,11 +94,13 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final transient IDocActionBL docActionBL = Services.get(IDocActionBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final Map<Integer, ISnapshotProducer<I_M_HU>> inventoryToSnapshotByInventoryId = new HashMap<>();
+	private final Map<Integer, ISnapshotProducer<I_M_HU>> huSnapshotProducerByInventoryId = new HashMap<>();
 
 	private final I_M_Warehouse warehouse;
 	private final int chargeId;
@@ -105,7 +115,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	 */
 	private final Map<Integer, I_M_Inventory> orderIdToInventory = new HashMap<>();
 
-	private HUPackingMaterialsCollector collector = null; // will be created on demand
+	//
+	// Packing materials
+	private final Map<Integer, HUPackingMaterialsCollector> packingMaterialsCollectorByInventoryId = new HashMap<>();
+	private final Set<Integer> packingMaterialsCollectedHUIds = new HashSet<>();
+	private HUPackingMaterialsCollector pmCollectorForCountingTUs; // will be created on demand
 
 	/**
 	 * Map the inventory lines to the base inout lines
@@ -122,11 +136,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final Properties ctx = InterfaceWrapperHelper.getCtx(warehouse);
 		chargeId = Services.get(IInventoryBL.class).getDefaultInternalChargeId(ctx);
 	}
-	
+
 	/** @return created inventory documents */
-	public List<I_M_Inventory> getInventories()
+	private List<I_M_Inventory> getInventories()
 	{
-		return inventories;
+		return ImmutableList.copyOf(inventories);
 	}
 
 	@Override
@@ -160,26 +174,26 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		// Get receipt line(s) which received this HU
 		final I_M_HU hu = huItem.getM_HU();
 		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-		final List<I_M_InOutLine> inOutLines = huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
-		
-		for (final I_M_InOutLine inOutLine : inOutLines)
+		final List<I_M_InOutLine> receiptLines = huAssignmentDAO.retrieveModelsForHU(topLevelHU, I_M_InOutLine.class);
+
+		for (final I_M_InOutLine receiptLine : receiptLines)
 		{
-			final I_M_InOut inout = inOutLine.getM_InOut();
-			if (inout.isSOTrx())
+			final I_M_InOut receipt = receiptLine.getM_InOut();
+			if (receipt.isSOTrx())
 			{
 				// in case the base inout line is from a shipment, it is not relevant for the material disposal (for the time being)
-				throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { inout.getC_DocType() });
+				throw new AdempiereException("Document type {0} is not suitable for material disposal", new Object[] { receipt.getC_DocType() });
 			}
 
 			// #1604: skip inoutlines for other products; request.getProduct() is not null, see AllocationRequest constructor
-			if (inOutLine.getM_Product_ID() != request.getProduct().getM_Product_ID())
+			if (receiptLine.getM_Product_ID() != request.getProduct().getM_Product_ID())
 			{
 				continue;
 			}
 
 			//
-			// Create the inventory line based on the info from inoutline and request
-			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(inOutLine, topLevelHU, request);
+			// Get/create the inventory line based on the info from material receipt and request
+			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, topLevelHU, request);
 
 			//
 			// Update inventory line's internal use Qty
@@ -194,15 +208,19 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Calculate and update inventory line's QtyTU
 			{
-				final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inOutLine);
-				if (collector == null)
-				{
-					collector = new HUPackingMaterialsCollector(request.getHUContext());
-				}
-				collector.addHURecursively(hu, inOutLineSource);
-				final int countTUs = collector.getAndResetCountTUs();
-				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(BigDecimal.valueOf(countTUs));
+				final BigDecimal countTUs = countTUs(request.getHUContext(), hu, receiptLine);
+				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
 				inventoryLine.setQtyTU(qtyTU);
+			}
+
+			//
+			// Collect HU's packing materials
+			{
+				collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), hu);
+				if(topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
+				{
+					collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+				}
 			}
 
 			//
@@ -226,6 +244,30 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		}
 
 		return result;
+	}
+
+	public List<I_M_Inventory> completeInventories()
+	{
+		final List<I_M_Inventory> inventories = getInventories();
+		for (final I_M_Inventory inventory : inventories)
+		{
+			docActionBL.processEx(inventory, X_M_Inventory.DOCACTION_Complete, X_M_Inventory.DOCSTATUS_Completed);
+
+			//
+			// Create empties movement
+			final int inventoryId = inventory.getM_Inventory_ID();
+			final HUPackingMaterialsCollector packingMaterialsCollector = getPackingMaterialsCollectorForInventory(inventoryId);
+			if (packingMaterialsCollector != null)
+			{
+				huEmptiesService.newEmptiesMovementProducer()
+						.setEmptiesMovementDirectionAuto()
+						.addCandidates(packingMaterialsCollector.getAndClearCandidates())
+						.setReferencedInventoryId(inventoryId)
+						.createMovements();
+			}
+		}
+
+		return inventories;
 	}
 
 	private I_M_Inventory getCreateInventoryHeader(final I_M_InOutLine inOutLine, final IAllocationRequest request)
@@ -264,7 +306,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				.createSnapshot()
 				.setContext(huContext);
 
-		inventoryToSnapshotByInventoryId.put(inventory.getM_Inventory_ID(), huSnapshotProducer);
+		huSnapshotProducerByInventoryId.put(inventory.getM_Inventory_ID(), huSnapshotProducer);
 
 		inventory.setSnapshot_UUID(huSnapshotProducer.getSnapshotId());
 		InterfaceWrapperHelper.save(inventory);
@@ -321,7 +363,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		inOutLineId2InventoryLine.put(inOutLineId, inventoryLine);
 
 		// #2143 hu snapshots
-		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = inventoryToSnapshotByInventoryId.get(inventoryHeader.getM_Inventory_ID());
+		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryHeader.getM_Inventory_ID());
 		currentSnapshotProducer.addModel(hu);
 		currentSnapshotProducer.createSnapshots();
 
@@ -330,4 +372,44 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventoryLine;
 	}
 
+	private BigDecimal countTUs(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
+	{
+		final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
+		if (pmCollectorForCountingTUs == null)
+		{
+			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
+		}
+		pmCollectorForCountingTUs.addHURecursively(hu, inOutLineSource);
+		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
+		return BigDecimal.valueOf(countTUs);
+	}
+
+	private void collectPackingMaterials(final IHUContext huContext, final int inventoryId, final I_M_HU hu)
+	{
+		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
+		final IHUPackingMaterialCollectorSource source = null;
+		collector.addHURecursively(hu, source);
+	}
+	
+	private void collectPackingMaterials_LUOnly(final IHUContext huContext, final int inventoryId, final I_M_HU luHU)
+	{
+		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
+		final IHUPackingMaterialCollectorSource source = null;
+		collector.addLU(luHU, source);
+	}
+
+
+	private HUPackingMaterialsCollector getCreatePackingMaterialsCollectorForInventory(final IHUContext huContext, final int inventoryId)
+	{
+		return packingMaterialsCollectorByInventoryId.computeIfAbsent(inventoryId, k -> {
+			final HUPackingMaterialsCollector c = new HUPackingMaterialsCollector(huContext);
+			c.setSeenM_HU_IDs_ToAdd(packingMaterialsCollectedHUIds);
+			return c;
+		});
+	}
+
+	private HUPackingMaterialsCollector getPackingMaterialsCollectorForInventory(final int inventoryId)
+	{
+		return packingMaterialsCollectorByInventoryId.get(inventoryId);
+	}
 }
