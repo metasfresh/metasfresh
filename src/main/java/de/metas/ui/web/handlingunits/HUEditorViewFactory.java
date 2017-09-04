@@ -16,7 +16,6 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.util.CCache;
-import org.compiere.util.DB;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +108,6 @@ public class HUEditorViewFactory implements IViewFactory
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		{
 			sqlWhereClause.append(I_M_HU.COLUMNNAME_M_HU_Item_Parent_ID + " is null"); // top level
-			sqlWhereClause.append("\n AND " + I_M_HU.COLUMNNAME_IsActive + "=" + DB.TO_BOOLEAN(Boolean.TRUE)); // active
 
 			// Consider window tab's where clause if any
 			final I_AD_Tab huTab = Services.get(IADWindowDAO.class).retrieveFirstTab(WEBUI_HU_Constants.WEBUI_HU_Window_ID.toInt());
