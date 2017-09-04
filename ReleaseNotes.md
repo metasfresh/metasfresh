@@ -26,6 +26,8 @@ Here come the actual release notes:
     * Further detailed improvements of Sales Order Window in WebUI, adding Fields and Translations.
   * [#2317](https://github.com/metasfresh/metasfresh/issues/2317) Improvement of Delivery Days Window in WebUI
     * Further detailed improvements done in Delivery Days Window.
+  * [#2326](https://github.com/metasfresh/metasfresh/issues/2326) New Window for Internal Usage in WebUI
+    * New Window for the maintainence of Internal Inventory Usage.
 
 # metasfresh 5.25 (2017-36)
 
