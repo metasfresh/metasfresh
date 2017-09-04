@@ -42,7 +42,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
 
 /**

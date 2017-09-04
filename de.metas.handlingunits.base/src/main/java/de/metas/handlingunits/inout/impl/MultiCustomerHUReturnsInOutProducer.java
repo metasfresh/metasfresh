@@ -37,7 +37,6 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 
 /*

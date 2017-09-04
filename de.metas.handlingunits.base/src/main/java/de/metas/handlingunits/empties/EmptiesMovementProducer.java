@@ -29,7 +29,7 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
