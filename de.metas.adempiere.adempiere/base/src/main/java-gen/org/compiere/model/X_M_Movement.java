@@ -1,26 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for M_Movement
  *  @author Adempiere (generated) 
@@ -32,7 +15,7 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 924655076L;
+	private static final long serialVersionUID = -10271888L;
 
     /** Standard Constructor */
     public X_M_Movement (Properties ctx, int M_Movement_ID, String trxName)
@@ -41,16 +24,13 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
       /** if (M_Movement_ID == 0)
         {
 			setC_DocType_ID (0);
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setDocumentNo (null);
 			setIsApproved (false);
 			setIsInTransit (false);
 			setM_Movement_ID (0);
-			setMovementDate (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setMovementDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setPosted (false);
 			setProcessed (false);
         } */
@@ -69,14 +49,6 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
     {
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
-    }
-
-    @Override
-    public String toString()
-    {
-      StringBuilder sb = new StringBuilder ("X_M_Movement[")
-        .append(get_ID()).append("]");
-      return sb.toString();
     }
 
 	@Override
@@ -135,7 +107,7 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 	@Override
 	public void setAD_User_ID (int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
 			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
@@ -171,7 +143,7 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ApprovalAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -449,7 +421,7 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -750,7 +722,7 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -841,6 +813,80 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 		return false;
 	}
 
+	@Override
+	public org.compiere.model.I_M_InOut getM_InOut() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
+	}
+
+	@Override
+	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
+	}
+
+	/** Set Lieferung/Wareneingang.
+		@param M_InOut_ID 
+		Material Shipment Document
+	  */
+	@Override
+	public void setM_InOut_ID (int M_InOut_ID)
+	{
+		if (M_InOut_ID < 1) 
+			set_Value (COLUMNNAME_M_InOut_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+	}
+
+	/** Get Lieferung/Wareneingang.
+		@return Material Shipment Document
+	  */
+	@Override
+	public int getM_InOut_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_M_Inventory getM_Inventory() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
+	}
+
+	@Override
+	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
+	}
+
+	/** Set Inventur.
+		@param M_Inventory_ID 
+		Parameter für eine physische Inventur
+	  */
+	@Override
+	public void setM_Inventory_ID (int M_Inventory_ID)
+	{
+		if (M_Inventory_ID < 1) 
+			set_Value (COLUMNNAME_M_Inventory_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Inventory_ID, Integer.valueOf(M_Inventory_ID));
+	}
+
+	/** Get Inventur.
+		@return Parameter für eine physische Inventur
+	  */
+	@Override
+	public int getM_Inventory_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Inventory_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Warenbewegung.
 		@param M_Movement_ID 
 		Movement of Inventory
@@ -903,9 +949,9 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 		return ii.intValue();
 	}
 
-	/** Set Bewegungs-Datum.
+	/** Set Bewegungsdatum.
 		@param MovementDate 
-		Date a product was moved in or out of inventory
+		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
 	public void setMovementDate (java.sql.Timestamp MovementDate)
@@ -913,8 +959,8 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungs-Datum.
-		@return Date a product was moved in or out of inventory
+	/** Get Bewegungsdatum.
+		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	  */
 	@Override
 	public java.sql.Timestamp getMovementDate () 
@@ -1100,10 +1146,8 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 		set_ValueFromPO(COLUMNNAME_SalesRep_ID, org.compiere.model.I_AD_User.class, SalesRep);
 	}
 
-	/** Set Vertriebsbeauftragter.
-		@param SalesRep_ID 
-		Sales Representative or Company Agent
-	  */
+	/** Set Aussendienst.
+		@param SalesRep_ID Aussendienst	  */
 	@Override
 	public void setSalesRep_ID (int SalesRep_ID)
 	{
@@ -1113,9 +1157,8 @@ public class X_M_Movement extends org.compiere.model.PO implements I_M_Movement,
 			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
 	}
 
-	/** Get Vertriebsbeauftragter.
-		@return Sales Representative or Company Agent
-	  */
+	/** Get Aussendienst.
+		@return Aussendienst	  */
 	@Override
 	public int getSalesRep_ID () 
 	{
