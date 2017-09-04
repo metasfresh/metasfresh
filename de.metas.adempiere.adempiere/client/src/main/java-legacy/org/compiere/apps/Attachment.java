@@ -290,7 +290,8 @@ public final class Attachment extends CDialog implements ActionListener
 		final AttachmentEntry entry = entryItem != null ? attachmentsBL.getEntryById(getRecord(), entryItem.getAttachmentEntryId()) : null;
 
 		// no attachment
-		if (entry == null || entry.getData() == null)
+		final byte[] data = entry == null ? null : attachmentsDAO.retrieveData(entry);
+		if (data == null || data.length == 0)
 		{
 			info.setText("-");
 		}
@@ -314,7 +315,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 					try
 					{
-						pdfViewer.loadPDF(entry.getInputStream());
+						pdfViewer.loadPDF(data);
 						pdfViewer.setScale(50);
 						//
 						graphPanel.add(pdfViewer, BorderLayout.CENTER);
@@ -333,7 +334,7 @@ public final class Attachment extends CDialog implements ActionListener
 			else if (entry.isGraphic())
 			{
 				// Can we display it
-				final Image image = Toolkit.getDefaultToolkit().createImage(entry.getData());
+				final Image image = Toolkit.getDefaultToolkit().createImage(data);
 				if (image != null)
 				{
 					gifPanel.setImage(image);
@@ -456,8 +457,7 @@ public final class Attachment extends CDialog implements ActionListener
 			if (existingEntry != null)
 			{
 				final byte[] data = Util.readBytes(file);
-				existingEntry.setData(data);
-				attachmentsDAO.saveAttachmentEntry(attachment, existingEntry);
+				attachmentsDAO.saveAttachmentEntryData(existingEntry, data);
 			}
 			else
 			{
@@ -590,7 +590,7 @@ public final class Attachment extends CDialog implements ActionListener
 	@Getter
 	private static final class AttachmentEntryItem
 	{
-		public static final AttachmentEntryItem of(AttachmentEntry entry)
+		public static final AttachmentEntryItem of(final AttachmentEntry entry)
 		{
 			return new AttachmentEntryItem(entry.getId(), entry.getName(), entry.getFilename());
 		}
@@ -612,7 +612,7 @@ public final class Attachment extends CDialog implements ActionListener
 		}
 		
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals(final Object obj)
 		{
 			if(this == obj)
 			{
@@ -656,7 +656,7 @@ public final class Attachment extends CDialog implements ActionListener
 		 * 
 		 * @param image image
 		 */
-		public void setImage(Image image)
+		public void setImage(final Image image)
 		{
 			m_image = image;
 			if (m_image == null)
@@ -681,7 +681,7 @@ public final class Attachment extends CDialog implements ActionListener
 		 * @param g graphics
 		 */
 		@Override
-		public void paint(Graphics g)
+		public void paint(final Graphics g)
 		{
 			Insets in = getInsets();
 			if (m_image != null)
@@ -694,7 +694,7 @@ public final class Attachment extends CDialog implements ActionListener
 		 * @param g graphics
 		 */
 		@Override
-		public void update(Graphics g)
+		public void update(final Graphics g)
 		{
 			paint(g);
 		}   // update

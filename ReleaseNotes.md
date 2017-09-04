@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Further detailed improvements done in Delivery Days Window.
   * [#2326](https://github.com/metasfresh/metasfresh/issues/2326) New Window for Internal Usage in WebUI
     * New Window for the maintainence of Internal Inventory Usage.
+  * [#2334](https://github.com/metasfresh/metasfresh/issues/2334) Default Filter Criteria for selected Windows
+    * Adding some default Filter criteria to selected Windows in WebUI.
 
 # metasfresh 5.25 (2017-36)
 

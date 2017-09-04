@@ -116,7 +116,11 @@ public class AttachmentDAO implements IAttachmentDAO
 	public byte[] retrieveFirstAttachmentEntryAsBytes(final int attachmentId)
 	{
 		final AttachmentEntry entry = retrieveFirstAttachmentEntry(attachmentId);
-		return entry != null ? entry.getData() : null;
+		if(entry == null)
+		{
+			return null;
+		}
+		return retrieveData(entry);
 	}
 	
 	@Override
@@ -146,7 +150,7 @@ public class AttachmentDAO implements IAttachmentDAO
 				.id(entryRecord.getAD_AttachmentEntry_ID())
 				.name(entryRecord.getFileName())
 				.filename(entryRecord.getFileName())
-				.data(entryRecord.getBinaryData())
+				// .data(entryRecord.getBinaryData())
 				.contentType(entryRecord.getContentType())
 				.build();
 	}
@@ -166,8 +170,16 @@ public class AttachmentDAO implements IAttachmentDAO
 		// entryRecord.setRecord_ID(attachment.getRecord_ID());
 
 		entryRecord.setFileName(entry.getFilename());
-		entryRecord.setBinaryData(entry.getData());
+		// entryRecord.setBinaryData(entry.getData());
 		entryRecord.setContentType(entry.getContentType());
+		InterfaceWrapperHelper.save(entryRecord);
+	}
+	
+	@Override
+	public void saveAttachmentEntryData(final AttachmentEntry entry, final byte[] data)
+	{
+		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(entry.getId(), I_AD_AttachmentEntry.class);
+		entryRecord.setBinaryData(data);
 		InterfaceWrapperHelper.save(entryRecord);
 	}
 
@@ -205,7 +217,7 @@ public class AttachmentDAO implements IAttachmentDAO
 			attachment.setBinaryData(null);
 			InterfaceWrapperHelper.save(attachment, ITrx.TRXNAME_ThreadInherited);
 
-			final List<AttachmentEntry> entries = new ArrayList<AttachmentEntry>();
+			final List<AttachmentEntry> entries = new ArrayList<>();
 			if (data.length == 0)
 			{
 				return entries;
@@ -264,5 +276,23 @@ public class AttachmentDAO implements IAttachmentDAO
 				throw new AdempiereException("Failed convering legacy LOB attachments to entries", ex);
 			}
 		});
+	}
+
+	@Override
+	public byte[] retrieveData(@NonNull final AttachmentEntry entry)
+	{
+		final int entryId = entry.getId();
+		if(entryId <= 0)
+		{
+			return null;
+		}
+		
+		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(entryId, I_AD_AttachmentEntry.class);
+		if(entryRecord == null)
+		{
+			return null;
+		}
+		
+		return entryRecord.getBinaryData();
 	}
 }
