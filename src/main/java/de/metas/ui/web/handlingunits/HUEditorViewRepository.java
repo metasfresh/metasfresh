@@ -144,6 +144,7 @@ public class HUEditorViewRepository
 				.createHUQueryBuilder()
 				.setContext(PlainContextAware.newOutOfTrx())
 				.setOnlyTopLevelHUs()
+				.setOnlyActiveHUs(false) // retrieve ALL HUs, see https://github.com/metasfresh/metasfresh-webui-api/issues/563
 				.createQueryBuilder();
 
 		if (huIds != null && !huIds.isEmpty())
