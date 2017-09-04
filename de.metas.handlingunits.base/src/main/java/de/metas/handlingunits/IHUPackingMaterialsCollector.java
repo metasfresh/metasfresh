@@ -155,8 +155,8 @@ public interface IHUPackingMaterialsCollector<T>
 	 */
 	IHUPackingMaterialsCollector<T> setProductIdSortComparator(Comparator<Integer> productIdsSortComparator);
 
-	void setisCollectTUNumberPerOrigin(boolean b);
+	void setIsCollectTUNumberPerOrigin(boolean b);
 
-	void setisCollectAggregatedHUs(boolean b);
+	void setIsCollectAggregatedHUs(boolean b);
 
 }

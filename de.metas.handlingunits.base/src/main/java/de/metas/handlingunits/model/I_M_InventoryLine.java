@@ -31,7 +31,6 @@ public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 		// public void setM_HU_PI_Item_Product_ID(int M_HU_PI_Item_Product_ID);
 		public int getM_HU_PI_Item_Product_ID();
 		public void setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product M_HU_PI_Item_Product) throws RuntimeException;
-		public void setM_HU_PI_Item_Product_ID(int HU_PI_Item_Product_ID);
 		public I_M_HU_PI_Item_Product getM_HU_PI_Item_Product() throws RuntimeException;
 		// @formatter:on
 		

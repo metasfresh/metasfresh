@@ -120,7 +120,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	// Packing materials
 	private final Map<Integer, HUPackingMaterialsCollector> packingMaterialsCollectorByInventoryId = new HashMap<>();
 	private final Set<Integer> packingMaterialsCollectedHUIds = new HashSet<>();
-	private HUPackingMaterialsCollector pmCollectorForCountingTUs; // will be created on demand
 
 	/**
 	 * Map the inventory lines to the base inout lines
@@ -207,14 +206,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			}
 
 			//
-			// Calculate and update inventory line's QtyTU
-			{
-				 final BigDecimal countTUs = countTUs(request.getHUContext(), hu, receiptLine);
-				 final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
-				 inventoryLine.setQtyTU(qtyTU);
-			}
-
-			//
 			// Collect HU's packing materials
 			{
 
@@ -251,7 +242,14 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return result;
 	}
 
-	private void setQtyTUAndHUPIP(final IHUContext huContext,final I_M_InventoryLine inventoryLine,final  I_M_InOutLine receiptLine)
+	/**
+	 * Update the QtyTU and M_HU_PI_Item_Produce of the inventory line based on the PackingMaterialsCollector that was registered for the origin (receiptLine) and for the inventoryLine's inventory
+	 * 
+	 * @param huContext
+	 * @param inventoryLine
+	 * @param receiptLine
+	 */
+	private void setQtyTUAndHUPIP(final IHUContext huContext, final I_M_InventoryLine inventoryLine, final I_M_InOutLine receiptLine)
 	{
 		final HUPackingMaterialsCollector createPackingMaterialsCollectorForInventory = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryLine.getM_Inventory_ID());
 		final Map<HUpipToHUPackingMaterialCollectorSource, Integer> huPIPToSource = createPackingMaterialsCollectorForInventory.getHuPIPToSource();
@@ -262,12 +260,12 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		{
 			if (huPipToHUPackingMaterialCollectorSource.getOriginalSourceID() == receiptLine.getM_InOutLine_ID())
 			{
-				
+
 				final BigDecimal qtyTU = inventoryLine.getQtyTU();
 				Integer hupipid = huPIPToSource.get(huPipToHUPackingMaterialCollectorSource);
 				inventoryLine.setQtyTU(qtyTU.add(BigDecimal.valueOf(hupipid)));
 
-				inventoryLine.setM_HU_PI_Item_Product_ID(huPipToHUPackingMaterialCollectorSource.getM_HU_PI_Item_Product_ID());
+				inventoryLine.setM_HU_PI_Item_Product(huPipToHUPackingMaterialCollectorSource.getHupip());
 
 			}
 		}
@@ -383,12 +381,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		inventoryLine.setC_UOM(inOutLine.getC_UOM());
 
-		// set the M_HU_PI_Item_Product from the HU
-		// if (hu.getM_HU_PI_Item_Product() != null)
-		// {
-		// inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
-		// }
-
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
 
 		inOutLineId2InventoryLine.put(inOutLineId, inventoryLine);
@@ -403,29 +395,33 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventoryLine;
 	}
 
-	 private BigDecimal countTUs(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
-	 {
-	 final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
-	 if (pmCollectorForCountingTUs == null)
-	 {
-	 pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
-	 }
-	 pmCollectorForCountingTUs.addHURecursively(hu, inOutLineSource);
-	 final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
-	 return BigDecimal.valueOf(countTUs);
-	 }
-
+	/**
+	 * Collect the packing materials based on the origin inoutline source. This way, they can be collected for QTYTU and M_HU_PI_Item_Product calculation in the inventory lines
+	 * 
+	 * @param huContext
+	 * @param inventoryId
+	 * @param hu
+	 * @param source
+	 */
 	private void collectPackingMaterials(final IHUContext huContext, final int inventoryId, final I_M_HU hu, final IHUPackingMaterialCollectorSource source)
 	{
 		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
-		// final IHUPackingMaterialCollectorSource source = null;
+
 		collector.addHURecursively(hu, source);
 	}
 
+	/**
+	 * Collect the packing materials based on the origin inoutline source. This way, they can be collected for QTYTU and M_HU_PI_Item_Product calculation in the inventory lines
+	 * 
+	 * @param huContext
+	 * @param inventoryId
+	 * @param luHU
+	 * @param source
+	 */
 	private void collectPackingMaterials_LUOnly(final IHUContext huContext, final int inventoryId, final I_M_HU luHU, final IHUPackingMaterialCollectorSource source)
 	{
 		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
-		// final IHUPackingMaterialCollectorSource source = null;
+
 		collector.addLU(luHU, source);
 	}
 
@@ -434,8 +430,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return packingMaterialsCollectorByInventoryId.computeIfAbsent(inventoryId, k -> {
 			final HUPackingMaterialsCollector c = new HUPackingMaterialsCollector(huContext);
 			c.setSeenM_HU_IDs_ToAdd(packingMaterialsCollectedHUIds);
-			c.setisCollectAggregatedHUs(true);
-			c.setisCollectTUNumberPerOrigin(true);
+			c.setIsCollectAggregatedHUs(true);
+			c.setIsCollectTUNumberPerOrigin(true);
 			return c;
 		});
 	}
