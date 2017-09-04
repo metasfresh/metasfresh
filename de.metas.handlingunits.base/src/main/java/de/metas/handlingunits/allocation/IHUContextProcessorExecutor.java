@@ -104,5 +104,11 @@ public interface IHUContextProcessorExecutor
 	 */
 	IHUTransactionAttributeBuilder getTrxAttributesBuilder();
 
+	/**
+	 * If enabled, the packing materials involved will be collected and will be transferred to/from empties warehouse.
+	 * This flag is enabled by default.
+	 * 
+	 * @param automaticallyMovePackingMaterials
+	 */
 	IHUContextProcessorExecutor setAutomaticallyMovePackingMaterials(boolean automaticallyMovePackingMaterials);
 }
