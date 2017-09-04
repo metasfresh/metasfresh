@@ -22,6 +22,8 @@ Here come the actual release notes:
     * Translation for en_US and further refinements of Calendar Period Window in WebUI.
   * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
     * Further detailed improvements of Sales Order Window in WebUI, adding Fields and Translations.
+  * [#2317](https://github.com/metasfresh/metasfresh/issues/2317) Improvement of Delivery Days Window in WebUI
+    * Further detailed improvements done in Delivery Days Window.
 
 # metasfresh 5.25 (2017-36)
 
