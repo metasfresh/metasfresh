@@ -340,13 +340,10 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 								final BigDecimal includedQty = huItem.getQty();
 								huPIPToSource.put(currentHUPipToOrigin, qtyTU + includedQty.intValueExact());
 
-								if (innerCandidate != null)
+								if (innerCandidate != null && !innerCandidate.getSources().contains(huPackingMaterialCollectorsource))
 								{
-									if (!innerCandidate.getSources().contains(huPackingMaterialCollectorsource))
-									{
-										innerCandidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
-										innerCandidate.addQty(includedQty.intValueExact());
-									}
+									innerCandidate.addSourceIfNotNull(huPackingMaterialCollectorsource);
+									innerCandidate.addQty(includedQty.intValueExact());
 								}
 							}
 						}
