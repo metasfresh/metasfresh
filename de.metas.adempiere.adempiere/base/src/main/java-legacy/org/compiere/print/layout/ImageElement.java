@@ -37,6 +37,7 @@ import org.compiere.util.Env;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.IAttachmentDAO;
 
 /**
  *	Image Element
@@ -51,7 +52,7 @@ public class ImageElement extends PrintElement
 	 *	@param imageURLString image url
 	 *	@return image element
 	 */
-	public static ImageElement get (String imageURLString)
+	public static ImageElement get (final String imageURLString)
 	{
 		Object key = imageURLString;
 		ImageElement image = s_cache.get(key);
@@ -68,7 +69,7 @@ public class ImageElement extends PrintElement
 	 *  @param imageURL image url
 	 *	@return image element
 	 */
-	public static ImageElement get (URL imageURL)
+	public static ImageElement get (final URL imageURL)
 	{
 		Object key = imageURL;
 		ImageElement image = s_cache.get(key);
@@ -85,7 +86,7 @@ public class ImageElement extends PrintElement
 	 * 	@param AD_PrintFormatItem_ID record id
 	 *	@return image element
 	 */
-	public static ImageElement get (int AD_PrintFormatItem_ID)
+	public static ImageElement get (final int AD_PrintFormatItem_ID)
 	{
 		Object key = new Integer(AD_PrintFormatItem_ID);
 		ImageElement image = s_cache.get(key);
@@ -103,7 +104,7 @@ public class ImageElement extends PrintElement
 	 *	@param imageURLString image url - containing just the AD_Image_ID reference
 	 *	@return image element
 	 */
-	public static ImageElement get(PrintDataElement data, String imageURLString)
+	public static ImageElement get(final PrintDataElement data, final String imageURLString)
 	{
 		Object key = data.getValue();
 		ImageElement image = s_cache.get(key);
@@ -121,13 +122,13 @@ public class ImageElement extends PrintElement
 	
 	/**	60 minute Cache						*/
 	private static CCache<Object,ImageElement>	s_cache 
-		= new CCache<Object,ImageElement>("ImageElement", 10, 60);
+		= new CCache<>("ImageElement", 10, 60);
 	
 	/**************************************************************************
 	 *	Create from existing Image
 	 *  @param image image
 	 */
-	public ImageElement(Image image)
+	public ImageElement(final Image image)
 	{
 		m_image = image;
 		if (m_image != null)
@@ -140,7 +141,7 @@ public class ImageElement extends PrintElement
 	 *	Create Image from URL
 	 *	@param imageURLstring image url
 	 */
-	private ImageElement(String imageURLstring)
+	private ImageElement(final String imageURLstring)
 	{
 		URL imageURL = getURL(imageURLstring);
 		if (imageURL != null)
@@ -159,7 +160,7 @@ public class ImageElement extends PrintElement
 	 *	Create Image from URL
 	 *  @param imageURL image url
 	 */
-	private ImageElement(URL imageURL)
+	private ImageElement(final URL imageURL)
 	{
 		if (imageURL != null)
 		{
@@ -177,7 +178,7 @@ public class ImageElement extends PrintElement
 	 *	Create Image from Attachment
 	 * 	@param AD_PrintFormatItem_ID record id
 	 */
-	private ImageElement(int AD_PrintFormatItem_ID)
+	private ImageElement(final int AD_PrintFormatItem_ID)
 	{
 		loadAttachment(AD_PrintFormatItem_ID);
 	}	//	ImageElement
@@ -187,7 +188,7 @@ public class ImageElement extends PrintElement
 	 * 	@param record_ID_ID record id from printformat or column
 	 * 	@param isAttachment flag to indicate if is attachment or is a column from DB
 	 */
-	public ImageElement(int record_ID, boolean isAttachment)
+	public ImageElement(final int record_ID, final boolean isAttachment)
 	{
 		if (isAttachment)
 			loadAttachment(record_ID);
@@ -205,7 +206,7 @@ public class ImageElement extends PrintElement
 	 *  @param urlString url or resource
 	 *  @return URL or null
 	 */
-	private URL getURL (String urlString)
+	private URL getURL (final String urlString)
 	{
 		URL url = null;
 		//	not a URL - may be a resource
@@ -234,7 +235,7 @@ public class ImageElement extends PrintElement
 	 * 	Load from DB
 	 * 	@param record_ID record id
 	 */
-	private void loadFromDB(int record_ID)
+	private void loadFromDB(final int record_ID)
 	{
 		MImage mimage = MImage.get(Env.getCtx(), record_ID);
 		if (mimage == null)
@@ -259,7 +260,7 @@ public class ImageElement extends PrintElement
 	 * 	Load Attachment
 	 * 	@param AD_PrintFormatItem_ID record id
 	 */
-	private void loadAttachment(int AD_PrintFormatItem_ID)
+	private void loadAttachment(final int AD_PrintFormatItem_ID)
 	{
 		final AttachmentEntry attachmentEntry = Services.get(IAttachmentBL.class).getFirstEntry(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
 		if (attachmentEntry == null)
@@ -267,7 +268,7 @@ public class ImageElement extends PrintElement
 			log.warn("No Attachment entry - AD_PrintFormatItem_ID={}", AD_PrintFormatItem_ID);
 			return;
 		}
-		final byte[] imageData = attachmentEntry.getData();
+		final byte[] imageData = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
 		if (imageData != null)
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);
 		if (m_image != null)
@@ -357,7 +358,7 @@ public class ImageElement extends PrintElement
 	 *  @param isView true if online view (IDs are links)
 	 */
 	@Override
-	public void paint(Graphics2D g2D, int pageNo, Point2D pageStart, Properties ctx, boolean isView)
+	public void paint(final Graphics2D g2D, final int pageNo, final Point2D pageStart, final Properties ctx, final boolean isView)
 	{
 		if (m_image == null)
 			return;

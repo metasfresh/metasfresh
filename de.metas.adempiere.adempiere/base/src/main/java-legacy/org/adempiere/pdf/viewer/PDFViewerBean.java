@@ -29,14 +29,13 @@ import java.awt.image.RGBImageFilter;
 import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -55,6 +54,9 @@ import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
 import org.jpedal.PdfDecoder;
+import org.slf4j.Logger;
+
+import de.metas.logging.LogManager;
 
 /**
  * PDF Viewer using jpedal
@@ -85,7 +87,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = -4038401603459821668L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             print();
         }
     };
@@ -97,7 +99,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = 2556454917786013951L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             save();
         }
     };
@@ -109,7 +111,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = 3012006964079877706L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             goFirst();
         }
     };
@@ -121,7 +123,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = 7146121058674779580L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             goPrevious();
         }
     };
@@ -133,7 +135,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = -535856649012053593L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             goNext();
         }
     };
@@ -145,7 +147,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = -9129162509234933692L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             goLast();
         }
     };
@@ -157,7 +159,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = 8712227061870874820L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             zoomIn();
         }
     };
@@ -169,7 +171,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = -796771923722993041L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             zoomOut();
         }
     };
@@ -181,7 +183,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = -5323310183497748731L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             rotateCClock();
         }
     };
@@ -193,7 +195,7 @@ public class PDFViewerBean extends JPanel {
 		private static final long serialVersionUID = 7048804716310413300L;
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
             rotateClock();
         }
     };
@@ -215,7 +217,7 @@ public class PDFViewerBean extends JPanel {
         zoomSelect.addActionListener(new ActionListener() {
             private boolean isAdjusting = false;
             @Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
                 if (isAdjusting) {
                     return;
                 }
@@ -231,7 +233,7 @@ public class PDFViewerBean extends JPanel {
         rotationSelect.addActionListener(new ActionListener() {
             private boolean isAdjusting = false;
             @Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
                 if (isAdjusting) {
                     return;
                 }
@@ -249,14 +251,14 @@ public class PDFViewerBean extends JPanel {
         add(BorderLayout.CENTER, center);
         pageField.addFocusListener(new FocusAdapter() {        
             @Override
-			public void focusGained(FocusEvent e) {
+			public void focusGained(final FocusEvent e) {
                 pageField.selectAll();
             }
         });
         pageField.setHorizontalAlignment(SwingConstants.TRAILING);
         pageField.addActionListener(new ActionListener() {
             @Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(final ActionEvent e) {
                 setCurrentPage(Integer.parseInt(pageField.getText()));
             }
         });
@@ -264,7 +266,7 @@ public class PDFViewerBean extends JPanel {
         setPreferredSize(new Dimension(480, 0));
     }
     
-    public void setRotation(int rotation) {
+    public void setRotation(final int rotation) {
         this.rotation = rotation;
         rotationSelect.setSelectedIndex(rotation / 90);
         updateZoomRotate();
@@ -286,7 +288,7 @@ public class PDFViewerBean extends JPanel {
         setCurrentPage(decoder.getPageCount());
     }
     
-    public void setCurrentPage(int page) {
+    public void setCurrentPage(final int page) {
         if (page < 1 || page > decoder.getPageCount()) {
             return;
         }
@@ -341,7 +343,7 @@ public class PDFViewerBean extends JPanel {
             }
         
             @Override
-			public boolean accept(File f) {
+			public boolean accept(final File f) {
                 return f.isDirectory()
                     || f.getName().toLowerCase().endsWith(".pdf");
             }
@@ -470,14 +472,14 @@ public class PDFViewerBean extends JPanel {
         add(BorderLayout.NORTH, bar);
     }
 
-    protected JPanel createToolbarItemPanel(JComponent component) {
+    protected JPanel createToolbarItemPanel(final JComponent component) {
         final JPanel pagePanel = new JPanel(new GridBagLayout());
         pagePanel.add(component);
         pagePanel.setMaximumSize(pagePanel.getPreferredSize());
         return pagePanel;
     }
     
-    public boolean loadPDF(String filename) {
+    public boolean loadPDF(final String filename) {
         this.filename = filename;
         boolean loaded = false;
         try {
@@ -495,17 +497,17 @@ public class PDFViewerBean extends JPanel {
         return loaded;
     }
     
-    protected JButton createActionButton(Action action,
-                                         String text,
-                                         String image,
-                                         String tooltip) {
+    protected JButton createActionButton(final Action action,
+                                         final String text,
+                                         final String image,
+                                         final String tooltip) {
         final ImageIcon icon =
             new ImageIcon(getClass().getResource(image));
         final double colorFactor = 0.9;
         
         final RGBImageFilter filter = new RGBImageFilter() {
             @Override
-			public int filterRGB(int x, int y, int rgb) {
+			public int filterRGB(final int x, final int y, final int rgb) {
                 final int alpha = (rgb >> 24) & 0xff;
                 final int red   = (rgb >> 16) & 0xff;
                 final int green = (rgb >>  8) & 0xff;
@@ -536,12 +538,12 @@ public class PDFViewerBean extends JPanel {
 
         result.addMouseListener(new MouseAdapter() {
             @Override
-			public void mouseEntered(MouseEvent me) {
+			public void mouseEntered(final MouseEvent me) {
                 result.setBorderPainted(true);
                 result.setIcon(icon);
             }
             @Override
-			public void mouseExited(MouseEvent me) {
+			public void mouseExited(final MouseEvent me) {
                 result.setBorderPainted(false);
                 result.setIcon(darkerIcon);
             }
@@ -565,7 +567,7 @@ public class PDFViewerBean extends JPanel {
     	}
     }
     
-    public void setScaleStep(int scaleStep) {
+    public void setScaleStep(final int scaleStep) {
         if (scaleStep < 0 || zoomFactors.length <= scaleStep) {
             return;
         }
@@ -591,7 +593,7 @@ public class PDFViewerBean extends JPanel {
         }
     }
 
-    public void setScale(int percent) {
+    public void setScale(final int percent) {
         int step;
         for (step = 0; step < zoomFactors.length - 1; step++) {
             if (zoomFactors[step] * 100 >= percent) {
@@ -600,8 +602,14 @@ public class PDFViewerBean extends JPanel {
         }
     	setScaleStep(step);
     }
-    
-    public boolean loadPDF(InputStream is) {
+
+    public boolean loadPDF(final byte[] data)
+    {
+    	return loadPDF(new ByteArrayInputStream(data));
+    }
+
+    public boolean loadPDF(final InputStream is)
+    {
     	if (tmpFile != null) {
     		tmpFile.delete();
     	}
