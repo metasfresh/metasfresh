@@ -48,6 +48,7 @@ t.ad_window_id
 , c.isupdateable
 , c.isencrypted AS isencryptedcolumn
 , c.isselectioncolumn
+, c.SelectionColumnSeqNo
 , tbl.tablename
 , c.valuemin
 , c.valuemax
