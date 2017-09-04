@@ -2,6 +2,8 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -43,6 +45,8 @@ import de.metas.ui.web.window.model.DocumentCollection;
  */
 public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private static final String MSG_NotEnoughTUsFound = "WEBUI_M_HU_MoveTUsToDirectWarehouse.NotEnoughTUsFound";
+
 	@Autowired
 	private DocumentCollection documentsCollection;
 
@@ -60,7 +64,18 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 
 		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
 		final HUEditorRow huRow = getView().getById(rowId);
-		if (!huRow.isLU() && !huRow.isTU())
+		if (huRow.isLU())
+		{
+			if (!huRow.hasIncludedTUs())
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("no TUs");
+			}
+		}
+		else if (huRow.isTU())
+		{
+			// OK
+		}
+		else
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a LU or TU");
 		}
@@ -72,11 +87,20 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 	// @RunOutOfTrx // run in transaction!
 	protected String doIt()
 	{
+		if (p_QtyTU <= 0)
+		{
+			throw new FillMandatoryException("QtyTU");
+		}
+
 		final I_M_HU topLevelHU = getRecord(I_M_HU.class);
 
 		final boolean isOwnPackingMaterials = true;
 		final List<I_M_HU> tus = HUTransformService.getWithThreadInheritedTrx()
 				.huExtractTUs(topLevelHU, p_QtyTU, isOwnPackingMaterials);
+		if (tus.size() != p_QtyTU)
+		{
+			throw new AdempiereException(MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tus.size() });
+		}
 
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
