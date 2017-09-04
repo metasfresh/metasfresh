@@ -1,0 +1,15 @@
+-- 2017-09-04T10:22:09.763
+-- URL zum Konzept
+DELETE FROM AD_Table_Process WHERE AD_Process_ID=540794 AND AD_Table_ID=319
+;
+
+-- 2017-09-04T10:22:12.876
+-- URL zum Konzept
+DELETE FROM  AD_Process_Trl WHERE AD_Process_ID=540794
+;
+
+-- 2017-09-04T10:22:12.883
+-- URL zum Konzept
+DELETE FROM AD_Process WHERE AD_Process_ID=540794
+;
+

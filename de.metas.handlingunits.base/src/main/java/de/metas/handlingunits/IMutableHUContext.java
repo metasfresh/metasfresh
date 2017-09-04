@@ -28,8 +28,8 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.impl.CompositeHUTrxListener;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 
 public interface IMutableHUContext extends IHUContext
 {

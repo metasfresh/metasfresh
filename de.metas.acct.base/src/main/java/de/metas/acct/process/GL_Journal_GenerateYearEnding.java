@@ -88,7 +88,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 
 		final Timestamp dateAcct = p_GL_JournalBatch.getDateAcct();
 		p_DateFrom = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_YEAR);
-		p_DateTo = TimeUtil.getYearLastDay(dateAcct);
+		p_DateTo = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY);
 
 		final int p_C_AcctSchema_ID = params.getParameterAsInt(PARAM_C_AcctSchema_ID);
 		p_C_AcctSchema = InterfaceWrapperHelper.create(getCtx(), p_C_AcctSchema_ID, I_C_AcctSchema.class, ITrx.TRXNAME_None);

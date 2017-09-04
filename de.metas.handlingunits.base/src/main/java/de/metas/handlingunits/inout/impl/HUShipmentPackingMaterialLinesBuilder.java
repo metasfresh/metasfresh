@@ -44,11 +44,11 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 
 /**

@@ -37,7 +37,6 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.IInOutBL;
 import de.metas.inout.event.ReturnInOutProcessedEventBus;
 
 /*
@@ -122,13 +121,7 @@ public class MultiCustomerHUReturnsInOutProducer
 						childHUs.addAll(handlingUnitsDAO.retrieveChildHUsForItem(huItem));
 					}
 				}
-				
-				for(final I_M_HU childHU : childHUs)
-				{
-					childHU.setIsActive(true);
-					InterfaceWrapperHelper.save(childHU);
-				}
-			
+
 			}
 			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
@@ -176,14 +169,14 @@ public class MultiCustomerHUReturnsInOutProducer
 					// do not allow HUs from receipts to get into customer returns
 					continue;
 				}
-				
-				if(! Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
+
+				if (!Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
 				{
 					// do not allow HUs from uncompleted inouts to get into customer returns
 					continue;
 				}
-				
-				if(Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+
+				if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
 				{
 					continue;
 				}

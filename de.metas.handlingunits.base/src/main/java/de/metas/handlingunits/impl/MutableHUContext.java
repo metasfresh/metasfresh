@@ -43,9 +43,9 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 import lombok.NonNull;
 
 /* package */class MutableHUContext implements IMutableHUContext

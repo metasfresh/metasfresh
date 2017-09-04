@@ -31,8 +31,8 @@ import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 
 /**
  * Immutable Handling Unit Context. Use {@link IHUContextFactory} to create an instance. 

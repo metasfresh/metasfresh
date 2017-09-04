@@ -76,6 +76,7 @@ public class HULoader
 	private boolean allowPartialLoads = false;
 	private boolean forceLoad = false;
 	private boolean skipAttributesTransfer = false;
+	private boolean automaticallyMovePackingMaterials = true;
 
 	/**
 	 * The current executor. Will be <code>null</code> while no loading is taking place.
@@ -152,6 +153,18 @@ public class HULoader
 	}
 
 	/**
+	 * If enabled, the packing materials involved will be collected and will be transferred to/from empties warehouse.
+	 * This flag is enabled by default.
+	 * 
+	 * @param automaticallyMovePackingMaterials
+	 */
+	public HULoader setAutomaticallyMovePackingMaterials(final boolean automaticallyMovePackingMaterials)
+	{
+		this.automaticallyMovePackingMaterials = automaticallyMovePackingMaterials;
+		return this;
+	}
+
+	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>. If the <code>Qty</code> of the given <code>request</code> is zero, then the method does nothing and just return
 	 * {@link AllocationUtils#nullResult()}.
 	 *
@@ -204,7 +217,8 @@ public class HULoader
 	 */
 	private final IAllocationResult processInHUContext(final IHUContext huContext, final IHUContextProcessor processor)
 	{
-		currentInContextExecutor = huTrxBL.createHUContextProcessorExecutor(huContext);
+		currentInContextExecutor = huTrxBL.createHUContextProcessorExecutor(huContext)
+				.setAutomaticallyMovePackingMaterials(automaticallyMovePackingMaterials);
 		try
 		{
 			return currentInContextExecutor.run(processor);

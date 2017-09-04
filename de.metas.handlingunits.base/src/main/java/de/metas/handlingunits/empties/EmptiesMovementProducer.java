@@ -29,7 +29,7 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.interfaces.I_M_Movement;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -84,13 +84,14 @@ public class EmptiesMovementProducer
 
 	private EmptiesMovementDirection _emptiesMovementDirection = null;
 	private int _referencedInOutId = -1;
+	private int _referencedInventoryId = -1;
 	private List<HUPackingMaterialDocumentLineCandidate> candidates = new ArrayList<>();
 
 	private EmptiesMovementProducer()
 	{
 	}
 
-	public EmptiesMovementProducer setEmptiesMovementDirection(EmptiesMovementDirection emptiesMovementDirection)
+	public EmptiesMovementProducer setEmptiesMovementDirection(final EmptiesMovementDirection emptiesMovementDirection)
 	{
 		Check.assumeNotNull(emptiesMovementDirection, "Parameter emptiesMovementDirection is not null");
 		this._emptiesMovementDirection = emptiesMovementDirection;
@@ -123,7 +124,7 @@ public class EmptiesMovementProducer
 	 * 
 	 * @param referencedInOutId
 	 */
-	public EmptiesMovementProducer setReferencedInOutId(int referencedInOutId)
+	public EmptiesMovementProducer setReferencedInOutId(final int referencedInOutId)
 	{
 		this._referencedInOutId = referencedInOutId;
 		return this;
@@ -133,8 +134,19 @@ public class EmptiesMovementProducer
 	{
 		return _referencedInOutId;
 	}
+	
+	public EmptiesMovementProducer setReferencedInventoryId(final int referencedInventoryId)
+	{
+		this._referencedInventoryId = referencedInventoryId;
+		return this;
+	}
+	
+	private int getReferencedInventoryId()
+	{
+		return _referencedInventoryId;
+	}
 
-	public EmptiesMovementProducer addCandidates(Collection<HUPackingMaterialDocumentLineCandidate> candidates)
+	public EmptiesMovementProducer addCandidates(final Collection<HUPackingMaterialDocumentLineCandidate> candidates)
 	{
 		if (candidates == null || candidates.isEmpty())
 		{
@@ -215,10 +227,17 @@ public class EmptiesMovementProducer
 		movement.setMovementDate(Env.getDate(context.getCtx())); // use Login date (08306)
 		movement.setDocStatus(DocAction.STATUS_Drafted);
 		movement.setDocAction(DocAction.ACTION_Complete);
+		
+		// Base document reference
 		if (getReferencedInOutId() > 0)
 		{
 			movement.setM_InOut_ID(getReferencedInOutId());
 		}
+		if(getReferencedInventoryId() > 0)
+		{
+			movement.setM_Inventory_ID(getReferencedInventoryId());
+		}
+		
 		InterfaceWrapperHelper.save(movement);
 
 		//
