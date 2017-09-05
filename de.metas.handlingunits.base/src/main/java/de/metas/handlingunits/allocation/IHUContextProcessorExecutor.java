@@ -74,7 +74,7 @@ public interface IHUContextProcessorExecutor
 		run(new IHUContextProcessor()
 		{
 			@Override
-			public IMutableAllocationResult process(IHUContext huContext)
+			public IMutableAllocationResult process(final IHUContext huContext)
 			{
 				processor.accept(huContext);
 				return NULL_RESULT;
@@ -103,4 +103,12 @@ public interface IHUContextProcessorExecutor
 	 * @return current {@link IHUTransactionAttributeBuilder}; never return null.
 	 */
 	IHUTransactionAttributeBuilder getTrxAttributesBuilder();
+
+	/**
+	 * If enabled, the packing materials involved will be collected and will be transferred to/from empties warehouse.
+	 * This flag is enabled by default.
+	 * 
+	 * @param automaticallyMovePackingMaterials
+	 */
+	IHUContextProcessorExecutor setAutomaticallyMovePackingMaterials(boolean automaticallyMovePackingMaterials);
 }

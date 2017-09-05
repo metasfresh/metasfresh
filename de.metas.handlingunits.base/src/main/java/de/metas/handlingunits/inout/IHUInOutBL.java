@@ -36,7 +36,7 @@ import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 
 public interface IHUInOutBL extends ISingletonService
 {

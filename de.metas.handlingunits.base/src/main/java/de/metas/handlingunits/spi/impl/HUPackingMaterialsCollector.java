@@ -1,4 +1,4 @@
-package de.metas.inoutcandidate.spi.impl;
+package de.metas.handlingunits.spi.impl;
 
 import java.math.BigDecimal;
 
@@ -68,6 +68,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import lombok.NonNull;
 import lombok.Value;

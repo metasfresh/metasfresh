@@ -52,6 +52,7 @@ c_trl.ad_language
 , c.isupdateable
 , c.isencrypted AS isencryptedcolumn
 , c.isselectioncolumn
+, c.SelectionColumnSeqNo
 , tbl.tablename
 , c.valuemin
 , c.valuemax

@@ -80,8 +80,8 @@ void invokeZapier(
     echo "Wait 30 minutes for the zapier-triggered downstream jobs to succeed or fail"
     timeout(time: 30, unit: 'MINUTES')
     {
-      final def data = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-      if(data != 'OK')
+      final def message = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
+      if(message != 'OK')
       {
         error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
       }

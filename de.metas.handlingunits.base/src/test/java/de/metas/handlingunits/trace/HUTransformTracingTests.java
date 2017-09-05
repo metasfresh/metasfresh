@@ -24,9 +24,9 @@ import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor;
-import de.metas.inoutcandidate.spi.impl.IHUPackingMaterialCollectorSource;
 import mockit.Mocked;
 
 /*

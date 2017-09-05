@@ -18,10 +18,20 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2300](https://github.com/metasfresh/metasfresh/issues/2300) Doc Outbound missing Columns
     * Adjustments to Document Outbound Window, adapting to current Design Guidelines, making it more user friendly with more functionality.
+  * [#2304](https://github.com/metasfresh/metasfresh/issues/2304) New Action: Create new Product Prices from selected Pricelist Version
+    * Improvement of Price List and Product Prices Window, adding the action to create new Price List version easiliy via mass selection and calculation schema.
+  * [#2306](https://github.com/metasfresh/metasfresh/issues/2306) Period mass actions missing in WebUI
+    * New Action "Open all/ Close all" in Period Window, allowing to change the Perdion status of all Doctype in few clicks.
   * [#2307](https://github.com/metasfresh/metasfresh/issues/2307) Window Period adjustments, add missing Translations
     * Translation for en_US and further refinements of Calendar Period Window in WebUI.
   * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
     * Further detailed improvements of Sales Order Window in WebUI, adding Fields and Translations.
+  * [#2317](https://github.com/metasfresh/metasfresh/issues/2317) Improvement of Delivery Days Window in WebUI
+    * Further detailed improvements done in Delivery Days Window.
+  * [#2326](https://github.com/metasfresh/metasfresh/issues/2326) New Window for Internal Usage in WebUI
+    * New Window for the maintainence of Internal Inventory Usage.
+  * [#2334](https://github.com/metasfresh/metasfresh/issues/2334) Default Filter Criteria for selected Windows
+    * Adding some default Filter criteria to selected Windows in WebUI.
 
 # metasfresh 5.25 (2017-36)
 

@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.spi.impl;
 
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import lombok.Builder;
 import lombok.NonNull;
 

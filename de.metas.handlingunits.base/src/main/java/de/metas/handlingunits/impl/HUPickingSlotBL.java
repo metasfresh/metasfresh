@@ -580,7 +580,14 @@ public class HUPickingSlotBL
 
 		final List<I_M_HU> result = retrieveFullTreeAndFilterForAlreadyPickedHUs(vhus);
 
-		return result;
+		if (!request.isOnlyTopLevelHUs())
+		{
+			return result; // we are done
+		}
+
+		// we need to filter out everything that is not toplevel
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		return handlingUnitsBL.getTopLevelHUs(TopLevelHusRequest.builder().hus(result).includeAll(false).build());
 	}
 
 	private List<I_M_HU> retrieveVHUsFromStorage(final AvailableHUsToPickRequest request)
@@ -646,7 +653,7 @@ public class HUPickingSlotBL
 		final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
 
 		// We still need to iterate the HUs trees from the top level HUs.
-		// Even if we called handlingUnitsBL.getTopLevelHUs with includeAll(true),
+		// Even if we had called handlingUnitsBL.getTopLevelHUs with includeAll(true),
 		// There might be a VHU with a picked TU. Because the TU is picked, also its un-picked VHU may not be in the result we return
 		final List<I_M_HU> result = new ArrayList<>();
 		for (final I_M_HU huTopLevel : husTopLevel)
@@ -670,7 +677,7 @@ public class HUPickingSlotBL
 		}
 		return result;
 	}
-	
+
 	private boolean isPicked(@NonNull final I_M_HU hu)
 	{
 		final boolean isAlreadyPicked = Services.get(IQueryBL.class)

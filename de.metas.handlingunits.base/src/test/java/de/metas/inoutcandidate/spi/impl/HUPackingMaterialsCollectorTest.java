@@ -16,6 +16,8 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
 /*
  * #%L

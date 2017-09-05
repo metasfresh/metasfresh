@@ -65,8 +65,8 @@ import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -386,8 +386,6 @@ public class HUInOutBL implements IHUInOutBL
 			
 			lineToHus.put(customerReturnLine.getM_InOutLine_ID(), currentHUs);
 		}
-
-		moveHUsForCustomerReturn(ctxAware.getCtx(), hus);
 
 		updateManualCustomerReturnInOutForHUs(customerReturn, lineToHus);
 
