@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-04-05T14:00:54 -->
+<!-- 2017-09-05T15:54:51 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/receiptlabel/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -23,8 +23,10 @@
 		<![CDATA[SELECT * FROM report.receipt_label($P{M_HU_ID});]]>
 	</queryString>
 	<field name="vendoraddress" class="java.lang.String"/>
+	<field name="vendorvalue" class="java.lang.String"/>
 	<field name="vendorgap" class="java.lang.String"/>
 	<field name="produceraddress" class="java.lang.String"/>
+	<field name="producervalue" class="java.lang.String"/>
 	<field name="producergap" class="java.lang.String"/>
 	<field name="herkunft" class="java.lang.String"/>
 	<field name="charge" class="java.lang.String"/>
@@ -185,7 +187,9 @@
 				<textFieldExpression><![CDATA[$F{herkunft}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="229" y="297" width="279" height="16" uuid="d513ceb5-5834-45cf-86e8-abfc320b40c5"/>
+				<reportElement x="229" y="297" width="217" height="16" uuid="d513ceb5-5834-45cf-86e8-abfc320b40c5">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<textElement markup="none">
 					<font size="11" isBold="false"/>
 				</textElement>
@@ -215,7 +219,9 @@
 				<textFieldExpression><![CDATA[$F{produceraddress} + "\n"]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="229" y="233" width="279" height="16" uuid="dbafd1f4-9e15-4f7f-9f27-c49f58c424bd"/>
+				<reportElement x="229" y="233" width="217" height="16" uuid="dbafd1f4-9e15-4f7f-9f27-c49f58c424bd">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<textElement markup="none">
 					<font size="11"/>
 				</textElement>
@@ -374,6 +380,20 @@ $F{beurteilung}.floatValue() <= 20 ? "Vorbehalt gross" :
 					<font size="20" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qualityinspectioncycle} !=null ? $F{qualityinspectioncycle} : (("Y").equals($F{isqualityinspection}) ?$R{isqualityinspection} : null)]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="446" y="233" width="51" height="16" uuid="df7117fb-853e-424f-9a43-11b1a5556037"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{vendorvalue}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="446" y="297" width="51" height="16" uuid="6d958e04-5950-44c1-8ab0-b93c4e160a90"/>
+				<textElement textAlignment="Right" markup="none">
+					<font size="11" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{producervalue}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
