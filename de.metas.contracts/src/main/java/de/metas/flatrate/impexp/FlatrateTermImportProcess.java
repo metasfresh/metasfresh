@@ -226,4 +226,15 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		return ImportRecordResult.Inserted;
 	}
 
+	@Override
+	protected void markImported(final I_I_Flatrate_Term importRecord)
+	{
+		// NOTE: overriding the method from abstract class because in case of I_Flatrate_Term,
+		// * the I_IsImported is a List (as it should be) and not YesNo
+		// * there is no Processing column
+		importRecord.setI_IsImported(X_I_Flatrate_Term.I_ISIMPORTED_Imported);
+		importRecord.setProcessed(true);
+		InterfaceWrapperHelper.save(importRecord);
+	}
+
 }
