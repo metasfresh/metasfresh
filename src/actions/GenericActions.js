@@ -178,6 +178,18 @@ export function deleteRequest(
     );
 }
 
+export function duplicateRequest(
+    entity, docType, docId
+) {
+    return axios.post(
+        config.API_URL +
+        '/' + entity +
+        (docType ? '/' + docType : '') +
+        (docId ? '/' + docId : '') +
+        '/duplicate'
+    );
+}
+
 export function actionsRequest(entity, type, id, selected){
     let query = '';
     for (let item of selected) {

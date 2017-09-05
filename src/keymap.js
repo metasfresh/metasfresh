@@ -19,6 +19,7 @@ export default {
         //=========== Document Context =================
 
         OPEN_ADVANCED_EDIT: mod + '+' + 'e',
+        CLONE_DOCUMENT: mod + '+' + 'w',
         OPEN_PRINT_RAPORT: mod + '+' + 'p',
         OPEN_EMAIL: mod + '+' + 'x',
         DELETE_DOCUMENT: mod + '+' + 'd',
