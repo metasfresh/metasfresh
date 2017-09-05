@@ -4,7 +4,6 @@ package de.metas.flatrate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Flatrate_Matching
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_Flatrate_Matching extends org.compiere.model.PO implements I_C_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -880135339L;
+	private static final long serialVersionUID = 897501876L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Matching (Properties ctx, int C_Flatrate_Matching_ID, String trxName)
@@ -28,10 +27,8 @@ public class X_C_Flatrate_Matching extends org.compiere.model.PO implements I_C_
 			setC_Flatrate_Matching_ID (0);
 			setC_Flatrate_Transition_ID (0);
 			setM_Product_Category_Matching_ID (0);
-			setQtyPerDelivery (Env.ZERO);
-// 1
-			setSeqNo (0);
-// @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 FROM C_Flatrate_Matching WHERE C_Flatrate_Conditions_ID=@C_Flatrate_Conditions_ID@
+			setQtyPerDelivery (BigDecimal.ZERO); // 1
+			setSeqNo (0); // @SQL=SELECT COALESCE(MAX(SeqNo),0)+10 FROM C_Flatrate_Matching WHERE C_Flatrate_Conditions_ID=@C_Flatrate_Conditions_ID@
         } */
     }
 
@@ -306,7 +303,7 @@ public class X_C_Flatrate_Matching extends org.compiere.model.PO implements I_C_
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPerDelivery);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

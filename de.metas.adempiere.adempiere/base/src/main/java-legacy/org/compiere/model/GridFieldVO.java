@@ -264,8 +264,10 @@ public class GridFieldVO implements Serializable
 					vo.IsEncryptedField = "Y".equals(rs.getString (i));
 				else if (columnName.equalsIgnoreCase("IsEncryptedColumn"))
 					vo.IsEncryptedColumn = "Y".equals(rs.getString (i));
-				else if (columnName.equalsIgnoreCase("IsSelectionColumn"))
-					vo.IsSelectionColumn = "Y".equals(rs.getString (i));
+				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_IsSelectionColumn))
+					vo.IsSelectionColumn = DisplayType.toBoolean(rs.getString(i));
+				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
+					vo.selectionColumnSeqNo = rs.getInt(i);
 				else if (columnName.equalsIgnoreCase("SortNo"))
 					vo.SortNo = rs.getInt (i);
 				else if (columnName.equalsIgnoreCase("FieldLength"))
@@ -504,9 +506,9 @@ public class GridFieldVO implements Serializable
 	 *  @param isTimestamp is the timestamp (not by)
 	 *  @return MFieldVO
 	 */
-	public static GridFieldVO createStdField (Properties ctx, int WindowNo, int TabNo,
-		int AD_Window_ID, int AD_Tab_ID, boolean tabReadOnly,
-		boolean isCreated, boolean isTimestamp)
+	public static GridFieldVO createStdField (final Properties ctx, final int WindowNo, final int TabNo,
+		final int AD_Window_ID, final int AD_Tab_ID, final boolean tabReadOnly,
+		final boolean isCreated, final boolean isTimestamp)
 	{
 		GridFieldVO vo = new GridFieldVO (ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly);
 		vo.ColumnName = isCreated ? "Created" : "Updated";
@@ -534,7 +536,7 @@ public class GridFieldVO implements Serializable
 	 *  @param ad_Tab_ID tab
 	 *  @param TabReadOnly tab read only
 	 */
-	private GridFieldVO (Properties ctx, int windowNo, int tabNo, int ad_Window_ID, int ad_Tab_ID, boolean TabReadOnly)
+	private GridFieldVO (final Properties ctx, final int windowNo, final int tabNo, final int ad_Window_ID, final int ad_Tab_ID, final boolean TabReadOnly)
 	{
 		super();
 		this.ctx = ctx;
@@ -632,6 +634,7 @@ public class GridFieldVO implements Serializable
 	public boolean      IsEncryptedColumn = false;
 	/**	Find Selection		*/
 	private boolean IsSelectionColumn = false;
+	private int selectionColumnSeqNo = 0;
 	/**	Order By		*/
 	public int          SortNo = 0;
 	/**	Field Length		*/
@@ -698,7 +701,7 @@ public class GridFieldVO implements Serializable
 	 *  Set Context including contained elements
 	 *  @param newCtx new context
 	 */
-	public void setCtx (Properties newCtx)
+	public void setCtx (final Properties newCtx)
 	{
 		ctx = newCtx;
 	}   //  setCtx
@@ -757,7 +760,7 @@ public class GridFieldVO implements Serializable
 	 *            always create the lookup info, even if the field is not displayed
 	 */
 	// metas : cg: task 02354
-	private void createLookupInfo(boolean alwaysCreate)
+	private void createLookupInfo(final boolean alwaysCreate)
 	{
 		// Shall we create the MLookupInfo?
 		if (lookupInfo != null)
@@ -808,9 +811,9 @@ public class GridFieldVO implements Serializable
 	 * @param ad_Tab_ID tab id
 	 * @param TabReadOnly r/o
 	 */
-	public GridFieldVO clone(Properties Ctx, int windowNo, int tabNo,
-		int ad_Window_ID, int ad_Tab_ID,
-		boolean TabReadOnly)
+	public GridFieldVO clone(final Properties Ctx, final int windowNo, final int tabNo,
+		final int ad_Window_ID, final int ad_Tab_ID,
+		final boolean TabReadOnly)
 	{
 		final GridFieldVO clone = new GridFieldVO(Ctx, windowNo, tabNo,  ad_Window_ID, ad_Tab_ID, TabReadOnly);
 		//
@@ -850,6 +853,7 @@ public class GridFieldVO implements Serializable
 		clone.IsEncryptedField = IsEncryptedField;
 		clone.IsEncryptedColumn = IsEncryptedColumn;
 		clone.IsSelectionColumn = IsSelectionColumn;
+		clone.selectionColumnSeqNo = selectionColumnSeqNo;
 		clone.autocomplete = autocomplete;
 		clone.SortNo = SortNo;
 		clone.FieldLength = FieldLength;
@@ -966,7 +970,7 @@ public class GridFieldVO implements Serializable
 		return this.lookupInfo;
 	}
 
-	public void setIsDisplayed(boolean displayed)
+	public void setIsDisplayed(final boolean displayed)
 	{
 		if (this.IsDisplayed == displayed)
 		{
@@ -986,7 +990,7 @@ public class GridFieldVO implements Serializable
 		return autocomplete;
 	}
 
-	public void setAutocomplete(boolean autocomplete)
+	public void setAutocomplete(final boolean autocomplete)
 	{
 		this.autocomplete = autocomplete;
 	}
@@ -1018,7 +1022,7 @@ public class GridFieldVO implements Serializable
 		this.lookupInfo = null; // reset lookup info
 	}
 
-	public void setColumnName(String columnName)
+	public void setColumnName(final String columnName)
 	{
 		this.ColumnName = columnName;
 	}
@@ -1029,7 +1033,7 @@ public class GridFieldVO implements Serializable
 	}
 
 	private boolean lookupLoadFromColumn = false;
-	public void setLookupLoadFromColumn(boolean lookupLoadFromColumn)
+	public void setLookupLoadFromColumn(final boolean lookupLoadFromColumn)
 	{
 		if (this.lookupLoadFromColumn == lookupLoadFromColumn)
 		{
@@ -1064,7 +1068,7 @@ public class GridFieldVO implements Serializable
 		return seqNo;
 	}
 
-	private void setSeqNo(int seqNo)
+	private void setSeqNo(final int seqNo)
 	{
 		this.seqNo = seqNo;
 	}
@@ -1074,7 +1078,7 @@ public class GridFieldVO implements Serializable
 		return seqNoGrid;
 	}
 
-	public void setSeqNoGrid(int seqNoGrid)
+	public void setSeqNoGrid(final int seqNoGrid)
 	{
 		this.seqNoGrid = seqNoGrid;
 	}
@@ -1084,7 +1088,7 @@ public class GridFieldVO implements Serializable
 		return isDisplayedGrid;
 	}
 
-	public void setIsDisplayedGrid(boolean isDisplayedGrid)
+	public void setIsDisplayedGrid(final boolean isDisplayedGrid)
 	{
 		this.isDisplayedGrid = isDisplayedGrid;
 	}
@@ -1125,7 +1129,7 @@ public class GridFieldVO implements Serializable
 		return fieldGroup;
 	}
 
-	public void setIsFieldOnly(boolean isFieldOnly)
+	public void setIsFieldOnly(final boolean isFieldOnly)
 	{
 		this.IsFieldOnly = isFieldOnly;
 	}
@@ -1135,7 +1139,7 @@ public class GridFieldVO implements Serializable
 		return IsFieldOnly;
 	}
 
-	public void setIsHeadingOnly(boolean isHeading)
+	public void setIsHeadingOnly(final boolean isHeading)
 	{
 		this.IsHeading = isHeading;
 	}
@@ -1191,7 +1195,7 @@ public class GridFieldVO implements Serializable
 		return headerTrls;
 	}
 	
-	public void setHeader(String header)
+	public void setHeader(final String header)
 	{
 		this.header = header;
 	}
@@ -1222,7 +1226,7 @@ public class GridFieldVO implements Serializable
 		return descriptionTrls;
 	}
 	
-	public void setDescription(String description)
+	public void setDescription(final String description)
 	{
 		this.description = description;
 	}
@@ -1253,7 +1257,7 @@ public class GridFieldVO implements Serializable
 		return helpTrls;
 	}
 	
-	public void setHelp(String help)
+	public void setHelp(final String help)
 	{
 		this.help = help;
 	}
@@ -1284,7 +1288,7 @@ public class GridFieldVO implements Serializable
 	 * @param withAS include AS ColumnName for virtual columns in select statements
 	 * @return column name
 	 */
-	public String getColumnSQL(boolean withAS)
+	public String getColumnSQL(final boolean withAS)
 	{
 		// metas
 		if (ColumnClass != null)
@@ -1335,7 +1339,7 @@ public class GridFieldVO implements Serializable
 		return IsUpdateable;
 	}
 	
-	public void setIsUpdateable(boolean updateable)
+	public void setIsUpdateable(final boolean updateable)
 	{
 		IsUpdateable = updateable;
 	}
@@ -1378,5 +1382,10 @@ public class GridFieldVO implements Serializable
 	public boolean isSelectionColumn()
 	{
 		return IsSelectionColumn;
+	}
+	
+	public int getSelectionColumnSeqNo()
+	{
+		return selectionColumnSeqNo;
 	}
 }

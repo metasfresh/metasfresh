@@ -211,7 +211,9 @@ public interface I_C_Contract_Term_Alloc
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	public void setDocStatus (java.lang.String DocStatus);
 
 	/**
