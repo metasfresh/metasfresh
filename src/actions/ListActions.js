@@ -49,3 +49,9 @@ export function setListIncludedView(windowType, viewId) {
         viewId
     }
 }
+
+export function closeListIncludedView() {
+    return {
+        type: types.CLOSE_LIST_INCLUDED_VIEW
+    }
+}

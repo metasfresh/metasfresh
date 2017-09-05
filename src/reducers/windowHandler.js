@@ -84,10 +84,19 @@ export default function windowHandler(state = initialState, action) {
                     visible: false,
                     tabId: null,
                     rowId: null,
+                    viewId: null,
+                    viewDocumentIds: null,
                     layout: {},
                     data: [],
+                    rowData: {},
+                    isAdvanced: false,
                     title: '',
-                    rowData: {}
+                    type: '',
+                    modalType: '',
+                    saveStatus: {},
+                    validStatus: {},
+                    includedTabsInfo: {},
+                    triggerField: null
                 })
             });
 
