@@ -366,12 +366,14 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.addCharacteristicIfTrue(keyColumn, Characteristic.SideListField)
 				.addCharacteristicIfTrue(keyColumn, Characteristic.GridViewField)
-				.addCharacteristicIfTrue(gridFieldVO.isSelectionColumn(), Characteristic.AllowFiltering)
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
+				//
+				.setDefaultFilterField(gridFieldVO.isSelectionColumn())
+				.setDefaultFilterFieldSeqNo(gridFieldVO.getSelectionColumnSeqNo())
 				//
 				.setDataBinding(fieldBinding);
 
