@@ -24,6 +24,7 @@ import {
 
 import {
     deleteRequest,
+    duplicateRequest,
     openFile
 } from '../../actions/GenericActions';
 
@@ -196,6 +197,19 @@ class Header extends Component {
             'window', windowType, docId, 'print',
             windowType + '_' + (docNo ? docNo : docId) + '.pdf'
         );
+    }
+
+    handleClone = (windowType, docId) => {
+        const { dispatch } = this.props;
+
+        duplicateRequest('window', windowType, docId)
+            .then( (response) => {
+                if (response && response.data && response.data.id) {
+                    dispatch(
+                        push(`/window/${windowType}/${response.data.id}`)
+                    );
+                }
+            });
     }
 
     handleDelete = () => {
@@ -570,6 +584,7 @@ class Header extends Component {
                     openModal={this.openModal}
                     openModalRow={this.openModalRow}
                     handlePrint={this.handlePrint}
+                    handleClone={this.handleClone}
                     handleDelete={this.handleDelete}
                     handleEmail={this.handleEmail}
                     redirect={this.redirect}

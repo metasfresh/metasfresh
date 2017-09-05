@@ -127,7 +127,7 @@ class Subheader extends Component {
         const {
             dataId, windowType, openModal, closeSubheader, handlePrint,
             handleDelete, docNo, redirect, breadcrumb, siteName, editmode,
-            handleEditModeToggle, handleEmail
+            handleEditModeToggle, handleEmail, handleClone
         } = this.props;
 
         const {
@@ -151,10 +151,28 @@ class Subheader extends Component {
                 </span>
             </div>,
             <div
-                key={1}
+                key={10}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
-                onClick={() => {handleEmail(); closeSubheader()}}
+                onClick={() => {
+                    handleClone(windowType, dataId);
+                    closeSubheader();
+                }}
+            >
+                <i className="meta-icon-duplicate" />
+                {counterpart.translate('window.clone.caption')}
+                <span className="tooltip-inline">
+                    {keymap.GLOBAL_CONTEXT.CLONE_DOCUMENT}
+                </span>
+            </div>,
+            <div
+                key={20}
+                className="subheader-item js-subheader-item"
+                tabIndex={0}
+                onClick={() => {
+                    handleEmail();
+                    closeSubheader();
+                }}
             >
                 <i className="meta-icon-mail" />
                 {counterpart.translate('window.email.caption')}
@@ -163,11 +181,12 @@ class Subheader extends Component {
                 </span>
             </div>,
             <div
-                key={2}
+                key={30}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
                 onClick={() => {
-                    handlePrint(windowType, dataId, docNo); closeSubheader()
+                    handlePrint(windowType, dataId, docNo);
+                    closeSubheader();
                 }}
             >
                 <i className="meta-icon-print" />
@@ -177,10 +196,12 @@ class Subheader extends Component {
                 </span>
             </div>,
             <div
-                key={3}
+                key={40}
                 className="subheader-item js-subheader-item"
                 tabIndex={0}
-                onClick={() => handleDelete()}
+                onClick={() => {
+                    handleDelete();
+                }}
             >
                 <i className="meta-icon-delete" />
                 {counterpart.translate('window.Delete.caption')}
