@@ -81,7 +81,7 @@ void invokeZapier(
     timeout(time: 30, unit: 'MINUTES')
     {
       final def message = waitForWebhook hook // to stop and wait, for someone to do e.g. curl -X POST -d 'OK' <hook-URL>
-      if(data != 'OK')
+      if(message != 'OK')
       {
         error "An external job that was invoked by zapier failed; message=${message}; hook-URL=${hook.getURL()}"
       }
