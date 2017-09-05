@@ -38,6 +38,8 @@ Here come the actual release notes:
     * New Window for Changelog maintenance in WebUI. This Window will be added to referenced Documents Sidelist for all records in future and show the data changes done by whom and when.
   * [#2352](https://github.com/metasfresh/metasfresh/issues/2352) Invoice Customer window adjustments for WebUI
     * Detailed improvements of the Customer Invoice Window in WebUI, adding new Actions and refining the Grid View Layout.
+  * [#2353](https://github.com/metasfresh/metasfresh/issues/2353) Invoice Candidates Window in WebUI detail improvements
+    * Detailed improvements of the Invoice Candidates Window in WebUI, refining the Grid View Layout.
 
 # metasfresh 5.25 (2017-36)
 
