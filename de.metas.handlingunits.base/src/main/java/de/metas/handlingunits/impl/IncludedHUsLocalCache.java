@@ -93,7 +93,11 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 		final IQueryBuilder<I_M_HU> queryBuilder = queryBL
 				.createQueryBuilder(I_M_HU.class, ctx)
 				.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, parentItem.getM_HU_Item_ID())
-				.addOnlyActiveRecordsFilter();
+				 // Retrieve all HUs, even if they are not active.
+				 // We need this because in case of shipped HUs (HUStatus=E) those are also inactivated (IsActive=N).		
+				 // see https://github.com/metasfresh/metasfresh-webui-api/issues/567.		
+				 // .addOnlyActiveRecordsFilter()
+		;
 
 		final List<I_M_HU> hus = queryBuilder
 				.create()
