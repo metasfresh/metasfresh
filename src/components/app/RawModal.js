@@ -13,6 +13,10 @@ import {
     deleteView
 } from '../../actions/AppActions';
 
+import {
+    closeListIncludedView
+} from '../../actions/ListActions';
+
 import keymap from '../../keymap.js';
 import ModalContextShortcuts from '../shortcuts/ModalContextShortcuts';
 import { ShortcutManager } from 'react-shortcuts';
@@ -92,6 +96,7 @@ class RawModal extends Component {
 
         dispatch(closeRawModal());
         dispatch(closeModal());
+        dispatch(closeListIncludedView());
 
         if (!modalVisible){
             document.body.style.overflow = 'auto';
