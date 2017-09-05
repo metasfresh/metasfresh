@@ -653,11 +653,11 @@ public final class ImpFormat
 			{
 				throw new DBException("Failed inserting the record");
 			}
-			log.trace("New ID=" + importRecordId);
+			log.trace("New ID={}", importRecordId);
 		}
 		else
 		{
-			log.trace("Old ID=" + importRecordId);
+			log.trace("Old ID={}", importRecordId);
 		}
 
 		//
