@@ -22,8 +22,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -40,8 +38,11 @@ import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.X_AD_ImpFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
 
 /**
  * Import Format a Row
@@ -58,7 +59,7 @@ public final class ImpFormat
 	 * @param AD_Table_ID table
 	 * @param formatType format type
 	 */
-	private ImpFormat(String name, int AD_Table_ID, String formatType)
+	private ImpFormat(final String name, final int AD_Table_ID, final String formatType)
 	{
 		super();
 		setName(name);
@@ -82,14 +83,14 @@ public final class ImpFormat
 	private String m_tableUniqueChild;
 	//
 	private String m_BPartner;
-	private ArrayList<ImpFormatRow> m_rows = new ArrayList<ImpFormatRow>();
+	private ArrayList<ImpFormatRow> m_rows = new ArrayList<>();
 
 	/**
 	 * Set Name
 	 * 
 	 * @param newName new name
 	 */
-	public void setName(String newName)
+	public void setName(final String newName)
 	{
 		if (newName == null || newName.length() == 0)
 			throw new IllegalArgumentException("Name must be at least 1 char");
@@ -117,7 +118,7 @@ public final class ImpFormat
 	 * 
 	 * @param AD_Table_ID table
 	 */
-	public void setTable(int AD_Table_ID)
+	public void setTable(final int AD_Table_ID)
 	{
 		m_AD_Table_ID = AD_Table_ID;
 		m_tableName = null;
@@ -206,7 +207,7 @@ public final class ImpFormat
 	 * 
 	 * @param newFormatType - F/C/T/X
 	 */
-	public void setFormatType(String newFormatType)
+	public void setFormatType(final String newFormatType)
 	{
 		if (newFormatType.equals(FORMATTYPE_FIXED) || newFormatType.equals(FORMATTYPE_COMMA)
 				|| newFormatType.equals(FORMATTYPE_TAB) || newFormatType.equals(FORMATTYPE_XML))
@@ -230,7 +231,7 @@ public final class ImpFormat
 	 * 
 	 * @param newBPartner (value)
 	 */
-	public void setBPartner(String newBPartner)
+	public void setBPartner(final String newBPartner)
 	{
 		m_BPartner = newBPartner;
 	}   // setBPartner
@@ -250,7 +251,7 @@ public final class ImpFormat
 	 * 
 	 * @param row row
 	 */
-	public void addRow(ImpFormatRow row)
+	public void addRow(final ImpFormatRow row)
 	{
 		m_rows.add(row);
 	}	// addRow
@@ -261,7 +262,7 @@ public final class ImpFormat
 	 * @param index index
 	 * @return Import Format Row
 	 */
-	public ImpFormatRow getRow(int index)
+	public ImpFormatRow getRow(final int index)
 	{
 		if (index >= 0 && index < m_rows.size())
 			return m_rows.get(index);
@@ -286,7 +287,7 @@ public final class ImpFormat
 	 * @deprecated Please use {@link #load(I_AD_ImpFormat)}
 	 */
 	@Deprecated
-	public static ImpFormat load(String name)
+	public static ImpFormat load(final String name)
 	{
 		final I_AD_ImpFormat impFormatModel = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_ImpFormat.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -412,7 +413,7 @@ public final class ImpFormat
 	 * @return field in lime or ""
 	 * @throws IllegalArgumentException if format unknows
 	 * */
-	private String parseFlexFormat(String line, String formatType, int fieldNo)
+	private String parseFlexFormat(final String line, final String formatType, final int fieldNo)
 	{
 		final char QUOTE = '"';
 		// check input
@@ -640,6 +641,11 @@ public final class ImpFormat
 		if (importRecordId <= 0)
 		{
 			importRecordId = DB.getNextID(ctx, m_tableName, ITrx.TRXNAME_None);		// get ID
+			if(importRecordId <= 0)
+			{
+				throw new AdempiereException("Cannot acquire next ID for " + m_tableName);
+			}
+			
 			final StringBuilder sql = new StringBuilder("INSERT INTO ")
 					.append(m_tableName).append("(").append(m_tablePK).append(",")
 					.append("AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive")	// StdFields
@@ -653,11 +659,11 @@ public final class ImpFormat
 			{
 				throw new DBException("Failed inserting the record");
 			}
-			log.trace("New ID=" + importRecordId);
+			log.trace("New ID={}", importRecordId);
 		}
 		else
 		{
-			log.trace("Old ID=" + importRecordId);
+			log.trace("Old ID={}", importRecordId);
 		}
 
 		//
@@ -683,6 +689,6 @@ public final class ImpFormat
 			}
 		}
 
-		return new TableRecordReference(m_tableName, importRecordId);
+		return TableRecordReference.of(m_tableName, importRecordId);
 	}
 }	// ImpFormat
