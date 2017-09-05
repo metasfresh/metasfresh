@@ -641,6 +641,11 @@ public final class ImpFormat
 		if (importRecordId <= 0)
 		{
 			importRecordId = DB.getNextID(ctx, m_tableName, ITrx.TRXNAME_None);		// get ID
+			if(importRecordId <= 0)
+			{
+				throw new AdempiereException("Cannot acquire next ID for " + m_tableName);
+			}
+			
 			final StringBuilder sql = new StringBuilder("INSERT INTO ")
 					.append(m_tableName).append("(").append(m_tablePK).append(",")
 					.append("AD_Client_ID,AD_Org_ID,Created,CreatedBy,Updated,UpdatedBy,IsActive")	// StdFields
@@ -684,6 +689,6 @@ public final class ImpFormat
 			}
 		}
 
-		return new TableRecordReference(m_tableName, importRecordId);
+		return TableRecordReference.of(m_tableName, importRecordId);
 	}
 }	// ImpFormat
