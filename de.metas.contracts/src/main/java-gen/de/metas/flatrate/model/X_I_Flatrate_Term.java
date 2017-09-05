@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.flatrate.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -679078726L;
+	private static final long serialVersionUID = 2091512056L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -274,6 +275,65 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
 	}
 
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Preis.
+		@param Price 
+		Preis
+	  */
+	@Override
+	public void setPrice (java.math.BigDecimal Price)
+	{
+		set_Value (COLUMNNAME_Price, Price);
+	}
+
+	/** Get Preis.
+		@return Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
+	}
+
 	/** Set Verarbeitet.
 		@param Processed 
 		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
@@ -298,6 +358,25 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Schlüssel des Produktes
+	  */
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
+	{
+		set_Value (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	/** Get Produktschlüssel.
+		@return Schlüssel des Produktes
+	  */
+	@Override
+	public java.lang.String getProductValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
 	}
 
 	/** Set Anfangsdatum.
