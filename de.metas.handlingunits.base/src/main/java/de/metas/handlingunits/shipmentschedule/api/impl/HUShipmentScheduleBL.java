@@ -152,6 +152,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (luHU != null)
 		{
 			handlingUnitsBL.setHUStatus(huContext, luHU, X_M_HU.HUSTATUS_Picked);
+			handlingUnitsDAO.saveHU(luHU);
 		}
 		// Fallback: set the TU's status as picked if it doesn't have a parent.
 		else
@@ -163,7 +164,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		setHUPartnerAndLocationFromSched(sched, tuHU);
 
 		
-		handlingUnitsDAO.saveHU(luHU);
+		
 		handlingUnitsDAO.saveHU(tuHU);
 
 		return schedQtyPickedHU;
