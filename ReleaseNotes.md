@@ -29,9 +29,13 @@ Here come the actual release notes:
   * [#2317](https://github.com/metasfresh/metasfresh/issues/2317) Improvement of Delivery Days Window in WebUI
     * Further detailed improvements done in Delivery Days Window.
   * [#2326](https://github.com/metasfresh/metasfresh/issues/2326) New Window for Internal Usage in WebUI
-    * New Window for the maintainence of Internal Inventory Usage.
+    * New Window for the maintenance of Internal Inventory Usage.
   * [#2334](https://github.com/metasfresh/metasfresh/issues/2334) Default Filter Criteria for selected Windows
     * Adding some default Filter criteria to selected Windows in WebUI.
+  * [#2337](https://github.com/metasfresh/metasfresh/issues/2337) Purchase Order detail adjustments
+    * Adjusting the Purchase Order Window with further details.
+  * [#2339](https://github.com/metasfresh/metasfresh/issues/2339) New Window in WebUI for Changelog
+    * New Window for Changelog maintenance in WebUI. This Window will be added to referenced Documents Sidelist for all records in future and show the data changes done by whome and when.
 
 # metasfresh 5.25 (2017-36)
 
