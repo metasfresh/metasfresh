@@ -120,6 +120,40 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			markAsError("Flatrate conditions not found", I_I_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID + " IS NULL"
 					+ "\n AND " + sqlImportWhereClause);
 		}
+
+		//
+		// Update M_Product_ID by Value
+		{
+			final String sqlSelectByValue = "select MIN(bp." + I_M_Product.COLUMNNAME_M_Product_ID + ")"
+					+ " from " + I_M_Product.Table_Name + " bp "
+					+ " where bp." + I_M_Product.COLUMNNAME_Value + "=i." + I_I_Flatrate_Term.COLUMNNAME_ProductValue
+					+ " and bp." + I_M_Product.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID;
+			final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
+					+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + "=(" + sqlSelectByValue + ")"
+					+ "\n WHERE " + sqlImportWhereClause
+					+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL";
+
+			final int no = DB.executeUpdateEx(sql, trxName);
+			log.debug("Set M_Product_ID for {} records (by Value)", no);
+		}
+		// Update M_Product_ID by Name
+		{
+			final String sqlSelectByValue = "select MIN(bp." + I_M_Product.COLUMNNAME_M_Product_ID + ")"
+					+ " from " + I_M_Product.Table_Name + " bp "
+					+ " where bp." + I_M_Product.COLUMNNAME_Name + "=i." + I_I_Flatrate_Term.COLUMNNAME_ProductValue
+					+ " and bp." + I_M_Product.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID;
+			final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
+					+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + "=(" + sqlSelectByValue + ")"
+					+ "\n WHERE " + sqlImportWhereClause
+					+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL";
+
+			final int no = DB.executeUpdateEx(sql, trxName);
+			log.debug("Set M_Product_ID for {} records (by Name)", no);
+			
+		}
+		// Flag missing product
+		markAsError("Product not found", I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL"
+				+ "\n AND " + sqlImportWhereClause);
 	}
 
 	private final void markAsError(final String errorMsg, final String sqlWhereClause)
@@ -148,15 +182,15 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 				importRecord.getC_Flatrate_Conditions(), // conditions
 				importRecord.getStartDate(), // startDate
 				(I_AD_User)null, // userInCharge
-				(I_M_Product)null, // product
+				importRecord.getM_Product(), // product
 				false // completeIt
-				);
-		if(contract == null)
+		);
+		if (contract == null)
 		{
 			throw new AdempiereException("contract not created");
 		}
-		
-		if(importRecord.getEndDate() != null)
+
+		if (importRecord.getEndDate() != null)
 		{
 			contract.setEndDate(importRecord.getEndDate());
 		}
@@ -165,7 +199,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		// Complete the subscription/contract
 		InterfaceWrapperHelper.save(contract);
 		flatrateBL.complete(contract);
-		
+
 		//
 		importRecord.setC_Flatrate_Term(contract);
 		return ImportRecordResult.Inserted;
