@@ -1,5 +1,6 @@
 package de.metas.flatrate.impexp;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -14,6 +15,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
@@ -23,6 +25,7 @@ import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_I_Flatrate_Term;
 import de.metas.flatrate.model.X_I_Flatrate_Term;
+import de.metas.product.IProductBL;
 
 /*
  * #%L
@@ -149,7 +152,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 
 			final int no = DB.executeUpdateEx(sql, trxName);
 			log.debug("Set M_Product_ID for {} records (by Name)", no);
-			
+
 		}
 		// Flag missing product
 		markAsError("Product not found", I_I_Flatrate_Term.COLUMNNAME_M_Product_ID + " IS NULL"
@@ -176,13 +179,15 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 	@Override
 	protected ImportRecordResult importRecord(final IMutable<Object> state, final I_I_Flatrate_Term importRecord) throws Exception
 	{
+		final I_M_Product product = importRecord.getM_Product();
+
 		final I_C_Flatrate_Term contract = flatrateBL.createTerm(
 				PlainContextAware.newWithThreadInheritedTrx(), // context
 				importRecord.getC_BPartner(), // bpartner
 				importRecord.getC_Flatrate_Conditions(), // conditions
 				importRecord.getStartDate(), // startDate
 				(I_AD_User)null, // userInCharge
-				importRecord.getM_Product(), // product
+				product, // product
 				false // completeIt
 		);
 		if (contract == null)
@@ -190,6 +195,20 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			throw new AdempiereException("contract not created");
 		}
 
+		//
+		// Product/UOM and price
+		{
+			// NOTE: product was already set above
+			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
+			contract.setC_UOM(uom);
+
+			final BigDecimal price = importRecord.getPrice();
+			contract.setPriceActual(price);
+		}
+
+		//
+		// Start/End date
+		// NOTE: start date was already set above
 		if (importRecord.getEndDate() != null)
 		{
 			contract.setEndDate(importRecord.getEndDate());
@@ -200,8 +219,10 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		InterfaceWrapperHelper.save(contract);
 		flatrateBL.complete(contract);
 
-		//
+		// Link back the contract to current import record
 		importRecord.setC_Flatrate_Term(contract);
+
+		//
 		return ImportRecordResult.Inserted;
 	}
 
