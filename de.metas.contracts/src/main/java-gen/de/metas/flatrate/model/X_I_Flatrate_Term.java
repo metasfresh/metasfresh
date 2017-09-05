@@ -14,7 +14,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1682486404L;
+	private static final long serialVersionUID = -679078726L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -23,7 +23,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
       /** if (I_Flatrate_Term_ID == 0)
         {
 			setI_Flatrate_Term_ID (0);
-			setI_IsImported (false); // N
+			setI_IsImported (null); // N
 			setProcessed (false); // N
         } */
     }
@@ -243,30 +243,35 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		return ii.intValue();
 	}
 
+	/** 
+	 * I_IsImported AD_Reference_ID=540745
+	 * Reference name: I_IsImported
+	 */
+	public static final int I_ISIMPORTED_AD_Reference_ID=540745;
+	/** NotImported = N */
+	public static final String I_ISIMPORTED_NotImported = "N";
+	/** Imported = Y */
+	public static final String I_ISIMPORTED_Imported = "Y";
+	/** ImportFailed = E */
+	public static final String I_ISIMPORTED_ImportFailed = "E";
 	/** Set Importiert.
 		@param I_IsImported 
 		Ist dieser Import verarbeitet worden?
 	  */
 	@Override
-	public void setI_IsImported (boolean I_IsImported)
+	public void setI_IsImported (java.lang.String I_IsImported)
 	{
-		set_Value (COLUMNNAME_I_IsImported, Boolean.valueOf(I_IsImported));
+
+		set_Value (COLUMNNAME_I_IsImported, I_IsImported);
 	}
 
 	/** Get Importiert.
 		@return Ist dieser Import verarbeitet worden?
 	  */
 	@Override
-	public boolean isI_IsImported () 
+	public java.lang.String getI_IsImported () 
 	{
-		Object oo = get_Value(COLUMNNAME_I_IsImported);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
 	}
 
 	/** Set Verarbeitet.

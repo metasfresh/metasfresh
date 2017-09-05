@@ -35,7 +35,9 @@ Here come the actual release notes:
   * [#2337](https://github.com/metasfresh/metasfresh/issues/2337) Purchase Order detail adjustments
     * Adjusting the Purchase Order Window with further details.
   * [#2339](https://github.com/metasfresh/metasfresh/issues/2339) New Window in WebUI for Changelog
-    * New Window for Changelog maintenance in WebUI. This Window will be added to referenced Documents Sidelist for all records in future and show the data changes done by whome and when.
+    * New Window for Changelog maintenance in WebUI. This Window will be added to referenced Documents Sidelist for all records in future and show the data changes done by whom and when.
+  * [#2352](https://github.com/metasfresh/metasfresh/issues/2352) Invoice Customer window adjustments for WebUI
+    * Detailed improvements of the Customer Invoice Window in WebUI, adding new Actions and refining the Grid View Layout.
 
 # metasfresh 5.25 (2017-36)
 
