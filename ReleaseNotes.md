@@ -105,6 +105,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product
+  * [#1174](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1174) picking: weird issues with included view
 
 # metasfresh 5.24 (2017-35)
 
