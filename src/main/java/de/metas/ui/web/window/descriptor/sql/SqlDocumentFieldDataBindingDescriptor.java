@@ -243,19 +243,19 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		return numericKey != null && numericKey;
 	}
 
-	/**
-	 * @return true if this field has ORDER BY instructions
-	 */
+	@Override
 	public boolean isDefaultOrderBy()
 	{
 		return defaultOrderByPriority != 0;
 	}
 
+	@Override
 	public int getDefaultOrderByPriority()
 	{
 		return defaultOrderByPriority;
 	}
 
+	@Override
 	public boolean isDefaultOrderByAscending()
 	{
 		return defaultOrderByAscending;
@@ -578,7 +578,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		 *
 		 * @param priority priority; if positive then direction will be ascending; if negative then direction will be descending
 		 */
-		public Builder setOrderBy(final int priority)
+		public Builder setDefaultOrderBy(final int priority)
 		{
 			if (priority >= 0)
 			{

@@ -30,7 +30,9 @@ import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
@@ -46,6 +48,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.Doc
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.HighVolumeReadWriteIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
@@ -95,7 +98,7 @@ public class DocumentEntityDescriptor
 	private final ILogicExpression allowDeleteLogic;
 	private final ILogicExpression readonlyLogic;
 	private final ILogicExpression displayLogic;
-	
+
 	private final Map<String, DocumentFieldDescriptor> fields;
 	private final DocumentFieldDescriptor idField;
 
@@ -242,7 +245,7 @@ public class DocumentEntityDescriptor
 	{
 		return allowDeleteLogic;
 	}
-	
+
 	public ILogicExpression getReadonlyLogic()
 	{
 		return readonlyLogic;
@@ -267,7 +270,7 @@ public class DocumentEntityDescriptor
 	{
 		return fields.values();
 	}
-	
+
 	public boolean hasField(final String fieldName)
 	{
 		return fields.containsKey(fieldName);
@@ -494,7 +497,7 @@ public class DocumentEntityDescriptor
 
 			return id.toString();
 		}
-		
+
 		public WindowId getWindowId()
 		{
 			Check.assume(_documentType == DocumentType.Window, "expected document type to be {} but it was {}", DocumentType.Window, _documentType);
@@ -687,7 +690,7 @@ public class DocumentEntityDescriptor
 		{
 			return _highVolume;
 		}
-		
+
 		public boolean isQueryIncludedTabOnActivate()
 		{
 			return true;
@@ -696,9 +699,9 @@ public class DocumentEntityDescriptor
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
-			
+
 			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly, getReadonlyLogic().getParameters(), DependencyType.DocumentReadonlyLogic);
-			
+
 			getFields().values().stream().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();
 		}
@@ -979,6 +982,16 @@ public class DocumentEntityDescriptor
 		private OptionalInt getPrintAD_Process_ID()
 		{
 			return _printProcessId;
+		}
+
+		public List<DocumentQueryOrderBy> getDefaultOrderBys()
+		{
+			return getFieldBuilders()
+					.stream()
+					.filter(field -> field.isDefaultOrderBy())
+					.sorted(Ordering.natural().onResultOf(field -> field.getDefaultOrderByPriority()))
+					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

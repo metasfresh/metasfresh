@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.json.JSONViewOrderBy;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
@@ -98,6 +99,10 @@ public final class JSONDocumentLayoutTab implements Serializable
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final List<JSONDocumentFilterDescriptor> filters;
+	
+	@JsonProperty("defaultOrderBys")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final List<JSONViewOrderBy> defaultOrderBys;
 
 	@JsonProperty("supportQuickInput")
 	private final boolean supportQuickInput;
@@ -143,20 +148,23 @@ public final class JSONDocumentLayoutTab implements Serializable
 		elements = JSONDocumentLayoutElement.ofList(gridLayout.getElements(), jsonOpts);
 
 		this.filters = JSONDocumentFilterDescriptor.ofCollection(filters, jsonOpts);
+		
+		this.defaultOrderBys = JSONViewOrderBy.ofList(gridLayout.getDefaultOrderBys());
 	}
 
 	@JsonCreator
 	private JSONDocumentLayoutTab(
-			@JsonProperty("windowId") final WindowId windowId //
-			, @JsonProperty("tabId") final DetailId tabId //
-			, @JsonProperty("caption") final String caption //
-			, @JsonProperty("description") final String description //
-			, @JsonProperty("emptyResultText") final String emptyResultText //
-			, @JsonProperty("emptyResultHint") final String emptyResultHint //
-			, @JsonProperty("elements") final List<JSONDocumentLayoutElement> elements //
-			, @JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters //
-			, @JsonProperty("supportQuickInput") final boolean supportQuickInput //
-			, @JsonProperty("queryOnActivate") final boolean queryOnActivate //
+			@JsonProperty("windowId") final WindowId windowId,
+			@JsonProperty("tabId") final DetailId tabId,
+			@JsonProperty("caption") final String caption,
+			@JsonProperty("description") final String description,
+			@JsonProperty("emptyResultText") final String emptyResultText,
+			@JsonProperty("emptyResultHint") final String emptyResultHint,
+			@JsonProperty("elements") final List<JSONDocumentLayoutElement> elements,
+			@JsonProperty("filters") final List<JSONDocumentFilterDescriptor> filters,
+			@JsonProperty("defaultOrderBys") final List<JSONViewOrderBy> defaultOrderBys,
+			@JsonProperty("supportQuickInput") final boolean supportQuickInput,
+			@JsonProperty("queryOnActivate") final boolean queryOnActivate
 	)
 	{
 		super();
@@ -173,6 +181,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 
 		this.elements = elements == null ? ImmutableList.of() : ImmutableList.copyOf(elements);
 		this.filters = filters == null ? ImmutableList.of() : ImmutableList.copyOf(filters);
+		this.defaultOrderBys = defaultOrderBys == null ? ImmutableList.of() : ImmutableList.copyOf(defaultOrderBys);
 		this.supportQuickInput = supportQuickInput;
 		this.queryOnActivate = queryOnActivate;
 	}
@@ -186,6 +195,7 @@ public final class JSONDocumentLayoutTab implements Serializable
 				.add("caption", caption)
 				.add("elements", elements.isEmpty() ? null : elements)
 				.add("filters", filters.isEmpty() ? null : filters)
+				.add("defaultOrderBys", defaultOrderBys.isEmpty() ? null : defaultOrderBys)
 				.toString();
 	}
 

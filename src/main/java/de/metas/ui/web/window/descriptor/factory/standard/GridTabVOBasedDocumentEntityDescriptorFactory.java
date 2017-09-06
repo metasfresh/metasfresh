@@ -346,7 +346,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.setLookupDescriptor(lookupDescriptor)
 				.setKeyColumn(keyColumn)
 				.setEncrypted(gridFieldVO.isEncryptedColumn())
-				.setOrderBy(orderBySortNo)
+				.setDefaultOrderBy(orderBySortNo)
 				.build();
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)

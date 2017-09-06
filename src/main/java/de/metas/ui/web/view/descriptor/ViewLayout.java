@@ -28,6 +28,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -68,6 +69,8 @@ public class ViewLayout implements ETagAware
 	private final ITranslatableString emptyResultHint;
 
 	private final ImmutableList<DocumentFilterDescriptor> filters;
+	
+	private final ImmutableList<DocumentQueryOrderBy> defaultOrderBys;
 
 	private final ImmutableList<DocumentLayoutElementDescriptor> elements;
 
@@ -102,6 +105,8 @@ public class ViewLayout implements ETagAware
 		elements = ImmutableList.copyOf(builder.buildElements());
 
 		filters = ImmutableList.copyOf(builder.getFilters());
+		
+		defaultOrderBys = ImmutableList.copyOf(builder.getDefaultOrderBys());
 
 		idFieldName = builder.getIdFieldName();
 
@@ -123,6 +128,7 @@ public class ViewLayout implements ETagAware
 	private ViewLayout(final ViewLayout from,
 			final WindowId windowId,
 			final ImmutableList<DocumentFilterDescriptor> filters,
+			final ImmutableList<DocumentQueryOrderBy> defaultOrderBys,
 			final String allowNewCaption,
 			final boolean hasTreeSupport, final boolean treeCollapsible, final int treeExpandedDepth)
 	{
@@ -137,6 +143,7 @@ public class ViewLayout implements ETagAware
 		elements = from.elements;
 
 		this.filters = filters;
+		this.defaultOrderBys = defaultOrderBys;
 
 		idFieldName = from.idFieldName;
 
@@ -210,6 +217,11 @@ public class ViewLayout implements ETagAware
 	public List<DocumentFilterDescriptor> getFilters()
 	{
 		return filters;
+	}
+	
+	public List<DocumentQueryOrderBy> getDefaultOrderBys()
+	{
+		return defaultOrderBys;
 	}
 
 	public ViewLayout withFiltersAndTreeSupport(final Collection<DocumentFilterDescriptor> filtersToSet,
@@ -314,6 +326,7 @@ public class ViewLayout implements ETagAware
 		{
 			final WindowId windowIdEffective = windowId != null ? windowId : from.windowId;
 			final ImmutableList<DocumentFilterDescriptor> filtersEffective = ImmutableList.copyOf(filters != null ? filters : from.getFilters());
+			final ImmutableList<DocumentQueryOrderBy> defaultOrderBys = ImmutableList.copyOf(from.getDefaultOrderBys());
 			final String allowNewCaptionEffective = allowNewCaption != null ? allowNewCaption : from.allowNewCaption;
 			final boolean hasTreeSupportEffective = hasTreeSupport != null ? hasTreeSupport.booleanValue() : from.hasTreeSupport;
 			final boolean treeCollapsibleEffective = treeCollapsible != null ? treeCollapsible.booleanValue() : from.treeCollapsible;
@@ -330,10 +343,15 @@ public class ViewLayout implements ETagAware
 				return from;
 			}
 
-			return new ViewLayout(from, windowIdEffective, filtersEffective, allowNewCaptionEffective, hasTreeSupportEffective, treeCollapsibleEffective, treeExpandedDepthEffective);
+			return new ViewLayout(from,
+					windowIdEffective,
+					filtersEffective,
+					defaultOrderBys,
+					allowNewCaptionEffective,
+					hasTreeSupportEffective, treeCollapsibleEffective, treeExpandedDepthEffective);
 		}
 
-		public ChangeBuilder windowId(WindowId windowId)
+		public ChangeBuilder windowId(final WindowId windowId)
 		{
 			this.windowId = windowId;
 			return this;
@@ -345,7 +363,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public ChangeBuilder filters(Collection<DocumentFilterDescriptor> filters)
+		public ChangeBuilder filters(final Collection<DocumentFilterDescriptor> filters)
 		{
 			this.filters = filters;
 			return this;
@@ -371,6 +389,7 @@ public class ViewLayout implements ETagAware
 		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
 
 		private Collection<DocumentFilterDescriptor> filters = null;
+		private List<DocumentQueryOrderBy> defaultOrderBys = null;
 
 		private boolean hasAttributesSupport = false;
 		private boolean hasIncludedViewSupport = false;
@@ -506,6 +525,17 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		private List<DocumentQueryOrderBy> getDefaultOrderBys()
+		{
+			return defaultOrderBys != null ? defaultOrderBys : ImmutableList.of();
+		}
+		
+		public Builder setDefaultOrderBys(final List<DocumentQueryOrderBy> defaultOrderBys)
+		{
+			this.defaultOrderBys = defaultOrderBys;
+			return this;
+		}
+
 		public Set<String> getFieldNames()
 		{
 			return elementBuilders
@@ -537,7 +567,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 		
-		public Builder setHasIncludedViewOnSelectSupport(boolean hasIncludedViewOnSelectSupport)
+		public Builder setHasIncludedViewOnSelectSupport(final boolean hasIncludedViewOnSelectSupport)
 		{
 			this.hasIncludedViewOnSelectSupport = hasIncludedViewOnSelectSupport;
 			return this;
