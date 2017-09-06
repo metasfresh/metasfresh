@@ -86,6 +86,8 @@ Here come the actual release notes:
     * Renaming the Candidates Window in baselanguage, now called disposition.
   * [#2370](https://github.com/metasfresh/metasfresh/issues/2370) Price Topic improvements in Product Price and Pricelist
     * Different detail improvements done to Pricinf relevant topics in WebUI.
+  * [#2372](https://github.com/metasfresh/metasfresh/issues/2372) Detailed Improvements in different Finance Functionalities
+    * Detail Improvements added to different Finance windows and processes.
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
