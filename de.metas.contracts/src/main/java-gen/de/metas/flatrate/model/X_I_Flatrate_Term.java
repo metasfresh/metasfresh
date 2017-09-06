@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.flatrate.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -14,7 +15,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1682486404L;
+	private static final long serialVersionUID = 2091512056L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -23,7 +24,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
       /** if (I_Flatrate_Term_ID == 0)
         {
 			setI_Flatrate_Term_ID (0);
-			setI_IsImported (false); // N
+			setI_IsImported (null); // N
 			setProcessed (false); // N
         } */
     }
@@ -243,30 +244,94 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		return ii.intValue();
 	}
 
+	/** 
+	 * I_IsImported AD_Reference_ID=540745
+	 * Reference name: I_IsImported
+	 */
+	public static final int I_ISIMPORTED_AD_Reference_ID=540745;
+	/** NotImported = N */
+	public static final String I_ISIMPORTED_NotImported = "N";
+	/** Imported = Y */
+	public static final String I_ISIMPORTED_Imported = "Y";
+	/** ImportFailed = E */
+	public static final String I_ISIMPORTED_ImportFailed = "E";
 	/** Set Importiert.
 		@param I_IsImported 
 		Ist dieser Import verarbeitet worden?
 	  */
 	@Override
-	public void setI_IsImported (boolean I_IsImported)
+	public void setI_IsImported (java.lang.String I_IsImported)
 	{
-		set_Value (COLUMNNAME_I_IsImported, Boolean.valueOf(I_IsImported));
+
+		set_Value (COLUMNNAME_I_IsImported, I_IsImported);
 	}
 
 	/** Get Importiert.
 		@return Ist dieser Import verarbeitet worden?
 	  */
 	@Override
-	public boolean isI_IsImported () 
+	public java.lang.String getI_IsImported () 
 	{
-		Object oo = get_Value(COLUMNNAME_I_IsImported);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return (java.lang.String)get_Value(COLUMNNAME_I_IsImported);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Product getM_Product() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class);
+	}
+
+	@Override
+	public void setM_Product(org.compiere.model.I_M_Product M_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Product_ID, org.compiere.model.I_M_Product.class, M_Product);
+	}
+
+	/** Set Produkt.
+		@param M_Product_ID 
+		Produkt, Leistung, Artikel
+	  */
+	@Override
+	public void setM_Product_ID (int M_Product_ID)
+	{
+		if (M_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+	}
+
+	/** Get Produkt.
+		@return Produkt, Leistung, Artikel
+	  */
+	@Override
+	public int getM_Product_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Preis.
+		@param Price 
+		Preis
+	  */
+	@Override
+	public void setPrice (java.math.BigDecimal Price)
+	{
+		set_Value (COLUMNNAME_Price, Price);
+	}
+
+	/** Get Preis.
+		@return Preis
+	  */
+	@Override
+	public java.math.BigDecimal getPrice () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Price);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Verarbeitet.
@@ -293,6 +358,25 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Produktschlüssel.
+		@param ProductValue 
+		Schlüssel des Produktes
+	  */
+	@Override
+	public void setProductValue (java.lang.String ProductValue)
+	{
+		set_Value (COLUMNNAME_ProductValue, ProductValue);
+	}
+
+	/** Get Produktschlüssel.
+		@return Schlüssel des Produktes
+	  */
+	@Override
+	public java.lang.String getProductValue () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
 	}
 
 	/** Set Anfangsdatum.

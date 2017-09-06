@@ -306,21 +306,21 @@ public interface I_I_Flatrate_Term
 	 * Set Importiert.
 	 * Ist dieser Import verarbeitet worden?
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setI_IsImported (boolean I_IsImported);
+	public void setI_IsImported (java.lang.String I_IsImported);
 
 	/**
 	 * Get Importiert.
 	 * Ist dieser Import verarbeitet worden?
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isI_IsImported();
+	public java.lang.String getI_IsImported();
 
     /** Column definition for I_IsImported */
     public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "I_IsImported", null);
@@ -353,6 +353,60 @@ public interface I_I_Flatrate_Term
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Produkt.
+	 * Produkt, Leistung, Artikel
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getM_Product_ID();
+
+	public org.compiere.model.I_M_Product getM_Product();
+
+	public void setM_Product(org.compiere.model.I_M_Product M_Product);
+
+    /** Column definition for M_Product_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_M_Product>(I_I_Flatrate_Term.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+    /** Column name M_Product_ID */
+    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Preis.
+	 * Preis
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPrice (java.math.BigDecimal Price);
+
+	/**
+	 * Get Preis.
+	 * Preis
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getPrice();
+
+    /** Column definition for Price */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_Price = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "Price", null);
+    /** Column name Price */
+    public static final String COLUMNNAME_Price = "Price";
+
+	/**
 	 * Set Verarbeitet.
 	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
 	 *
@@ -376,6 +430,31 @@ public interface I_I_Flatrate_Term
     public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "Processed", null);
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setProductValue (java.lang.String ProductValue);
+
+	/**
+	 * Get Produktschlüssel.
+	 * Schlüssel des Produktes
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getProductValue();
+
+    /** Column definition for ProductValue */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "ProductValue", null);
+    /** Column name ProductValue */
+    public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Anfangsdatum.
