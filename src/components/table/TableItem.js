@@ -115,23 +115,28 @@ class TableItem extends Component {
             } else {
                 return cols && cols.map((item, index) => {
                     const property = item.fields[0].field;
-                    const widgetData =
-                        item.fields.map(prop => cells && cells[prop.field] || -1);
+                    const widgetData = item.fields.map(
+                        (prop) => cells && cells[prop.field] || -1
+                    );
                     const {supportZoomInto} = item.fields[0];
 
                     return (
                         <TableCell
-                            {...{getSizeClass, entity, type, docId, rowId, tabId, item,
-                                readonly, widgetData, tabIndex, listenOnKeys, caption }}
+                            {...{getSizeClass, entity, type, docId, rowId,
+                                tabId, item, readonly, widgetData, tabIndex,
+                                listenOnKeys, caption
+                            }}
                             key={index}
-                            
                             isEdited={edited === property}
                             onDoubleClick={(e) =>
-                                this.handleEditProperty(e, property, true, widgetData[0])
+                                this.handleEditProperty(
+                                    e, property, true, widgetData[0]
+                                )
                             }
                             onClickOutside={(e) => {
-                                this.handleEditProperty(e); changeListenOnTrue()}
-                            }
+                                this.handleEditProperty(e);
+                                changeListenOnTrue();
+                            }}
                             disableOnClickOutside={edited !== property}
                             onKeyDown = {!mainTable ?
                                 (e) => this.handleKey(e, property) : ''
@@ -140,8 +145,9 @@ class TableItem extends Component {
                             updateRow={this.updateRow}
                             listenOnKeysFalse={this.listenOnKeysFalse}
                             closeTableField={(e) => this.closeTableField(e)}
-                            handleRightClick={(e) =>
-                                handleRightClick(e, supportZoomInto ? property : null)}
+                            handleRightClick={(e) => handleRightClick(
+                                e, supportZoomInto ? property : null
+                            )}
                         />
                     )
                 })
