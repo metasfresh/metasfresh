@@ -1,7 +1,11 @@
 package de.metas.ui.web.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -15,6 +19,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.IHUPickingSlotBL;
+import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsRequest;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -61,19 +68,40 @@ import lombok.NonNull;
 	}
 
 	@VisibleForTesting
-	/* package */ PickingHUsRepository(final HUEditorViewRepository huEditorRepo)
+	/* package */ PickingHUsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
 	{
 		this.huEditorRepo = huEditorRepo;
 	}
 
 	/**
+	 * Retrieve the union of all HUs that match any one of the given shipment schedule IDs and that are flagged to be fine picking source HUs.
+	 * 
+	 * @param shipmentScheduleIds
+	 * @return
+	 */
+	public List<HUEditorRow> retrieveSourceHUs(@NonNull final List<Integer> shipmentScheduleIds)
+	{
+		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleIds.stream()
+				.map(id -> load(id, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
+				.collect(Collectors.toList());
+
+		final PickingHUsRequest request = PickingHUsRequest.builder().shipmentSchedules(shipmentSchedules).build();
+
+		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveAvailableSourceHUs(request);
+		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
+
+		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);
+	}
+
+	/**
 	 * 
 	 * @param pickingSlotRowQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>
-	 * and also (optionally) if the returned rows shall have picking candidates with a certain status.
+	 *            and also (optionally) if the returned rows shall have picking candidates with a certain status.
 	 * 
 	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows which also contain with the respective {@code M_Picking_Candidate}s' {@code processed} states.
 	 */
-	public ListMultimap<Integer, PickingSlotHUEditorRow> retrieveHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
+	public ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
 	{
 		// configure the query builder
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -109,10 +137,10 @@ import lombok.NonNull;
 
 		final List<HUEditorRow> huRows = huEditorRepo.retrieveHUEditorRows(huId2pickingSlotId.keySet());
 
-		final ListMultimap<Integer, PickingSlotHUEditorRow> result = huRows.stream()
+		final ListMultimap<Integer, PickedHUEditorRow> result = huRows.stream()
 				.map(huRow -> GuavaCollectors.entry(
 						huId2pickingSlotId.get(huRow.getM_HU_ID()).getLeft(), // the results key, i.e. M_PickingSlot_ID
-						new PickingSlotHUEditorRow(// the result's values
+						new PickedHUEditorRow(// the result's values
 								huRow, // the actual row
 								huId2pickingSlotId.get(huRow.getM_HU_ID()).getRight()) // M_Picking_Candidate.Processed
 				))
@@ -148,12 +176,12 @@ import lombok.NonNull;
 	 *
 	 */
 	// the fully qualified annotations are a workaround for a javac problem with maven
-	@lombok.Data
+	@lombok.Value
 	@lombok.AllArgsConstructor
-	public static class PickingSlotHUEditorRow
+	public static class PickedHUEditorRow
 	{
-		private final HUEditorRow huEditor;
+		HUEditorRow huEditor;
 
-		private final boolean processed;
+		boolean processed;
 	}
 }

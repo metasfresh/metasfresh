@@ -94,7 +94,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		}
 
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isHURow())
+		if (!pickingSlotRow.isPickedHURow())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}

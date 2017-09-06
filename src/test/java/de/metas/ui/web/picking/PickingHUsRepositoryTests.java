@@ -2,26 +2,32 @@ package de.metas.ui.web.picking;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.util.List;
+
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 
+import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
-import de.metas.ui.web.picking.PickingHUsRepository.PickingSlotHUEditorRow;
+import de.metas.ui.web.picking.PickingHUsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import mockit.Expectations;
@@ -61,15 +67,20 @@ public class PickingHUsRepositoryTests
 	@Mocked
 	private HUEditorViewRepository huEditorViewRepository;
 
+	/**
+	 * Needed to test {@link PickingHUsRepository#retrieveSourceHUs(List)}.
+	 */
+	@Mocked
+	private IHUPickingSlotBL huPickingSlotBL;
+
 	@DataPoints
 	public static String[] pickingCandidateStates()
 	{
-		return new String[]
-			{
-					X_M_Picking_Candidate.STATUS_IP,
-					X_M_Picking_Candidate.STATUS_PR,
-					X_M_Picking_Candidate.STATUS_CL
-			};
+		return new String[] {
+				X_M_Picking_Candidate.STATUS_IP,
+				X_M_Picking_Candidate.STATUS_PR,
+				X_M_Picking_Candidate.STATUS_CL
+		};
 	}
 
 	@Before
@@ -79,12 +90,12 @@ public class PickingHUsRepositoryTests
 	}
 
 	/**
-	 * Tests {@link PickingHUsRepository#retrieveHUsIndexedByPickingSlotId(PickingSlotRepoQuery)} with a simple mocked {@link HUEditorViewRepository} that returns one HURow.
+	 * Tests {@link PickingHUsRepository#retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery)} with a simple mocked {@link HUEditorViewRepository} that returns one HURow.
 	 * 
 	 * @param pickingCandidateStatus this value is given to the {@link I_M_Picking_Candidate} we test with, and we verify that this value is correctly translated it to the resulting {@link PickingSlotHUEditorRow#isProcessed()}.
 	 */
 	@Theory
-	public void testRetrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus)
+	public void test_retrieveHUsIndexedByPickingSlotId(@NonNull final String pickingCandidateStatus)
 	{
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setM_ShipmentSchedule_ID(M_SHIPMENT_SCHEDULE_ID);
@@ -100,7 +111,7 @@ public class PickingHUsRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		if(!X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
+		if (!X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
 		{
 			// @formatter:off
 			new Expectations() {{ huEditorViewRepository.retrieveHUEditorRows(ImmutableSet.of(M_HU_ID)); result = huEditorRow; }};
@@ -108,7 +119,7 @@ public class PickingHUsRepositoryTests
 		}
 
 		final PickingHUsRepository pickingHUsRepository = new PickingHUsRepository(huEditorViewRepository);
-		final ListMultimap<Integer, PickingSlotHUEditorRow> result = pickingHUsRepository.retrieveHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
+		final ListMultimap<Integer, PickedHUEditorRow> result = pickingHUsRepository.retrievePickedHUsIndexedByPickingSlotId(PickingSlotRepoQuery.of(M_SHIPMENT_SCHEDULE_ID));
 
 		if (X_M_Picking_Candidate.STATUS_CL.equals(pickingCandidateStatus))
 		{
@@ -121,7 +132,15 @@ public class PickingHUsRepositoryTests
 			assertThat(result.get(M_PICKINGSLOT_ID).size(), is(1));
 
 			final boolean expectedProcessed = !X_M_Picking_Candidate.STATUS_IP.equals(pickingCandidateStatus);
-			assertThat(result.get(M_PICKINGSLOT_ID).get(0), is(new PickingSlotHUEditorRow(huEditorRow, expectedProcessed)));
+			assertThat(result.get(M_PICKINGSLOT_ID).get(0), is(new PickedHUEditorRow(huEditorRow, expectedProcessed)));
 		}
+	}
+
+	@Test
+	public void test_retrieveSourceHUs_empty_shipmentScheduleIds()
+	{
+		final PickingHUsRepository pickingHUsRepository = new PickingHUsRepository(huEditorViewRepository);
+		final List<HUEditorRow> sourceHUs = pickingHUsRepository.retrieveSourceHUs(ImmutableList.of());
+		assertThat(sourceHUs).isEmpty();
 	}
 }

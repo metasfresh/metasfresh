@@ -41,6 +41,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  */
 
 /**
+ * Assigns an existing HU to a picking slot.
+ * 
  * This process is called from the HU selection dialog that is opened by {@link WEBUI_Picking_OpenHUsToPick}.
  * 
  * @author metas-dev <dev@metasfresh.com>

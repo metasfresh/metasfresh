@@ -27,9 +27,9 @@ import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 /**
  * Used in the repo services, to specify which data we want to be retrieved.
@@ -37,7 +37,7 @@ import lombok.Singular;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
+@Value
 @Builder
 public class PickingSlotRepoQuery
 {
@@ -53,7 +53,7 @@ public class PickingSlotRepoQuery
 	
 	@NonNull
 	@Singular
-	final ImmutableList<Integer> shipmentScheduleIds;
+	ImmutableList<Integer> shipmentScheduleIds;
 
 	public enum PickingCandidate
 	{
@@ -77,5 +77,5 @@ public class PickingSlotRepoQuery
 	 * Optional; a <code>null</code> value means "return both with and without"
 	 */
 	@Default
-	final PickingCandidate pickingCandidates = PickingCandidate.DONT_CARE;
+	PickingCandidate pickingCandidates = PickingCandidate.DONT_CARE;
 }

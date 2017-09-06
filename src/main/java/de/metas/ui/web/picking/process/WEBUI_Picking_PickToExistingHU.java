@@ -62,6 +62,9 @@ public class WEBUI_Picking_PickToExistingHU
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	private BigDecimal qtyCU;
 
+	@Param(parameterName = "M_HU_ID", mandatory = true)
+	private int p_M_HU_ID;
+	
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -71,7 +74,7 @@ public class WEBUI_Picking_PickToExistingHU
 		}
 
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isHURow())
+		if (!pickingSlotRow.isPickedHURow())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
 		}
