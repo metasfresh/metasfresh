@@ -365,7 +365,7 @@ class RawList extends Component {
     }
 
     handleKeyDown = (e) => {
-        const { onSelect, list } = this.props;
+        const { onSelect, list, readonly } = this.props;
         const { selected, isOpen } = this.state;
 
         if ((e.keyCode > 47) && (e.keyCode < 123)) {
@@ -402,7 +402,7 @@ class RawList extends Component {
                     break;
 
                 case 'Tab':
-                    (list.length === 0) && onSelect(null);
+                    ((list.length === 0) && !readonly) && onSelect(null);
                     break;
             }
         }
