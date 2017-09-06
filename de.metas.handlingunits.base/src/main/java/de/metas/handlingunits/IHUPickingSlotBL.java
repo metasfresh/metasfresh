@@ -31,6 +31,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
@@ -153,17 +154,17 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	}
 
 	/**
-	 * Search for available (top level) HUs to be picked.
+	 * Search for available (top level) HUs to be picked. Picking in this case means that the whole HU is assigned to a picking slot.
 	 *
 	 * @param request
 	 * 
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(AvailableHUsToPickRequest request);
+	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsRequest request);
 
 	@lombok.Builder
 	@lombok.Value
-	public static final class AvailableHUsToPickRequest
+	public static final class PickingHUsRequest
 	{
 		/**
 		 * If true we shall consider the HU attributes while searching for matching HUs.
@@ -183,4 +184,15 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		@Default
 		boolean onlyTopLevelHUs = true;
 	}
+
+	/**
+	 * Search for available fine picking source HUs.<br>
+	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
+	 * to serve as source HU from which stuff is loaded into the picking-HUs.
+	 * 
+	 * @param request
+	 * @return
+	 */
+	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsRequest request);
+
 }

@@ -25,10 +25,14 @@ package de.metas.handlingunits.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -50,6 +54,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -68,6 +75,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -569,16 +577,29 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final AvailableHUsToPickRequest request)
+	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsRequest request)
+	{
+		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveTopLevelAndFilterForSourceHUs(vhus)));
+	}
+
+	@Override
+	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsRequest request)
+	{
+		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveFullTreeAndExcludeAlreadyPickedHUs(vhus)));
+	}
+
+	private List<I_M_HU> retrieveAvailableHUsToPick0(
+			@NonNull final PickingHUsRequest request,
+			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> function)
 	{
 		if (request.getShipmentSchedules().isEmpty())
 		{
 			return Collections.emptyList();
 		}
 
-		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request);
+		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request.getShipmentSchedules(), request.isConsiderAttributes());
 
-		final List<I_M_HU> result = retrieveFullTreeAndFilterForAlreadyPickedHUs(vhus);
+		final List<I_M_HU> result = function.apply(vhus);
 
 		if (!request.isOnlyTopLevelHUs())
 		{
@@ -590,7 +611,9 @@ public class HUPickingSlotBL
 		return handlingUnitsBL.getTopLevelHUs(TopLevelHusRequest.builder().hus(result).includeAll(false).build());
 	}
 
-	private List<I_M_HU> retrieveVHUsFromStorage(final AvailableHUsToPickRequest request)
+	private List<I_M_HU> retrieveVHUsFromStorage(
+			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
+			final boolean considerAttributes)
 	{
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
@@ -598,9 +621,9 @@ public class HUPickingSlotBL
 		//
 		// Create storage queries from shipment schedules
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
-		for (final I_M_ShipmentSchedule shipmentSchedule : request.getShipmentSchedules())
+		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final IStorageQuery storageQuery = createStorageQuery(storageEngine, shipmentSchedule, request.isConsiderAttributes());
+			final IStorageQuery storageQuery = createStorageQuery(storageEngine, shipmentSchedule, considerAttributes);
 			storageQueries.add(storageQuery);
 		}
 
@@ -640,7 +663,7 @@ public class HUPickingSlotBL
 		return vhus;
 	}
 
-	private List<I_M_HU> retrieveFullTreeAndFilterForAlreadyPickedHUs(final List<I_M_HU> vhus)
+	private List<I_M_HU> retrieveFullTreeAndExcludeAlreadyPickedHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		//
@@ -684,6 +707,44 @@ public class HUPickingSlotBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.create()
+				.match();
+		return isAlreadyPicked;
+	}
+
+	@VisibleForTesting
+	List<I_M_HU> retrieveTopLevelAndFilterForSourceHUs(@NonNull final List<I_M_HU> vhus)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
+
+		//
+		// this filter's real job is to collect those HUs that are flagged as "picking source" 
+		final Predicate<I_M_HU> filter = hu -> {
+			if (isSelectedAsSourceHU(hu))
+			{
+				sourceHUs.add(hu);
+			}
+			return true;
+		};
+
+		final TopLevelHusRequest topLevelHusRequest = TopLevelHusRequest.builder()
+				.hus(vhus)
+				.includeAll(false)
+				.filter(filter)
+				.build();
+		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
+		
+		return ImmutableList.copyOf(sourceHUs);
+	}
+
+	private boolean isSelectedAsSourceHU(@NonNull final I_M_HU hu)
+	{
+		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Source_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.match();
 		return isAlreadyPicked;

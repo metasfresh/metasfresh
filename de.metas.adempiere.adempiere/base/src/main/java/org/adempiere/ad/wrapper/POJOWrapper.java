@@ -544,6 +544,18 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	@Override
 	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable
 	{
+		try
+		{
+			return invoke0(method, args);
+		}
+		catch (final AdempiereException e)
+		{
+			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\"; proxy=" + proxy + "; args=" + args, e);
+		}
+	}
+
+	private Object invoke0(final Method method, final Object[] args)
+	{
 		final String methodName = method.getName();
 
 		if (methodName.equals("set_TrxName") && args.length == 1)
@@ -1280,13 +1292,20 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		setTrxName(this, trxName); // doing it because this is also a side effect of PO.load(trxName) which is called when a PO is refreshed
 
 		final Object record = lookup.lookup(tableName, getId(), interfaceClass);
+		if (record == null)
+		{
+			throw new AdempiereException("No record found for tableName=" + tableName + " and ID=" + getId()
+					+ "\ninterfaceClass: " + interfaceClass
+					+ "\nthis=" + this);
+		}
 		final POJOWrapper recordWrapper = getWrapper(record);
 		if (recordWrapper == null)
 		{
-			throw new AdempiereException("No POJOWrapper was found in database for " + this
+			throw new AdempiereException("No POJOWrapper found for tableName=" + tableName + " and ID=" + getId()
 					+ "\ninterfaceClass: " + interfaceClass
-					+ "\nTableName: " + tableName
-					+ "\nID=" + getId());
+					+ "\nrecord: " + record
+					+ "\nthis=" + this);
+
 		}
 		else if (this == recordWrapper)
 		{
