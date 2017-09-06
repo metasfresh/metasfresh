@@ -109,11 +109,13 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalBatch());
+		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_Journal());
 		calloutsRegistry.registerAnnotatedCallout(new de.metas.acct.callout.GL_JournalLine());
 	}
 
 	@Override
-	protected void setupCaching(IModelCacheService cachingService)
+	protected void setupCaching(final IModelCacheService cachingService)
 	{
 		cachingService.addTableCacheConfigIfAbsent(I_C_AcctSchema.class);
 
@@ -132,7 +134,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void onUserLogin(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);

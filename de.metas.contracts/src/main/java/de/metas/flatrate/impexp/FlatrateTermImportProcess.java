@@ -198,7 +198,7 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		//
 		// Product/UOM and price
 		{
-			// NOTE: product was already set above
+			contract.setM_Product(product);
 			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
 			contract.setC_UOM(uom);
 
