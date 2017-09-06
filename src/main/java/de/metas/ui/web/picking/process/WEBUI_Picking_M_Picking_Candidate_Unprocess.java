@@ -2,7 +2,7 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_PROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P;
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -89,7 +89,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
 		if (!pickingSlotRow.isProcessed())

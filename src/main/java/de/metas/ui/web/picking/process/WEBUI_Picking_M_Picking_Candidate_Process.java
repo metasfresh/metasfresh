@@ -2,7 +2,7 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -96,12 +96,12 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 		if(pickingSlotRow.getIncludedRows().isEmpty())
 		{
 			// we want a toplevel HU..this is kindof dirty, but should work in this context
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
 		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
@@ -128,7 +128,8 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		final I_M_PickingSlot pickingSlot = load(rowToProcess.getPickingSlotId(), I_M_PickingSlot.class);
 		final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
+		final PickingSlotView view = PickingSlotView.cast(super.getView());
+		final I_M_ShipmentSchedule shipmentSchedule = view.getShipmentSchedule();
 		final I_M_Product product = shipmentSchedule.getM_Product();
 
 		BigDecimal qty = BigDecimal.ZERO;
@@ -168,12 +169,6 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		invalidateParentView();
 		
 		return MSG_OK;
-	}
-
-	@Override
-	protected PickingSlotView getView()
-	{
-		return PickingSlotView.cast(super.getView());
 	}
 
 	@Override

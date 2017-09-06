@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -311,7 +313,7 @@ public final class HUEditorRow implements IViewRow
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+		return load(huId, I_M_HU.class);
 	}
 
 	public boolean isHUPlanningReceiptOwnerPM()

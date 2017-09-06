@@ -48,7 +48,9 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class WEBUI_Picking_PickSelectedHU 
+extends ViewBasedProcessTemplate 
+implements IProcessPrecondition
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
@@ -59,6 +61,7 @@ public class WEBUI_Picking_PickSelectedHU extends ViewBasedProcessTemplate imple
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
+		
 		if (!getSelectedDocumentIds().isSingleDocumentId())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();

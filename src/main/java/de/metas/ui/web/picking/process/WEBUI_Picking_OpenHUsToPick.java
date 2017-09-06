@@ -52,7 +52,7 @@ import de.metas.ui.web.view.json.JSONViewDataType;
  */
 
 /**
- * This process opens a HU editor window within the picking window and registers the process {@link WEBUI_Picking_PickSelectedHU} for that window.
+ * This process opens a HU editor window within the picking window and registers the processes {@link WEBUI_Picking_PickSelectedHU} for that window.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -73,7 +73,6 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -90,7 +89,6 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 				.onlyTopLevelHUs(false)
 				.considerAttributes(true)
 				.build();
-
 		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(request);
 		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu -> hu.getM_HU_ID()).collect(Collectors.toList());
 
@@ -100,7 +98,7 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 				.build();
 
 		final RelatedProcessDescriptor flagSelectedHUsAsSourceHUs = RelatedProcessDescriptor.builder()
-				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_M_Source_HU_Create.class))
 				.webuiQuickAction(true)
 				.build();
 		
