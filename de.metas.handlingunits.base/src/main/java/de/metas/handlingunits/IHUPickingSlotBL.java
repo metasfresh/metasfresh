@@ -194,5 +194,4 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @return
 	 */
 	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsRequest request);
-
 }

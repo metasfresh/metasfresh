@@ -34,7 +34,6 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -74,8 +73,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -585,7 +582,7 @@ public class HUPickingSlotBL
 	@Override
 	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsRequest request)
 	{
-		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveFullTreeAndExcludeAlreadyPickedHUs(vhus)));
+		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveFullTreeAndExcludePickingHUs(vhus)));
 	}
 
 	private List<I_M_HU> retrieveAvailableHUsToPick0(
@@ -632,6 +629,8 @@ public class HUPickingSlotBL
 		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
 		final Collection<IStorageRecord> storageRecords = storageEngine.retrieveStorageRecords(context, storageQueries);
 
+		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+
 		//
 		// Fetch VHUs from storage records
 		final List<I_M_HU> vhus = new ArrayList<>();
@@ -653,7 +652,7 @@ public class HUPickingSlotBL
 				continue;
 			}
 
-			if (isPicked(vhu))
+			if (huPickingSlotDAO.isHuIdPicked(vhu.getM_HU_ID()) && huPickingSlotDAO.isSourceHU(vhu.getM_HU_ID()))
 			{
 				continue;
 			}
@@ -663,15 +662,25 @@ public class HUPickingSlotBL
 		return vhus;
 	}
 
-	private List<I_M_HU> retrieveFullTreeAndExcludeAlreadyPickedHUs(@NonNull final List<I_M_HU> vhus)
+	/**
+	 * Excludes HU that are already picked or already selected as fine picking source HUs.
+	 * 
+	 * @param vhus
+	 * @return
+	 */
+	private List<I_M_HU> retrieveFullTreeAndExcludePickingHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
+
+		final Predicate<I_M_HU> notPickedOrSourceHU = hu -> !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !huPickingSlotDAO.isSourceHU(hu.getM_HU_ID());
+
 		//
 		// get the the top level HUs from for our VHUs
 		final TopLevelHusRequest topLevelHusRequest = TopLevelHusRequest.builder()
 				.hus(vhus)
 				.includeAll(false)
-				.filter(hu -> !isPicked(hu)) // exclude already picked HUs
+				.filter(notPickedOrSourceHU) // exclude HUs that are already picked or flagged as source HUs
 				.build();
 		final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
 
@@ -688,7 +697,7 @@ public class HUPickingSlotBL
 						@Override
 						public Result beforeHU(IMutable<I_M_HU> hu)
 						{
-							if (isPicked(hu.getValue()))
+							if (!notPickedOrSourceHU.test(hu.getValue()))
 							{
 								return Result.SKIP_DOWNSTREAM;
 							}
@@ -701,28 +710,18 @@ public class HUPickingSlotBL
 		return result;
 	}
 
-	private boolean isPicked(@NonNull final I_M_HU hu)
-	{
-		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.create()
-				.match();
-		return isAlreadyPicked;
-	}
-
 	@VisibleForTesting
 	List<I_M_HU> retrieveTopLevelAndFilterForSourceHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
 
 		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 
 		//
-		// this filter's real job is to collect those HUs that are flagged as "picking source" 
+		// this filter's real job is to collect those HUs that are flagged as "picking source"
 		final Predicate<I_M_HU> filter = hu -> {
-			if (isSelectedAsSourceHU(hu))
+			if (huPickingSlotDAO.isSourceHU(hu.getM_HU_ID()))
 			{
 				sourceHUs.add(hu);
 			}
@@ -735,19 +734,8 @@ public class HUPickingSlotBL
 				.filter(filter)
 				.build();
 		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
-		
-		return ImmutableList.copyOf(sourceHUs);
-	}
 
-	private boolean isSelectedAsSourceHU(@NonNull final I_M_HU hu)
-	{
-		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Source_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.create()
-				.match();
-		return isAlreadyPicked;
+		return ImmutableList.copyOf(sourceHUs);
 	}
 
 	/**

@@ -25,6 +25,7 @@ import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -237,6 +238,25 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		final I_M_Picking_Candidate pickingCandidate = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidate.setM_HU(luTuVhu.getLu());
 		save(pickingCandidate);
+
+		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
+		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * Like {@link #testVhuWithTuAndLuAndPickingCandidateForLu(boolean)}, but the LU is not flagged by a picking candidate but by a {@link I_M_Source_HU}.<br>
+	 * Because of the source HU, LU shall still not be returned.
+	 * 
+	 * @param onlyTopLevelHUs
+	 */
+	@Theory
+	public void testVhuWithTuAndLuAndSourceHuForLu(final boolean onlyTopLevelHUs)
+	{
+		final LuTuVhu luTuVhu = createLuTuVhu();
+
+		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
+		sourceHU.setM_HU(luTuVhu.getLu());
+		save(sourceHU);
 
 		final List<I_M_HU> result = common(luTuVhu.getVhu(), onlyTopLevelHUs);
 		assertThat(result).isEmpty();
