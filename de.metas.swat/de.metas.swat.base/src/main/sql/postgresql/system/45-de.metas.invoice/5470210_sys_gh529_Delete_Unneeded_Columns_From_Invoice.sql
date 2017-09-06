@@ -31,6 +31,11 @@ DELETE FROM AD_Column WHERE AD_Column_ID=550244
 
 -- do not drop the physical columns. They might already be filled
 -- ALTER TABLE C_Invoice DROP COLUMN Ref_CreditMemo_ID;
+COMMENT ON COLUMN C_Invoice.Ref_CreditMemo_ID 
+IS 'This column is obsolete since issue "Possibility to easily create more than 1 referenced Doc per Invoice" https://github.com/metasfresh/metasfresh/issues/529';
+
 -- ALTER TABLE C_Invoice DROP COLUMN Ref_AdjustmentCharge_ID;
+COMMENT ON COLUMN C_Invoice.Ref_AdjustmentCharge_ID 
+IS 'This column is obsolete since issue "Possibility to easily create more than 1 referenced Doc per Invoice" https://github.com/metasfresh/metasfresh/issues/529';
 
 
