@@ -38,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
@@ -594,17 +595,18 @@ public final class Document
 		private final DocumentValuesSupplier parentSupplier;
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
+		private final String documentTableName;
 		private final IDocumentEvaluatee _evaluatee;
 		private final DocumentId parentDocumentId;
 
-		private InitialFieldValueSupplier(final Document document, final DocumentValuesSupplier parentSupplier)
+		private InitialFieldValueSupplier(@NonNull final Document document, @NonNull final DocumentValuesSupplier parentSupplier)
 		{
-			super();
 			this.parentSupplier = parentSupplier;
 
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			documentType = entityDescriptor.getDocumentType();
 			documentTypeId = entityDescriptor.getDocumentTypeId();
+			documentTableName = entityDescriptor.getTableNameOrNull();
 
 			_evaluatee = document.asEvaluatee();
 
@@ -725,6 +727,27 @@ public final class Document
 					{
 						return valueStr;
 					}
+				}
+			}
+
+			//
+			// Value field: automatically generate a preliminary sequence number (e.g. "<1000000>")
+			//
+			// NOTE/known issue: atm we use context AD_Client_ID/AD_Org_ID to fetch the sequence.
+			// The sequence won't change when user will change the organization (for example). I think that shall be supported on callout level. 
+			if (documentTableName != null
+					&& WindowConstants.FIELDNAME_Value.equals(fieldDescriptor.getFieldName()))
+			{
+				final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
+				final int adClientId = Env.getAD_Client_ID(Env.getCtx());
+				final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
+				final String value = documentNoFactory.forTableName(documentTableName, adClientId, adOrgId)
+						.setFailOnError(true)
+						.setUsePreliminaryDocumentNo(true)
+						.build();
+				if(value != null)
+				{
+					return value;
 				}
 			}
 
@@ -1458,7 +1481,7 @@ public final class Document
 					final boolean currentValueStillValid = documentField.getLookupValues() // because we did setLookupValuesStaled(), this causes a reload
 							.stream()
 							.anyMatch(value -> Objects.equals(value, valueOld)); // check if the current value is still value after we reloaded the list
-					if(!currentValueStillValid)
+					if (!currentValueStillValid)
 					{
 						documentField.setValue(null, changesCollector);
 						changesCollector.collectValueIfChanged(documentField, valueOld, reason);
