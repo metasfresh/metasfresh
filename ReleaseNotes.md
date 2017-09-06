@@ -82,6 +82,8 @@ Here come the actual release notes:
     * New generic Layout for the Picking Window in WebUI.
   * [#2364](https://github.com/metasfresh/metasfresh/issues/2364) Rename Packvorschrift-Produkt-Zuordnung to Packvorschrift
     * Renaming the Field for Packing Instructions in the de_DE Baselanguage.
+  * [#2365](https://github.com/metasfresh/metasfresh/issues/2365) Rename all Windows with Suffix "kandidaten" to suffix "disposition"
+    * Renaming the Candidates Window in baselanguage, now called disposition.
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
