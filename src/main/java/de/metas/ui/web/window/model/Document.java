@@ -38,7 +38,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.document.documentNo.IDocumentNoBuilderFactory;
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
 import de.metas.logging.LogManager;
@@ -727,27 +726,6 @@ public final class Document
 					{
 						return valueStr;
 					}
-				}
-			}
-
-			//
-			// Value field: automatically generate a preliminary sequence number (e.g. "<1000000>")
-			//
-			// NOTE/known issue: atm we use context AD_Client_ID/AD_Org_ID to fetch the sequence.
-			// The sequence won't change when user will change the organization (for example). I think that shall be supported on callout level. 
-			if (documentTableName != null
-					&& WindowConstants.FIELDNAME_Value.equals(fieldDescriptor.getFieldName()))
-			{
-				final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-				final int adClientId = Env.getAD_Client_ID(Env.getCtx());
-				final int adOrgId = Env.getAD_Org_ID(Env.getCtx());
-				final String value = documentNoFactory.forTableName(documentTableName, adClientId, adOrgId)
-						.setFailOnError(true)
-						.setUsePreliminaryDocumentNo(true)
-						.build();
-				if(value != null)
-				{
-					return value;
 				}
 			}
 
