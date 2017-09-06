@@ -5,6 +5,9 @@ import java.util.Set;
 
 import org.adempiere.util.Services;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -41,7 +44,9 @@ import de.metas.process.ProcessPreconditionsResolution;
 public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private static final String MSG_NoSelectedHU = "NoHUSelected";
-	
+
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	private List<I_M_HU> husToReturn = null;
 
 	@Override
@@ -59,7 +64,11 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	@Override
 	protected String doIt()
 	{
-		husToReturn = getSelectedHUs();
+		husToReturn = getSelectedHUs()
+				.stream()
+				.filter(handlingUnitsBL::isTopLevel) // only top level HUs
+				.collect(ImmutableList.toImmutableList());
+		
 		Services.get(IHUInOutBL.class).createCustomerReturnInOutForHUs(husToReturn);
 		return MSG_OK;
 	}

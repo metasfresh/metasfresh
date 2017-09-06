@@ -86,7 +86,7 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				.filter(gridFieldVO -> gridFieldVO.getDisplayType() != DocumentFieldWidgetType.BinaryData.getDisplayType()) // exclude BinaryData columns
 				.collect(Collectors.toMap(GridFieldVO::getAD_Field_ID, GridFieldVO::getColumnName));
 
-		defaultValueExpressionsFactory = new DefaultValueExpressionsFactory(gridTabVO.getTabLevel() > 0);
+		defaultValueExpressionsFactory = DefaultValueExpressionsFactory.newInstance(gridTabVO.getTableName(), gridTabVO.getTabLevel() > 0);
 
 		//
 		// Create initial document entity & field builders
@@ -267,11 +267,12 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 			valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 
 			defaultValueExpression = defaultValueExpressionsFactory.extractDefaultValueExpression(
-					gridFieldVO.getDefaultValue() //
-					, fieldName  //
-					, widgetType //
-					, valueClass //
-					, gridFieldVO.isMandatory() //
+					gridFieldVO.getDefaultValue(),
+					fieldName,
+					widgetType,
+					valueClass,
+					gridFieldVO.isMandatory(),
+					gridFieldVO.isUseDocSequence()
 			);
 
 			if (gridFieldVO.isReadOnly())
@@ -366,12 +367,14 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 				//
 				.addCharacteristicIfTrue(keyColumn, Characteristic.SideListField)
 				.addCharacteristicIfTrue(keyColumn, Characteristic.GridViewField)
-				.addCharacteristicIfTrue(gridFieldVO.isSelectionColumn(), Characteristic.AllowFiltering)
 				//
 				.setReadonlyLogic(readonlyLogic)
 				.setAlwaysUpdateable(alwaysUpdateable)
 				.setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
 				.setDisplayLogic(gridFieldVO.getDisplayLogic())
+				//
+				.setDefaultFilterField(gridFieldVO.isSelectionColumn())
+				.setDefaultFilterFieldSeqNo(gridFieldVO.getSelectionColumnSeqNo())
 				//
 				.setDataBinding(fieldBinding);
 

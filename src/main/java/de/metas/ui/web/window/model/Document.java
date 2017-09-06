@@ -594,17 +594,18 @@ public final class Document
 		private final DocumentValuesSupplier parentSupplier;
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
+		private final String documentTableName;
 		private final IDocumentEvaluatee _evaluatee;
 		private final DocumentId parentDocumentId;
 
-		private InitialFieldValueSupplier(final Document document, final DocumentValuesSupplier parentSupplier)
+		private InitialFieldValueSupplier(@NonNull final Document document, @NonNull final DocumentValuesSupplier parentSupplier)
 		{
-			super();
 			this.parentSupplier = parentSupplier;
 
 			final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 			documentType = entityDescriptor.getDocumentType();
 			documentTypeId = entityDescriptor.getDocumentTypeId();
+			documentTableName = entityDescriptor.getTableNameOrNull();
 
 			_evaluatee = document.asEvaluatee();
 
@@ -1458,7 +1459,7 @@ public final class Document
 					final boolean currentValueStillValid = documentField.getLookupValues() // because we did setLookupValuesStaled(), this causes a reload
 							.stream()
 							.anyMatch(value -> Objects.equals(value, valueOld)); // check if the current value is still value after we reloaded the list
-					if(!currentValueStillValid)
+					if (!currentValueStillValid)
 					{
 						documentField.setValue(null, changesCollector);
 						changesCollector.collectValueIfChanged(documentField, valueOld, reason);

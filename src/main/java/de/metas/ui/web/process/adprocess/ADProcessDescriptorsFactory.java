@@ -86,7 +86,7 @@ import lombok.NonNull;
 	// services
 	// private static final transient Logger logger = LogManager.getLogger(ProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
-	private final transient DefaultValueExpressionsFactory defaultValueExpressions = new DefaultValueExpressionsFactory(false);
+	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
@@ -221,11 +221,12 @@ import lombok.NonNull;
 		final ILogicExpression mandatoryLogic = ConstantLogicExpression.of(adProcessParam.isMandatory());
 
 		final Optional<IExpression<?>> defaultValueExpr = defaultValueExpressions.extractDefaultValueExpression(
-				adProcessParam.getDefaultValue() //
-				, parameterName //
-				, widgetType //
-				, valueClass //
-				, mandatoryLogic.isConstantTrue() //
+				adProcessParam.getDefaultValue(),
+				parameterName,
+				widgetType,
+				valueClass,
+				mandatoryLogic.isConstantTrue(),
+				false // don't allow using auto sequence
 		);
 
 		final DocumentFieldDescriptor.Builder paramDescriptor = DocumentFieldDescriptor.builder(parameterName)
