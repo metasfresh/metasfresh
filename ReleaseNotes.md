@@ -66,6 +66,7 @@ Here come the actual release notes:
 * metasfresh-app
   * [#2237](https://github.com/metasfresh/metasfresh/issues/2237) Order Control Report Attribute missing
   * [#2260](https://github.com/metasfresh/metasfresh/issues/2260) SQL - problem to rollout master build to DB with issue-build
+  * [#2345](https://github.com/metasfresh/metasfresh/issues/2345) java.math.BigDecimal Exception when using process quotation to sales order
 
 * metasfresh-webui-api
   * [#528](https://github.com/metasfresh/metasfresh-webui-api/issues/528) Exception when opening PP Order issue / receipt
