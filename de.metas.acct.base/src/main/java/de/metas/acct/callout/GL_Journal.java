@@ -11,6 +11,8 @@ import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_GL_Journal;
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 
 /*
  * #%L
@@ -37,6 +39,21 @@ import de.metas.currency.ICurrencyBL;
 @Callout(I_GL_Journal.class)
 public class GL_Journal
 {
+	@CalloutMethod(columnNames = I_GL_Journal.COLUMNNAME_C_DocType_ID)
+	public void onC_DocType_ID(final I_GL_Journal glJournal)
+	{
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(glJournal.getC_DocType())
+				.setOldDocumentNo(glJournal.getDocumentNo())
+				.setDocumentModel(glJournal)
+				.buildOrNull();
+		if (documentNoInfo != null && documentNoInfo.isDocNoControlled())
+		{
+			glJournal.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
+	}
+
 	@CalloutMethod(columnNames = I_GL_Journal.COLUMNNAME_DateDoc)
 	public void onDateDoc(final I_GL_Journal glJournal)
 	{

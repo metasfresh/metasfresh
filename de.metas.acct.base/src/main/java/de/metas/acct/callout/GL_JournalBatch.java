@@ -4,7 +4,11 @@ import java.sql.Timestamp;
 
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.util.Services;
 import org.compiere.model.I_GL_JournalBatch;
+
+import de.metas.document.documentNo.IDocumentNoBuilderFactory;
+import de.metas.document.documentNo.impl.IDocumentNoInfo;
 
 /*
  * #%L
@@ -41,6 +45,21 @@ public class GL_JournalBatch
 		}
 
 		glJournalBatch.setDateAcct(dateDoc);
+	}
+
+	@CalloutMethod(columnNames = I_GL_JournalBatch.COLUMNNAME_C_DocType_ID)
+	public void onC_DocType_ID(final I_GL_JournalBatch glJournalBatch)
+	{
+		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
+				.createPreliminaryDocumentNoBuilder()
+				.setNewDocType(glJournalBatch.getC_DocType())
+				.setOldDocumentNo(glJournalBatch.getDocumentNo())
+				.setDocumentModel(glJournalBatch)
+				.buildOrNull();
+		if (documentNoInfo != null && documentNoInfo.isDocNoControlled())
+		{
+			glJournalBatch.setDocumentNo(documentNoInfo.getDocumentNo());
+		}
 	}
 
 	// Old/missing callouts
