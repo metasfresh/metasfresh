@@ -40,6 +40,8 @@ Here come the actual release notes:
     * Detailed improvements of the Customer Invoice Window in WebUI, adding new Actions and refining the Grid View Layout.
   * [#2353](https://github.com/metasfresh/metasfresh/issues/2353) Invoice Candidates Window in WebUI detail improvements
     * Detailed improvements of the Invoice Candidates Window in WebUI, refining the Grid View Layout.
+  * [#2362](https://github.com/metasfresh/metasfresh/issues/2362) Default Reports to WebUI
+    * New Sales, Purchase, Warehouse, Logistics and Finance Reports added to WebUI.
 
 # metasfresh 5.25 (2017-36)
 
