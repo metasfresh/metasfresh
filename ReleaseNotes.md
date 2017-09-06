@@ -88,6 +88,8 @@ Here come the actual release notes:
     * Different detail improvements done to Pricinf relevant topics in WebUI.
   * [#2372](https://github.com/metasfresh/metasfresh/issues/2372) Detailed Improvements in different Finance Functionalities
     * Detail Improvements added to different Finance windows and processes.
+  * [#2374](https://github.com/metasfresh/metasfresh/issues/2374) Detail adjustments to Shipment Candidates Window
+    * Detail adjustments to the Shipment Candidates Window adding further data manipulation functionality.
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
