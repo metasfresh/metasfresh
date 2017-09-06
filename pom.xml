@@ -520,6 +520,8 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                         <artifactId>cobertura-maven-plugin</artifactId>
                         <version>2.7</version>
                         <configuration>
+							<!-- trying quiet=true to avoid a 29GB console output file on the jenkins node --> 
+							<quiet>true</quiet>
                             <formats>
                                 <format>xml</format>
                             </formats>
