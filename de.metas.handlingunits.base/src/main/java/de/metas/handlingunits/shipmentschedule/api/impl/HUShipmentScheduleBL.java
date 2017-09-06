@@ -147,11 +147,24 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Change HU status to Picked
 		// huContext might be needed if the M_HU_Status record has ExChangeGebindeLagerWhenEmpty='Y'
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
-		handlingUnitsBL.setHUStatus(huContext, tuHU, X_M_HU.HUSTATUS_Picked);
+
+		// if the TU is contained by an U, it is sufficient to update the HU_Status of the LU, because all its children will be updated afterwards.
+		if (luHU != null)
+		{
+			handlingUnitsBL.setHUStatus(huContext, luHU, X_M_HU.HUSTATUS_Picked);
+			handlingUnitsDAO.saveHU(luHU);
+		}
+		// Fallback: set the TU's status as picked if it doesn't have a parent.
+		else
+		{
+			handlingUnitsBL.setHUStatus(huContext, tuHU, X_M_HU.HUSTATUS_Picked);
+		}
 
 		// update HU from sched
 		setHUPartnerAndLocationFromSched(sched, tuHU);
 
+		
+		
 		handlingUnitsDAO.saveHU(tuHU);
 
 		return schedQtyPickedHU;
@@ -394,8 +407,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (shipmentCount > 1)
 		{
 			final Exception ex = new AdempiereException("More than 1 open shipment found for schedule {}. Returning the first one (out of {}).",
-					new Object[]
-					{ shipmentSchedule, shipmentCount });
+					new Object[] { shipmentSchedule, shipmentCount });
 			logger.warn(ex.getLocalizedMessage());
 		}
 
@@ -691,7 +703,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// NOTE: we are not checking if tuPIItemProduct is for an PI of Type Transport Unit (TU)
 		// because it can also be a Virtual PI and also because it's enough for us to find out an LU for it
 
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct,
+				cuProduct,
+				cuUOM,
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfiguration.setM_Locator(locator);

@@ -39,6 +39,13 @@ public interface IStorageEngine
 {
 	List<IStorageRecord> retrieveStorageRecords(final IContextAware context, IStorageQuery storageQuery);
 
+	/**
+	 * Retrieve a <b>union</b> of all storage records that match the given {@code storageQueries}
+	 *
+	 * @param context
+	 * @param storageQueries
+	 * @return
+	 */
 	Set<IStorageRecord> retrieveStorageRecords(IContextAware context, Set<IStorageQuery> storageQueries);
 
 	IStorageQuery newStorageQuery();

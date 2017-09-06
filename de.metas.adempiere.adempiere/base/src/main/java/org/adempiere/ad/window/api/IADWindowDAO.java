@@ -74,6 +74,6 @@ public interface IADWindowDAO extends ISingletonService
 	 * @param window
 	 * @return
 	 */
-	I_AD_Tab retrieveFirstTab(I_AD_Window window);
+	I_AD_Tab retrieveFirstTab(final int adWindowId);
 
 }

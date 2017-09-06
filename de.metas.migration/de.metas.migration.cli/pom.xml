@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.migration</groupId>
 		<artifactId>de.metas.migration</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.migration.cli</artifactId>
@@ -14,7 +14,7 @@
 		<dependency>
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 
 		<dependency>
@@ -47,6 +47,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
 			<scope>test</scope>
@@ -76,7 +82,7 @@
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<manifestEntries>
-										<Main-Class>de.metas.migration.cli.RolloutMigrate</Main-Class>
+										<Main-Class>de.metas.migration.cli.Main</Main-Class>
 									</manifestEntries>
 								</transformer>
 							</transformers>

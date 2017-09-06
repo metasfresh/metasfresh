@@ -32,8 +32,8 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import mockit.Mocked;
 
 /*
@@ -72,7 +72,7 @@ public class HUTransformServiceTests
 	private HUTransformTestsBase testsBase;
 
 	@Mocked
-	private IHUPackingMaterialsCollector<I_M_InOutLine> noopPackingMaterialsCollector;
+	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 	
 	@Before
 	public void init()

@@ -38,6 +38,7 @@ package org.compiere.grid;
 
 import java.util.HashMap;
 
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridWindowVO;
 import org.compiere.model.I_C_Invoice;
@@ -73,7 +74,7 @@ public class VCreateFromFactory
 	{
 		// Register defaults:
 		s_registeredClasses = new HashMap<Integer, Class<? extends ICreateFrom>>();
-		s_registeredClasses.put(I_C_Invoice.Table_ID, VCreateFromInvoiceUI.class);
+		s_registeredClasses.put(InterfaceWrapperHelper.getTableId(I_C_Invoice.class), VCreateFromInvoiceUI.class);
 		
 		s_registeredClasses.put(I_M_InOut.Table_ID, VCreateFromShipmentUI.class);
 		s_registeredClasses.put(I_M_RMA.Table_ID, VCreateFromRMAUI.class);

@@ -12,14 +12,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_Inventory;
 import org.compiere.util.Env;
 
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -27,6 +24,7 @@ import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.InventoryAllocationDestination;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.inventory.event.InventoryProcessedEventBus;
 import lombok.NonNull;
 
@@ -124,15 +122,16 @@ public class HUInternalUseInventoryProducer
 
 		//
 		// Create and configure Loader
-		final HULoader loader = HULoader.of(husSource, inventoryAllocationDestination);
-		loader.setAllowPartialLoads(true);
+		final HULoader loader = HULoader.of(husSource, inventoryAllocationDestination)
+				.setAllowPartialLoads(true)
+				.setAutomaticallyMovePackingMaterials(false); // we assume the inventory destination will do that
 
 		//
 		// Unload everything from source (our HUs)
 		loader.unloadAllFromSource(huContext);
 
 		// destroy empty hus
-
+		// TODO: not sure if this is still needed because at this point we expect everything to be already destroyed!
 		{
 			for (final I_M_HU hu : hus)
 			{
@@ -145,12 +144,10 @@ public class HUInternalUseInventoryProducer
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}
 		}
-		final List<I_M_Inventory> inventories = inventoryAllocationDestination.getInventories();
-
-		for (final I_M_Inventory inventory : inventories)
-		{
-			Services.get(IDocActionBL.class).processEx(inventory, X_M_Inventory.DOCACTION_Complete, X_M_Inventory.DOCSTATUS_Completed);
-		}
+		
+		//
+		final List<I_M_Inventory> inventories = inventoryAllocationDestination.completeInventories();
+		
 		//
 		// Send notifications
 		InventoryProcessedEventBus.newInstance()

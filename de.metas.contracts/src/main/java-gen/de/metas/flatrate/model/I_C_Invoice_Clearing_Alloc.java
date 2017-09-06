@@ -123,6 +123,33 @@ public interface I_C_Invoice_Clearing_Alloc
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Zu verrechnender Rechn-Kand..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Invoice_Cand_ToClear_ID (int C_Invoice_Cand_ToClear_ID);
+
+	/**
+	 * Get Zu verrechnender Rechn-Kand..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_Invoice_Cand_ToClear_ID();
+
+	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Cand_ToClear();
+
+	public void setC_Invoice_Cand_ToClear(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Cand_ToClear);
+
+    /** Column definition for C_Invoice_Cand_ToClear_ID */
+    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Clearing_Alloc, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Cand_ToClear_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Clearing_Alloc, de.metas.invoicecandidate.model.I_C_Invoice_Candidate>(I_C_Invoice_Clearing_Alloc.class, "C_Invoice_Cand_ToClear_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+    /** Column name C_Invoice_Cand_ToClear_ID */
+    public static final String COLUMNNAME_C_Invoice_Cand_ToClear_ID = "C_Invoice_Cand_ToClear_ID";
+
+	/**
 	 * Set Rechnungskandidat.
 	 * Eindeutige Identifikationsnummer eines Rechnungskandidaten
 	 *
@@ -150,33 +177,6 @@ public interface I_C_Invoice_Clearing_Alloc
     public static final org.adempiere.model.ModelColumn<I_C_Invoice_Clearing_Alloc, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Clearing_Alloc, de.metas.invoicecandidate.model.I_C_Invoice_Candidate>(I_C_Invoice_Clearing_Alloc.class, "C_Invoice_Candidate_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
     /** Column name C_Invoice_Candidate_ID */
     public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
-
-	/**
-	 * Set Zu verrechnender Rechn-Kand..
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Invoice_Cand_ToClear_ID (int C_Invoice_Cand_ToClear_ID);
-
-	/**
-	 * Get Zu verrechnender Rechn-Kand..
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Invoice_Cand_ToClear_ID();
-
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Cand_ToClear();
-
-	public void setC_Invoice_Cand_ToClear(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Cand_ToClear);
-
-    /** Column definition for C_Invoice_Cand_ToClear_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Invoice_Clearing_Alloc, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Cand_ToClear_ID = new org.adempiere.model.ModelColumn<I_C_Invoice_Clearing_Alloc, de.metas.invoicecandidate.model.I_C_Invoice_Candidate>(I_C_Invoice_Clearing_Alloc.class, "C_Invoice_Cand_ToClear_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-    /** Column name C_Invoice_Cand_ToClear_ID */
-    public static final String COLUMNNAME_C_Invoice_Cand_ToClear_ID = "C_Invoice_Cand_ToClear_ID";
 
 	/**
 	 * Set Rechnungskanditad - Verrechnung.

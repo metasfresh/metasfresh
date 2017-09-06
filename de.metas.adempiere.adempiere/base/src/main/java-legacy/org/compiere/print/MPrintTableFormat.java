@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.IAttachmentBL;
+import de.metas.attachments.IAttachmentDAO;
 import de.metas.logging.LogManager;
 
 /**
@@ -66,7 +67,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param AD_PrintTableFormat_ID table format
 	 * @param trxName transaction
 	 */
-	public MPrintTableFormat(Properties ctx, int AD_PrintTableFormat_ID, String trxName)
+	public MPrintTableFormat(final Properties ctx, final int AD_PrintTableFormat_ID, final String trxName)
 	{
 		super(ctx, AD_PrintTableFormat_ID, trxName);
 		if (AD_PrintTableFormat_ID == 0)
@@ -88,7 +89,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param rs result set
 	 * @param trxName transaction
 	 */
-	public MPrintTableFormat(Properties ctx, ResultSet rs, String trxName)
+	public MPrintTableFormat(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	// MPrintTableFormat
@@ -134,7 +135,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * 
 	 * @param standardFont standard font
 	 */
-	public void setStandard_Font(Font standardFont)
+	public void setStandard_Font(final Font standardFont)
 	{
 		if (standardFont != null)
 			standard_Font = standardFont;
@@ -558,7 +559,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param width width of line
 	 * @return pattern
 	 */
-	private float[] getPatternDotted(float width)
+	private float[] getPatternDotted(final float width)
 	{
 		return new float[] { 2 * width, 2 * width };
 	}	// getPatternDotted
@@ -569,7 +570,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param width width of line
 	 * @return pattern
 	 */
-	private float[] getPatternDashed(float width)
+	private float[] getPatternDashed(final float width)
 	{
 		return new float[] { 10 * width, 4 * width };
 	}	// getPatternDashed
@@ -580,7 +581,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param width width of line
 	 * @return pattern
 	 */
-	private float[] getPatternDash_Dotted(float width)
+	private float[] getPatternDash_Dotted(final float width)
 	{
 		return new float[] { 10 * width, 2 * width, 2 * width, 2 * width };
 	}	// getPatternDash_Dotted
@@ -631,7 +632,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param AD_PrintFont_ID standard font
 	 * @return Table Format
 	 */
-	static public MPrintTableFormat get(Properties ctx, int AD_PrintTableFormat_ID, int AD_PrintFont_ID)
+	static public MPrintTableFormat get(final Properties ctx, final int AD_PrintTableFormat_ID, final int AD_PrintFont_ID)
 	{
 		return get(ctx, AD_PrintTableFormat_ID, MPrintFont.get(AD_PrintFont_ID).getFont());
 	}	// get
@@ -642,7 +643,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 	 * @param ctx context
 	 * @return Default Table Format (need to set standard font)
 	 */
-	static public MPrintTableFormat getDefault(Properties ctx)
+	static public MPrintTableFormat getDefault(final Properties ctx)
 	{
 		MPrintTableFormat tf = null;
 		String sql = "SELECT * FROM AD_PrintTableFormat "
@@ -693,7 +694,7 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 				return null;
 			}
 			
-			byte[] imageData = attachmentEntry.getData();
+			final byte[] imageData = Services.get(IAttachmentDAO.class).retrieveData(attachmentEntry);
 			if (imageData != null)
 			{
 				m_image = Toolkit.getDefaultToolkit().createImage(imageData);

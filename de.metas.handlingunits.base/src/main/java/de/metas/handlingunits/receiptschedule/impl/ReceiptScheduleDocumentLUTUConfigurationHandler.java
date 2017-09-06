@@ -82,13 +82,17 @@ import de.metas.interfaces.I_C_BPartner;
 		final I_C_UOM cuUOM = documentLine.getC_UOM();
 
 		final I_C_BPartner bpartner = receiptScheduleBL.getC_BPartner_Effective(documentLine);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU);
 
-		//
 		// Update LU/TU configuration
 		updateLUTUConfiguration(lutuConfiguration, documentLine);
 		
-		// NOTE: don't save it
+		// NOTE: don't save it...we might use it as "in-memory POJO"
 
 		return lutuConfiguration;
 	}

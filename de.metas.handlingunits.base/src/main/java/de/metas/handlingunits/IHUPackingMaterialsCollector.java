@@ -31,8 +31,8 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
 /**
  * The implementation iterates HUs (and their children) and collect the packing material products from those HUs.
@@ -154,5 +154,9 @@ public interface IHUPackingMaterialsCollector<T>
 	 * @param productIdsSortComparator
 	 */
 	IHUPackingMaterialsCollector<T> setProductIdSortComparator(Comparator<Integer> productIdsSortComparator);
+
+	void setisCollectTUNumberPerOrigin(boolean b);
+
+	void setisCollectAggregatedHUs(boolean b);
 
 }

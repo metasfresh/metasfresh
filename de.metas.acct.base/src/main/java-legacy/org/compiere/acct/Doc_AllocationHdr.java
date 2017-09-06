@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.Services;
@@ -870,7 +871,7 @@ public class Doc_AllocationHdr extends Doc
 		Doc_Invoice docInvoice = (Doc_Invoice)getDocFactory().getOrNull(
 				getCtx(),
 				new MAcctSchema[] { as },
-				MInvoice.Table_ID, invoice.getC_Invoice_ID(),
+				InterfaceWrapperHelper.getTableId(I_C_Invoice.class), invoice.getC_Invoice_ID(),
 				getTrxName());
 		docInvoice.loadDocumentDetails();
 		allocationAccounted = docInvoice.createFactCash(as, fact, new BigDecimal(percent));

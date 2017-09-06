@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>de.metas.migration</groupId>
 		<artifactId>de.metas.migration</artifactId>
-		<version>1.0.0</version>
+		<version>10.0.0</version>
 	</parent>
 
 	<artifactId>de.metas.migration.maven-plugin</artifactId>
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>de.metas.migration</groupId>
 			<artifactId>de.metas.migration.base</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 
 			<exclusions>
 				<exclusion>
@@ -64,7 +64,7 @@
 		<dependency>
 			<groupId>com.googlecode.slf4j-maven-plugin-log</groupId>
 			<artifactId>slf4j-maven-plugin-log</artifactId>
-			<version>1.0.0</version>
+			<version>10.0.0</version>
 		</dependency>
 	-->
 

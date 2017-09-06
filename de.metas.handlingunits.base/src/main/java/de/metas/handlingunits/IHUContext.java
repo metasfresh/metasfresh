@@ -31,6 +31,7 @@ import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 /**
@@ -93,7 +94,7 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	 * @return
 	 * @task 07617
 	 */
-	IHUPackingMaterialsCollector<I_M_InOutLine> getHUPackingMaterialsCollector();
+	IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> getHUPackingMaterialsCollector();
 
 	/** @return transaction listeners */
 	IHUTrxListener getTrxListeners();

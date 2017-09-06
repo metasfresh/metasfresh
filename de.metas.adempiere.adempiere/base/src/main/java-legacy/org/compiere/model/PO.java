@@ -2294,6 +2294,7 @@ public abstract class PO
 	 *
 	 * @param AD_Org_ID org
 	 */
+	@Override
 	final public void setAD_Org_ID(int AD_Org_ID)
 	{
 		set_ValueNoCheck("AD_Org_ID", new Integer(AD_Org_ID));
@@ -2905,13 +2906,15 @@ public abstract class PO
 						MTree.updateTreeNode(this);
 				}
 
+				//
+				// Continue copying child records
 				// start: c.ghita@metas.ro
 				CopyRecordSupport copyRecordSupport = (CopyRecordSupport)getDynAttribute(DYNATTR_CopyRecordSupport);
 				if (copyRecordSupport != null && success)
 				{
-					copyRecordSupport.setParentID(get_ID());
 					copyRecordSupport.setParentPO(this);
 					copyRecordSupport.copyRecord(this, get_TrxName());
+					
 					copyRecordSupport = null;
 					setDynAttribute(DYNATTR_CopyRecordSupport, null);
 				}

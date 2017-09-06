@@ -53,6 +53,8 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 	 * This field will be set when we start a processing and it will be cleared after.
 	 */
 	private IHUTransactionAttributeBuilder trxAttributesBuilder;
+	
+	private boolean automaticallyMovePackingMaterials = true;
 
 	public HUContextProcessorExecutor(final IHUContext huContext)
 	{
@@ -116,11 +118,14 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 				}
 
 				//
-				// Create packing material movements (if needed)
-				huEmptiesService.newEmptiesMovementProducer()
-						.setEmptiesMovementDirectionAuto()
-						.addCandidates(huContextInLocalTrx.getHUPackingMaterialsCollector().getAndClearCandidates())
-						.createMovements();
+				// Create packing material movements (if needed and required)
+				if(isAutomaticallyMovePackingMaterials())
+				{
+					huEmptiesService.newEmptiesMovementProducer()
+							.setEmptiesMovementDirectionAuto()
+							.addCandidates(huContextInLocalTrx.getHUPackingMaterialsCollector().getAndClearCandidates())
+							.createMovements();
+				}
 
 				//
 				// If we reach this point it was a success
@@ -163,5 +168,17 @@ public class HUContextProcessorExecutor implements IHUContextProcessorExecutor
 		});
 
 		return result[0];
+	}
+
+	@Override
+	public HUContextProcessorExecutor setAutomaticallyMovePackingMaterials(final boolean automaticallyMovePackingMaterials)
+	{
+		this.automaticallyMovePackingMaterials = automaticallyMovePackingMaterials;
+		return this;
+	}
+	
+	private boolean isAutomaticallyMovePackingMaterials()
+	{
+		return automaticallyMovePackingMaterials;
 	}
 }

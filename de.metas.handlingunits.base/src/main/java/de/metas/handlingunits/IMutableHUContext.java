@@ -28,7 +28,7 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.impl.CompositeHUTrxListener;
-import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
 public interface IMutableHUContext extends IHUContext
@@ -65,6 +65,6 @@ public interface IMutableHUContext extends IHUContext
 	 * @task https://github.com/metasfresh/metasfresh/issues/1975
 	 */
 	@VisibleForTesting
-	IMutableHUContext setHUPackingMaterialsCollector(IHUPackingMaterialsCollector<I_M_InOutLine> huPackingMaterialsCollector);
+	IMutableHUContext setHUPackingMaterialsCollector(IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> huPackingMaterialsCollector);
 
 }

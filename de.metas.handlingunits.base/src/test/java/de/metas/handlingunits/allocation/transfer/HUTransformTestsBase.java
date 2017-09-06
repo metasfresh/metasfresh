@@ -30,11 +30,11 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Status;
 import de.metas.handlingunits.model.validator.M_HU;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.trace.HUTransformTracingTests;
 import de.metas.interfaces.I_M_Warehouse;
 
@@ -76,9 +76,9 @@ public class HUTransformTestsBase
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
 
-	private final IHUPackingMaterialsCollector<I_M_InOutLine> noopPackingMaterialsCollector;
+	private final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector;
 
-	public HUTransformTestsBase(IHUPackingMaterialsCollector<I_M_InOutLine> noopPackingMaterialsCollector)
+	public HUTransformTestsBase(IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> noopPackingMaterialsCollector)
 	{
 		this.noopPackingMaterialsCollector = noopPackingMaterialsCollector;
 

@@ -29,12 +29,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTab.DataNewCopyMode;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.MAsset;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MCampaign;
 import org.compiere.model.MInOut;
-import org.compiere.model.MInvoice;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MPayment;
@@ -124,7 +124,7 @@ public class ARequest implements ActionListener
 			m_where.append(" OR C_BPartner_ID=").append(m_Record_ID);
 		else if (m_AD_Table_ID == MOrder.Table_ID)
 			m_where.append(" OR C_Order_ID=").append(m_Record_ID);
-		else if (m_AD_Table_ID == MInvoice.Table_ID)
+		else if (m_AD_Table_ID == InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
 			m_where.append(" OR C_Invoice_ID=").append(m_Record_ID);
 		else if (m_AD_Table_ID == MPayment.Table_ID)
 			m_where.append(" OR C_Payment_ID=").append(m_Record_ID);
@@ -231,7 +231,7 @@ public class ARequest implements ActionListener
 			//
 			else if (m_AD_Table_ID == MOrder.Table_ID)
 				tab.setValue("C_Order_ID", new Integer(m_Record_ID));
-			else if (m_AD_Table_ID == MInvoice.Table_ID)
+			else if (m_AD_Table_ID ==InterfaceWrapperHelper.getTableId(I_C_Invoice.class))
 				tab.setValue("C_Invoice_ID", new Integer(m_Record_ID));
 			//
 			else if (m_AD_Table_ID == MProduct.Table_ID)

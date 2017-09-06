@@ -13,15 +13,14 @@ package de.metas.handlingunits.inout.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -45,10 +44,12 @@ import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.inoutcandidate.spi.impl.InOutLineHUPackingMaterialCollectorSource;
 
 /**
  * Builder class to generate packing material shipment lines for a given shipment.
@@ -79,7 +80,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 */
 	private boolean _manualLUCollected;
 
-	/* package */HUShipmentPackingMaterialLinesBuilder()
+	/* package */ HUShipmentPackingMaterialLinesBuilder()
 	{
 		super();
 
@@ -159,7 +160,8 @@ public class HUShipmentPackingMaterialLinesBuilder
 		final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout, I_M_InOutLine.class);
 		for (final I_M_InOutLine inoutLineHU : inoutLines)
 		{
-			collectHUs(inoutLineHU);
+			final IHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(inoutLineHU);
+			collectHUs(inOutLineSource);
 		}
 	}
 
@@ -201,11 +203,16 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_InOutLine packingMaterialLine = createPackingMaterialLine(pmCandidate);
 
 			// task 09502: set the reference from line to packing-line
-			final List<I_M_InOutLine> sourceIols = pmCandidate.getSources();
-			for (final I_M_InOutLine sourceIol : sourceIols)
+			final List<IHUPackingMaterialCollectorSource> sourceIols = pmCandidate.getSources();
+			for (final IHUPackingMaterialCollectorSource source : sourceIols)
 			{
-				sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
-				InterfaceWrapperHelper.save(sourceIol);
+				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
+				{
+					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
+					final I_M_InOutLine sourceIol = inOutLineSource.getM_InOutLine();
+					sourceIol.setM_PackingMaterial_InOutLine(packingMaterialLine);
+					InterfaceWrapperHelper.save(sourceIol);
+				}
 			}
 		}
 
@@ -231,8 +238,10 @@ public class HUShipmentPackingMaterialLinesBuilder
 	 * @param packingMaterialsCollector
 	 * @param shipmentLine
 	 */
-	private final void collectHUs(final I_M_InOutLine shipmentLine)
+	private final void collectHUs(final IHUPackingMaterialCollectorSource huPackingMaterialCollectorSource)
 	{
+		Check.assume(huPackingMaterialCollectorSource instanceof InOutLineHUPackingMaterialCollectorSource, huPackingMaterialCollectorSource + "must be a instance of " + InOutLineHUPackingMaterialCollectorSource.class);
+		
 		Check.assume(packingMaterialsCollector.getCountTUs() == 0, "At this point CountTUs shall be zero: {}", packingMaterialsCollector);
 
 		final boolean initializeOverrides = isUpdateOverrideValues();
@@ -242,10 +251,18 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// NOTE: we are doing this because we also want to explicitly count them
 		// If we would fetch all HUs it could be to count more TUs than there are actually assigned to this particular inout line
 		final HUPackingMaterialsCollector packingMaterialsCollectorFromHUs = packingMaterialsCollector.splitNew();
+		
+		final InOutLineHUPackingMaterialCollectorSource shipmentLineSource = (InOutLineHUPackingMaterialCollectorSource) huPackingMaterialCollectorSource;
+		final I_M_InOutLine shipmentLine = shipmentLineSource.getM_InOutLine();
+		
 		final IQueryBuilder<I_M_HU_Assignment> tuAssignmentsQuery = huAssignmentDAO.retrieveTUHUAssignmentsForModelQuery(shipmentLine);
 		packingMaterialsCollectorFromHUs.addTUHUsRecursively(tuAssignmentsQuery);
 		final int countTUs_Calculated = packingMaterialsCollectorFromHUs.getAndResetCountTUs();
 
+		
+
+		
+		
 		//
 		// Collect TU packing materials from overrides
 		int countTUs_Override = shipmentLine.getQtyTU_Override().intValueExact();
@@ -259,7 +276,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		if (huPIItemProduct != null)
 		{
 			final I_M_HU_PI huPI = huPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
-			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, countTUs_Override, shipmentLine);
+			packingMaterialsCollectorFromOverrides.addM_HU_PI(huPI, countTUs_Override, shipmentLineSource);
 		}
 		//
 		// Collect LU packing materials from overrides
@@ -271,9 +288,9 @@ public class HUShipmentPackingMaterialLinesBuilder
 			final I_M_HU_PI luPI = handlingUnitsDAO.retrieveDefaultLUOrNull(ctx, adOrgId);
 			if (luPI != null)
 			{
-				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLine);
+				packingMaterialsCollector.addM_HU_PI(luPI, 1, shipmentLineSource);
 			}
-			
+
 			_manualLUCollected = true;
 		}
 
@@ -300,7 +317,7 @@ public class HUShipmentPackingMaterialLinesBuilder
 		// Make sure the countTUs is reset
 		packingMaterialsCollector.getAndResetCountTUs();
 	}
-	
+
 	private I_M_InOutLine createPackingMaterialLine(final HUPackingMaterialDocumentLineCandidate pmCandidate)
 	{
 		final I_M_InOut inout = getM_InOut();

@@ -201,7 +201,10 @@ public class AttachmentBL implements IAttachmentBL
 	}
 
 	@Override
-	public AttachmentEntry addEntry(final Object model, final String name, final byte[] data)
+	public AttachmentEntry addEntry(
+			@NonNull final Object model, 
+			@NonNull final String name, 
+			@NonNull final byte[] data)
 	{
 		return addEntry(model, AttachmentEntryCreateRequest.builder()
 				.filename(name)
@@ -234,7 +237,12 @@ public class AttachmentBL implements IAttachmentBL
 	public byte[] getEntryByFilenameAsBytes(final Object model, final String filename)
 	{
 		final AttachmentEntry entry = getEntryByFilename(model, filename);
-		return entry != null ? entry.getData() : null;
+		if (entry == null)
+		{
+			return null;
+		}
+
+		return Services.get(IAttachmentDAO.class).retrieveData(entry);
 	}
 
 	@Override
@@ -246,7 +254,7 @@ public class AttachmentBL implements IAttachmentBL
 			return null;
 		}
 
-		return entry.getData();
+		return Services.get(IAttachmentDAO.class).retrieveData(entry);
 	}
 
 	@Override

@@ -114,28 +114,6 @@ public interface IInvoiceDAO extends ISingletonService
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
 
 	/**
-	 * Retrieves the invoice that has crediMemo's ID as Ref_CreditMemo.<br>
-	 * Never returns <code>null</code>.
-	 * This method retrieves an iterator of invoices that have this ref_creditMemo.<br>
-	 * At the moment, there shouldn't be more than one, but in the future, the possibility of allocating several invoices against the same credit memo is not out of question.
-	 * 
-	 * @param creditMemo
-	 * @return
-	 */
-	Iterator<I_C_Invoice> retrieveParentInvoiceForCreditMemo(I_C_Invoice creditMemo);
-
-	/**
-	 * Retrieves the invoice that has the ID of the adjustmentCharge as Ref_AdjustmentCharge_ID.<br>
-	 * Never returns <code>null</code>.
-	 * This method retrieves an iterator of invoices that have this Ref_AdjustmentCharge_ID.<br>
-	 * Similar with <code>org.adempiere.invoice.service.IInvoiceDAO.retrieveReversalLine(I_C_InvoiceLine, int)</code>
-	 * 
-	 * @param adjustmentCharge
-	 * @return
-	 */
-	Iterator<I_C_Invoice> retrieveParentInvoiceForAdjustmentCharge(I_C_Invoice adjustmentCharge);
-
-	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
 	 * 
@@ -144,4 +122,20 @@ public interface IInvoiceDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_C_Invoice> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
+
+	/**
+	 * Retrieve all Adjustment Charge entries that were created based on the given invoice
+	 * 
+	 * @param invoice
+	 * @return
+	 */
+	Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(I_C_Invoice invoice);
+
+	/**
+	 * Retrieve all Credit Memo entries that were created based on the given invoice
+	 * 
+	 * @param invoice
+	 * @return
+	 */
+	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 }

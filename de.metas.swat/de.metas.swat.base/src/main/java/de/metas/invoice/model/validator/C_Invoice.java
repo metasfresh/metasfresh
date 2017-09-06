@@ -24,7 +24,6 @@ package de.metas.invoice.model.validator;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -69,9 +68,9 @@ public class C_Invoice
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
 	// exclude columns which are not relevant if they change
-	, ignoreColumnsChanged = {
-			I_C_Invoice.COLUMNNAME_IsPaid
-	})
+			, ignoreColumnsChanged = {
+					I_C_Invoice.COLUMNNAME_IsPaid
+			})
 	public void updateIsReadOnly(final I_C_Invoice invoice)
 	{
 		Services.get(IInvoiceBL.class).updateInvoiceLineIsReadOnlyFlags(invoice);
@@ -102,7 +101,7 @@ public class C_Invoice
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice, trxName);
 		for (final I_C_InvoiceLine invoiceLine : invoiceLines)
 		{
-			if(!ProductPriceQuery.mainProductPriceExists(priceListVersion, invoiceLine.getM_Product_ID()))
+			if (!ProductPriceQuery.mainProductPriceExists(priceListVersion, invoiceLine.getM_Product_ID()))
 			{
 				InterfaceWrapperHelper.delete(invoiceLine);
 			}
@@ -146,36 +145,6 @@ public class C_Invoice
 	}
 
 	/**
-	 * Unlink the credit memo from its parent invoice in case of reactivation or voiding
-	 *
-	 * @param creditMemo
-	 */
-	@DocValidate(timings = {
-			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
-			ModelValidator.TIMING_BEFORE_VOID
-	})
-	public void onVoidOrReverse_UnlinkRefCreditMemo(final I_C_Invoice creditMemo)
-	{
-		unlinkCreditMemoReferences(creditMemo);
-	}
-
-	/**
-	 * Unlink the credit memo from its parent invoice in case of reactivation or voiding
-	 *
-	 * @param creditMemo
-	 */
-	@DocValidate(timings = {
-			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
-			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
-			ModelValidator.TIMING_BEFORE_VOID
-	})
-	public void onVoidOrReverse_UnlinkRefAdjustmentCharge(final I_C_Invoice adjustmentCharge)
-	{
-		unlinkAdjustmentChargeReferences(adjustmentCharge);
-	}
-
-	/**
 	 * Mark invoice as paid if the grand total/open amount is 0
 	 *
 	 * @param invoice
@@ -203,7 +172,7 @@ public class C_Invoice
 	{
 		// services
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		// final IInvoiceReferenceDAO invoiceReferenceDAO = Services.get(IInvoiceReferenceDAO.class);
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(creditMemo);
@@ -214,38 +183,21 @@ public class C_Invoice
 			return;
 		}
 
-		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceDAO.retrieveParentInvoiceForCreditMemo(creditMemo);
-
-		if (!parentInvoiceIterator.hasNext())
-		{
-			// do nothing
-			return;
-		}
-
 		// The amount from the credit memo to be allocated to parent invoices
 		BigDecimal creditMemoLeft = creditMemo.getGrandTotal();
 
-		while (parentInvoiceIterator.hasNext())
-		{
-			if (creditMemoLeft.signum() <= 0)
-			{
-				// nothing to allocate
-				return;
-			}
+		final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 
-			final I_C_Invoice parentInvoice = parentInvoiceIterator.next();
+		final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
+				false); // creditMemoAdjusted = false
 
-			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
-					false); // creditMemoAdjusted = false
+		final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
-			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
+		// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
+		invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 
-			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
-			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
-
-			// update credit memo left
-			creditMemoLeft = creditMemoLeft.subtract(amtToAllocate);
-		}
+		// update credit memo left
+		creditMemoLeft = creditMemoLeft.subtract(amtToAllocate);
 	}
 
 	@ModelChange(timings = {
@@ -271,7 +223,6 @@ public class C_Invoice
 
 		if (isAdjustmentCharge)
 		{
-			unlinkAdjustmentChargeReferences(invoice);
 			deleteInvoiceLines(invoice);
 			return;
 		}
@@ -280,83 +231,10 @@ public class C_Invoice
 
 		if (isCreditMemo)
 		{
-			unlinkCreditMemoReferences(invoice);
 			deleteInvoiceLines(invoice);
 			return;
 		}
 
-	}
-
-	/**
-	 * For all the invoices that have Ref_AdjustmentCharge_ID same with the ID of the invoice given as parameter, set the ID to 0.
-	 *
-	 * @param adjustmentCharge
-	 */
-	private void unlinkAdjustmentChargeReferences(I_C_Invoice adjustmentCharge)
-	{
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-		final boolean isAdjustmentCharge = invoiceBL.isAdjustmentCharge(adjustmentCharge);
-
-		if (!isAdjustmentCharge)
-		{
-			// nothing to do
-			return;
-		}
-
-		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceDAO.retrieveParentInvoiceForAdjustmentCharge(adjustmentCharge);
-
-		if (!parentInvoiceIterator.hasNext())
-		{
-			// do nothing
-			return;
-		}
-
-		// unlink the credit memo from all the parent invoices
-		while (parentInvoiceIterator.hasNext())
-		{
-			final I_C_Invoice parentInvoice = parentInvoiceIterator.next();
-			parentInvoice.setRef_AdjustmentCharge_ID(0);
-			InterfaceWrapperHelper.save(parentInvoice);
-		}
-	}
-
-	/**
-	 * For all the invoices that have Ref_CreditMemo_ID same with the ID of the invoice given as parameter, set the ID to 0.
-	 *
-	 * @param creditMemo
-	 */
-	private void unlinkCreditMemoReferences(I_C_Invoice creditMemo)
-	{
-		// services
-
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-		final boolean isCreditMemo = invoiceBL.isCreditMemo(creditMemo);
-
-		if (!isCreditMemo)
-		{
-			// nothing to do
-			return;
-		}
-
-		final Iterator<I_C_Invoice> parentInvoiceIterator = invoiceDAO.retrieveParentInvoiceForCreditMemo(creditMemo);
-
-		if (!parentInvoiceIterator.hasNext())
-		{
-			// do nothing
-			return;
-		}
-
-		// unlink the credit memo from all the parent invoices
-		while (parentInvoiceIterator.hasNext())
-		{
-			final I_C_Invoice parentInvoice = parentInvoiceIterator.next();
-			parentInvoice.setRef_CreditMemo_ID(0);
-			InterfaceWrapperHelper.save(parentInvoice);
-		}
 	}
 
 	/**

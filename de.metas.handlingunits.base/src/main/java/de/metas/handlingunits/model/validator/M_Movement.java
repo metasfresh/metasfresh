@@ -241,9 +241,9 @@ public class M_Movement
 		//
 		// Activate HU (not needed, but we want to be sure)
 		// (even if we do reversals)
-		
+
 		// NOTE: as far as we know, HUContext won't be used by setHUStatus, because the status active doesn't
-		// trigger a movement to/from gebindelager. In this case a movement is already created from a lager to another. 
+		// trigger a movement to/from gebindelager. In this case a movement is already created from a lager to another.
 		// So no HU leftovers.
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
 		Services.get(IHandlingUnitsBL.class).setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);

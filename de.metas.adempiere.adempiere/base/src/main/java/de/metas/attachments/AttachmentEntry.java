@@ -1,8 +1,6 @@
 package de.metas.attachments;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.InputStream;
 
 import org.compiere.util.MimeType;
 
@@ -21,19 +19,15 @@ public final class AttachmentEntry
 	private final String name;
 	private final String filename;
 	private final String contentType;
-	private byte[] data;
 
 	@Builder
 	private AttachmentEntry(final int id,
 			final String name,
 			final String filename,
-			final byte[] data,
 			final String contentType)
 	{
 		this.id = id;
 		this.name = name == null ? "?" : name;
-		this.data = data;
-
 		this.filename = filename != null ? filename : new File(this.name).getName();
 		this.contentType = contentType != null ? contentType : MimeType.getMimeType(this.name);
 	}
@@ -47,29 +41,32 @@ public final class AttachmentEntry
 	public String toStringX()
 	{
 		final StringBuilder sb = new StringBuilder(getName());
-		final byte[] data = getData();
-		if (data != null)
-		{
-			sb.append(" (");
-			//
-			float size = data.length;
-			if (size <= 1024)
-				sb.append(data.length).append(" B");
-			else
-			{
-				size /= 1024;
-				if (size > 1024)
-				{
-					size /= 1024;
-					sb.append(size).append(" MB");
-				}
-				else
-					sb.append(size).append(" kB");
-			}
-			//
-			sb.append(")");
-		}
+
+		// final byte[] data = getData();
+		// if (data != null)
+		// {
+		// sb.append(" (");
+		// //
+		// float size = data.length;
+		// if (size <= 1024)
+		// sb.append(data.length).append(" B");
+		// else
+		// {
+		// size /= 1024;
+		// if (size > 1024)
+		// {
+		// size /= 1024;
+		// sb.append(size).append(" MB");
+		// }
+		// else
+		// sb.append(size).append(" kB");
+		// }
+		// //
+		// sb.append(")");
+		// }
+
 		sb.append(" - ").append(getContentType());
+
 		return sb.toString();
 	}	// toStringX
 
@@ -83,18 +80,5 @@ public final class AttachmentEntry
 	{
 		final String name = getName().trim().toLowerCase();
 		return name.endsWith(".gif") || name.endsWith(".jpg") || name.endsWith(".png");
-	}
-
-	public InputStream getInputStream()
-	{
-		final byte[] data = getData();
-		if (data == null)
-			return null;
-		return new ByteArrayInputStream(data);
-	}
-
-	public File getStorageFile()
-	{
-		return new File(getName());
 	}
 }

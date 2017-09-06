@@ -5,18 +5,21 @@ import java.util.List;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.minventory.api.IInventoryDAO;
+import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_M_Inventory;
 
+import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.IHUInventoryBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 
 /*
@@ -56,12 +59,10 @@ public class M_Inventory
 			return; // nothing to do
 		}
 
-		final de.metas.handlingunits.model.I_M_Inventory huInventory = InterfaceWrapperHelper.create(inventory, de.metas.handlingunits.model.I_M_Inventory.class);
-
-		final String snapshotId = huInventory.getSnapshot_UUID();
+		final String snapshotId = inventory.getSnapshot_UUID();
 		if (Check.isEmpty(snapshotId, true))
 		{
-			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + huInventory + ")");
+			throw new HUException("@NotFound@ @Snapshot_UUID@ (" + inventory + ")");
 		}
 
 		final List<I_M_InventoryLine> inventoryLines = Services.get(IInventoryDAO.class).retrieveLinesForInventory(inventory);
@@ -69,22 +70,29 @@ public class M_Inventory
 		for (final I_M_InventoryLine inventoryLine : inventoryLines)
 		{
 			final List<I_M_HU> topLevelHUsForInventoryLine = huAssignmentDAO.retrieveTopLevelHUsForModel(inventoryLine);
-
-			final IContextAware context = InterfaceWrapperHelper.getContextAware(huInventory);
+			final IContextAware context = InterfaceWrapperHelper.getContextAware(inventory);
 
 			// restore HUs from snapshots
 			Services.get(IHUSnapshotDAO.class).restoreHUs()
 					.setContext(context)
 					.setSnapshotId(snapshotId)
-					.setDateTrx(huInventory.getMovementDate())
+					.setDateTrx(inventory.getMovementDate())
 					.addModels(topLevelHUsForInventoryLine)
-					.setReferencedModel(huInventory)
+					.setReferencedModel(inventory)
 					.restoreFromSnapshot();
-
-			// TODO: create movement for the HUs. I don't know if needed and how this should be done efficiently
-
 		}
 
+		//
+		// Reverse empties movements
+		{
+			final IDocActionBL docActionBL = Services.get(IDocActionBL.class);
+			Services.get(IMovementDAO.class)
+					.retrieveMovementsForInventoryQuery(inventory.getM_Inventory_ID())
+					.addEqualsFilter(I_M_Inventory.COLUMNNAME_DocStatus, X_M_Inventory.DOCSTATUS_Completed)
+					.create()
+					.stream()
+					.forEach(emptiesMovement -> docActionBL.processEx(emptiesMovement, X_M_Inventory.DOCACTION_Reverse_Correct, X_M_Inventory.DOCSTATUS_Reversed));
+		}
 	}
 
 }

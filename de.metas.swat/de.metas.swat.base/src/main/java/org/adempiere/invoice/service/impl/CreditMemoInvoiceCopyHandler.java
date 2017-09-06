@@ -276,13 +276,6 @@ public class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice
 
 	private void completeAndAllocateCreditMemo(final de.metas.adempiere.model.I_C_Invoice invoice, final de.metas.adempiere.model.I_C_Invoice creditMemo)
 	{
-		// task 08906: link the credit memo with the parent invoice
-		if (creditCtx.isReferenceInvoice())
-		{
-			invoice.setRef_CreditMemo_ID(creditMemo.getC_Invoice_ID());
-			InterfaceWrapperHelper.save(invoice);
-		}
-
 		if (!creditCtx.completeAndAllocate())
 		{
 			Services.get(IDocActionBL.class).processEx(creditMemo, DocAction.ACTION_Prepare, DocAction.STATUS_InProgress);

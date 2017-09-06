@@ -1,28 +1,5 @@
 package org.adempiere.process;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.model.CopyRecordFactory;
@@ -36,10 +13,11 @@ import org.compiere.model.PO;
 import org.compiere.process.DocAction;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
+
 import de.metas.document.engine.IDocActionBL;
+import de.metas.logging.LogManager;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 
 public final class OrderCreateNewFromProposal extends JavaProcess 
 {
@@ -84,9 +62,7 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 		InterfaceWrapperHelper.save(newOrder);
 		
 		final CopyRecordSupport childCRS = CopyRecordFactory.getCopyRecordSupport(I_C_Order.Table_Name);
-		childCRS.setGridTab(null);
 		childCRS.setParentPO(to);
-		childCRS.setParentID(to.get_ID());
 		childCRS.setBase(true);
 		childCRS.copyRecord(sourceOrder, get_TrxName());
 
@@ -149,26 +125,23 @@ public final class OrderCreateNewFromProposal extends JavaProcess
 			}
 			else if (name.equals("C_DocType_ID"))
 			{
-				newOrderDocType = ((BigDecimal)para[i].getParameter())
-						.intValue();
+				newOrderDocType = para[i].getParameterAsInt();
 			}
 			else if (name.equals("DateOrdered"))
 			{
-				newOrderDateOrdered = (Timestamp)para[i].getParameter();
+				newOrderDateOrdered = para[i].getParameterAsTimestamp();
 			}
 			else if (name.equals("DocumentNo"))
 			{
-				poReference = (String)para[i].getParameter();
+				poReference = para[i].getParameterAsString();
 			}
 			else if (name.equals("CompleteIt"))
 			{
-
-				final String strCompleteIt = (String)para[i].getParameter();
-				newOrderClompleteIt = ("Y".equals(strCompleteIt));
+				newOrderClompleteIt = para[i].getParameterAsBoolean();
 			}
 			else
 			{
-				log.error("Unknown Parameter: " + name);
+				log.error("Unknown Parameter: {}", name);
 			}
 		}
 	}

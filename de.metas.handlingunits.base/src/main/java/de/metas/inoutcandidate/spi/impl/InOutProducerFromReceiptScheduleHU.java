@@ -73,6 +73,9 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.util.HUByIdComparator;
@@ -132,8 +135,10 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		// the HU-context shall use the tread-inherited trx because it is executed by ITrxItemProcessorExecutorService and instantiated before the executor-services internal trxName is known.
 		_huContext = handlingUnitsBL.createMutableHUContext(trxManager.createThreadContextAware(ctx));
+		
+		
 		packingMaterialsCollector = new HUPackingMaterialsCollector(_huContext);
-
+	
 		huSnapshotProducer = Services.get(IHUSnapshotDAO.class)
 				.createSnapshot()
 				.setContext(_huContext);
@@ -208,7 +213,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		// The receipt lines created.
 		// Could be maximum 2: one with QtyWithoutIssues, one with QtyWithIssues
-		final List<I_M_InOutLine> receiptLines = new ArrayList<I_M_InOutLine>(2);
+		final List<I_M_InOutLine> receiptLines = new ArrayList<>(2);
 
 		//
 		// Create receipt line for QtyWithoutIssues
@@ -362,7 +367,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 		//
 		// Create one receipt line for each candidate
-		final List<I_M_InOutLine> receiptLines = new ArrayList<I_M_InOutLine>();
+		final List<I_M_InOutLine> receiptLines = new ArrayList<>();
 		for (final HUPackingMaterialDocumentLineCandidate candidate : candidates)
 		{
 			final I_M_InOutLine packagingReceiptLine = createPackingMaterialReceiptLine(candidate);
@@ -372,10 +377,16 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 			}
 
 			// task 09502: set the reference from line to packing-line
-			for (final I_M_InOutLine sourceReceiptLine : candidate.getSources())
+			for (final IHUPackingMaterialCollectorSource source : candidate.getSources())
 			{
-				sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
-				InterfaceWrapperHelper.save(sourceReceiptLine);
+				if (source instanceof InOutLineHUPackingMaterialCollectorSource)
+				{
+
+					final InOutLineHUPackingMaterialCollectorSource inOutLineSource = (InOutLineHUPackingMaterialCollectorSource)source;
+					final I_M_InOutLine sourceReceiptLine = inOutLineSource.getM_InOutLine();
+					sourceReceiptLine.setM_PackingMaterial_InOutLine(packagingReceiptLine);
+					InterfaceWrapperHelper.save(sourceReceiptLine);
+				}
 			}
 
 			receiptLines.add(packagingReceiptLine);
@@ -589,11 +600,16 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 
 			//
 			// Collect packing materials
+			final IHUPackingMaterialCollectorSource receiptLineSource = InOutLineHUPackingMaterialCollectorSource.builder()
+					.inoutLine(receiptLine)
+					.collectHUPipToSource(false)
+					.build();
+
 			//
 			// 08162: Only collect them if the owner is not us. Otherwise, take them from the Gebinde Lager
 			if (!tuHU.isHUPlanningReceiptOwnerPM())
 			{
-				packingMaterialsCollector.addTU(tuHU, receiptLine);
+				packingMaterialsCollector.addTU(tuHU, receiptLineSource);
 			}
 			else
 			{
@@ -605,7 +621,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 				final I_M_HU luHU = rsa.getM_LU_HU();
 				if (!luHU.isHUPlanningReceiptOwnerPM())
 				{
-					packingMaterialsCollector.addLU(luHU, receiptLine);
+					packingMaterialsCollector.addLU(luHU, receiptLineSource);
 				}
 				else
 				{

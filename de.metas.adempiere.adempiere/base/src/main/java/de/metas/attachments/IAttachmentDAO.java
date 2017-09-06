@@ -38,6 +38,12 @@ public interface IAttachmentDAO extends ISingletonService
 
 	AttachmentEntry retrieveAttachmentEntryById(int attachmentId, int attachmentEntryId);
 
+	/**
+	 * 
+	 * @param attachmentId
+	 * @param filename
+	 * @return the retrieved entry of {@code null}, if there is none.
+	 */
 	AttachmentEntry retrieveAttachmentEntryByFilename(int attachmentId, String filename);
 
 	byte[] retrieveFirstAttachmentEntryAsBytes(int attachmentId);
@@ -47,9 +53,12 @@ public interface IAttachmentDAO extends ISingletonService
 	AttachmentEntry toAttachmentEntry(I_AD_AttachmentEntry entryRecord);
 
 	void saveAttachmentEntry(I_AD_Attachment attachment, AttachmentEntry entry);
+	void saveAttachmentEntryData(AttachmentEntry entry, byte[] data);
 
 	boolean deleteAttachmentEntryById(int attachmentId, int attachmentEntryId);
 
 	boolean hasAttachmentEntries(int attachmentId);
+
+	byte[] retrieveData(AttachmentEntry entry);
 
 }

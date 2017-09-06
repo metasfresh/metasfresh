@@ -132,10 +132,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
-import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.handlingunits.test.HUListAssertsBuilder;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
@@ -339,7 +339,7 @@ public class HUTestHelper
 	public String trxName;
 	private Timestamp today;
 
-	private IHUPackingMaterialsCollector<I_M_InOutLine> contextPackingMaterialsCollector;
+	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> contextPackingMaterialsCollector;
 
 	public final IContextAware contextProvider = new IContextAware()
 	{
@@ -383,7 +383,7 @@ public class HUTestHelper
 		this.initAdempiere = initAdempiere;
 	}
 
-	public void setContextPackingMaterialsCollector(final IHUPackingMaterialsCollector<I_M_InOutLine> contextPackingMaterialsCollector)
+	public void setContextPackingMaterialsCollector(final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> contextPackingMaterialsCollector)
 	{
 		this.contextPackingMaterialsCollector = contextPackingMaterialsCollector;
 	}
@@ -1595,7 +1595,12 @@ public class HUTestHelper
 		final I_C_UOM cuUOM = tuPIItemProduct.getC_UOM();
 
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(tuPIItemProduct, cuProduct, cuUOM, bpartner);
+		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
+				tuPIItemProduct, 
+				cuProduct, 
+				cuUOM, 
+				bpartner,
+				false); // noLUForVirtualTU == false => allow placing the CU (e.g. a packing material product) directly on the LU
 		lutuConfiguration.setC_BPartner(bpartner);
 		lutuConfiguration.setC_BPartner_Location_ID(bpartnerLocationId);
 		lutuConfigurationFactory.save(lutuConfiguration);
@@ -1727,7 +1732,7 @@ public class HUTestHelper
 		@NonNull
 		final I_C_UOM loadCuUOM;
 
-		final IHUPackingMaterialsCollector<I_M_InOutLine> huPackingMaterialsCollector;
+		final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> huPackingMaterialsCollector;
 	}
 
 	/**

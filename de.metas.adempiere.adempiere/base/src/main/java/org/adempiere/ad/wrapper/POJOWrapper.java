@@ -689,12 +689,12 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private String toString(final List<String> trace)
 	{
 		final StringBuilder sb = new StringBuilder("POJOWrapper[");
-		sb.append(interfaceClass);
-
 		if (!Check.isEmpty(instanceName, true))
 		{
-			sb.append(", instanceName=").append(instanceName);
+			sb.append("instanceName=").append(instanceName).append(", ");
 		}
+
+		sb.append(interfaceClass);
 
 		sb.append(", instanceId=").append(instanceId);
 

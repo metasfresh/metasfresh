@@ -3,8 +3,10 @@ DROP FUNCTION IF EXISTS report.receipt_label(IN M_HU_ID numeric);
 CREATE FUNCTION report.receipt_label(IN M_HU_ID numeric) RETURNS TABLE
 	(
 	vendoraddress text, 
+	vendorvalue Character Varying,
 	vendorgap Character Varying, 
 	produceraddress text,
+	producervalue Character Varying,
 	producergap Character Varying,
 	Herkunft Character Varying,
 	Charge Character Varying,
@@ -38,7 +40,9 @@ SELECT distinct
 		WHERE ol.C_OrderLine_ID = (t.TU_Attrs).PurchaseOrderLine_Value AND ol.isActive = 'Y'
 )  AS vendoraddress
 
-  ,vendorbp.naics AS vendorgap
+	
+   ,vendorbp.value AS vendorvalue
+   ,vendorbp.naics AS vendorgap
  	,(
 		SELECT	COALESCE(bp.name||', ', '') || Regexp_Replace(address, E'\n', ', ', 'g')
 		FROM	C_BPartner bp
@@ -46,6 +50,8 @@ SELECT distinct
 		WHERE	bpl.C_BPartner_ID =  (t.TU_Attrs).SubProducerBPartner_Value AND bp.isActive = 'Y'
 		LIMIT 1
 	) AS produceraddress
+	
+	,producerbp.value AS producervalue
 	,producerbp.naics AS producergap
  , (t.TU_Attrs).herkunft_name AS Herkunft
  , (t.TU_Attrs).lotnumber_value AS Charge
@@ -103,4 +109,6 @@ LEFT OUTER JOIN M_HU_PI_Item_Product hu_piip ON hu_piip.M_HU_PI_Item_Product_ID 
 
 
 $$
-  LANGUAGE sql STABLE
+LANGUAGE sql STABLE
+
+

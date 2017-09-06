@@ -38,7 +38,7 @@ import de.metas.i18n.IMsgBL;
 public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	@Override
-	public void setSpecialColumnsName(PO to)
+	public void updateSpecialColumnsName(PO to)
 	{
 		final String MSG_AD_Role_Name_Unique = "AD_Role_Unique_Name";
 
@@ -57,7 +57,7 @@ public class AD_Role_POCopyRecordSupport extends GeneralCopyRecordSupport
 		// shall never happen if the message is set.
 		if (msg.isEmpty())
 		{
-			super.setSpecialColumnsName(to);
+			super.updateSpecialColumnsName(to);
 		}
 
 		to.set_CustomColumn(I_AD_Role.COLUMNNAME_Name, msg);

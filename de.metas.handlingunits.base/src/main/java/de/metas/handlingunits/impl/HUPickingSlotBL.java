@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,6 +56,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusRequest;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
@@ -66,6 +67,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -204,7 +206,7 @@ public class HUPickingSlotBL
 
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(pickingSlot);
-		//trxManager.assertTrxNull(context);
+		// trxManager.assertTrxNull(context);
 		trxManager.run(context.getTrxName(), new TrxRunnable()
 		{
 
@@ -273,7 +275,7 @@ public class HUPickingSlotBL
 
 	@Override
 	public List<IQueueActionResult> addToPickingSlotQueue(
-			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot, 
+			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
 			@NonNull final List<I_M_HU> hus)
 	{
 		if (Check.isEmpty(hus))
@@ -314,8 +316,8 @@ public class HUPickingSlotBL
 	}
 
 	private final IQueueActionResult addToPickingSlotQueue0(
-			@NonNull final IHUContext huContext, 
-			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot, 
+			@NonNull final IHUContext huContext,
+			@NonNull final de.metas.picking.model.I_M_PickingSlot pickingSlot,
 			@NonNull final I_M_HU hu)
 	{
 		// services
@@ -567,19 +569,38 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableHUsToPick(final List<I_M_ShipmentSchedule> shipmentSchedules, final boolean considerAttributes)
+	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final AvailableHUsToPickRequest request)
 	{
+		if (request.getShipmentSchedules().isEmpty())
+		{
+			return Collections.emptyList();
+		}
+
+		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request);
+
+		final List<I_M_HU> result = retrieveFullTreeAndFilterForAlreadyPickedHUs(vhus);
+
+		if (!request.isOnlyTopLevelHUs())
+		{
+			return result; // we are done
+		}
+
+		// we need to filter out everything that is not toplevel
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		return handlingUnitsBL.getTopLevelHUs(TopLevelHusRequest.builder().hus(result).includeAll(false).build());
+	}
+
+	private List<I_M_HU> retrieveVHUsFromStorage(final AvailableHUsToPickRequest request)
+	{
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-		
 		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 
 		//
 		// Create storage queries from shipment schedules
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
-		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
+		for (final I_M_ShipmentSchedule shipmentSchedule : request.getShipmentSchedules())
 		{
-			final IStorageQuery storageQuery = createStorageQuery(storageEngine, shipmentSchedule, considerAttributes);
+			final IStorageQuery storageQuery = createStorageQuery(storageEngine, shipmentSchedule, request.isConsiderAttributes());
 			storageQueries.add(storageQuery);
 		}
 
@@ -602,42 +623,72 @@ public class HUPickingSlotBL
 			{
 				continue;
 			}
-			
-			final I_M_Locator locator = huStorageRecord.getLocator();			
-			if(locator!= null && locator.getM_Locator_ID() != vhu.getM_Locator_ID())
+
+			final I_M_Locator locator = huStorageRecord.getLocator();
+			if (locator != null && locator.getM_Locator_ID() != vhu.getM_Locator_ID())
+			{
+				continue;
+			}
+
+			if (isPicked(vhu))
 			{
 				continue;
 			}
 
 			vhus.add(vhu);
 		}
-
-		// TODO: exclude those HUs which are on a picking slot. Consider setting the HU from picking slot to after picking locator
-
-		// Do not throw exceptions if there are no vhus.
-		if (!vhus.isEmpty())
-		{
-			//
-			// Extract the top level HUs from them
-			final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(vhus);
-
-			if (husTopLevel.isEmpty())
-			{
-				final StringBuilder errmsg = new StringBuilder("@NotFound@ @M_HU_ID@");
-				for (final IStorageQuery storageQuery : storageQueries)
-				{
-					errmsg.append("\n\n").append(storageQuery.getSummary());
-				}
-				throw new AdempiereException(errmsg.toString());
-			}
-
-			return husTopLevel;
-		}
-
-		// In case there are no vhus, return empty list (read write, in case the caller it assumes it can modify it)
-		return new ArrayList<>();
+		return vhus;
 	}
-	
+
+	private List<I_M_HU> retrieveFullTreeAndFilterForAlreadyPickedHUs(final List<I_M_HU> vhus)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		//
+		// get the the top level HUs from for our VHUs
+		final TopLevelHusRequest topLevelHusRequest = TopLevelHusRequest.builder()
+				.hus(vhus)
+				.includeAll(false)
+				.filter(hu -> !isPicked(hu)) // exclude already picked HUs
+				.build();
+		final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
+
+		// We still need to iterate the HUs trees from the top level HUs.
+		// Even if we had called handlingUnitsBL.getTopLevelHUs with includeAll(true),
+		// There might be a VHU with a picked TU. Because the TU is picked, also its un-picked VHU may not be in the result we return
+		final List<I_M_HU> result = new ArrayList<>();
+		for (final I_M_HU huTopLevel : husTopLevel)
+		{
+			new HUIterator()
+					.setEnableStorageIteration(false)
+					.setListener(new HUIteratorListenerAdapter()
+					{
+						@Override
+						public Result beforeHU(IMutable<I_M_HU> hu)
+						{
+							if (isPicked(hu.getValue()))
+							{
+								return Result.SKIP_DOWNSTREAM;
+							}
+							result.add(hu.getValue());
+							return Result.CONTINUE;
+						}
+					})
+					.iterate(huTopLevel);
+		}
+		return result;
+	}
+
+	private boolean isPicked(@NonNull final I_M_HU hu)
+	{
+		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+				.create()
+				.match();
+		return isAlreadyPicked;
+	}
+
 	/**
 	 * Creates "HUs available to be picked" storage query.
 	 * 
@@ -648,7 +699,7 @@ public class HUPickingSlotBL
 	private IStorageQuery createStorageQuery(final IStorageEngine storageEngine, final I_M_ShipmentSchedule sched, final boolean considerAttributes)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		
+
 		//
 		// Create storage query
 		final I_M_Product product = sched.getM_Product();

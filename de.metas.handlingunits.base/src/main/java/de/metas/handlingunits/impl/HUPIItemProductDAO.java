@@ -51,6 +51,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -70,9 +71,8 @@ import lombok.NonNull;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
-	// NOTE: it's public only for testing purposes
+	@VisibleForTesting
 	public static final int NO_HU_PI_Item_Product_ID = 100;
-	public static final int VIRTUAL_HU_PI_Item_Product_ID = 101;
 
 	@Override
 	public IHUPIItemProductQuery createHUPIItemProductQuery()

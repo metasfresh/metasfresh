@@ -278,8 +278,8 @@ public final class POInfo implements Serializable
 				+ (m_AD_Table_ID <= 0 ? "UPPER(t.TableName)=UPPER(?)" : "t.AD_Table_ID=?")
 				+ " AND c.IsActive='Y'");
 		//
-		final List<String> keyColumnNames = new ArrayList<String>();
-		final List<String> parentColumnNames = new ArrayList<String>();
+		final List<String> keyColumnNames = new ArrayList<>();
+		final List<String> parentColumnNames = new ArrayList<>();
 		boolean tableInfoLoaded = false;
 		//
 		PreparedStatement pstmt = null;
@@ -466,7 +466,7 @@ public final class POInfo implements Serializable
 	 * @param index column index
 	 * @return String Representation
 	 */
-	public String toString(int index)
+	public String toString(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return "POInfo[" + getTableName() + "-(InvalidColumnIndex=" + index + ")]";
@@ -609,7 +609,7 @@ public final class POInfo implements Serializable
 	 * @param AD_Column_ID column
 	 * @return index of column with ColumnName or -1 if not found
 	 */
-	public int getColumnIndex(int AD_Column_ID)
+	public int getColumnIndex(final int AD_Column_ID)
 	{
 		if (AD_Column_ID <= 0)
 		{
@@ -638,7 +638,7 @@ public final class POInfo implements Serializable
 	 * @param columnName
 	 * @return AD_Column_ID if found, -1 if not found
 	 */
-	public int getAD_Column_ID(String columnName)
+	public int getAD_Column_ID(final String columnName)
 	{
 		final int columnIndex = getColumnIndex(columnName);
 		if (columnIndex < 0)
@@ -656,7 +656,7 @@ public final class POInfo implements Serializable
 	 * @return column
 	 */
 	// metas: making getColumn public to enable easier testing (was protected)
-	public POInfoColumn getColumn(int index)
+	public POInfoColumn getColumn(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
@@ -677,7 +677,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return ColumnName column name
 	 */
-	public String getColumnName(int index)
+	public String getColumnName(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
@@ -754,7 +754,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column is virtual
 	 */
-	public boolean isVirtualColumn(int index)
+	public boolean isVirtualColumn(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 		{
@@ -792,7 +792,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return column label
 	 */
-	public String getColumnLabel(int index)
+	public String getColumnLabel(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
@@ -805,7 +805,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return column description
 	 */
-	public String getColumnDescription(int index)
+	public String getColumnDescription(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
@@ -818,7 +818,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return Class
 	 */
-	public Class<?> getColumnClass(int index)
+	public Class<?> getColumnClass(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
@@ -848,7 +848,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return DisplayType
 	 */
-	public int getColumnDisplayType(int index)
+	public int getColumnDisplayType(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return DisplayType.String;
@@ -871,7 +871,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return Default Logic
 	 */
-	public String getDefaultLogic(int index)
+	public String getDefaultLogic(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return null;
@@ -884,7 +884,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column mandatory
 	 */
-	public boolean isColumnMandatory(int index)
+	public boolean isColumnMandatory(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;
@@ -900,7 +900,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return the column's AD_Reference_Value_ID or -1 if the given index is not valid
 	 */
-	public int getColumnReferenceValueId(int index)
+	public int getColumnReferenceValueId(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return -1;
@@ -928,7 +928,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column updateable
 	 */
-	public boolean isColumnUpdateable(int index)
+	public boolean isColumnUpdateable(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;
@@ -955,7 +955,7 @@ public final class POInfo implements Serializable
 	 * @deprecated This method will be deleted in future because our {@link POInfo} has to be immutable.
 	 */
 	@Deprecated
-	public void setUpdateable(boolean updateable)
+	public void setUpdateable(final boolean updateable)
 	{
 		for (int i = 0; i < m_columns.length; i++)
 		{
@@ -993,7 +993,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column is the key
 	 */
-	public boolean isKey(int index)
+	public boolean isKey(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;
@@ -1021,7 +1021,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column is a Parent
 	 */
-	public boolean isColumnParent(int index)
+	public boolean isColumnParent(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;
@@ -1040,7 +1040,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column is encrypted
 	 */
-	public boolean isEncrypted(int index)
+	public boolean isEncrypted(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;
@@ -1053,7 +1053,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return true if column is allowed to be logged
 	 */
-	public boolean isAllowLogging(int index)
+	public boolean isAllowLogging(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;
@@ -1066,7 +1066,7 @@ public final class POInfo implements Serializable
 	 * @param index index
 	 * @return field length
 	 */
-	public int getFieldLength(int index)
+	public int getFieldLength(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return 0;
@@ -1079,7 +1079,7 @@ public final class POInfo implements Serializable
 	 * @param columnName Column Name
 	 * @return field length or 0
 	 */
-	public int getFieldLength(String columnName)
+	public int getFieldLength(final String columnName)
 	{
 		int index = getColumnIndex(columnName);
 		if (index >= 0)
@@ -1096,7 +1096,7 @@ public final class POInfo implements Serializable
 	 * @param value new Value
 	 * @return null if all valid otherwise error message
 	 */
-	public String validate(int index, Object value)
+	public String validate(final int index, final Object value)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return "RangeError";
@@ -1183,11 +1183,11 @@ public final class POInfo implements Serializable
 		return null;
 	}   // validate
 
-	public boolean isLazyLoading(int index)
+	public boolean isLazyLoading(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return true;
-		return isVirtualColumn(index) && m_columns[index].IsLazyLoading;
+		return m_columns[index].IsLazyLoading;
 	}
 
 	/**
@@ -1244,7 +1244,7 @@ public final class POInfo implements Serializable
 	}
 
 	// metas: us215
-	public boolean isCalculated(int index)
+	public boolean isCalculated(final int index)
 	{
 		if (index < 0 || index >= m_columns.length)
 			return false;

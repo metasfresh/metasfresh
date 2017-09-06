@@ -82,11 +82,11 @@ public class HUMovementBL implements IHUMovementBL
 
 		// Load the warehouse (we assume the table level caching is enabled for warehouse)
 		final I_M_Warehouse directMoveWarehouse = InterfaceWrapperHelper.create(ctx, directMoveWarehouseId, I_M_Warehouse.class, ITrx.TRXNAME_None);
-		if (directMoveWarehouse != null && directMoveWarehouse.getM_Warehouse_ID() <= 0)
+		if (directMoveWarehouse == null || directMoveWarehouse.getM_Warehouse_ID() <= 0)
 		{
 			if(throwEx)
 			{
-				throw new AdempiereException("No warehouse found for ID="+directMoveWarehouseId+". Check sysconfig "+SYSCONFIG_DirectMove_Warehouse_ID);
+				throw new AdempiereException("No warehouse found for ID=" + directMoveWarehouseId + ". Check sysconfig " + SYSCONFIG_DirectMove_Warehouse_ID);
 			}
 			return null;
 		}
@@ -108,7 +108,7 @@ public class HUMovementBL implements IHUMovementBL
 		// iterate the HUs,
 		// create one builder per source warehouse
 		// add each HU to one builder
-		final Map<Integer, HUMovementBuilder> warehouseId2builder = new HashMap<Integer, HUMovementBuilder>();
+		final Map<Integer, HUMovementBuilder> warehouseId2builder = new HashMap<>();
 		for (final I_M_HU hu : hus)
 		{
 			

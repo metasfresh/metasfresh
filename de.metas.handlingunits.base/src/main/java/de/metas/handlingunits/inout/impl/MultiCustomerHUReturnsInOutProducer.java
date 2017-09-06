@@ -25,6 +25,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.adempiere.model.I_C_BPartner_Location;
+import de.metas.document.engine.IDocActionBL;
 import de.metas.flatrate.interfaces.I_C_BPartner;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -120,13 +121,7 @@ public class MultiCustomerHUReturnsInOutProducer
 						childHUs.addAll(handlingUnitsDAO.retrieveChildHUsForItem(huItem));
 					}
 				}
-				
-				for(final I_M_HU childHU : childHUs)
-				{
-					childHU.setIsActive(true);
-					InterfaceWrapperHelper.save(childHU);
-				}
-			
+
 			}
 			InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
@@ -172,6 +167,17 @@ public class MultiCustomerHUReturnsInOutProducer
 				if (!inout.isSOTrx())
 				{
 					// do not allow HUs from receipts to get into customer returns
+					continue;
+				}
+
+				if (!Services.get(IDocActionBL.class).isDocumentCompletedOrClosed(inout))
+				{
+					// do not allow HUs from uncompleted inouts to get into customer returns
+					continue;
+				}
+
+				if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+				{
 					continue;
 				}
 

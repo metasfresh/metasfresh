@@ -269,7 +269,7 @@ public class SponsorCond implements ICommissionType
 							{
 								continue;
 							}
-							final ArrayKey key = Util.mkKey(I_C_Invoice.Table_ID, il.getC_Invoice_ID());
+							final ArrayKey key = Util.mkKey(InterfaceWrapperHelper.getTableId(I_C_Invoice.class), il.getC_Invoice_ID());
 
 							if (!instTriggers.containsKey(key))
 							{

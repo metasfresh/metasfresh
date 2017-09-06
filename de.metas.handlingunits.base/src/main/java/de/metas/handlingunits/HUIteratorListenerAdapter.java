@@ -98,9 +98,6 @@ public abstract class HUIteratorListenerAdapter implements IHUIteratorListener
 		return getDefaultResult();
 	}
 
-	/**
-	 * Method is called after a the given <code>hu</code> has been visited by the iterator.
-	 */
 	@Override
 	public Result afterHU(final I_M_HU hu)
 	{

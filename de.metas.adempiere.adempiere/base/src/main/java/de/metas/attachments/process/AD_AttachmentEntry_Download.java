@@ -31,13 +31,16 @@ import de.metas.process.JavaProcess;
 
 public class AD_AttachmentEntry_Download extends JavaProcess
 {
+	private final transient IAttachmentDAO attachmentDAO = Services.get(IAttachmentDAO.class);
+	
 	@Override
 	protected String doIt()
 	{
 		final I_AD_AttachmentEntry entryRecord = getRecord(I_AD_AttachmentEntry.class);
-		final AttachmentEntry entry = Services.get(IAttachmentDAO.class).toAttachmentEntry(entryRecord);
+		final AttachmentEntry entry = attachmentDAO.toAttachmentEntry(entryRecord);
+		final byte[] data = attachmentDAO.retrieveData(entry);
 
-		getResult().setReportData(entry.getData(), entry.getFilename(), entry.getContentType());
+		getResult().setReportData(data, entry.getFilename(), entry.getContentType());
 
 		return MSG_OK;
 	}

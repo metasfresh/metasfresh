@@ -16,7 +16,8 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
 /*
  * #%L
@@ -70,7 +71,7 @@ public class HUPackingMaterialsCollectorTest
 		//
 		// Create a packing materials collector and collect the LU we just create it
 		final HUPackingMaterialsCollector collector = new HUPackingMaterialsCollector(data.helper.createMutableHUContext());
-		final I_M_InOutLine source = null; // N/A
+		final IHUPackingMaterialCollectorSource source = null; // N/A
 		collector.addHURecursively(luHU, source);
 
 		//

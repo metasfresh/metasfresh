@@ -13,15 +13,14 @@ package de.metas.handlingunits.movement.api.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.Comparator;
 import java.util.List;
@@ -31,9 +30,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialDocumentLineCandidate;
-import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
+import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
+import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 
 /**
  * Collects HUs for a particular locator from/to and creates {@link HUPackingMaterialDocumentLineCandidate}s.
@@ -43,7 +42,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 /* package */class HUPackingMaterialMovementLineBuilder
 {
 	// task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
-	private final IHUPackingMaterialsCollector<I_M_InOutLine> packingMaterialsCollector = new HUPackingMaterialsCollector(null);
+	private final IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> packingMaterialsCollector = new HUPackingMaterialsCollector(null);
 	private final int locatorFromId;
 	private final int locatorToId;
 
@@ -52,6 +51,9 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 		super();
 		this.locatorFromId = locatorFromId;
 		this.locatorToId = locatorToId;
+
+		packingMaterialsCollector.setisCollectTUNumberPerOrigin(true);
+		packingMaterialsCollector.setisCollectAggregatedHUs(true);
 	}
 
 	public int getM_Locator_From_ID()
@@ -72,6 +74,7 @@ import de.metas.inoutcandidate.spi.impl.HUPackingMaterialsCollector;
 
 	public void addHURecursively(final IQueryBuilder<I_M_HU_Assignment> huAssignments)
 	{
+
 		packingMaterialsCollector.addHURecursively(huAssignments);
 	}
 

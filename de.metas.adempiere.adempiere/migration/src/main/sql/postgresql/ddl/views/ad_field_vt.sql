@@ -52,6 +52,7 @@ c_trl.ad_language
 , c.isupdateable
 , c.isencrypted AS isencryptedcolumn
 , c.isselectioncolumn
+, c.SelectionColumnSeqNo
 , tbl.tablename
 , c.valuemin
 , c.valuemax
@@ -65,10 +66,11 @@ c_trl.ad_language
 , c.isautocomplete
 , f.includedtabheight
 , c.iscalculated
-, c.FormatPattern
 , f.SpanX
 , f.SpanY
 , f.EntityType as FieldEntityType
+, c.FormatPattern
+, c.IsUseDocSequence
 FROM ad_tab t
 JOIN ad_table tbl ON tbl.ad_table_id = t.ad_table_id
 JOIN ad_column c ON c.ad_table_id = t.ad_table_id
