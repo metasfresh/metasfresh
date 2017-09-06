@@ -84,6 +84,8 @@ Here come the actual release notes:
     * Renaming the Field for Packing Instructions in the de_DE Baselanguage.
   * [#2365](https://github.com/metasfresh/metasfresh/issues/2365) Rename all Windows with Suffix "kandidaten" to suffix "disposition"
     * Renaming the Candidates Window in baselanguage, now called disposition.
+  * [#2370](https://github.com/metasfresh/metasfresh/issues/2370) Price Topic improvements in Product Price and Pricelist
+    * Different detail improvements done to Pricinf relevant topics in WebUI.
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
