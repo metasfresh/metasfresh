@@ -76,8 +76,9 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 	}
 
 	/**
-	 * Only allows rows whose HUs are in the "active" status. 
+	 * Only allows rows whose HUs are in the "active" status.
 	 */
+	@Override
 	final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
 	{
 		if (!document.isHUStatusActive())
@@ -86,7 +87,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		}
 		return null;
 	}
-	
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
