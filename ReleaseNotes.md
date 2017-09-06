@@ -80,6 +80,8 @@ Here come the actual release notes:
     * New Window for Process Audit in WebUI.
   * [#2294](https://github.com/metasfresh/metasfresh/issues/2294) Window Layout for Picking Window in WebUI
     * New generic Layout for the Picking Window in WebUI.
+  * [#2364](https://github.com/metasfresh/metasfresh/issues/2364) Rename Packvorschrift-Produkt-Zuordnung to Packvorschrift
+    * Renaming the Field for Packing Instructions in the de_DE Baselanguage.
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
