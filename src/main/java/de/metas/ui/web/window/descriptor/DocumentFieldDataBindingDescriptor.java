@@ -37,4 +37,22 @@ public interface DocumentFieldDataBindingDescriptor
 		final T thisCasted = (T)this;
 		return thisCasted;
 	}
+
+	/**
+	 * @return true if this field has ORDER BY instructions
+	 */
+	default boolean isDefaultOrderBy()
+	{
+		return false;
+	}
+
+	default int getDefaultOrderByPriority()
+	{
+		return 0;
+	}
+
+	default boolean isDefaultOrderByAscending()
+	{
+		return true;
+	}
 }

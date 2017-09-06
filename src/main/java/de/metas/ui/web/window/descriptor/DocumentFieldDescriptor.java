@@ -1366,5 +1366,26 @@ public final class DocumentFieldDescriptor implements Serializable
 			this.defaultFilterFieldSeqNo = defaultFilterFieldSeqNo;
 			return this;
 		}
+		
+		/**
+		 * @return true if this field has ORDER BY instructions
+		 */
+		public boolean isDefaultOrderBy()
+		{
+			final DocumentFieldDataBindingDescriptor dataBinding = getDataBinding().orElse(null);
+			return dataBinding != null ? dataBinding.isDefaultOrderBy() : false;
+		}
+
+		public int getDefaultOrderByPriority()
+		{
+			// we assume isDefaultOrderBy() was checked before calling this method
+			return getDataBinding().get().getDefaultOrderByPriority();
+		}
+
+		public boolean isDefaultOrderByAscending()
+		{
+			// we assume isDefaultOrderBy() was checked before calling this method
+			return getDataBinding().get().isDefaultOrderByAscending();
+		}
 	}
 }
