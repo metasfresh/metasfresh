@@ -94,17 +94,23 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(request);
 		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu -> hu.getM_HU_ID()).collect(Collectors.toList());
 
-		final RelatedProcessDescriptor processToPickSelectedHU = RelatedProcessDescriptor.builder()
+		final RelatedProcessDescriptor pickSelectedHU = RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
 				.webuiQuickAction(true)
 				.build();
 
+		final RelatedProcessDescriptor flagSelectedHUsAsSourceHUs = RelatedProcessDescriptor.builder()
+				.processId(adProcessDAO.retriveProcessIdByClassIfUnique(Env.getCtx(), WEBUI_Picking_PickSelectedHU.class))
+				.webuiQuickAction(true)
+				.build();
+		
 		final IView husToPickView = viewsRepo.createView(
 				CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)
 						.setParentViewId(pickingSlotViewId)
 						.setParentRowId(pickingSlotRow.getId())
 						.addStickyFilters(HUIdsFilterHelper.createFilter(availableHUsToPickIDs))
-						.addAdditionalRelatedProcessDescriptor(processToPickSelectedHU)
+						.addAdditionalRelatedProcessDescriptor(pickSelectedHU)
+						.addAdditionalRelatedProcessDescriptor(flagSelectedHUsAsSourceHUs)
 						.build());
 
 		getResult().setWebuiIncludedViewIdToOpen(husToPickView.getViewId().getViewId());

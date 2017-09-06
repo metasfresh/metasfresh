@@ -53,6 +53,12 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * This class is used by {@link PickingSlotViewRepository} and provides the HUs that are related to picking.
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
 @Component
 /* package */class PickingHUsRepository
 {

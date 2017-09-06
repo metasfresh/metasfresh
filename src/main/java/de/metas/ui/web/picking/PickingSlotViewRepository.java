@@ -3,13 +3,11 @@ package de.metas.ui.web.picking;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,7 +16,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 
@@ -26,6 +23,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -165,22 +163,20 @@ public class PickingSlotViewRepository
 		// assume that all shipment schedules have the same partner and location (needs to be made sure) before starting all this stuff
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
-		final int bpartnerId = shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule);
-		final int bpartnerLocationId = shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule);
+		final PickingSlotQuery pickingSlotquery = PickingSlotQuery.builder()
+				.bpartnerId(shipmentScheduleEffectiveBL.getC_BPartner_ID(shipmentSchedule))
+				.bpartnerLocationId(shipmentScheduleEffectiveBL.getC_BP_Location_ID(shipmentSchedule))
+				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.build();
 
 		final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
-
-		final Set<Integer> pickingSlotIds = pickingSlotDAO
-				.retrivePickingSlotsForBPartner(Env.getCtx(), bpartnerId, bpartnerLocationId)
-				.stream()
-				.filter(ps -> ps.getM_Warehouse_ID() == shipmentSchedule.getM_Warehouse_ID())
-				.map(I_M_PickingSlot::getM_PickingSlot_ID)
-				.collect(ImmutableSet.toImmutableSet());
+		final List<I_M_PickingSlot> pickingSlots = pickingSlotDAO.retrivePickingSlots(pickingSlotquery);
 
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
 		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickedHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
 
-		final Predicate<? super I_M_PickingSlot> predicate = pickingSlotPO -> {
+		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> {
+
 			if (query.getPickingCandidates() == PickingCandidate.DONT_CARE)
 			{
 				return true;
@@ -188,13 +184,12 @@ public class PickingSlotViewRepository
 
 			// For any other PickingCandidate enum value, huEditorRowsByPickingSlotId only contains items which match that value.
 			// That's because we already invoked pickingHUsRepo with the same query.
-			return huEditorRowsByPickingSlotId.containsKey(pickingSlotPO.getM_PickingSlot_ID());
+			return huEditorRowsByPickingSlotId.containsKey(pickingSlot.getM_PickingSlot_ID());
 		};
 
-		final ImmutableList<PickingSlotRow> result = pickingSlotDAO
-				.retrievePickingSlotsByIds(pickingSlotIds).stream() // get stream of I_M_PickingSlot
-				.filter(predicate) // filter according to 'query'
-				.map(pickingSlotPO -> createPickingSlotRow(pickingSlotPO, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
+		final ImmutableList<PickingSlotRow> result = pickingSlots.stream() // get stream of I_M_PickingSlot
+				.filter(pickingCandidatesFilter)
+				.map(pickingSlot -> createPickingSlotRow(pickingSlot, huEditorRowsByPickingSlotId)) // create the actual PickingSlotRows
 				.collect(ImmutableList.toImmutableList());
 		return result;
 	}

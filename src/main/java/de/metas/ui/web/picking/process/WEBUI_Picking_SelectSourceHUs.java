@@ -33,7 +33,7 @@ import de.metas.process.JavaProcess;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_SelectHUsFor_PickTo extends JavaProcess
+public class WEBUI_Picking_SelectSourceHUs extends JavaProcess
 {
 
 	@Override
