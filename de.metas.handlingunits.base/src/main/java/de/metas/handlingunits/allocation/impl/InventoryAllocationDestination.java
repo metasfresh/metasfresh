@@ -386,6 +386,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	private BigDecimal countTUs(final IHUContext huContext, final I_M_HU hu, final I_M_InventoryLine inventoryLine)
 	{
+		// Find out if the hu is VHU or Aggregate -> Move to TU level
 		// Add the TU recursively
 
 		final I_M_HU tuHU;
