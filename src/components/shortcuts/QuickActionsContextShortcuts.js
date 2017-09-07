@@ -27,6 +27,7 @@ class QuickActionsContextShortcuts extends Component {
             handler = { this.handleShortcuts }
             targetNodeSelector = "body"
             isolate = { true }
+            global = { true }
             preventDefault = { true }
             stopPropagation = { true }
         />
