@@ -13,15 +13,14 @@ package de.metas.edi.model.validator;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -40,14 +39,21 @@ import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
+import de.metas.handlingunits.inout.IHUInOutBL;
 
 @Validator(I_M_InOut.class)
 public class M_InOut
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }
-			, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
 	public void updateEdiStatus(final I_M_InOut document)
 	{
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(inOut))
+		{
+			// no EDI for customer return (for the time being)
+
+			return;
+		}
+
 		// make sure the inout is initialized with the ediEnabled flag from order, if the order is set
 		setEdiEnabledFromOrder(document);
 
@@ -70,8 +76,7 @@ public class M_InOut
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_InOut.COLUMNNAME_C_Order_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_Order_ID)
 	public void updateEdiEnabled(final I_M_InOut inout)
 	{
 		setEdiEnabledFromOrder(inout);
@@ -79,6 +84,13 @@ public class M_InOut
 
 	private void setEdiEnabledFromOrder(final I_M_InOut inout)
 	{
+
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
+		{
+			// no EDI for customer return (for the time being)
+
+			return;
+		}
 		final I_C_Order order = InterfaceWrapperHelper.create(inout.getC_Order(), de.metas.edi.model.I_C_Order.class);
 		if (order == null || order.getC_Order_ID() <= 0)
 		{
@@ -131,6 +143,13 @@ public class M_InOut
 			ModelValidator.TIMING_BEFORE_VOID })
 	public void assertReActivationAllowed(final I_M_InOut inOut)
 	{
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(inOut))
+		{
+			// no EDI for customer return (for the time being)
+
+			return;
+		}
+
 		final String inOutEDIStatus = inOut.getEDI_ExportStatus();
 		if (I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(inOutEDIStatus)
 				|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(inOutEDIStatus)
@@ -162,6 +181,13 @@ public class M_InOut
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
 	public void addToDesadv(final I_M_InOut inOut)
 	{
+		if (Services.get(IHUInOutBL.class).isCustomerReturn(inOut))
+		{
+			// no EDI for customer return (for the time being)
+
+			return;
+		}
+
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 		if (!ediDocumentBL.updateEdiEnabled(inOut))
 		{
