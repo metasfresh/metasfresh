@@ -105,10 +105,15 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
+    * New Functionality for Data and Docuemnts Copy/ Copy with details. Now combined both to one Action for the User.
   * [#549](https://github.com/metasfresh/metasfresh-webui-api/issues/549) Validcombination Window does not allow NEW in WebUI
+    * Now allowing to create valid account combination records in WebUI.
   * [#556](https://github.com/metasfresh/metasfresh-webui-api/issues/556) Picking Window Main View adjustments
+    * Detail adjustments added to the new Picking Window in WebUI.
   * [#557](https://github.com/metasfresh/metasfresh-webui-api/issues/557) Picking Window: Open HU Selection window filtering
+    * New User Workflow in Picking window, now opening the Handling Unit Selection with additional filter possibilities.
   * [#560](https://github.com/metasfresh/metasfresh-webui-api/issues/560) Picking: don't allow picking included rows
+    * Fine tuning of Picking Window workflow, now restricting the user from picking already picked items.
 
 * metasfresh-webui-frontend
   * [#1157](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1157) Delete User Notifications
@@ -117,8 +122,11 @@ Here come the actual release notes:
 ## Fixes
 * metasfresh-app
   * [#2237](https://github.com/metasfresh/metasfresh/issues/2237) Order Control Report Attribute missing
+    * Fix/ Extension of the Order Control report. Now showing additional Attribute Values.
   * [#2260](https://github.com/metasfresh/metasfresh/issues/2260) SQL - problem to rollout master build to DB with issue-build
+    * Fix to Internal Housekeeping Issue during rollout to Database in Build process.
   * [#2345](https://github.com/metasfresh/metasfresh/issues/2345) java.math.BigDecimal Exception when using process quotation to sales order
+    * Fix for the Quotation to Sales Order Action.
 
 * metasfresh-webui-api
   * [#528](https://github.com/metasfresh/metasfresh-webui-api/issues/528) Exception when opening PP Order issue / receipt
