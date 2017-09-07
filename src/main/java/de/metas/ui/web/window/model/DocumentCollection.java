@@ -596,6 +596,7 @@ public class DocumentCollection
 		
 		
 		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
+		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
 		PO.copyValues(fromPO, toPO, true);
 		InterfaceWrapperHelper.save(toPO);
 		
