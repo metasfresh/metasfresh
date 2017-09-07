@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
 
@@ -32,7 +16,7 @@ public interface I_AD_Column
 
 //    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 4 - System 
+    /** AccessLevel = 4 - System
      */
 //    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
 
@@ -307,31 +291,6 @@ public interface I_AD_Column
     public static final String COLUMNNAME_AllowZoomTo = "AllowZoomTo";
 
 	/**
-	 * Set ColumnClass.
-	 * Vortual Column (r/o)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setColumnClass (java.lang.String ColumnClass);
-
-	/**
-	 * Get ColumnClass.
-	 * Vortual Column (r/o)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getColumnClass();
-
-    /** Column definition for ColumnClass */
-    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_ColumnClass = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "ColumnClass", null);
-    /** Column name ColumnClass */
-    public static final String COLUMNNAME_ColumnClass = "ColumnClass";
-
-	/**
 	 * Set Spaltenname.
 	 * Name of the column in the database
 	 *
@@ -360,7 +319,7 @@ public interface I_AD_Column
 	 * Set Column SQL.
 	 * Virtual Column (r/o)
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -370,7 +329,7 @@ public interface I_AD_Column
 	 * Get Column SQL.
 	 * Virtual Column (r/o)
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1083,6 +1042,29 @@ public interface I_AD_Column
     public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_ReadOnlyLogic = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "ReadOnlyLogic", null);
     /** Column name ReadOnlyLogic */
     public static final String COLUMNNAME_ReadOnlyLogic = "ReadOnlyLogic";
+
+	/**
+	 * Set Selection column ordering.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setSelectionColumnSeqNo (int SelectionColumnSeqNo);
+
+	/**
+	 * Get Selection column ordering.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getSelectionColumnSeqNo();
+
+    /** Column definition for SelectionColumnSeqNo */
+    public static final org.adempiere.model.ModelColumn<I_AD_Column, Object> COLUMN_SelectionColumnSeqNo = new org.adempiere.model.ModelColumn<I_AD_Column, Object>(I_AD_Column.class, "SelectionColumnSeqNo", null);
+    /** Column name SelectionColumnSeqNo */
+    public static final String COLUMNNAME_SelectionColumnSeqNo = "SelectionColumnSeqNo";
 
 	/**
 	 * Set Reihenfolge.

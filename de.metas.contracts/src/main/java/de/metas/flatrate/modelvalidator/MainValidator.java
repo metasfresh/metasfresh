@@ -25,6 +25,7 @@ package de.metas.flatrate.modelvalidator;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.impexp.IImportProcessFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.compiere.model.MClient;
@@ -39,7 +40,9 @@ import de.metas.contracts.subscription.inoutcandidate.spi.impl.InOutCandSubscrip
 import de.metas.contracts.subscription.inoutcandidate.spi.impl.SubscriptionInOutCandHandler;
 import de.metas.flatrate.Contracts_Constants;
 import de.metas.flatrate.freighcost.spi.impl.SubscriptionFreighCostFreeEvaluator;
+import de.metas.flatrate.impexp.FlatrateTermImportProcess;
 import de.metas.flatrate.inout.spi.impl.FlatrateMaterialBalanceConfigMatcher;
+import de.metas.flatrate.model.I_I_Flatrate_Term;
 import de.metas.flatrate.ordercandidate.spi.FlatrateGroupingProvider;
 import de.metas.flatrate.ordercandidate.spi.FlatrateOLCandListener;
 import de.metas.freighcost.api.IFreightCostBL;
@@ -119,6 +122,8 @@ public class MainValidator implements ModelValidator
 		}
 
 		setupCallouts();
+		
+		Services.get(IImportProcessFactory.class).registerImportProcess(I_I_Flatrate_Term.class, FlatrateTermImportProcess.class);
 	}
 
 	private void setupCallouts()
@@ -130,7 +135,7 @@ public class MainValidator implements ModelValidator
 	}
 
 	@Override
-	public String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	public String login(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
 		return null; // nothing to do
 	}
@@ -143,7 +148,7 @@ public class MainValidator implements ModelValidator
 
 
 	@Override
-	public String docValidate(PO po, int timing)
+	public String docValidate(final PO po, final int timing)
 	{
 		return null; // nothing to do
 	}

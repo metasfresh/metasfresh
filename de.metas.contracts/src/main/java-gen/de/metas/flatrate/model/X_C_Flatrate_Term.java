@@ -4,7 +4,6 @@ package de.metas.flatrate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Flatrate_Term
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -821091243L;
+	private static final long serialVersionUID = -133858118L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Term (Properties ctx, int C_Flatrate_Term_ID, String trxName)
@@ -25,25 +24,18 @@ public class X_C_Flatrate_Term extends org.compiere.model.PO implements I_C_Flat
       /** if (C_Flatrate_Term_ID == 0)
         {
 			setAD_User_InCharge_ID (0);
-			setBill_BPartner_ID (0);
-// @C_BPartner_ID@
+			setBill_BPartner_ID (0); // @C_BPartner_ID@
 			setBill_Location_ID (0);
 			setC_Flatrate_Conditions_ID (0);
 			setC_Flatrate_Data_ID (0);
 			setC_Flatrate_Term_ID (0);
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
-			setIsAutoRenew (false);
-// N
-			setIsPostageFree (false);
-// N
-			setIsSimulation (false);
-// N
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
+			setIsAutoRenew (false); // N
+			setIsPostageFree (false); // N
+			setIsSimulation (false); // N
 			setPlannedQtyPerUnit (BigDecimal.ZERO);
-			setProcessing (false);
-// N
+			setProcessing (false); // N
 			setStartDate (new Timestamp( System.currentTimeMillis() ));
 			setType_Conditions (null);
         } */

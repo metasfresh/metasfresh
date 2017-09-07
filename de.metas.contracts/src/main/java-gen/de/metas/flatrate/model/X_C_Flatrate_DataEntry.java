@@ -4,7 +4,6 @@ package de.metas.flatrate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_Flatrate_DataEntry
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1234255831L;
+	private static final long serialVersionUID = 1237507434L;
 
     /** Standard Constructor */
     public X_C_Flatrate_DataEntry (Properties ctx, int C_Flatrate_DataEntry_ID, String trxName)
@@ -28,15 +27,11 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 			setC_Flatrate_Term_ID (0);
 			setC_Period_ID (0);
 			setC_UOM_ID (0);
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
 			setM_Product_DataEntry_ID (0);
-			setProcessed (false);
-// N
-			setProcessing (false);
-// N
+			setProcessed (false); // N
+			setProcessing (false); // N
 			setType (null);
         } */
     }
@@ -74,7 +69,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -96,7 +91,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffAbs);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -118,7 +113,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffPercent);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -140,7 +135,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffPercentEff);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -162,7 +157,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyDiffPerUOM);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -184,7 +179,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ActualQtyPerUnit);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -602,7 +597,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatrateAmt);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -624,7 +619,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatrateAmtCorr);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -643,7 +638,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatrateAmtPerUOM);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -792,7 +787,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Planned);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
@@ -814,7 +809,7 @@ public class X_C_Flatrate_DataEntry extends org.compiere.model.PO implements I_C
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty_Reported);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 

@@ -98,29 +98,6 @@ public interface I_C_Flatrate_Data
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set C_Flatrate_DataEntry_IncludedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT);
-
-	/**
-	 * Get C_Flatrate_DataEntry_IncludedTab.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getC_Flatrate_DataEntry_IncludedT();
-
-    /** Column definition for C_Flatrate_DataEntry_IncludedT */
-    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_DataEntry_IncludedT = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_DataEntry_IncludedT", null);
-    /** Column name C_Flatrate_DataEntry_IncludedT */
-    public static final String COLUMNNAME_C_Flatrate_DataEntry_IncludedT = "C_Flatrate_DataEntry_IncludedT";
-
-	/**
 	 * Set Datenerfassung.
 	 *
 	 * <br>Type: ID
@@ -142,6 +119,29 @@ public interface I_C_Flatrate_Data
     public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_Data_ID = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_Data_ID", null);
     /** Column name C_Flatrate_Data_ID */
     public static final String COLUMNNAME_C_Flatrate_Data_ID = "C_Flatrate_Data_ID";
+
+	/**
+	 * Set C_Flatrate_DataEntry_IncludedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_Flatrate_DataEntry_IncludedT (java.lang.String C_Flatrate_DataEntry_IncludedT);
+
+	/**
+	 * Get C_Flatrate_DataEntry_IncludedTab.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getC_Flatrate_DataEntry_IncludedT();
+
+    /** Column definition for C_Flatrate_DataEntry_IncludedT */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object> COLUMN_C_Flatrate_DataEntry_IncludedT = new org.adempiere.model.ModelColumn<I_C_Flatrate_Data, Object>(I_C_Flatrate_Data.class, "C_Flatrate_DataEntry_IncludedT", null);
+    /** Column name C_Flatrate_DataEntry_IncludedT */
+    public static final String COLUMNNAME_C_Flatrate_DataEntry_IncludedT = "C_Flatrate_DataEntry_IncludedT";
 
 	/**
 	 * Get Erstellt.

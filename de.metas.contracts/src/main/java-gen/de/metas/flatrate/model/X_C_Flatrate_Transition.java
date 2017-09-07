@@ -14,7 +14,7 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 387691766L;
+	private static final long serialVersionUID = -1928742498L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Transition (Properties ctx, int C_Flatrate_Transition_ID, String trxName)
@@ -24,23 +24,15 @@ public class X_C_Flatrate_Transition extends org.compiere.model.PO implements I_
         {
 			setC_Calendar_Contract_ID (0);
 			setC_Flatrate_Transition_ID (0);
-			setDocAction (null);
-// CO
-			setDocStatus (null);
-// DR
-			setEndsWithCalendarYear (false);
-// N
-			setIsAutoCompleteNewTerm (false);
-// N
-			setIsAutoRenew (false);
-// N
-			setIsNotifyUserInCharge (false);
-// N
+			setDocAction (null); // CO
+			setDocStatus (null); // DR
+			setEndsWithCalendarYear (false); // N
+			setIsAutoCompleteNewTerm (false); // N
+			setIsAutoRenew (false); // N
+			setIsNotifyUserInCharge (false); // N
 			setName (null);
-			setProcessed (false);
-// N
-			setProcessing (false);
-// N
+			setProcessed (false); // N
+			setProcessing (false); // N
 			setTermDuration (0);
 			setTermDurationUnit (null);
 			setTermOfNotice (0);

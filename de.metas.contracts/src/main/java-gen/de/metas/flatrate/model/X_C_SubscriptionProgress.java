@@ -4,7 +4,6 @@ package de.metas.flatrate.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for C_SubscriptionProgress
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -626565630L;
+	private static final long serialVersionUID = 1831041135L;
 
     /** Standard Constructor */
     public X_C_SubscriptionProgress (Properties ctx, int C_SubscriptionProgress_ID, String trxName)
@@ -29,12 +28,9 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 			setDropShip_BPartner_ID (0);
 			setDropShip_Location_ID (0);
 			setEventType (null);
-			setIsSubscriptionConfirmed (false);
-// N
-			setProcessed (false);
-// N
-			setStatus (null);
-// P
+			setIsSubscriptionConfirmed (false); // N
+			setProcessed (false); // N
+			setStatus (null); // P
         } */
     }
 
@@ -87,42 +83,6 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 		return ii.intValue();
 	}
 
-	/** 
-	 * ContractStatus AD_Reference_ID=540000
-	 * Reference name: SubscriptionStatus
-	 */
-	public static final int CONTRACTSTATUS_AD_Reference_ID=540000;
-	/** Laufend  = Ru */
-	public static final String CONTRACTSTATUS_Laufend = "Ru";
-	/** Lieferpause = Pa */
-	public static final String CONTRACTSTATUS_Lieferpause = "Pa";
-	/** Beendet = En */
-	public static final String CONTRACTSTATUS_Beendet = "En";
-	/** Gekündigt = Qu */
-	public static final String CONTRACTSTATUS_Gekuendigt = "Qu";
-	/** Wartet auf Bestätigung = St */
-	public static final String CONTRACTSTATUS_WartetAufBestaetigung = "St";
-	/** Info = In */
-	public static final String CONTRACTSTATUS_Info = "In";
-	/** Noch nicht begonnen = Wa */
-	public static final String CONTRACTSTATUS_NochNichtBegonnen = "Wa";
-	/** Set Vertrags-Status.
-		@param ContractStatus Vertrags-Status	  */
-	@Override
-	public void setContractStatus (java.lang.String ContractStatus)
-	{
-
-		set_Value (COLUMNNAME_ContractStatus, ContractStatus);
-	}
-
-	/** Get Vertrags-Status.
-		@return Vertrags-Status	  */
-	@Override
-	public java.lang.String getContractStatus () 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
-	}
-
 	/** Set Abo-Verlauf.
 		@param C_SubscriptionProgress_ID Abo-Verlauf	  */
 	@Override
@@ -143,6 +103,44 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** 
+	 * ContractStatus AD_Reference_ID=540000
+	 * Reference name: SubscriptionStatus
+	 */
+	public static final int CONTRACTSTATUS_AD_Reference_ID=540000;
+	/** Laufend  = Ru */
+	public static final String CONTRACTSTATUS_Laufend = "Ru";
+	/** Lieferpause = Pa */
+	public static final String CONTRACTSTATUS_Lieferpause = "Pa";
+	/** Beendet = En */
+	public static final String CONTRACTSTATUS_Beendet = "En";
+	/** Gekündigt = Qu */
+	public static final String CONTRACTSTATUS_Gekuendigt = "Qu";
+	/** Wartet auf Bestätigung = St */
+	public static final String CONTRACTSTATUS_WartetAufBestaetigung = "St";
+	/** Info = In */
+	public static final String CONTRACTSTATUS_Info = "In";
+	/** Noch nicht begonnen = Wa */
+	public static final String CONTRACTSTATUS_NochNichtBegonnen = "Wa";
+	/** EndingContract = Ec */
+	public static final String CONTRACTSTATUS_EndingContract = "Ec";
+	/** Set Vertrags-Status.
+		@param ContractStatus Vertrags-Status	  */
+	@Override
+	public void setContractStatus (java.lang.String ContractStatus)
+	{
+
+		set_Value (COLUMNNAME_ContractStatus, ContractStatus);
+	}
+
+	/** Get Vertrags-Status.
+		@return Vertrags-Status	  */
+	@Override
+	public java.lang.String getContractStatus () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ContractStatus);
 	}
 
 	@Override
@@ -411,7 +409,7 @@ public class X_C_SubscriptionProgress extends org.compiere.model.PO implements I
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
-			 return Env.ZERO;
+			 return BigDecimal.ZERO;
 		return bd;
 	}
 
