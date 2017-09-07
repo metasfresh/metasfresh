@@ -92,7 +92,7 @@ public interface IView
 
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
-	default ViewResult getPageWithRowIdsOnly(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys)
+	default ViewResult getPageWithRowIdsOnly(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
 		return getPage(firstRow, pageLength, orderBys);
 	}
