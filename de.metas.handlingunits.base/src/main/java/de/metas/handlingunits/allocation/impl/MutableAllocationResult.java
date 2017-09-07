@@ -139,7 +139,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 	}
 
 	@Override
-	public void substractAllocatedQty(final BigDecimal qtyAllocated)
+	public void subtractAllocatedQty(final BigDecimal qtyAllocated)
 	{
 		final BigDecimal qtyToAllocateNew = qtyToAllocate.subtract(qtyAllocated);
 		Check.assume(qtyToAllocateNew.signum() >= 0,

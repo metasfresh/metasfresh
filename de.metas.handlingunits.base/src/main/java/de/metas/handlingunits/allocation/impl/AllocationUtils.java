@@ -252,7 +252,7 @@ public final class AllocationUtils
 		Check.assumeNotNull(to, "to not null");
 		Check.assumeNotNull(from, "from not null");
 
-		to.substractAllocatedQty(from.getQtyAllocated());
+		to.subtractAllocatedQty(from.getQtyAllocated());
 		to.addTransactions(from.getTransactions());
 		to.addAttributeTransactions(from.getAttributeTransactions());
 	}
