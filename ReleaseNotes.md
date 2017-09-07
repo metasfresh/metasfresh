@@ -43,6 +43,11 @@ Here come the actual release notes:
   * [#2362](https://github.com/metasfresh/metasfresh/issues/2362) Default Reports to WebUI
     * New Sales, Purchase, Warehouse, Logistics and Finance Reports added to WebUI.
 
+## Fixes
+* metasfresh-frontend
+  * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
+    * Fix and adjustment to the Lookup fields behavior in included Views.
+
 # metasfresh 5.25 (2017-36)
 
 **release for week 2017-36**
@@ -100,6 +105,7 @@ Here come the actual release notes:
 
 * metasfresh-webui-frontend
   * [#1157](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1157) Delete User Notifications
+    * Now the user can delete own User Notifications.
 
 ## Fixes
 * metasfresh-app
@@ -116,6 +122,7 @@ Here come the actual release notes:
 * metasfresh-webui-frontend
   * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product
   * [#1174](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1174) picking: weird issues with included view
+
 
 # metasfresh 5.24 (2017-35)
 
