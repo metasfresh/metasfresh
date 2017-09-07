@@ -130,13 +130,19 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#528](https://github.com/metasfresh/metasfresh-webui-api/issues/528) Exception when opening PP Order issue / receipt
+    * Fixes an Exception in Manufaturing Orders action Issue/ Recept.
   * [#551](https://github.com/metasfresh/metasfresh-webui-api/issues/551) verify if lookup value is still valid
+    * New Verification in Lookup Fields, now verifying that the included values are still valid.
   * [#553](https://github.com/metasfresh/metasfresh-webui-api/issues/553) webui notification-test fails
+    * Fix for the automated Test of User Notifications in Continuous Integration workflow.
   * [#561](https://github.com/metasfresh/metasfresh-webui-api/issues/561) Handling Unit Editor Materialentnahme Bug
+    * Fixes an Issue during Internal Usage workflow via Handling Unit Editor.
 
 * metasfresh-webui-frontend
   * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product
+    * Not closing the issue panel anymore automatically after performing the action issue for a manufacturing order.
   * [#1174](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1174) picking: weird issues with included view
+    * Stabilization of the new Picking window, now avioding some minor weird behavior.
 
 
 # metasfresh 5.24 (2017-35)
