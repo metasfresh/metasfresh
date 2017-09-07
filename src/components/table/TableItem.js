@@ -23,7 +23,7 @@ class TableItem extends Component {
                 activeCell: elem
             })
         }
-        
+
         this.editProperty(e, property, callback, item);
     }
 
@@ -201,6 +201,8 @@ class TableItem extends Component {
                 return 'meta-icon-receipt';
             case 'PP_Order_Issue':
                 return 'meta-icon-issue';
+            case 'M_Picking_Slot':
+                return 'meta-icon-beschaffung';	// https://github.com/metasfresh/metasfresh/issues/2298
         }
     }
 
