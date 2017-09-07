@@ -248,7 +248,7 @@ node('agent && linux')
 			if(!params.MF_SKIP_TO_DIST)
 			{
 				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
-				// junit '**/target/surefire-reports/*.xml'
+				junit '**/target/surefire-reports/*.xml'
         jacoco exclusionPattern: '**/src/main/java-gen'
 			}
 
