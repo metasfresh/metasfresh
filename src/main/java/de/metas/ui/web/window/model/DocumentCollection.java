@@ -586,6 +586,26 @@ public class DocumentCollection
 		});
 	}
 	
+	/**
+	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
+	 * 
+	 * @param tableName
+	 * @param recordId
+	 */
+	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
+	{
+		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(documentPath);
+
+		//
+		// Invalidate the root documents
+		rootDocuments.invalidate(documentKey);
+
+		//
+		// Notify frontend
+		final JSONDocumentChangedWebSocketEvent event = JSONDocumentChangedWebSocketEvent.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
+		websocketSender.convertAndSend(event.getWebsocketEndpoint(), event);
+	}
+	
 	public Document duplicateDocument(final DocumentPath fromDocumentPath)
 	{
 		final TableRecordReference fromRecordRef = getTableRecordReference(fromDocumentPath);
@@ -596,6 +616,7 @@ public class DocumentCollection
 		
 		
 		final PO toPO = TableModelLoader.instance.newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
+		toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, CopyRecordFactory.getCopyRecordSupport(tableName)); // set "getValueToCopy" advisor
 		PO.copyValues(fromPO, toPO, true);
 		InterfaceWrapperHelper.save(toPO);
 		

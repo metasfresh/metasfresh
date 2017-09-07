@@ -21,6 +21,7 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.websocket.WebSocketConfig;
 import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 /*
@@ -175,6 +176,13 @@ public class ViewChangesCollector implements AutoCloseable
 	public void collectRowsChanged(final IView view, final DocumentIdsSelection rowIds)
 	{
 		viewChanges(view).addChangedRowIds(rowIds);
+
+		autoflushIfEnabled();
+	}
+	
+	public void collectRowChanged(final IView view, final DocumentId rowId)
+	{
+		viewChanges(view).addChangedRowId(rowId);
 
 		autoflushIfEnabled();
 	}

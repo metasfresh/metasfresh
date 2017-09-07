@@ -76,8 +76,9 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 	}
 
 	/**
-	 * Only allows rows whose HUs are in the "active" status. 
+	 * Only allows rows whose HUs are in the "active" status.
 	 */
+	@Override
 	final ProcessPreconditionsResolution rejectResolutionOrNull(final HUEditorRow document)
 	{
 		if (!document.isHUStatusActive())
@@ -86,7 +87,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 		}
 		return null;
 	}
-	
+
 	@Override
 	@RunOutOfTrx
 	protected String doIt() throws Exception
@@ -123,7 +124,7 @@ public class WEBUI_M_HU_ReverseReceipt extends WEBUI_M_HU_Receipt_Base implement
 			if (hasChanges)
 			{
 				// Reset the view's affected HUs
-				getView().invalidateAll();
+				getView().removeHUIdsAndInvalidate(huIdsToReverse);
 
 				// Notify all active views that given receipt schedules were changed
 				viewsRepo.notifyRecordsChanged(TableRecordReference.ofSet(receiptSchedules));

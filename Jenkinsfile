@@ -144,7 +144,11 @@ node('agent && linux') // shall only run on a jenkins agent with linux
 <li>A docker image which you can run in docker via<br>
 <code>docker run --rm -d -p 8080:8080 -e "DB_HOST=localhost" --name metasfresh-webui-api-${MF_VERSION} ${BUILD_DOCKER_IMAGE}</code></li>
 </ul>"""
+
 				junit '**/target/surefire-reports/*.xml'
+
+				// thx to https://github.com/jenkinsci/jacoco-plugin/pull/83
+				jacoco exclusionPattern: '**/src/main/java-gen'
       } // stage
 		  } // withMaven
 			} // withEnv

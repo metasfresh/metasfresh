@@ -271,7 +271,12 @@ public class DefaultView implements IView
 	{
 		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
 		cache_rowsById.clear();
-		
+	}
+	
+	@Override
+	public void invalidateRowById(final DocumentId rowId)
+	{
+		cache_rowsById.remove(rowId);
 	}
 
 	private final void assertNotClosed()
@@ -467,7 +472,7 @@ public class DefaultView implements IView
 			return this;
 		}
 		
-		public Builder setParentRowId(DocumentId parentRowId)
+		public Builder setParentRowId(final DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
@@ -489,7 +494,7 @@ public class DefaultView implements IView
 			return windowId;
 		}
 
-		public Builder setViewType(JSONViewDataType viewType)
+		public Builder setViewType(final JSONViewDataType viewType)
 		{
 			this.viewType = viewType;
 			return this;
@@ -500,7 +505,7 @@ public class DefaultView implements IView
 			return viewType;
 		}
 
-		public Builder setReferencingDocumentPaths(Set<DocumentPath> referencingDocumentPaths)
+		public Builder setReferencingDocumentPaths(final Set<DocumentPath> referencingDocumentPaths)
 		{
 			this.referencingDocumentPaths = referencingDocumentPaths;
 			return this;

@@ -8,6 +8,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -86,30 +87,30 @@ public class ViewChanges
 	{
 		return fullyChanged;
 	}
-	
+
 	public boolean hasChanges()
 	{
-		if(fullyChanged)
+		if (fullyChanged)
 		{
 			return true;
 		}
-		
+
 		return changedRowIds != null && !changedRowIds.isEmpty();
 	}
 
 	public void addChangedRowIds(final DocumentIdsSelection rowIds)
 	{
 		// Don't collect rowIds if this was already flagged as fully changed.
-		if(fullyChanged)
+		if (fullyChanged)
 		{
 			return;
 		}
-		
+
 		if (rowIds == null || rowIds.isEmpty())
 		{
 			return;
 		}
-		
+
 		else if (rowIds.isAll())
 		{
 			fullyChanged = true;
@@ -123,6 +124,15 @@ public class ViewChanges
 			}
 			changedRowIds.addAll(rowIds.toSet());
 		}
+	}
+
+	public void addChangedRowId(@NonNull final DocumentId rowId)
+	{
+		if (changedRowIds == null)
+		{
+			changedRowIds = new HashSet<>();
+		}
+		changedRowIds.add(rowId);
 	}
 
 	public DocumentIdsSelection getChangedRowIds()

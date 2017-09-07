@@ -57,7 +57,7 @@ public class JSONViewRow extends JSONDocumentBase implements JSONViewRowBase
 				.collect(Collectors.toList());
 	}
 
-	private static JSONViewRow ofRow(final IViewRow row, final String adLanguage)
+	public static JSONViewRow ofRow(final IViewRow row, final String adLanguage)
 	{
 		//
 		// Document view record
