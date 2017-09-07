@@ -42,11 +42,15 @@ Here come the actual release notes:
     * Detailed improvements of the Invoice Candidates Window in WebUI, refining the Grid View Layout.
   * [#2362](https://github.com/metasfresh/metasfresh/issues/2362) Default Reports to WebUI
     * New Sales, Purchase, Warehouse, Logistics and Finance Reports added to WebUI.
+  * [#2378](https://github.com/metasfresh/metasfresh/issues/2378) Procurement candidates detail Improvements
+    * Refining the Fieldnames in Procurement Candidates Window, allowing a better transparency for the User.
 
 ## Fixes
 * metasfresh-frontend
   * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
     * Fix and adjustment to the Lookup fields behavior in included Views.
+  * [#1183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1183) Purchase order: screen is scrolling when i am trying to type in Delivery from field
+    * Avoiding the scroll of the main page when scrolling in a Lookup Field
 
 # metasfresh 5.25 (2017-36)
 
