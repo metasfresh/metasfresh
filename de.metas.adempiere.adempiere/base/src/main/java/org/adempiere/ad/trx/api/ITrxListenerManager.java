@@ -1,5 +1,6 @@
 package org.adempiere.ad.trx.api;
 
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,9 +25,10 @@ package org.adempiere.ad.trx.api;
 
 import org.adempiere.ad.trx.spi.ITrxListener;
 import org.adempiere.ad.trx.spi.TrxListenerAdapter;
-import org.adempiere.util.Check;
 
 import com.google.common.base.MoreObjects;
+
+import lombok.NonNull;
 
 /**
  * Transactions Listeners Mananger.<br>
@@ -57,9 +59,8 @@ public interface ITrxListenerManager
 	 * 
 	 * @param runnable
 	 */
-	default void onAfterCommit(final Runnable runnable)
+	default void onAfterCommit(@NonNull final Runnable runnable)
 	{
-		Check.assumeNotNull(runnable, "Parameter runnable is not null");
 		registerListener(new TrxListenerAdapter()
 		{
 			@Override
@@ -76,6 +77,12 @@ public interface ITrxListenerManager
 		});
 	}
 
+	/**
+	 * Similar to {@link #onAfterCommit(Runnable)}, but the given {@code runnable} is automatically unregistered after its first invocation.
+	 * @param runnable
+	 */
+	void onAfterFirstCommit(Runnable runnable);
+
 	void fireBeforeCommit(ITrx trx);
 
 	void fireAfterCommit(ITrx trx);
@@ -83,5 +90,4 @@ public interface ITrxListenerManager
 	void fireAfterRollback(ITrx trx);
 
 	void fireAfterClose(ITrx trx);
-
 }

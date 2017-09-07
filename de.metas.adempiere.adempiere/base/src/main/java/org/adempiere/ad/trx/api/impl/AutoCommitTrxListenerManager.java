@@ -49,6 +49,15 @@ import org.adempiere.ad.trx.spi.ITrxListener;
 		execute(listener);
 	}
 
+	/**
+	 * Same as {@link #onAfterCommit(Runnable)}.
+	 */
+	@Override
+	public void onAfterFirstCommit(Runnable runnable)
+	{
+		onAfterCommit(runnable);
+	}
+	
 	@Override
 	public void registerListener(final boolean weak, final ITrxListener listener)
 	{
