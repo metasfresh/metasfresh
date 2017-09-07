@@ -213,8 +213,13 @@ public interface ITrxManager extends ISingletonService
 	 * @see #run(String, boolean, TrxRunnable)
 	 */
 	void run(String trxName, TrxRunnable r);
-
+	
 	void run(String trxName, Runnable runnable);
+	
+	default void runInThreadInheritedTrx(final Runnable runnable)
+	{
+		run(ITrx.TRXNAME_ThreadInherited, runnable);
+	}
 
 	/**
 	 * Executes the callable object. Same as calling {@link #call(String, boolean, TrxRunnable)} with manageTrx = false. This means that it uses the trx with the the given trxName, creates a savepoint

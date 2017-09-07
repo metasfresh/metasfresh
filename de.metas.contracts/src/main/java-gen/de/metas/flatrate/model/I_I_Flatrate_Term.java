@@ -230,6 +230,60 @@ public interface I_I_Flatrate_Term
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Lieferempfänger.
+	 * Business Partner to ship to
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
+
+	/**
+	 * Get Lieferempfänger.
+	 * Business Partner to ship to
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDropShip_BPartner_ID();
+
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner();
+
+	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner);
+
+    /** Column definition for DropShip_BPartner_ID */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, org.compiere.model.I_C_BPartner>(I_I_Flatrate_Term.class, "DropShip_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+    /** Column name DropShip_BPartner_ID */
+    public static final String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Lieferempfänger Key.
+	 * Business Partner to ship to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDropShip_BPartner_Value (java.lang.String DropShip_BPartner_Value);
+
+	/**
+	 * Get Lieferempfänger Key.
+	 * Business Partner to ship to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getDropShip_BPartner_Value();
+
+    /** Column definition for DropShip_BPartner_Value */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_DropShip_BPartner_Value = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "DropShip_BPartner_Value", null);
+    /** Column name DropShip_BPartner_Value */
+    public static final String COLUMNNAME_DropShip_BPartner_Value = "DropShip_BPartner_Value";
+
+	/**
 	 * Set Enddatum.
 	 * Last effective date (inclusive)
 	 *

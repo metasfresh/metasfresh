@@ -249,6 +249,7 @@ node('agent && linux')
 			{
 				// collect the test results for the two preceeding stages. call this step once to avoid counting the tests twice.
 				junit '**/target/surefire-reports/*.xml'
+        jacoco exclusionPattern: '**/src/main/java-gen'
 			}
 
 		} // withMaven

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
+<!-- 2017-09-06T15:33:44 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="label" pageWidth="156" pageHeight="284" columnWidth="156" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/cu_manufacturing/report" uuid="76f10556-26bf-42e7-b375-0391b4cedd84">
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<parameter name="SUBREPORT_DIR" class="java.lang.String" isForPrompting="false">
+		<defaultValueExpression><![CDATA[".\\"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT	
+	(CASE WHEN pi.AD_Table_ID = get_table_ID('M_HU') THEN ts.T_Selection_ID ELSE NULL END) AS M_HU_ID,
+	(CASE WHEN pi.AD_Table_ID = get_table_ID('PP_Order') THEN pi.Record_ID ELSE NULL END) AS PP_Order_ID
+FROM AD_PInstance pi
+LEFT JOIN T_Selection ts ON pi.AD_PInstance_ID = ts.AD_PInstance_ID
+WHERE	pi.AD_PInstance_ID =  $P{AD_PInstance_ID}
+ORDER BY ts.T_Selection_ID]]>
+	</queryString>
+	<field name="m_hu_id" class="java.math.BigDecimal"/>
+	<field name="pp_order_id" class="java.math.BigDecimal"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="284" splitType="Stretch">
+			<subreport>
+				<reportElement x="0" y="0" width="156" height="283" uuid="06d9d72d-5738-4760-ad56-026152b47d49"/>
+				<subreportParameter name="m_hu_id">
+					<subreportParameterExpression><![CDATA[$F{m_hu_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="pp_order_id">
+					<subreportParameterExpression><![CDATA[$F{pp_order_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/label/cu_manufacturing/label.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+</jasperReport>

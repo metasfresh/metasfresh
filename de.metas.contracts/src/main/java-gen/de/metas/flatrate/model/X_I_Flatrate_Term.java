@@ -15,7 +15,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 2091512056L;
+	private static final long serialVersionUID = 1687046215L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -182,6 +182,62 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_BPartner getDropShip_BPartner() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class);
+	}
+
+	@Override
+	public void setDropShip_BPartner(org.compiere.model.I_C_BPartner DropShip_BPartner)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_BPartner_ID, org.compiere.model.I_C_BPartner.class, DropShip_BPartner);
+	}
+
+	/** Set Lieferempfänger.
+		@param DropShip_BPartner_ID 
+		Business Partner to ship to
+	  */
+	@Override
+	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID)
+	{
+		if (DropShip_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_BPartner_ID, Integer.valueOf(DropShip_BPartner_ID));
+	}
+
+	/** Get Lieferempfänger.
+		@return Business Partner to ship to
+	  */
+	@Override
+	public int getDropShip_BPartner_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Lieferempfänger Key.
+		@param DropShip_BPartner_Value 
+		Business Partner to ship to
+	  */
+	@Override
+	public void setDropShip_BPartner_Value (java.lang.String DropShip_BPartner_Value)
+	{
+		set_Value (COLUMNNAME_DropShip_BPartner_Value, DropShip_BPartner_Value);
+	}
+
+	/** Get Lieferempfänger Key.
+		@return Business Partner to ship to
+	  */
+	@Override
+	public java.lang.String getDropShip_BPartner_Value () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_DropShip_BPartner_Value);
 	}
 
 	/** Set Enddatum.

@@ -3,10 +3,12 @@ package de.metas.flatrate.impexp;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractImportProcess;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,6 +22,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
 import org.compiere.util.DB;
 
+import com.google.common.collect.Ordering;
+
+import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
@@ -52,6 +57,7 @@ import de.metas.product.IProductBL;
 public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrate_Term>
 {
 	private final transient IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public Class<I_I_Flatrate_Term> getImportModelClass()
@@ -102,6 +108,28 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			// Flag missing BPartners
 			markAsError("BPartner not found", I_I_Flatrate_Term.COLUMNNAME_C_BPartner_ID + " IS NULL"
 					+ "\n AND " + sqlImportWhereClause);
+		}
+
+		//
+		// Update DropShip_BPartner_ID
+		{
+			final String sqlSelectByValue = "select MIN(bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + ")"
+					+ " from " + I_C_BPartner.Table_Name + " bp "
+					+ " where bp." + I_C_BPartner.COLUMNNAME_Value + "=i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_Value
+					+ " and bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + "=i." + I_I_Flatrate_Term.COLUMNNAME_AD_Client_ID;
+			final String sql = "UPDATE " + I_I_Flatrate_Term.Table_Name + " i "
+					+ "\n SET " + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + "=(" + sqlSelectByValue + ")"
+					+ "\n WHERE " + sqlImportWhereClause
+					+ "\n AND i." + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + " IS NULL";
+
+			final int no = DB.executeUpdateEx(sql, trxName);
+			log.debug("Set DropShip_BPartner_ID for {} records", no);
+
+			// Flag missing DropShip BPartners
+			markAsError("DropShip BPartner not found",
+					I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID + " IS NULL"
+							+ "\n AND " + I_I_Flatrate_Term.COLUMNNAME_DropShip_BPartner_Value + " IS NOT NULL" // only where the we have a key to match
+							+ "\n AND " + sqlImportWhereClause);
 		}
 
 		//
@@ -196,9 +224,30 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		}
 
 		//
+		// DropShip BPartner and Location
+		{
+			int dropShipBPartnerId = importRecord.getDropShip_BPartner_ID();
+			if (dropShipBPartnerId <= 0)
+			{
+				dropShipBPartnerId = importRecord.getC_BPartner_ID();
+			}
+			if (dropShipBPartnerId <= 0)
+			{
+				throw new AdempiereException("DropShip BPartner not found");
+			}
+
+			final I_C_BPartner_Location dropShipBPLocation = findBPartnerShipToLocation(dropShipBPartnerId);
+			if (dropShipBPLocation != null)
+			{
+				contract.setDropShip_BPartner_ID(dropShipBPartnerId);
+				contract.setDropShip_Location(dropShipBPLocation);
+			}
+		}
+
+		//
 		// Product/UOM and price
 		{
-			// NOTE: product was already set above
+			contract.setM_Product(product);
 			final I_C_UOM uom = Services.get(IProductBL.class).getStockingUOM(product);
 			contract.setC_UOM(uom);
 
@@ -235,6 +284,34 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		importRecord.setI_IsImported(X_I_Flatrate_Term.I_ISIMPORTED_Imported);
 		importRecord.setProcessed(true);
 		InterfaceWrapperHelper.save(importRecord);
+	}
+
+	private I_C_BPartner_Location findBPartnerShipToLocation(final int bpartnerId)
+	{
+		final List<I_C_BPartner_Location> bpLocations = bpartnerDAO.retrieveBPartnerLocations(getCtx(), bpartnerId, ITrx.TRXNAME_None);
+		if (bpLocations.isEmpty())
+		{
+			return null;
+		}
+		else if (bpLocations.size() == 1)
+		{
+			return bpLocations.get(0);
+		}
+		else
+		{
+			final I_C_BPartner_Location bpLocation = bpLocations.stream()
+					.filter(I_C_BPartner_Location::isShipTo)
+					.sorted(Ordering.natural().onResultOf(bpl -> bpl.isShipToDefault() ? 0 : 1))
+					.findFirst().get();
+			if (bpLocation.isShipToDefault())
+			{
+				return bpLocation;
+			}
+			else
+			{
+				return null;
+			}
+		}
 	}
 
 }
