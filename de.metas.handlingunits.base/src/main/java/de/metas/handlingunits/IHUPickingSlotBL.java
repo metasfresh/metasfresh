@@ -154,17 +154,18 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	}
 
 	/**
-	 * Search for available (top level) HUs to be picked. Picking in this case means that the whole HU is assigned to a picking slot.
+	 * Search for available (top level) HUs to be picked. Picking in this case means that the whole HU is assigned to a picking slot.<br>
+	 * Available HUs are not yet picked and are not yet selected to be source HUs
 	 *
 	 * @param request
 	 * 
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsRequest request);
+	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery request);
 
 	@lombok.Builder
 	@lombok.Value
-	public static final class PickingHUsRequest
+	public static final class PickingHUsQuery
 	{
 		/**
 		 * If true we shall consider the HU attributes while searching for matching HUs.
@@ -193,5 +194,5 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 * @param request
 	 * @return
 	 */
-	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsRequest request);
+	List<I_M_HU> retrieveSourceHUs(PickingHUsQuery request);
 }

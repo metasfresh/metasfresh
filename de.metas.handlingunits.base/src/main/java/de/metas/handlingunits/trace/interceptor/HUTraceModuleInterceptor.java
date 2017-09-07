@@ -75,7 +75,7 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		}
 
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-		huTrxBL.addListener(new TraceHUTrxListener());
+		huTrxBL.addListener(TraceHUTrxListener.INSTANCE);
 
 	}
 

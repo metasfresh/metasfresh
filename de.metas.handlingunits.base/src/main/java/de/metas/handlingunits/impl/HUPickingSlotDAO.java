@@ -244,12 +244,12 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
 	public boolean isSourceHU(final int huId)
 	{
-		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
+		final boolean isSourceHU = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Source_HU.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.match();
-		return isAlreadyPicked;
+		return isSourceHU;
 	}
 }

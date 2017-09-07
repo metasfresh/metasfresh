@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsRequest;
+import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
@@ -78,7 +78,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 	@Test
 	public void testEmtpySchedulesList()
 	{
-		final List<I_M_HU> result = new HUPickingSlotBL().retrieveAvailableHUsToPick(PickingHUsRequest.builder().shipmentSchedules(Collections.emptyList()).build());
+		final List<I_M_HU> result = new HUPickingSlotBL().retrieveAvailableHUsToPick(PickingHUsQuery.builder().shipmentSchedules(Collections.emptyList()).build());
 		assertThat(result).isEmpty();
 	}
 
@@ -381,7 +381,7 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 		// @formatter:on
 
 		final List<I_M_HU> result = new HUPickingSlotBL()
-				.retrieveAvailableHUsToPick(PickingHUsRequest.builder()
+				.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
 						.shipmentSchedules(ImmutableList.of(shipmentSchedule))
 						.onlyTopLevelHUs(onlyTopLevelHUs)
 						.build());

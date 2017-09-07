@@ -30,7 +30,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 
 /**
- * Used to retrieve {@link IStorageRecord}s. Use {@link IStorageBL#createStorageQuery()} to get an instance.
+ * Used to retrieve {@link IStorageRecord}s. Use {@link IStorageEngine#newStorageQuery()} to get an instance.
  * <p>
  * Also see {@link IStorageSegment}.
  *

@@ -37,7 +37,6 @@ import java.util.function.Predicate;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -46,10 +45,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable;
 
@@ -75,7 +71,7 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.impl.PickingSlotBL;
 import de.metas.storage.IStorageEngine;
@@ -574,20 +570,20 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsRequest request)
+	public List<I_M_HU> retrieveSourceHUs(@NonNull final PickingHUsQuery request)
 	{
-		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveTopLevelAndFilterForSourceHUs(vhus)));
+		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveTopLevelAndFilterForActualSourceHUs(vhus)));
 	}
 
 	@Override
-	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsRequest request)
+	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery request)
 	{
 		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveFullTreeAndExcludePickingHUs(vhus)));
 	}
 
 	private List<I_M_HU> retrieveAvailableHUsToPick0(
-			@NonNull final PickingHUsRequest request,
-			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> function)
+			@NonNull final PickingHUsQuery request,
+			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction)
 	{
 		if (request.getShipmentSchedules().isEmpty())
 		{
@@ -596,7 +592,7 @@ public class HUPickingSlotBL
 
 		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request.getShipmentSchedules(), request.isConsiderAttributes());
 
-		final List<I_M_HU> result = function.apply(vhus);
+		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
 
 		if (!request.isOnlyTopLevelHUs())
 		{
@@ -612,20 +608,21 @@ public class HUPickingSlotBL
 			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
 			final boolean considerAttributes)
 	{
-		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
-
 		//
 		// Create storage queries from shipment schedules
+
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		final Set<IStorageQuery> storageQueries = new HashSet<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final IStorageQuery storageQuery = createStorageQuery(storageEngine, shipmentSchedule, considerAttributes);
+			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes);
 			storageQueries.add(storageQuery);
 		}
 
 		//
 		// Retrieve Storage records
+		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
+		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
 		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
 		final Collection<IStorageRecord> storageRecords = storageEngine.retrieveStorageRecords(context, storageQueries);
 
@@ -711,7 +708,7 @@ public class HUPickingSlotBL
 	}
 
 	@VisibleForTesting
-	List<I_M_HU> retrieveTopLevelAndFilterForSourceHUs(@NonNull final List<I_M_HU> vhus)
+	List<I_M_HU> retrieveTopLevelAndFilterForActualSourceHUs(@NonNull final List<I_M_HU> vhus)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
@@ -736,41 +733,5 @@ public class HUPickingSlotBL
 		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
 
 		return ImmutableList.copyOf(sourceHUs);
-	}
-
-	/**
-	 * Creates "HUs available to be picked" storage query.
-	 * 
-	 * @param sched
-	 * @param considerAttributes true if we shall consider the HU attributes while searching for matching HUs
-	 * @return query
-	 */
-	private IStorageQuery createStorageQuery(final IStorageEngine storageEngine, final I_M_ShipmentSchedule sched, final boolean considerAttributes)
-	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-
-		//
-		// Create storage query
-		final I_M_Product product = sched.getM_Product();
-		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
-		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
-
-		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
-		storageQuery.addWarehouse(warehouse);
-		storageQuery.addProduct(product);
-		storageQuery.addPartner(bpartner);
-
-		// Add query attributes
-		if (considerAttributes)
-		{
-			final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
-			if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
-			{
-				final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
-				storageQuery.addAttributes(attributeSet);
-			}
-		}
-
-		return storageQuery;
 	}
 }
