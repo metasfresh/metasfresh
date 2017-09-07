@@ -40,7 +40,7 @@ import de.metas.payment.esr.model.I_ESR_Import;
  * #L%
  */
 
-public class ESRDataImporterCamt54Tests
+public class ESRDataImporterCamt54V06Tests
 {
 	private final Condition<? super ESRTransaction> trxHasNoErrors = new Condition<>(
 			t -> t.getErrorMsgs().isEmpty(),
@@ -272,30 +272,6 @@ public class ESRDataImporterCamt54Tests
 		return importData;
 	}
 
-	
-	/**
-	 * test v02 file
-	 */
-	@Test
-	public void testV02File()
-	{
-		
-		final InputStream inputStream = getClass().getResourceAsStream("/camt054_esr_v02.xml");
-		assertThat(inputStream).isNotNull();
-
-		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
-
-		assertThat(importData.getCtrlQty()).isNull();
-		assertThat(importData.getCtrlAmount()).isEqualByComparingTo("1130");
-
-		final BigDecimal lineSum = importData
-				.getTransactions()
-				.stream()
-				.map(t -> t.getAmount()).reduce(
-						BigDecimal.ZERO,
-						(a, b) -> a.add(b));
-		assertThat(lineSum).isEqualByComparingTo(importData.getCtrlAmount());
-	}
 	
 	/**
 	 * User this method to quickly run with customer-provided files which we can't share.<br>

@@ -64,7 +64,17 @@ import lombok.NonNull;
  * Creates an {@link ESRStatement} from camt.54-XML data.
  * This implementation assumes the incoming XML to comply with the version <b><code>camt.054.001.06</code></b>.
  * However, XML which have versions <code>camt.054.001.04</code> and <code>camt.054.001.05</code> will also work (gh #1093).
- *
+ * 
+ * <p>
+ * Lots of methods are duplicated from <code>ESRDataImporterCamt54v02</code>
+ * Important logical differences are in methods:
+ * <ul>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.loadXML()/code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.verifyTransactionCurrency(EntryTransaction8, ESRTransactionBuilder)/code>
+ * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.extractAmountAndType(ReportEntry8, EntryTransaction8, ESRTransactionBuilder)</code>
+ * </ul>	
+ * For the rest, the difference is the object generated from xsd
+ * 
  * <p>
  * The XSD file for the xml which this implementation imports is available at <a href="https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip">BankToCustomerDebitCreditNotificationV04</a>.<br>
  * Note that
