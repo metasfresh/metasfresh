@@ -5,13 +5,26 @@ class ModalContextShortcuts extends Component {
     constructor(props){
         super(props);
     }
+
+    blurActiveElement = () => {
+        const activeElement = document.activeElement;
+
+        if (activeElement && activeElement.blur) {
+            activeElement.blur();
+        }
+    }
+
     handleShortcuts = (action, event) => {
         const {apply, cancel} = this.props;
 
         switch (action) {
             case 'APPLY':
                 event.preventDefault();
+
+                this.blurActiveElement();
+
                 apply && apply();
+
                 break;
             case 'CANCEL':
                 event.preventDefault();
