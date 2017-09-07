@@ -78,3 +78,8 @@ UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-07 14:40:33'
 UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-07 14:40:47','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='TU next Week ordered' WHERE AD_Field_ID=556699 AND AD_Language='en_US'
 ;
 
+-- 2017-09-07T15:50:50.475
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-07 15:50:50','YYYY-MM-DD HH24:MI:SS'),Name='TU agreed' WHERE AD_Field_ID=556858 AND AD_Language='en_US'
+;
+
