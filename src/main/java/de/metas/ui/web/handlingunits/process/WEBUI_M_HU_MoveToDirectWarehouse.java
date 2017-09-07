@@ -1,15 +1,19 @@
 package de.metas.ui.web.handlingunits.process;
 
+import java.util.List;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.google.common.collect.Iterators;
+import com.google.common.collect.ImmutableList;
 
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
 
@@ -43,6 +47,8 @@ import de.metas.ui.web.window.model.DocumentCollection;
  */
 public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
+	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
 	@Autowired
 	private DocumentCollection documentsCollection;
 
@@ -50,14 +56,17 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
-		if (!selectedRowIds.isSingleDocumentId())
+		if (selectedRowIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
-		final HUEditorRow huRow = getView().getById(rowId);
-		if (!huRow.isTopLevel())
+		final boolean hasTopLevelHUsSelected = getView()
+				.streamByIds(selectedRowIds)
+				.filter(HUEditorRow::isTopLevel)
+				.anyMatch(HUEditorRow::isTopLevel);
+
+		if (!hasTopLevelHUsSelected)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a top level HU");
 		}
@@ -69,8 +78,15 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final I_M_HU hu = getRecord(I_M_HU.class);
-		
+		final List<I_M_HU> selectedTopLevelHUs = getSelectedHUs()
+				.stream()
+				.filter(handlingUnitsBL::isTopLevel)
+				.collect(ImmutableList.toImmutableList());
+		if (selectedTopLevelHUs.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
 				.setHUView(getView())
@@ -78,7 +94,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
 				.setLoggable(this)
-				.move(Iterators.singletonIterator(hu));
+				.move(selectedTopLevelHUs.iterator());
 
 		return MSG_OK;
 	}
