@@ -20,7 +20,7 @@ import com.google.common.base.Objects;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
-import de.metas.payment.camt054.v02.jaxb.BankToCustomerDebitCreditNotificationV02;
+import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;

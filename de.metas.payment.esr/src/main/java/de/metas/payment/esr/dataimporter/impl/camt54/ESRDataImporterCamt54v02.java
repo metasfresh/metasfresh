@@ -21,16 +21,18 @@ import org.compiere.util.Env;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.i18n.IMsgBL;
-import de.metas.payment.camt054.v02.jaxb.AccountNotification2;
-import de.metas.payment.camt054.v02.jaxb.AmountAndCurrencyExchange3;
-import de.metas.payment.camt054.v02.jaxb.AmountAndCurrencyExchangeDetails3;
-import de.metas.payment.camt054.v02.jaxb.BankToCustomerDebitCreditNotificationV02;
-import de.metas.payment.camt054.v02.jaxb.DateAndDateTimeChoice;
-import de.metas.payment.camt054.v02.jaxb.Document;
-import de.metas.payment.camt054.v02.jaxb.EntryDetails1;
-import de.metas.payment.camt054.v02.jaxb.EntryTransaction2;
-import de.metas.payment.camt054.v02.jaxb.ObjectFactory;
-import de.metas.payment.camt054.v02.jaxb.ReportEntry2;
+import de.metas.payment.camt054_001_02.AccountNotification2;
+import de.metas.payment.camt054_001_02.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.payment.camt054_001_02.AmountAndCurrencyExchange3;
+import de.metas.payment.camt054_001_02.AmountAndCurrencyExchangeDetails3;
+import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
+import de.metas.payment.camt054_001_02.CreditDebitCode;
+import de.metas.payment.camt054_001_02.DateAndDateTimeChoice;
+import de.metas.payment.camt054_001_02.Document;
+import de.metas.payment.camt054_001_02.EntryDetails1;
+import de.metas.payment.camt054_001_02.EntryTransaction2;
+import de.metas.payment.camt054_001_02.ObjectFactory;
+import de.metas.payment.camt054_001_02.ReportEntry2;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
@@ -238,7 +240,7 @@ public class ESRDataImporterCamt54v02
 
 		final AmountAndCurrencyExchange3 transactionDetailAmt = txDtls.getAmtDtls();
 		final AmountAndCurrencyExchangeDetails3 transactionInstdAmt = transactionDetailAmt.getInstdAmt();
-		final de.metas.payment.camt054.v02.jaxb.ActiveOrHistoricCurrencyAndAmount amt = transactionInstdAmt.getAmt();
+		final ActiveOrHistoricCurrencyAndAmount amt = transactionInstdAmt.getAmt();
 
 
 		final BigDecimal amount = amt.getValue()
@@ -246,7 +248,7 @@ public class ESRDataImporterCamt54v02
 				.multiply(getRvslMultiplier(ntry));
 		trxBuilder.amount(amount);
 
-		if (ntry.getCdtDbtInd() == de.metas.payment.camt054.v02.jaxb.CreditDebitCode.CRDT)
+		if (ntry.getCdtDbtInd() == CreditDebitCode.CRDT)
 		{
 			if (isReversal(ntry))
 			{
@@ -272,9 +274,9 @@ public class ESRDataImporterCamt54v02
 	 * @param creditDebitCode
 	 * @return
 	 */
-	private BigDecimal getCrdDbtMultiplier(@NonNull final de.metas.payment.camt054.v02.jaxb.CreditDebitCode creditDebitCode)
+	private BigDecimal getCrdDbtMultiplier(@NonNull final CreditDebitCode creditDebitCode)
 	{
-		if (creditDebitCode == de.metas.payment.camt054.v02.jaxb.CreditDebitCode.CRDT)
+		if (creditDebitCode == CreditDebitCode.CRDT)
 		{
 			return BigDecimal.ONE;
 		}
@@ -327,7 +329,7 @@ public class ESRDataImporterCamt54v02
 
 		final AmountAndCurrencyExchange3 transactionDetailAmt = txDtls.getAmtDtls();
 		final AmountAndCurrencyExchangeDetails3 transactionInstdAmt = transactionDetailAmt.getInstdAmt();
-		final de.metas.payment.camt054.v02.jaxb.ActiveOrHistoricCurrencyAndAmount amt = transactionInstdAmt.getAmt();
+		final ActiveOrHistoricCurrencyAndAmount amt = transactionInstdAmt.getAmt();
 
 		final String headerCurrencyISO = header.getC_BP_BankAccount().getC_Currency().getISO_Code();
 		if (!headerCurrencyISO.equalsIgnoreCase(amt.getCcy()))
