@@ -1608,10 +1608,14 @@ public abstract class PO
 				// metas: begin: us215
 				else if (honorIsCalculated && from.p_info.isCalculated(i))
 				{
-					if (to.getDynAttribute(PO.DYNATTR_CopyRecordSupport) != null)
+					final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(DYNATTR_CopyRecordSupport);
+					if (cps != null)
 					{
-						final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(PO.DYNATTR_CopyRecordSupport);
 						to.m_newValues[i] = cps.getValueToCopy(to, from, colName);
+					}
+					else
+					{
+						s_log.trace("Skip copying calculated column because there is no CopyRecordSupport advisor: {}", colName);
 					}
 				}
 				// metas: end: us215
@@ -1629,7 +1633,7 @@ public abstract class PO
 						|| colName.equals("Processed") // metas: tsa: us215
 				)
 				{
-					;	// ignore / skip this column
+					s_log.trace("Skip copying standard column: {}", colName);
 				}
 				else
 				{
