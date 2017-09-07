@@ -271,7 +271,12 @@ public class DefaultView implements IView
 	{
 		// TODO recreate defaultSelection, clear selectionsByOrderBys etc
 		cache_rowsById.clear();
-		
+	}
+	
+	@Override
+	public void invalidateRowById(final DocumentId rowId)
+	{
+		cache_rowsById.remove(rowId);
 	}
 
 	private final void assertNotClosed()

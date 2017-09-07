@@ -86,9 +86,25 @@ public interface IView
 	boolean isQueryLimitHit();
 
 	/**
-	 * NOTE: don't call this directly it shall be called by API.
+	 * Invalidate ALL view rows.
+	 * 
+	 * NOTE: this method is NOT sending websocket notifications
 	 */
 	void invalidateAll();
+
+	/**
+	 * Invalidate given row by ID.
+	 * 
+	 * If there is no custom implementation then this method will invalidate all by default.
+	 * 
+	 * NOTE: this method is NOT sending websocket notifications
+	 * 
+	 * @param rowId
+	 */
+	default void invalidateRowById(final DocumentId rowId)
+	{
+		invalidateAll();
+	}
 
 	ViewResult getPage(int firstRow, int pageLength, List<DocumentQueryOrderBy> orderBys);
 
