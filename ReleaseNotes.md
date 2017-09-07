@@ -55,9 +55,13 @@ Here come the actual release notes:
 ## Features
 * metasfresh-app
   * [#529](https://github.com/metasfresh/metasfresh/issues/529) Possibility to easily create more than 1 referenced Doc per Invoice
+    * Extending the credit memo generation action for Invoices. Adding more flexibility, now allowing to create more than 1 referenced document.
   * [#1876](https://github.com/metasfresh/metasfresh/issues/1876) New CU Labels
+    * New Customer Unit Labels created. These will be uses in manufacturing Action receipt workflow.
   * [#2102](https://github.com/metasfresh/metasfresh/issues/2102) maven change "local" version from 1.0.0 to 10.0.0
+    * Internal Housekleeping issue solved for our Continuous Integration/ Build System.
   * [#2145](https://github.com/metasfresh/metasfresh/issues/2145) Partial Internal usage action in Handling Unit Editor
+    * Extended Functionality in in Internal usage action in Handling Unit Editor, now allowing to select and use partial Handling Units.
   * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
     * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
   * [#2230](https://github.com/metasfresh/metasfresh/issues/2230) New Window for Fact_Acct_ActivityChangeRequest
@@ -71,8 +75,11 @@ Here come the actual release notes:
   * [#2236](https://github.com/metasfresh/metasfresh/issues/2236) New Window for Printing Queue in WebUI
     * New window for Printing Queue maintenance in WebUI.
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2245) Replace description field by memo in B2C
+    * Detail adjustment in Businesspartner B2C window, changing the Field Type of description field to memo, allowing the user to record longer text.
   * [#2247](https://github.com/metasfresh/metasfresh/issues/2247) Make Request Type a search field
+    * Adding the Request Type to Filter criteria in Request Window.
   * [#2258](https://github.com/metasfresh/metasfresh/issues/2258) add due date to request grid view
+    * Adding the Field Due Date to the included View of Requests in B2C Customer Window in WebUI.
   * [#2267](https://github.com/metasfresh/metasfresh/issues/2267) New Window for Hardware drucker in WebUI
     * New Widnow for Printer Configuration and Maintenance in WebUI.
   * [#2268](https://github.com/metasfresh/metasfresh/issues/2268) New Window for Drucker-Zuordnung in WebUI
