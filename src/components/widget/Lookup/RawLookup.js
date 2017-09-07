@@ -142,46 +142,46 @@ class RawLookup extends Component {
 
         this.setState({
             selected: null
-        }, () => {
+        });
 
-            if (filterWidget) {
-                const promise = onChange(mainProp.parameterName, select);
+        if (filterWidget) {
+            const promise = onChange(mainProp.parameterName, select);
+
+            if (promise) {
+                promise.then( ()=> {
+                    setNextProperty(mainProp.parameterName);
+                });
+            } else {
+                setNextProperty(mainProp.parameterName);
+            }
+
+        } else {
+            if (subentity === 'quickInput') {
+                onChange(
+                    mainProperty[0].field, select,
+                    () => setNextProperty(mainProp.field)
+                );
+            } else {
+                const promise = onChange(mainProp.field, select);
 
                 if (promise) {
                     promise.then( ()=> {
-                        setNextProperty(mainProp.parameterName);
-                    })
-                } else {
-                    setNextProperty(mainProp.parameterName);
-                }
-
-            } else {
-                if (subentity === 'quickInput') {
-                    onChange(
-                        mainProperty[0].field, select,
-                        () => setNextProperty(mainProp.field)
-                    );
-                } else {
-                    const promise = onChange(mainProp.field, select);
-
-                    if (promise) {
-                        promise.then( ()=> {
-                            setNextProperty(mainProp.field);
-                        })
-                    } else {
                         setNextProperty(mainProp.field);
-                    }
+                    });
+                } else {
+                    setNextProperty(mainProp.field);
                 }
-
             }
 
-            if (select) {
-                this.inputSearch.value = select[Object.keys(select)[0]];
-            }
+        }
 
-            handleInputEmptyStatus(false);
-            this.handleBlur();
-        });
+        if (select) {
+            this.inputSearch.value = select[Object.keys(select)[0]];
+        }
+
+        handleInputEmptyStatus(false);
+
+        this.handleBlur();
     }
 
     handleAddNew = () => {

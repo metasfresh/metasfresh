@@ -331,7 +331,6 @@ class RawWidget extends Component {
                         readonly={widgetData[0].readonly || disabled}
                         mandatory={widgetData[0].mandatory}
                         rank={type}
-                        onChange={this.handlePatch}
                         align={gridAlign}
                         isModal={isModal}
                         updated={updated}
@@ -350,6 +349,7 @@ class RawWidget extends Component {
                         listenOnKeys={listenOnKeys}
                         listenOnKeysFalse={listenOnKeysFalse}
                         closeTableField={closeTableField}
+                        onChange={this.handlePatch}
                         onBlurWidget={onBlurWidget}
                     />
                 )
