@@ -541,7 +541,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								<configuration>
 									<rules>
 										<!--  note: the two implementation attributes are needed only for Maven 2  -->
-										<!--
+										<!-- "intepretation" (e.g. fail if too low) is done via the jenkins jacoco plugin.
 										<rule implementation="org.jacoco.maven.RuleConfiguration">
 											<element>BUNDLE</element>
 											<limits>
