@@ -2,12 +2,11 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.Services;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
@@ -37,6 +36,9 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
+	@Autowired
+	private PickingCandidateCommand pickingCandidateCommand;
+	
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -58,11 +60,9 @@ public class WEBUI_Picking_M_Source_HU_Delete
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
+		final int huId = rowToProcess.getHuId();
 
-		Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
-				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, rowToProcess.getHuId())
-				.create()
-				.delete();
+		pickingCandidateCommand.removeSourceHu(huId);
 
 		invalidateView();
 		invalidateParentView();

@@ -9,7 +9,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
@@ -81,12 +80,6 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot extends ViewBasedProcessTempl
 		invalidateView();
 
 		return MSG_OK;
-	}
-
-	@Override
-	protected PickingSlotView getView()
-	{
-		return PickingSlotView.cast(super.getView());
 	}
 
 	@Override

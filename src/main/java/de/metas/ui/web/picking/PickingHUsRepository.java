@@ -20,7 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsRequest;
+import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
@@ -91,10 +91,10 @@ import lombok.NonNull;
 				.map(id -> load(id, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
 				.collect(Collectors.toList());
 
-		final PickingHUsRequest request = PickingHUsRequest.builder().shipmentSchedules(shipmentSchedules).build();
+		final PickingHUsQuery request = PickingHUsQuery.builder().shipmentSchedules(shipmentSchedules).build();
 
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveAvailableSourceHUs(request);
+		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveSourceHUs(request);
 		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
 
 		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);

@@ -14,11 +14,11 @@ import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -70,7 +70,7 @@ public final class PickingSlotRow implements IViewRow
 	}
 
 	private final PickingSlotRowId id;
-	private final IViewRowType type;
+	private final PickingSlotRowType type;
 
 	private final DocumentPath documentPath;
 
@@ -118,7 +118,7 @@ public final class PickingSlotRow implements IViewRow
 	private PickingSlotRow(
 			final int huId,
 			//
-			final IViewRowType type,
+			final HUEditorRowType huEditorRowType,
 			//
 			final String huCode,
 			final JSONLookupValue product,
@@ -127,7 +127,7 @@ public final class PickingSlotRow implements IViewRow
 	{
 		id = PickingSlotRowId.ofSourceHU(huId);
 
-		this.type = type;
+		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
 		processed = true;
 		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
 
@@ -174,7 +174,8 @@ public final class PickingSlotRow implements IViewRow
 			final List<PickingSlotRow> includedHURows)
 	{
 		id = PickingSlotRowId.ofPickingSlotId(pickingSlotId);
-		type = DefaultRowType.Row;
+
+		type = PickingSlotRowType.forPickingSlotRow();
 		processed = false;
 		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
 
@@ -219,7 +220,7 @@ public final class PickingSlotRow implements IViewRow
 			final int huId,
 			final int huStorageProductId,
 			//
-			final IViewRowType type,
+			final HUEditorRowType huEditorRowType,
 			final boolean processed,
 			//
 			final String huCode,
@@ -233,7 +234,8 @@ public final class PickingSlotRow implements IViewRow
 		Preconditions.checkArgument(huId > 0, "huId > 0");
 
 		id = PickingSlotRowId.ofPickedHU(pickingSlotId, huId, huStorageProductId);
-		this.type = type;
+
+		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
 		this.processed = processed;
 		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, id.toDocumentId());
 
@@ -426,7 +428,7 @@ public final class PickingSlotRow implements IViewRow
 		{
 			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
 			Preconditions.checkArgument(huId > 0, "huId > 0");
-			//Preconditions.checkArgument(huStorageProductId > 0, "huStorageProductId > 0");
+			// Preconditions.checkArgument(huStorageProductId > 0, "huStorageProductId > 0");
 
 			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 		}

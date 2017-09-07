@@ -108,7 +108,6 @@ public final class HUEditorRow implements IViewRow
 
 	@ViewColumn(captionKey = "HU_UnitType", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
 	private final JSONLookupValue huUnitType;
 
@@ -126,13 +125,11 @@ public final class HUEditorRow implements IViewRow
 
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 	})
 	private final JSONLookupValue uom;
 
 	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
 	})
 	private final JSONLookupValue huStatus;
 

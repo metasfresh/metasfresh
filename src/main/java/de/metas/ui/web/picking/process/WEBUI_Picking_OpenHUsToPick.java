@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsRequest;
+import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IADProcessDAO;
@@ -84,7 +84,7 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 
 		final int shipmentScheduleId = getView().getShipmentScheduleId();
 
-		final PickingHUsRequest request = PickingHUsRequest.builder()
+		final PickingHUsQuery request = PickingHUsQuery.builder()
 				.shipmentSchedules(ImmutableList.of(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class)))
 				.onlyTopLevelHUs(false)
 				.considerAttributes(true)

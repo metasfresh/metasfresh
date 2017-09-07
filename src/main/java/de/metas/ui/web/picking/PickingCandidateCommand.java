@@ -1,5 +1,9 @@
 package de.metas.ui.web.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -16,25 +20,27 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPickingSlotBL;
+import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
@@ -61,6 +67,7 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 @Service
 public class PickingCandidateCommand
 {
@@ -72,7 +79,7 @@ public class PickingCandidateCommand
 		final BigDecimal qty;
 		final I_C_UOM uom;
 		{
-			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			final I_M_HU hu = load(huId, I_M_HU.class);
 			final List<IHUProductStorage> productStorages = Services.get(IHUContextFactory.class)
 					.createMutableHUContext()
 					.getHUStorageFactory()
@@ -98,13 +105,13 @@ public class PickingCandidateCommand
 
 		}
 
-		final I_M_Picking_Candidate pickingCandidatePO = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
+		final I_M_Picking_Candidate pickingCandidatePO = newInstance(I_M_Picking_Candidate.class);
 		pickingCandidatePO.setM_ShipmentSchedule_ID(shipmentScheduleId);
 		pickingCandidatePO.setM_PickingSlot_ID(pickingSlotId);
 		pickingCandidatePO.setM_HU_ID(huId);
 		pickingCandidatePO.setQtyPicked(qty);
 		pickingCandidatePO.setC_UOM(uom);
-		InterfaceWrapperHelper.save(pickingCandidatePO);
+		save(pickingCandidatePO);
 	}
 
 	/**
@@ -113,30 +120,39 @@ public class PickingCandidateCommand
 	 * @param huId
 	 * @param pickingSlotId
 	 * @param shipmentScheduleId
-	 * @return the quantity that was effectively added. As determined by {@link ShipmentScheduleQtyPickedProductStorage}, we can only add the quantity that is still open according to the underlyiung shipment schedule.
+	 * 
+	 * @return the quantity that was effectively added. We can only add the quantity that's still left in our source HUs.
 	 */
-	public Quantity addQtyToHU(
-			@NonNull final BigDecimal qtyCU,
-			final int huId,
-			final int pickingSlotId,
-			final int shipmentScheduleId)
+	public Quantity addQtyToHU(@NonNull final AddQtyToHURequest addQtyToHURequest)
 	{
+		final BigDecimal qtyCU = addQtyToHURequest.getQtyCU();
+
 		if (qtyCU.signum() <= 0)
 		{
 			throw new AdempiereException("@Invalid@ @QtyCU@");
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final int shipmentScheduleId = addQtyToHURequest.getShipmentScheduleId();
+		final int pickingSlotId = addQtyToHURequest.getPickingSlotId();
+		final int huId = addQtyToHURequest.getHuId();
+
+		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		final I_M_Product product = shipmentSchedule.getM_Product();
 
 		final I_M_Picking_Candidate candidate = getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
 
 		//
-		// Source
+		// Source - take the preselected sourceHUs
 		final IAllocationSource source;
+		final List<I_M_HU> sourceHUs;
 		{
-			final IProductStorage storage = new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
-			source = new GenericAllocationSourceDestination(storage, candidate);
+			final PickingHUsQuery query = PickingHUsQuery.builder()
+					.considerAttributes(true)
+					.shipmentSchedules(ImmutableList.of(shipmentSchedule))
+					.onlyTopLevelHUs(true)
+					.build();
+			sourceHUs = Services.get(IHUPickingSlotBL.class).retrieveSourceHUs(query);
+			source = HUListAllocationSourceDestination.of(sourceHUs);
 		}
 
 		//
@@ -144,9 +160,10 @@ public class PickingCandidateCommand
 		final IAllocationDestination destination;
 		{
 			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-			if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
+			// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
+			if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 			{
-				throw new AdempiereException("not a planning HU").setParameter("hu", hu);
+				throw new AdempiereException("not an active HU").setParameter("hu", hu);
 			}
 			destination = HUListAllocationSourceDestination.of(hu);
 		}
@@ -173,14 +190,43 @@ public class PickingCandidateCommand
 				.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
 				.setAllowPartialUnloads(true) // don't fail if the the picking staff attempted to to pick more than the shipment schedule's quantity to deliver.
 				.load(request);
-		logger.debug("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
+		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
 
+		// clean up and unselect used up source HUs
+		for (final I_M_HU sourceHU : sourceHUs)
+		{
+			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+			handlingUnitsBL.destroyIfEmptyStorage(sourceHU);
+
+			if (handlingUnitsBL.isDestroyed(sourceHU))
+			{
+				logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHU.getM_HU_ID());
+				removeSourceHu(sourceHU.getM_HU_ID());
+			}
+		}
 		//
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
 		addQtyToCandidate(candidate, product, qtyPicked);
 
 		return qtyPicked;
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	public static final class AddQtyToHURequest
+	{
+		@NonNull
+		BigDecimal qtyCU;
+
+		@NonNull
+		Integer huId;
+
+		@NonNull
+		Integer pickingSlotId;
+
+		@NonNull
+		Integer shipmentScheduleId;
 	}
 
 	private I_M_Picking_Candidate getCreateCandidate(final int huId, final int pickingSlotId, final int shipmentScheduleId)
@@ -324,4 +370,25 @@ public class PickingCandidateCommand
 		}
 
 	}
+
+	public I_M_Source_HU addSourceHu(final int huId)
+	{
+		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
+		sourceHU.setM_HU_ID(huId);
+		save(sourceHU);
+
+		logger.info("Created one M_Source_HU record for M_HU_ID={}", huId);
+		return sourceHU;
+	}
+
+	public void removeSourceHu(final int huId)
+	{
+		final int delCount = Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
+				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, huId)
+				.create()
+				.delete();
+
+		logger.info("Deleted {} M_Source_HU record for M_HU_ID={}", delCount, huId);
+	}
+
 }

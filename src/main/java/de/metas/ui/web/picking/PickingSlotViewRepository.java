@@ -150,8 +150,9 @@ public class PickingSlotViewRepository
 		}
 
 		return ImmutableList.copyOf(Iterables.concat(
-				sourceHUPickingSlotRows,
-				pickingSlotRows));
+				pickingSlotRows,
+				sourceHUPickingSlotRows
+				));
 	}
 
 	@VisibleForTesting
@@ -219,7 +220,7 @@ public class PickingSlotViewRepository
 				.huId(huEditorRow.getM_HU_ID())
 
 				//
-				.type(huEditorRow.getType())
+				.huEditorRowType(huEditorRow.getType())
 
 				// do *not* take the HUEditorRow's processed flag, because we don't care about that; we do care about PickingSlotHUEditorRow.isProcessed() because that's the value coming from the M_Picking_Candiate
 				.processed(from.isProcessed())
@@ -239,7 +240,7 @@ public class PickingSlotViewRepository
 	{
 		final PickingSlotRow pickingSourceHuRow = PickingSlotRow.fromSourceHUBuilder()
 				.huId(sourceHuEditorRow.getM_HU_ID())
-				.type(sourceHuEditorRow.getType())
+				.huEditorRowType(sourceHuEditorRow.getType())
 				.huCode(sourceHuEditorRow.getValue())
 				.product(sourceHuEditorRow.getProduct())
 				.packingInfo(sourceHuEditorRow.getPackingInfo())

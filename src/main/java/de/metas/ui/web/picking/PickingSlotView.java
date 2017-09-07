@@ -1,6 +1,6 @@
 package de.metas.ui.web.picking;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 import java.util.Map;
@@ -10,10 +10,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.base.Preconditions;
@@ -302,7 +300,7 @@ public class PickingSlotView implements IView
 	 */
 	public I_M_ShipmentSchedule getShipmentSchedule()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = create(Env.getCtx(), shipmentScheduleId, I_M_ShipmentSchedule.class, ITrx.TRXNAME_ThreadInherited);
+		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		return shipmentSchedule;
 	}
 

@@ -1,23 +1,22 @@
 package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_ACTIVE_UNPICKED_UNSELECTED_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.adempiere.util.Services;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.IHUPickingSlotDAO;
-import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.picking.PickingCandidateCommand;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -56,6 +55,9 @@ public class WEBUI_Picking_M_Source_HU_Create
 		implements IProcessPrecondition
 {
 
+	@Autowired
+	private PickingCandidateCommand pickingCandidateCommand;
+
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -75,11 +77,13 @@ public class WEBUI_Picking_M_Source_HU_Create
 	{
 		retrieveEligibleHUEditorRows().forEach(
 				huEditorRow -> {
-					final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
-					sourceHU.setM_HU_ID(huEditorRow.getM_HU_ID());
-					save(sourceHU);
-					addLog("Create M_Source_HU with ID={} and M_HU_ID={}", sourceHU.getM_Source_HU_ID(), sourceHU.getM_HU_ID());
+
+					pickingCandidateCommand.addSourceHu(huEditorRow.getM_HU_ID());
 				});
+		
+		invalidateView();
+		invalidateParentView();
+		
 		return MSG_OK;
 	}
 
@@ -91,8 +95,8 @@ public class WEBUI_Picking_M_Source_HU_Create
 		final Stream<HUEditorRow> stream = huEditorRows.stream()
 				.filter(huRow -> huRow.isTopLevel())
 				.filter(huRow -> huRow.isHUStatusActive())
-				.filter(huRow -> huPickingSlotDAO.isSourceHU(huRow.getM_HU_ID()))
-				.filter(huRow -> huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
+				.filter(huRow -> !huPickingSlotDAO.isSourceHU(huRow.getM_HU_ID())) // may not yet be a source-HU
+				.filter(huRow -> !huPickingSlotDAO.isHuIdPicked(huRow.getM_HU_ID()));
 
 		return stream;
 	}
