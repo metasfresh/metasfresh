@@ -47,6 +47,8 @@ Here come the actual release notes:
 * metasfresh-frontend
   * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
     * Fix and adjustment to the Lookup fields behavior in included Views.
+  * [#1183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1183) Purchase order: screen is scrolling when i am trying to type in Delivery from field
+    * Avoiding the scroll of the main page when scrolling in a Lookup Field
 
 # metasfresh 5.25 (2017-36)
 
