@@ -504,7 +504,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 	    <!-- 
 			Add code coverage metrics to our builds https://github.com/metasfresh/metasfresh/issues/2343
 			Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. 
-			Note: still need to check it if works like this in every project
 		-->
         <profile>
             <id>jenkins</id>
@@ -541,7 +540,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 								<configuration>
 									<rules>
 										<!--  note: the two implementation attributes are needed only for Maven 2  -->
-										<!-- "intepretation" (e.g. fail if too low) is done via the jenkins jacoco plugin.
+										<!-- "intepretation" (e.g. fail if too low) is done via the jenkins jacoco plugin
 										<rule implementation="org.jacoco.maven.RuleConfiguration">
 											<element>BUNDLE</element>
 											<limits>
