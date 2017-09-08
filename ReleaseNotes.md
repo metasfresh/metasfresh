@@ -63,11 +63,11 @@ Here come the actual release notes:
   * [#1876](https://github.com/metasfresh/metasfresh/issues/1876) New CU Labels
     * New Customer Unit Labels created. These will be uses in manufacturing Action receipt workflow.
   * [#2102](https://github.com/metasfresh/metasfresh/issues/2102) maven change "local" version from 1.0.0 to 10.0.0
-    * Internal Housekleeping issue solved for our Continuous Integration/ Build System.
+    * Internal Housekeeping issue solved for our Continuous Integration/ Build System.
   * [#2145](https://github.com/metasfresh/metasfresh/issues/2145) Partial Internal usage action in Handling Unit Editor
-    * Extended Functionality in in Internal usage action in Handling Unit Editor, now allowing to select and use partial Handling Units.
+    * Extended Functionality in Internal usage action in Handling Unit Editor, now allowing to select and use partial Handling Units.
   * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
-    * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
+    * New Window for Product Costs in WebUI. Allowing to view/ maintain Product Costs of different Costing Types.
   * [#2230](https://github.com/metasfresh/metasfresh/issues/2230) New Window for Fact_Acct_ActivityChangeRequest
     * New Window in WebUI for the maintenance of Activity ID changes in Documents.
   * [#2232](https://github.com/metasfresh/metasfresh/issues/2232) New Window for c_activity in WebUI
@@ -85,7 +85,7 @@ Here come the actual release notes:
   * [#2258](https://github.com/metasfresh/metasfresh/issues/2258) add due date to request grid view
     * Adding the Field Due Date to the included View of Requests in B2C Customer Window in WebUI.
   * [#2267](https://github.com/metasfresh/metasfresh/issues/2267) New Window for Hardware drucker in WebUI
-    * New Widnow for Printer Configuration and Maintenance in WebUI.
+    * New Window for Printer Configuration and Maintenance in WebUI.
   * [#2268](https://github.com/metasfresh/metasfresh/issues/2268) New Window for Drucker-Zuordnung in WebUI
     * New Window for Printer Matching Configuration and Maintenance in WebUI.
   * [#2269](https://github.com/metasfresh/metasfresh/issues/2269) New Window for Async Batch in WebUI
@@ -101,7 +101,7 @@ Here come the actual release notes:
   * [#2365](https://github.com/metasfresh/metasfresh/issues/2365) Rename all Windows with Suffix "kandidaten" to suffix "disposition"
     * Renaming the Candidates Window in baselanguage, now called disposition.
   * [#2370](https://github.com/metasfresh/metasfresh/issues/2370) Price Topic improvements in Product Price and Pricelist
-    * Different detail improvements done to Pricinf relevant topics in WebUI.
+    * Different detail improvements done to Pricing relevant topics in WebUI.
   * [#2372](https://github.com/metasfresh/metasfresh/issues/2372) Detailed Improvements in different Finance Functionalities
     * Detail Improvements added to different Finance windows and processes.
   * [#2374](https://github.com/metasfresh/metasfresh/issues/2374) Detail adjustments to Shipment Candidates Window
