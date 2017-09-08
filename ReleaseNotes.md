@@ -50,6 +50,8 @@ Here come the actual release notes:
 *metasfresh-webui-frontend
   * [#1147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1147) Implement the initial Sorting Indicator in included Tabs
     * Now also showing the initial Sorting indicators in included tabs.
+  * [#1152](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1152) find a new shortcut for CTRL + X
+    * Providing a new shortcut for eMail send. It's now ctrl+k instead of ctrl+x.
 
 
 ## Fixes
