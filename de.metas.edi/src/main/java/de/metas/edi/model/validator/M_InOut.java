@@ -50,7 +50,6 @@ public class M_InOut
 		if (Services.get(IHUInOutBL.class).isCustomerReturn(document))
 		{
 			// no EDI for customer return (for the time being)
-
 			return;
 		}
 
@@ -84,18 +83,16 @@ public class M_InOut
 
 	private void setEdiEnabledFromOrder(final I_M_InOut inout)
 	{
-
 		if (Services.get(IHUInOutBL.class).isCustomerReturn(inout))
 		{
 			// no EDI for customer return (for the time being)
-
 			return;
 		}
+
 		final I_C_Order order = InterfaceWrapperHelper.create(inout.getC_Order(), de.metas.edi.model.I_C_Order.class);
 		if (order == null || order.getC_Order_ID() <= 0)
 		{
 			// nothing to do
-
 			return;
 		}
 
@@ -146,7 +143,6 @@ public class M_InOut
 		if (Services.get(IHUInOutBL.class).isCustomerReturn(inOut))
 		{
 			// no EDI for customer return (for the time being)
-
 			return;
 		}
 
@@ -167,7 +163,7 @@ public class M_InOut
 				|| I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(desadvEDIStatus)
 				|| I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(desadvEDIStatus))
 		{
-			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + inOutEDIStatus + ")");
+			throw new AdempiereException("@NotAllowed@ (@EDI_Desadv_ID@ @EDIStatus@: " + desadvEDIStatus + ")");
 		}
 	}
 
@@ -184,7 +180,6 @@ public class M_InOut
 		if (Services.get(IHUInOutBL.class).isCustomerReturn(inOut))
 		{
 			// no EDI for customer return (for the time being)
-
 			return;
 		}
 
