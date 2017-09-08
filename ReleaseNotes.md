@@ -119,6 +119,7 @@ Here come the actual release notes:
     * Detail Improvements added to different Finance windows and processes.
   * [#2374](https://github.com/metasfresh/metasfresh/issues/2374) Detail adjustments to Shipment Candidates Window
     * Detail adjustments to the Shipment Candidates Window adding further data manipulation functionality.
+  * [#2294](https://github.com/metasfresh/metasfresh/issues/2396) copy report.properties for purchase order to dist repo
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
@@ -154,6 +155,7 @@ Here come the actual release notes:
     * Fix for the automated Test of User Notifications in Continuous Integration workflow.
   * [#561](https://github.com/metasfresh/metasfresh-webui-api/issues/561) Handling Unit Editor Materialentnahme Bug
     * Fixes an Issue during Internal Usage workflow via Handling Unit Editor.
+  * [#579](https://github.com/metasfresh/metasfresh-webui-api/issues/579) NPE when you issue HUs
 
 * metasfresh-webui-frontend
   * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product
