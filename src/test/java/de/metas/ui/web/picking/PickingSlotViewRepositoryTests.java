@@ -20,7 +20,7 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.picking.PickingHUsRepository.PickedHUEditorRow;
+import de.metas.ui.web.picking.PickingHuRowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
@@ -52,7 +52,7 @@ import mockit.Mocked;
 public class PickingSlotViewRepositoryTests
 {
 	@Mocked
-	private PickingHUsRepository pickingHUsRepo;
+	private PickingHuRowsRepository pickingHUsRepo;
 
 	@Before
 	public void init()

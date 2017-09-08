@@ -5,15 +5,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.uom.api.IUOMConversionContext;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -30,7 +38,6 @@ import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
-import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -40,7 +47,12 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
+import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.trace.HUTraceEvent;
+import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.handlingunits.trace.HUTraceSpecification;
+import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
@@ -71,7 +83,7 @@ import lombok.NonNull;
 @Service
 public class PickingCandidateCommand
 {
-	private static final Logger logger = LogManager.getLogger(PickingHUsRepository.class);
+	private static final Logger logger = LogManager.getLogger(PickingHuRowsRepository.class);
 
 	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
 	{
@@ -126,7 +138,6 @@ public class PickingCandidateCommand
 	public Quantity addQtyToHU(@NonNull final AddQtyToHURequest addQtyToHURequest)
 	{
 		final BigDecimal qtyCU = addQtyToHURequest.getQtyCU();
-
 		if (qtyCU.signum() <= 0)
 		{
 			throw new AdempiereException("@Invalid@ @QtyCU@");
@@ -143,16 +154,16 @@ public class PickingCandidateCommand
 
 		//
 		// Source - take the preselected sourceHUs
-		final IAllocationSource source;
-		final List<I_M_HU> sourceHUs;
+		final HUListAllocationSourceDestination source;
 		{
 			final PickingHUsQuery query = PickingHUsQuery.builder()
 					.considerAttributes(true)
 					.shipmentSchedules(ImmutableList.of(shipmentSchedule))
 					.onlyTopLevelHUs(true)
 					.build();
-			sourceHUs = Services.get(IHUPickingSlotBL.class).retrieveSourceHUs(query);
+			final List<I_M_HU> sourceHUs = Services.get(IHUPickingSlotBL.class).retrieveSourceHUs(query);
 			source = HUListAllocationSourceDestination.of(sourceHUs);
+			source.setDestroyEmptyHUs(false); // don't automatically destroy them. we will do that ourselves if the sourceHUs are empty at the time we process our picking candidates
 		}
 
 		//
@@ -180,7 +191,7 @@ public class PickingCandidateCommand
 				.setProduct(product)
 				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getC_UOM(shipmentSchedule)))
 				.setDateAsToday()
-				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the HU_trx_Candidate
+				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the picking candidate
 				.setForceQtyAllocation(true)
 				.create();
 
@@ -192,18 +203,6 @@ public class PickingCandidateCommand
 				.load(request);
 		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
 
-		// clean up and unselect used up source HUs
-		for (final I_M_HU sourceHU : sourceHUs)
-		{
-			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			handlingUnitsBL.destroyIfEmptyStorage(sourceHU);
-
-			if (handlingUnitsBL.isDestroyed(sourceHU))
-			{
-				logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHU.getM_HU_ID());
-				removeSourceHu(sourceHU.getM_HU_ID());
-			}
-		}
 		//
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
@@ -215,6 +214,97 @@ public class PickingCandidateCommand
 	@lombok.Value
 	@lombok.Builder
 	public static final class AddQtyToHURequest
+	{
+		@NonNull
+		BigDecimal qtyCU;
+
+		@NonNull
+		Integer huId;
+
+		@NonNull
+		Integer pickingSlotId;
+
+		@NonNull
+		Integer shipmentScheduleId;
+	}
+
+	public void removeQtyFromHU(RemoveQtyFromHURequest removeQtyFromHURequest)
+	{
+		final Collection<I_M_HU> sourceHUs = retrieveSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
+		removeQtyFromHU0(removeQtyFromHURequest, sourceHUs);
+	}
+
+	private void removeQtyFromHU0(
+			@NonNull final RemoveQtyFromHURequest removeQtyFromHURequest,
+			@NonNull final Collection<I_M_HU> sourceHUs)
+	{
+		final BigDecimal qtyCU = removeQtyFromHURequest.getQtyCU();
+		if (qtyCU.signum() <= 0)
+		{
+			throw new AdempiereException("@Invalid@ @QtyCU@");
+		}
+
+		final int shipmentScheduleId = removeQtyFromHURequest.getShipmentScheduleId();
+		final int pickingSlotId = removeQtyFromHURequest.getPickingSlotId();
+		final int huId = removeQtyFromHURequest.getHuId();
+
+		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_Product product = shipmentSchedule.getM_Product();
+
+		final I_M_Picking_Candidate candidate = getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
+
+		//
+		// Source - take the preselected sourceHUs
+		final HUListAllocationSourceDestination source;
+		{
+			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+			// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
+			if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+			{
+				throw new AdempiereException("not an active HU").setParameter("hu", hu);
+			}
+			source = HUListAllocationSourceDestination.of(hu);
+			source.setDestroyEmptyHUs(true);
+		}
+
+		//
+		// Destination: HU
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(sourceHUs);
+
+		//
+		// Request
+		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
+		// create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
+		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing();
+
+		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+				.setHUContext(huContext)
+				.setProduct(product)
+				.setQuantity(Quantity.of(qtyCU, shipmentScheduleBL.getC_UOM(shipmentSchedule)))
+				.setDateAsToday()
+				.setFromReferencedModel(candidate) // the m_hu_trx_Line coming out of this will reference the picking candidate
+				.setForceQtyAllocation(true)
+				.create();
+
+		//
+		// Load QtyCU to HU(destination)
+		final IAllocationResult loadResult = HULoader.of(source, destination)
+				.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
+				.setAllowPartialUnloads(true) // don't fail if the the picking staff attempted to to pick more than the shipment schedule's quantity to deliver.
+				.load(request);
+		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
+
+		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+		if (Services.get(IHandlingUnitsBL.class).isDestroyed(hu))
+		{
+			deletePickingCandidate(removeQtyFromHURequest);
+		}
+	}
+
+	@lombok.Value
+	@lombok.Builder
+	public static final class RemoveQtyFromHURequest
 	{
 		@NonNull
 		BigDecimal qtyCU;
@@ -254,17 +344,33 @@ public class PickingCandidateCommand
 		return pickingCandidatePO;
 	}
 
-	public void removeHUFromPickingSlot(final int huId, final int pickingSlotId)
+	public void removeHUFromPickingSlot(@NonNull final RemoveQtyFromHURequest removeQtyFromHURequest)
+	{
+		final Collection<I_M_HU> sourceHUs = retrieveSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
+		if (sourceHUs.isEmpty())
+		{
+			deletePickingCandidate(removeQtyFromHURequest);
+			return;
+		}
+
+		removeQtyFromHU0(removeQtyFromHURequest, sourceHUs);
+	}
+
+	void deletePickingCandidate(final RemoveQtyFromHURequest removeQtyFromHURequest)
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_Picking_Candidate.class)
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
-				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, removeQtyFromHURequest.getPickingSlotId())
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, removeQtyFromHURequest.getHuId())
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, removeQtyFromHURequest.getShipmentScheduleId())
 				.create()
 				.delete();
 	}
 
-	private void addQtyToCandidate(@NonNull final I_M_Picking_Candidate candidate, @NonNull final I_M_Product product, @NonNull final Quantity qtyToAdd)
+	private void addQtyToCandidate(
+			@NonNull final I_M_Picking_Candidate candidate,
+			@NonNull final I_M_Product product,
+			@NonNull final Quantity qtyToAdd)
 	{
 		final Quantity qtyNew;
 		if (candidate.getQtyPicked().signum() == 0)
@@ -301,6 +407,10 @@ public class PickingCandidateCommand
 		{
 			return 0;
 		}
+
+		final Collection<I_M_HU> sourceHuIds = retrieveSourceHUs(huIds);
+		destroyEmptySourceHUs(sourceHuIds);
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
@@ -315,14 +425,103 @@ public class PickingCandidateCommand
 		return query.updateDirectly(updater);
 	}
 
+	private HUTraceRepository huTraceRepository;
+
+	private Collection<I_M_HU> retrieveSourceHUs(@NonNull final List<Integer> huIds)
+	{
+		final Set<Integer> vhuSourceIds = new HashSet<>();
+
+		for (final int huId : huIds)
+		{
+			final HUTraceSpecification query = HUTraceSpecification.builder()
+					.type(HUTraceType.TRANSFORM_LOAD)
+					.topLevelHuId(huId)
+					.build();
+
+			final List<HUTraceEvent> traceEvents = huTraceRepository.query(query);
+			for (final HUTraceEvent traceEvent : traceEvents)
+			{
+				vhuSourceIds.add(traceEvent.getVhuSourceId());
+			}
+		}
+
+		//
+		// don't use Services.get(IHandlingUnitsBL.class).getTopLevelHUs() because the sourceHUs might already be destroyed
+		final Set<I_M_HU> topLevelSourceHus = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
+		for (int vhuSourceId : vhuSourceIds)
+		{
+			final HUTraceSpecification query = HUTraceSpecification.builder()
+					.type(HUTraceType.TRANSFORM_LOAD)
+					.vhuId(vhuSourceId)
+					.build();
+			final List<HUTraceEvent> traceEvents = huTraceRepository.query(query);
+			for (final HUTraceEvent traceEvent : traceEvents)
+			{
+				final I_M_HU topLevelSourceHu = load(traceEvent.getTopLevelHuId(), I_M_HU.class);
+				topLevelSourceHus.add(topLevelSourceHu);
+			}
+		}
+		return topLevelSourceHus;
+	}
+
+	void destroyEmptySourceHUs(final Collection<I_M_HU> sourceHus)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+
+		// clean up and unselect used up source HUs
+		for (final I_M_HU sourceHu : sourceHus)
+		{
+			if (!handlingUnitsBL.getStorageFactory().getStorage(sourceHu).isEmpty())
+			{
+				continue;
+			}
+
+			final String snapshotId = huSnapshotDAO.createSnapshot()
+					.setContext(PlainContextAware.newWithThreadInheritedTrx())
+					.addModel(sourceHu)
+					.createSnapshots()
+					.getSnapshotId();
+
+			handlingUnitsBL.destroyIfEmptyStorage(sourceHu);
+			Check.errorUnless(handlingUnitsBL.isDestroyed(sourceHu), "We invoked IHandlingUnitsBL.destroyIfEmptyStorage on an HU with empty storage, but its not destroyed; hu={}", sourceHu);
+
+			sourceHuDestroyed(sourceHu.getM_HU_ID(), snapshotId);
+			logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHu.getM_HU_ID());
+		}
+	}
+
 	public int setCandidatesInProgress(@NonNull final List<Integer> huIds)
 	{
 		if (huIds.isEmpty())
 		{
 			return 0;
 		}
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final Collection<I_M_HU> sourceHUs = retrieveSourceHUs(huIds);
+		for (final I_M_HU sourceHU : sourceHUs)
+		{
+			if (!Services.get(IHandlingUnitsBL.class).isDestroyed(sourceHU))
+			{
+				continue;
+			}
+			final I_M_Source_HU sourceHuRecord = Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
+					.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, sourceHU.getM_HU_ID())
+					.create()
+					.firstOnlyNotNull(I_M_Source_HU.class);
+
+			Services.get(IHUSnapshotDAO.class).restoreHUs()
+					.addModel(sourceHU)
+					.setContext(PlainContextAware.newWithThreadInheritedTrx())
+					.setDateTrx(SystemTime.asDate())
+					.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
+					.restoreFromSnapshot();
+
+			sourceHuRecord.setPreDestroy_Snapshot_UUID(null);
+			save(sourceHuRecord);
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR)
@@ -381,14 +580,29 @@ public class PickingCandidateCommand
 		return sourceHU;
 	}
 
+	public void sourceHuDestroyed(
+			final int huId,
+			@NonNull final String huSnapShotId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQuery<I_M_Source_HU> query = queryBL.createQueryBuilder(I_M_Source_HU.class)
+				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, huId)
+				.create();
+
+		final ICompositeQueryUpdater<I_M_Source_HU> updater = queryBL.createCompositeQueryUpdater(I_M_Source_HU.class)
+				.addSetColumnValue(I_M_Source_HU.COLUMNNAME_PreDestroy_Snapshot_UUID, huSnapShotId);
+
+		query.update(updater);
+	}
+
 	public void removeSourceHu(final int huId)
 	{
-		final int delCount = Services.get(IQueryBL.class).createQueryBuilder(I_M_Source_HU.class)
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		queryBL.createQueryBuilder(I_M_Source_HU.class)
 				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, huId)
 				.create()
 				.delete();
-
-		logger.info("Deleted {} M_Source_HU record for M_HU_ID={}", delCount, huId);
 	}
-
 }

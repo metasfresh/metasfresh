@@ -1,18 +1,20 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
+import static de.metas.ui.web.picking.PickingConstants.*;
+
+import java.math.BigDecimal;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.picking.PickingSlotRow;
 
 /*
  * #%L
@@ -36,20 +38,16 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
-/**
- * 
- * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
- * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class WEBUI_Picking_RemoveHUFromPickingSlot
-		extends ViewBasedProcessTemplate
+public class WEBUI_Picking_ReturnQtyToSourceHU
+		extends WEBUI_Picking_PickFrom_M_Source_HU
 		implements IProcessPrecondition
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
+
+	private static final String PARAM_QTY_CU = "QtyCU";
+	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
+	private BigDecimal qtyCU;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -62,39 +60,41 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
 		}
 
-		if (pickingSlotRow.isProcessed())
+		final String rowType = pickingSlotRow.getType().getName();
+		final boolean cuRow = Objects.equals(rowType, HUEditorRowType.VHU.getName()) || Objects.equals(rowType, HUEditorRowType.HUStorage.getName());
+		if (cuRow)
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_CU));
+		}
+
+		if (!checkSourceHuPrecondition())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
-		final PickingSlotRow huRow = getSingleSelectedRow();
-		final PickingSlotView view = PickingSlotView.cast(super.getView());
+		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 
 		final RemoveQtyFromHURequest request = RemoveQtyFromHURequest.builder()
-				.huId(huRow.getHuId())
-				.pickingSlotId(huRow.getPickingSlotId())
-				.shipmentScheduleId(view.getShipmentScheduleId())
+				.qtyCU(qtyCU)
+				.huId(pickingSlotRow.getHuId())
+				.pickingSlotId(pickingSlotRow.getPickingSlotId())
+				.shipmentScheduleId(getView().getShipmentScheduleId())
 				.build();
 
-		pickingCandidateCommand.removeHUFromPickingSlot(request);
+		pickingCandidateCommand.removeQtyFromHU(request);
 
 		invalidateView();
+		invalidateParentView();
 
 		return MSG_OK;
-	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
 }

@@ -3,7 +3,6 @@ package de.metas.ui.web.picking.process;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
@@ -31,7 +30,6 @@ import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.PickingCandidateCommand;
@@ -39,6 +37,7 @@ import de.metas.ui.web.picking.PickingSlotRow;
 import de.metas.ui.web.picking.PickingSlotView;
 import de.metas.ui.web.picking.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -81,7 +80,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
-	
+
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
@@ -98,7 +97,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-		if(pickingSlotRow.getIncludedRows().isEmpty())
+		if (pickingSlotRow.getIncludedRows().isEmpty())
 		{
 			// we want a toplevel HU..this is kindof dirty, but should work in this context
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
@@ -122,16 +121,56 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
-		final IPackingService packingService = Services.get(IPackingService.class);
-
-		final I_M_PickingSlot pickingSlot = load(rowToProcess.getPickingSlotId(), I_M_PickingSlot.class);
 		final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
 
 		final PickingSlotView view = PickingSlotView.cast(super.getView());
 		final I_M_ShipmentSchedule shipmentSchedule = view.getShipmentSchedule();
-		final I_M_Product product = shipmentSchedule.getM_Product();
 
+		allocateHuToShipmentSchedule(
+				rowToProcess.getPickingSlotId(),
+				hu,
+				shipmentSchedule);
+
+		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
+
+		invalidateView();
+		invalidateParentView();
+
+		return MSG_OK;
+	}
+
+	private void allocateHuToShipmentSchedule(
+			final int pickingSlotId,
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+
+		final I_M_Product product = shipmentSchedule.getM_Product();
+		final BigDecimal qty = retrieveHuStorageQty(hu, product);
+
+		final IPackingService packingService = Services.get(IPackingService.class);
+		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
+
+		final PackingItemsMap packingItemsMap = new PackingItemsMap();
+		packingItemsMap.addUnpackedItem(itemToPack);
+
+		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
+		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
+		packingContext.setPackingItemsMapKey(pickingSlotId);
+
+		// Allocate given HUs to "itemToPack"
+		new HU2PackingItemsAllocator()
+				.setItemToPack(itemToPack)
+				.setPackingContext(packingContext)
+				.setFromHUs(ImmutableList.of(hu))
+				.allocate();
+	}
+
+	private BigDecimal retrieveHuStorageQty(
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_Product product)
+	{
+		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 		BigDecimal qty = BigDecimal.ZERO;
 		final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(ImmutableList.of(hu), product);
 		for (final IHUProductStorage storage : huProductStorages)
@@ -146,29 +185,7 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 			Loggables.get().addLog(msg);
 			throw new AdempiereException(msg);
 		}
-
-		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
-
-		final PackingItemsMap packingItemsMap = new PackingItemsMap();
-		packingItemsMap.addUnpackedItem(itemToPack);
-
-		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
-		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(pickingSlot.getM_PickingSlot_ID());
-
-		// Allocate given HUs to "itemToPack"
-		new HU2PackingItemsAllocator()
-				.setItemToPack(itemToPack)
-				.setPackingContext(packingContext)
-				.setFromHUs(ImmutableList.of(hu))
-				.allocate();
-
-		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
-				
-		invalidateView();
-		invalidateParentView();
-		
-		return MSG_OK;
+		return qty;
 	}
 
 	@Override

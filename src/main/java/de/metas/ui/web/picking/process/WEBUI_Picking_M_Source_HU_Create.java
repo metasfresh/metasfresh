@@ -43,7 +43,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /**
  * This process is available from the HU editor window opened by {@link WEBUI_Picking_OpenHUsToPick}.<br>
- * Its job is to flag the currently selected HUs so they are available as source-HUs for either {@link WEBUI_Picking_PickToNewHU} or {@link WEBUI_Picking_PickToExistingHU}.
+ * Its job is to flag the currently selected HUs so they are available as source-HUs for either {@link WEBUI_Picking_PickQtyToNewHU} or {@link WEBUI_Picking_PickQtyToExistingHU}.
  * 
  * @task https://github.com/metasfresh/metasfresh/issues/2298
  * 

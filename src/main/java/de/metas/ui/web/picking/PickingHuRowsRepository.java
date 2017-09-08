@@ -60,11 +60,11 @@ import lombok.NonNull;
  *
  */
 @Component
-/* package */class PickingHUsRepository
+/* package */class PickingHuRowsRepository
 {
 	private final HUEditorViewRepository huEditorRepo;
 
-	public PickingHUsRepository()
+	public PickingHuRowsRepository()
 	{
 		this(HUEditorViewRepository.builder()
 				.windowId(PickingConstants.WINDOWID_PickingSlotView)
@@ -74,7 +74,7 @@ import lombok.NonNull;
 	}
 
 	@VisibleForTesting
-	/* package */ PickingHUsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
+	PickingHuRowsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
 	{
 		this.huEditorRepo = huEditorRepo;
 	}
@@ -99,7 +99,7 @@ import lombok.NonNull;
 
 		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);
 	}
-
+	
 	/**
 	 * 
 	 * @param pickingSlotRowQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>

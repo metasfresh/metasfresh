@@ -20,8 +20,8 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
 import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
-import de.metas.ui.web.picking.process.WEBUI_Picking_PickToExistingHU;
-import de.metas.ui.web.picking.process.WEBUI_Picking_PickToNewHU;
+import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToExistingHU;
+import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -151,7 +151,7 @@ public class PickingSlotViewFactory implements IViewFactory
 
 		return ImmutableList.of(
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_PickToNewHU.class))
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_PickQtyToNewHU.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
@@ -169,7 +169,7 @@ public class PickingSlotViewFactory implements IViewFactory
 						.build(),
 
 				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_PickToExistingHU.class))
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_PickQtyToExistingHU.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),

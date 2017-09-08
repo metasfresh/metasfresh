@@ -27,7 +27,7 @@ import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.PickingHUsRepository.PickedHUEditorRow;
+import de.metas.ui.web.picking.PickingHuRowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider.LookupScope;
@@ -69,7 +69,7 @@ public class PickingSlotViewRepository
 {
 	private static final Logger logger = LogManager.getLogger(PickingSlotViewRepository.class);
 
-	private final PickingHUsRepository pickedHUsRepo;
+	private final PickingHuRowsRepository pickedHUsRepo;
 
 	private final Supplier<LookupDataSource> warehouseLookup;
 	private final Supplier<LookupDataSource> bpartnerLookup;
@@ -79,7 +79,7 @@ public class PickingSlotViewRepository
 	 * @param pickingHUsRepo the "backend" repo to be used by this instance.
 	 */
 	@Autowired
-	public PickingSlotViewRepository(@NonNull final PickingHUsRepository pickingHUsRepo)
+	public PickingSlotViewRepository(@NonNull final PickingHuRowsRepository pickingHUsRepo)
 	{
 		// creating those LookupDataSources requires DB access. so to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers
@@ -114,7 +114,7 @@ public class PickingSlotViewRepository
 
 	@VisibleForTesting
 	/* package */ PickingSlotViewRepository(
-			@NonNull final PickingHUsRepository pickingHUsRepo,
+			@NonNull final PickingHuRowsRepository pickingHUsRepo,
 			@NonNull final Supplier<LookupDataSource> warehouseLookup,
 			@NonNull final Supplier<LookupDataSource> bpartnerLookup,
 			@NonNull final Supplier<LookupDataSource> bpartnerLocationLookup)

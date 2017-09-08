@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
+import de.metas.ui.web.handlingunits.HUEditorRowType;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -34,10 +36,12 @@ public class PickingSlotRowTests
 		final PickingSlotRow sourceHURow = PickingSlotRow.fromSourceHUBuilder()
 				.huCode("123")
 				.huId(2)
+				.huEditorRowType(HUEditorRowType.LU)
 				.build();
 		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
 		assertThat(sourceHURow.isPickedHURow()).isFalse();
 		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
+		assertThat(sourceHURow.getType().getName()).isEqualTo(HUEditorRowType.LU.getName());
 	}
 	
 	@Test
@@ -46,9 +50,11 @@ public class PickingSlotRowTests
 		final PickingSlotRow sourceHURow = PickingSlotRow.fromSourceHUBuilder()
 				.huCode("123")
 				.huId(2)
+				.huEditorRowType(HUEditorRowType.TU)
 				.build();
 		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
 		assertThat(sourceHURow.isPickedHURow()).isFalse();
 		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
+		assertThat(sourceHURow.getType().getName()).isEqualTo(HUEditorRowType.TU.getName());
 	}
 }

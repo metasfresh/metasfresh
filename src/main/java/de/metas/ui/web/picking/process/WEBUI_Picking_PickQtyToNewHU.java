@@ -66,7 +66,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickToNewHU
+public class WEBUI_Picking_PickQtyToNewHU
 		extends WEBUI_Picking_PickFrom_M_Source_HU
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
