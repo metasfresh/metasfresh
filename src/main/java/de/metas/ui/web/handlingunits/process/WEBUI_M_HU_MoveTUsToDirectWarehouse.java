@@ -45,8 +45,6 @@ import de.metas.ui.web.window.model.DocumentCollection;
  */
 public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private static final String MSG_NotEnoughTUsFound = "WEBUI_M_HU_MoveTUsToDirectWarehouse.NotEnoughTUsFound";
-
 	@Autowired
 	private DocumentCollection documentsCollection;
 
@@ -99,7 +97,7 @@ public class WEBUI_M_HU_MoveTUsToDirectWarehouse extends HUEditorProcessTemplate
 				.huExtractTUs(topLevelHU, p_QtyTU, isOwnPackingMaterials);
 		if (tus.size() != p_QtyTU)
 		{
-			throw new AdempiereException(MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tus.size() });
+			throw new AdempiereException(WEBUI_M_HU_Messages.MSG_NotEnoughTUsFound, new Object[] { p_QtyTU, tus.size() });
 		}
 
 		HUMoveToDirectWarehouseService.newInstance()
