@@ -244,7 +244,21 @@ public final class HUIdsFilterHelper
 		}
 
 		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
-		return huIds == null || huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD;
+		if(huIds == null)
+		{
+			// null means no restrictions, so we might have a lot of HUs
+			return true; // high volume
+		}
+		else if (huIds.isEmpty())
+		{
+			// no HUs will be allowed
+			return false; //  not high volume
+		}
+		else
+		{
+			// consider high volume if it's above give threshold
+			return huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD;
+		}
 	}
 
 	public static final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterConverter
