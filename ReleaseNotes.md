@@ -45,6 +45,11 @@ Here come the actual release notes:
   * [#2378](https://github.com/metasfresh/metasfresh/issues/2378) Procurement candidates detail Improvements
     * Refining the Fieldnames in Procurement Candidates Window, allowing a better transparency for the User.
 
+*metasfresh-webui-frontend
+  * [#1147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1147) Implement the initial Sorting Indicator in included Tabs
+    * Now also showing the initial Sorting indicators uin included tabs.
+
+
 ## Fixes
 * metasfresh-frontend
   * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
