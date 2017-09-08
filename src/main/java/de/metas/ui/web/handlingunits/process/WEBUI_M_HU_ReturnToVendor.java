@@ -81,7 +81,7 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 	{
 		if (husToReturn != null && !husToReturn.isEmpty())
 		{
-			getView().removeHUsAndInvalidate(getSelectedHUs());
+			getView().removeHUsAndInvalidate(husToReturn);
 		}
 	}
 
