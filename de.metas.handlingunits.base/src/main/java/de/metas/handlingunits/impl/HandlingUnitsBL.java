@@ -23,6 +23,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
 import org.slf4j.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -138,13 +140,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public boolean destroyIfEmptyStorage(final I_M_HU huToDestroy)
+	public boolean destroyIfEmptyStorage(@NonNull final I_M_HU huToDestroy)
 	{
 		//
 		// Create HU Context
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(huToDestroy);
 		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContext(context);
-		// huContextInitial.setDate(SystemTime.asDate()); // use the default date set when HUContext was created
 
 		//
 		// Try to destroy given HU (or some of it's children)
@@ -192,9 +193,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				if (storage.isEmpty())
 				{
 					//
-					// In case we current HU is the one that we got as parameter (i.e. huToDestroy)
+					// In case the current HU is the one that we got as parameter (i.e. huToDestroy)
 					// then we need to check if parent got empty after our removal and in that case, destroy it.
-					// else do nothing because destroying is performed recursivelly here.
+					// else do nothing because destroying is performed recursively here.
 					final boolean destroyOldParentIfEmptyStorage;
 					if (huIterator.getDepth() == IHUIterator.DEPTH_STARTING_HU)
 					{
@@ -564,31 +565,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU getTopLevelParent(final I_M_HU hu)
+	public I_M_HU getTopLevelParent(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		//
-		// Navigate maximum maxDepth levels and try to get the top level parent
-		final int maxDepth = 100;
-		I_M_HU parent = hu;
-		for (int i = 0; i < maxDepth; i++)
-		{
-			final I_M_HU parentNew = handlingUnitsDAO.retrieveParent(parent);
-			if (parentNew == null)
-			{
-				return parent;
-			}
-			parent = parentNew;
-		}
-
-		throw new IllegalStateException("We navigated more then " + maxDepth + " levels deep to get the top level of " + hu + ". It seems like a data error");
+		final TopLevelHusQuery query = TopLevelHusQuery.builder()
+				.hus(ImmutableList.of(hu))
+				.includeAll(false)
+				.build();
+		return getTopLevelHUs(query).get(0);
 	}
 
 	@Override
-	public List<I_M_HU> getTopLevelHUs(@NonNull final TopLevelHusRequest request)
+	public List<I_M_HU> getTopLevelHUs(@NonNull final TopLevelHusQuery request)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
@@ -597,6 +584,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		for (final I_M_HU hu : request.getHus())
 		{
+			// Navigate maximum maxDepth levels and try to get the top level parent
+			int maxDepth = 100;
+
 			I_M_HU parent = hu;
 			while (parent != null
 					// don't go up any further if...
@@ -612,6 +602,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					husResult.add(parent);
 				}
 				parent = parentNew;
+
+				maxDepth--;
+				Check.errorIf(maxDepth <= 0, "We navigated more than {} levels deep to get the top level of hu={}. It seems like a data error", maxDepth, hu);
 			}
 		}
 		return husResult;

@@ -151,35 +151,6 @@ public interface I_M_Source_HU
     public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Lagerort.
-	 * Lagerort im Lager
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Locator_ID (int M_Locator_ID);
-
-	/**
-	 * Get Lagerort.
-	 * Lagerort im Lager
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Locator_ID();
-
-	public org.compiere.model.I_M_Locator getM_Locator();
-
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator);
-
-    /** Column definition for M_Locator_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_Source_HU, org.compiere.model.I_M_Locator> COLUMN_M_Locator_ID = new org.adempiere.model.ModelColumn<I_M_Source_HU, org.compiere.model.I_M_Locator>(I_M_Source_HU.class, "M_Locator_ID", org.compiere.model.I_M_Locator.class);
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
-
-	/**
 	 * Set Source-HU.
 	 *
 	 * <br>Type: ID
@@ -201,6 +172,31 @@ public interface I_M_Source_HU
     public static final org.adempiere.model.ModelColumn<I_M_Source_HU, Object> COLUMN_M_Source_HU_ID = new org.adempiere.model.ModelColumn<I_M_Source_HU, Object>(I_M_Source_HU.class, "M_Source_HU_ID", null);
     /** Column name M_Source_HU_ID */
     public static final String COLUMNNAME_M_Source_HU_ID = "M_Source_HU_ID";
+
+	/**
+	 * Set PreDestroy_Snapshot_UUID.
+	 * Snapshot einer HU vor ihrer Zerstörung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPreDestroy_Snapshot_UUID (java.lang.String PreDestroy_Snapshot_UUID);
+
+	/**
+	 * Get PreDestroy_Snapshot_UUID.
+	 * Snapshot einer HU vor ihrer Zerstörung
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPreDestroy_Snapshot_UUID();
+
+    /** Column definition for PreDestroy_Snapshot_UUID */
+    public static final org.adempiere.model.ModelColumn<I_M_Source_HU, Object> COLUMN_PreDestroy_Snapshot_UUID = new org.adempiere.model.ModelColumn<I_M_Source_HU, Object>(I_M_Source_HU.class, "PreDestroy_Snapshot_UUID", null);
+    /** Column name PreDestroy_Snapshot_UUID */
+    public static final String COLUMNNAME_PreDestroy_Snapshot_UUID = "PreDestroy_Snapshot_UUID";
 
 	/**
 	 * Get Aktualisiert.

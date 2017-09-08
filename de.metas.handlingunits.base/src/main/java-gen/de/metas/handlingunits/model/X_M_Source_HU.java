@@ -14,7 +14,7 @@ public class X_M_Source_HU extends org.compiere.model.PO implements I_M_Source_H
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1277425520L;
+	private static final long serialVersionUID = 623349405L;
 
     /** Standard Constructor */
     public X_M_Source_HU (Properties ctx, int M_Source_HU_ID, String trxName)
@@ -75,43 +75,6 @@ public class X_M_Source_HU extends org.compiere.model.PO implements I_M_Source_H
 		return ii.intValue();
 	}
 
-	@Override
-	public org.compiere.model.I_M_Locator getM_Locator() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class);
-	}
-
-	@Override
-	public void setM_Locator(org.compiere.model.I_M_Locator M_Locator)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Locator_ID, org.compiere.model.I_M_Locator.class, M_Locator);
-	}
-
-	/** Set Lagerort.
-		@param M_Locator_ID 
-		Lagerort im Lager
-	  */
-	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
-	{
-		if (M_Locator_ID < 1) 
-			set_Value (COLUMNNAME_M_Locator_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
-	}
-
-	/** Get Lagerort.
-		@return Lagerort im Lager
-	  */
-	@Override
-	public int getM_Locator_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
 	/** Set Source-HU.
 		@param M_Source_HU_ID Source-HU	  */
 	@Override
@@ -132,5 +95,24 @@ public class X_M_Source_HU extends org.compiere.model.PO implements I_M_Source_H
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set PreDestroy_Snapshot_UUID.
+		@param PreDestroy_Snapshot_UUID 
+		Snapshot einer HU vor ihrer Zerstörung
+	  */
+	@Override
+	public void setPreDestroy_Snapshot_UUID (java.lang.String PreDestroy_Snapshot_UUID)
+	{
+		set_Value (COLUMNNAME_PreDestroy_Snapshot_UUID, PreDestroy_Snapshot_UUID);
+	}
+
+	/** Get PreDestroy_Snapshot_UUID.
+		@return Snapshot einer HU vor ihrer Zerstörung
+	  */
+	@Override
+	public java.lang.String getPreDestroy_Snapshot_UUID () 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PreDestroy_Snapshot_UUID);
 	}
 }

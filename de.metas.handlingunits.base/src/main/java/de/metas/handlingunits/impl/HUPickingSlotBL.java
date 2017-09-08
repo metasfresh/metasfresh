@@ -58,7 +58,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusRequest;
+import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
@@ -601,7 +601,7 @@ public class HUPickingSlotBL
 
 		// we need to filter out everything that is not toplevel
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		return handlingUnitsBL.getTopLevelHUs(TopLevelHusRequest.builder().hus(result).includeAll(false).build());
+		return handlingUnitsBL.getTopLevelHUs(TopLevelHusQuery.builder().hus(result).includeAll(false).build());
 	}
 
 	private List<I_M_HU> retrieveVHUsFromStorage(
@@ -674,7 +674,7 @@ public class HUPickingSlotBL
 
 		//
 		// get the the top level HUs from for our VHUs
-		final TopLevelHusRequest topLevelHusRequest = TopLevelHusRequest.builder()
+		final TopLevelHusQuery topLevelHusRequest = TopLevelHusQuery.builder()
 				.hus(vhus)
 				.includeAll(false)
 				.filter(notPickedOrSourceHU) // exclude HUs that are already picked or flagged as source HUs
@@ -725,7 +725,7 @@ public class HUPickingSlotBL
 			return true;
 		};
 
-		final TopLevelHusRequest topLevelHusRequest = TopLevelHusRequest.builder()
+		final TopLevelHusQuery topLevelHusRequest = TopLevelHusQuery.builder()
 				.hus(vhus)
 				.includeAll(false)
 				.filter(filter)
