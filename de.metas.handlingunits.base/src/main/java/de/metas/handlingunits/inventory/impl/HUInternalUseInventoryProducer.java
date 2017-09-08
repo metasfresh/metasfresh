@@ -19,6 +19,7 @@ import org.compiere.util.Env;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusRequest;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -79,7 +80,7 @@ public class HUInternalUseInventoryProducer
 
 	public List<I_M_Inventory> create()
 	{
-		final Map<Integer, List<I_M_HU>> husByWarehouseId = getHUs()
+		final Map<Integer, List<I_M_HU>> husByWarehouseId = getTopLevelHUs()
 				.stream()
 				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID()));
 
@@ -107,7 +108,7 @@ public class HUInternalUseInventoryProducer
 		final HUListAllocationSourceDestination husSource = HUListAllocationSourceDestination.of(hus);
 
 		husSource.setCreateHUSnapshots(true);
-		 husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
+		husSource.setDestroyEmptyHUs(true); // get rid of those HUs which got empty
 
 		//
 		// Create and setup context
@@ -144,10 +145,10 @@ public class HUInternalUseInventoryProducer
 				handlingUnitsBL.destroyIfEmptyStorage(huContext, hu);
 			}
 		}
-		
+
 		//
 		final List<I_M_Inventory> inventories = inventoryAllocationDestination.completeInventories();
-		
+
 		//
 		// Send notifications
 		InventoryProcessedEventBus.newInstance()
@@ -195,18 +196,27 @@ public class HUInternalUseInventoryProducer
 		return docType;
 	}
 
+	/**
+	 * Add the HUs to be disposed.
+	 * 
+	 * @param hus may be empty but not null.
+	 *            This class takes care of making sure that only the top level HUs are processed to avoid issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/578">metasfresh/metasfresh-webui-api#578</a>.
+	 *            Included lower-level HUs are processed recursively.
+	 * @return
+	 */
 	public HUInternalUseInventoryProducer addHUs(final Collection<I_M_HU> hus)
 	{
 		_hus.addAll(hus);
 		return this;
 	}
 
-	private List<I_M_HU> getHUs()
+	private List<I_M_HU> getTopLevelHUs()
 	{
 		if (_hus.isEmpty())
 		{
 			throw new AdempiereException("No HUs for internal use inventory");
 		}
-		return _hus;
+		final TopLevelHusRequest query = TopLevelHusRequest.builder().hus(_hus).includeAll(false).build();
+		return handlingUnitsBL.getTopLevelHUs(query);
 	}
 }
