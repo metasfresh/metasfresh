@@ -244,7 +244,7 @@ public final class HUIdsFilterHelper
 		}
 
 		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
-		return huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD;
+		return huIds == null || huIds.isEmpty() || huIds.size() >= HUEditorViewBuffer_HighVolume.HIGHVOLUME_THRESHOLD;
 	}
 
 	public static final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterConverter
