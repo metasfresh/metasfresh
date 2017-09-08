@@ -75,6 +75,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
@@ -217,6 +218,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				inventoryLine.setQtyInternalUse(qtyInternalUseNew);
 			}
 
+			setInventoryLinePiip(hu, inventoryLine);
+			
 			//
 			// Calculate and update inventory line's QtyTU
 			{
@@ -384,25 +387,18 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventoryLine;
 	}
 
-	private BigDecimal countTUs(final IHUContext huContext, final I_M_HU hu, final I_M_InventoryLine inventoryLine)
+	/**
+	 * Sets the given {@code inventoryLine}'s {@code M_HU_PI_Item_Product} according to the given {@code hu}.<br>
+	 * If the hu does not have one, we make a very educated guess based on the hu's (effective) PI version.
+	 * 
+	 * @param hu
+	 * @param inventoryLine
+	 */
+	private void setInventoryLinePiip(
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_InventoryLine inventoryLine)
 	{
-		// Find out if the hu is VHU or Aggregate -> Move to TU level
-		// Add the TU recursively
-
-		final I_M_HU tuHU;
-		// VHU
-		if (handlingUnitsBL.isVirtual(hu))
-		{
-			tuHU = handlingUnitsDAO.retrieveParent(hu);
-
-		}
-		else
-		{
-			// Aggregated HU
-			tuHU = hu;
-		}
-
-		I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
+		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
 
 		final I_M_InOut inout = receiptLine.getM_InOut();
 		final I_C_BPartner partner = inout.getC_BPartner();
@@ -410,12 +406,12 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final Date date = inout.getMovementDate();
 
 		I_M_HU_PI_Item_Product huPIP = hu.getM_HU_PI_Item_Product();
-
 		if (huPIP == null)
 		{
+			final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(hu);
 
 			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
-					.retrievePIItems(tuHU.getM_HU_PI_Version().getM_HU_PI(), partner).stream()
+					.retrievePIItems(effectivePIVersion.getM_HU_PI(), partner).stream()
 					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
 					.findFirst().orElse(null);
 
@@ -424,17 +420,61 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				huPIP = huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, partner, product, date);
 			}
 		}
-
 		inventoryLine.setM_HU_PI_Item_Product(huPIP);
+	}
 
+	/**
+	 * Counts the number of TUs from from the
+	 * 
+	 * @param huContext
+	 * @param hu
+	 * @param inventoryLine
+	 * @return
+	 */
+	private BigDecimal countTUs(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_InventoryLine inventoryLine)
+	{
+		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
 		final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
+
 		if (pmCollectorForCountingTUs == null)
 		{
 			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
 		}
+
+		final I_M_HU tuHU = retrieveTu(hu);
 		pmCollectorForCountingTUs.addHURecursively(tuHU, inOutLineSource);
+
 		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
 		return BigDecimal.valueOf(countTUs);
+	}
+
+	/**
+	 * Find get the TU for the given {@code hu}. Might be the HU itself or its parent.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	private I_M_HU retrieveTu(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU tuHU;
+
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			tuHU = hu;
+		}
+		else if (handlingUnitsBL.isVirtual(hu))
+		{
+			tuHU = handlingUnitsDAO.retrieveParent(hu);
+		}
+		else
+		{
+			// neither aggregate nor virtual. since we know from the start that we don't deal with an LU, hu must be a TU
+			tuHU = hu; 
+		}
+		return tuHU;
 	}
 
 	private void collectPackingMaterials(final IHUContext huContext, final int inventoryId, final I_M_HU hu)
