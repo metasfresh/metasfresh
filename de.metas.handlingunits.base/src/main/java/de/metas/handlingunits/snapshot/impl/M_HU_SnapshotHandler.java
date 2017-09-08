@@ -121,7 +121,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 	}
 
 	/**
-	 * Recursivelly collect all M_HU_IDs and M_HU_Item_IDs starting from <code>startHUIds</code> to the bottom, including those too.
+	 * Recursively collect all M_HU_IDs and M_HU_Item_IDs starting from <code>startHUIds</code> to the bottom, including those too.
 	 * 
 	 * @param startHUIds
 	 * @param huIdsCollector

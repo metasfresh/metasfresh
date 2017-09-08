@@ -24,6 +24,7 @@ package de.metas.handlingunits.allocation.impl;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
@@ -60,7 +62,9 @@ import de.metas.document.engine.IDocActionBL;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -69,9 +73,13 @@ import de.metas.handlingunits.hutransaction.IHUTransaction;
 import de.metas.handlingunits.hutransaction.impl.HUTransaction;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -91,6 +99,9 @@ public class InventoryAllocationDestination implements IAllocationDestination
 {
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	private final transient IHUPIItemProductDAO huPiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final transient IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final transient IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
@@ -119,6 +130,8 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	// Packing materials
 	private final Map<Integer, HUPackingMaterialsCollector> packingMaterialsCollectorByInventoryId = new HashMap<>();
 	private final Set<Integer> packingMaterialsCollectedHUIds = new HashSet<>();
+
+	// NOTE: using a shared collector for counting because we want to avoid counting same HU in multiple places
 	private HUPackingMaterialsCollector pmCollectorForCountingTUs; // will be created on demand
 
 	/**
@@ -205,10 +218,12 @@ public class InventoryAllocationDestination implements IAllocationDestination
 				inventoryLine.setQtyInternalUse(qtyInternalUseNew);
 			}
 
+			setInventoryLinePiip(hu, inventoryLine);
+			
 			//
 			// Calculate and update inventory line's QtyTU
 			{
-				final BigDecimal countTUs = countTUs(request.getHUContext(), hu, receiptLine);
+				final BigDecimal countTUs = countTUs(request.getHUContext(), hu, inventoryLine);
 				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
 				inventoryLine.setQtyTU(qtyTU);
 			}
@@ -217,7 +232,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			// Collect HU's packing materials
 			{
 				collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), hu);
-				if(topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
+				if (topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
 				{
 					collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
 				}
@@ -231,7 +246,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Update the result
 			{
-				result.substractAllocatedQty(qtySource);
+				result.subtractAllocatedQty(qtySource);
 
 				final IHUTransaction trx = new HUTransaction(
 						inventoryLine, // Reference model
@@ -356,7 +371,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		inventoryLine.setC_UOM(inOutLine.getC_UOM());
 
 		// set the M_HU_PI_Item_Product from the HU
-		inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
+		// inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
 
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
 
@@ -372,16 +387,94 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventoryLine;
 	}
 
-	private BigDecimal countTUs(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
+	/**
+	 * Sets the given {@code inventoryLine}'s {@code M_HU_PI_Item_Product} according to the given {@code hu}.<br>
+	 * If the hu does not have one, we make a very educated guess based on the hu's (effective) PI version.
+	 * 
+	 * @param hu
+	 * @param inventoryLine
+	 */
+	private void setInventoryLinePiip(
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_InventoryLine inventoryLine)
 	{
+		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
+
+		final I_M_InOut inout = receiptLine.getM_InOut();
+		final I_C_BPartner partner = inout.getC_BPartner();
+		final I_M_Product product = receiptLine.getM_Product();
+		final Date date = inout.getMovementDate();
+
+		I_M_HU_PI_Item_Product huPIP = hu.getM_HU_PI_Item_Product();
+		if (huPIP == null)
+		{
+			final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(hu);
+
+			final I_M_HU_PI_Item materialItem = handlingUnitsDAO
+					.retrievePIItems(effectivePIVersion.getM_HU_PI(), partner).stream()
+					.filter(i -> X_M_HU_PI_Item.ITEMTYPE_Material.equals(i.getItemType()))
+					.findFirst().orElse(null);
+
+			if (materialItem != null)
+			{
+				huPIP = huPiItemProductDAO.retrievePIMaterialItemProduct(materialItem, partner, product, date);
+			}
+		}
+		inventoryLine.setM_HU_PI_Item_Product(huPIP);
+	}
+
+	/**
+	 * Counts the number of TUs from from the
+	 * 
+	 * @param huContext
+	 * @param hu
+	 * @param inventoryLine
+	 * @return
+	 */
+	private BigDecimal countTUs(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU hu,
+			@NonNull final I_M_InventoryLine inventoryLine)
+	{
+		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
 		final InOutLineHUPackingMaterialCollectorSource inOutLineSource = InOutLineHUPackingMaterialCollectorSource.of(receiptLine);
+
 		if (pmCollectorForCountingTUs == null)
 		{
 			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
 		}
-		pmCollectorForCountingTUs.addHURecursively(hu, inOutLineSource);
+
+		final I_M_HU tuHU = retrieveTu(hu);
+		pmCollectorForCountingTUs.addHURecursively(tuHU, inOutLineSource);
+
 		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();
 		return BigDecimal.valueOf(countTUs);
+	}
+
+	/**
+	 * Find get the TU for the given {@code hu}. Might be the HU itself or its parent.
+	 * 
+	 * @param hu
+	 * @return
+	 */
+	private I_M_HU retrieveTu(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU tuHU;
+
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			tuHU = hu;
+		}
+		else if (handlingUnitsBL.isVirtual(hu))
+		{
+			tuHU = handlingUnitsDAO.retrieveParent(hu);
+		}
+		else
+		{
+			// neither aggregate nor virtual. since we know from the start that we don't deal with an LU, hu must be a TU
+			tuHU = hu; 
+		}
+		return tuHU;
 	}
 
 	private void collectPackingMaterials(final IHUContext huContext, final int inventoryId, final I_M_HU hu)
@@ -390,14 +483,13 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		final IHUPackingMaterialCollectorSource source = null;
 		collector.addHURecursively(hu, source);
 	}
-	
+
 	private void collectPackingMaterials_LUOnly(final IHUContext huContext, final int inventoryId, final I_M_HU luHU)
 	{
 		final HUPackingMaterialsCollector collector = getCreatePackingMaterialsCollectorForInventory(huContext, inventoryId);
 		final IHUPackingMaterialCollectorSource source = null;
 		collector.addLU(luHU, source);
 	}
-
 
 	private HUPackingMaterialsCollector getCreatePackingMaterialsCollectorForInventory(final IHUContext huContext, final int inventoryId)
 	{

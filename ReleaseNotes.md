@@ -44,6 +44,15 @@ Here come the actual release notes:
     * New Sales, Purchase, Warehouse, Logistics and Finance Reports added to WebUI.
   * [#2378](https://github.com/metasfresh/metasfresh/issues/2378) Procurement candidates detail Improvements
     * Refining the Fieldnames in Procurement Candidates Window, allowing a better transparency for the User.
+  * [#2391](https://github.com/metasfresh/metasfresh/issues/2391) Partial vendor Returns
+    * New Functionality in Handling unit Editor now allowing to also do partial Vendor Returns.
+
+*metasfresh-webui-frontend
+  * [#1147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1147) Implement the initial Sorting Indicator in included Tabs
+    * Now also showing the initial Sorting indicators in included tabs.
+  * [#1152](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1152) find a new shortcut for CTRL + X
+    * Providing a new shortcut for eMail send. It's now ctrl+k instead of ctrl+x.
+
 
 ## Fixes
 * metasfresh-frontend
@@ -51,6 +60,10 @@ Here come the actual release notes:
     * Fix and adjustment to the Lookup fields behavior in included Views.
   * [#1183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1183) Purchase order: screen is scrolling when i am trying to type in Delivery from field
     * Avoiding the scroll of the main page when scrolling in a Lookup Field
+
+* metasfresh-webui-frontend
+  * [#1156](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1156) Offline message is no longer displayed
+    * Fixes the message that is shown when the appclicaton turns offline.
 
 # metasfresh 5.25 (2017-36)
 
@@ -63,11 +76,11 @@ Here come the actual release notes:
   * [#1876](https://github.com/metasfresh/metasfresh/issues/1876) New CU Labels
     * New Customer Unit Labels created. These will be uses in manufacturing Action receipt workflow.
   * [#2102](https://github.com/metasfresh/metasfresh/issues/2102) maven change "local" version from 1.0.0 to 10.0.0
-    * Internal Housekleeping issue solved for our Continuous Integration/ Build System.
+    * Internal Housekeeping issue solved for our Continuous Integration/ Build System.
   * [#2145](https://github.com/metasfresh/metasfresh/issues/2145) Partial Internal usage action in Handling Unit Editor
-    * Extended Functionality in in Internal usage action in Handling Unit Editor, now allowing to select and use partial Handling Units.
+    * Extended Functionality in Internal usage action in Handling Unit Editor, now allowing to select and use partial Handling Units.
   * [#2229](https://github.com/metasfresh/metasfresh/issues/2229) New Window for Product Costs in WebUI
-    * New Window for Productcosts in WebUI. Allowing to view/ maintain Productcosts of different Costing Types.
+    * New Window for Product Costs in WebUI. Allowing to view/ maintain Product Costs of different Costing Types.
   * [#2230](https://github.com/metasfresh/metasfresh/issues/2230) New Window for Fact_Acct_ActivityChangeRequest
     * New Window in WebUI for the maintenance of Activity ID changes in Documents.
   * [#2232](https://github.com/metasfresh/metasfresh/issues/2232) New Window for c_activity in WebUI
@@ -85,7 +98,7 @@ Here come the actual release notes:
   * [#2258](https://github.com/metasfresh/metasfresh/issues/2258) add due date to request grid view
     * Adding the Field Due Date to the included View of Requests in B2C Customer Window in WebUI.
   * [#2267](https://github.com/metasfresh/metasfresh/issues/2267) New Window for Hardware drucker in WebUI
-    * New Widnow for Printer Configuration and Maintenance in WebUI.
+    * New Window for Printer Configuration and Maintenance in WebUI.
   * [#2268](https://github.com/metasfresh/metasfresh/issues/2268) New Window for Drucker-Zuordnung in WebUI
     * New Window for Printer Matching Configuration and Maintenance in WebUI.
   * [#2269](https://github.com/metasfresh/metasfresh/issues/2269) New Window for Async Batch in WebUI
@@ -101,11 +114,12 @@ Here come the actual release notes:
   * [#2365](https://github.com/metasfresh/metasfresh/issues/2365) Rename all Windows with Suffix "kandidaten" to suffix "disposition"
     * Renaming the Candidates Window in baselanguage, now called disposition.
   * [#2370](https://github.com/metasfresh/metasfresh/issues/2370) Price Topic improvements in Product Price and Pricelist
-    * Different detail improvements done to Pricinf relevant topics in WebUI.
+    * Different detail improvements done to Pricing relevant topics in WebUI.
   * [#2372](https://github.com/metasfresh/metasfresh/issues/2372) Detailed Improvements in different Finance Functionalities
     * Detail Improvements added to different Finance windows and processes.
   * [#2374](https://github.com/metasfresh/metasfresh/issues/2374) Detail adjustments to Shipment Candidates Window
     * Detail adjustments to the Shipment Candidates Window adding further data manipulation functionality.
+  * [#2294](https://github.com/metasfresh/metasfresh/issues/2396) copy report.properties for purchase order to dist repo
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
@@ -141,6 +155,7 @@ Here come the actual release notes:
     * Fix for the automated Test of User Notifications in Continuous Integration workflow.
   * [#561](https://github.com/metasfresh/metasfresh-webui-api/issues/561) Handling Unit Editor Materialentnahme Bug
     * Fixes an Issue during Internal Usage workflow via Handling Unit Editor.
+  * [#579](https://github.com/metasfresh/metasfresh-webui-api/issues/579) NPE when you issue HUs
 
 * metasfresh-webui-frontend
   * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product

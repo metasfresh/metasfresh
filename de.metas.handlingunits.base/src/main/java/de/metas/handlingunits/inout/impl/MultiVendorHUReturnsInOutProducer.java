@@ -129,7 +129,7 @@ class MultiVendorHUReturnsInOutProducer
 				// Find out the the Vendor BPartner
 				final I_M_InOutLine inoutLine = InterfaceWrapperHelper.loadOutOfTrx(originalReceiptInOutLineId, I_M_InOutLine.class);
 				final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
-				
+
 				if (inout.isSOTrx())
 				{
 					// do not allow HUs from shipments to get into vendor returns
@@ -152,6 +152,7 @@ class MultiVendorHUReturnsInOutProducer
 		// Iterate all vendor return producers and actually create the vendor returns InOut
 		final List<I_M_InOut> returnInOuts = vendorReturnProducers.values().stream()
 				.map(VendorReturnsInOutProducer::create) // create vendor return
+				.filter(returnInOut -> returnInOut != null)
 				.map(returnInOut -> InterfaceWrapperHelper.create(returnInOut, I_M_InOut.class)) // wrap it
 				.collect(GuavaCollectors.toImmutableList());
 
