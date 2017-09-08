@@ -125,6 +125,7 @@ public class WEBUI_M_HU_ReturnTUsToVendor extends HUEditorProcessTemplate implem
 
 		//
 		// Assign the split TUs to the receipt line
+		// FIXME: this is a workaround until https://github.com/metasfresh/metasfresh/issues/2392 is implemented 
 		tusToReturn.forEach(tu -> huAssignmentBL.createHUAssignmentBuilder()
 				.initializeAssignment(getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.setM_LU_HU(null)
