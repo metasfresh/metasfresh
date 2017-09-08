@@ -120,10 +120,13 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	private boolean collectIfOwnPackingMaterialsOnly = false;
 
 	/**
-	 * memorize how many TUs were set per source, in case this number is needed later in the code. Also check the aggregated HUs for LU type
+	 * Set on true if the M_HU_PI_Item_Products shall be remembered and counted for creation of the document line
 	 */
 	private boolean isCollectTUNumberPerOrigin = false;
 
+	/**
+	 * Set on true if the quantities of the aggregated TUs shall be taken into account for the final QtyTU that will get into the document line.
+	 */
 	private boolean isCollectAggregatedHUs = false;
 
 	private Comparator<HUPackingMaterialDocumentLineCandidate> candidatesSortComparator = null;
@@ -721,12 +724,12 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		this.collectIfOwnPackingMaterialsOnly = collectIfOwnPackingMaterialsOnly;
 	}
 
-	public void setisCollectTUNumberPerOrigin(final boolean isCollectTUNumberPerOrigin)
+	public void setIsCollectTUNumberPerOrigin(final boolean isCollectTUNumberPerOrigin)
 	{
 		this.isCollectTUNumberPerOrigin = isCollectTUNumberPerOrigin;
 	}
 
-	public void setisCollectAggregatedHUs(final boolean isCollectAggregatedHUs)
+	public void setIsCollectAggregatedHUs(final boolean isCollectAggregatedHUs)
 	{
 		this.isCollectAggregatedHUs = isCollectAggregatedHUs;
 	}

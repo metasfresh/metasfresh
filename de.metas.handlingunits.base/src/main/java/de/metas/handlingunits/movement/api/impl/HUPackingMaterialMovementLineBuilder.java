@@ -52,8 +52,8 @@ import de.metas.handlingunits.spi.impl.HUPackingMaterialsCollector;
 		this.locatorFromId = locatorFromId;
 		this.locatorToId = locatorToId;
 
-		packingMaterialsCollector.setisCollectTUNumberPerOrigin(true);
-		packingMaterialsCollector.setisCollectAggregatedHUs(true);
+		packingMaterialsCollector.setIsCollectTUNumberPerOrigin(true);
+		packingMaterialsCollector.setIsCollectAggregatedHUs(true);
 	}
 
 	public int getM_Locator_From_ID()

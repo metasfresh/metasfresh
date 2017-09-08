@@ -130,8 +130,8 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
 			collector = new HUPackingMaterialsCollector(huContext);
-			collector.setisCollectTUNumberPerOrigin(true);
-			collector.setisCollectAggregatedHUs(true);
+			collector.setIsCollectTUNumberPerOrigin(true);
+			collector.setIsCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
 			
 		

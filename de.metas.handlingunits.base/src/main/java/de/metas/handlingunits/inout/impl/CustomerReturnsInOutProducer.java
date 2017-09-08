@@ -117,8 +117,8 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 		{
 
 			collector = new HUPackingMaterialsCollector(huContext);
-			collector.setisCollectTUNumberPerOrigin(true);
-			collector.setisCollectAggregatedHUs(true);
+			collector.setIsCollectTUNumberPerOrigin(true);
+			collector.setIsCollectAggregatedHUs(true);
 
 			final I_M_HU hu = huToReturnInfo.getHu();
 
