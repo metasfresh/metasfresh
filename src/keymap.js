@@ -21,7 +21,7 @@ export default {
         OPEN_ADVANCED_EDIT: mod + '+' + 'e',
         CLONE_DOCUMENT: mod + '+' + 'w',
         OPEN_PRINT_RAPORT: mod + '+' + 'p',
-        OPEN_EMAIL: mod + '+' + 'x',
+        OPEN_EMAIL: mod + '+' + 'k',
         DELETE_DOCUMENT: mod + '+' + 'd',
         NEW_DOCUMENT: mod + '+' + 'm',
         TOGGLE_EDIT_MODE: mod + '+' + 'o'
