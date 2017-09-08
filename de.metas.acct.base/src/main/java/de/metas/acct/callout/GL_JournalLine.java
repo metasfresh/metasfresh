@@ -13,17 +13,18 @@ package de.metas.acct.callout;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
 
 import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.acct.api.ITaxAccountable;
@@ -32,13 +33,16 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.adempiere.util.time.SystemTime;
+import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
 
-@Callout(value = I_GL_JournalLine.class
-		, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
+import de.metas.currency.ICurrencyBL;
+
+@Callout(value = I_GL_JournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class GL_JournalLine
 {
 	private static final String MSG_AutoTaxAccountDrCrNotAllowed = "AutoTaxAccountDrCrNotAllowed";
@@ -48,6 +52,51 @@ public class GL_JournalLine
 	private static final boolean ACCTSIGN_Credit = false;
 
 	private final TaxAccountableCallout taxAccountableCallout = new TaxAccountableCallout();
+
+	@CalloutMethod(columnNames = { I_GL_JournalLine.COLUMNNAME_DateAcct, I_GL_JournalLine.COLUMNNAME_C_Currency_ID, I_GL_JournalLine.COLUMNNAME_C_ConversionType_ID })
+	public void updateCurrencyRate(final I_GL_JournalLine glJournalLine)
+	{
+		//
+		// Extract data from source Journal
+		final int currencyId = glJournalLine.getC_Currency_ID();
+		final int conversionTypeId = glJournalLine.getC_ConversionType_ID();
+		Timestamp dateAcct = glJournalLine.getDateAcct();
+		if (dateAcct == null)
+		{
+			dateAcct = SystemTime.asDayTimestamp();
+		}
+		final int adClientId = glJournalLine.getAD_Client_ID();
+		final int adOrgId = glJournalLine.getAD_Org_ID();
+		final I_C_AcctSchema acctSchema = glJournalLine.getGL_Journal().getC_AcctSchema();
+
+		//
+		// Calculate currency rate
+		BigDecimal currencyRate = Services.get(ICurrencyBL.class).getRate(currencyId, acctSchema.getC_Currency_ID(),
+				dateAcct, conversionTypeId, adClientId, adOrgId);
+		if (currencyRate == null)
+		{
+			currencyRate = BigDecimal.ZERO;
+		}
+
+		//
+		glJournalLine.setCurrencyRate(currencyRate);
+	}
+
+	@CalloutMethod(columnNames = { I_GL_JournalLine.COLUMNNAME_AmtSourceDr, I_GL_JournalLine.COLUMNNAME_AmtSourceCr, I_GL_JournalLine.COLUMNNAME_CurrencyRate })
+	public void updateAmtAcctDrAndCr(final I_GL_JournalLine journalLine)
+	{
+		final int precision = journalLine.getGL_Journal().getC_AcctSchema().getC_Currency().getStdPrecision();
+		final BigDecimal currencyRate = journalLine.getCurrencyRate();
+
+		// AmtAcct = AmtSource * CurrencyRate ==> Precision
+		final BigDecimal amtSourceDr = journalLine.getAmtSourceDr();
+		final BigDecimal amtAcctDr = amtSourceDr.multiply(currencyRate).setScale(precision, RoundingMode.HALF_UP);
+		journalLine.setAmtAcctDr(amtAcctDr);
+
+		final BigDecimal amtSourceCr = journalLine.getAmtSourceCr();
+		final BigDecimal amtAcctCr = amtSourceCr.multiply(currencyRate).setScale(precision, RoundingMode.HALF_UP);
+		journalLine.setAmtAcctCr(amtAcctCr);
+	}
 
 	@CalloutMethod(columnNames = I_GL_JournalLine.COLUMNNAME_IsSplitAcctTrx)
 	public void onIsSplitAcctTrx(final I_GL_JournalLine glJournalLine)
@@ -82,9 +131,9 @@ public class GL_JournalLine
 	 * @param glJournalLine
 	 * @param fromAmtSourceColumnName source column from where we shall copy the amount. It can be:
 	 *            <ul>
-	 *            <li> {@link I_GL_JournalLine#COLUMNNAME_AmtSourceDr} to copy from AmtSourceDr to AmtSourceCr
-	 *            <li> {@link I_GL_JournalLine#COLUMNNAME_AmtSourceCr} to copy from AmtSourceCr to AmtSourceDr
-	 *            <li> <code>null</code> - it will copy from AmtSourceDr if it's not zero else from AmtSourceCr
+	 *            <li>{@link I_GL_JournalLine#COLUMNNAME_AmtSourceDr} to copy from AmtSourceDr to AmtSourceCr
+	 *            <li>{@link I_GL_JournalLine#COLUMNNAME_AmtSourceCr} to copy from AmtSourceCr to AmtSourceDr
+	 *            <li><code>null</code> - it will copy from AmtSourceDr if it's not zero else from AmtSourceCr
 	 *            </ul>
 	 */
 	private final void syncSourceAmountsIfSplitAcctTrx(final I_GL_JournalLine glJournalLine, String fromAmtSourceColumnName)

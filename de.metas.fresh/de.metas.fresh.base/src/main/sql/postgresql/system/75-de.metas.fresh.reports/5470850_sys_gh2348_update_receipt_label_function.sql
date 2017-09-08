@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS report.receipt_label(IN M_HU_ID numeric);
+﻿DROP FUNCTION IF EXISTS report.receipt_label(IN M_HU_ID numeric);
 
 CREATE FUNCTION report.receipt_label(IN M_HU_ID numeric) RETURNS TABLE
 	(
@@ -109,6 +109,6 @@ LEFT OUTER JOIN M_HU_PI_Item_Product hu_piip ON hu_piip.M_HU_PI_Item_Product_ID 
 
 
 $$
-LANGUAGE sql STABLE
+  LANGUAGE sql STABLE
 
 

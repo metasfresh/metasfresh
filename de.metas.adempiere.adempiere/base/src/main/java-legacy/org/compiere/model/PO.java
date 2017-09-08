@@ -154,7 +154,7 @@ public abstract class PO
 	 *
 	 * @param docWFMgr mgr
 	 */
-	public static void setDocWorkflowMgr(DocWorkflowMgr docWFMgr)
+	public static void setDocWorkflowMgr(final DocWorkflowMgr docWFMgr)
 	{
 		s_docWFMgr = docWFMgr;
 		s_log.info("Document workflow manager set to {}", s_docWFMgr);
@@ -173,7 +173,7 @@ public abstract class PO
 	 *
 	 * @param ctx context
 	 */
-	public PO(Properties ctx)
+	public PO(final Properties ctx)
 	{
 		this(ctx, 0, null, null);
 	}   // PO
@@ -185,7 +185,7 @@ public abstract class PO
 	 * @param ctx context
 	 * @param trxName transaction name
 	 */
-	public PO(Properties ctx, int ID, String trxName)
+	public PO(final Properties ctx, final int ID, final String trxName)
 	{
 		this(ctx, ID, trxName, null);
 	}   // PO
@@ -198,7 +198,7 @@ public abstract class PO
 	 *            if null, a new record is created.
 	 * @param trxName transaction name
 	 */
-	public PO(Properties ctx, ResultSet rs, String trxName)
+	public PO(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		this(ctx, 0, trxName, rs);
 	}	// PO
@@ -223,7 +223,7 @@ public abstract class PO
 	 * @param trxName transaction name
 	 * @param rs optional - load from current result set position (no navigation, not closed)
 	 */
-	public PO(Properties ctx, int ID, String trxName, ResultSet rs)
+	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
 	{
 		super();
 		if (ctx == null)
@@ -260,7 +260,7 @@ public abstract class PO
 	 * @param AD_Client_ID client
 	 * @param AD_Org_ID org
 	 */
-	public PO(Properties ctx, PO source, int AD_Client_ID, int AD_Org_ID)
+	public PO(final Properties ctx, final PO source, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		this(ctx, 0, null, null);	// create new
 		//
@@ -346,7 +346,7 @@ public abstract class PO
 		return isAssignedID;
 	}
 
-	public final void setIsAssignedID(boolean assignedID)
+	public final void setIsAssignedID(final boolean assignedID)
 	{
 		isAssignedID = assignedID;
 	}
@@ -416,7 +416,7 @@ public abstract class PO
 	 * @return true if ID the same
 	 */
 	@Override
-	public boolean equals(Object cmp)
+	public boolean equals(final Object cmp)
 	{
 		if (this == cmp)
 			return true;
@@ -449,7 +449,7 @@ public abstract class PO
 	 * @return -1 if o1 < o2
 	 */
 	@Override
-	public int compare(Object o1, Object o2)
+	public int compare(final Object o1, final Object o2)
 	{
 		if (o1 == null)
 			return -1;
@@ -584,7 +584,7 @@ public abstract class PO
 	 * @param index index
 	 * @return value
 	 */
-	public final Object get_Value(int index)
+	public final Object get_Value(final int index)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -613,7 +613,7 @@ public abstract class PO
 	 * @param index index
 	 * @return int value or 0
 	 */
-	public final int get_ValueAsInt(int index)
+	public final int get_ValueAsInt(final int index)
 	{
 		Object value = get_Value(index);
 		if (value == null)
@@ -637,7 +637,7 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return value or null
 	 */
-	public final Object get_Value(String columnName)
+	public final Object get_Value(final String columnName)
 	{
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
@@ -655,13 +655,13 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return value or null
 	 */
-	protected final Object get_ValueE(String columnName)
+	protected final Object get_ValueE(final String columnName)
 	{
 		return get_Value(columnName);
 	}   // get_ValueE
 
 	@Override
-	public <T> T get_ValueAsObject(String variableName)
+	public <T> T get_ValueAsObject(final String variableName)
 	{
 		@SuppressWarnings("unchecked")
 		final T value = (T)get_Value(variableName);
@@ -706,7 +706,7 @@ public abstract class PO
 	 * @param AD_Column_ID column
 	 * @return value or null
 	 */
-	public final Object get_ValueOfColumn(int AD_Column_ID)
+	public final Object get_ValueOfColumn(final int AD_Column_ID)
 	{
 		int index = p_info.getColumnIndex(AD_Column_ID);
 		if (index < 0)
@@ -723,7 +723,7 @@ public abstract class PO
 	 * @param index index
 	 * @return value
 	 */
-	public final Object get_ValueOld(int index)
+	public final Object get_ValueOld(final int index)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -740,7 +740,7 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return value or null
 	 */
-	public final Object get_ValueOld(String columnName)
+	public final Object get_ValueOld(final String columnName)
 	{
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
@@ -757,7 +757,7 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return int value or 0
 	 */
-	public final int get_ValueOldAsInt(String columnName)
+	public final int get_ValueOldAsInt(final String columnName)
 	{
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
@@ -768,7 +768,7 @@ public abstract class PO
 		return get_ValueOldAsInt(index);
 	}   // get_ValueOldAsInt
 
-	public final int get_ValueOldAsInt(int index)
+	public final int get_ValueOldAsInt(final int index)
 	{
 		Object value = get_ValueOld(index);
 		if (value == null)
@@ -792,7 +792,7 @@ public abstract class PO
 	 * @param index index
 	 * @return true if changed
 	 */
-	public final boolean is_ValueChanged(int index)
+	public final boolean is_ValueChanged(final int index)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -840,7 +840,7 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return true if changed
 	 */
-	public final boolean is_ValueChanged(String columnName)
+	public final boolean is_ValueChanged(final String columnName)
 	{
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
@@ -860,7 +860,7 @@ public abstract class PO
 	 * @param index index
 	 * @return new - old or null if not appropriate or not changed
 	 */
-	public final Object get_ValueDifference(int index)
+	public final Object get_ValueDifference(final int index)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -910,7 +910,7 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return new - old or null if not appropriate or not changed
 	 */
-	public final Object get_ValueDifference(String columnName)
+	public final Object get_ValueDifference(final String columnName)
 	{
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
@@ -928,7 +928,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(String ColumnName, Object value)
+	protected final boolean set_Value(final String ColumnName, Object value)
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
 				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
@@ -961,7 +961,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_ValueE(String ColumnName, Object value)
+	protected final boolean set_ValueE(final String ColumnName, final Object value)
 	{
 		return set_Value(ColumnName, value);
 	}   // setValueE
@@ -974,7 +974,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(int index, Object value)
+	protected final boolean set_Value(final int index, final Object value)
 	{
 		if (index < 0 || index >= get_ColumnCount())
 		{
@@ -1154,7 +1154,7 @@ public abstract class PO
 	 * @return true if value set
 	 */
 	// metas: changed from protected to public
-	public final boolean set_ValueNoCheck(String ColumnName, Object value)
+	public final boolean set_ValueNoCheck(final String ColumnName, final Object value)
 	{
 		int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
@@ -1253,7 +1253,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_ValueNoCheckE(String ColumnName, Object value)
+	protected final boolean set_ValueNoCheckE(final String ColumnName, final Object value)
 	{
 		return set_ValueNoCheck(ColumnName, value);
 	}	// set_ValueNoCheckE
@@ -1264,7 +1264,7 @@ public abstract class PO
 	 * @param columnName
 	 * @param value
 	 */
-	public final void set_ValueOfColumn(String columnName, Object value)
+	public final void set_ValueOfColumn(final String columnName, final Object value)
 	{
 		set_ValueOfColumnReturningBoolean(columnName, value);
 	}
@@ -1326,7 +1326,7 @@ public abstract class PO
 	 * @param columnName column
 	 * @param value value
 	 */
-	public final void set_CustomColumn(String columnName, Object value)
+	public final void set_CustomColumn(final String columnName, final Object value)
 	{
 		set_CustomColumnReturningBoolean(columnName, value);
 	}	// set_CustomColumn
@@ -1338,7 +1338,7 @@ public abstract class PO
 	 * @param value value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_CustomColumnReturningBoolean(String columnName, Object value)
+	public final boolean set_CustomColumnReturningBoolean(final String columnName, final Object value)
 	{
 		// [ 1845793 ] PO.set_CustomColumn not updating correctly m_newValues
 		// this is for columns not in PO - verify and call proper method if exists
@@ -1374,7 +1374,7 @@ public abstract class PO
 	 * @param ColumnName column name
 	 * @param value value
 	 */
-	private void set_Keys(String ColumnName, Object value)
+	private void set_Keys(final String ColumnName, final Object value)
 	{
 		// Update if KeyColumn
 		for (int i = 0; i < m_IDs.length; i++)
@@ -1402,7 +1402,7 @@ public abstract class PO
 	 * @param index index
 	 * @return ColumnName
 	 */
-	public final String get_ColumnName(int index)
+	public final String get_ColumnName(final int index)
 	{
 		return p_info.getColumnName(index);
 	}   // getColumnName
@@ -1413,7 +1413,7 @@ public abstract class PO
 	 * @param index index
 	 * @return true if column mandatory
 	 */
-	protected final boolean isColumnMandatory(int index)
+	protected final boolean isColumnMandatory(final int index)
 	{
 		return p_info.isColumnMandatory(index);
 	}   // isColumnNandatory
@@ -1424,7 +1424,7 @@ public abstract class PO
 	 * @param index index
 	 * @return true if column updateable
 	 */
-	protected final boolean isColumnUpdateable(int index)
+	protected final boolean isColumnUpdateable(final int index)
 	{
 		return p_info.isColumnUpdateable(index);
 	}	// isColumnUpdateable
@@ -1435,7 +1435,7 @@ public abstract class PO
 	 * @param index index
 	 * @return display type
 	 */
-	protected final int get_ColumnDisplayType(int index)
+	protected final int get_ColumnDisplayType(final int index)
 	{
 		return p_info.getColumnDisplayType(index);
 	}	// getColumnDisplayType
@@ -1446,7 +1446,7 @@ public abstract class PO
 	 * @param index index
 	 * @return Lookup or null
 	 */
-	protected final Lookup get_ColumnLookup(int index)
+	protected final Lookup get_ColumnLookup(final int index)
 	{
 		// NOTE: in case the PO was saved/deleted from a UI window then WindowNo is available
 		final int windowNo = get_WindowNo();
@@ -1460,7 +1460,7 @@ public abstract class PO
 	 * @param columnName column name
 	 * @return index of column with ColumnName or -1 if not found
 	 */
-	public final int get_ColumnIndex(String columnName)
+	public final int get_ColumnIndex(final String columnName)
 	{
 		return p_info.getColumnIndex(columnName);
 	}   // getColumnIndex
@@ -1472,7 +1472,7 @@ public abstract class PO
 	 * @param currentValue current value
 	 * @return String value with "./." as null
 	 */
-	public final String get_DisplayValue(String columnName, boolean currentValue)
+	public final String get_DisplayValue(final String columnName, final boolean currentValue)
 	{
 		Object value = currentValue ? get_Value(columnName) : get_ValueOld(columnName);
 		if (value == null)
@@ -1504,7 +1504,7 @@ public abstract class PO
 	 * @param AD_Client_ID client
 	 * @param AD_Org_ID org
 	 */
-	protected static void copyValues(PO from, PO to, int AD_Client_ID, int AD_Org_ID)
+	protected static void copyValues(final PO from, final PO to, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		copyValues(from, to);
 		to.setAD_Client_ID(AD_Client_ID);
@@ -1520,13 +1520,13 @@ public abstract class PO
 	 * @param from old, existing & unchanged PO
 	 * @param to new, not saved PO
 	 */
-	public static void copyValues(PO from, PO to)
+	public static void copyValues(final PO from, final PO to)
 	{
 		// metas: begin
 		copyValues(from, to, false);
 	}
 
-	public static void copyValues(PO from, PO to, final boolean honorIsCalculated)
+	public static void copyValues(final PO from, final PO to, final boolean honorIsCalculated)
 	{
 		// metas: end
 		s_log.debug("Copy values: From ID={}, To ID={}", from.get_ID(), to.get_ID());
@@ -1608,10 +1608,14 @@ public abstract class PO
 				// metas: begin: us215
 				else if (honorIsCalculated && from.p_info.isCalculated(i))
 				{
-					if (to.getDynAttribute(PO.DYNATTR_CopyRecordSupport) != null)
+					final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(DYNATTR_CopyRecordSupport);
+					if (cps != null)
 					{
-						final CopyRecordSupport cps = (CopyRecordSupport)to.getDynAttribute(PO.DYNATTR_CopyRecordSupport);
 						to.m_newValues[i] = cps.getValueToCopy(to, from, colName);
+					}
+					else
+					{
+						s_log.trace("Skip copying calculated column because there is no CopyRecordSupport advisor: {}", colName);
 					}
 				}
 				// metas: end: us215
@@ -1629,7 +1633,7 @@ public abstract class PO
 						|| colName.equals("Processed") // metas: tsa: us215
 				)
 				{
-					;	// ignore / skip this column
+					s_log.trace("Skip copying standard column: {}", colName);
 				}
 				else
 				{
@@ -1812,7 +1816,7 @@ public abstract class PO
 	 * @param rs result set
 	 * @return true if loaded
 	 */
-	protected final boolean load(ResultSet rs)
+	protected final boolean load(final ResultSet rs)
 	{
 		int size = get_ColumnCount();
 		boolean success = true;
@@ -1832,7 +1836,7 @@ public abstract class PO
 		return success;
 	}	// load
 
-	private final boolean loadColumn(int index, ResultSet rs)
+	private final boolean loadColumn(final int index, final ResultSet rs)
 	{
 		boolean success = true;
 		String columnName = p_info.getColumnName(index);
@@ -1886,7 +1890,7 @@ public abstract class PO
 		return success;
 	}
 
-	private boolean loadColumn(int index)
+	private boolean loadColumn(final int index)
 	{
 		if (is_new())
 		{
@@ -1928,7 +1932,7 @@ public abstract class PO
 	 * @param hmIn hash map
 	 * @return true if loaded
 	 */
-	protected final boolean load(HashMap<String, String> hmIn)
+	protected final boolean load(final HashMap<String, String> hmIn)
 	{
 		int size = get_ColumnCount();
 		boolean success = true;
@@ -1993,7 +1997,7 @@ public abstract class PO
 	 * @param requestedColumnIndex column index to load; if requestedColumnIndex is less then ZERO then object will be loaded anyway
 	 * @task 01537
 	 */
-	private final void loadIfStalled(int requestedColumnIndex)
+	private final void loadIfStalled(final int requestedColumnIndex)
 	{
 		// Object is not staled, nothing to do
 		if (!m_stale)
@@ -2120,7 +2124,7 @@ public abstract class PO
 	 * @return value value
 	 * @throws SQLException
 	 */
-	protected Object loadSpecial(ResultSet rs, int index) throws SQLException
+	protected Object loadSpecial(final ResultSet rs, final int index) throws SQLException
 	{
 		if (log.isTraceEnabled())
 		{
@@ -2147,7 +2151,7 @@ public abstract class PO
 	 *
 	 * @param success success
 	 */
-	protected void onLoadComplete(boolean success)
+	protected void onLoadComplete(final boolean success)
 	{
 		// nothing at this level
 	}
@@ -2270,7 +2274,7 @@ public abstract class PO
 	 *
 	 * @param AD_Client_ID client
 	 */
-	final protected void setAD_Client_ID(int AD_Client_ID)
+	final protected void setAD_Client_ID(final int AD_Client_ID)
 	{
 		set_ValueNoCheck("AD_Client_ID", new Integer(AD_Client_ID));
 	}	// setAD_Client_ID
@@ -2295,7 +2299,7 @@ public abstract class PO
 	 * @param AD_Org_ID org
 	 */
 	@Override
-	final public void setAD_Org_ID(int AD_Org_ID)
+	final public void setAD_Org_ID(final int AD_Org_ID)
 	{
 		set_ValueNoCheck("AD_Org_ID", new Integer(AD_Org_ID));
 	}	// setAD_Org_ID
@@ -2321,7 +2325,7 @@ public abstract class PO
 	 * @param AD_Org_ID org
 	 */
 	@OverridingMethodsMustInvokeSuper
-	protected void setClientOrg(int AD_Client_ID, int AD_Org_ID)
+	protected void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		if (AD_Client_ID != getAD_Client_ID())
 			setAD_Client_ID(AD_Client_ID);
@@ -2334,7 +2338,7 @@ public abstract class PO
 	 *
 	 * @param po persistent object
 	 */
-	protected final void setClientOrg(PO po)
+	protected final void setClientOrg(final PO po)
 	{
 		setClientOrg(po.getAD_Client_ID(), po.getAD_Org_ID());
 	}	// setClientOrg
@@ -2351,7 +2355,7 @@ public abstract class PO
 	 *
 	 * @param active active
 	 */
-	public final void setIsActive(boolean active)
+	public final void setIsActive(final boolean active)
 	{
 		set_Value("IsActive", active);
 	}	// setActive
@@ -2420,7 +2424,7 @@ public abstract class PO
 	 *
 	 * @param AD_User_ID user
 	 */
-	final protected void setUpdatedBy(int AD_User_ID)
+	final protected void setUpdatedBy(final int AD_User_ID)
 	{
 		set_ValueNoCheck("UpdatedBy", new Integer(AD_User_ID));
 	}	// setAD_User_ID
@@ -2474,7 +2478,7 @@ public abstract class PO
 	 * @param columnName
 	 * @return translation
 	 */
-	public final String get_Translation(String columnName)
+	public final String get_Translation(final String columnName)
 	{
 		return get_Translation(columnName, Env.getAD_Language(getCtx()));
 	}
@@ -2764,7 +2768,7 @@ public abstract class PO
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e) throws Throwable
 			{
 				// restoring settings and flags before failing
 				m_createNew = newRecordInitial;
@@ -3059,7 +3063,7 @@ public abstract class PO
 	 * @param isFromReplication
 	 * @throws AdempiereException
 	 */
-	public final void saveExReplica(boolean isFromReplication) throws AdempiereException
+	public final void saveExReplica(final boolean isFromReplication) throws AdempiereException
 	{
 		setReplication(isFromReplication);
 		saveEx();
@@ -3090,7 +3094,7 @@ public abstract class PO
 	 * @param newRecord new record
 	 * @return true if record can be saved
 	 */
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		/**
 		 * Prevents saving
@@ -3110,7 +3114,7 @@ public abstract class PO
 	 * @param success true if save operation was success
 	 * @return if save was a success
 	 */
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		return success;
 	}	// afterSave
@@ -3764,7 +3768,7 @@ public abstract class PO
 	 * @param withValues if true uses actual values otherwise ?
 	 * @return where clause
 	 */
-	public final String get_WhereClause(boolean withValues)
+	public final String get_WhereClause(final boolean withValues)
 	{
 		if (!withValues)
 		{
@@ -3793,7 +3797,7 @@ public abstract class PO
 	 * @param index index
 	 * @return SQL code for INSERT VALUES clause
 	 */
-	protected String saveNewSpecial(Object value, int index)
+	protected String saveNewSpecial(final Object value, final int index)
 	{
 		String colName = p_info.getColumnName(index);
 		String colClass = p_info.getColumnClass(index).toString();
@@ -3816,7 +3820,7 @@ public abstract class PO
 	 * @param xx data
 	 * @return xx
 	 */
-	private Object encrypt(int index, Object xx)
+	private Object encrypt(final int index, final Object xx)
 	{
 		if (xx == null)
 			return null;
@@ -3832,7 +3836,7 @@ public abstract class PO
 	 * @param yy data
 	 * @return yy
 	 */
-	private Object decrypt(int index, Object yy)
+	private Object decrypt(final int index, final Object yy)
 	{
 		if (yy == null)
 			return null;
@@ -3901,7 +3905,7 @@ public abstract class PO
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e) throws Throwable
 			{
 				throw e;
 			}
@@ -4054,7 +4058,7 @@ public abstract class PO
 	 * @param trxName transaction
 	 * @return true if deleted
 	 */
-	public final boolean delete(boolean force, String trxName)
+	public final boolean delete(final boolean force, final String trxName)
 	{
 		set_TrxName(trxName);
 		return delete(force);
@@ -4068,7 +4072,7 @@ public abstract class PO
 	 * @throws AdempiereException
 	 * @see {@link #deleteEx(boolean)}
 	 */
-	public final void deleteEx(boolean force, String trxName) throws AdempiereException
+	public final void deleteEx(final boolean force, final String trxName) throws AdempiereException
 	{
 		set_TrxName(trxName);
 		deleteEx(force);
@@ -4091,7 +4095,7 @@ public abstract class PO
 	 * @param success true if record deleted
 	 * @return true if delete is a success
 	 */
-	protected boolean afterDelete(boolean success)
+	protected boolean afterDelete(final boolean success)
 	{
 		return success;
 	} 	// afterDelete
@@ -4307,7 +4311,7 @@ public abstract class PO
 	 * @deprecated Do not call this method anymore. Tree maintenance is automatically made.
 	 */
 	@Deprecated
-	protected final boolean insert_Tree(String treeType)
+	protected final boolean insert_Tree(final String treeType)
 	{
 		return true;
 	}	// insert_Tree
@@ -4320,7 +4324,7 @@ public abstract class PO
 	 * @deprecated Do not call this method anymore. Tree maintenance is automatically made.
 	 */
 	@Deprecated
-	protected final boolean delete_Tree(String treeType)
+	protected final boolean delete_Tree(final String treeType)
 	{
 		return true;
 	}	// delete_Tree
@@ -4369,7 +4373,7 @@ public abstract class PO
 	 * @param trxName transaction
 	 * @return true if unlocked (false only if unlock fails)
 	 */
-	public final boolean unlock(String trxName)
+	public final boolean unlock(final String trxName)
 	{
 		// log.warn(trxName);
 		int index = get_ProcessingIndex();
@@ -4400,7 +4404,7 @@ public abstract class PO
 	 *
 	 * @param trxName transaction
 	 */
-	public final void set_TrxName(String trxName)
+	public final void set_TrxName(final String trxName)
 	{
 		m_trxName = trxName;
 	}	// setTrx
@@ -4433,7 +4437,7 @@ public abstract class PO
 	 *
 	 * @param index index
 	 */
-	public void dump(int index)
+	public void dump(final int index)
 	{
 		StringBuilder sb = new StringBuilder(" ").append(index);
 		if (index < 0 || index >= get_ColumnCount())
@@ -4464,7 +4468,7 @@ public abstract class PO
 	 * @return array of IDs or null
 	 * @param trxName transaction
 	 */
-	public static int[] getAllIDs(String TableName, String WhereClause, String trxName)
+	public static int[] getAllIDs(final String TableName, final String WhereClause, final String trxName)
 	{
 		ArrayList<Integer> list = new ArrayList<>();
 		StringBuilder sql = new StringBuilder("SELECT ");
@@ -4522,7 +4526,7 @@ public abstract class PO
 	 * @param value LOB
 	 * @return object
 	 */
-	private Object get_LOB(Object value)
+	private Object get_LOB(final Object value)
 	{
 		log.debug("Getting LOB for Value={}", value);
 		if (value == null)
@@ -4581,7 +4585,7 @@ public abstract class PO
 	 * @param index index
 	 * @param displayType display type
 	 */
-	private void lobAdd(Object value, int index, int displayType)
+	private void lobAdd(final Object value, final int index, final int displayType)
 	{
 		log.trace("Adding LOB: Value={}", value);
 		PO_LOB lob = new PO_LOB(p_info.getTableName(), get_ColumnName(index),
@@ -4671,7 +4675,7 @@ public abstract class PO
 	 * @param noComment do not add comment
 	 * @return XML document
 	 */
-	public final Document get_xmlDocument(boolean noComment)
+	public final Document get_xmlDocument(final boolean noComment)
 	{
 		Document document = null;
 		try
@@ -4751,7 +4755,7 @@ public abstract class PO
 		return document;
 	}	// getDocument
 
-	public final void setReplication(boolean isFromReplication)
+	public final void setReplication(final boolean isFromReplication)
 	{
 		m_isReplication = isFromReplication;
 	}
@@ -4765,7 +4769,7 @@ public abstract class PO
 	 * PO.setTrxName - set given trxName to an array of POs
 	 * As suggested by teo in [ 1854603 ]
 	 */
-	public static void set_TrxName(PO[] lines, String trxName)
+	public static void set_TrxName(final PO[] lines, final String trxName)
 	{
 		for (PO line : lines)
 			line.set_TrxName(trxName);
@@ -4777,7 +4781,7 @@ public abstract class PO
 	 * @param columnName
 	 * @return int value
 	 */
-	public final int get_ValueAsInt(String columnName)
+	public final int get_ValueAsInt(final String columnName)
 	{
 		int idx = get_ColumnIndex(columnName);
 		if (idx < 0)
@@ -4794,7 +4798,7 @@ public abstract class PO
 	 * @return boolean value
 	 */
 	// metas: tsa: changed and introduced get_ValueAsBoolean(int)
-	public final boolean get_ValueAsBoolean(String columnName)
+	public final boolean get_ValueAsBoolean(final String columnName)
 	{
 		int idx = get_ColumnIndex(columnName);
 		if (idx < 0)
@@ -4804,7 +4808,7 @@ public abstract class PO
 		return get_ValueAsBoolean(idx);
 	}
 
-	public final boolean get_ValueAsBoolean(int index)
+	public final boolean get_ValueAsBoolean(final int index)
 	{
 		Object oo = get_Value(index);
 		if (oo != null)
@@ -4828,7 +4832,7 @@ public abstract class PO
 	 * @param name
 	 * @param value
 	 */
-	public final Object setDynAttribute(String name, Object value)
+	public final Object setDynAttribute(final String name, final Object value)
 	{
 		if (m_dynAttrs == null)
 			m_dynAttrs = new HashMap<>();
@@ -4841,7 +4845,7 @@ public abstract class PO
 	 * @param name
 	 * @return attribute value or null if not found
 	 */
-	public final Object getDynAttribute(String name)
+	public final Object getDynAttribute(final String name)
 	{
 		if (m_dynAttrs == null)
 			return null;
@@ -4905,13 +4909,13 @@ public abstract class PO
 	public static final String DYNATTR_CopyRecordSupport_OldValue = "CopyRecordSupportOldValue";
 
 	@Override
-	public final boolean has_Variable(String variableName)
+	public final boolean has_Variable(final String variableName)
 	{
 		return get_ColumnIndex(variableName) >= 0;
 	}
 
 	@Override
-	public final String get_ValueOldAsString(String columnName)
+	public final String get_ValueOldAsString(final String columnName)
 	{
 		int index = get_ColumnIndex(columnName);
 		if (index < 0)
@@ -4922,7 +4926,7 @@ public abstract class PO
 		return get_ValueOldAsString(index);
 	}
 
-	public final String get_ValueOldAsString(int index)
+	public final String get_ValueOldAsString(final int index)
 	{
 		Object value = get_ValueOld(index);
 		if (value == null)
@@ -4973,7 +4977,7 @@ public abstract class PO
 
 	private transient Map<String, POCacheLocal> m_poCacheLocals;
 
-	private POCacheLocal get_POCacheLocal(String columnName, String refTableName)
+	private POCacheLocal get_POCacheLocal(final String columnName, final String refTableName)
 	{
 		if (m_poCacheLocals == null)
 		{
@@ -5075,7 +5079,7 @@ public abstract class PO
 		return get_ValueAsPO("AD_Org_ID", org.compiere.model.I_AD_Org.class);
 	}
 
-	public final void setAD_Org(org.compiere.model.I_AD_Org org)
+	public final void setAD_Org(final org.compiere.model.I_AD_Org org)
 	{
 		set_ValueFromPO("AD_Org_ID", org.compiere.model.I_AD_Org.class, org);
 	}
@@ -5112,7 +5116,7 @@ public abstract class PO
 		return get_ValueAsTimestamp(idx);
 	}
 
-	public final Timestamp get_ValueAsTimestamp(int index)
+	public final Timestamp get_ValueAsTimestamp(final int index)
 	{
 		final Timestamp ts = (Timestamp)get_Value(index);
 		return ts;

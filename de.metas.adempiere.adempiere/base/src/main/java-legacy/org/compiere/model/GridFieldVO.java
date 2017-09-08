@@ -335,6 +335,10 @@ public class GridFieldVO implements Serializable
 				{
 					vo.fieldEntityType = rs.getString(i);
 				}
+				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_IsUseDocSequence))
+				{
+					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
+				}
 			}
 
 			//
@@ -487,6 +491,7 @@ public class GridFieldVO implements Serializable
 		voTo.AD_Reference_Value_ID = vo.AD_Reference_Value_ID;
 		voTo.autocomplete = vo.autocomplete;
 		voTo.fieldEntityType = vo.fieldEntityType;
+		voTo.useDocSequence = vo.useDocSequence;
 		voTo.isHiddenFromUI = vo.isHiddenFromUI;
 
 		voTo.initFinish();
@@ -696,6 +701,8 @@ public class GridFieldVO implements Serializable
 	public String InfoFactoryClass = null;
 
 	private String fieldEntityType = null;
+	
+	private boolean useDocSequence = false;
 
 	/**
 	 *  Set Context including contained elements
@@ -884,6 +891,7 @@ public class GridFieldVO implements Serializable
 		clone.IsCalculated = IsCalculated; // metas: us215
 
 		clone.fieldEntityType = fieldEntityType;
+		clone.useDocSequence = useDocSequence;
 		clone.isHiddenFromUI = isHiddenFromUI;
 
 		return clone;
@@ -1387,5 +1395,14 @@ public class GridFieldVO implements Serializable
 	public int getSelectionColumnSeqNo()
 	{
 		return selectionColumnSeqNo;
+	}
+
+	/**
+	 * @return true if system shall auto generate a preliminary sequence value for this field
+	 * @task https://github.com/metasfresh/metasfresh/issues/2303
+	 */
+	public boolean isUseDocSequence()
+	{
+		return useDocSequence;
 	}
 }
