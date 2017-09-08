@@ -32,9 +32,13 @@ class LookupList extends Component {
 
     componentWillReceiveProps(nextProps){
         if (typeof nextProps.selected === 'number') {
+            const container = this.listScrollWrap;
             let element = this.items.childNodes[nextProps.selected];
-            if (element && element.scrollIntoView) {
-                element.scrollIntoView();
+
+            if (container && element && element.scrollIntoView) {
+                if (container.scrollHeight > container.offsetHeight) {
+                    element.scrollIntoView();
+                }
             }
         }
     }
