@@ -112,7 +112,7 @@ public abstract class AbstractReturnsInOutProducer implements IReturnsInOutProdu
 	public I_M_InOut create()
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.call(this::createInTrx);
+		return trxManager.call(ITrx.TRXNAME_ThreadInherited, this::createInTrx);
 	}
 
 	private I_M_InOut createInTrx()
