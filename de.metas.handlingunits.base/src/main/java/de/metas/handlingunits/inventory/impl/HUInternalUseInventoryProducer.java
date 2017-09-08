@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
@@ -82,7 +84,7 @@ public class HUInternalUseInventoryProducer
 	{
 		final Map<Integer, List<I_M_HU>> husByWarehouseId = getTopLevelHUs()
 				.stream()
-				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID()));
+				.collect(Collectors.groupingBy(hu -> hu.getM_Locator().getM_Warehouse_ID())); // we asserted earlier that each HU has a locator
 
 		final List<I_M_Inventory> result = new ArrayList<>();
 		for (final Map.Entry<Integer, List<I_M_HU>> warehouseIdAndHUs : husByWarehouseId.entrySet())
@@ -204,10 +206,20 @@ public class HUInternalUseInventoryProducer
 	 *            Included lower-level HUs are processed recursively.
 	 * @return
 	 */
-	public HUInternalUseInventoryProducer addHUs(final Collection<I_M_HU> hus)
+	public HUInternalUseInventoryProducer addHUs(@NonNull final Collection<I_M_HU> hus)
 	{
+		assertEveryHuHasLocator(hus);
 		_hus.addAll(hus);
 		return this;
+	}
+
+	private void assertEveryHuHasLocator(@NonNull final Collection<I_M_HU> hus)
+	{
+		final Optional<I_M_HU> anyHuWithoutLocator = hus.stream().filter(hu -> hu.getM_Locator_ID() <= 0).findAny();
+		if (anyHuWithoutLocator.isPresent())
+		{
+			Check.errorIf(true, "Every given HU needs to have a locator, but at least one hu doesn't; hu=", anyHuWithoutLocator.get());
+		}
 	}
 
 	private List<I_M_HU> getTopLevelHUs()
