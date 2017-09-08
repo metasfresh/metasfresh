@@ -51,6 +51,7 @@ Here come the actual release notes:
     * New Window for Process Audit in WebUI.
   * [#2294](https://github.com/metasfresh/metasfresh/issues/2294) Window Layout for Picking Window in WebUI
     * New generic Layout for the Picking Window in WebUI.
+  * [#2294](https://github.com/metasfresh/metasfresh/issues/2396) copy report.properties for purchase order to dist repo
 
 * metasfresh-webui-api
   * [#54](https://github.com/metasfresh/metasfresh-webui-api/issues/54) Implement endpoint for document cloning
@@ -73,6 +74,7 @@ Here come the actual release notes:
   * [#551](https://github.com/metasfresh/metasfresh-webui-api/issues/551) verify if lookup value is still valid
   * [#553](https://github.com/metasfresh/metasfresh-webui-api/issues/553) webui notification-test fails
   * [#561](https://github.com/metasfresh/metasfresh-webui-api/issues/561) Handling Unit Editor Materialentnahme Bug
+  * [#579](https://github.com/metasfresh/metasfresh-webui-api/issues/579) NPE when you issue HUs
 
 * metasfresh-webui-frontend
   * [#1142](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1142) issue panel closes right after you issue a product
