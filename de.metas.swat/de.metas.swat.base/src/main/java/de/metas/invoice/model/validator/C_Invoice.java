@@ -184,13 +184,12 @@ public class C_Invoice
 		}
 
 		// The amount from the credit memo to be allocated to parent invoices
-		BigDecimal creditMemoLeft = creditMemo.getGrandTotal();
-
-		final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
+		final BigDecimal creditMemoLeft = creditMemo.getGrandTotal();
 
 		// the parent invoice might be null if the credit memo was created manually
-		if (parentInvoice != null)
+		if (creditMemo.getRef_Invoice_ID() > 0)
 		{
+			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
 					false); // creditMemoAdjusted = false
 
@@ -199,7 +198,6 @@ public class C_Invoice
 			// Allocate the minimum between parent invoice open amt and what is left of the creditMemo's grand Total
 			invoiceBL.allocateCreditMemo(parentInvoice, creditMemo, amtToAllocate);
 		}
-
 	}
 
 	@ModelChange(timings = {
