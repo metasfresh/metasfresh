@@ -34,4 +34,7 @@ import lombok.experimental.UtilityClass;
 	 * </ul>
 	 */
 	public static final String MSG_NotEnoughTUsFound = "WEBUI_M_HU_MoveTUsToDirectWarehouse.NotEnoughTUsFound";
+
+	public static final String MSG_WEBUI_ONLY_TOP_LEVEL_HU = "WEBUI_Only_TopLevelHU";
+
 }
