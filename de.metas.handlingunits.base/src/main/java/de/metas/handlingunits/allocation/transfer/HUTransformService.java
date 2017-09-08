@@ -556,11 +556,11 @@ public class HUTransformService
 	 * @param qtyTU the number of TUs to take off or split
 	 * @param isOwnPackingMaterials
 	 */
-	public List<I_M_HU> tuToNewTUs(final I_M_HU sourceTuHU, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
+	public List<I_M_HU> tuToNewTUs(
+			@NonNull final I_M_HU sourceTuHU, 
+			@NonNull final BigDecimal qtyTU, 
+			final boolean isOwnPackingMaterials)
 	{
-		Preconditions.checkNotNull(sourceTuHU, "Param 'sourceTuHU' may not be null");
-		Preconditions.checkNotNull(qtyTU, "Param 'qtyTU' may not be null");
-
 		// get cuHU's old parent (if any) for later usage, before the changes start
 
 		if (qtyTU.compareTo(getMaximumQtyTU(sourceTuHU)) >= 0) // the caller wants to process the entire sourceTuHU

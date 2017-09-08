@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.uom.api.IUOMConversionBL;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
@@ -168,10 +167,7 @@ public class HUItemStorage implements IHUItemStorage
 		final BigDecimal qtyOld = storageLine.getQty();
 		final BigDecimal qtyNew = qtyOld.add(qtyConv);
 
-		if (qtyNew.signum() < 0)
-		{
-			throw new AdempiereException("Negative storage: qty=" + qty + ", qtyNew=" + qtyNew + ", qtyOld=" + qtyOld + ", storage=" + this);
-		}
+		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qty={}; qtyNew={}; qtyOld={}; this={}; storageLine={}", qty, qtyNew, qtyOld, this, storageLine);
 
 		storageLine.setQty(qtyNew);
 		dao.save(storageLine);
