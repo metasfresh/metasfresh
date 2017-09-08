@@ -40,6 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import lombok.NonNull;
 
 public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 {
@@ -98,7 +99,7 @@ public final class HUAndItemsDAO extends AbstractHUAndItemsDAO
 	}
 
 	@Override
-	public I_M_HU retrieveParent(final I_M_HU hu)
+	public I_M_HU retrieveParent(@NonNull final I_M_HU hu)
 	{
 		final I_M_HU_Item itemParent = hu.getM_HU_Item_Parent();
 		if (itemParent == null)

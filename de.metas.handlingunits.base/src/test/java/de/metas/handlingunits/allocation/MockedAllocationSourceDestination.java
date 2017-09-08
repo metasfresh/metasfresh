@@ -85,7 +85,7 @@ public class MockedAllocationSourceDestination implements IAllocationSource, IAl
 				requestActual,
 				outTrx);
 
-		result.substractAllocatedQty(requestActual.getQty());
+		result.subtractAllocatedQty(requestActual.getQty());
 		result.addTransaction(trx);
 
 		return result;

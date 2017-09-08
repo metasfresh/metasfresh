@@ -604,13 +604,15 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	@Override
 	public void addHURecursively(final I_M_HU hu, final IHUPackingMaterialCollectorSource source)
 	{
-		addOrRemoveHURecursively(hu, source, false);
+		final boolean remove = false;
+		addOrRemoveHURecursively(hu, source, remove);
 	}
 
 	@Override
 	public void removeHURecursively(final I_M_HU hu)
 	{
-		addOrRemoveHURecursively(hu, null, true);
+		final boolean remove = true;
+		addOrRemoveHURecursively(hu, null, remove);
 	}
 
 	/**
@@ -628,7 +630,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 		{
 			return;
 		}
-		// handlingUnitsBL.isAggregateHU(hu);
+
 		final int huId = hu.getM_HU_ID();
 		if (huId <= 0)
 		{
