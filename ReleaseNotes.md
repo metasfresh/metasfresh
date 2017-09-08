@@ -44,6 +44,8 @@ Here come the actual release notes:
     * New Sales, Purchase, Warehouse, Logistics and Finance Reports added to WebUI.
   * [#2378](https://github.com/metasfresh/metasfresh/issues/2378) Procurement candidates detail Improvements
     * Refining the Fieldnames in Procurement Candidates Window, allowing a better transparency for the User.
+  * [#2385](https://github.com/metasfresh/metasfresh/issues/2385) New Window for M_PickingSlot in WebUI
+    * New Picking Slot Window in WebUI, allowing the maintenance of Picking Locators/ Slots and allocation to Businesspartner and Locations or usage with dynamic allocation.
   * [#2391](https://github.com/metasfresh/metasfresh/issues/2391) Partial vendor Returns
     * New Functionality in Handling unit Editor now allowing to also do partial Vendor Returns.
 
