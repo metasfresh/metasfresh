@@ -7,7 +7,7 @@
 *.project
 *.classpath
 
-**/metasfresh.properties
+**/metasfresh*.properties
 **/de.metas.endcustomer.mf15.swingui/log/
 **/de.metas.endcustomer.mf15.serverRoot/log/
 **/de.metas.endcustomer.mf15.serverRoot/data/
