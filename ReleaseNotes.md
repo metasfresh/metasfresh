@@ -47,7 +47,7 @@ Here come the actual release notes:
 
 *metasfresh-webui-frontend
   * [#1147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1147) Implement the initial Sorting Indicator in included Tabs
-    * Now also showing the initial Sorting indicators uin included tabs.
+    * Now also showing the initial Sorting indicators in included tabs.
 
 
 ## Fixes
@@ -56,6 +56,10 @@ Here come the actual release notes:
     * Fix and adjustment to the Lookup fields behavior in included Views.
   * [#1183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1183) Purchase order: screen is scrolling when i am trying to type in Delivery from field
     * Avoiding the scroll of the main page when scrolling in a Lookup Field
+
+* metasfresh-webui-frontend
+  * [#1156](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1156) Offline message is no longer displayed
+    * Fixes the message that is shown when the appclicaton turns offline.
 
 # metasfresh 5.25 (2017-36)
 
