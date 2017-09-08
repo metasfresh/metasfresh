@@ -107,34 +107,26 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	 * @param fileName
 	 * @return
 	 */
-	boolean isVersion2Schema(@NonNull final String namespaceURI)
+	private boolean isVersion2Schema(@NonNull final String namespaceURI)
 	{
-		if (Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI))
-		{
-			return true;
-		}
-
-		return false;
+		return Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
 	}
 	
-	String getNameSpaceURI(@NonNull final XMLStreamReader reader)
+	private String getNameSpaceURI(@NonNull final XMLStreamReader reader)
 	{
 		try
 		{
 			while (reader.hasNext())
 			{
 				int event = reader.next();
-				if (XMLStreamConstants.START_ELEMENT == event)
+				if (XMLStreamConstants.START_ELEMENT == event && reader.getNamespaceCount() > 0)
 				{
-					if (reader.getNamespaceCount() > 0)
+					for (int nsIndex = 0; nsIndex < reader.getNamespaceCount(); nsIndex++)
 					{
-						for (int nsIndex = 0; nsIndex < reader.getNamespaceCount(); nsIndex++)
+						final String nsId = reader.getNamespaceURI(nsIndex);
+						if (nsId.startsWith("urn:iso:std:iso:20022:tech:xsd"))
 						{
-							final String nsId = reader.getNamespaceURI(nsIndex);
-							if (nsId.startsWith("urn:iso:std:iso:20022:tech:xsd"))
-							{
-								return nsId;
-							}
+							return nsId;
 						}
 					}
 				}
