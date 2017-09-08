@@ -244,7 +244,7 @@ public final class HUIdsFilterHelper
 		}
 
 		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
-		if(huIds == null)
+		if (huIds == null)
 		{
 			// null means no restrictions, so we might have a lot of HUs
 			return true; // high volume
@@ -252,7 +252,7 @@ public final class HUIdsFilterHelper
 		else if (huIds.isEmpty())
 		{
 			// no HUs will be allowed
-			return false; //  not high volume
+			return false; // not high volume
 		}
 		else
 		{
@@ -274,7 +274,19 @@ public final class HUIdsFilterHelper
 		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
-			final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			final ImmutableList<Integer> onlyHUIds;
+			if (huIdsFilter.getInitialHUIds() != null && huIdsFilter.getMustHUIds() != null)
+			{
+				onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			}
+			else if (huIdsFilter.getInitialHUIds() != null)
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getInitialHUIds()); // huIdsFilter.getMustHUIds() == null
+			}
+			else
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds()); // huIdsFilter.getInitialHUIds() == null
+			}
 
 			if (onlyHUIds == null && !huIdsFilter.hasInitialHUQuery())
 			{
