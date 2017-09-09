@@ -14,6 +14,11 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-38**
 
+##Features
+* metasfresh-app
+  * [#2386](https://github.com/metasfresh/metasfresh/issues/2386) New Window for M_PickingSlot_Trx in WebUI
+    * New Window in WebUI allowing to View Picking Slot Transations and involved Handling Units.
+
 # metasfresh 5.26 (2017-37)
 
 **upcoming release for week 2017-37**
