@@ -273,3 +273,33 @@ UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=30,Updated=TO_
 UPDATE AD_UI_Element SET IsDisplayed_SideList='Y', SeqNo_SideList=40,Updated=TO_TIMESTAMP('2017-09-09 15:52:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548162
 ;
 
+-- 2017-09-09T15:56:59.793
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Fach',Updated=TO_TIMESTAMP('2017-09-09 15:56:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554222
+;
+
+-- 2017-09-09T15:57:07.691
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Banutzeraktion',Updated=TO_TIMESTAMP('2017-09-09 15:57:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554224
+;
+
+-- 2017-09-09T15:57:47.717
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Benutzeraktion',Updated=TO_TIMESTAMP('2017-09-09 15:57:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=554224
+;
+
+-- 2017-09-09T15:58:08.538
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-09 15:58:08','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Useraction' WHERE AD_Field_ID=554224 AND AD_Language='en_US'
+;
+
+-- 2017-09-09T15:58:22.805
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-09 15:58:22','YYYY-MM-DD HH24:MI:SS'),Name='Action',Description='',Help='' WHERE AD_Field_ID=554225 AND AD_Language='en_US'
+;
+
+-- 2017-09-09T15:58:25.493
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-09 15:58:25','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y' WHERE AD_Field_ID=554225 AND AD_Language='en_US'
+;
+
