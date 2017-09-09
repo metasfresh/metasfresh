@@ -10,6 +10,7 @@ Additional notes:
 
 Here come the actual release notes:
 
+
 # metasfresh 5.26 (2017-37)
 
 **upcoming release for week 2017-37**
@@ -56,6 +57,7 @@ Here come the actual release notes:
 
 * metasfresrh-webui-api
   * [#563](https://github.com/metasfresh/metasfresh-webui-api/issues/563) Handling Unit Editor - remove hardcoded filter for active HUs
+  * [#564](https://github.com/metasfresh/metasfresh-webui-api/issues/564) Filter Layout Sequence
   * [#573](https://github.com/metasfresh/metasfresh-webui-api/issues/573) MoveToDirectWarehouse shall support multiple HUs
   * [#577](https://github.com/metasfresh/metasfresh-webui-api/issues/577) API for Edit Fields in Main Grid View
 
@@ -69,18 +71,23 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh-app
+  * [#2141](https://github.com/metasfresh/metasfresh/issues/2141) Year-End P&L Process w/ multiple Organisations error
+  * [#2303](https://github.com/metasfresh/metasfresh/issues/2302) Order validation rule for packing instruction needs to look at DatePromised
   * [#2342](https://github.com/metasfresh/metasfresh/issues/2342) Make Material Disposal Lines and their Movements respect all the details from the HUs
   * [#2354](https://github.com/metasfresh/metasfresh/issues/2354) LU has HU_Status Active after picking
   * [#2389](https://github.com/metasfresh/metasfresh/issues/2389) edi problem for customer returns
   * [#2399](https://github.com/metasfresh/metasfresh/issues/2399) uom in customer return lines
 
 * metasfresh-webui-api
+  * [#532](https://github.com/metasfresh/metasfresh-webui-api/issues/532) Unable to see list of document's attachments
+  * [#572](https://github.com/metasfresh/metasfresh-webui-api/issues/572) qty doubled on vendor/customer return and destroyed HUs
   * [#578](https://github.com/metasfresh/metasfresh-webui-api/issues/578) storage error on disposal
 
 * metasfresh-webui-frontend
   * [#1156](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1156) Offline message is no longer displayed
     * Fixes the message that is shown when the appclicaton turns offline.
   * [#1159](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1159) batch entry: scrollbar not moving when using keyboard
+  * [#1165](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1165) frontend cache for dropdown value not invalidated on lookupValuesStale is true
   * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
     * Fix and adjustment to the Lookup fields behavior in included Views.
   * [#1172](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1172) filtering is not working in picking
