@@ -1563,3 +1563,498 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 UPDATE AD_Window_Trl SET UpdatedBy=100,Updated=TO_TIMESTAMP('2017-09-09 16:51:21','YYYY-MM-DD HH24:MI:SS'),IsTranslated='Y',Name='Contractpartner' WHERE AD_Window_ID=540112 AND AD_Language='en_US'
 ;
 
+-- 2017-09-09T16:57:05.216
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,540859,540466,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2017-09-09T16:57:05.217
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540466 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2017-09-09T16:57:05.258
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540625,540466,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.292
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540626,540466,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.328
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540625,541099,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.375
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559650,0,540859,541099,548168,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Manueller Preis',10,10,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.410
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559622,0,540859,541099,548169,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','Y','N','Sektion',20,20,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.450
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559623,0,540859,541099,548170,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Vertragsart',30,30,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.487
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559624,0,540859,541099,548171,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Alphanumeric identifier of the entity','The name of an entity (record) is used as an default search option in addition to the search key. The name is up to 60 characters in length.','Y','N','Y','Y','N','Name',40,40,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.520
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559625,0,540859,541099,548172,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Beschreibung',50,50,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.564
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559626,0,540859,541099,548173,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Planspiel',60,60,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.601
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559627,0,540859,541099,548174,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Entscheidet, ob das System beim Fertigstellen einer neuen Vertragslaufzeit (z.B. bei automatischer Verlängerung) eine Auftragsbestätigung erzeugt.','Y','N','Y','Y','N','AB bei neuer Vertragslaufzeit',70,70,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.631
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559628,0,540859,541099,548175,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Typ der möglichen Einheiten, zu denen Leistungen pauschal erfasst und abgerechnet werden können.','In den Vertragsbedingungen sind nur die Maßeinheiten mit dem hier gewählten Einheiten-Typ auswählbar.
+Bei der Pauschalen-Datenerfassung kann nur ein Vertrag ausgewählt werden, dessen Einheiten-Typ mit dem Einheitentyp des jeweiligen Basisdatensatzes übereinstimmt.','Y','N','Y','Y','N','Einheiten-Typ',80,80,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.661
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559629,0,540859,541099,548176,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Maßeinheit, zu der pauschal erfasste Leistungen abgerechnet werden sollen','Y','N','Y','Y','N','Maßeinheit',90,90,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.690
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559630,0,540859,541099,548177,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Art der Rechnungsstellung bei Rechnungskandidaten, die aufgrund dieser Vertragsbedingungen erszeugt werden.','"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.','Y','N','Y','Y','N','Rechnungsstellung',100,100,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.718
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559631,0,540859,541099,548178,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, unter dem die pauschal abzurechnenden Leistungen in Rechnung gestellt werden','Y','N','Y','Y','N','Produkt für pauschale Berechnung',110,110,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.744
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559632,0,540859,541099,548179,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Preissystem, das bei der Pauschalen-Berechnung benutzt werden soll. ','Das Preissystem enthält neben dem Preis und der Währung noch Informationen zur MwSt.-Kategorie und die Information, ob der jeweilige Preis inklusive MwSt. ist oder nicht. Deshalb muss ein Preissystem auch dann gewählt werden, wenn in den Vertragsbedingungen ein konkreter Preis mit Währung angegeben ist.','Y','N','Y','Y','N','Preissystem',120,120,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.772
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559633,0,540859,541099,548180,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Es wird unabhängig vom gewählten Preissystem ein Rabatt von 100% gewährt','Y','N','Y','Y','N','Gratis',130,130,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.813
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559634,0,540859,541099,548181,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Lagerkonferenz',140,140,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.848
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559635,0,540859,541099,548182,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen','Im Fall der Gegegenüberstellung von zu pauschal abgerechenten Beträgen und tatsächlich erbrachten Leistungen kann eine Verrechnung mit eventueller Nachzahlung oder Rückerstattung erfolgen.','Y','N','Y','Y','N','Gegenüberstellung mit erbr. Leist.',150,150,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.891
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559636,0,540859,541099,548183,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen','Wenn eine Gegenüberstellung mit tatsächliche erbrachten Leistungen vorgesehen ist, dann definiert dieses Feld, ob eine ggf. eine Abweichung in Rechnung gestellt werden kann.','Y','N','Y','Y','N','Verrechnungsart',160,160,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.931
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559637,0,540859,541099,548184,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Wenn eine Differenz zwischen pauschal abgerechneten und tatsächlich erbrachten Leistungen in Rechnung zu stellen ist, dann definiert dieses Feld, ob der Differenzbetrag komplett oder nur teilweise berechnet wird','Y','N','Y','Y','N','Verrechnungsmodus',170,170,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:05.968
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559638,0,540859,541099,548185,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, unter dem ggf. die Differenz zu tatsächlich erbrachten Leistungen in Rechnung gestellt wird.','Y','N','Y','Y','N','Produkt für Verrechnung',180,180,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.005
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559639,0,540859,541099,548186,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Korridor - Überschreitung',190,190,0,TO_TIMESTAMP('2017-09-09 16:57:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.041
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559640,0,540859,541099,548187,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Korridor - Unterschreitung',200,200,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.084
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559641,0,540859,541099,548188,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können','Y','N','Y','Y','N','Abschlusskorrektur vorsehen',210,210,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.117
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559642,0,540859,541099,548189,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, unter dem ggf. die Differenz zu den in der Abschlusskorrektur gemeldeten Mengen in Rechnung gestellt wird.','Y','N','Y','Y','N','Produkt für Abschlusskorrektur',220,220,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.145
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559643,0,540859,541099,548190,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, ob Nach- bzw. Rückzahlungen erst nach Erfassung der Abschlusskorrektur in Rechnung zu stellen sind','Hinweis: Wenn dieses Häkchen gesetzt ist, werden  Nach- bzw. Rückzahlungen erst nach der Abschlusskorrektur in Rechnung gestellt. In diesem Fall fließt auch die Korrekturmeldung in das Verhältnis aus gemledtenen Einheiten und der tatsächlich erbrachten Leistung mit ein. Außerdem sind die unter "Datenerfassung" => "Pausch-Datensätze" im Feld "Nachzahlung/Erstattung" aufgeführten Werte in diesem Fall rein informativ.','Y','N','Y','Y','N','Verrechung erst nach Abschlusskorrektur',230,230,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.179
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559644,0,540859,541099,548191,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.','Y','N','Y','Y','N','Vertragsverlängerung/-übergang',240,240,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.217
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559646,0,540859,541099,548192,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Vertragsbedingungen müssen im Status "Fertiggestellt" sein, damit sie in laufenden Verträgen verwendet werden können.','Y','N','Y','Y','N','Belegstatus',250,250,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.260
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559647,0,540859,541099,548193,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Der zukünftige Status des Belegs','You find the current status in the Document Status field. The options are listed in a popup','Y','N','Y','Y','N','Belegverarbeitung',260,260,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.304
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559648,0,540859,541099,548194,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.','Y','N','Y','Y','N','Verarbeitet',270,270,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.347
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559649,0,540859,541099,548195,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Keine Rechnungserstellung',280,280,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.389
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,540860,540467,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2017-09-09T16:57:06.390
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540467 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2017-09-09T16:57:06.429
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540627,540467,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.467
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540627,541100,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.508
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559663,0,540860,541100,548196,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Planspiel',0,10,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.544
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559664,0,540860,541100,548197,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Periode des Kalenders','"Periode" bezeichnet einen eklusiven Datumsbereich eines Kalenders.','Y','N','N','Y','N','Periode',0,20,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.581
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559665,0,540860,541100,548198,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Datum, an dem die Pauschalen-Zahl von Seiten des Kunden gemeldet wurde','Y','N','N','Y','N','Gemeldet am',0,30,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.616
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559666,0,540860,541100,548199,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Ansprechpartner auf Kunden-Seite, der die Pauschalen-Menge gemeldet hat.','Y','N','N','Y','N','Gemeldet durch',0,40,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.653
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559667,0,540860,541100,548200,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Maßeinheit des Pauschalen-Datensatzes','Y','N','N','Y','N','Maßeinheit',0,50,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.687
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559668,0,540860,541100,548201,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Betrag/Maßeinheit',0,60,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.724
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559669,0,540860,541100,548202,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','N','Y','N','Währung',0,70,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.760
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559670,0,540860,541100,548203,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Vom Kunden gemeldete Menge, die ggf. als Pauschale in Rechnung gestellt wird.','Y','N','N','Y','N','Gemeldete Menge',0,80,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.795
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559671,0,540860,541100,548204,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Pauschal zu Zahlender Betrag, ohne Berücksichtigung der Korrektur wegen Über- oder Unterschreibung.','Y','N','N','Y','N','Pauschalenbetrag',0,90,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.832
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559672,0,540860,541100,548205,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Tatsächliche Menge der erbrachten Leistung (z.B gelieferte Teile)','Y','N','N','Y','N','Istmenge',0,100,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.868
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559673,0,540860,541100,548206,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Tatsächliche Menge der erbrachten Leistung (z.B "Stück geliefert") pro pauschal abgerechnete Einheit (z.B. pro Pflegetag).','Y','N','N','Y','N','Istmenge/Maßeinheit',0,110,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.904
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559674,0,540860,541100,548207,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Absolute Differenz zwischen Plan- und Istmenge','Y','N','N','Y','N','Diff. Menge',0,120,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.943
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559675,0,540860,541100,548208,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Differenz zwischen Plan- und Istmenge pro Maßeinheit','Y','N','N','Y','N','Differenz/Maßeinheit',0,130,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:06.977
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559676,0,540860,541100,548209,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Prozentuale Abweichung zwischen Plan- und Istmenge','Y','N','N','Y','N','Diff. Menge %',0,140,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.012
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559677,0,540860,541100,548210,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100,'Prozentuale Abweichung, ggf. verringert um den Korridor-Prozentbetrag. Dieser wert ist der prozentuale Auf- oder Abschlag auf den Pauschalenbetrag','Y','N','N','Y','N','Diff. Menge % eff.',0,150,0,TO_TIMESTAMP('2017-09-09 16:57:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.052
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559678,0,540860,541100,548211,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Aufgrund von Über-/Unterschreitung der Planmenge zusätzlich zu zahlender bzw. gutzuschreibender Betrag.','Y','N','N','Y','N','Nachzahlung/Erstattung',0,160,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.092
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559679,0,540860,541100,548212,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Optional weitere Information für ein Dokument','Das Notiz-Feld erlaubt es, weitere Informationen zu diesem Eintrag anzugeben','Y','N','N','Y','N','Notiz',0,170,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.130
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559680,0,540860,541100,548213,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'The current status of the document','The Document Status indicates the status of a document at this time.  If you want to change the document status, use the Document Action field','Y','N','N','Y','N','Belegstatus',0,180,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.169
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559681,0,540860,541100,548214,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.','Y','N','N','Y','N','Verarbeitet',0,190,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.203
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559682,0,540860,541100,548215,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Der zukünftige Status des Belegs','Ein Pauschalen-Datensatz kann fertig gestellt und reaktiviert werden
+<ul>
+<li>Beim Fertigstellen des Datensatzes wird sofort ein Rechnungskandidat angelegt, der im weiteren Verlauf Teil einer Rechnungen werden kann. Diesem Rechnungskandidaten werden außerdem die passenden Rechnungskandidaten zugeordnet, die als "Zu Verrechnen" marktiert sind</li>
+<li>Das Reaktivieren ist nur erlaubt, wenn die betreffenden Rechnungskandidaten noch nicht in Rechnungen überführt wurden, oder wenn die jeweilige(n) Rechnung(en) storniert wurde(n). Beim Reaktivieren werden ggf. vorhandene Rechnungskandidaten wieder gelöscht</li>','Y','N','N','Y','N','Belegverarbeitung',0,200,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.239
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559683,0,540860,541100,548216,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Ggf. Referenz auf den Rechnungskandidaten, mit dem dieser Datensatz berechnet wird','Wenn die Maßeinheit des Pauschalen-Datensatzes gleich der Maßeinheit der gewählten Vertragsbedingungen ist, dann wird beim fertig stellen des Datensatzes ein Rechnungskandidat erstellt, so dass der Datensatz pauschal Abgerechnet werden kann.<br>
+Die "Gemeldete Menge" des fertig gestellten Datensatzes wird dabei als "Bestellte Menge" in den Rechnungskandiaten übernommen. Aus den Vertragsbedingunen werden Produkt, Preis und einige andere Angaben übernommen.','Y','N','N','Y','N','Rechnungskandidat',0,210,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.277
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559684,0,540860,541100,548217,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Rechnungskand. Nachzahlung/Erstattung',0,220,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.323
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,540861,540468,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2017-09-09T16:57:07.324
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540468 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2017-09-09T16:57:07.360
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540628,540468,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.396
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540628,541101,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.441
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559696,0,540861,541101,548218,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Planspiel',0,10,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.480
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559697,0,540861,541101,548219,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Abrechnungsperiode, bis zu der sich der Korrektur-Datensatz erstreckt','Y','N','N','Y','N','Korrektur bis Periode',0,20,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.515
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559698,0,540861,541101,548220,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Datum, an dem die korrigierte Menge von Seiten des Kunden gemeldet wurde','Y','N','N','Y','N','Gemeldet am',0,30,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.556
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559699,0,540861,541101,548221,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Ansprechpartner auf Kunden-Seite, der die Pauschalen-Menge gemeldet hat.','Y','N','N','Y','N','Gemeldet durch',0,40,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.595
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559700,0,540861,541101,548222,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Maßeinheit','Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','N','Y','N','Maßeinheit',0,50,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.626
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559701,0,540861,541101,548223,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Betrag/Maßeinheit',0,60,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.660
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559702,0,540861,541101,548224,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','N','Y','N','Währung',0,70,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.703
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559703,0,540861,541101,548225,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Summe der innerhalb der Abschluss-Periode gemeldeten Mengen.','Y','N','N','Y','N','Zu korrigierende Menge',0,80,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.742
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559704,0,540861,541101,548226,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Vom Kunden gemeldete korigierte Menge','In diesem Feld soll keine Differenz sondern der korrigierte Absolutbetrag erfasst werden','Y','N','N','Y','N','Korrektur-Menge',0,90,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.775
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559705,0,540861,541101,548227,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Pauschal zu Zahlender Betrag, ohne Berücksichtigung der Korrektur wegen Über- oder Unterschreibung.','Y','N','N','Y','N','Pauschalenbetrag',0,100,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.803
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559706,0,540861,541101,548228,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Tatsächliche Menge der erbrachten Leistung (z.B gelieferte Teile)','Y','N','N','Y','N','Istmenge',0,110,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.834
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559707,0,540861,541101,548229,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Tatsächliche Menge der erbrachten Leistung (z.B "Stück geliefert") pro pauschal abgerechnete Einheit (z.B. pro Pflegetag).','Y','N','N','Y','N','Istmenge/Maßeinheit',0,120,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.862
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559708,0,540861,541101,548230,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Absolute Differenz zwischen Plan- und Istmenge','Y','N','N','Y','N','Diff. Menge',0,130,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.891
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559709,0,540861,541101,548231,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Differenz zwischen Plan- und Istmenge pro Maßeinheit','Y','N','N','Y','N','Differenz/Maßeinheit',0,140,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.917
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559710,0,540861,541101,548232,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Prozentuale Abweichung zwischen Plan- und Istmenge','Y','N','N','Y','N','Diff. Menge %',0,150,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.948
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559711,0,540861,541101,548233,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Prozentuale Abweichung, ggf. verringert um den Korridor-Prozentbetrag. Dieser wert ist der prozentuale Auf- oder Abschlag auf den Pauschalenbetrag','Y','N','N','Y','N','Diff. Menge % eff.',0,160,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:07.977
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559712,0,540861,541101,548234,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Aufgrund von Über-/Unterschreitung der Planmenge zusätzlich zu zahlender bzw. gutzuschreibender Betrag.','Y','N','N','Y','N','Nachzahlung/Erstattung',0,170,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.002
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559713,0,540861,541101,548235,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100,'Optional weitere Information für ein Dokument','Das Notiz-Feld erlaubt es, weitere Informationen zu diesem Eintrag anzugeben','Y','N','N','Y','N','Notiz',0,180,0,TO_TIMESTAMP('2017-09-09 16:57:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.032
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559714,0,540861,541101,548236,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'The current status of the document','The Document Status indicates the status of a document at this time.  If you want to change the document status, use the Document Action field','Y','N','N','Y','N','Belegstatus',0,190,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.064
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559715,0,540861,541101,548237,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Checkbox sagt aus, ob der Beleg verarbeitet wurde. ','Verarbeitete Belege dürfen in der Regel nich mehr geändert werden.','Y','N','N','Y','N','Verarbeitet',0,200,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.101
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559716,0,540861,541101,548238,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Der zukünftige Status des Belegs','You find the current status in the Document Status field. The options are listed in a popup','Y','N','N','Y','N','Belegverarbeitung',0,210,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.138
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559717,0,540861,541101,548239,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Eindeutige Identifikationsnummer eines Rechnungskandidaten','Y','N','N','Y','N','Rechnungskandidat',0,220,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.174
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559718,0,540861,541101,548240,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Rechnungskand. Nachzahlung/Erstattung',0,230,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.210
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,540862,540469,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2017-09-09T16:57:08.212
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_UI_Section_ID=540469 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2017-09-09T16:57:08.247
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,540629,540469,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.282
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,540629,541102,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.321
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559721,0,540862,541102,548241,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Produkt, zu dem die Depotgebühr erhoben wird','Y','N','N','Y','N','Produkt',0,10,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.356
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559722,0,540862,541102,548242,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Periode des Kalenders','"Periode" bezeichnet einen eklusiven Datumsbereich eines Kalenders.','Y','N','N','Y','N','Periode',0,20,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.393
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559723,0,540862,541102,548243,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Vorab eingeplante Pauschalen-Menge','Y','N','N','Y','N','Geplante Menge',0,30,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.428
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559724,0,540862,541102,548244,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Maßeinheit','Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','N','Y','N','Maßeinheit',0,40,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.464
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559725,0,540862,541102,548245,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Betrag/Maßeinheit',0,50,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.500
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559726,0,540862,541102,548246,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Lieferprodukt',0,60,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.537
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559727,0,540862,541102,548247,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Pauschal zu Zahlender Betrag, ohne Berücksichtigung der Korrektur wegen Über- oder Unterschreibung.','Y','N','N','Y','N','Pauschalenbetrag',0,70,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-09T16:57:08.573
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,559728,0,540862,541102,548248,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100,'Die Währung für diesen Eintrag','Bezeichnet die auf Dokumenten oder Berichten verwendete Währung','Y','N','N','Y','N','Währung',0,80,0,TO_TIMESTAMP('2017-09-09 16:57:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
