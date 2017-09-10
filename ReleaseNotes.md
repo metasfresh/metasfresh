@@ -21,7 +21,9 @@ Here come the actual release notes:
   * [#2386](https://github.com/metasfresh/metasfresh/issues/2386) New Window for M_PickingSlot_Trx in WebUI
     * New Window in WebUI allowing to View Picking Slot Transations and involved Handling Units.
   * [#2405](https://github.com/metasfresh/metasfresh/issues/2405) New Window for C_Invoice_Clearing_Alloc in WebUI
-    * New window for Invoice Allocation in Contract as substitute for 3rd Level Subtab in old Contract Window.
+    * New window for Invoice Allocation as substitute for 3rd Level Subtab in old Contract Window.
+  * [#2406](https://github.com/metasfresh/metasfresh/issues/2406) New Window for C_SubscriptionProgress in WebUI
+    * New window for Subscription Progress/ History as substitute for 3rd Level Subtab in old Contract Window.
 
 # metasfresh 5.26 (2017-37)
 
