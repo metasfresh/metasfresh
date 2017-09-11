@@ -1,5 +1,7 @@
 package de.metas.handlingunits.attribute;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -65,4 +67,10 @@ public interface IHUAttributesBL extends ISingletonService
 			I_M_Attribute attribute,
 			Object attributeValue,
 			String onlyHUStatus);
+
+	/**
+	 * @param hu
+	 * @return quality discount percent (between 0...100); never return null
+	 */
+	BigDecimal getQualityDiscountPercent(I_M_HU hu);
 }

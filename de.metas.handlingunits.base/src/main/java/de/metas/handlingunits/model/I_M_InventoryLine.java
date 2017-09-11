@@ -39,5 +39,26 @@ public interface I_M_InventoryLine extends org.compiere.model.I_M_InventoryLine
 		public BigDecimal getQtyTU();
 		public void setQtyTU(BigDecimal QtyTU);
 		// @formatter:on
+		
+		// @formatter:off
+		// Column IsInDispute
+		public static final String COLUMNNAME_IsInDispute = "IsInDispute";
+		public void setIsInDispute(boolean IsInDispute);
+		public boolean isInDispute();
+		// @formatter:on
+
+		// @formatter:off
+		// column QualityDiscountPercent
+		public static final String COLUMNNAME_QualityDiscountPercent = "QualityDiscountPercent";
+		public void setQualityDiscountPercent(BigDecimal QualityDiscountPercent);
+		public BigDecimal getQualityDiscountPercent();
+		// @formatter:on
+
+		// @formatter:off
+		// column QualityNote
+		public static final String COLUMNNAME_QualityNote = "QualityNote";
+		public void setQualityNote(String QualityNote);
+		public String getQualityNote();
+		// @formatter:on
 
 }
