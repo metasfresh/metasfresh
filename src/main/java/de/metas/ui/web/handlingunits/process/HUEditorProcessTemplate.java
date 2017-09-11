@@ -111,7 +111,8 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 		final Set<Integer> huIds = getSelectedHUIds(Select.ALL);
 
 		return Services.get(IHandlingUnitsDAO.class)
-				.createHUQueryBuilder().addOnlyHUIds(huIds)
+				.createHUQueryBuilder()
+				.addOnlyHUIds(huIds)
 				.setOnlyTopLevelHUs(select == Select.ONLY_TOPLEVEL)
 				.createQuery()
 				.list(I_M_HU.class);
