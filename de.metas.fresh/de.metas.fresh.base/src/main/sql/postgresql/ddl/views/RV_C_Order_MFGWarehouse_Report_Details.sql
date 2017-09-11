@@ -5,7 +5,7 @@ SELECT
 	ol.line,
 	att.Attributes,
 	COALESCE(bpp.ProductNo, p.value) AS ProductValue,
-	COALESCE(NULLIF(bpp.ProductName,''), p.Name) AS ProductName,
+	COALESCE(NULLIF(trim(bpp.ProductName),''), p.Name) AS ProductName,
 	COALESCE(bpp.UPC, p.UPC) AS EAN,
 	-- Rounding these columns is important to have them in one group
 	-- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
