@@ -251,7 +251,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 	private I_M_InOutLine getCreateInOutLineInDispute(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
-		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveInDisputeInOutLine(originInOutLine), I_M_InOutLine.class);
+		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(originInOutLine), I_M_InOutLine.class);
 
 		if (originInOutLineInDispute == null)
 		{
