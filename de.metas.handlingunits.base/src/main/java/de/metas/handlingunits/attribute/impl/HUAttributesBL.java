@@ -1,5 +1,9 @@
 package de.metas.handlingunits.attribute.impl;
 
+import java.math.BigDecimal;
+
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -13,16 +17,18 @@ package de.metas.handlingunits.attribute.impl;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.model.IContextAware;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.ILoggable;
 import org.adempiere.util.Loggables;
@@ -30,10 +36,13 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.time.SystemTime;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.util.Env;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUAware;
+import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.Constants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -109,4 +118,38 @@ public class HUAttributesBL implements IHUAttributesBL
 		});
 		iterator.iterate(hu);
 	}
+
+	@Override
+	public BigDecimal getQualityDiscountPercent(final I_M_HU hu)
+	{
+
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+
+		final IHUContext huContext = Services.get(IHandlingUnitsBL.class).createMutableHUContext(ctxAware);
+
+		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
+
+		final I_M_Attribute attr_QualityDiscountPercent = Services.get(IAttributeDAO.class).retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_QualityDiscountPercent_Value, I_M_Attribute.class);
+
+		if (!attributeStorage.hasAttribute(attr_QualityDiscountPercent))
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final BigDecimal qualityDiscountPercent = attributeStorage.getValueAsBigDecimal(attr_QualityDiscountPercent);
+		if (qualityDiscountPercent == null)
+		{
+			return BigDecimal.ZERO;
+		}
+
+		return qualityDiscountPercent.divide(Env.ONEHUNDRED);
+	}
+
+	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
+	{
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		return attributeStorage;
+	}
+
 }

@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -14,19 +13,15 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IReference;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.Constants;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -65,8 +60,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
+	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	// referenced inout header
 	private final IReference<I_M_InOut> _inoutRef;
 
@@ -135,7 +129,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		final I_C_UOM productUOM = productBL.getStockingUOM(product);
 		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM);
 
-		final BigDecimal qualityDiscountPerc = getQualityDiscountPercent(huContext, productStorage.getM_HU());
+		final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(productStorage.getM_HU());
 		final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
 		final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
 
@@ -294,35 +288,4 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	{
 		return _inOutLines.isEmpty();
 	}
-
-	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
-	{
-		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-		return attributeStorage;
-	}
-
-	/**
-	 * @return quality discount percent (between 0...100); never return null
-	 */
-	private BigDecimal getQualityDiscountPercent(final IHUContext huContext, final I_M_HU hu)
-	{
-		final IAttributeStorage attributeStorage = getAttributeStorage(huContext, hu);
-
-		final I_M_Attribute attr_QualityDiscountPercent = attributeDAO.retrieveAttributeByValue(huContext.getCtx(), Constants.ATTR_QualityDiscountPercent_Value, I_M_Attribute.class);
-
-		if (!attributeStorage.hasAttribute(attr_QualityDiscountPercent))
-		{
-			return BigDecimal.ZERO;
-		}
-
-		final BigDecimal qualityDiscountPercent = attributeStorage.getValueAsBigDecimal(attr_QualityDiscountPercent);
-		if (qualityDiscountPercent == null)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		return qualityDiscountPercent.divide(Env.ONEHUNDRED);
-	}
-
 }
