@@ -84,12 +84,15 @@ public final class HUIdsFilterHelper
 		}
 
 		/**
-		 * Important: {@code null} means "no restriction" (i.e. we can select allHUs) whereas empty means that no HU matches the filter.
+		 * Important: {@code null} means "no restriction" (i.e. we can select all HUs) whereas empty means that no HU matches the filter.
 		 */
 		private final ImmutableSet<Integer> initialHUIds;
 
 		private final IHUQueryBuilder initialHUQuery;
 
+		/**
+		 * Empty list means "no restricton".
+		 */
 		private final Set<Integer> mustHUIds;
 		private final Set<Integer> shallNotHUIds;
 
@@ -244,7 +247,7 @@ public final class HUIdsFilterHelper
 		}
 
 		final Set<Integer> huIds = huIdsFilterData.getInitialHUIds();
-		if(huIds == null)
+		if (huIds == null)
 		{
 			// null means no restrictions, so we might have a lot of HUs
 			return true; // high volume
@@ -252,7 +255,7 @@ public final class HUIdsFilterHelper
 		else if (huIds.isEmpty())
 		{
 			// no HUs will be allowed
-			return false; //  not high volume
+			return false; // not high volume
 		}
 		else
 		{
@@ -274,7 +277,27 @@ public final class HUIdsFilterHelper
 		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter)
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
-			final ImmutableList<Integer> onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			final ImmutableList<Integer> onlyHUIds;
+
+			final boolean mustHuIdsSpecified = huIdsFilter.getMustHUIds() != null && !huIdsFilter.getMustHUIds().isEmpty();
+			final boolean initialHuIdsSpecified = huIdsFilter.getInitialHUIds() != null;
+
+			if (initialHuIdsSpecified && mustHuIdsSpecified)
+			{
+				onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
+			}
+			else if (initialHuIdsSpecified)
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getInitialHUIds()); // huIdsFilter.getMustHUIds() == null
+			}
+			else if (mustHuIdsSpecified)
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds());
+			}
+			else
+			{
+				onlyHUIds = null;
+			}
 
 			if (onlyHUIds == null && !huIdsFilter.hasInitialHUQuery())
 			{
