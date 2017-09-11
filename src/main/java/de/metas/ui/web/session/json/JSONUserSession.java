@@ -69,6 +69,8 @@ public class JSONUserSession
 
 	@JsonProperty("language")
 	private final JSONLookupValue language;
+	@JsonProperty("locale")
+	private final JSONUserSessionLocale locale;
 
 	@JsonProperty("timeZone")
 	private final String timeZone;
@@ -116,6 +118,7 @@ public class JSONUserSession
 
 		final Language language = userSession.getLanguage();
 		this.language = JSONLookupValue.of(language.getAD_Language(), language.getName());
+		this.locale = JSONUserSessionLocale.of(userSession.getUserSessionLocale());
 
 		timeZone = JSONDate.getCurrentTimeZoneAsJson();
 	}

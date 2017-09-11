@@ -380,8 +380,8 @@ public class PPOrderLinesView implements IView
 		{
 			throw new IllegalStateException("Row processed");
 		}
-
-		final IHUQueryBuilder huIdsToAvailableToIssueQuery = Services.get(IHUPPOrderBL.class).createHUsAvailableToIssueQuery(selectedRow.getM_Product_ID());
+		final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
+		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(selectedRow.getM_Product_ID());
 
 		final IViewsRepository viewsRepo = Adempiere.getSpringApplicationContext().getBean(IViewsRepository.class); // TODO dirty workaround
 		final IView husToIssueView = viewsRepo.createView(CreateViewRequest.builder(WEBUI_HU_Constants.WEBUI_HU_Window_ID, JSONViewDataType.includedView)

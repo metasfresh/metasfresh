@@ -90,6 +90,9 @@ public final class HUIdsFilterHelper
 
 		private final IHUQueryBuilder initialHUQuery;
 
+		/**
+		 * Empty list means "no restricton".
+		 */
 		private final Set<Integer> mustHUIds;
 		private final Set<Integer> shallNotHUIds;
 
@@ -275,17 +278,25 @@ public final class HUIdsFilterHelper
 		{
 			final HUIdsFilterData huIdsFilter = extractFilterData(filter);
 			final ImmutableList<Integer> onlyHUIds;
-			if (huIdsFilter.getInitialHUIds() != null && huIdsFilter.getMustHUIds() != null)
+
+			final boolean mustHuIdsSpecified = huIdsFilter.getMustHUIds() != null && !huIdsFilter.getMustHUIds().isEmpty();
+			final boolean initialHuIdsSpecified = huIdsFilter.getInitialHUIds() != null;
+
+			if (initialHuIdsSpecified && mustHuIdsSpecified)
 			{
 				onlyHUIds = ImmutableList.copyOf(Iterables.concat(huIdsFilter.getInitialHUIds(), huIdsFilter.getMustHUIds()));
 			}
-			else if (huIdsFilter.getInitialHUIds() != null)
+			else if (initialHuIdsSpecified)
 			{
 				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getInitialHUIds()); // huIdsFilter.getMustHUIds() == null
 			}
+			else if (mustHuIdsSpecified)
+			{
+				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds());
+			}
 			else
 			{
-				onlyHUIds = ImmutableList.copyOf(huIdsFilter.getMustHUIds()); // huIdsFilter.getInitialHUIds() == null
+				onlyHUIds = null;
 			}
 
 			if (onlyHUIds == null && !huIdsFilter.hasInitialHUQuery())
