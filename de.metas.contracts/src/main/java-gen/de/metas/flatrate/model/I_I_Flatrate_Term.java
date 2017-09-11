@@ -200,6 +200,52 @@ public interface I_I_Flatrate_Term
     public static final String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+	 * Set Contract End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setContractEndDate (java.sql.Timestamp ContractEndDate);
+
+	/**
+	 * Get Contract End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getContractEndDate();
+
+    /** Column definition for ContractEndDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_ContractEndDate = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "ContractEndDate", null);
+    /** Column name ContractEndDate */
+    public static final String COLUMNNAME_ContractEndDate = "ContractEndDate";
+
+	/**
+	 * Set Contract Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setContractStartDate (java.sql.Timestamp ContractStartDate);
+
+	/**
+	 * Get Contract Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getContractStartDate();
+
+    /** Column definition for ContractStartDate */
+    public static final org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object> COLUMN_ContractStartDate = new org.adempiere.model.ModelColumn<I_I_Flatrate_Term, Object>(I_I_Flatrate_Term.class, "ContractStartDate", null);
+    /** Column name ContractStartDate */
+    public static final String COLUMNNAME_ContractStartDate = "ContractStartDate";
+
+	/**
 	 * Get Erstellt.
 	 * Datum, an dem dieser Eintrag erstellt wurde
 	 *

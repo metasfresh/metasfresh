@@ -15,7 +15,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1687046215L;
+	private static final long serialVersionUID = -612882098L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -182,6 +182,38 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Contract End Date.
+		@param ContractEndDate Contract End Date	  */
+	@Override
+	public void setContractEndDate (java.sql.Timestamp ContractEndDate)
+	{
+		set_Value (COLUMNNAME_ContractEndDate, ContractEndDate);
+	}
+
+	/** Get Contract End Date.
+		@return Contract End Date	  */
+	@Override
+	public java.sql.Timestamp getContractEndDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractEndDate);
+	}
+
+	/** Set Contract Start Date.
+		@param ContractStartDate Contract Start Date	  */
+	@Override
+	public void setContractStartDate (java.sql.Timestamp ContractStartDate)
+	{
+		set_Value (COLUMNNAME_ContractStartDate, ContractStartDate);
+	}
+
+	/** Get Contract Start Date.
+		@return Contract Start Date	  */
+	@Override
+	public java.sql.Timestamp getContractStartDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractStartDate);
 	}
 
 	@Override

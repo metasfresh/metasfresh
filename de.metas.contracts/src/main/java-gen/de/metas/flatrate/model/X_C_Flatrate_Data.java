@@ -14,7 +14,7 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 114751667L;
+	private static final long serialVersionUID = -1594011462L;
 
     /** Standard Constructor */
     public X_C_Flatrate_Data (Properties ctx, int C_Flatrate_Data_ID, String trxName)
@@ -116,6 +116,38 @@ public class X_C_Flatrate_Data extends org.compiere.model.PO implements I_C_Flat
 	public java.lang.String getC_Flatrate_DataEntry_IncludedT () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_C_Flatrate_DataEntry_IncludedT);
+	}
+
+	/** Set Contract End Date.
+		@param ContractEndDate Contract End Date	  */
+	@Override
+	public void setContractEndDate (java.sql.Timestamp ContractEndDate)
+	{
+		set_Value (COLUMNNAME_ContractEndDate, ContractEndDate);
+	}
+
+	/** Get Contract End Date.
+		@return Contract End Date	  */
+	@Override
+	public java.sql.Timestamp getContractEndDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractEndDate);
+	}
+
+	/** Set Contract Start Date.
+		@param ContractStartDate Contract Start Date	  */
+	@Override
+	public void setContractStartDate (java.sql.Timestamp ContractStartDate)
+	{
+		set_Value (COLUMNNAME_ContractStartDate, ContractStartDate);
+	}
+
+	/** Get Contract Start Date.
+		@return Contract Start Date	  */
+	@Override
+	public java.sql.Timestamp getContractStartDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractStartDate);
 	}
 
 	/** Set Existierende Verträge.

@@ -27,6 +27,7 @@ import com.google.common.collect.Ordering;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
+import de.metas.flatrate.model.I_C_Flatrate_Data;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_I_Flatrate_Term;
 import de.metas.flatrate.model.X_I_Flatrate_Term;
@@ -263,6 +264,24 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			contract.setEndDate(importRecord.getEndDate());
 		}
 
+		//
+		// ContractStartDate/ContractEndDate
+		final I_C_Flatrate_Data flatRateData = contract.getC_Flatrate_Data();
+		//
+		//ContractStartDate
+		if (importRecord.getContractStartDate() != null)
+		{
+			flatRateData.setContractStartDate(importRecord.getContractStartDate());
+			InterfaceWrapperHelper.save(flatRateData);
+		}
+		//
+		//getContractEndDate
+		if (importRecord.getContractEndDate() != null)
+		{
+			flatRateData.setContractStartDate(importRecord.getContractEndDate());
+			InterfaceWrapperHelper.save(flatRateData);
+		}
+		
 		//
 		// Complete the subscription/contract
 		InterfaceWrapperHelper.save(contract);
