@@ -3,7 +3,9 @@ import axios from 'axios';
 import counterpart from 'counterpart';
 import {replace} from 'react-router-redux';
 import Moment from 'moment';
+import numeral from 'numeral';
 import {LOCAL_LANG}  from '../constants/Constants';
+import {LOCAL_NUMERAL_FORMATS}  from '../constants/Locales';
 
 // REQUESTS
 
@@ -225,7 +227,7 @@ export function getMessages(lang) {
 export function loginSuccess(auth) {
     return dispatch => {
         localStorage.setItem('isLogged', true);
-        
+
 /*
         getMessages().then(response => {
             counterpart.registerTranslations('lang', response.data);
@@ -292,9 +294,31 @@ export function loginSuccess(auth) {
     }
 }
 
+function initNumeralLocales(lang) {
+    let formatKeys = Object.keys(LOCAL_NUMERAL_FORMATS);
+    let language = lang.toLowerCase();
+
+    formatKeys.forEach( (locale) => {
+        if (typeof numeral.locales[locale] === 'undefined') {
+            numeral.register('locale', locale, LOCAL_NUMERAL_FORMATS[locale]);
+        }
+    });
+
+    if (typeof numeral.locales[language] !== 'undefined') {
+        numeral.locale(language);
+
+        if (LOCAL_NUMERAL_FORMATS[language].defaultFormat) {
+            numeral.defaultFormat(LOCAL_NUMERAL_FORMATS[language].defaultFormat);
+        }
+    }
+}
+
 export function languageSuccess(lang) {
     localStorage.setItem(LOCAL_LANG, lang);
     Moment.locale(lang);
+
+    initNumeralLocales(lang);
+
     axios.defaults.headers.common['Accept-Language'] = lang;
 }
 

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import Moment from 'moment';
+import numeral from 'numeral';
 import MasterWidget from '../widget/MasterWidget';
 
 class TableCell extends Component {
@@ -66,6 +67,11 @@ class TableCell extends Component {
             Moment(new Date(field)).format(this.getDateFormat(type)) : '';
     }
 
+    createAmount = (field, type) => {
+        let value = numeral(parseFloat(field)).format();
+        return field ? value : '';
+    }
+
     fieldToString = (field, type) => {
         if(field === null){
             return '';
@@ -92,6 +98,11 @@ class TableCell extends Component {
                         type === 'Time'
                     ){
                         return this.createDate(field, type);
+                    } else if (
+                        type === 'CostPrice' ||
+                        type === 'Amount'
+                    ) {
+                        return this.createAmount(field, type);
                     } else {
                         return field;
                     }
