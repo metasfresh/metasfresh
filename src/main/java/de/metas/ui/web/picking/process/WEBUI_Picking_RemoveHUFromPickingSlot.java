@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
-import de.metas.ui.web.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand.RemoveQtyFromHURequest;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -37,6 +37,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  */
 
 /**
+ * Unassigns the currently selected HU from its picking slot so that it could be picked again.
  * 
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.

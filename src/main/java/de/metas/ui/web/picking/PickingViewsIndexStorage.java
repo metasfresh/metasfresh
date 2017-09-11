@@ -8,6 +8,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import de.metas.ui.web.picking.packageable.PackageableRow;
+import de.metas.ui.web.picking.packageable.PackageableView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsIndexStorage;
@@ -51,7 +55,7 @@ import lombok.NonNull;
  *
  */
 @Component
-public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
+public class PickingViewsIndexStorage implements IViewsIndexStorage
 {
 	@Autowired
 	private PickingSlotViewFactory pickingSlotViewFactory;
@@ -82,11 +86,11 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 	public void put(final IView pickingSlotView)
 	{
 		final ViewId pickingSlotViewId = pickingSlotView.getViewId();
-		final PackageableView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
+		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
 
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
 
-		pickingView.setPickingSlotView(rowId, PickingSlotView.cast(pickingSlotView));
+		packageableView.setPickingSlotView(rowId, PickingSlotView.cast(pickingSlotView));
 	}
 
 	public static ViewId createViewId(
@@ -108,13 +112,13 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 		return ViewId.ofParts(PickingConstants.WINDOWID_PickingView, viewIdPart);
 	}
 
-	private DocumentId extractRowId(final ViewId pickingSlotViewId)
+	private DocumentId extractRowId(@NonNull final ViewId pickingSlotViewId)
 	{
 		final String rowIdStr = pickingSlotViewId.getPart(2);
 		return DocumentId.of(rowIdStr);
 	}
 
-	private PackageableView getPickingViewByPickingSlotViewId(final ViewId pickingSlotViewId)
+	private PackageableView getPackageableViewByPickingSlotViewId(final ViewId pickingSlotViewId)
 	{
 		final ViewId pickingViewId = extractPickingViewId(pickingSlotViewId);
 		final PackageableView view = PackageableView.cast(getViewsRepository().getView(pickingViewId));
@@ -128,40 +132,41 @@ public class PickingSlotViewsIndexStorage implements IViewsIndexStorage
 		return getOrCreatePickingSlotView(pickingSlotViewId, create);
 	}
 
-	private PickingSlotView getOrCreatePickingSlotView(final ViewId pickingSlotViewId, final boolean create)
+	private PickingSlotView getOrCreatePickingSlotView(
+			@NonNull final ViewId pickingSlotViewId, 
+			final boolean create)
 	{
-		final PackageableView pickingView = getPickingViewByPickingSlotViewId(pickingSlotViewId);
+		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
 		final DocumentId pickingSlotRowId = extractRowId(pickingSlotViewId);
 
 		if (create)
 		{
-			return pickingView.computePickingSlotViewIfAbsent(
+			return packageableView.computePickingSlotViewIfAbsent(
 					pickingSlotRowId, 
 					() -> {
-						final PackageableRow pickingRow = pickingView.getById(pickingSlotRowId);
+						final PackageableRow packageableRow = packageableView.getById(pickingSlotRowId);
 						final CreateViewRequest createViewRequest = CreateViewRequest
 							.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
-							.setParentViewId(pickingView.getViewId())
-							.setParentRowId(pickingRow.getId())
+							.setParentViewId(packageableView.getViewId())
+							.setParentRowId(packageableRow.getId())
 							.build();
 
 						// provide all pickingView's M_ShipmentSchedule_IDs to the factory, because we want to show the same picking slots and picked HU-rows for all of them.
-						final List<Integer> allShipmentScheduleIds = pickingView.streamByIds(DocumentIdsSelection.ALL).map(PackageableRow::cast).map(PackageableRow::getShipmentScheduleId).collect(Collectors.toList());
+						final List<Integer> allShipmentScheduleIds = packageableView.streamByIds(DocumentIdsSelection.ALL).map(PackageableRow::cast).map(PackageableRow::getShipmentScheduleId).collect(Collectors.toList());
 
 						return pickingSlotViewFactory.createView(createViewRequest, allShipmentScheduleIds);
 					});
 		}
-		else
-		{
-			return pickingView.getPickingSlotViewOrNull(pickingSlotRowId);
-		}
+		
+		return packageableView.getPickingSlotViewOrNull(pickingSlotRowId);
 	}
 
 	@Override
-	public void removeById(final ViewId pickingSlotViewId)
+	public void removeById(@NonNull final ViewId pickingSlotViewId)
 	{
 		final DocumentId rowId = extractRowId(pickingSlotViewId);
-		getPickingViewByPickingSlotViewId(pickingSlotViewId).removePickingSlotView(rowId);
+		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
+		packageableView.removePickingSlotView(rowId);
 	}
 
 	@Override

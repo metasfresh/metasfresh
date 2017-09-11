@@ -1,10 +1,10 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 
-import de.metas.ui.web.picking.PickingSlotRow.PickingSlotRowId;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow.PickingSlotRowId;
 
 /*
  * #%L

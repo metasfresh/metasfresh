@@ -28,10 +28,10 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingCandidateCommand.AddQtyToHURequest;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand.AddQtyToHURequest;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.NonNull;
@@ -67,7 +67,7 @@ import lombok.NonNull;
  *
  */
 public class WEBUI_Picking_PickQtyToNewHU
-		extends WEBUI_Picking_PickFrom_M_Source_HU
+		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired

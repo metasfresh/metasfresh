@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -20,8 +20,12 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.picking.PickingHuRowsRepository.PickedHUEditorRow;
-import de.metas.ui.web.picking.PickingSlotRepoQuery.PickingCandidate;
+import de.metas.ui.web.picking.pickingslot.PickingHuRowsRepository;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
+import de.metas.ui.web.picking.pickingslot.PickingHuRowsRepository.PickedHUEditorRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 import mockit.Expectations;

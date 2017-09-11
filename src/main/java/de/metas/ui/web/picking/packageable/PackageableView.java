@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.packageable;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +28,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
@@ -316,22 +318,22 @@ public class PackageableView implements IView
 	{
 	}
 
-	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
+	public void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
 	{
 		pickingSlotsViewByRowId.put(rowId, pickingSlotView);
 	}
 
-	/* package */ void removePickingSlotView(@NonNull final DocumentId rowId)
+	public void removePickingSlotView(@NonNull final DocumentId rowId)
 	{
 		pickingSlotsViewByRowId.remove(rowId);
 	}
 
-	/* package */ PickingSlotView getPickingSlotViewOrNull(@NonNull final DocumentId rowId)
+	public PickingSlotView getPickingSlotViewOrNull(@NonNull final DocumentId rowId)
 	{
 		return pickingSlotsViewByRowId.get(rowId);
 	}
 
-	/* package */ PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
+	public PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
 	{
 		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
 	}

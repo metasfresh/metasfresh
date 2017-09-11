@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.packageable;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.picking.PickingViewsIndexStorage;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
@@ -143,7 +144,7 @@ public final class PackageableRow implements IViewRow
 		// create the included view's ID
 		// note that despite all our packageable-rows have the same picking slots, the IDs still need to be individual per-row,
 		// because we need to notify the picking slot view of this packageable-rows is selected at a given point in time
-		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
+		this.includedViewId = PickingViewsIndexStorage.createViewId(viewId, id);
 	}
 
 	@Override

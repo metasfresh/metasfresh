@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 /*
  * #%L
  * metasfresh-webui-api

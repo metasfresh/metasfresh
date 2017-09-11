@@ -29,10 +29,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*

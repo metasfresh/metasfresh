@@ -57,7 +57,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@lombok.Data
+@lombok.Value
 public final class CreateViewRequest
 {
 	public static final Builder builder(final WindowId windowId, final JSONViewDataType viewType)
@@ -106,13 +106,13 @@ public final class CreateViewRequest
 				.addAdditionalRelatedProcessDescriptors(view.getAdditionalRelatedProcessDescriptors());
 	}
 
-	private final WindowId windowId;
-	private final JSONViewDataType viewType;
+	WindowId windowId;
+	JSONViewDataType viewType;
 
-	private final ViewId parentViewId;
-	private final DocumentId parentRowId;
+	ViewId parentViewId;
+	DocumentId parentRowId;
 
-	private final Set<DocumentPath> referencingDocumentPaths;
+	Set<DocumentPath> referencingDocumentPaths;
 
 	/**
 	 * Sticky filters can't be changed by the user.<br>
@@ -120,26 +120,26 @@ public final class CreateViewRequest
 	 * <p>
 	 * Multiple sticky filters are always <code>AND</code>ed.
 	 */
-	private final List<DocumentFilter> stickyFilters;
+	List<DocumentFilter> stickyFilters;
 
 	/**
 	 * Filters can be changed by the user.
 	 * <p>
 	 * Multiple filters are always <code>AND</code>ed.
 	 */
-	private final DocumentFiltersList filters;
+	DocumentFiltersList filters;
 
 	/**
 	 * This one is becoming kind of legacy.... it's a particular kind of sticky filter which filters by given IDs.<br>
-	 * <b>Important:</b> empty means "no restriction"
+	 * <b>Important:</b> never null, empty means "no restriction"
 	 * 
 	 * @deprecated please rather use {@link #getFilters()} {@link #getStickyFilters()}.
 	 */
 	@Deprecated
-	private final Set<Integer> filterOnlyIds;
+	Set<Integer> filterOnlyIds;
 
-	private final ViewActionDescriptorsList actions;
-	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+	ViewActionDescriptorsList actions;
+	ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	private CreateViewRequest(final Builder builder)
 	{

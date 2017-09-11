@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -13,7 +13,7 @@ import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +29,7 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesProvider;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
+import de.metas.ui.web.picking.PickingConstants;
 import lombok.NonNull;
 
 /*
@@ -59,7 +60,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Component
+@Service
 /* package */class PickingHuRowsRepository
 {
 	private final HUEditorViewRepository huEditorRepo;

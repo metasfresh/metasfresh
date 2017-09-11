@@ -10,8 +10,8 @@ import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -42,7 +42,7 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public abstract class WEBUI_Picking_PickFrom_M_Source_HU
+public abstract class WEBUI_Picking_With_M_Source_HU_Base
 		extends ViewBasedProcessTemplate
 {
 	protected final boolean checkSourceHuPrecondition()

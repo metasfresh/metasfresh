@@ -12,9 +12,9 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
-import de.metas.ui.web.picking.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand.RemoveQtyFromHURequest;
 
 /*
  * #%L
@@ -39,7 +39,7 @@ import de.metas.ui.web.picking.PickingSlotRow;
  */
 
 public class WEBUI_Picking_ReturnQtyToSourceHU
-		extends WEBUI_Picking_PickFrom_M_Source_HU
+		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition
 {
 	@Autowired

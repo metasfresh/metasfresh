@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.packageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.window.datatypes.DocumentId;

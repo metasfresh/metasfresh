@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.view.IViewRowType;

@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -6,11 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -49,10 +45,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceRepository;
-import de.metas.handlingunits.trace.HUTraceSpecification;
-import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.logging.LogManager;
 import de.metas.quantity.Quantity;
@@ -84,6 +76,13 @@ import lombok.NonNull;
 public class PickingCandidateCommand
 {
 	private static final Logger logger = LogManager.getLogger(PickingHuRowsRepository.class);
+
+	private final SourceHUsRepository sourceHUsRepository;
+
+	public PickingCandidateCommand(@NonNull final SourceHUsRepository sourceHUsRepository)
+	{
+		this.sourceHUsRepository = sourceHUsRepository;
+	}
 
 	public void addHUToPickingSlot(final int huId, final int pickingSlotId, final int shipmentScheduleId)
 	{
@@ -230,7 +229,7 @@ public class PickingCandidateCommand
 
 	public void removeQtyFromHU(RemoveQtyFromHURequest removeQtyFromHURequest)
 	{
-		final Collection<I_M_HU> sourceHUs = retrieveSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
 		removeQtyFromHU0(removeQtyFromHURequest, sourceHUs);
 	}
 
@@ -346,7 +345,7 @@ public class PickingCandidateCommand
 
 	public void removeHUFromPickingSlot(@NonNull final RemoveQtyFromHURequest removeQtyFromHURequest)
 	{
-		final Collection<I_M_HU> sourceHUs = retrieveSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveSourceHUs(ImmutableList.of(removeQtyFromHURequest.getHuId()));
 		if (sourceHUs.isEmpty())
 		{
 			deletePickingCandidate(removeQtyFromHURequest);
@@ -391,11 +390,13 @@ public class PickingCandidateCommand
 	}
 
 	/**
-	 * For the given {@code huIds}, this method selects the {@link I_M_Picking_Candidate}s that reference those HUs
+	 * For the given {@code huIds}, this method does two things:
+	 * <ul>
+	 * <li>Retrieves the source HUs (if any) of the the given {@code huIds} and if they are empty creates a snapshot and destroys them</li>
+	 * <li>selects the {@link I_M_Picking_Candidate}s that reference those HUs
 	 * and have {@code status == 'IP'} (in progress) and updates them to {@code status='PR'} (processed).
-	 * No model interceptors etc will be fired.
-	 * <p>
-	 * Note: no model interceptors etc are fired when this method is called.
+	 * No model interceptors etc will be fired.</li>
+	 * </ul>
 	 * 
 	 * @param huIds
 	 * 
@@ -408,7 +409,7 @@ public class PickingCandidateCommand
 			return 0;
 		}
 
-		final Collection<I_M_HU> sourceHuIds = retrieveSourceHUs(huIds);
+		final Collection<I_M_HU> sourceHuIds = sourceHUsRepository.retrieveSourceHUs(huIds);
 		destroyEmptySourceHUs(sourceHuIds);
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -423,45 +424,6 @@ public class PickingCandidateCommand
 				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_PR);
 
 		return query.updateDirectly(updater);
-	}
-
-	private HUTraceRepository huTraceRepository;
-
-	private Collection<I_M_HU> retrieveSourceHUs(@NonNull final List<Integer> huIds)
-	{
-		final Set<Integer> vhuSourceIds = new HashSet<>();
-
-		for (final int huId : huIds)
-		{
-			final HUTraceSpecification query = HUTraceSpecification.builder()
-					.type(HUTraceType.TRANSFORM_LOAD)
-					.topLevelHuId(huId)
-					.build();
-
-			final List<HUTraceEvent> traceEvents = huTraceRepository.query(query);
-			for (final HUTraceEvent traceEvent : traceEvents)
-			{
-				vhuSourceIds.add(traceEvent.getVhuSourceId());
-			}
-		}
-
-		//
-		// don't use Services.get(IHandlingUnitsBL.class).getTopLevelHUs() because the sourceHUs might already be destroyed
-		final Set<I_M_HU> topLevelSourceHus = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
-		for (int vhuSourceId : vhuSourceIds)
-		{
-			final HUTraceSpecification query = HUTraceSpecification.builder()
-					.type(HUTraceType.TRANSFORM_LOAD)
-					.vhuId(vhuSourceId)
-					.build();
-			final List<HUTraceEvent> traceEvents = huTraceRepository.query(query);
-			for (final HUTraceEvent traceEvent : traceEvents)
-			{
-				final I_M_HU topLevelSourceHu = load(traceEvent.getTopLevelHuId(), I_M_HU.class);
-				topLevelSourceHus.add(topLevelSourceHu);
-			}
-		}
-		return topLevelSourceHus;
 	}
 
 	void destroyEmptySourceHUs(final Collection<I_M_HU> sourceHus)
@@ -498,7 +460,7 @@ public class PickingCandidateCommand
 			return 0;
 		}
 
-		final Collection<I_M_HU> sourceHUs = retrieveSourceHUs(huIds);
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveSourceHUs(huIds);
 		for (final I_M_HU sourceHU : sourceHUs)
 		{
 			if (!Services.get(IHandlingUnitsBL.class).isDestroyed(sourceHU))

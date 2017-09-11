@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import java.util.Collection;
 import java.util.List;
@@ -17,12 +17,16 @@ import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.picking.PickingViewsIndexStorage;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Process;
 import de.metas.ui.web.picking.process.WEBUI_Picking_M_Picking_Candidate_Unprocess;
+import de.metas.ui.web.picking.process.WEBUI_Picking_M_Source_HU_Delete;
 import de.metas.ui.web.picking.process.WEBUI_Picking_OpenHUsToPick;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToExistingHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_PickQtyToNewHU;
 import de.metas.ui.web.picking.process.WEBUI_Picking_RemoveHUFromPickingSlot;
+import de.metas.ui.web.picking.process.WEBUI_Picking_ReturnQtyToSourceHU;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
@@ -61,8 +65,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@ViewFactory(windowId = PickingConstants.WINDOWID_PickingSlotView_String, viewTypes =
-	{ JSONViewDataType.grid, JSONViewDataType.includedView })
+@ViewFactory(windowId = PickingConstants.WINDOWID_PickingSlotView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PickingSlotViewFactory implements IViewFactory
 {
 	@Autowired
@@ -104,13 +107,13 @@ public class PickingSlotViewFactory implements IViewFactory
 	 *            may be {@code null} or empty, in this case we assume that only the given {@code request}'s {@code shipmentScheduleId} is available.
 	 * @return
 	 */
-	/* package */ PickingSlotView createView(
+	public PickingSlotView createView(
 			@NonNull final CreateViewRequest request,
 			@Nullable final List<Integer> allShipmentScheduleIds)
 	{
 		final ViewId pickingViewId = request.getParentViewId();
 		final DocumentId pickingRowId = request.getParentRowId();
-		final ViewId pickingSlotViewId = PickingSlotViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
+		final ViewId pickingSlotViewId = PickingViewsIndexStorage.createViewId(pickingViewId, pickingRowId);
 
 		final int shipmentScheduleId = pickingRowId.toInt(); // TODO make it more obvious/explicit
 
@@ -150,36 +153,51 @@ public class PickingSlotViewFactory implements IViewFactory
 		final Properties ctx = Env.getCtx();
 
 		return ImmutableList.of(
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_PickQtyToNewHU.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
-
+				// allow to open the HU-editor for various picking related purposes
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_OpenHUsToPick.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
+				//
+				// fine-picking related processes
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClassIfUnique(ctx, WEBUI_Picking_PickQtyToNewHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_PickQtyToExistingHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_ReturnQtyToSourceHU.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
+				// note that WEBUI_Picking_M_Source_HU_Create is called from the HU-editor
+				RelatedProcessDescriptor.builder()
+						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Source_HU_Delete.class))
+						.anyTable().anyWindow()
+						.webuiQuickAction(true)
+						.build(),
 
+				//
+				// complete-HU-picking related processes; note that the add to-slot-process is called from the HU-editor
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_RemoveHUFromPickingSlot.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
 
-				RelatedProcessDescriptor.builder()
-						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_PickQtyToExistingHU.class))
-						.anyTable().anyWindow()
-						.webuiQuickAction(true)
-						.build(),
-
+				//
+				// "picking-lifecycle" processes
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Process.class))
 						.anyTable().anyWindow()
 						.webuiQuickAction(true)
 						.build(),
-
 				RelatedProcessDescriptor.builder()
 						.processId(adProcessDAO.retriveProcessIdByClass(ctx, WEBUI_Picking_M_Picking_Candidate_Unprocess.class))
 						.anyTable().anyWindow()

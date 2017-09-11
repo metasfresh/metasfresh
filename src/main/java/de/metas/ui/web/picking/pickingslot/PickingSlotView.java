@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -25,7 +25,8 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.picking.PickingSlotRow.PickingSlotRowId;
+import de.metas.ui.web.picking.packageable.PackageableView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow.PickingSlotRowId;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;

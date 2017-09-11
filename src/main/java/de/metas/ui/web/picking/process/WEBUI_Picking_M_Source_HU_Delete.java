@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*

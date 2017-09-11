@@ -1,18 +1,14 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
@@ -48,9 +44,9 @@ import de.metas.ui.web.window.datatypes.DocumentId;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickSelectedHU 
-extends ViewBasedProcessTemplate 
-implements IProcessPrecondition
+public class WEBUI_Picking_PickSelectedHU
+		extends WEBUI_Picking_Select_M_HU_Base
+		implements IProcessPrecondition
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
@@ -59,27 +55,22 @@ implements IProcessPrecondition
 	private IViewsRepository viewsRepo;
 
 	@Override
-	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
-	{
-		
-		if (!getSelectedDocumentIds().isSingleDocumentId())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		final HUEditorRow huRow = getSingleSelectedRow();
-		if (!huRow.isTopLevel())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NOT_TOP_LEVEL_HU));
-		}
-
-		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
 	protected String doIt() throws Exception
 	{
-		final HUEditorRow huRow = getSingleSelectedRow();
+		retrieveEligibleHUEditorRows().forEach(
+				huEditorRow -> {
+
+					pickHuRow(huEditorRow);
+				});
+
+		invalidateView();
+		invalidateParentView();
+
+		return MSG_OK;
+	}
+
+	void pickHuRow(final HUEditorRow huRow)
+	{
 		final int huId = huRow.getM_HU_ID();
 		if (!huRow.isTopLevel())
 		{
@@ -99,14 +90,6 @@ implements IProcessPrecondition
 
 		// After this process finished successfully go back to picking slots view
 		getResult().setWebuiIncludedViewIdToOpen(pickingSlotsView.getViewId().getViewId());
-
-		return MSG_OK;
-	}
-
-	@Override
-	protected HUEditorView getView()
-	{
-		return HUEditorView.cast(super.getView());
 	}
 
 	@Override
