@@ -285,7 +285,7 @@ public class LetterDialog
 			}
 			finally
 			{
-				confirmPanel.getOKButton().setEnabled(false);
+				confirmPanel.getOKButton().setEnabled(true);
 				setCursor(Cursor.getDefaultCursor());
 			}
 			// m_isPrinted = true;
