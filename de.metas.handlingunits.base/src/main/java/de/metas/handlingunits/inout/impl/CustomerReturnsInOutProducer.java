@@ -205,13 +205,9 @@ public class CustomerReturnsInOutProducer extends AbstractReturnsInOutProducer
 		// Create the packing material lines that were prepared
 		packingMaterialInoutLinesBuilder.create();
 
-		final Map<ArrayKey, I_M_InOutLine> newInOutLinesMap = inoutLinesBuilder.get_inOutLines();
-
 		// update the qtyTU and M_HU_PI_Item_Product in the newly created lines
-		for (final ArrayKey key : newInOutLinesMap.keySet())
+		for (final I_M_InOutLine newInOutLine : inoutLinesBuilder.getInOutLines())
 		{
-			final I_M_InOutLine newInOutLine = newInOutLinesMap.get(key);
-
 			de.metas.inout.model.I_M_InOutLine returnOriginInOutLine = newInOutLine.getReturn_Origin_InOutLine();
 
 			if (returnOriginInOutLine == null)
