@@ -1,5 +1,7 @@
 package de.metas.inout.impl;
 
+import java.math.BigDecimal;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,7 +37,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.process.DocAction;
-import org.compiere.util.Env;
 
 import de.metas.inout.IInOutDAO;
 
@@ -160,19 +161,38 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public List<Integer> retrieveLinesWithQualityIssues(final I_M_InOut inOut)
+	public List<Integer> retrieveLineIdsWithQualityDiscount(final I_M_InOut inOut)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final IQueryBuilder<de.metas.inout.model.I_M_InOutLine> queryBuilder = queryBL
-				.createQueryBuilder(de.metas.inout.model.I_M_InOutLine.class, inOut)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
-				.addNotEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, null)
-				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, Env.ZERO);
-
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = createInDisputeQueryBuilder(inOut);
 		return queryBuilder
 				.create()
 				.listIds();
+	}
+
+	@Override
+	public I_M_InOutLine retrieveLineWithQualityDiscount(final I_M_InOutLine originInOutLine)
+	{
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = createInDisputeQueryBuilder(originInOutLine.getM_InOut());
+
+		final int orderLineID = originInOutLine.getC_OrderLine_ID();
+
+		return queryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineID)
+				.create()
+				.firstOnly(I_M_InOutLine.class);
+	}
+
+	private IQueryBuilder<I_M_InOutLine> createInDisputeQueryBuilder(final I_M_InOut inOut)
+	{
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryBuilder<I_M_InOutLine> queryBuilder = queryBL
+				.createQueryBuilder(I_M_InOutLine.class, inOut)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
+				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, BigDecimal.ZERO);
+
+		return queryBuilder;
 	}
 }
