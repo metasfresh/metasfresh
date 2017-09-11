@@ -3,17 +3,18 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.Services;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -56,35 +57,64 @@ public abstract class HUEditorProcessTemplate extends ViewBasedProcessTemplate
 	{
 		return HUEditorRow.cast(super.getSingleSelectedRow());
 	}
-	
-	protected final List<HUEditorRow> getSelectedRows()
+
+	enum Select
+	{
+		ONLY_TOPLEVEL, ALL
+	}
+
+	/**
+	 * 
+	 * @param select if {@link Select#ONLY_TOPLEVEL} then the method only returns row with {@link HUEditorRow#isTopLevel()} {@code == true};
+	 * @return
+	 */
+	protected final List<HUEditorRow> getSelectedRows(@NonNull final Select select)
 	{
 		final DocumentIdsSelection selectedDocumentIds = getSelectedDocumentIds();
-		return getView().getByIds(selectedDocumentIds);
+		final List<HUEditorRow> allRows = getView().getByIds(selectedDocumentIds);
+
+		if (select == Select.ALL)
+		{
+			return allRows;
+		}
+		return allRows.stream()
+				.filter(HUEditorRow::isTopLevel)
+				.collect(ImmutableList.toImmutableList());
+
 	}
-	
-	protected final Set<Integer> getSelectedHUIds()
+
+	/**
+	 * Calls {@link #getSelectedRows(Select)} and returns the {@link HUEditorRow}s' {@code M_HU_ID}s.
+	 *
+	 * @param select
+	 * @return
+	 */
+	protected final Set<Integer> getSelectedHUIds(@NonNull final Select select)
 	{
-		return getSelectedRows()
+		return getSelectedRows(select)
 				.stream()
 				.map(HUEditorRow::getM_HU_ID)
 				.filter(huId -> huId > 0)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	protected final List<I_M_HU> getSelectedHUs()
+	/**
+	 * Gets <b>all</b> selected {@link HUEditorRow}s and loads the top level-HUs from those. 
+	 * I.e. this method does not rely on {@link HUEditorRow#isTopLevel()}, but checks the underlying HU.
+	 * 
+	 * @param select
+	 * @return
+	 */
+	protected final List<I_M_HU> getSelectedHUs(@NonNull final Select select)
 	{
-		final Set<Integer> huIds = getSelectedHUIds();
-		if (huIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+		// get all IDs, we we will check for ourselves if they are toplevel or not
+		final Set<Integer> huIds = getSelectedHUIds(Select.ALL);
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class)
-				.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds)
-				.create()
+		return Services.get(IHandlingUnitsDAO.class)
+				.createHUQueryBuilder()
+				.addOnlyHUIds(huIds)
+				.setOnlyTopLevelHUs(select == Select.ONLY_TOPLEVEL)
+				.createQuery()
 				.list(I_M_HU.class);
 	}
-
 }

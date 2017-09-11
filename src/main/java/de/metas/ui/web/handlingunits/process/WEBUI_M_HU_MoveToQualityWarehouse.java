@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_M_HU;
@@ -44,8 +45,6 @@ import de.metas.process.ProcessPreconditionsResolution;
  */
 public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
-	private static final String MSG_NoSelectedHU = "NoHUSelected";
-	
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 
 	@Param(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, mandatory = true)
@@ -56,10 +55,10 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final Set<Integer> huIds = getSelectedHUIds();
+		final Set<Integer> huIds = getSelectedHUIds(Select.ONLY_TOPLEVEL);
 		if (huIds.isEmpty())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NoSelectedHU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_M_HU_Messages.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -70,8 +69,13 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 	{
 		Check.assume(warehouse.isQualityReturnWarehouse(), "not a quality returns warehouse");
 
-		final List<I_M_HU> hus = getSelectedHUs();
-		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
+		final List<I_M_HU> selectedTopLevelHUs = getSelectedHUs(Select.ONLY_TOPLEVEL);
+		if (selectedTopLevelHUs.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		movementResult = huMovementBL.moveHUsToWarehouse(selectedTopLevelHUs, warehouse);
 
 		return MSG_OK;
 	}
