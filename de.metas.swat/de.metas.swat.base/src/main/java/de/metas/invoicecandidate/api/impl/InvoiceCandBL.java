@@ -1738,7 +1738,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// package-visible for testing
 	/* package */BigDecimal getQtyDelivered_Effective(final I_C_Invoice_Candidate ic)
 	{
-		return ic.getQtyDelivered().subtract(ic.getQtyWithIssues_Effective());
+		
+		final BigDecimal factor;
+		if (ic.getQtyOrdered().signum() < 0)
+		{
+			factor = BigDecimal.ONE.negate();
+		}
+		else
+		{
+			factor = BigDecimal.ONE;
+		}
+		
+		return ic.getQtyDelivered().subtract((ic.getQtyWithIssues_Effective()).multiply(factor));
 	}
 
 	/* package */void updateQtyWithIssues_Effective(final I_C_Invoice_Candidate ic)

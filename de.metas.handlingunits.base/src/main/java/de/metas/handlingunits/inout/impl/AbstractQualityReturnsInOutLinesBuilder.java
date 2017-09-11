@@ -159,7 +159,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 		// handle Qty with Quality Issues
 
-		if (qtyToMoveInDispute.signum() > 0)
+		if (qtyToMoveInDispute.signum() != 0)
 		{
 			final I_M_InOutLine inOutLineInDispute = getCreateInOutLineInDispute(originInOutLine, product);
 
