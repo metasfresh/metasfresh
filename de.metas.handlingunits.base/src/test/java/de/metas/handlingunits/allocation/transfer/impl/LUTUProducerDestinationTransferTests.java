@@ -726,7 +726,7 @@ public class LUTUProducerDestinationTransferTests
 	}
 
 	/**
-	 * Creates a palet with 110kg tomatoes. the palet has one aggregate VHU that reprents two IFCOs with 40kg each and one "real" IFCO for the remaining 30kg.<br>
+	 * Creates a palet with 110kg tomatoes. the palet has one aggregate VHU that represents two IFCOs with 40kg each and one "real" IFCO for the remaining 30kg.<br>
 	 * Then the test transfers 25kg to a new IFCO.<br>
 	 * It then verifies that those 25kg were taken from the "real" IFCO, and the aggregated VHU was left intact.
 	 */

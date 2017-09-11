@@ -127,7 +127,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 *
-	 * @param hu
+	 * @param hu may be {@code null}
 	 * @return true if this is a virtual HU
 	 */
 	boolean isVirtual(I_M_HU hu);
@@ -423,7 +423,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
 
 	/**
-	 * Checks if the given {@code hu} is a "bag".
+	 * Checks if the given {@code hu} is a aggregate HU.<br>
+	 * An aggregate HU is on a virtual HU located below an LU that represents a whole number of TUs at once.
 	 * 
 	 * @param hu optional, may be {@code null}.
 	 * @return {@code true} if the given {@code hu} is not {@code null} and if it also has a {@code M_HU_Item_Parent} with {@code ItemType} being {@link X_M_HU_Item#ITEMTYPE_HUAggregate}.

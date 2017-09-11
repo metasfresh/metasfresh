@@ -83,8 +83,6 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return new VendorReturnsInOutProducer();
 	}
 
-	private HUPackingMaterialsCollector collector = null;
-
 	/**
 	 * Builder for lines with products that are not packing materials
 	 */
@@ -124,12 +122,11 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void createLines()
 	{
-
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx());
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx(), ITrx.TRXNAME_ThreadInherited);
 
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
-			collector = new HUPackingMaterialsCollector(huContext);
+			final HUPackingMaterialsCollector collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
@@ -149,7 +146,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			// Create product (non-packing material) lines
 			{
 				// Iterate the product storages of this HU and create/update the inout lines
-				final IHUStorageFactory huStorageFactory = handlingUnitsBL.getStorageFactory();
+				final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 				final IHUStorage huStorage = huStorageFactory.getStorage(hu);
 				final List<IHUProductStorage> productStorages = huStorage.getProductStorages();
 				for (final IHUProductStorage productStorage : productStorages)
