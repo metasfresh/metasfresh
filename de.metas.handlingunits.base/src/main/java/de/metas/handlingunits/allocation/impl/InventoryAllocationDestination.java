@@ -206,7 +206,10 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			//
 			// Get/create the inventory line based on the info from material receipt and request
-			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, topLevelHU, request);
+			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, request);
+
+			// #2143 hu snapshots
+			createHuSnapshot(topLevelHU, inventoryLine);
 
 			//
 			// Update inventory line's internal use Qty
@@ -219,7 +222,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			}
 
 			setInventoryLinePiip(hu, inventoryLine);
-			
+
 			//
 			// Calculate and update inventory line's QtyTU
 			{
@@ -329,30 +332,14 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventory;
 	}
 
-	// public void createHUSnapshots()
-	// {
-	// for (final I_M_Inventory inventory : inventories)
-	// {
-	// final ISnapshotProducer<I_M_HU> currentSnapshotProducer = inventoryToSnapshot.get(inventory.getM_Inventory_ID());
-	//
-	// // Create the snapshots for all enqueued HUs so far.
-	// currentSnapshotProducer.createSnapshots();
-	//
-	// // Set the Snapshot_UUID to current receipt (for later recall and reporting).
-	//
-	// final de.metas.handlingunits.model.I_M_Inventory huInventory = InterfaceWrapperHelper.create(inventory, de.metas.handlingunits.model.I_M_Inventory.class);
-	// huInventory.setSnapshot_UUID(currentSnapshotProducer.getSnapshotId());
-	// InterfaceWrapperHelper.save(huInventory);
-	// }
-	// }
-
-	private I_M_InventoryLine getCreateInventoryLine(final I_M_InOutLine inOutLine, final I_M_HU hu, final IAllocationRequest request)
+	private I_M_InventoryLine getCreateInventoryLine(
+			@NonNull final I_M_InOutLine inOutLine,
+			@NonNull final IAllocationRequest request)
 	{
 		final int inOutLineId = inOutLine.getM_InOutLine_ID();
 
 		if (inOutLineId2InventoryLine.containsKey(inOutLineId))
 		{
-
 			return inOutLineId2InventoryLine.get(inOutLineId);
 		}
 
@@ -370,21 +357,24 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		inventoryLine.setC_UOM(inOutLine.getC_UOM());
 
-		// set the M_HU_PI_Item_Product from the HU
-		// inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
-
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
 
 		inOutLineId2InventoryLine.put(inOutLineId, inventoryLine);
 
-		// #2143 hu snapshots
-		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryHeader.getM_Inventory_ID());
-		currentSnapshotProducer.addModel(hu);
-		currentSnapshotProducer.createSnapshots();
-
 		// NOTE: we are not saving here
-
 		return inventoryLine;
+	}
+
+	private ISnapshotProducer<I_M_HU> createHuSnapshot(
+			@NonNull final I_M_HU topLevelHU,
+			@NonNull final I_M_InventoryLine inventoryLine)
+	{
+		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryLine.getM_Inventory_ID());
+		Check.errorIf(currentSnapshotProducer == null, "Missing SnapshotProducer for M_Inventory_ID={}", inventoryLine.getM_Inventory_ID());
+
+		currentSnapshotProducer.addModel(topLevelHU);
+		currentSnapshotProducer.createSnapshots();
+		return currentSnapshotProducer;
 	}
 
 	/**
@@ -472,7 +462,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		else
 		{
 			// neither aggregate nor virtual. since we know from the start that we don't deal with an LU, hu must be a TU
-			tuHU = hu; 
+			tuHU = hu;
 		}
 		return tuHU;
 	}
