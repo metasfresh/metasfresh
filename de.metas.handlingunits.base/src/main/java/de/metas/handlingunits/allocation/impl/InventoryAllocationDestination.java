@@ -329,24 +329,10 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		return inventory;
 	}
 
-	// public void createHUSnapshots()
-	// {
-	// for (final I_M_Inventory inventory : inventories)
-	// {
-	// final ISnapshotProducer<I_M_HU> currentSnapshotProducer = inventoryToSnapshot.get(inventory.getM_Inventory_ID());
-	//
-	// // Create the snapshots for all enqueued HUs so far.
-	// currentSnapshotProducer.createSnapshots();
-	//
-	// // Set the Snapshot_UUID to current receipt (for later recall and reporting).
-	//
-	// final de.metas.handlingunits.model.I_M_Inventory huInventory = InterfaceWrapperHelper.create(inventory, de.metas.handlingunits.model.I_M_Inventory.class);
-	// huInventory.setSnapshot_UUID(currentSnapshotProducer.getSnapshotId());
-	// InterfaceWrapperHelper.save(huInventory);
-	// }
-	// }
-
-	private I_M_InventoryLine getCreateInventoryLine(final I_M_InOutLine inOutLine, final I_M_HU hu, final IAllocationRequest request)
+	private I_M_InventoryLine getCreateInventoryLine(
+			@NonNull final I_M_InOutLine inOutLine, 
+			@NonNull final I_M_HU hu, 
+			@NonNull final IAllocationRequest request)
 	{
 		final int inOutLineId = inOutLine.getM_InOutLine_ID();
 
@@ -369,9 +355,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		inventoryLine.setM_InOutLine(inOutLine);
 
 		inventoryLine.setC_UOM(inOutLine.getC_UOM());
-
-		// set the M_HU_PI_Item_Product from the HU
-		// inventoryLine.setM_HU_PI_Item_Product(hu.getM_HU_PI_Item_Product());
 
 		Services.get(IAttributeSetInstanceBL.class).cloneASI(inventoryLine, inOutLine);
 
