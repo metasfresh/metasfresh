@@ -293,7 +293,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 	private I_M_InventoryLine getCreateInventoryLineInDispute(final I_M_InOutLine receiptLine, final IAllocationRequest request)
 	{
-		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveInDisputeInOutLine(receiptLine), I_M_InOutLine.class);
+		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(receiptLine), I_M_InOutLine.class);
 
 		if (originInOutLineInDispute == null)
 		{
