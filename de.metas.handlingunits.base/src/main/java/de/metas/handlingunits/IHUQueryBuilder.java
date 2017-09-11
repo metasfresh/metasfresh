@@ -113,7 +113,7 @@ public interface IHUQueryBuilder
 	<T> List<T> collect(ModelColumn<I_M_HU, T> huColumn);
 
 	/**
-	 * Sets the context in which the query will run.
+	 * Set the context in which the query will run. Optional, see {@link #setContext(Object)}.
 	 *
 	 * @param ctx
 	 * @param trxName
@@ -122,9 +122,10 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setContext(final Properties ctx, final String trxName);
 
 	/**
-	 * Sets the context in which the query will run.
+	 * Optionally set the context in which the query will run.<br>
+	 * If omitted, then then {@link org.adempiere.model.PlainContextAware#newWithThreadInheritedTrx()} is used.
 	 *
-	 * @param contextProvider
+	 * @param contextProvider an instance that can be used as parameter for {@link org.adempiere.model.InterfaceWrapperHelper#getContextAware(Object)}.
 	 * @return this
 	 */
 	IHUQueryBuilder setContext(final Object contextProvider);
