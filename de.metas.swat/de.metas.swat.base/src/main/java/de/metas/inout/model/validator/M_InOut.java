@@ -143,7 +143,7 @@ public class M_InOut
 	public void onComplete_QualityIssues(final I_M_InOut inOut)
 	{
 		// retrieve all lines with issues (quality discount percent)
-		final List<Integer> linesWithQualityIssues = Services.get(IInOutDAO.class).retrieveLinesWithQualityIssues(inOut);
+		final List<Integer> linesWithQualityIssues = Services.get(IInOutDAO.class).retrieveLineIdsWithQualityDiscount(inOut);
 
 		if (linesWithQualityIssues.isEmpty())
 		{

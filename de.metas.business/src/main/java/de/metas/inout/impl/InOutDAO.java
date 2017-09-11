@@ -161,7 +161,7 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public List<Integer> retrieveLinesWithQualityIssues(final I_M_InOut inOut)
+	public List<Integer> retrieveLineIdsWithQualityDiscount(final I_M_InOut inOut)
 	{
 
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = createInDisputeQueryBuilder(inOut);
@@ -171,7 +171,7 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine retrieveInDisputeInOutLine(final I_M_InOutLine originInOutLine)
+	public I_M_InOutLine retrieveLineWithQualityDiscount(final I_M_InOutLine originInOutLine)
 	{
 		final IQueryBuilder<I_M_InOutLine> queryBuilder = createInDisputeQueryBuilder(originInOutLine.getM_InOut());
 
@@ -180,7 +180,6 @@ public class InOutDAO implements IInOutDAO
 		return queryBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLineID)
 				.create()
 				.firstOnly(I_M_InOutLine.class);
-
 	}
 
 	private IQueryBuilder<I_M_InOutLine> createInDisputeQueryBuilder(final I_M_InOut inOut)
@@ -192,7 +191,6 @@ public class InOutDAO implements IInOutDAO
 				.createQueryBuilder(I_M_InOutLine.class, inOut)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
-				.addNotEqualsFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, null)
 				.addCompareFilter(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_QualityDiscountPercent, Operator.GREATER, BigDecimal.ZERO);
 
 		return queryBuilder;
