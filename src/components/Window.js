@@ -60,7 +60,7 @@ class Window extends Component {
                     const {
                         tabid, caption, elements, emptyResultText,
                         emptyResultHint, queryOnActivate, supportQuickInput,
-                        orderBy
+                        defaultOrderBys
                     } = elem;
                     return (
                         <Table
@@ -73,7 +73,7 @@ class Window extends Component {
                             tabid={tabid}
                             type={type}
                             sort={sort}
-                            orderBy={orderBy}
+                            orderBy={defaultOrderBys}
                             docId={dataId}
                             emptyText={emptyResultText}
                             emptyHint={emptyResultHint}
