@@ -206,7 +206,10 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			//
 			// Get/create the inventory line based on the info from material receipt and request
-			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, topLevelHU, request);
+			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(receiptLine, request);
+
+			// #2143 hu snapshots
+			createHuSnapshot(topLevelHU, inventoryLine);
 
 			//
 			// Update inventory line's internal use Qty
@@ -219,7 +222,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			}
 
 			setInventoryLinePiip(hu, inventoryLine);
-			
+
 			//
 			// Calculate and update inventory line's QtyTU
 			{
@@ -330,15 +333,13 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	}
 
 	private I_M_InventoryLine getCreateInventoryLine(
-			@NonNull final I_M_InOutLine inOutLine, 
-			@NonNull final I_M_HU hu, 
+			@NonNull final I_M_InOutLine inOutLine,
 			@NonNull final IAllocationRequest request)
 	{
 		final int inOutLineId = inOutLine.getM_InOutLine_ID();
 
 		if (inOutLineId2InventoryLine.containsKey(inOutLineId))
 		{
-
 			return inOutLineId2InventoryLine.get(inOutLineId);
 		}
 
@@ -360,14 +361,20 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 		inOutLineId2InventoryLine.put(inOutLineId, inventoryLine);
 
-		// #2143 hu snapshots
-		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryHeader.getM_Inventory_ID());
-		currentSnapshotProducer.addModel(hu);
-		currentSnapshotProducer.createSnapshots();
-
 		// NOTE: we are not saving here
-
 		return inventoryLine;
+	}
+
+	private ISnapshotProducer<I_M_HU> createHuSnapshot(
+			@NonNull final I_M_HU topLevelHU,
+			@NonNull final I_M_InventoryLine inventoryLine)
+	{
+		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryLine.getM_Inventory_ID());
+		Check.errorIf(currentSnapshotProducer == null, "Missing SnapshotProducer for M_Inventory_ID={}", inventoryLine.getM_Inventory_ID());
+
+		currentSnapshotProducer.addModel(topLevelHU);
+		currentSnapshotProducer.createSnapshots();
+		return currentSnapshotProducer;
 	}
 
 	/**
@@ -455,7 +462,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 		else
 		{
 			// neither aggregate nor virtual. since we know from the start that we don't deal with an LU, hu must be a TU
-			tuHU = hu; 
+			tuHU = hu;
 		}
 		return tuHU;
 	}
