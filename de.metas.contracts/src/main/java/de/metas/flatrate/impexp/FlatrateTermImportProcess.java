@@ -265,21 +265,17 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		}
 
 		//
-		// ContractStartDate/ContractEndDate
-		final I_C_Flatrate_Data flatRateData = contract.getC_Flatrate_Data();
-		//
 		//ContractStartDate
-		if (importRecord.getContractStartDate() != null)
+		if (importRecord.getMasterStartDate() != null)
 		{
-			flatRateData.setContractStartDate(importRecord.getContractStartDate());
-			InterfaceWrapperHelper.save(flatRateData);
+			contract.setMasterStartDate(importRecord.getMasterStartDate());
 		}
+
 		//
 		//getContractEndDate
-		if (importRecord.getContractEndDate() != null)
+		if (importRecord.getMasterEndDate() != null)
 		{
-			flatRateData.setContractStartDate(importRecord.getContractEndDate());
-			InterfaceWrapperHelper.save(flatRateData);
+			contract.setMasterEndDate(importRecord.getMasterEndDate());
 		}
 		
 		//

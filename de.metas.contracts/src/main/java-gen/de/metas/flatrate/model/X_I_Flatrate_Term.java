@@ -15,7 +15,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -612882098L;
+	private static final long serialVersionUID = 1355694496L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -182,38 +182,6 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
-	}
-
-	/** Set Contract End Date.
-		@param ContractEndDate Contract End Date	  */
-	@Override
-	public void setContractEndDate (java.sql.Timestamp ContractEndDate)
-	{
-		set_Value (COLUMNNAME_ContractEndDate, ContractEndDate);
-	}
-
-	/** Get Contract End Date.
-		@return Contract End Date	  */
-	@Override
-	public java.sql.Timestamp getContractEndDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractEndDate);
-	}
-
-	/** Set Contract Start Date.
-		@param ContractStartDate Contract Start Date	  */
-	@Override
-	public void setContractStartDate (java.sql.Timestamp ContractStartDate)
-	{
-		set_Value (COLUMNNAME_ContractStartDate, ContractStartDate);
-	}
-
-	/** Get Contract Start Date.
-		@return Contract Start Date	  */
-	@Override
-	public java.sql.Timestamp getContractStartDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ContractStartDate);
 	}
 
 	@Override
@@ -398,6 +366,38 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Master End Date.
+		@param MasterEndDate Master End Date	  */
+	@Override
+	public void setMasterEndDate (java.sql.Timestamp MasterEndDate)
+	{
+		set_Value (COLUMNNAME_MasterEndDate, MasterEndDate);
+	}
+
+	/** Get Master End Date.
+		@return Master End Date	  */
+	@Override
+	public java.sql.Timestamp getMasterEndDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MasterEndDate);
+	}
+
+	/** Set Master Start Date.
+		@param MasterStartDate Master Start Date	  */
+	@Override
+	public void setMasterStartDate (java.sql.Timestamp MasterStartDate)
+	{
+		set_Value (COLUMNNAME_MasterStartDate, MasterStartDate);
+	}
+
+	/** Get Master Start Date.
+		@return Master Start Date	  */
+	@Override
+	public java.sql.Timestamp getMasterStartDate () 
+	{
+		return (java.sql.Timestamp)get_Value(COLUMNNAME_MasterStartDate);
 	}
 
 	/** Set Preis.
