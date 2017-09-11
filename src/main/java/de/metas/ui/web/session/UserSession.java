@@ -278,6 +278,12 @@ public class UserSession
 	{
 		return data.getLocale();
 	}
+	
+	public UserSessionLocale getUserSessionLocale()
+	{
+		return UserSessionLocale.get(getAD_Language());
+	}
+
 
 	public boolean isUseHttpAcceptLanguage()
 	{
@@ -409,7 +415,7 @@ public class UserSession
 	{
 		return data.getHttpCacheMaxAge();
 	}
-
+	
 	/**
 	 * Event fired when the user language was changed.
 	 * Usually it is user triggered.
