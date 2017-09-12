@@ -136,20 +136,6 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-//		finally 
-//		{
-//            if (reader != null) 
-//            {
-//                try
-//				{
-//					reader.close();
-//				}
-//				catch (XMLStreamException e)
-//				{
-//					throw AdempiereException.wrapIfNeeded(e);
-//				}
-//            }
-//		}
 		
 		return null;
 	}
@@ -184,8 +170,8 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 			}
 			else
 			{
-				final ESRDataImporterCamt54v06 importerV02 = new ESRDataImporterCamt54v06(header, mxsr);
-				final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = importerV02.loadXML();
+				final ESRDataImporterCamt54v06 importerV06 = new ESRDataImporterCamt54v06(header, mxsr);
+				final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = importerV06.loadXML();
 				if (bkToCstmrDbtCdtNtfctn.getGrpHdr() != null && bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf() != null)
 				{
 					Loggables.get().withLogger(logger, Level.INFO).addLog("The given input is a test file: bkToCstmrDbtCdtNtfctn/grpHdr/addtlInf={}", bkToCstmrDbtCdtNtfctn.getGrpHdr().getAddtlInf());
@@ -193,7 +179,7 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 				
 				try (final IAutoCloseable switchContext = Env.switchContext(InterfaceWrapperHelper.getCtx(header, true)))
 				{
-					return importerV02.createESRStatement(bkToCstmrDbtCdtNtfctn);
+					return importerV06.createESRStatement(bkToCstmrDbtCdtNtfctn);
 				}
 
 			}
