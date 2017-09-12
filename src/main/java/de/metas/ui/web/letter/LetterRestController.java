@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.IMsgBL;
+import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.ui.web.config.WebConfig;
@@ -134,7 +135,7 @@ public class LetterRestController
 
 	private File createPDFFile(final WebuiLetter letter)
 	{
-		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), "de.metas.letters.Letter");
+		final String pdfFilenamePrefix = Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter);
 		final File pdfFile = MADBoilerPlate.getPDF(pdfFilenamePrefix, letter.getContent(), BoilerPlateContext.EMPTY);
 		return pdfFile;
 	}
