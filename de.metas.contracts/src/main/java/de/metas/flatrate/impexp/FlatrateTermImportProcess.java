@@ -27,7 +27,6 @@ import com.google.common.collect.Ordering;
 import de.metas.adempiere.model.I_C_BPartner_Location;
 import de.metas.flatrate.api.IFlatrateBL;
 import de.metas.flatrate.model.I_C_Flatrate_Conditions;
-import de.metas.flatrate.model.I_C_Flatrate_Data;
 import de.metas.flatrate.model.I_C_Flatrate_Term;
 import de.metas.flatrate.model.I_I_Flatrate_Term;
 import de.metas.flatrate.model.X_I_Flatrate_Term;
