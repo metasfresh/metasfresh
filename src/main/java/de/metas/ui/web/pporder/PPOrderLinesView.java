@@ -49,6 +49,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -269,7 +270,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds)
+	public String getSqlWhereClause(final DocumentIdsSelection viewDocumentIds, final SqlOptions sqlOpts)
 	{
 		return null; // not supported
 	}

@@ -43,6 +43,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -313,7 +314,7 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(@NonNull final DocumentIdsSelection rowIds, final SqlOptions sqlOpts_NOTUSED)
 	{
 		return rowsBuffer.getSqlWhereClause(rowIds);
 	}

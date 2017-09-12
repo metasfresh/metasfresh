@@ -22,6 +22,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -148,7 +149,7 @@ public interface IView
 		return TableRecordReference.of(getTableNameOrNull(rowId), recordId);
 	}
 
-	String getSqlWhereClause(DocumentIdsSelection rowIds);
+	String getSqlWhereClause(DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
 	boolean hasAttributesSupport();
 

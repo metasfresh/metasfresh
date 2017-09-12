@@ -16,6 +16,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -72,13 +73,13 @@ import lombok.NonNull;
 
 	/** Build document filter where clause */
 	@Override
-	public String getSql(final SqlParamsCollector sqlParams, final DocumentFilter filter)
+	public String getSql(final SqlParamsCollector sqlParams, final DocumentFilter filter, final SqlOptions sqlOpts)
 	{
 		final StringBuilder sql = new StringBuilder();
 
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
-			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam);
+			final String sqlFilterParam = buildSqlWhereClause(sqlParams, filterParam, sqlOpts);
 			if (Check.isEmpty(sqlFilterParam, true))
 			{
 				continue;
@@ -96,13 +97,18 @@ import lombok.NonNull;
 	}
 
 	/** Build document filter parameter where clause */
-	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam)
+	private String buildSqlWhereClause(final SqlParamsCollector sqlParams, final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
 		//
 		// SQL filter
 		if (filterParam.isSqlFilter())
 		{
-			final String sqlWhereClause = replaceTableNameWithTableAlias(filterParam.getSqlWhereClause());
+			String sqlWhereClause = filterParam.getSqlWhereClause();
+			if(sqlOpts.isUseTableAlias())
+			{
+				sqlWhereClause = replaceTableNameWithTableAlias(sqlWhereClause);
+			}
+			
 			final List<Object> sqlWhereClauseParams = filterParam.getSqlWhereClauseParams();
 			sqlParams.collectAll(sqlWhereClauseParams);
 			return sqlWhereClause;

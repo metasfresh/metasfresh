@@ -120,5 +120,6 @@ interface HUEditorViewBuffer
 
 	HUEditorRow getById(DocumentId rowId) throws EntityNotFoundException;
 
+	/** @return SQL where clause using fully qualified table name (i.e. not table alias) */
 	String getSqlWhereClause(DocumentIdsSelection rowIds);
 }

@@ -38,6 +38,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -242,7 +243,7 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
 		// TODO Auto-generated method stub
 		return null;
