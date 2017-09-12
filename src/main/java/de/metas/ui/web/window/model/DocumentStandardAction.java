@@ -41,6 +41,7 @@ public enum DocumentStandardAction
 	AdvancedEdit("advancedEdit"), //
 	Clone("clone"), //
 	Email("email"), //
+	Letter("letter"), //
 	Print("print"), //
 	Delete("delete") //
 	;

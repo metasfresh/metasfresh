@@ -41,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -1974,6 +1975,12 @@ public final class Document
 		if(!getEntityDescriptor().isPrintable())
 		{
 			standardActions.remove(DocumentStandardAction.Print);
+		}
+
+		// Remove letter action if functionality is not enabled (https://github.com/metasfresh/metasfresh-webui-api/issues/178)
+		if(!Letters.isEnabled())
+		{
+			standardActions.remove(DocumentStandardAction.Letter);
 		}
 		
 		return standardActions;
