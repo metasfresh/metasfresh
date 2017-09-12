@@ -40,6 +40,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.report.jasper.OutputType;
+import de.metas.letters.model.MADBoilerPlate;
+import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
+import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -60,6 +63,7 @@ import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.exceptions.InvalidDocumentPathException;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -629,6 +633,45 @@ public class DocumentCollection
 		final DocumentPath toDocumentPath = DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 		return forDocumentReadonly(toDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
 	}
+	
+	public BoilerPlateContext createBoilerPlateContext(final DocumentPath documentPath)
+	{
+		if (documentPath == null)
+		{
+			return BoilerPlateContext.EMPTY;
+		}
+
+		return forDocumentReadonly(documentPath, NullDocumentChangesCollector.instance, document -> {
+			final SourceDocument sourceDocument = new DocumentAsTemplateSourceDocument(document);
+			return MADBoilerPlate.createEditorContext(sourceDocument);
+		});
+	}
+	
+	@AllArgsConstructor
+	private static final class DocumentAsTemplateSourceDocument implements SourceDocument
+	{
+		@NonNull
+		private final Document document;
+
+		@Override
+		public boolean hasFieldValue(final String fieldName)
+		{
+			return document.hasField(fieldName);
+		}
+
+		@Override
+		public Object getFieldValue(final String fieldName)
+		{
+			return document.getFieldView(fieldName).getValue();
+		}
+
+		@Override
+		public int getFieldValueAsInt(final String fieldName, final int defaultValue)
+		{
+			return document.getFieldView(fieldName).getValueAsInt(defaultValue);
+		}
+	}
+
 
 	@Immutable
 	@Value
