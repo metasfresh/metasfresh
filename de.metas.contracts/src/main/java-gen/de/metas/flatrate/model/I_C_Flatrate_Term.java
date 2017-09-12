@@ -1097,6 +1097,52 @@ public interface I_C_Flatrate_Term
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMasterEndDate (java.sql.Timestamp MasterEndDate);
+
+	/**
+	 * Get Master End Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMasterEndDate();
+
+    /** Column definition for MasterEndDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterEndDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterEndDate", null);
+    /** Column name MasterEndDate */
+    public static final String COLUMNNAME_MasterEndDate = "MasterEndDate";
+
+	/**
+	 * Set Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setMasterStartDate (java.sql.Timestamp MasterStartDate);
+
+	/**
+	 * Get Master Start Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getMasterStartDate();
+
+    /** Column definition for MasterStartDate */
+    public static final org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object> COLUMN_MasterStartDate = new org.adempiere.model.ModelColumn<I_C_Flatrate_Term, Object>(I_C_Flatrate_Term.class, "MasterStartDate", null);
+    /** Column name MasterStartDate */
+    public static final String COLUMNNAME_MasterStartDate = "MasterStartDate";
+
+	/**
 	 * Set Notiz.
 	 * Optional weitere Information für ein Dokument
 	 *
