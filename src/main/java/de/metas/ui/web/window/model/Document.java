@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1963,6 +1964,11 @@ public final class Document
 	public void onChildSaved(final Document document)
 	{
 		getIncludedDocumentsCollection(document.getDetailId()).onChildSaved(document);
+	}
+	
+	public Set<DocumentStandardAction> getStandardActions()
+	{
+		return EnumSet.allOf(DocumentStandardAction.class);
 	}
 
 	//

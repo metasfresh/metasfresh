@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -27,6 +28,7 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChanges;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
+import de.metas.ui.web.window.model.DocumentStandardAction;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
@@ -114,6 +116,11 @@ public final class JSONDocument extends JSONDocumentBase
 				.map(JSONIncludedTabInfo::new)
 				.peek(jsonIncludedTabInfo -> jsonOpts.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
 				.forEach(jsonDocument::addIncludedTabInfo);
+		
+		//
+		// Available standard actions
+		jsonDocument.setStandardActions(document.getStandardActions());
+		
 
 		//
 		// Set debugging info
@@ -242,6 +249,10 @@ public final class JSONDocument extends JSONDocumentBase
 	// @JsonSerialize(using = JsonMapAsValuesListSerializer.class) // serialize as Map (see #288)
 	private Map<String, JSONIncludedTabInfo> includedTabsInfo;
 
+	@JsonProperty("standardActions")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private Set<DocumentStandardAction> standardActions;
+
 	@JsonProperty("websocketEndpoint")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String websocketEndpoint;
@@ -250,7 +261,7 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonProperty("timestamp")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String timestamp;
-
+	
 	private JSONDocument(final DocumentPath documentPath)
 	{
 		super(documentPath);
@@ -313,17 +324,11 @@ public final class JSONDocument extends JSONDocumentBase
 		}
 		return includedTabsInfo.values();
 	}
-
-//	@JsonIgnore
-//	public String getWebsocketEndpointEffective()
-//	{
-//		if (websocketEndpoint != null)
-//		{
-//			return websocketEndpoint;
-//		}
-//
-//		return buildWebsocketEndpointOrNull(getWindowId(), getId());
-//	}
+	
+	private void setStandardActions(final Set<DocumentStandardAction> standardActions)
+	{
+		this.standardActions = standardActions;
+	}
 
 	//
 	//
