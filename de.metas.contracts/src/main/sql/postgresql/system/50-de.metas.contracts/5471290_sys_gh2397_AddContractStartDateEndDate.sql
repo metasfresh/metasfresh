@@ -239,12 +239,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 
-ALTER TABLE i_flatrate_term drop column ContractStartDate;
-
-ALTER TABLE i_flatrate_term drop column ContractEndDate;
-
-
-
 -- 2017-09-11T17:16:37.863
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_ImpFormat_Row SET Name='Master Start Date',Updated=TO_TIMESTAMP('2017-09-11 17:16:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540113
