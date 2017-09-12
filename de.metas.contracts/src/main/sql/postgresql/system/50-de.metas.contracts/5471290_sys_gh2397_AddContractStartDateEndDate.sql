@@ -207,16 +207,6 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 /* DDL */ SELECT public.db_alter_table('i_flatrate_term','ALTER TABLE public.I_Flatrate_Term ADD COLUMN MasterEndDate TIMESTAMP WITHOUT TIME ZONE')
 ;
 
--- 2017-09-12T10:50:26.311
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataFormat,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,557134,540010,540118,0,TO_TIMESTAMP('2017-09-12 10:50:26','YYYY-MM-DD HH24:MI:SS'),100,'yyyy-MM-dd','D','.','N',0,'Y','Master Start Date',80,8,TO_TIMESTAMP('2017-09-12 10:50:26','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2017-09-12T10:50:38.299
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataFormat,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,557135,540010,540119,0,TO_TIMESTAMP('2017-09-12 10:50:38','YYYY-MM-DD HH24:MI:SS'),100,'yyyy-MM-dd','D','.','N',0,'Y','Master End Date',90,9,TO_TIMESTAMP('2017-09-12 10:50:38','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 
 -- 2017-09-11T17:22:53.280
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -252,5 +242,63 @@ UPDATE AD_Field SET AD_FieldGroup_ID=540088,Updated=TO_TIMESTAMP('2017-09-11 17:
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET IsSameLine='N',Updated=TO_TIMESTAMP('2017-09-11 17:24:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=559888
 ;
+
+
+
+
+--------------
+
+
+
+-- 2017-09-12T11:23:32.597
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,557144,543413,0,15,540836,'N','MasterStartDate',TO_TIMESTAMP('2017-09-12 11:23:32','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.flatrate',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Master Start Date',0,0,TO_TIMESTAMP('2017-09-12 11:23:32','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2017-09-12T11:23:32.602
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=557144 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-09-12T11:23:40.146
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AllowZoomTo,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,557145,543414,0,15,540836,'N','MasterEndDate',TO_TIMESTAMP('2017-09-12 11:23:40','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.flatrate',7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Master End Date',0,0,TO_TIMESTAMP('2017-09-12 11:23:40','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2017-09-12T11:23:40.150
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Column_ID=557145 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2017-09-12T11:24:16.794
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,557144,559897,0,540858,0,TO_TIMESTAMP('2017-09-12 11:24:16','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.flatrate',0,'Y','Y','Y','Y','N','N','N','N','N','Master Start Date',200,200,0,1,1,TO_TIMESTAMP('2017-09-12 11:24:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-12T11:24:16.798
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=559897 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2017-09-12T11:24:33.620
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,557145,559898,0,540858,0,TO_TIMESTAMP('2017-09-12 11:24:33','YYYY-MM-DD HH24:MI:SS'),100,0,'de.metas.flatrate',0,'Y','Y','Y','Y','N','N','N','N','N','Master End Date',210,210,0,1,1,TO_TIMESTAMP('2017-09-12 11:24:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-12T11:24:33.624
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language,t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N' AND t.AD_Field_ID=559898 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2017-09-12T11:25:19.025
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataFormat,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,557144,540010,540120,0,TO_TIMESTAMP('2017-09-12 11:25:18','YYYY-MM-DD HH24:MI:SS'),100,'yyyy-MM-dd','D','.','N',0,'Y','Master Start Date',80,0,TO_TIMESTAMP('2017-09-12 11:25:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2017-09-12T11:25:33.438
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataFormat,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,557145,540010,540121,0,TO_TIMESTAMP('2017-09-12 11:25:33','YYYY-MM-DD HH24:MI:SS'),100,'yyyy-MM-dd','D','.','N',0,'Y','Master End Date',90,9,TO_TIMESTAMP('2017-09-12 11:25:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
 
 
