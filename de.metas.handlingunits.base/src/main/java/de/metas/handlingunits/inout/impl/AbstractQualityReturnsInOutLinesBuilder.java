@@ -1,7 +1,8 @@
 package de.metas.handlingunits.inout.impl;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -20,11 +21,13 @@ import org.compiere.util.Util.ArrayKey;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inout.IQualityReturnsInOutLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.product.IProductBL;
 
 /*
@@ -54,14 +57,17 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
+	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final transient IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	private final transient IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	// referenced inout header
 	private final IReference<I_M_InOut> _inoutRef;
 
 	/**
 	 * Map on product keys and their inout lines
 	 */
-	private final Map<ArrayKey, I_M_InOutLine> _inOutLines = new HashMap<>();
+	private final Map<ArrayKey, I_M_InOutLine> _inOutLines = new LinkedHashMap<>();
 
 	protected AbstractQualityReturnsInOutLinesBuilder(final IReference<I_M_InOut> inoutRef)
 	{
@@ -114,14 +120,22 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			return;
 		}
 
-		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine, product);
-
-		final I_C_UOM productUOM = productBL.getStockingUOM(product);
-		final BigDecimal qtyToMove = productStorage.getQty(productUOM);
-
 		final I_M_HU hu = productStorage.getM_HU();
 
-		if (originInOutLine.getM_InOut_ID() != _inoutRef.getValue().getM_InOut_ID())
+		final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
+
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
+
+		final I_C_UOM productUOM = productBL.getStockingUOM(product);
+		final BigDecimal qtyToMoveTotal = productStorage.getQty(productUOM);
+
+		final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(productStorage.getM_HU());
+		final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
+		final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
+
+		final I_M_InOutLine inOutLine = getCreateInOutLine(originInOutLine, product);
+
+		if (originInOutLine.getM_InOut_ID() != getM_InOut().getM_InOut_ID())
 		{
 			//
 			// Adjust movement line's qty to move
@@ -137,6 +151,25 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 			InterfaceWrapperHelper.save(inOutLine);
 		}
 
+		// handle Qty with Quality Issues
+
+		if (qtyToMoveInDispute.signum() != 0)
+		{
+			final I_M_InOutLine inOutLineInDispute = getCreateInOutLineInDispute(originInOutLine, product);
+
+			final BigDecimal inOutLine_Qty_Old = inOutLineInDispute.getMovementQty();
+			final BigDecimal inOutLine_Qty_New = inOutLine_Qty_Old.add(qtyToMoveInDispute);
+			inOutLineInDispute.setMovementQty(inOutLine_Qty_New);
+
+			//
+			// Also set the qty entered
+			inOutLineInDispute.setQtyEntered(inOutLine_Qty_New);
+
+			// Make sure the inout line is saved
+			InterfaceWrapperHelper.save(inOutLineInDispute);
+		}
+
+		//
 		// Assign the HU to the inout line and mark it as shipped
 		{
 
@@ -150,10 +183,6 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 					.build();
 
 			// mark hu as shipped ( if vendor return) or Active (if customer return)
-			final IContextAware ctxAware = InterfaceWrapperHelper.getContextAware(hu);
-
-			final IHUContext huContext = handlingUnitsBL.createMutableHUContext(ctxAware);
-
 			setHUStatus(huContext, hu);
 
 		}
@@ -169,12 +198,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	 */
 	private I_M_InOutLine getCreateInOutLine(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
-
-		// services
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
-
-		final I_M_InOut inout = _inoutRef.getValue();
+		final I_M_InOut inout = getM_InOut();
 
 		if (inout.getM_InOut_ID() <= 0)
 		{
@@ -225,9 +249,27 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 		return newInOutLine;
 	}
 
-	public Map<ArrayKey, I_M_InOutLine> get_inOutLines()
+	private I_M_InOutLine getCreateInOutLineInDispute(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
-		return _inOutLines;
+		final I_M_InOutLine originInOutLineInDispute = InterfaceWrapperHelper.create(inOutDAO.retrieveLineWithQualityDiscount(originInOutLine), I_M_InOutLine.class);
+
+		if (originInOutLineInDispute == null)
+		{
+			return null;
+		}
+
+		final I_M_InOutLine inoutLineInDispute = getCreateInOutLine(originInOutLineInDispute, product);
+
+		inoutLineInDispute.setIsInDispute(true);
+		inoutLineInDispute.setQualityDiscountPercent(originInOutLineInDispute.getQualityDiscountPercent());
+		inoutLineInDispute.setQualityNote(originInOutLineInDispute.getQualityNote());
+		return inoutLineInDispute;
+
+	}
+
+	public Collection<I_M_InOutLine> getInOutLines()
+	{
+		return _inOutLines.values();
 	}
 
 	/**
@@ -236,7 +278,7 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	 * @param product
 	 * @return
 	 */
-	private ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, final I_M_Product product)
+	private static ArrayKey mkInOutLineKey(final I_M_InOutLine originInOutLine, final I_M_Product product)
 	{
 		return Util.mkKey(originInOutLine.getM_InOutLine_ID(), product.getM_Product_ID());
 	}
@@ -246,5 +288,4 @@ public abstract class AbstractQualityReturnsInOutLinesBuilder implements IQualit
 	{
 		return _inOutLines.isEmpty();
 	}
-
 }

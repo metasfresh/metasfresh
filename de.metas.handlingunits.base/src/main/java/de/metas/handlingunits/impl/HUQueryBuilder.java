@@ -692,12 +692,17 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	public IHUQueryBuilder setContext(final Object contextProvider)
 	{
 		_contextProvider = contextProvider;
-
 		return this;
 	}
 
 	private final Object getContextProvider()
 	{
+		if(_contextProvider == null)
+		{
+			// context provider is optional; if it was not set, then use this default one
+			_contextProvider = PlainContextAware.newWithThreadInheritedTrx();
+		}
+
 		Check.assumeNotNull(_contextProvider, "contextProvider not null");
 		return _contextProvider;
 	}

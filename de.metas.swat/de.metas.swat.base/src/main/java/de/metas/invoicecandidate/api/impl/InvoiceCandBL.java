@@ -72,6 +72,7 @@ import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -695,9 +696,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final BigDecimal maxQtyToInvoicable,
 			final BigDecimal factor)
 	{
+		BigDecimal qtyInvoicable;
+		
 		final BigDecimal qtyOverride = getQtyToInvoice_OverrideOrNull(ic);
-
-		final BigDecimal qtyInvoicable;
 		if (qtyOverride == null || qtyOverride.multiply(factor).compareTo(maxQtyToInvoicable.multiply(factor)) > 0)
 		{
 			// there is no override value or that value is bigger than 'maxQtyToInvoicable' (i.e. the value that we could actually invoice).
@@ -708,9 +709,16 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			// subtract the qty that has already been invoiced.
 			qtyInvoicable = qtyOverride.subtract(ic.getQtyToInvoice_OverrideFulfilled()).multiply(factor);
 		}
+		
+		if(ic.isInDispute()
+				&& ic.getAD_Table_ID() == InterfaceWrapperHelper.getTableId(I_M_InventoryLine.class) // TODO HARDCODED, see ...
+				)
+		{
+			qtyInvoicable = qtyInvoicable.subtract(ic.getQtyWithIssues_Effective());
+		}
 
 		// if the result is < 0, return zero instead.
-		if (qtyInvoicable.signum() < 0)
+		if (qtyInvoicable.signum() <= 0)
 		{
 			return BigDecimal.ZERO;
 		}
@@ -1738,7 +1746,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	// package-visible for testing
 	/* package */BigDecimal getQtyDelivered_Effective(final I_C_Invoice_Candidate ic)
 	{
-		return ic.getQtyDelivered().subtract(ic.getQtyWithIssues_Effective());
+		
+		final BigDecimal factor;
+		if (ic.getQtyOrdered().signum() < 0)
+		{
+			factor = BigDecimal.ONE.negate();
+		}
+		else
+		{
+			factor = BigDecimal.ONE;
+		}
+		
+		return ic.getQtyDelivered().subtract((ic.getQtyWithIssues_Effective()).multiply(factor));
 	}
 
 	/* package */void updateQtyWithIssues_Effective(final I_C_Invoice_Candidate ic)
