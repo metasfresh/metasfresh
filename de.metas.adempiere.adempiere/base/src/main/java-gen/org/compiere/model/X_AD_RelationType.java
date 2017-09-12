@@ -14,7 +14,7 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 791382458L;
+	private static final long serialVersionUID = 1435148794L;
 
     /** Standard Constructor */
     public X_AD_RelationType (Properties ctx, int AD_RelationType_ID, String trxName)
@@ -23,10 +23,9 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
       /** if (AD_RelationType_ID == 0)
         {
 			setAD_RelationType_ID (0);
-			setEntityType (null);
-// de.metas.swat
-			setIsDirected (false);
-// N
+			setEntityType (null); // de.metas.swat
+			setIsDirected (false); // N
+			setIsReferenceTarget (false); // N
 			setName (null);
         } */
     }
@@ -228,6 +227,29 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 		return false;
 	}
 
+	/** Set IsReferenceTarget.
+		@param IsReferenceTarget IsReferenceTarget	  */
+	@Override
+	public void setIsReferenceTarget (boolean IsReferenceTarget)
+	{
+		set_Value (COLUMNNAME_IsReferenceTarget, Boolean.valueOf(IsReferenceTarget));
+	}
+
+	/** Get IsReferenceTarget.
+		@return IsReferenceTarget	  */
+	@Override
+	public boolean isReferenceTarget () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsReferenceTarget);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Name.
 		@param Name 
 		Alphanumeric identifier of the entity
@@ -302,6 +324,8 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	public static final String ROLE_SOURCE_Eingangsrechnung = "PO_Invoice";
 	/** ESR Import = ESR_Import */
 	public static final String ROLE_SOURCE_ESRImport = "ESR_Import";
+	/** MD_Candidate_PRODUCTION = MD_Candidate_PRODUCTION */
+	public static final String ROLE_SOURCE_MD_Candidate_PRODUCTION = "MD_Candidate_PRODUCTION";
 	/** Set Source Role.
 		@param Role_Source Source Role	  */
 	@Override
@@ -374,6 +398,8 @@ public class X_AD_RelationType extends org.compiere.model.PO implements I_AD_Rel
 	public static final String ROLE_TARGET_Eingangsrechnung = "PO_Invoice";
 	/** ESR Import = ESR_Import */
 	public static final String ROLE_TARGET_ESRImport = "ESR_Import";
+	/** MD_Candidate_PRODUCTION = MD_Candidate_PRODUCTION */
+	public static final String ROLE_TARGET_MD_Candidate_PRODUCTION = "MD_Candidate_PRODUCTION";
 	/** Set Target Role.
 		@param Role_Target Target Role	  */
 	@Override

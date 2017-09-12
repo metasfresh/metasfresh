@@ -305,6 +305,29 @@ public interface I_AD_RelationType
     public static final String COLUMNNAME_IsDirected = "IsDirected";
 
 	/**
+	 * Set IsReferenceTarget.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setIsReferenceTarget (boolean IsReferenceTarget);
+
+	/**
+	 * Get IsReferenceTarget.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public boolean isReferenceTarget();
+
+    /** Column definition for IsReferenceTarget */
+    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsReferenceTarget = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsReferenceTarget", null);
+    /** Column name IsReferenceTarget */
+    public static final String COLUMNNAME_IsReferenceTarget = "IsReferenceTarget";
+
+	/**
 	 * Set Name.
 	 * Alphanumeric identifier of the entity
 	 *
