@@ -408,6 +408,17 @@ public class DocumentEntityDescriptor
 		return printProcessId.orElseThrow(() -> new IllegalStateException("No print process configured for " + this));
 	}
 
+	public boolean isPrintable()
+	{
+		return printProcessId.orElse(-1) > 0;
+	}
+
+	//
+	//
+	// -----------------------------------------------------------------------------------------------------------------------
+	//
+	//
+
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
