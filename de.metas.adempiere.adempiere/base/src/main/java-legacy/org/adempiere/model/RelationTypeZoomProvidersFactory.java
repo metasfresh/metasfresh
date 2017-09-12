@@ -94,6 +94,26 @@ public final class RelationTypeZoomProvidersFactory
 					+ "    AND tab.AD_Key=?" //
 					+ "  ORDER BY rt.Name";
 
+	private final static String SQL_Reference = "  SELECT " //
+			+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID //
+			+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name //
+			+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected //
+			+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
+
+			+ "  FROM" //
+			+ "    AD_RelationType rt, AD_Reference ref"
+			+ "  WHERE " //
+			+ "    rt.IsActive='Y'" //
+			+ "    rt.IsReferenceTarget  = 'Y'"
+			+ "    AND ref.IsActive='Y'" //
+			+ "    AND ref.ValidationType='T'" // must have table validation
+			+ "    AND (" // join the source AD_Reference
+			+ "      rt.AD_Reference_Source_ID is null" //
+			+ "      AND " // not directed? -> also join the target AD_Reference
+			+ "        rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
+			+ "      )" //
+			+ "  ORDER BY rt.Name";
+
 	private final CCache<String, List<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
 	private RelationTypeZoomProvidersFactory()
@@ -113,6 +133,49 @@ public final class RelationTypeZoomProvidersFactory
 				.filter(zoomProvider -> Objects.equals(internalName, zoomProvider.getInternalName()))
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("No zoom provider found for sourceTableName=" + sourceTableName + ", internalName=" + internalName));
+	}
+
+	public List<RelationTypeZoomProvider> retrieveReferenceZoomProvidersBySourceTableName(final String tableName)
+	{
+		Check.assumeNotEmpty(tableName, "tableName is not empty");
+
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final String keyColumnName = poInfo.getKeyColumnName();
+		if (keyColumnName == null)
+		{
+			logger.error("{} does not have a single key column", tableName);
+			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
+		}
+
+		// TODO
+
+		// not needed here
+		// final int adTableId = poInfo.getAD_Table_ID();
+		// final int keyColumnId = poInfo.getAD_Column_ID(keyColumnName);
+		//
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		try
+		{
+			pstmt = DB.prepareStatement(SQL_Reference, ITrx.TRXNAME_None);
+		
+			rs = pstmt.executeQuery();
+
+			final List<RelationTypeZoomProvider> result = retrieveZoomProviders(rs);
+			logger.info("There are {} matching types for {}", result.size(), tableName);
+
+			return result;
+		}
+		catch (final SQLException e)
+		{
+			throw new DBException(e, SQL);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+
 	}
 
 	private List<RelationTypeZoomProvider> retrieveZoomProvidersBySourceTableName(final String tableName)
@@ -192,12 +255,14 @@ public final class RelationTypeZoomProvidersFactory
 						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
 						.setTargetRoleDisplayName(roleTargetDisplayName)
 						//
+						.setIsReferenceTarget(relationType.isReferenceTarget())
+						//
 						.buildOrNull();
-				if(zoomProvider == null)
+				if (zoomProvider == null)
 				{
 					continue;
 				}
-				
+
 				result.add(zoomProvider);
 			}
 			catch (Exception ex)
