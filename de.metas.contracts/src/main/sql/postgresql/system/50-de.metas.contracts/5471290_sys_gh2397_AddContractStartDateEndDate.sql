@@ -302,3 +302,8 @@ INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFo
 
 
 
+-- 2017-09-12T11:28:01.666
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_ImpFormat_Row SET StartNo=8,Updated=TO_TIMESTAMP('2017-09-12 11:28:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=540120
+;
+
