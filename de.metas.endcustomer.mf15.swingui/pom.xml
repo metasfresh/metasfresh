@@ -117,6 +117,12 @@
 			<version>${metasfresh.version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
+		<dependency>
+            <groupId>de.metas.report.jasper.commons</groupId>
+            <artifactId>de.metas.report.jasper.commons</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
 		<!-- https://github.com/metasfresh/metasfresh/issues/523 -->
 		<!-- we need those classes in the webui-api and swing-UI in order to run the MD_Candidate_Request_PP_Order process -->
