@@ -30,6 +30,8 @@ Here come the actual release notes:
     * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
   * [#2442](https://github.com/metasfresh/metasfresh/issues/2442) New Window for GL Journal Category in WebUI
     * New Window for GL Category in WebUI Finance/ Settings.
+  * [#2449](https://github.com/metasfresh/metasfresh/issues/2449) Adjust the window Product for Procurement Contracts
+    * Adjustments to the WebUI Window for Product for Procurement Contracts maintenance. Translations added for de_DE and en_US.
 
 # metasfresh 5.26 (2017-37)
 
