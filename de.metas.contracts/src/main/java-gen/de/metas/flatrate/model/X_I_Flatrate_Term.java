@@ -472,7 +472,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		Menge
 	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQty(BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}
@@ -481,7 +481,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 		@return Menge
 	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public BigDecimal getQty () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
 		if (bd == null)
