@@ -399,31 +399,23 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		return bpartner;
 	}
 
-	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner importRecord) 
+	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner importRecord)
 	{
-	    return p ->  
-	    		 importRecord.getC_Country_ID() == p.getC_Country_ID()
+		return p -> importRecord.getC_Country_ID() == p.getC_Country_ID()
 				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
-				&& importRecord.getCity() == p.getCity()
-				&& importRecord.getAddress1() == p.getAddress1()
-				&& importRecord.getAddress2() == p.getAddress2()
-				&& importRecord.getPostal() == p.getPostal()
-				&& importRecord.getPostal_Add() == p.getPostal_Add();
+				&& Objects.equals(importRecord.getCity(), p.getCity())
+				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
+				&& Objects.equals(importRecord.getAddress2(), p.getAddress2())
+				&& Objects.equals(importRecord.getPostal(), p.getPostal())
+				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add());
 	}
-	
+
 	private I_C_BPartner_Location createUpdateBPartnerLocation(final I_I_BPartner importRecord, final List<I_I_BPartner> sameBPpreviousImportRecords)
 	{
 		I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
 		
 		final List<I_I_BPartner> alreadyImportedBPAddresses = sameBPpreviousImportRecords.stream()
-				.filter(p ->  
-	    		 importRecord.getC_Country_ID() == p.getC_Country_ID()
-				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
-				&& Objects.equals(importRecord.getCity(),p.getCity())
-				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
-				&& Objects.equals(importRecord.getAddress2(), p.getAddress2())
-				&& Objects.equals(importRecord.getPostal(), p.getPostal())
-				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add()))
+				.filter((isSameAddress(importRecord)))
 				.collect(Collectors.<I_I_BPartner> toList());
 		
 		final boolean isAlreadyImportedBPAddresses = alreadyImportedBPAddresses.isEmpty() ? false : true;;
@@ -467,6 +459,8 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 
 			InterfaceWrapperHelper.save(bpartnerLocation);
+			
+			importRecord.setC_BPartner_Location(bpartnerLocation);
 		}
 		else 	// New Location
 		if (importRecord.getC_Country_ID() > 0
