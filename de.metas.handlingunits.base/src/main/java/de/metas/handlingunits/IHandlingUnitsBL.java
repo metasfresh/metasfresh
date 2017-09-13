@@ -181,10 +181,11 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	/**
 	 * Destroy given HU or some of it's children which are empty.
-	 *
-	 * NOTE: if you are not calling this method from a code chunk which is injected to be executed inside HU API (which could be your case!) please consider using
+	 * <p>
+	 * NOTE 1: if you are not calling this method from a code chunk which is injected to be executed inside HU API (which could be your case!) please consider using
 	 * {@link #destroyIfEmptyStorage(I_M_HU)}.
-	 * 
+	 * <p>
+	 * NOTE 2: the destroyed HUs are also saved.
 	 * Additionally, this method does:
 	 * <ul>
 	 * <li>destroys any of it's HU children which have empty storage

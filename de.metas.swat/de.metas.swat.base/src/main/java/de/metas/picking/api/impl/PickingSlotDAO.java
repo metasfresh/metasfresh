@@ -72,7 +72,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 		final List<I_M_PickingSlot> pickingSlotsAll = retrievePickingSlots(Env.getCtx(), ITrx.TRXNAME_None);
 
 		final Predicate<I_M_PickingSlot> warehouseFilter = ps -> request.getWarehouseId() <= 0 || request.getWarehouseId() == ps.getM_Warehouse_ID();
-		final Predicate<I_M_PickingSlot> partnerFilter = ps -> !Services.get(IPickingSlotBL.class).isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
+		final Predicate<I_M_PickingSlot> partnerFilter = ps -> Services.get(IPickingSlotBL.class).isAvailableForBPartnerAndLocation(ps, bpartnerId, bpartnerLocationId);
 
 		final List<I_M_PickingSlot> result = pickingSlotsAll.stream()
 				.filter(warehouseFilter)

@@ -23,8 +23,13 @@ package de.metas.handlingunits;
  */
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
+
+import com.google.common.base.Preconditions;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -33,10 +38,12 @@ import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Note: Please use this interface in this module instead of {@link IPickingSlotBL}.
@@ -163,9 +170,19 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	 */
 	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery request);
 
+	/**
+	 * Search for available fine picking source HUs.<br>
+	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
+	 * to serve as source HU from which stuff is loaded into the picking-HUs. That means that they may not yet be empty.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsQuery query);
+
 	@lombok.Builder
 	@lombok.Value
-	public static final class PickingHUsQuery
+	class PickingHUsQuery
 	{
 		/**
 		 * If true we shall consider the HU attributes while searching for matching HUs.
@@ -174,7 +191,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		boolean considerAttributes = true;
 
 		/**
-		 * ShipmentSchedules for which the HUs shall be picked. May not be {@code null}.
+		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.
 		 */
 		@NonNull
 		List<I_M_ShipmentSchedule> shipmentSchedules;
@@ -187,12 +204,38 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	}
 
 	/**
-	 * Search for available fine picking source HUs.<br>
-	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
-	 * to serve as source HU from which stuff is loaded into the picking-HUs.
+	 * Returns those fine picking source HUs whose location and product match any the given query.
 	 * 
-	 * @param request
+	 * @param query
 	 * @return
 	 */
-	List<I_M_HU> retrieveSourceHUs(PickingHUsQuery request);
+	List<I_M_HU> retrieveActiveSourceHUs(RetrieveActiveSourceHusQuery query);
+
+	/**
+	 * Specifies which source HUs (products and warehouse) to retrieve in particular
+	 */
+	@lombok.Value
+	class RetrieveActiveSourceHusQuery
+	{
+		/**
+		 * query for HUs that have any of the given product IDs
+		 */
+		@Singular
+		Set<Integer> productIds;
+
+		int warehouseId;
+
+		/**
+		 * @param shipmentSchedules the schedules to make the new instance from; may not be {@code null} or empty.
+		 */
+		public static RetrieveActiveSourceHusQuery fromShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
+		{
+			Preconditions.checkArgument(!shipmentSchedules.isEmpty(), "Parameter shipmentSchedules may not be empty");
+
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+			final Set<Integer> productIds = shipmentSchedules.stream().map(s -> s.getM_Product_ID()).collect(Collectors.toSet());
+
+			return new RetrieveActiveSourceHusQuery(productIds, shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedules.get(0)));
+		}
+	}
 }

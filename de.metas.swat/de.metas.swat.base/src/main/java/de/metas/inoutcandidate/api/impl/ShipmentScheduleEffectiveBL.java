@@ -96,7 +96,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	}
 
 	@Override
-	public I_M_Locator getM_Locator(final I_M_ShipmentSchedule sched)
+	public I_M_Locator getDefaultLocator(final I_M_ShipmentSchedule sched)
 	{
 		final I_M_Warehouse warehouse = getWarehouse(sched);
 		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);

@@ -34,6 +34,10 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -69,6 +73,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -570,7 +575,7 @@ public class HUPickingSlotBL
 	}
 
 	@Override
-	public List<I_M_HU> retrieveSourceHUs(@NonNull final PickingHUsQuery request)
+	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsQuery request)
 	{
 		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveTopLevelAndFilterForActualSourceHUs(vhus)));
 	}
@@ -733,5 +738,44 @@ public class HUPickingSlotBL
 		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
 
 		return ImmutableList.copyOf(sourceHUs);
+	}
+
+	@Override
+	public List<I_M_HU> retrieveActiveSourceHUs(@NonNull final RetrieveActiveSourceHusQuery query)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFiltersForScheds(query);
+
+		final IQueryBuilder<I_M_HU> queryBuilder = queryBL.createQueryBuilder(I_M_Source_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_Source_HU.COLUMN_M_HU_ID)
+				.filter(huFilters);
+
+		final List<I_M_HU> result = queryBuilder.create()
+				.list();
+		return result;
+	}
+
+	@VisibleForTesting
+	ICompositeQueryFilter<I_M_HU> createHuFiltersForScheds(@NonNull final RetrieveActiveSourceHusQuery query)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final ICompositeQueryFilter<I_M_HU> huFilters = queryBL.createCompositeQueryFilter(I_M_HU.class)
+				.setJoinOr();
+
+		
+			final IQueryFilter<I_M_HU> huFilter = handlingUnitsDAO.createHUQueryBuilder()
+					.setOnlyActiveHUs(true)
+					.setAllowEmptyStorage()
+					.addOnlyWithProductIds(query.getProductIds())
+					.addOnlyInWarehouseId(query.getWarehouseId())
+					.createQueryFilter();
+			huFilters.addFilter(huFilter);
+		
+		return huFilters;
 	}
 }
