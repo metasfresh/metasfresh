@@ -3,11 +3,14 @@ package de.metas.ui.web.view;
 import java.util.List;
 import java.util.Set;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractExcelExporter;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -43,31 +46,58 @@ import lombok.NonNull;
 	private final IView view;
 	private final ViewLayout layout;
 	private final String adLanguage;
+	/** Selected rowIds. Might be null in case ALL rows shall be exported. */
+	private final List<DocumentId> rowIds;
 
 	@Builder
-	private ViewExcelExporter(@NonNull final IView view, @NonNull final ViewLayout layout, @NonNull final String adLanguage)
+	private ViewExcelExporter(
+			@NonNull final IView view,
+			@NonNull final DocumentIdsSelection rowIds,
+			@NonNull final ViewLayout layout,
+			@NonNull final String adLanguage)
 	{
 		this.view = view;
 		this.layout = layout;
 		this.adLanguage = adLanguage;
+
+		if (rowIds.isAll())
+		{
+			this.rowIds = null;
+		}
+		else if (rowIds.isEmpty())
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+		else
+		{
+			this.rowIds = ImmutableList.copyOf(rowIds.toSet());
+		}
 
 		setFreezePane(0, 1);
 	}
 
 	private IViewRow getRow(final int rowIndex)
 	{
-		final int firstRow = rowIndex;
-		final int pageLength = 1;
-		final List<DocumentQueryOrderBy> orderBys = ImmutableList.of(); // default
-		final ViewResult page = view.getPage(firstRow, pageLength, orderBys);
-		final List<IViewRow> rows = page.getPage();
-		if (rows.isEmpty())
+		if (rowIds == null) // All rows
 		{
-			return null;
+			final int firstRow = rowIndex;
+			final int pageLength = 1;
+			final List<DocumentQueryOrderBy> orderBys = ImmutableList.of(); // default
+			final ViewResult page = view.getPage(firstRow, pageLength, orderBys);
+			final List<IViewRow> rows = page.getPage();
+			if (rows.isEmpty())
+			{
+				return null;
+			}
+			else
+			{
+				return rows.get(0);
+			}
 		}
 		else
 		{
-			return rows.get(0);
+			final DocumentId rowId = rowIds.get(rowIndex);
+			return view.getById(rowId);
 		}
 	}
 
@@ -97,7 +127,14 @@ import lombok.NonNull;
 	@Override
 	public int getRowCount()
 	{
-		return (int)view.size();
+		if (rowIds == null)
+		{
+			return (int)view.size();
+		}
+		else
+		{
+			return rowIds.size();
+		}
 	}
 
 	@Override

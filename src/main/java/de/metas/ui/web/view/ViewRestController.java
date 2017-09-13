@@ -356,7 +356,9 @@ public class ViewRestController
 	@GetMapping("/{viewId}/export/excel")
 	public ResponseEntity<Resource> exportToExcel(
 			@PathVariable("windowId") final String windowIdStr,
-			@PathVariable("viewId") final String viewIdStr) throws Exception
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr)
+			throws Exception
 	{
 		userSession.assertLoggedIn();
 
@@ -364,6 +366,7 @@ public class ViewRestController
 
 		final ViewExcelExporter viewExporter = ViewExcelExporter.builder()
 				.view(viewsRepo.getView(viewId))
+				.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
 				.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid))
 				.adLanguage(userSession.getAD_Language())
 				.build();
