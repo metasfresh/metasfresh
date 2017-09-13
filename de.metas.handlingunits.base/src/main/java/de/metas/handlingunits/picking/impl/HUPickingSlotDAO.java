@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.picking.impl;
 
 /*
  * #%L
@@ -38,12 +38,12 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 
 public class HUPickingSlotDAO implements IHUPickingSlotDAO
 {

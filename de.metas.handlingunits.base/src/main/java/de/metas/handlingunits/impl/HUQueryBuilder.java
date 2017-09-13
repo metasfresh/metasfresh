@@ -65,12 +65,12 @@ import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 
 /**
  * {@link IHUQueryBuilder} implementation.

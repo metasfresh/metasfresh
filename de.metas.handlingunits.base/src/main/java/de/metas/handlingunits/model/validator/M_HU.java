@@ -12,12 +12,12 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
-import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;

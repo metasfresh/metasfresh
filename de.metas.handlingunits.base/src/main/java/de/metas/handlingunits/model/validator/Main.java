@@ -71,6 +71,7 @@ import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
+import de.metas.handlingunits.picking.modelinterceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
@@ -187,10 +188,13 @@ public final class Main extends AbstractModuleInterceptor
 		// Manufacturing
 		engine.addModelValidator(new PP_Cost_Collector(), client);
 
+		// https://github.com/metasfresh/metasfresh/issues/2298
+		engine.addModelValidator(de.metas.handlingunits.picking.modelinterceptor.M_HU.INSTANCE, client);
+		
 		//
 		// Tour Planning
 		setupTourPlanning();
-
+				
 		//
 		// Register GridTabSummaryInfo entries (08734) - override de.metas.swat implementation
 		final IGridTabSummaryInfoFactory gridTabSummaryInfoFactory = Services.get(IGridTabSummaryInfoFactory.class);

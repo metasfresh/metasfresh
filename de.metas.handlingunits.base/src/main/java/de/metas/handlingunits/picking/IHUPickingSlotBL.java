@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.picking;
 
 /*
  * #%L
