@@ -56,7 +56,6 @@ import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Process_Stats;
 import org.compiere.model.I_AD_Ref_List;
 import org.compiere.model.I_AD_Ref_Table;
-import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Table_Access;
@@ -145,9 +144,13 @@ public class MigrationLogger implements IMigrationLogger
 				// Don't log migration scripts tables - 02662
 				"AD_MIGRATION",
 				"AD_MIGRATIONSTEP",
-				"AD_MIGRATIONDATA",
+				"AD_MIGRATIONDATA"
 				
-				I_AD_Sequence.Table_Name.toUpperCase() // see https://github.com/metasfresh/metasfresh/issues/2444
+				// Don't log AD_Sequence because these will be created automatically (at least for Table_ID)
+				// NOTE: while this is applying for XML migrations, we need this to be logged in SQL migrations
+				// and currently we use SQL migrations
+				// FIXME: find a way to fine tune this
+				// "AD_SEQUENCE"
 			);
 
 		//
