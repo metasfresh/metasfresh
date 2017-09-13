@@ -40,6 +40,7 @@ import org.compiere.util.Env;
 import de.metas.email.EMail;
 import de.metas.i18n.IMsgBL;
 import de.metas.letters.model.IEMailEditor;
+import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -188,7 +189,7 @@ public class AEMailLetter implements ActionListener
 		final BoilerPlateContext context = MADBoilerPlate.createEditorContext(SourceDocument.toSourceDocumentOrNull(parent.getCurrentTab()));
 		final LetterDialog dialog = new LetterDialog(
 				Env.getWindow(parent.getWindowNo()),
-				Services.get(IMsgBL.class).getMsg(Env.getCtx(), "de.metas.letters.Letter"),
+				Services.get(IMsgBL.class).getMsg(Env.getCtx(), Letters.MSG_Letter),
 				context
 				);
 		dialog.setPrintOnOK(true);
