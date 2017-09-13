@@ -269,7 +269,8 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		final int previousBPartnerId = context.getPreviousC_BPartner_ID();
 		final String previousBPValue = context.getPreviousBPValue();
 		context.setPreviousImportRecord(importRecord); // set it early in case this method fails
-		final List<I_I_BPartner> sameBPpreviousImportRecords = context.getSameBPpreviousImportRecords();
+		final List<I_I_BPartner> sameBPpreviousImportRecords = new ArrayList<>();
+		sameBPpreviousImportRecords.addAll(context.getSameBPpreviousImportRecords());
 		
 		final ImportRecordResult bpartnerImportResult;
 		
@@ -398,23 +399,33 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		return bpartner;
 	}
 
-	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner currentImportRecord) 
+	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner importRecord) 
 	{
-	    return previousImportRecord -> previousImportRecord.getC_BPartner_Location_ID() > 0 
-	    		&& currentImportRecord.getC_Country_ID() == previousImportRecord.getC_Country_ID()
-				&& currentImportRecord.getC_Region_ID() == previousImportRecord.getC_Region_ID()
-				&& currentImportRecord.getCity() == previousImportRecord.getCity()
-				&& currentImportRecord.getAddress1() == previousImportRecord.getAddress1()
-				&& currentImportRecord.getAddress2() == previousImportRecord.getAddress2()
-				&& currentImportRecord.getPostal() == previousImportRecord.getPostal()
-				&& currentImportRecord.getPostal_Add() == previousImportRecord.getPostal_Add();
+	    return p ->  
+	    		 importRecord.getC_Country_ID() == p.getC_Country_ID()
+				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
+				&& importRecord.getCity() == p.getCity()
+				&& importRecord.getAddress1() == p.getAddress1()
+				&& importRecord.getAddress2() == p.getAddress2()
+				&& importRecord.getPostal() == p.getPostal()
+				&& importRecord.getPostal_Add() == p.getPostal_Add();
 	}
 	
 	private I_C_BPartner_Location createUpdateBPartnerLocation(final I_I_BPartner importRecord, final List<I_I_BPartner> sameBPpreviousImportRecords)
 	{
 		I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
 		
-		final List<I_I_BPartner> alreadyImportedBPAddresses = sameBPpreviousImportRecords.stream().filter(isSameAddress(importRecord)).collect(Collectors.<I_I_BPartner> toList());
+		final List<I_I_BPartner> alreadyImportedBPAddresses = sameBPpreviousImportRecords.stream()
+				.filter(p ->  
+	    		 importRecord.getC_Country_ID() == p.getC_Country_ID()
+				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
+				&& Objects.equals(importRecord.getCity(),p.getCity())
+				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
+				&& Objects.equals(importRecord.getAddress2(), p.getAddress2())
+				&& Objects.equals(importRecord.getPostal(), p.getPostal())
+				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add()))
+				.collect(Collectors.<I_I_BPartner> toList());
+		
 		final boolean isAlreadyImportedBPAddresses = alreadyImportedBPAddresses.isEmpty() ? false : true;;
 		if (isAlreadyImportedBPAddresses
 				|| (bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0))// Update Location
@@ -422,7 +433,8 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			final I_C_Location location;
 			if (isAlreadyImportedBPAddresses)
 			{
-				location = alreadyImportedBPAddresses.get(0).getC_BPartner_Location().getC_Location();
+				bpartnerLocation = alreadyImportedBPAddresses.get(0).getC_BPartner_Location();
+				location = bpartnerLocation.getC_Location();
 			}
 			else
 			{
