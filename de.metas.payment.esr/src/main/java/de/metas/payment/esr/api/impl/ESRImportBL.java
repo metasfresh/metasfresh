@@ -9,6 +9,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
@@ -195,6 +196,14 @@ public class ESRImportBL implements IESRImportBL
 
 		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in);
 		final ESRStatement esrStatement = loader.importData();
+		try
+		{
+			in.close();
+		}
+		catch (IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 
 		esrImport.setESR_Control_Amount(esrStatement.getCtrlAmount());
 		esrImport.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());

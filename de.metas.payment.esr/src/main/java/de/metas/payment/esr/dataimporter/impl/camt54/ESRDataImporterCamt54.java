@@ -1,5 +1,6 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
@@ -111,43 +112,36 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	{
 		return Objects.equal("urn:iso:std:iso:20022:tech:xsd:camt.054.001.02", namespaceURI);
 	}
-	
-	private String getNameSpaceURI(@NonNull final XMLStreamReader reader)
+
+	private String getNameSpaceURI(@NonNull final XMLStreamReader reader) throws XMLStreamException
 	{
-		try
 		{
-			while (reader.hasNext())
+			int event = reader.next();
+			if (XMLStreamConstants.START_ELEMENT == event && reader.getNamespaceCount() > 0)
 			{
-				int event = reader.next();
-				if (XMLStreamConstants.START_ELEMENT == event && reader.getNamespaceCount() > 0)
+				for (int nsIndex = 0; nsIndex < reader.getNamespaceCount(); nsIndex++)
 				{
-					for (int nsIndex = 0; nsIndex < reader.getNamespaceCount(); nsIndex++)
+					final String nsId = reader.getNamespaceURI(nsIndex);
+					if (nsId.startsWith("urn:iso:std:iso:20022:tech:xsd"))
 					{
-						final String nsId = reader.getNamespaceURI(nsIndex);
-						if (nsId.startsWith("urn:iso:std:iso:20022:tech:xsd"))
-						{
-							return nsId;
-						}
+						return nsId;
 					}
 				}
 			}
 		}
-		catch (XMLStreamException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-		
+
 		return null;
+
 	}
-	
+
 	@Override
 	public ESRStatement importData()
 	{
+		final XMLStreamReader xsr;
 		try
 		{
-		
 			final XMLInputFactory xif = XMLInputFactory.newInstance();
-			final XMLStreamReader xsr = xif.createXMLStreamReader(input);
+			xsr = xif.createXMLStreamReader(input);
 	
 			// https://github.com/metasfresh/metasfresh/issues/1903
 			// use a delegate to make sure that the unmarshaller won't refuse camt.054.001.04 and amt.054.001.05
@@ -188,6 +182,10 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 		catch (final XMLStreamException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
+		}
+		finally 
+		{
+			xsr.close();
 		}
 		
 	}
