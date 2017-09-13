@@ -71,14 +71,14 @@ public class LetterDialog
 	public LetterDialog(final Frame owner, final String title, final BoilerPlateContext context)
 	{
 		super(owner, title, true);
-		this.attributes = attributes;
+		this.attributes = context;
 		init(owner);
 	}
 
 	public LetterDialog(final Dialog owner, final String title, final BoilerPlateContext context)
 	{
 		super(owner, title, true);
-		this.attributes = attributes;
+		this.attributes = context;
 		init(owner);
 	}
 
@@ -285,7 +285,7 @@ public class LetterDialog
 			}
 			finally
 			{
-				confirmPanel.getOKButton().setEnabled(false);
+				confirmPanel.getOKButton().setEnabled(true);
 				setCursor(Cursor.getDefaultCursor());
 			}
 			// m_isPrinted = true;

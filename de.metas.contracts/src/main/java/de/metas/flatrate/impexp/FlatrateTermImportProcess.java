@@ -264,6 +264,20 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 		}
 
 		//
+		//ContractStartDate
+		if (importRecord.getMasterStartDate() != null)
+		{
+			contract.setMasterStartDate(importRecord.getMasterStartDate());
+		}
+
+		//
+		//getContractEndDate
+		if (importRecord.getMasterEndDate() != null)
+		{
+			contract.setMasterEndDate(importRecord.getMasterEndDate());
+		}
+		
+		//
 		// Complete the subscription/contract
 		InterfaceWrapperHelper.save(contract);
 		flatrateBL.complete(contract);

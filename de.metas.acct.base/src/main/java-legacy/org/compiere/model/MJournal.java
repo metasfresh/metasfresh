@@ -27,6 +27,7 @@ import org.adempiere.acct.api.IFactAcctDAO;
 import org.adempiere.acct.api.IGLJournalBL;
 import org.adempiere.acct.api.IGLJournalLineBL;
 import org.adempiere.acct.api.IGLJournalLineDAO;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -67,7 +68,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param GL_Journal_ID id
 	 * @param trxName transaction
 	 */
-	public MJournal(Properties ctx, int GL_Journal_ID, String trxName)
+	public MJournal(final Properties ctx, final int GL_Journal_ID, final String trxName)
 	{
 		super(ctx, GL_Journal_ID, trxName);
 		if (GL_Journal_ID == 0)
@@ -103,7 +104,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param rs result set
 	 * @param trxName transaction
 	 */
-	public MJournal(Properties ctx, ResultSet rs, String trxName)
+	public MJournal(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}	// MJournal
@@ -113,7 +114,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 *
 	 * @param parent batch
 	 */
-	public MJournal(MJournalBatch parent)
+	public MJournal(final MJournalBatch parent)
 	{
 		this(parent.getCtx(), 0, parent.get_TrxName());
 		setClientOrg(parent);
@@ -131,7 +132,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 *
 	 * @param original original
 	 */
-	public MJournal(MJournal original)
+	public MJournal(final MJournal original)
 	{
 		this(original.getCtx(), 0, original.get_TrxName());
 		setClientOrg(original);
@@ -160,7 +161,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param AD_Org_ID org
 	 */
 	@Override
-	public void setClientOrg(int AD_Client_ID, int AD_Org_ID)
+	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		super.setClientOrg(AD_Client_ID, AD_Org_ID);
 	}	// setClientOrg
@@ -171,7 +172,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param DateAcct date
 	 */
 	@Override
-	public void setDateAcct(Timestamp DateAcct)
+	public void setDateAcct(final Timestamp DateAcct)
 	{
 		super.setDateAcct(DateAcct);
 		if (DateAcct == null)
@@ -185,7 +186,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param C_ConversionType_ID type
 	 * @param CurrencyRate rate
 	 */
-	public void setCurrency(int C_Currency_ID, int C_ConversionType_ID, BigDecimal CurrencyRate)
+	public void setCurrency(final int C_Currency_ID, final int C_ConversionType_ID, final BigDecimal CurrencyRate)
 	{
 		if (C_Currency_ID != 0)
 			setC_Currency_ID(C_Currency_ID);
@@ -201,7 +202,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param description text
 	 * @since 3.1.4
 	 */
-	public void addDescription(String description)
+	public void addDescription(final String description)
 	{
 		String desc = getDescription();
 		if (desc == null)
@@ -216,7 +217,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param requery requery
 	 * @return Array of lines
 	 */
-	public MJournalLine[] getLines(boolean requery)
+	public MJournalLine[] getLines(final boolean requery)
 	{
 		final List<I_GL_JournalLine> lines = Services.get(IGLJournalLineDAO.class).retrieveLines(this);
 		return LegacyAdapters.convertToPOArray(lines, MJournalLine.class);
@@ -230,7 +231,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param typeCR type of copying (C)orrect=negate - (R)everse=flip dr/cr - otherwise just copy
 	 * @return number of lines copied
 	 */
-	public int copyLinesFrom(MJournal fromJournal, Timestamp dateAcct, char typeCR)
+	public int copyLinesFrom(final MJournal fromJournal, final Timestamp dateAcct, final char typeCR)
 	{
 		if (isProcessed() || fromJournal == null)
 			return 0;
@@ -293,7 +294,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param processed processed
 	 */
 	@Override
-	public void setProcessed(boolean processed)
+	public void setProcessed(final boolean processed)
 	{
 		super.setProcessed(processed);
 		if (get_ID() == 0)
@@ -312,7 +313,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @return true
 	 */
 	@Override
-	protected boolean beforeSave(boolean newRecord)
+	protected boolean beforeSave(final boolean newRecord)
 	{
 		// Imported Journals may not have date
 		if (getDateDoc() == null)
@@ -326,13 +327,16 @@ public class MJournal extends X_GL_Journal implements DocAction
 			setDateAcct(getDateDoc());
 
 		// Update DateAcct on lines - teo_sarca BF [ 1775358 ]
-		if (is_ValueChanged(COLUMNNAME_DateAcct))
+		if (!newRecord && is_ValueChanged(COLUMNNAME_DateAcct))
 		{
-			int no = DB.executeUpdate(
-					"UPDATE GL_JournalLine SET " + MJournalLine.COLUMNNAME_DateAcct + "=? WHERE GL_Journal_ID=?",
-					new Object[] { getDateAcct(), getGL_Journal_ID() },
-					false, get_TrxName());
-			log.trace("Updated GL_JournalLine.DateAcct #" + no);
+			final int no = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_GL_JournalLine.class)
+					.addEqualsFilter(I_GL_JournalLine.COLUMN_GL_Journal_ID, getGL_Journal_ID())
+					.create()
+					.updateDirectly()
+					.addSetColumnValue(I_GL_JournalLine.COLUMNNAME_DateAcct, getDateAcct())
+					.execute();
+			log.trace("Updated GL_JournalLine.DateAcct #{}", no);
 		}
 
 		setAmtPrecision(this); // metas: cg: 02476
@@ -348,11 +352,14 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @return success
 	 */
 	@Override
-	protected boolean afterSave(boolean newRecord, boolean success)
+	protected boolean afterSave(final boolean newRecord, final boolean success)
 	{
 		if (!success)
 			return success;
-		return updateBatch();
+		
+		updateBatch();
+		
+		return true;
 	}	// afterSave
 
 	/**
@@ -362,29 +369,37 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @return true if success
 	 */
 	@Override
-	protected boolean afterDelete(boolean success)
+	protected boolean afterDelete(final boolean success)
 	{
 		if (!success)
 			return success;
-		return updateBatch();
+		
+		updateBatch();
+		
+		return true;
 	}	// afterDelete
 
 	/**
 	 * Update Batch total
-	 *
-	 * @return true if ok
 	 */
-	private boolean updateBatch()
+	private void updateBatch()
 	{
-		String sql = DB.convertSqlToNative("UPDATE GL_JournalBatch jb"
+		final int glJournalBatchId = getGL_JournalBatch_ID();
+		if(glJournalBatchId <= 0)
+		{
+			return;
+		}
+		
+		final String sql = DB.convertSqlToNative("UPDATE " + I_GL_JournalBatch.Table_Name + " jb"
 				+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
 				+ " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
-				+ "WHERE GL_JournalBatch_ID=" + getGL_JournalBatch_ID());
-		int no = DB.executeUpdate(sql, get_TrxName());
+				+ "WHERE GL_JournalBatch_ID=?");
+		final int no = DB.executeUpdateEx(sql, new Object[] { glJournalBatchId }, get_TrxName());
 		if (no != 1)
-			log.warn("afterSave - Update Batch #" + no);
-		return no == 1;
-	}	// updateBatch
+		{
+			throw new AdempiereException("Failed updating GL_JournalBatch_ID=" + glJournalBatchId);
+		}
+	}
 
 	/**************************************************************************
 	 * Process document
@@ -393,7 +408,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @return true if performed
 	 */
 	@Override
-	public boolean processIt(String processAction)
+	public boolean processIt(final String processAction)
 	{
 		m_processMsg = null;
 		DocumentEngine engine = new DocumentEngine(this, getDocStatus());
@@ -703,7 +718,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param GL_JournalBatch_ID reversal batch
 	 * @return reversed Journal or null
 	 */
-	MJournal reverseCorrectIt(int GL_JournalBatch_ID)
+	MJournal reverseCorrectIt(final int GL_JournalBatch_ID)
 	{
 		log.info("{}", this);
 		
@@ -775,7 +790,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param GL_JournalBatch_ID reversal batch
 	 * @return reversed journal or null
 	 */
-	public MJournal reverseAccrualIt(int GL_JournalBatch_ID)
+	public MJournal reverseAccrualIt(final int GL_JournalBatch_ID)
 	{
 		log.info(toString());
 		// Journal
@@ -910,7 +925,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	 * @param file output file
 	 * @return file if success
 	 */
-	public File createPDF(File file)
+	public File createPDF(final File file)
 	{
 		// ReportEngine re = ReportEngine.get (getCtx(), ReportEngine.INVOICE, getC_Invoice_ID());
 		// if (re == null)
@@ -963,7 +978,7 @@ public class MJournal extends X_GL_Journal implements DocAction
 	}	// isComplete
 
 	// metas: cg: 02476
-	public static void setAmtPrecision(I_GL_Journal journal)
+	private static void setAmtPrecision(final I_GL_Journal journal)
 	{
 		if (journal.getC_AcctSchema_ID() <= 0)
 		{
