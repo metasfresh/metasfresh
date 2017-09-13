@@ -80,5 +80,14 @@ public interface IInOutDAO extends ISingletonService
 	 * @param inOut
 	 * @return
 	 */
-	List<Integer> retrieveLinesWithQualityIssues(I_M_InOut inOut);
+	List<Integer> retrieveLineIdsWithQualityDiscount(I_M_InOut inOut);
+
+	/**
+	 * 
+	 * Retrieve the M_InOutLine that is in dispute (has qty with issues) and is based on the same order line as the inout line given as parameter.
+	 * 
+	 * @param originInOutLine
+	 * @return
+	 */
+	I_M_InOutLine retrieveLineWithQualityDiscount(I_M_InOutLine originInOutLine);
 }

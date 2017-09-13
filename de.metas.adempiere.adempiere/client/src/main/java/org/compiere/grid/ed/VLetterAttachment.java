@@ -42,6 +42,7 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 
 import de.metas.i18n.Msg;
+import de.metas.letters.model.Letters;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 
 /**
@@ -60,10 +61,8 @@ public class VLetterAttachment extends CPanel {
 
 	private final ActionListener editAction = new ActionListener() {
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			final LetterDialog d = new LetterDialog(parentDialog, Msg
-					.translate(Env.getAD_Language(Env.getCtx()),
-							"de.metas.letters.Letter"), variables);
+		public void actionPerformed(final ActionEvent e) {
+			final LetterDialog d = new LetterDialog(parentDialog, Msg.translate(Env.getAD_Language(Env.getCtx()), Letters.MSG_Letter), variables);
 			d.setMessage(letterHtml);
 			AEnv.showCenterScreen(d);
 			if (d.isPressedOK()) {
@@ -76,14 +75,14 @@ public class VLetterAttachment extends CPanel {
 	};
 	private final ActionListener cancelAction = new ActionListener() {
 		@Override
-		public void actionPerformed(ActionEvent e) {
+		public void actionPerformed(final ActionEvent e) {
 			letterHtml = "";
 			letterPdfFile = null;
 			updateComponentsStatus();
 		}
 	};
 
-	public VLetterAttachment(Dialog parentDialog) {
+	public VLetterAttachment(final Dialog parentDialog) {
 		super();
 		this.parentDialog = parentDialog;
 		init();

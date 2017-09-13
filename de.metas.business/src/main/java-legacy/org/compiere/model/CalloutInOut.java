@@ -465,6 +465,12 @@ public class CalloutInOut extends CalloutEngine
 		}
 
 		//
+		// Set UOM/Qty
+		final I_M_Product product = inoutLine.getM_Product();
+		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
+		inoutLine.setC_UOM(productUOM);
+
+		//
 		final I_M_InOut inout = inoutLine.getM_InOut();
 		if (inout.isSOTrx())
 		{
@@ -475,11 +481,6 @@ public class CalloutInOut extends CalloutEngine
 		// Locator
 		updateLocator(inoutLine, selected_locatorId);
 
-		//
-		// Set UOM/Qty
-		final I_M_Product product = inoutLine.getM_Product();
-		final I_C_UOM productUOM = Services.get(IProductBL.class).getStockingUOM(product);
-		inoutLine.setC_UOM(productUOM);
 		//
 		final BigDecimal QtyEntered = inoutLine.getQtyEntered();
 		inoutLine.setMovementQty(QtyEntered);

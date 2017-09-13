@@ -83,8 +83,6 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		return new VendorReturnsInOutProducer();
 	}
 
-	private HUPackingMaterialsCollector collector = null;
-
 	/**
 	 * Builder for lines with products that are not packing materials
 	 */
@@ -124,12 +122,11 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 	@Override
 	protected void createLines()
 	{
-
-		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx());
+		final IHUContext huContext = handlingUnitsBL.createMutableHUContext(getCtx(), ITrx.TRXNAME_ThreadInherited);
 
 		for (final HUToReturn huToReturnInfo : getHUsToReturn())
 		{
-			collector = new HUPackingMaterialsCollector(huContext);
+			final HUPackingMaterialsCollector collector = new HUPackingMaterialsCollector(huContext);
 			collector.setisCollectTUNumberPerOrigin(true);
 			collector.setisCollectAggregatedHUs(true);
 			final I_M_HU hu = huToReturnInfo.getHu();
@@ -149,7 +146,7 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 			// Create product (non-packing material) lines
 			{
 				// Iterate the product storages of this HU and create/update the inout lines
-				final IHUStorageFactory huStorageFactory = handlingUnitsBL.getStorageFactory();
+				final IHUStorageFactory huStorageFactory = huContext.getHUStorageFactory();
 				final IHUStorage huStorage = huStorageFactory.getStorage(hu);
 				final List<IHUProductStorage> productStorages = huStorage.getProductStorages();
 				for (final IHUProductStorage productStorage : productStorages)
@@ -185,13 +182,9 @@ class VendorReturnsInOutProducer extends AbstractReturnsInOutProducer
 		// Create the packing material lines that were prepared
 		packingMaterialInoutLinesBuilder.create();
 
-		final Map<ArrayKey, I_M_InOutLine> newInOutLinesMap = inoutLinesBuilder.get_inOutLines();
-
 		// update the qtyTU and M_HU_PI_Item_Product in the newly created lines
-		for (final ArrayKey key : newInOutLinesMap.keySet())
+		for (final I_M_InOutLine newInOutLine : inoutLinesBuilder.getInOutLines())
 		{
-			final I_M_InOutLine newInOutLine = newInOutLinesMap.get(key);
-
 			de.metas.inout.model.I_M_InOutLine returnOriginInOutLine = newInOutLine.getReturn_Origin_InOutLine();
 
 			if (returnOriginInOutLine == null)

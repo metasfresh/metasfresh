@@ -377,8 +377,10 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			
 			// also set isBillTo and IsShipTo flags
 			
-			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
-			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
+			bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
+			bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
+			bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
+			bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
 
 			if (importRecord.getPhone() != null)
 				bpartnerLocation.setPhone(importRecord.getPhone());
@@ -414,8 +416,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			bpartnerLocation.setFax(importRecord.getFax());
 			
 			// set isShipTo and isBillTo
-			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
-			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
+			bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
+			bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
+			bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
+			bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
+
 			
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpartnerLocation);
@@ -468,6 +473,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				user.setEMail(importRecord.getEMail());
 			if (importRecord.getBirthday() != null)
 				user.setBirthday(importRecord.getBirthday());
+			user.setIsDefaultContact(importRecord.isDefaultContact());
 			if (bpartnerLocation != null)
 				user.setC_BPartner_Location(bpartnerLocation);
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, user, IImportValidator.TIMING_AFTER_IMPORT);
@@ -496,6 +502,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			user.setFax(importRecord.getFax());
 			user.setEMail(importRecord.getEMail());
 			user.setBirthday(importRecord.getBirthday());
+			user.setIsDefaultContact(importRecord.isDefaultContact());
 			if (bpartnerLocation != null)
 				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, user, IImportValidator.TIMING_AFTER_IMPORT);
@@ -550,7 +557,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	}
 
 	@Override
-	protected I_I_BPartner retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
+	protected I_I_BPartner retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_BPartner(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -561,7 +568,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 	 * @param X_I_BPartner impBP
 	 * @param MBPartner bp
 	 */
-	private void setTypeOfBPartner(I_I_BPartner impBP, I_C_BPartner bp)
+	private void setTypeOfBPartner(final I_I_BPartner impBP, final I_C_BPartner bp)
 	{
 		if (impBP.isVendor())
 		{

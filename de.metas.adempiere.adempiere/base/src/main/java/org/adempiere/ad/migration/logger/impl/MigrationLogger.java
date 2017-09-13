@@ -81,13 +81,13 @@ public class MigrationLogger implements IMigrationLogger
 	/**
 	 * Upper case list of table names that shall be ignored when creating migration scripts and we are running in system mode
 	 */
-	private final Set<String> _tablesIgnoreSystem = new CopyOnWriteArraySet<String>();
+	private final Set<String> _tablesIgnoreSystem = new CopyOnWriteArraySet<>();
 	private final Set<String> _tablesIgnoreSystemRO = Collections.unmodifiableSet(_tablesIgnoreSystem);
 
 	/**
 	 * Upper case list of table names that shall be ignored when creating migration scripts and we are running in client mode
 	 */
-	private final Set<String> _tablesIgnoreClient = new CopyOnWriteArraySet<String>();
+	private final Set<String> _tablesIgnoreClient = new CopyOnWriteArraySet<>();
 	private final Set<String> _tablesIgnoreClientRO = Collections.unmodifiableSet(_tablesIgnoreClient);
 
 	public MigrationLogger()
@@ -174,7 +174,7 @@ public class MigrationLogger implements IMigrationLogger
 	}
 
 	@Override
-	public boolean isLogTableName(String tableName)
+	public boolean isLogTableName(final String tableName)
 	{
 		final Set<String> tablesToIgnore = getTablesToIgnoreUC();
 		if (tablesToIgnore.contains(tableName.toUpperCase()))
@@ -185,7 +185,7 @@ public class MigrationLogger implements IMigrationLogger
 	}
 
 	@Override
-	public void addTableToIgnoreList(String tableName)
+	public void addTableToIgnoreList(final String tableName)
 	{
 		final String tableNameUC = tableName.toUpperCase();
 		_tablesIgnoreSystem.add(tableNameUC);
@@ -193,7 +193,7 @@ public class MigrationLogger implements IMigrationLogger
 	}
 
 	@Override
-	public void removeTableFromIgnoreList(String tableName)
+	public void removeTableFromIgnoreList(final String tableName)
 	{
 		final String tableNameUC = tableName.toUpperCase();
 		_tablesIgnoreSystem.remove(tableNameUC);
@@ -216,14 +216,14 @@ public class MigrationLogger implements IMigrationLogger
 	}
 
 	@Override
-	public void logMigration(MFSession session, PO po, POInfo info, String event)
+	public void logMigration(final MFSession session, final PO po, final POInfo info, final String event)
 	{
 		final IMigrationLoggerContext migrationCtx = getSessionMigrationLoggerContext(session);
 		logMigration(migrationCtx, po, info, event);
 	}
 
 	@Override
-	public void logMigration(IMigrationLoggerContext migrationCtx, PO po, POInfo info, String event)
+	public void logMigration(final IMigrationLoggerContext migrationCtx, final PO po, final POInfo info, final String event)
 	{
 		if (!migrationCtx.isEnabled())
 		{
@@ -252,7 +252,7 @@ public class MigrationLogger implements IMigrationLogger
 				if (migrationStep == null)
 				{
 					migrationStep = createMigrationStep(migrationCtx, po, event);
-					stepDataList = new ArrayList<I_AD_MigrationData>();
+					stepDataList = new ArrayList<>();
 				}
 				data.setAD_MigrationStep_ID(migrationStep.getAD_MigrationStep_ID());
 				InterfaceWrapperHelper.save(data);
@@ -268,7 +268,7 @@ public class MigrationLogger implements IMigrationLogger
 		}
 	}
 
-	private boolean isLogPO(PO po, POInfo pinfo)
+	private boolean isLogPO(final PO po, final POInfo pinfo)
 	{
 		// ignore statistic updates
 		// TODO: metas: 02662: shall be deleted because it's handled by AD_Column.IsCalculated flag
@@ -279,7 +279,7 @@ public class MigrationLogger implements IMigrationLogger
 		return true;
 	}
 
-	private I_AD_MigrationData createMigrationData(PO po, POInfo info, int columnIndex, String event)
+	private I_AD_MigrationData createMigrationData(final PO po, final POInfo info, final int columnIndex, final String event)
 	{
 		// Don't log encrypted columns
 		if (info.isEncrypted(columnIndex))
@@ -354,7 +354,7 @@ public class MigrationLogger implements IMigrationLogger
 	 * @param migrationStep
 	 * @param stepDataList
 	 */
-	protected void setComments(PO po, I_AD_MigrationStep migrationStep, List<I_AD_MigrationData> stepDataList)
+	protected void setComments(final PO po, final I_AD_MigrationStep migrationStep, final List<I_AD_MigrationData> stepDataList)
 	{
 		final boolean isDeleted = X_AD_MigrationStep.ACTION_Delete.equals(migrationStep.getAction());
 		final String poStr = getSummary(po, isDeleted);
@@ -395,13 +395,13 @@ public class MigrationLogger implements IMigrationLogger
 		InterfaceWrapperHelper.save(migrationStep);
 	}
 
-	protected String getSummary(I_AD_MigrationData data)
+	protected String getSummary(final I_AD_MigrationData data)
 	{
 		String columnName = data.getAD_Column().getColumnName();
 		return columnName;
 	}
 
-	protected String getSummary(PO po, boolean isDeleted)
+	protected String getSummary(final PO po, final boolean isDeleted)
 	{
 		if (po == null)
 		{
@@ -515,7 +515,7 @@ public class MigrationLogger implements IMigrationLogger
 	}
 
 	@Override
-	public void logMigrationSQL(PO contextPO, String sql)
+	public void logMigrationSQL(final PO contextPO, final String sql)
 	{
 		final Properties ctx = contextPO == null ? Env.getCtx() : contextPO.getCtx();
 		final MFSession session = Services.get(ISessionBL.class).getCurrentSession(ctx);
@@ -568,7 +568,7 @@ public class MigrationLogger implements IMigrationLogger
 		return migrationStep;
 	}
 
-	protected I_AD_MigrationStep createMigrationStep(final IMigrationLoggerContext migrationCtx, PO po, String event)
+	protected I_AD_MigrationStep createMigrationStep(final IMigrationLoggerContext migrationCtx, final PO po, final String event)
 	{
 		final I_AD_MigrationStep migrationStep = createMigrationStep(migrationCtx, po);
 		migrationStep.setStepType(X_AD_MigrationStep.STEPTYPE_ApplicationDictionary);
@@ -582,7 +582,7 @@ public class MigrationLogger implements IMigrationLogger
 		return migrationStep;
 	}
 
-	private I_AD_Migration getCreateMigration(final IMigrationLoggerContext mctx, String entityType)
+	private I_AD_Migration getCreateMigration(final IMigrationLoggerContext mctx, final String entityType)
 	{
 		String entityTypeActual = entityType;
 		if (entityTypeActual == null)
@@ -601,7 +601,7 @@ public class MigrationLogger implements IMigrationLogger
 		return migration;
 	}
 
-	protected I_AD_Migration createMigration(Properties ctx, String entityType)
+	protected I_AD_Migration createMigration(final Properties ctx, final String entityType)
 	{
 		// this record shall be created out of transaction since it will accessible in more then one transaction
 		final String trxName = null;
@@ -615,7 +615,7 @@ public class MigrationLogger implements IMigrationLogger
 		return migration;
 	}
 
-	protected void setName(I_AD_Migration migration)
+	protected void setName(final I_AD_Migration migration)
 	{
 		final String name = Services.get(ISysConfigBL.class).getValue("DICTIONARY_ID_COMMENTS");
 		migration.setName(name);

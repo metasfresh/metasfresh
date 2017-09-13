@@ -46,7 +46,7 @@ public interface IMutableAllocationResult extends IAllocationResult
 	 *
 	 * @param qtyAllocated
 	 */
-	void substractAllocatedQty(BigDecimal qtyAllocated);
+	void subtractAllocatedQty(BigDecimal qtyAllocated);
 
 	/**
 	 * 
