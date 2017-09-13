@@ -7,10 +7,10 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.picking.PickingConstants;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;

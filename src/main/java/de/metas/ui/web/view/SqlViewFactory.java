@@ -3,18 +3,19 @@ package de.metas.ui.web.view;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.adempiere.ad.expression.api.NullStringExpression;
 import org.compiere.util.CCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest.DocumentFiltersList;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewGroupingBinding;
@@ -79,11 +80,27 @@ public class SqlViewFactory implements IViewFactory
 		private final Characteristic requiredFieldCharacteristic;
 	}
 
-	//
 	private final transient CCache<SqlViewBindingKey, SqlViewBinding> viewBindings = CCache.newCache("SqlViewBindings", 20, 0);
 
+	private final Map<WindowId, Supplier<SqlViewGroupingBinding>> windowId2GroupingSupplier = new HashMap<>();
+
+	/**
+	 * Registers a supplier to be used in {@link #createView(CreateViewRequest)}.
+	 * 
+	 * @param windoId
+	 * @param supplier
+	 */
+	public void registerGroupingSupplier(
+			@NonNull final WindowId windoId,
+			@NonNull final Supplier<SqlViewGroupingBinding> supplier)
+	{
+		windowId2GroupingSupplier.put(windoId, supplier);
+	}
+
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType)
 	{
 		final Collection<DocumentFilterDescriptor> filters = getViewFilterDescriptors(windowId, viewDataType);
 
@@ -158,7 +175,7 @@ public class SqlViewFactory implements IViewFactory
 		return viewBindings.getOrLoad(key, () -> createViewBinding(key));
 	}
 
-	private SqlViewBinding createViewBinding(final SqlViewBindingKey key)
+	private SqlViewBinding createViewBinding(@NonNull final SqlViewBindingKey key)
 	{
 		final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(key.getWindowId());
 		final Set<String> displayFieldNames = entityDescriptor.getFieldNamesWithCharacteristic(key.getRequiredFieldCharacteristic());
@@ -166,16 +183,9 @@ public class SqlViewFactory implements IViewFactory
 		final DocumentFilterDescriptorsProvider filterDescriptors = entityDescriptor.getFilterDescriptors();
 
 		final SqlViewGroupingBinding groupingBinding;
-		if (PickingConstants.WINDOWID_PackageableView.equals(entityDescriptor.getWindowId())) // FIXME: HARDCODED
+		if (windowId2GroupingSupplier.containsKey(entityDescriptor.getWindowId()))
 		{
-			groupingBinding = SqlViewGroupingBinding.builder()
-					.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
-					.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
-					.columnSql(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, "SUM(QtyToDeliver)")
-					.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, "SUM(QtyPickedPlanned)")
-					.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
-					.columnSql(I_M_Packageable_V.COLUMNNAME_PreparationDate, "IF_MIN(DeliveryDate, PreparationDate)")
-					.build();
+			groupingBinding = windowId2GroupingSupplier.get(entityDescriptor.getWindowId()).get();
 		}
 		else
 		{

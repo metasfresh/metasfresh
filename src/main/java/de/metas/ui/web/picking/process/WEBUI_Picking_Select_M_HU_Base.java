@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.process.ProcessPreconditionsResolution;

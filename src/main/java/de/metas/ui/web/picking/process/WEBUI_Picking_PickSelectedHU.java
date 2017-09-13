@@ -3,9 +3,9 @@ package de.metas.ui.web.picking.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 

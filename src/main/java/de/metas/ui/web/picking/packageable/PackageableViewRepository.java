@@ -57,7 +57,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 @Component
 public class PackageableViewRepository
 {
-	private final Supplier<LookupDataSource> warehouseLookup;
+	private final Supplier<LookupDataSource> orderLookup;
 	private final Supplier<LookupDataSource> productLookup;
 
 	public PackageableViewRepository()
@@ -65,8 +65,8 @@ public class PackageableViewRepository
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
 
-		warehouseLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
-				.setColumnName(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
+		orderLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.getLookupDataSource(SqlLookupDescriptor.builder()
+				.setColumnName(I_M_Packageable_V.COLUMNNAME_C_Order_ID)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.buildProvider()
@@ -101,6 +101,7 @@ public class PackageableViewRepository
 	{
 		final DocumentId rowId = DocumentId.of(packageable.getM_ShipmentSchedule_ID());
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingView, rowId);
+
 		return PackageableRow.builder()
 				.documentPath(documentPath)
 				.viewId(viewId)
@@ -108,7 +109,7 @@ public class PackageableViewRepository
 				.type(DefaultRowType.Row)
 				.processed(false)
 				//
-				.warehouse(warehouseLookup.get().findById(packageable.getM_Warehouse_ID()))
+				.order(orderLookup.get().findById(packageable.getC_Order_ID()))
 				.product(productLookup.get().findById(packageable.getM_Product_ID()))
 				.deliveryDate(packageable.getDeliveryDate())
 				.preparationDate(packageable.getPreparationDate())

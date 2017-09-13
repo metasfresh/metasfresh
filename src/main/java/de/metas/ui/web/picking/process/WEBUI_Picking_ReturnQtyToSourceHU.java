@@ -11,14 +11,14 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.SourceHUsRepository;
+import de.metas.handlingunits.picking.PickingCandidateCommand.RemoveQtyFromHURequest;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand.RemoveQtyFromHURequest;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.SourceHUsRepository;
 
 /*
  * #%L

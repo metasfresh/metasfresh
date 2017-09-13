@@ -2,8 +2,8 @@ package de.metas.ui.web.picking.process;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.process.IProcessPrecondition;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
 
 /*
  * #%L

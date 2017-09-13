@@ -4,9 +4,9 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 

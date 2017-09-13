@@ -64,11 +64,11 @@ public final class PackageableRow implements IViewRow
 	private final boolean processed;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID, layouts =
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_Order_ID, layouts =
 		{
 				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
 		})
-	private final LookupValue warehouse;
+	private final LookupValue order;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, layouts =
 		{
@@ -119,7 +119,7 @@ public final class PackageableRow implements IViewRow
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
 
-			final LookupValue warehouse,
+			final LookupValue order,
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,
 			final BigDecimal qtyPickedPlanned,
@@ -133,7 +133,7 @@ public final class PackageableRow implements IViewRow
 		this.processed = processed;
 		this.documentPath = documentPath;
 
-		this.warehouse = warehouse;
+		this.order = order;
 		this.product = product;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyPickedPlanned = qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;

@@ -6,13 +6,14 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.fresh.picking.form.FreshPackingItemHelper;
@@ -22,11 +23,11 @@ import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateRepository;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -134,31 +135,31 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 			final int pickingSlotId,
 			@NonNull final I_M_HU hu)
 	{
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
+		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<>();
 
+		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
 		for (final I_M_Picking_Candidate pc : pickingCandidates)
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
-
 			final BigDecimal qty = pc.getQtyPicked();
-
-			final IPackingService packingService = Services.get(IPackingService.class);
-			final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
-
-			final PackingItemsMap packingItemsMap = new PackingItemsMap();
-			packingItemsMap.addUnpackedItem(itemToPack);
-
-			final IPackingContext packingContext = packingService.createPackingContext(getCtx());
-			packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-			packingContext.setPackingItemsMapKey(pickingSlotId);
-
-			// Allocate given HUs to "itemToPack"
-			new HU2PackingItemsAllocator()
-					.setItemToPack(itemToPack)
-					.setPackingContext(packingContext)
-					.setFromHUs(ImmutableList.of(hu))
-					.allocate();
+			scheds2Qtys.put(shipmentSchedule, qty);
 		}
+
+		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
+		final PackingItemsMap packingItemsMap = new PackingItemsMap();
+		packingItemsMap.addUnpackedItem(itemToPack);
+
+		final IPackingService packingService = Services.get(IPackingService.class);
+		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
+		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
+		packingContext.setPackingItemsMapKey(pickingSlotId);
+
+		// Allocate given HUs to "itemToPack"
+		new HU2PackingItemsAllocator()
+				.setItemToPack(itemToPack)
+				.setPackingContext(packingContext)
+				.setFromHUs(ImmutableList.of(hu))
+				.allocate();
 	}
 
 	@Override
