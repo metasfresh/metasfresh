@@ -246,7 +246,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		
 		//
 		// gather a list with all imported lines for same partner
-		List<I_I_BPartner> sameBPpreviousImportRecords = new ArrayList<>();
+		private List<I_I_BPartner> sameBPpreviousImportRecords = new ArrayList<>();
 		public List<I_I_BPartner> getSameBPpreviousImportRecords()
 		{
 			return sameBPpreviousImportRecords;
@@ -410,6 +410,39 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				&& Objects.equals(importRecord.getPostal_Add(), p.getPostal_Add());
 	}
 
+	
+	private void updateLocation(final I_I_BPartner importRecord, I_C_BPartner_Location bpartnerLocation)
+	{
+		final I_C_Location location = bpartnerLocation.getC_Location();
+		location.setC_Country_ID(importRecord.getC_Country_ID());
+		location.setC_Region_ID(importRecord.getC_Region_ID());
+		location.setCity(importRecord.getCity());
+		location.setAddress1(importRecord.getAddress1());
+		location.setAddress2(importRecord.getAddress2());
+		location.setPostal(importRecord.getPostal());
+		location.setPostal_Add(importRecord.getPostal_Add());
+		InterfaceWrapperHelper.save(location);
+		bpartnerLocation.setC_Location(location);
+
+		// also set isBillTo and IsShipTo flags
+		bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
+		bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
+		bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
+		bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
+
+		if (importRecord.getPhone() != null)
+			bpartnerLocation.setPhone(importRecord.getPhone());
+		if (importRecord.getPhone2() != null)
+			bpartnerLocation.setPhone2(importRecord.getPhone2());
+		if (importRecord.getFax() != null)
+			bpartnerLocation.setFax(importRecord.getFax());
+		ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
+
+		InterfaceWrapperHelper.save(bpartnerLocation);
+		
+		importRecord.setC_BPartner_Location(bpartnerLocation);
+	}
+	
 	private I_C_BPartner_Location createUpdateBPartnerLocation(final I_I_BPartner importRecord, final List<I_I_BPartner> sameBPpreviousImportRecords)
 	{
 		I_C_BPartner_Location bpartnerLocation = importRecord.getC_BPartner_Location();
@@ -418,49 +451,16 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				.filter((isSameAddress(importRecord)))
 				.collect(Collectors.<I_I_BPartner> toList());
 		
-		final boolean isAlreadyImportedBPAddresses = alreadyImportedBPAddresses.isEmpty() ? false : true;;
+		final boolean isAlreadyImportedBPAddresses = alreadyImportedBPAddresses.isEmpty() ? false : true;
 		if (isAlreadyImportedBPAddresses
 				|| (bpartnerLocation != null && bpartnerLocation.getC_BPartner_Location_ID() > 0))// Update Location
 		{
-			final I_C_Location location;
 			if (isAlreadyImportedBPAddresses)
 			{
 				bpartnerLocation = alreadyImportedBPAddresses.get(0).getC_BPartner_Location();
-				location = bpartnerLocation.getC_Location();
-			}
-			else
-			{
-				location = bpartnerLocation.getC_Location();
 			}
 			
-			location.setC_Country_ID(importRecord.getC_Country_ID());
-			location.setC_Region_ID(importRecord.getC_Region_ID());
-			location.setCity(importRecord.getCity());
-			location.setAddress1(importRecord.getAddress1());
-			location.setAddress2(importRecord.getAddress2());
-			location.setPostal(importRecord.getPostal());
-			location.setPostal_Add(importRecord.getPostal_Add());
-			InterfaceWrapperHelper.save(location);
-			bpartnerLocation.setC_Location(location);
-
-			// also set isBillTo and IsShipTo flags
-
-			bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
-			bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
-			bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
-			bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
-
-			if (importRecord.getPhone() != null)
-				bpartnerLocation.setPhone(importRecord.getPhone());
-			if (importRecord.getPhone2() != null)
-				bpartnerLocation.setPhone2(importRecord.getPhone2());
-			if (importRecord.getFax() != null)
-				bpartnerLocation.setFax(importRecord.getFax());
-			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
-
-			InterfaceWrapperHelper.save(bpartnerLocation);
-			
-			importRecord.setC_BPartner_Location(bpartnerLocation);
+			updateLocation(importRecord, bpartnerLocation);
 		}
 		else 	// New Location
 		if (importRecord.getC_Country_ID() > 0
