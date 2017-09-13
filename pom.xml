@@ -46,21 +46,14 @@ Default parent pom with common settings (e.g. java file encoding) to be used by 
 	</modules>
 
 	<repositories>
-		<!-- 
-		    The repositories that we relate on are defined in this parent POM, 
-			because whether an artifact is found should not depend on a specific user's settings.xml 
-		-->
+				<!-- 
+				    The repositories that we relate on are defined in this parent POM, 
+					because whether an artifact is found should not depend on a specific user's settings.xml 
+				-->
 		<repository>
 			<id>metasfresh-repo</id>
 			<name>metasfresh maven repository</name>
 			<url>https://repo.metasfresh.com/content/groups/mvn-public/</url>
-		</repository>
-
-		<!-- this additional repo's parameters can be set from outside. It usually correesponds to a (task-)branch -->
-		<repository>
-			<id>${deploy-repo-id}</id>
-			<name>${deploy-repo-name}</name>
-			<url>${deploy-repo-url}</url>
 		</repository>
 	</repositories>
 
@@ -332,11 +325,11 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 									Also see http://maven.apache.org/enforcer/enforcer-rules/bannedDependencies.html 
 								-->
 								<bannedDependencies>
-								  <excludes>
-									<exclude>de.metas*:*:[10,)</exclude>
-								  </excludes>
+									<excludes>
+										<exclude>de.metas*:*:[10,)</exclude>
+									</excludes>
 								</bannedDependencies>
-								
+
 								<banDuplicateClasses>
 									<ignoreClasses>
 
@@ -344,7 +337,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 										<ignoreClass>org.bouncycastle.*</ignoreClass>
 
 										<!-- org.jboss.client:jbossall-client and partially geronimo specs -->
-										
+
 										<ignoreClass>javax.annotation.*</ignoreClass>
 										<ignoreClass>javax.ejb.*</ignoreClass>
 										<ignoreClass>javax.jms.*</ignoreClass>
@@ -421,8 +414,8 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 
 									<findAllDuplicates>true</findAllDuplicates>
 								</banDuplicateClasses>
-								
-								
+
+
 							</rules>
 							<fail>true</fail>
 						</configuration>
@@ -503,22 +496,32 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 	
 	    <!-- 
 			Add code coverage metrics to our builds https://github.com/metasfresh/metasfresh/issues/2343
+			Also define an additional repository with placeholders. The jenkins build jobs will set the values from outside. 
 			Jenkins by default defines a property BUILD_NUMBER which is used to enable the profile. 
 		-->
-        <profile>
-            <id>jenkins</id>
-            <activation>
-                <property>
-                    <name>env.BUILD_NUMBER</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
+		<profile>
+			<id>jenkins</id>
+			<activation>
+				<property>
+					<name>env.BUILD_NUMBER</name>
+				</property>
+			</activation>
+			<repositories>
+				<!-- this additional repo's parameters can be set from outside. It usually corresponds to a (task-)branch -->
+				<!-- moved into the jenkins profile; see https://github.com/metasfresh/metasfresh-parent/issues/14 -->
+				<repository>
+					<id>${deploy-repo-id}</id>
+					<name>${deploy-repo-name}</name>
+					<url>${deploy-repo-url}</url>
+				</repository>
+			</repositories>
+			<build>
+				<plugins>
+					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<version>0.7.9</version>
-						  <executions>
+						<executions>
 							<execution>
 								<id>default-prepare-agent</id>
 								<goals>
@@ -557,9 +560,9 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 							</execution>
 						</executions>
 					</plugin>
-                </plugins>
-            </build>
-        </profile>
-	
+				</plugins>
+			</build>
+		</profile>
+
 	</profiles>
 </project>
