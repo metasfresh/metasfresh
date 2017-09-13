@@ -1,10 +1,23 @@
 package de.metas.ui.web.view;
 
+import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import org.adempiere.util.concurrent.AsyncIOStreamProducerExecutor;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +31,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import com.google.common.collect.ImmutableList;
 
+import de.metas.logging.LogManager;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.process.ProcessRestController;
@@ -83,6 +97,8 @@ public class ViewRestController
 	private static final String PARAM_FirstRow_Description = "first row to fetch (starting from 0)";
 	private static final String PARAM_PageLength = "pageLength";
 
+	private static final transient Logger logger = LogManager.getLogger(ViewRestController.class);
+
 	@Autowired
 	private UserSession userSession;
 
@@ -94,6 +110,20 @@ public class ViewRestController
 
 	@Autowired
 	private WindowRestController windowRestController;
+
+	private final ExecutorService viewExportExecutor;
+
+	public ViewRestController()
+	{
+		viewExportExecutor = new ThreadPoolExecutor(
+				0, // corePoolSize
+				10, // maximumPoolSize
+				1, TimeUnit.MINUTES, // keepAliveTime / unit
+				new LinkedBlockingQueue<>(), // workQueue
+				CustomizableThreadFactory.builder().setThreadNamePrefix(getClass().getName() + ".viewExportExecutor").setDaemon(true).build(), // threadFactory
+				new ThreadPoolExecutor.AbortPolicy() // reject policy
+		);
+	}
 
 	private JSONOptions newJSONOptions()
 	{
@@ -165,7 +195,7 @@ public class ViewRestController
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
 		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
 	}
-	
+
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
 	public JSONViewResult deleteStickyFilter(@PathVariable(PARAM_WindowId) final String windowIdStr, @PathVariable("viewId") final String viewIdStr, @PathVariable("filterId") final String filterId)
 	{
@@ -314,10 +344,46 @@ public class ViewRestController
 			@PathVariable("rowId") final String rowId,
 			@PathVariable("fieldName") final String fieldName)
 	{
+		// userSession.assertLoggedIn(); // NOTE: not needed because we are forwarding to windowRestController
+
 		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
 
 		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
 
 		return windowRestController.getDocumentFieldZoomInto(windowIdStr, rowId, fieldName);
+	}
+
+	@GetMapping("/{viewId}/export/excel")
+	public ResponseEntity<Resource> exportToExcel(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("viewId") final String viewIdStr,
+			@RequestParam(name = "selectedIds", required = false) @ApiParam("comma separated IDs") final String selectedIdsListStr)
+			throws Exception
+	{
+		userSession.assertLoggedIn();
+
+		final ViewId viewId = ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr));
+
+		final ViewExcelExporter viewExporter = ViewExcelExporter.builder()
+				.view(viewsRepo.getView(viewId))
+				.rowIds(DocumentIdsSelection.ofCommaSeparatedString(selectedIdsListStr))
+				.layout(viewsRepo.getViewLayout(viewId.getWindowId(), JSONViewDataType.grid))
+				.adLanguage(userSession.getAD_Language())
+				.build();
+
+		final InputStream inputStream = AsyncIOStreamProducerExecutor.builder()
+				.executor(viewExportExecutor)
+				.exceptionLogger(logger)
+				.build()
+				.execute(viewExporter::export);
+
+		final String filename = "report.xls"; // TODO: use a better name
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.parseMediaType("application/vnd.ms-excel"));
+		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+		final ResponseEntity<Resource> response = new ResponseEntity<>(new InputStreamResource(inputStream), headers, HttpStatus.OK);
+		return response;
 	}
 }

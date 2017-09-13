@@ -119,7 +119,7 @@ public final class DocumentIdsSelection
 			return DocumentIdsSelection.EMPTY;
 		}
 
-		if (ALL_String.equals(string))
+		if (ALL_String.equalsIgnoreCase(string))
 		{
 			return ALL;
 		}
