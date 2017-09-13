@@ -104,7 +104,7 @@ public final class RelationTypeZoomProvidersFactory
 			+ "    AD_RelationType rt, AD_Reference ref"
 			+ "  WHERE " //
 			+ "    rt.IsActive='Y'" //
-			+ "    rt.IsReferenceTarget  = 'Y'"
+			+ "    AND rt.IsReferenceTarget  = 'Y'"
 			+ "    AND ref.IsActive='Y'" //
 			+ "    AND ref.ValidationType='T'" // must have table validation
 			+ "    AND (" // join the source AD_Reference

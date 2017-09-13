@@ -350,7 +350,7 @@ public class ZoomInfoFactory
 		logger.debug("source={}", source);
 		final Set<Integer> alreadySeenWindowIds = new HashSet<>();
 
-		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source.getTableName());
+		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(source);
 
 		return zoomProviders.stream()
 				.flatMap(zoomProvider -> {
@@ -448,8 +448,10 @@ public class ZoomInfoFactory
 				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + source + ", targetWindowId=" + targetWindowId));
 	}
 
-	private List<IZoomProvider> retrieveZoomProviders(final String tableName)
+	private List<IZoomProvider> retrieveZoomProviders(final IZoomSource source)
 	{
+		
+		final String tableName  = source.getTableName();
 		final List<IZoomProvider> zoomProviders = new ArrayList<>();
 
 		// NOTE: Zoom providers order matter because in case it finds some duplicates (i.e. same window),
