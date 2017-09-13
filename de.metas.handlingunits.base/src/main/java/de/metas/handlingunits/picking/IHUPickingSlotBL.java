@@ -29,8 +29,6 @@ import java.util.stream.Collectors;
 import org.adempiere.util.ISingletonService;
 import org.adempiere.util.Services;
 
-import com.google.common.base.Preconditions;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
@@ -218,7 +216,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	class RetrieveActiveSourceHusQuery
 	{
 		/**
-		 * query for HUs that have any of the given product IDs
+		 * Query for HUs that have any of the given product IDs. Empty means that no HUs will be found.
 		 */
 		@Singular
 		Set<Integer> productIds;
@@ -226,16 +224,16 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		int warehouseId;
 
 		/**
-		 * @param shipmentSchedules the schedules to make the new instance from; may not be {@code null} or empty.
+		 * @param shipmentSchedules the schedules to make the new instance from; may not be {@code null}. Empty means that no HUs will be found.
 		 */
 		public static RetrieveActiveSourceHusQuery fromShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
 		{
-			Preconditions.checkArgument(!shipmentSchedules.isEmpty(), "Parameter shipmentSchedules may not be empty");
-
 			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 			final Set<Integer> productIds = shipmentSchedules.stream().map(s -> s.getM_Product_ID()).collect(Collectors.toSet());
 
-			return new RetrieveActiveSourceHusQuery(productIds, shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedules.get(0)));
+			final int effectiveWarehouseId = shipmentSchedules.isEmpty() ? -1 : shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedules.get(0));
+
+			return new RetrieveActiveSourceHusQuery(productIds, effectiveWarehouseId);
 		}
 	}
 }

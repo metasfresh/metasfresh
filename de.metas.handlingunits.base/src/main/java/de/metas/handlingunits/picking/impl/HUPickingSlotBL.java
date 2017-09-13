@@ -744,6 +744,10 @@ public class HUPickingSlotBL
 	@Override
 	public List<I_M_HU> retrieveActiveSourceHUs(@NonNull final RetrieveActiveSourceHusQuery query)
 	{
+		if (query.getProductIds().isEmpty())
+		{
+			return ImmutableList.of();
+		}
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final ICompositeQueryFilter<I_M_HU> huFilters = createHuFiltersForScheds(query);
@@ -762,21 +766,20 @@ public class HUPickingSlotBL
 	ICompositeQueryFilter<I_M_HU> createHuFiltersForScheds(@NonNull final RetrieveActiveSourceHusQuery query)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		
+
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		final ICompositeQueryFilter<I_M_HU> huFilters = queryBL.createCompositeQueryFilter(I_M_HU.class)
 				.setJoinOr();
 
-		
-			final IQueryFilter<I_M_HU> huFilter = handlingUnitsDAO.createHUQueryBuilder()
-					.setOnlyActiveHUs(true)
-					.setAllowEmptyStorage()
-					.addOnlyWithProductIds(query.getProductIds())
-					.addOnlyInWarehouseId(query.getWarehouseId())
-					.createQueryFilter();
-			huFilters.addFilter(huFilter);
-		
+		final IQueryFilter<I_M_HU> huFilter = handlingUnitsDAO.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setAllowEmptyStorage()
+				.addOnlyWithProductIds(query.getProductIds())
+				.addOnlyInWarehouseId(query.getWarehouseId())
+				.createQueryFilter();
+		huFilters.addFilter(huFilter);
+
 		return huFilters;
 	}
 }
