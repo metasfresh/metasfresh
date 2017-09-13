@@ -165,7 +165,7 @@ public class ViewRestController
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
 		return JSONViewResult.of(ViewResult.ofView(newView), userSession.getAD_Language());
 	}
-	
+
 	@DeleteMapping("/{viewId}/staticFilter/{filterId}")
 	public JSONViewResult deleteStickyFilter(@PathVariable(PARAM_WindowId) final String windowIdStr, @PathVariable("viewId") final String viewIdStr, @PathVariable("filterId") final String filterId)
 	{
@@ -314,6 +314,8 @@ public class ViewRestController
 			@PathVariable("rowId") final String rowId,
 			@PathVariable("fieldName") final String fieldName)
 	{
+		// userSession.assertLoggedIn(); // NOTE: not needed because we are forwarding to windowRestController
+
 		ViewId.ofViewIdString(viewIdStr, WindowId.fromJson(windowIdStr)); // just validate the windowId and viewId
 
 		// TODO: atm we are forwarding all calls to windowRestController hopping the document existing and has the same ID as view's row ID.
