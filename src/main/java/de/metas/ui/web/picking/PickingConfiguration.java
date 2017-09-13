@@ -39,7 +39,6 @@ public class PickingConfiguration
 		final Supplier<SqlViewGroupingBinding> supplier = () -> SqlViewGroupingBinding.builder()
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Product_ID)
-				.columnSql(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, "NULL")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyToDeliver, "SUM(QtyToDeliver)")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_QtyPickedPlanned, "SUM(QtyPickedPlanned)")
 				.columnSql(I_M_Packageable_V.COLUMNNAME_DeliveryDate, "MIN(DeliveryDate)")
