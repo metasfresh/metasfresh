@@ -3,7 +3,6 @@ package de.metas.ui.web.view;
 import java.util.List;
 import java.util.Set;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.impexp.AbstractExcelExporter;
 
 import com.google.common.collect.ImmutableList;
@@ -128,9 +127,6 @@ import lombok.NonNull;
 	@Override
 	public Object getValueAt(final int rowIndex, final int columnIndex)
 	{
-		if (true)
-			throw new AdempiereException("fail test");
-
 		final String fieldName = getFieldName(columnIndex);
 
 		final IViewRow row = getRow(rowIndex);
