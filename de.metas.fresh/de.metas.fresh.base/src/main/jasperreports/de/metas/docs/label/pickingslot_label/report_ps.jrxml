@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2017-08-11T14:48:26 -->
+<!-- 2017-09-13T14:06:00 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="500" pageHeight="170" columnWidth="500" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -21,10 +21,13 @@
 		<defaultValueExpression><![CDATA["http://mf15adit:8080/adempiereJasper/BarcodeServlet"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT	T_Selection_ID as M_PickingSlot_ID
-FROM	T_Selection
-WHERE	AD_PInstance_ID = $P{AD_PInstance_ID}
-;]]>
+		<![CDATA[SELECT	
+	COALESCE(pi.Record_ID, ts.T_Selection_ID) AS M_PickingSlot_ID
+FROM AD_PInstance pi
+LEFT JOIN T_Selection ts ON pi.AD_PInstance_ID = ts.AD_PInstance_ID
+WHERE	pi.AD_PInstance_ID =  $P{AD_PInstance_ID}
+ORDER BY ts.T_Selection_ID
+]]>
 	</queryString>
 	<field name="m_pickingslot_id" class="java.math.BigDecimal"/>
 	<background>
@@ -54,7 +57,7 @@ WHERE	AD_PInstance_ID = $P{AD_PInstance_ID}
 					<subreportParameterExpression><![CDATA[$F{m_pickingslot_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/label/receiptlabel/label.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/label/pickingslot_label/label.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
