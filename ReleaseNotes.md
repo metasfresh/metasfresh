@@ -28,6 +28,8 @@ Here come the actual release notes:
     * New Windows for yearly Swiss Storage Conference, allowing the user to define the Storage Conference Criteria.
   * [#2426](https://github.com/metasfresh/metasfresh/issues/2426) Translation for window "RfQ" in WebUI
     * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
+  * [#2442](https://github.com/metasfresh/metasfresh/issues/2442) New Window for GL Journal Category in WebUI
+    * New Window for GL Category in WebUI Finance/ Settings.
 
 # metasfresh 5.26 (2017-37)
 
