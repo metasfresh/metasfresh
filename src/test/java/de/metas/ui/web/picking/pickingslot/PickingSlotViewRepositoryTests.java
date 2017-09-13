@@ -203,11 +203,4 @@ public class PickingSlotViewRepositoryTests
 		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
 		assertThat(sourceHURow.getId()).isEqualTo(DocumentId.of("0-100"));
 	}
-
-	@Test
-	public void testRetrieveSourceHuRow()
-	{
-		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();
-		pickingSlotViewRepository.retrievePickingSlotRows(PickingSlotRepoQuery.of(23));
-	}
 }

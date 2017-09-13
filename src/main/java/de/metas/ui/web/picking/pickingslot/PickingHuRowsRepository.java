@@ -169,7 +169,10 @@ import lombok.NonNull;
 				continue;
 			}
 
-			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRepo.retrieveForHUId(huId), isPickingCandidateProcessed(pickingCandidate));
+			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(huId);
+			final boolean pickingCandidateProcessed = isPickingCandidateProcessed(pickingCandidate);
+			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRow, pickingCandidateProcessed);
+
 			huId2huRow.put(huId, row);
 
 			builder.put(pickingCandidate.getM_PickingSlot_ID(), row);

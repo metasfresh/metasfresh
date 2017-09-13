@@ -40,6 +40,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -70,6 +71,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
 {
 	public static final Builder builder(final WindowId windowId)
