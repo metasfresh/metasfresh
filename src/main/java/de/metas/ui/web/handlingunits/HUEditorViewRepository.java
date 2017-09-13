@@ -41,6 +41,7 @@ import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowIdsConverter;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -401,7 +402,7 @@ public class HUEditorViewRepository
 		{
 			final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
 			final String sqlFilter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding)
-					.getSql(sqlFilterParams, filters);
+					.getSql(sqlFilterParams, filters, SqlOptions.defaults());
 			huQuery.addFilter(TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList()));
 		}
 

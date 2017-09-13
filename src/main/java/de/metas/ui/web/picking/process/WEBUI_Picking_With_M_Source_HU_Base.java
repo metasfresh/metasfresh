@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUPickingSlotBL;
 import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -47,15 +47,16 @@ public abstract class WEBUI_Picking_With_M_Source_HU_Base
 {
 	protected final boolean checkSourceHuPrecondition()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule();
 
 		final PickingHUsQuery query = PickingHUsQuery.builder()
 				.considerAttributes(true)
 				.shipmentSchedules(ImmutableList.of(shipmentSchedule))
 				.onlyTopLevelHUs(true)
 				.build();
+
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveSourceHUs(query);
+		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveAvailableSourceHUs(query);
 		return !sourceHUs.isEmpty();
 	}
 

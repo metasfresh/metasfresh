@@ -51,6 +51,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -228,7 +229,15 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				recordId = -1;
 			}
 
-			sqlWhereClause = viewDocumentIds.isEmpty() ? null : view.getSqlWhereClause(viewDocumentIds);
+			//
+			if(viewDocumentIds.isEmpty())
+			{
+				sqlWhereClause = null;
+			}
+			else
+			{
+				sqlWhereClause = view.getSqlWhereClause(viewDocumentIds, SqlOptions.usingTableName());
+			}
 		}
 		//
 		// Single document call

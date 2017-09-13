@@ -36,6 +36,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -347,9 +348,9 @@ public class DefaultView implements IView
 	}
 
 	@Override
-	public String getSqlWhereClause(final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
-		return viewDataRepository.getSqlWhereClause(getViewId(), getAllFilters(), rowIds);
+		return viewDataRepository.getSqlWhereClause(getViewId(), getAllFilters(), rowIds, sqlOpts);
 	}
 
 	@Override

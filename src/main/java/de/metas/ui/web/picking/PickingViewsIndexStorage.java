@@ -94,7 +94,7 @@ public class PickingViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	public static ViewId createViewId(
-			@NonNull final ViewId pickingViewId, 
+			@NonNull final ViewId pickingViewId,
 			@NonNull final DocumentId pickingRowId)
 	{
 		if (!PickingConstants.WINDOWID_PickingView.equals(pickingViewId.getWindowId()))
@@ -133,32 +133,36 @@ public class PickingViewsIndexStorage implements IViewsIndexStorage
 	}
 
 	private PickingSlotView getOrCreatePickingSlotView(
-			@NonNull final ViewId pickingSlotViewId, 
+			@NonNull final ViewId pickingSlotViewId,
 			final boolean create)
 	{
 		final PackageableView packageableView = getPackageableViewByPickingSlotViewId(pickingSlotViewId);
-		final DocumentId pickingSlotRowId = extractRowId(pickingSlotViewId);
+		final DocumentId packageableRowId = extractRowId(pickingSlotViewId);
 
 		if (create)
 		{
 			return packageableView.computePickingSlotViewIfAbsent(
-					pickingSlotRowId, 
+					packageableRowId,
 					() -> {
-						final PackageableRow packageableRow = packageableView.getById(pickingSlotRowId);
+						final PackageableRow packageableRow = packageableView.getById(packageableRowId);
 						final CreateViewRequest createViewRequest = CreateViewRequest
-							.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
-							.setParentViewId(packageableView.getViewId())
-							.setParentRowId(packageableRow.getId())
-							.build();
+								.builder(PickingConstants.WINDOWID_PickingSlotView, JSONViewDataType.includedView)
+								.setParentViewId(packageableView.getViewId())
+								.setParentRowId(packageableRow.getId())
+								.build();
 
 						// provide all pickingView's M_ShipmentSchedule_IDs to the factory, because we want to show the same picking slots and picked HU-rows for all of them.
-						final List<Integer> allShipmentScheduleIds = packageableView.streamByIds(DocumentIdsSelection.ALL).map(PackageableRow::cast).map(PackageableRow::getShipmentScheduleId).collect(Collectors.toList());
+						final List<Integer> allShipmentScheduleIds = packageableView
+								.streamByIds(DocumentIdsSelection.ALL)
+								.map(PackageableRow::cast)
+								.map(PackageableRow::getShipmentScheduleId)
+								.collect(Collectors.toList());
 
 						return pickingSlotViewFactory.createView(createViewRequest, allShipmentScheduleIds);
 					});
 		}
-		
-		return packageableView.getPickingSlotViewOrNull(pickingSlotRowId);
+
+		return packageableView.getPickingSlotViewOrNull(packageableRowId);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 
 /*
  * #%L
@@ -44,7 +45,7 @@ public interface IViewDataRepository
 {
 	String getTableName();
 
-	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds);
+	String getSqlWhereClause(ViewId viewId, List<DocumentFilter> filters, DocumentIdsSelection rowIds, SqlOptions sqlOpts);
 
 	DocumentFilterDescriptorsProvider getViewFilterDescriptors();
 

@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.util.Services;
 import org.compiere.util.DisplayType;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +20,6 @@ import com.google.common.collect.ListMultimap;
 
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -67,9 +65,7 @@ import lombok.NonNull;
 @Component
 public class PickingSlotViewRepository
 {
-	private static final Logger logger = LogManager.getLogger(PickingSlotViewRepository.class);
-
-	private final PickingHuRowsRepository pickedHUsRepo;
+	private final PickingHuRowsRepository pickingHUsRepo;
 
 	private final Supplier<LookupDataSource> warehouseLookup;
 	private final Supplier<LookupDataSource> bpartnerLookup;
@@ -119,7 +115,7 @@ public class PickingSlotViewRepository
 			@NonNull final Supplier<LookupDataSource> bpartnerLookup,
 			@NonNull final Supplier<LookupDataSource> bpartnerLocationLookup)
 	{
-		this.pickedHUsRepo = pickingHUsRepo;
+		this.pickingHUsRepo = pickingHUsRepo;
 		this.warehouseLookup = warehouseLookup;
 		this.bpartnerLookup = bpartnerLookup;
 		this.bpartnerLocationLookup = bpartnerLocationLookup;
@@ -140,14 +136,13 @@ public class PickingSlotViewRepository
 		Check.errorIf(query.getShipmentScheduleIds().isEmpty(), "Given query has no shipmentScheduleIds; query={}", query);
 
 		// get M_HU_Source records that reference active HUs with their locator in this WH and not on the picking location
-		final List<HUEditorRow> sourceHuEditorRows = pickedHUsRepo.retrieveSourceHUs(query.getShipmentScheduleIds());
-		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHuEditorRows.stream().map(sourceHuEditorRow -> createSourceHURow(sourceHuEditorRow)).collect(Collectors.toList());
+		final List<HUEditorRow> sourceHuEditorRows = pickingHUsRepo.retrieveSourceHUs(query.getShipmentScheduleIds());
+		final List<PickingSlotRow> sourceHUPickingSlotRows = sourceHuEditorRows.stream()
+				.map(sourceHuEditorRow -> createSourceHURow(sourceHuEditorRow))
+				.collect(Collectors.toList());
 
+		// get the picking slot rows, including the rows the represent picked HUs
 		final ImmutableList<PickingSlotRow> pickingSlotRows = retrievePickingSlotRows(query);
-		if (pickingSlotRows.isEmpty())
-		{
-			logger.warn("PickingSlotViewRepository returned empty list for query={}", query);
-		}
 
 		return ImmutableList.copyOf(Iterables.concat(
 				pickingSlotRows,
@@ -174,11 +169,11 @@ public class PickingSlotViewRepository
 		final List<I_M_PickingSlot> pickingSlots = pickingSlotDAO.retrivePickingSlots(pickingSlotquery);
 
 		// retrieve picked HU rows (if any) to be displayed below there respective picking slots
-		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickedHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
+		final ListMultimap<Integer, PickedHUEditorRow> huEditorRowsByPickingSlotId = pickingHUsRepo.retrievePickedHUsIndexedByPickingSlotId(query);
 
 		final Predicate<? super I_M_PickingSlot> pickingCandidatesFilter = pickingSlot -> {
 
-			if (query.getPickingCandidates() == PickingCandidate.DONT_CARE)
+			if (query.getPickingCandidates() == PickingCandidate.ONLY_NOT_CLOSED)
 			{
 				return true;
 			}
@@ -206,7 +201,7 @@ public class PickingSlotViewRepository
 			@NonNull final PickedHUEditorRow from,
 			final int pickingSlotId)
 	{
-		final HUEditorRow huEditorRow = from.getHuEditor();
+		final HUEditorRow huEditorRow = from.getHuEditorRow();
 
 		final List<PickingSlotRow> includedHURows = huEditorRow.getIncludedRows()
 				.stream()

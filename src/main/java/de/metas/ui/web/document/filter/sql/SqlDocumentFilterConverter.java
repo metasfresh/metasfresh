@@ -6,6 +6,7 @@ import org.compiere.util.DB;
 
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 
 /*
  * #%L
@@ -47,9 +48,9 @@ public interface SqlDocumentFilterConverter
 	 * @param filter
 	 * @return SQL
 	 */
-	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter);
+	String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, final SqlOptions sqlOpts);
 
-	default String getSql(SqlParamsCollector sqlParamsOut, final List<DocumentFilter> filters)
+	default String getSql(final SqlParamsCollector sqlParamsOut, final List<DocumentFilter> filters, final SqlOptions sqlOpts)
 	{
 		if (filters.isEmpty())
 		{
@@ -60,7 +61,7 @@ public interface SqlDocumentFilterConverter
 
 		for (final DocumentFilter filter : filters)
 		{
-			final String sqlFilter = getSql(sqlParamsOut, filter);
+			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts);
 			if (Check.isEmpty(sqlFilter, true))
 			{
 				continue;

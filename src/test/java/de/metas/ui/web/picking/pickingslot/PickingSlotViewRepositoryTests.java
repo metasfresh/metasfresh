@@ -20,12 +20,9 @@ import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
-import de.metas.ui.web.picking.pickingslot.PickingHuRowsRepository;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotViewRepository;
 import de.metas.ui.web.picking.pickingslot.PickingHuRowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRepoQuery.PickingCandidate;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.NullLookupDataSource;
 import mockit.Expectations;
@@ -157,9 +154,7 @@ public class PickingSlotViewRepositoryTests
 			// @formatter:on
 		}
 
-		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
-
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();
 		final List<PickingSlotRow> rowsByShipmentScheduleId = pickingSlotViewRepository.retrievePickingSlotRows(query);
 
 		assertThat(rowsByShipmentScheduleId.size(), is(1));
@@ -181,11 +176,17 @@ public class PickingSlotViewRepositoryTests
 		assertThat(whuRow.getHuId(), is(101));
 	}
 
-	@Test
-	public void testCreateSourceHURow()
+	PickingSlotViewRepository createPickingSllotViewRepository()
 	{
 		final NullLookupDataSource nullDs = NullLookupDataSource.instance;
 
+		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
+		return pickingSlotViewRepository;
+	}
+
+	@Test
+	public void testCreateSourceHURow()
+	{
 		final HUEditorRow huEditorRow = HUEditorRow
 				.builder(WindowId.of(423))
 				.setRowId(HUEditorRowId.ofTopLevelHU(100))
@@ -193,8 +194,20 @@ public class PickingSlotViewRepositoryTests
 				.setTopLevel(true)
 				.build();
 
-		final PickingSlotViewRepository pickingSlotViewRepository = new PickingSlotViewRepository(pickingHUsRepo, () -> nullDs, () -> nullDs, () -> nullDs);
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();		
 		final PickingSlotRow sourceHURow = pickingSlotViewRepository.createSourceHURow(huEditorRow);
+		
 		assertThat(sourceHURow).isNotNull();
+		assertThat(sourceHURow.isPickingSlotRow()).isFalse();
+		assertThat(sourceHURow.isPickedHURow()).isFalse();
+		assertThat(sourceHURow.isPickingSourceHURow()).isTrue();
+		assertThat(sourceHURow.getId()).isEqualTo(DocumentId.of("0-100"));
+	}
+
+	@Test
+	public void testRetrieveSourceHuRow()
+	{
+		final PickingSlotViewRepository pickingSlotViewRepository = createPickingSllotViewRepository();
+		pickingSlotViewRepository.retrievePickingSlotRows(PickingSlotRepoQuery.of(23));
 	}
 }

@@ -1,20 +1,24 @@
 package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
-import static de.metas.ui.web.picking.PickingConstants.*;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_CU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand.RemoveQtyFromHURequest;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.SourceHUsRepository;
 
 /*
  * #%L
@@ -45,6 +49,8 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
+	@Autowired private SourceHUsRepository sourceHUsRepository;
+	
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	private BigDecimal qtyCU;
@@ -60,7 +66,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
 		final String rowType = pickingSlotRow.getType().getName();
@@ -70,7 +76,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_CU));
 		}
 
-		if (!checkSourceHuPrecondition())
+		if (!checkSourceHuPreconditionIncludingEmptyHUs())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
 		}
@@ -87,7 +93,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 				.qtyCU(qtyCU)
 				.huId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
-				.shipmentScheduleId(getView().getShipmentScheduleId())
+				.productId(pickingSlotRow.getHuProductId())
 				.build();
 
 		pickingCandidateCommand.removeQtyFromHU(request);
@@ -96,5 +102,11 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		invalidateParentView();
 
 		return MSG_OK;
+	}
+
+	private boolean checkSourceHuPreconditionIncludingEmptyHUs()
+	{
+		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUs(getSingleSelectedRow().getHuId());
+		return !sourceHUs.isEmpty();
 	}
 }

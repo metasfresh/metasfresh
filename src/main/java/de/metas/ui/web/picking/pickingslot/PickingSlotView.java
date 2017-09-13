@@ -81,7 +81,7 @@ public class PickingSlotView implements IView
 	private final ViewId parentViewId;
 	private final DocumentId parentRowId;
 	private final ITranslatableString description;
-	private final int shipmentScheduleId;
+	private final int currentShipmentScheduleId;
 	private final ExtendedMemorizingSupplier<Map<PickingSlotRowId, PickingSlotRow>> rowsSupplier;
 	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
@@ -90,17 +90,17 @@ public class PickingSlotView implements IView
 			final ViewId parentViewId,
 			final DocumentId parentRowId,
 			final ITranslatableString description,
-			final int shipmentScheduleId,
+			final int currentShipmentScheduleId,
 			final Supplier<List<PickingSlotRow>> rows,
 			final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
-		Preconditions.checkArgument(shipmentScheduleId > 0, "shipmentScheduleId > 0");
+		Preconditions.checkArgument(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
 
 		this.viewId = viewId;
 		this.parentViewId = parentViewId;
 		this.parentRowId = parentRowId;
 		this.description = description != null ? description : ITranslatableString.empty();
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.currentShipmentScheduleId = currentShipmentScheduleId;
 		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
 		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
@@ -185,32 +185,40 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public PickingSlotRow getById(final DocumentId id) throws EntityNotFoundException
+	public PickingSlotRow getById(@NonNull final DocumentId id) throws EntityNotFoundException
 	{
-		PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
+		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
 
-		final PickingSlotRowId pickingSlotRowId = rowId.toPickingSlotId();
+		if (rowId.getPickingSlotId() <= 0)
+		{
+			return assertRowNotNull(rowId, rowsSupplier.get().get(rowId));
+		}
+
+		final PickingSlotRowId pickingSlotRowId = PickingSlotRowId.ofPickingSlotId(rowId.getPickingSlotId());
 		final PickingSlotRow pickingSlotRow = rowsSupplier.get().get(pickingSlotRowId);
+
+		if (java.util.Objects.equals(rowId, pickingSlotRowId))
+		{
+			return assertRowNotNull(pickingSlotRowId, pickingSlotRow);
+		}
+
+		return pickingSlotRow.findIncludedRowById(rowId)
+				.orElseThrow(() -> new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
+
+	}
+
+	PickingSlotRow assertRowNotNull(final PickingSlotRowId pickingSlotRowId, final PickingSlotRow pickingSlotRow)
+	{
 		if (pickingSlotRow == null)
 		{
 			throw new EntityNotFoundException("Row not found").setParameter("pickingSlotRowId", pickingSlotRowId);
 		}
-
-		if (pickingSlotRowId.equals(rowId))
-		{
-			return pickingSlotRow;
-		}
-		else
-		{
-			return pickingSlotRow.findIncludedRowById(rowId)
-					.orElseThrow(() -> new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
-		}
+		return pickingSlotRow;
 	}
 
 	@Override
 	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
 	{
-		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
@@ -286,22 +294,23 @@ public class PickingSlotView implements IView
 	}
 
 	/**
+	 * Returns the {@code M_ShipmentSchedule_ID} of the packageable line that is currently selected within the {@link PackageableView}.
 	 * 
 	 * @return never returns a value {@code <= 0} (see constructor code).
 	 */
-	public int getShipmentScheduleId()
+	public int getCurrentShipmentScheduleId()
 	{
-		return shipmentScheduleId;
+		return currentShipmentScheduleId;
 	}
 
 	/**
-	 * Convenience method.
+	 * Convenience method. See {@link #getCurrentShipmentScheduleId()}.
 	 * 
 	 * @return never returns {@code null} (see constructor code).
 	 */
-	public I_M_ShipmentSchedule getShipmentSchedule()
+	public I_M_ShipmentSchedule getCurrentShipmentSchedule()
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = load(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = load(currentShipmentScheduleId, I_M_ShipmentSchedule.class);
 		return shipmentSchedule;
 	}
 

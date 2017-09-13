@@ -98,7 +98,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 				.qtyCU(qtyCU)
 				.huId(pickingSlotRow.getHuId())
 				.pickingSlotId(pickingSlotRow.getPickingSlotId())
-				.shipmentScheduleId(getView().getShipmentScheduleId())
+				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
 				.build();
 
 		pickingCandidateCommand.addQtyToHU(request);
@@ -120,7 +120,7 @@ public class WEBUI_Picking_PickQtyToExistingHU
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 		return shipmentSchedule.getQtyToDeliver();
 	}
 

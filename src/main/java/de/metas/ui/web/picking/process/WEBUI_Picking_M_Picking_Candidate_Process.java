@@ -8,11 +8,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
@@ -24,17 +20,14 @@ import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
+import de.metas.ui.web.picking.pickingslot.PickingCandidateRepository;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import lombok.NonNull;
@@ -65,7 +58,6 @@ import lombok.NonNull;
  * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
  * Processing means that
  * <ul>
- * <li>the HU is changed from status "planned" or "active" to "picked"</li>
  * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
  * <li>The HU is added to its picking slot's picking-slot-queue</li>
  * </ul>
@@ -83,6 +75,9 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
+
+	@Autowired
+	private PickingCandidateRepository pickingCandidateRepository;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -123,13 +118,9 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 
 		final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
 
-		final PickingSlotView view = PickingSlotView.cast(super.getView());
-		final I_M_ShipmentSchedule shipmentSchedule = view.getShipmentSchedule();
-
 		allocateHuToShipmentSchedule(
 				rowToProcess.getPickingSlotId(),
-				hu,
-				shipmentSchedule);
+				hu);
 
 		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
 
@@ -141,51 +132,33 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 
 	private void allocateHuToShipmentSchedule(
 			final int pickingSlotId,
-			@NonNull final I_M_HU hu,
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+			@NonNull final I_M_HU hu)
 	{
+		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
 
-		final I_M_Product product = shipmentSchedule.getM_Product();
-		final BigDecimal qty = retrieveHuStorageQty(hu, product);
-
-		final IPackingService packingService = Services.get(IPackingService.class);
-		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
-
-		final PackingItemsMap packingItemsMap = new PackingItemsMap();
-		packingItemsMap.addUnpackedItem(itemToPack);
-
-		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
-		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(pickingSlotId);
-
-		// Allocate given HUs to "itemToPack"
-		new HU2PackingItemsAllocator()
-				.setItemToPack(itemToPack)
-				.setPackingContext(packingContext)
-				.setFromHUs(ImmutableList.of(hu))
-				.allocate();
-	}
-
-	private BigDecimal retrieveHuStorageQty(
-			@NonNull final I_M_HU hu,
-			@NonNull final I_M_Product product)
-	{
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
-		BigDecimal qty = BigDecimal.ZERO;
-		final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(ImmutableList.of(hu), product);
-		for (final IHUProductStorage storage : huProductStorages)
+		for (final I_M_Picking_Candidate pc : pickingCandidates)
 		{
-			qty = qty.add(storage.getQty(product.getC_UOM()));
-		}
+			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
 
-		if (qty.signum() <= 0)
-		{
-			// should not happen due to our checkPreconditionsApplicable(), but happened in other processes, sometimes..we just were unable to reproduce
-			final String msg = StringUtils.formatMessage("The current HU has no quantity of the current product; hu={}; product={}", hu, product);
-			Loggables.get().addLog(msg);
-			throw new AdempiereException(msg);
+			final BigDecimal qty = pc.getQtyPicked();
+
+			final IPackingService packingService = Services.get(IPackingService.class);
+			final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
+
+			final PackingItemsMap packingItemsMap = new PackingItemsMap();
+			packingItemsMap.addUnpackedItem(itemToPack);
+
+			final IPackingContext packingContext = packingService.createPackingContext(getCtx());
+			packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
+			packingContext.setPackingItemsMapKey(pickingSlotId);
+
+			// Allocate given HUs to "itemToPack"
+			new HU2PackingItemsAllocator()
+					.setItemToPack(itemToPack)
+					.setPackingContext(packingContext)
+					.setFromHUs(ImmutableList.of(hu))
+					.allocate();
 		}
-		return qty;
 	}
 
 	@Override

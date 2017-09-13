@@ -70,12 +70,12 @@ public class PickingSlotRepoQuery
 		/**
 		 * Retrieve all picking slot items, no matter whether they have a {@link I_M_Picking_Candidate} assigned to their underlying {@link I_M_PickingSlot} or not.
 		 */
-		DONT_CARE
+		ONLY_NOT_CLOSED
 	}
 
 	/**
 	 * Optional; a <code>null</code> value means "return both with and without"
 	 */
 	@Default
-	PickingCandidate pickingCandidates = PickingCandidate.DONT_CARE;
+	PickingCandidate pickingCandidates = PickingCandidate.ONLY_NOT_CLOSED;
 }

@@ -9,9 +9,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
-import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand.RemoveQtyFromHURequest;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -65,7 +63,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-
+		
 		if (pickingSlotRow.isProcessed())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
@@ -78,15 +76,7 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 	protected String doIt()
 	{
 		final PickingSlotRow huRow = getSingleSelectedRow();
-		final PickingSlotView view = PickingSlotView.cast(super.getView());
-
-		final RemoveQtyFromHURequest request = RemoveQtyFromHURequest.builder()
-				.huId(huRow.getHuId())
-				.pickingSlotId(huRow.getPickingSlotId())
-				.shipmentScheduleId(view.getShipmentScheduleId())
-				.build();
-
-		pickingCandidateCommand.removeHUFromPickingSlot(request);
+		pickingCandidateCommand.removeHUFromPickingSlot(huRow.getHuId());
 
 		invalidateView();
 

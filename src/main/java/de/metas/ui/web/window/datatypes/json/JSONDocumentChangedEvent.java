@@ -79,6 +79,11 @@ public class JSONDocumentChangedEvent
 		return operation == JSONOperation.replace;
 	}
 
+	public String getValueAsString(final String defaultValueIfNull)
+	{
+		return value != null ? value.toString() : defaultValueIfNull;
+	}
+
 	public Boolean getValueAsBoolean(final Boolean defaultValue)
 	{
 		return DisplayType.toBoolean(value, defaultValue);

@@ -2,6 +2,7 @@ package de.metas.ui.web.picking.pickingslot;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,18 +10,16 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableListMultimap.Builder;
 import com.google.common.collect.ListMultimap;
 
 import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.IHUPickingSlotBL.RetrieveActiveSourceHusQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
@@ -65,6 +64,9 @@ import lombok.NonNull;
 {
 	private final HUEditorViewRepository huEditorRepo;
 
+	/**
+	 * Creates an instance that builds its own {@link HUEditorViewRepository}.
+	 */
 	public PickingHuRowsRepository()
 	{
 		this(HUEditorViewRepository.builder()
@@ -74,6 +76,11 @@ import lombok.NonNull;
 				.build());
 	}
 
+	/**
+	 * Creates an instance using the given {@code huEditorRepo}. Intended for testing.
+	 * 
+	 * @param huEditorRepo
+	 */
 	@VisibleForTesting
 	PickingHuRowsRepository(@NonNull final HUEditorViewRepository huEditorRepo)
 	{
@@ -91,16 +98,14 @@ import lombok.NonNull;
 		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleIds.stream()
 				.map(id -> load(id, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class))
 				.collect(Collectors.toList());
-
-		final PickingHUsQuery request = PickingHUsQuery.builder().shipmentSchedules(shipmentSchedules).build();
-
+				
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveSourceHUs(request);
+		final List<I_M_HU> sourceHus = huPickingSlotBL.retrieveActiveSourceHUs(RetrieveActiveSourceHusQuery.fromShipmentSchedules(shipmentSchedules));
 		final Set<Integer> sourceHuIds = sourceHus.stream().map(I_M_HU::getM_HU_ID).collect(Collectors.toSet());
 
 		return huEditorRepo.retrieveHUEditorRows(sourceHuIds);
 	}
-	
+
 	/**
 	 * 
 	 * @param pickingSlotRowQuery determines which {@code M_ShipmentSchedule_ID}s this is about,<br>
@@ -109,6 +114,12 @@ import lombok.NonNull;
 	 * @return a multi-map where the keys are {@code M_PickingSlot_ID}s and the value is a list of HUEditorRows which also contain with the respective {@code M_Picking_Candidate}s' {@code processed} states.
 	 */
 	public ListMultimap<Integer, PickedHUEditorRow> retrievePickedHUsIndexedByPickingSlotId(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
+	{
+		final List<I_M_Picking_Candidate> pickingCandidates = retrievePickingCandidates(pickingSlotRowQuery);
+		return retriveHUEditorRowsAndMakePickingRows(pickingCandidates);
+	}
+
+	private List<I_M_Picking_Candidate> retrievePickingCandidates(@NonNull final PickingSlotRepoQuery pickingSlotRowQuery)
 	{
 		// configure the query builder
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -120,7 +131,7 @@ import lombok.NonNull;
 
 		switch (pickingSlotRowQuery.getPickingCandidates())
 		{
-			case DONT_CARE:
+			case ONLY_NOT_CLOSED:
 				queryBuilder.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, X_M_Picking_Candidate.STATUS_CL); // even if we don't care, we *do not* want to show closed picking candidates
 				break;
 			case ONLY_PROCESSED:
@@ -133,27 +144,38 @@ import lombok.NonNull;
 				Check.errorIf(true, "Query has unexpected pickingCandidates={}; query={}", pickingSlotRowQuery.getPickingCandidates(), pickingSlotRowQuery);
 		}
 
-		// execute the query and process the result
-		final Map<Integer, IPair<Integer, Boolean>> huId2pickingSlotId = queryBuilder
+		return queryBuilder
 				.create()
-				.stream(I_M_Picking_Candidate.class)
-				.collect(ImmutableMap.toImmutableMap(
-						I_M_Picking_Candidate::getM_HU_ID, // key function
-						pc -> ImmutablePair.of(pc.getM_PickingSlot_ID(), isPickingCandidateProcessed(pc))) // value function
-		);
+				.list();
+	}
 
-		final List<HUEditorRow> huRows = huEditorRepo.retrieveHUEditorRows(huId2pickingSlotId.keySet());
+	/**
+	 * 
+	 * @param pickingCandidates
+	 * @return a multimap with he keys being picking slot IDs and the values being a list of {@link PickedHUEditorRow}s.
+	 */
+	@VisibleForTesting
+	ListMultimap<Integer, PickedHUEditorRow> retriveHUEditorRowsAndMakePickingRows(@NonNull final List<I_M_Picking_Candidate> pickingCandidates)
+	{
+		final Map<Integer, PickedHUEditorRow> huId2huRow = new HashMap<>();
 
-		final ListMultimap<Integer, PickedHUEditorRow> result = huRows.stream()
-				.map(huRow -> GuavaCollectors.entry(
-						huId2pickingSlotId.get(huRow.getM_HU_ID()).getLeft(), // the results key, i.e. M_PickingSlot_ID
-						new PickedHUEditorRow(// the result's values
-								huRow, // the actual row
-								huId2pickingSlotId.get(huRow.getM_HU_ID()).getRight()) // M_Picking_Candidate.Processed
-				))
-				.collect(GuavaCollectors.toImmutableListMultimap());
+		final Builder<Integer, PickedHUEditorRow> builder = ImmutableListMultimap.builder();
 
-		return result;
+		for (final I_M_Picking_Candidate pickingCandidate : pickingCandidates)
+		{
+			final int huId = pickingCandidate.getM_HU_ID();
+			if (huId2huRow.containsKey(huId))
+			{
+				continue;
+			}
+
+			final PickedHUEditorRow row = new PickedHUEditorRow(huEditorRepo.retrieveForHUId(huId), isPickingCandidateProcessed(pickingCandidate));
+			huId2huRow.put(huId, row);
+
+			builder.put(pickingCandidate.getM_PickingSlot_ID(), row);
+		}
+
+		return builder.build();
 	}
 
 	private boolean isPickingCandidateProcessed(@NonNull final I_M_Picking_Candidate pc)
@@ -187,7 +209,7 @@ import lombok.NonNull;
 	@lombok.AllArgsConstructor
 	public static class PickedHUEditorRow
 	{
-		HUEditorRow huEditor;
+		HUEditorRow huEditorRow;
 
 		boolean processed;
 	}

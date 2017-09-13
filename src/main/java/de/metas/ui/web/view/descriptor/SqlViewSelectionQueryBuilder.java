@@ -40,6 +40,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder;
 import de.metas.ui.web.window.model.sql.SqlDocumentOrderByBuilder.SqlOrderByBindings;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -458,7 +459,7 @@ public final class SqlViewSelectionQueryBuilder
 		// Document filters
 		if (filters != null && !filters.isEmpty())
 		{
-			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters);
+			final String sqlFilters = getSqlDocumentFilterConverter().getSql(sqlParams, filters, SqlOptions.defaults());
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");

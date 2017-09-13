@@ -48,6 +48,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -322,7 +323,7 @@ public class HUEditorViewFactory implements IViewFactory
 		}
 
 		@Override
-		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter)
+		public String getSql(final SqlParamsCollector sqlParamsOut, final DocumentFilter filter, final SqlOptions sqlOpts_NOTUSED)
 		{
 			final Object barcodeObj = filter.getParameter(PARAM_Barcode).getValue();
 			if (barcodeObj == null)

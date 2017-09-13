@@ -61,7 +61,7 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 {
 	@Autowired
 	private IViewsRepository viewsRepo;
-
+	
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final transient IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
@@ -82,14 +82,14 @@ public class WEBUI_Picking_OpenHUsToPick extends ViewBasedProcessTemplate
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final ViewId pickingSlotViewId = getView().getViewId();
 
-		final int shipmentScheduleId = getView().getShipmentScheduleId();
-
-		final PickingHUsQuery request = PickingHUsQuery.builder()
+		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
+		
+		final PickingHUsQuery query = PickingHUsQuery.builder()
 				.shipmentSchedules(ImmutableList.of(loadOutOfTrx(shipmentScheduleId, I_M_ShipmentSchedule.class)))
 				.onlyTopLevelHUs(false)
 				.considerAttributes(true)
 				.build();
-		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(request);
+		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
 		final List<Integer> availableHUsToPickIDs = availableHUsToPick.stream().map(hu -> hu.getM_HU_ID()).collect(Collectors.toList());
 
 		final RelatedProcessDescriptor pickSelectedHU = RelatedProcessDescriptor.builder()

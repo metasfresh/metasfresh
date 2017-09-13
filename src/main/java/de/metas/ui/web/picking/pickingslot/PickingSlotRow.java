@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.adempiere.util.Check;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
@@ -454,9 +456,9 @@ public final class PickingSlotRow implements IViewRow
 		@Builder
 		private PickingSlotRowId(final int pickingSlotId, final int huId, final int huStorageProductId)
 		{
-			this.pickingSlotId = pickingSlotId > 0 ? pickingSlotId : -1;
-			this.huId = huId > 0 ? huId : -1;
-			this.huStorageProductId = huStorageProductId > 0 ? huStorageProductId : -1;
+			this.pickingSlotId = pickingSlotId > 0 ? pickingSlotId : 0;
+			this.huId = huId > 0 ? huId : 0;
+			this.huStorageProductId = huStorageProductId > 0 ? huStorageProductId : 0;
 		}
 
 		@Override
@@ -470,9 +472,12 @@ public final class PickingSlotRow implements IViewRow
 			DocumentId id = this._documentId;
 			if (id == null)
 			{
-				final String idStr = Joiner.on(SEPARATOR).skipNulls().join(pickingSlotId,
-						huId > 0 ? huId : null,
-						huStorageProductId > 0 ? huStorageProductId : null);
+				final String idStr = Joiner.on(SEPARATOR).skipNulls()
+						.join(
+								pickingSlotId,
+								huId > 0 ? huId : null,
+								huStorageProductId > 0 ? huStorageProductId : null);
+
 				id = _documentId = DocumentId.ofString(idStr);
 			}
 			return id;
@@ -487,9 +492,9 @@ public final class PickingSlotRow implements IViewRow
 				throw new IllegalArgumentException("Invalid id: " + documentId);
 			}
 
-			final int pickingSlotId = Integer.parseInt(parts.get(0));
-			final int huId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : -1;
-			final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : -1;
+			final int pickingSlotId = !Check.isEmpty(parts.get(0), true) ? Integer.parseInt(parts.get(0)) : 0;
+			final int huId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : 0;
+			final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : 0;
 
 			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 		}
@@ -516,5 +521,10 @@ public final class PickingSlotRow implements IViewRow
 	public BigDecimal getHuQtyCU()
 	{
 		return huQtyCU;
+	}
+
+	public int getHuProductId()
+	{
+		return huProduct != null ? huProduct.getKeyAsInt() : 0;
 	}
 }

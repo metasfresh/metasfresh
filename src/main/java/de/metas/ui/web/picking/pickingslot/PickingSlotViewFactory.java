@@ -139,7 +139,7 @@ public class PickingSlotViewFactory implements IViewFactory
 				.viewId(pickingSlotViewId)
 				.parentViewId(pickingViewId)
 				.parentRowId(pickingRowId)
-				.shipmentScheduleId(shipmentScheduleId)
+				.currentShipmentScheduleId(shipmentScheduleId)
 				.rows(rowsSupplier)
 				.additionalRelatedProcessDescriptors(createAdditionalRelatedProcessDescriptors())
 				.build();

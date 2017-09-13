@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Test;
 
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow.PickingSlotRowId;
+import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -37,9 +38,9 @@ public class PickingSlotRowIdTests
 	public void testNoPickingSlotId()
 	{
 		final PickingSlotRowId rowId = PickingSlotRowId.ofSourceHU(2);
-		assertThat(rowId.getPickingSlotId()).isLessThan(0);
+		assertThat(rowId.getPickingSlotId()).isLessThanOrEqualTo(0);
 		assertThat(rowId.getHuId()).isEqualTo(2);
-		assertThat(rowId.getHuStorageProductId()).isLessThan(0);
+		assertThat(rowId.getHuStorageProductId()).isLessThanOrEqualTo(0);
 	}
 	
 	@Test
@@ -49,5 +50,21 @@ public class PickingSlotRowIdTests
 		assertThat(rowId.getPickingSlotId()).isEqualTo(1);
 		assertThat(rowId.getHuId()).isEqualTo(2);
 		assertThat(rowId.getHuStorageProductId()).isEqualTo(3);
+	}
+	
+	/**
+	 * Tests the conversion between {@link DocumentId} and {@link PickingSlotRowId} in case of a source-HU row (which has no picking slot ID).
+	 */
+	@Test
+	public void testPickingSlotRowIdFromDocumentId()
+	{
+		final DocumentId documentIdWithoutPickingSlot = PickingSlotRowId.ofSourceHU(18052595).toDocumentId();
+		assertThat(documentIdWithoutPickingSlot.toString()).isEqualTo("0-18052595");
+		
+		final PickingSlotRowId fromDocumentId = PickingSlotRowId.fromDocumentId(documentIdWithoutPickingSlot);
+		
+		assertThat(fromDocumentId.getPickingSlotId()).isLessThanOrEqualTo(0);
+		assertThat(fromDocumentId.getHuId()).isEqualTo(18052595);
+		assertThat(fromDocumentId.getHuStorageProductId()).isLessThanOrEqualTo(0);
 	}
 }

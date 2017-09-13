@@ -38,7 +38,8 @@ public class WEBUI_Picking_M_Source_HU_Delete
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
-	
+
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -62,10 +63,15 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 		final int huId = rowToProcess.getHuId();
 
-		pickingCandidateCommand.removeSourceHu(huId);
-
+		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
+		final boolean sourceWasDeleted = pickingCandidateCommand.removeSourceHu(huId);
+		if (sourceWasDeleted)
+		{
+			getView().invalidateAll();
+//			final PickingSlotView pickingSlotView = PickingSlotView.cast(getView());
+		}
 		invalidateView();
-		invalidateParentView();
+	//	invalidateParentView();
 
 		return MSG_OK;
 	}

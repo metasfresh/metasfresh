@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model;
 
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.document.engine.IDocActionBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -1963,6 +1965,25 @@ public final class Document
 	public void onChildSaved(final Document document)
 	{
 		getIncludedDocumentsCollection(document.getDetailId()).onChildSaved(document);
+	}
+	
+	public Set<DocumentStandardAction> getStandardActions()
+	{
+		final EnumSet<DocumentStandardAction> standardActions = EnumSet.allOf(DocumentStandardAction.class);
+		
+		// Remove Print action if document is not printable (https://github.com/metasfresh/metasfresh-webui-api/issues/570)
+		if(!getEntityDescriptor().isPrintable())
+		{
+			standardActions.remove(DocumentStandardAction.Print);
+		}
+
+		// Remove letter action if functionality is not enabled (https://github.com/metasfresh/metasfresh-webui-api/issues/178)
+		if(!Letters.isEnabled())
+		{
+			standardActions.remove(DocumentStandardAction.Letter);
+		}
+		
+		return standardActions;
 	}
 
 	//

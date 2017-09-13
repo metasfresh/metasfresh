@@ -5,14 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.process.IProcessPrecondition;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.picking.pickingslot.PickingCandidateCommand;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
-import de.metas.ui.web.view.IView;
-import de.metas.ui.web.view.IViewsRepository;
-import de.metas.ui.web.view.ViewId;
-import de.metas.ui.web.window.datatypes.DocumentId;
 
 /*
  * #%L
@@ -51,9 +46,6 @@ public class WEBUI_Picking_PickSelectedHU
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
 
-	@Autowired
-	private IViewsRepository viewsRepo;
-
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -63,9 +55,7 @@ public class WEBUI_Picking_PickSelectedHU
 					pickHuRow(huEditorRow);
 				});
 
-		invalidateView();
-		invalidateParentView();
-
+		invalidateViewsAndPrepareReturn();
 		return MSG_OK;
 	}
 
@@ -78,44 +68,11 @@ public class WEBUI_Picking_PickSelectedHU
 			throw new AdempiereException("Not a top level HU");
 		}
 
-		final PickingSlotView pickingSlotsView = getPickingSlotView();
+		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
 		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = pickingSlotsView.getShipmentScheduleId();
+		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
 
 		pickingCandidateCommand.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
-
-		invalidateView(pickingSlotsView.getViewId()); // picking slots view
-		invalidateView(pickingSlotsView.getParentViewId()); // picking view
-
-		// After this process finished successfully go back to picking slots view
-		getResult().setWebuiIncludedViewIdToOpen(pickingSlotsView.getViewId().getViewId());
 	}
-
-	@Override
-	protected HUEditorRow getSingleSelectedRow()
-	{
-		return HUEditorRow.cast(super.getSingleSelectedRow());
-	}
-
-	protected PickingSlotView getPickingSlotView()
-	{
-		final ViewId parentViewId = getView().getParentViewId();
-		if (parentViewId == null)
-		{
-			return null;
-		}
-		final IView parentView = viewsRepo.getView(parentViewId);
-		return PickingSlotView.cast(parentView);
-	}
-
-	protected PickingSlotRow getPickingSlotRow()
-	{
-		final HUEditorView huView = getView();
-		final DocumentId pickingSlotRowId = huView.getParentRowId();
-
-		final PickingSlotView pickingSlotView = getPickingSlotView();
-		return pickingSlotView.getById(pickingSlotRowId);
-	}
-
 }

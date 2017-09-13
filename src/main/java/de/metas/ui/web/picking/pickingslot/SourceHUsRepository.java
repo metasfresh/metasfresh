@@ -5,17 +5,24 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.adempiere.util.Services;
 import org.springframework.stereotype.Service;
 
+import com.google.common.collect.ImmutableList;
+
+import de.metas.handlingunits.IHUPickingSlotBL;
+import de.metas.handlingunits.IHUPickingSlotBL.RetrieveActiveSourceHusQuery;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceSpecification;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 
 /*
@@ -50,12 +57,23 @@ public class SourceHUsRepository
 {
 	private final HUTraceRepository huTraceRepository;
 
-	public SourceHUsRepository(@NonNull final HUTraceRepository huTraceRepository)
+	private final PickingCandidateRepository pickingCandidateRepo;
+
+	public SourceHUsRepository(
+			@NonNull final HUTraceRepository huTraceRepository,
+			@NonNull final PickingCandidateRepository pickingCandidateRepo)
 	{
 		this.huTraceRepository = huTraceRepository;
+		this.pickingCandidateRepo = pickingCandidateRepo;
 	}
 
-	public Collection<I_M_HU> retrieveSourceHUs(@NonNull final List<Integer> huIds)
+	/**
+	 * Uses HU-tracing to identify and return the (top-level) HUs that are the given {@code huIds}' source HUs.
+	 * 
+	 * @param huIds
+	 * @return
+	 */
+	public Collection<I_M_HU> retrieveSourceHUsViaTracing(@NonNull final List<Integer> huIds)
 	{
 		final Set<Integer> vhuSourceIds = new HashSet<>();
 
@@ -90,6 +108,41 @@ public class SourceHUsRepository
 			}
 		}
 		return topLevelSourceHus;
+	}
+
+	public Collection<I_M_HU> retrieveMatchingSourceHUs(final int huId)
+	{
+		final List<I_M_ShipmentSchedule> scheds = pickingCandidateRepo.retrieveShipmentSchedulesViaPickingCandidates(huId);
+		final RetrieveActiveSourceHusQuery query = RetrieveActiveSourceHusQuery.fromShipmentSchedules(scheds);
+
+		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+		final List<I_M_HU> sourceHUs = huPickingSlotBL.retrieveActiveSourceHUs(query);
+
+		return sourceHUs;
+	}
+
+	public Collection<I_M_HU> retrieveSourceHUs(final int huId)
+	{
+		final LinkedHashMap<Integer, I_M_HU> map = new LinkedHashMap<>();
+
+		addToMapIfMissing(map, retrieveSourceHUsViaTracing(ImmutableList.of(huId)));
+		addToMapIfMissing(map, retrieveMatchingSourceHUs(huId));
+
+		return map.values();
+	}
+
+	void addToMapIfMissing(
+			@NonNull final LinkedHashMap<Integer, I_M_HU> map,
+			@NonNull final Collection<I_M_HU> sourceHUs)
+	{
+		for (final I_M_HU sourceHU : sourceHUs)
+		{
+			if (map.containsKey(sourceHU.getM_HU_ID()))
+			{
+				continue;
+			}
+			map.put(sourceHU.getM_HU_ID(), sourceHU);
+		}
 	}
 
 }

@@ -113,7 +113,8 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		// Add the TU to picking slot (as candidate)
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getShipmentScheduleId();
+		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
+
 		pickingCandidateCommand.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
 
 		// add the qty
@@ -123,7 +124,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 					.qtyCU(qtyCU)
 					.huId(hu.getM_HU_ID())
 					.pickingSlotId(pickingSlotRow.getPickingSlotId())
-					.shipmentScheduleId(getView().getShipmentScheduleId())
+					.shipmentScheduleId(shipmentScheduleId)
 					.build();
 
 			pickingCandidateCommand.addQtyToHU(request);
@@ -143,7 +144,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	private LookupValuesList getM_HU_PI_Item_Products()
 	{
 		final Properties ctx = getCtx();
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
 				shipmentSchedule.getM_Product(),
@@ -159,7 +160,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 			return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 		}
 		else if (Objects.equals(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, parameter.getColumnName()))

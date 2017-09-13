@@ -45,6 +45,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 /*
@@ -132,13 +133,13 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public String getSqlWhereClause(final ViewId viewId, List<DocumentFilter> filters, final DocumentIdsSelection rowIds)
+	public String getSqlWhereClause(final ViewId viewId, final List<DocumentFilter> filters, final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
 		final StringBuilder sqlWhereClause = new StringBuilder();
 
 		// Convert filters to SQL
 		{
-			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters);
+			final String sqlFilters = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts);
 			if (!Check.isEmpty(sqlFilters, true))
 			{
 				if (sqlWhereClause.length() > 0)
@@ -463,7 +464,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		final List<DocumentFilter> filters = ImmutableList.of();
-		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds);
+		final String sqlWhereClause = getSqlWhereClause(viewId, filters, rowIds, SqlOptions.defaults());
 		if (Check.isEmpty(sqlWhereClause, true))
 		{
 			logger.warn("Could get the SQL where clause for {}/{}. Returning empty", viewId, rowIds);

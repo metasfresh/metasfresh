@@ -52,10 +52,8 @@ public class WEBUI_Picking_M_Source_HU_Create
 
 					pickingCandidateCommand.addSourceHu(huEditorRow.getM_HU_ID());
 				});
-		
-		invalidateView();
-		invalidateParentView();
-		
+
+		invalidateViewsAndPrepareReturn();
 		return MSG_OK;
 	}
 }
