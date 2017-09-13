@@ -486,7 +486,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
 			</activation>
 			<properties>
 				<env.MF_VERSION>LOCAL-NO-RELEASE</env.MF_VERSION>
-				<env.MF_RELEASE_VERSION>LOCAL-NO-RELEASE</env.MF_RELEASE_VERSION>
+				<env.MF_RELEASE_VERSION>0.0</env.MF_RELEASE_VERSION> <!-- needs to be like this for the launch4j plugin's sake -->
 				<env.BUILD_TAG>LOCAL-NO-RELEASE</env.BUILD_TAG>
 				<env.BUILD_URL>LOCAL-NO-RELEASE</env.BUILD_URL>
 				<env.JOB_NAME>LOCAL-NO-RELEASE</env.JOB_NAME>
