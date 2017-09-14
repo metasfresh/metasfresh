@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -23,16 +25,10 @@ package de.metas.handlingunits.picking.impl;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -43,7 +39,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
@@ -60,7 +55,6 @@ import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
@@ -77,14 +71,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_PickingSlot_Trx;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.impl.PickingSlotBL;
-import de.metas.storage.IStorageEngine;
-import de.metas.storage.IStorageEngineService;
-import de.metas.storage.IStorageQuery;
-import de.metas.storage.IStorageRecord;
-import de.metas.storage.spi.hu.impl.HUStorageRecord;
 import lombok.NonNull;
 
 public class HUPickingSlotBL
@@ -346,7 +333,7 @@ public class HUPickingSlotBL
 		pickingSlotHU.setAD_Org_ID(pickingSlot.getAD_Org_ID());
 		pickingSlotHU.setIsActive(true);
 
-		InterfaceWrapperHelper.save(pickingSlotHU, ITrx.TRXNAME_ThreadInherited);
+		save(pickingSlotHU, ITrx.TRXNAME_ThreadInherited);
 
 		//
 		// Make sure HU has the picking slot's BPartner
@@ -383,7 +370,6 @@ public class HUPickingSlotBL
 		// Create the picking slot transaction and return it.
 		final I_M_PickingSlot_Trx pickingSlotTrx = createPickingSlotTrx(pickingSlot, hu, X_M_PickingSlot_Trx.ACTION_Add_HU_To_Queue);
 		return new QueueActionResult(pickingSlotTrx, pickingSlotHU);
-
 	}
 
 	@Override
@@ -578,167 +564,17 @@ public class HUPickingSlotBL
 	@Override
 	public List<I_M_HU> retrieveAvailableSourceHUs(@NonNull final PickingHUsQuery request)
 	{
-		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveTopLevelAndFilterForActualSourceHUs(vhus)));
+		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveTopLevelAndFilterForActualSourceHUs(vhus);
+
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
 	}
 
 	@Override
 	public List<I_M_HU> retrieveAvailableHUsToPick(@NonNull final PickingHUsQuery request)
 	{
-		return retrieveAvailableHUsToPick0(request, (vhus -> retrieveFullTreeAndExcludePickingHUs(vhus)));
-	}
+		final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction = vhus -> RetrieveAvailableHUsToPickFilters.retrieveFullTreeAndExcludePickingHUs(vhus);
 
-	private List<I_M_HU> retrieveAvailableHUsToPick0(
-			@NonNull final PickingHUsQuery request,
-			@NonNull final Function<List<I_M_HU>, List<I_M_HU>> vhuToEndResultFunction)
-	{
-		if (request.getShipmentSchedules().isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		final List<I_M_HU> vhus = retrieveVHUsFromStorage(request.getShipmentSchedules(), request.isConsiderAttributes());
-
-		final List<I_M_HU> result = vhuToEndResultFunction.apply(vhus);
-
-		if (!request.isOnlyTopLevelHUs())
-		{
-			return result; // we are done
-		}
-
-		// we need to filter out everything that is not toplevel
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		return handlingUnitsBL.getTopLevelHUs(TopLevelHusQuery.builder().hus(result).includeAll(false).build());
-	}
-
-	private List<I_M_HU> retrieveVHUsFromStorage(
-			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
-			final boolean considerAttributes)
-	{
-		//
-		// Create storage queries from shipment schedules
-
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final Set<IStorageQuery> storageQueries = new HashSet<>();
-		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
-		{
-			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes);
-			storageQueries.add(storageQuery);
-		}
-
-		//
-		// Retrieve Storage records
-		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
-		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
-		final IContextAware context = PlainContextAware.createUsingOutOfTransaction();
-		final Collection<IStorageRecord> storageRecords = storageEngine.retrieveStorageRecords(context, storageQueries);
-
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-
-		//
-		// Fetch VHUs from storage records
-		final List<I_M_HU> vhus = new ArrayList<>();
-		for (final IStorageRecord storageRecord : storageRecords)
-		{
-			final HUStorageRecord huStorageRecord = HUStorageRecord.cast(storageRecord);
-			final I_M_HU vhu = huStorageRecord.getVHU();
-
-			// Skip those VHUs which are not about Active HUs
-			// (i.e. we are skipping things which were already picked)
-			if (!X_M_HU.HUSTATUS_Active.equals(vhu.getHUStatus()))
-			{
-				continue;
-			}
-
-			final I_M_Locator locator = huStorageRecord.getLocator();
-			if (locator != null && locator.getM_Locator_ID() != vhu.getM_Locator_ID())
-			{
-				continue;
-			}
-
-			if (huPickingSlotDAO.isHuIdPicked(vhu.getM_HU_ID()) && huPickingSlotDAO.isSourceHU(vhu.getM_HU_ID()))
-			{
-				continue;
-			}
-
-			vhus.add(vhu);
-		}
-		return vhus;
-	}
-
-	/**
-	 * Excludes HU that are already picked or already selected as fine picking source HUs.
-	 * 
-	 * @param vhus
-	 * @return
-	 */
-	private List<I_M_HU> retrieveFullTreeAndExcludePickingHUs(@NonNull final List<I_M_HU> vhus)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-
-		final Predicate<I_M_HU> notPickedOrSourceHU = hu -> !huPickingSlotDAO.isHuIdPicked(hu.getM_HU_ID()) && !huPickingSlotDAO.isSourceHU(hu.getM_HU_ID());
-
-		//
-		// get the the top level HUs from for our VHUs
-		final TopLevelHusQuery topLevelHusRequest = TopLevelHusQuery.builder()
-				.hus(vhus)
-				.includeAll(false)
-				.filter(notPickedOrSourceHU) // exclude HUs that are already picked or flagged as source HUs
-				.build();
-		final List<I_M_HU> husTopLevel = handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
-
-		// We still need to iterate the HUs trees from the top level HUs.
-		// Even if we had called handlingUnitsBL.getTopLevelHUs with includeAll(true),
-		// There might be a VHU with a picked TU. Because the TU is picked, also its un-picked VHU may not be in the result we return
-		final List<I_M_HU> result = new ArrayList<>();
-		for (final I_M_HU huTopLevel : husTopLevel)
-		{
-			new HUIterator()
-					.setEnableStorageIteration(false)
-					.setListener(new HUIteratorListenerAdapter()
-					{
-						@Override
-						public Result beforeHU(IMutable<I_M_HU> hu)
-						{
-							if (!notPickedOrSourceHU.test(hu.getValue()))
-							{
-								return Result.SKIP_DOWNSTREAM;
-							}
-							result.add(hu.getValue());
-							return Result.CONTINUE;
-						}
-					})
-					.iterate(huTopLevel);
-		}
-		return result;
-	}
-
-	@VisibleForTesting
-	List<I_M_HU> retrieveTopLevelAndFilterForActualSourceHUs(@NonNull final List<I_M_HU> vhus)
-	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUPickingSlotDAO huPickingSlotDAO = Services.get(IHUPickingSlotDAO.class);
-
-		final TreeSet<I_M_HU> sourceHUs = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
-
-		//
-		// this filter's real job is to collect those HUs that are flagged as "picking source"
-		final Predicate<I_M_HU> filter = hu -> {
-			if (huPickingSlotDAO.isSourceHU(hu.getM_HU_ID()))
-			{
-				sourceHUs.add(hu);
-			}
-			return true;
-		};
-
-		final TopLevelHusQuery topLevelHusRequest = TopLevelHusQuery.builder()
-				.hus(vhus)
-				.includeAll(false)
-				.filter(filter)
-				.build();
-		handlingUnitsBL.getTopLevelHUs(topLevelHusRequest);
-
-		return ImmutableList.copyOf(sourceHUs);
+		return RetrieveAvailableHUsToPick.retrieveAvailableHUsToPick(request, vhuToEndResultFunction);
 	}
 
 	@Override

@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
+import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -190,11 +191,11 @@ public final class Main extends AbstractModuleInterceptor
 
 		// https://github.com/metasfresh/metasfresh/issues/2298
 		engine.addModelValidator(de.metas.handlingunits.picking.modelinterceptor.M_HU.INSTANCE, client);
-		
+
 		//
 		// Tour Planning
 		setupTourPlanning();
-				
+
 		//
 		// Register GridTabSummaryInfo entries (08734) - override de.metas.swat implementation
 		final IGridTabSummaryInfoFactory gridTabSummaryInfoFactory = Services.get(IGridTabSummaryInfoFactory.class);
@@ -238,13 +239,25 @@ public final class Main extends AbstractModuleInterceptor
 	protected void setupCaching(@NonNull final IModelCacheService cachingService)
 	{
 		// master data
+		setupMasterDataCaching(cachingService);
+
+		setupRemoteCaching();
+
+		setupInTrxOnlyCaching(cachingService);
+	}
+
+	private void setupMasterDataCaching(final IModelCacheService cachingService)
+	{
 		cachingService.addTableCacheConfig(I_M_HU_PI.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Version.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Item.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Item_Product.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Attribute.class);
 		cachingService.addTableCacheConfig(I_M_HU_PackingMaterial.class);
+	}
 
+	private void setupRemoteCaching()
+	{
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI_Version.Table_Name);
@@ -256,9 +269,15 @@ public final class Main extends AbstractModuleInterceptor
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Source_HU.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Picking_Candidate.Table_Name);
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PickingSlot_HU.Table_Name);
+	}
 
-		//
-		// Setup tables for InTransaction only caching
+	/**
+	 * Setup tables for InTransaction only caching. see {@link ITableCacheConfigBuilder#setTrxLevel(TrxLevel)}.
+	 * 
+	 * @param cachingService
+	 */
+	private void setupInTrxOnlyCaching(final IModelCacheService cachingService)
+	{
 		for (final String tableName : Arrays.asList(
 				I_M_HU.Table_Name, I_M_HU_Storage.Table_Name, I_M_HU_Item.Table_Name, I_M_HU_Item_Storage.Table_Name, I_M_HU_Attribute.Table_Name))
 		{

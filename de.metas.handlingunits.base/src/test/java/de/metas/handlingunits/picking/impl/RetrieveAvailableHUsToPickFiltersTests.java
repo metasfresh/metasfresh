@@ -48,7 +48,7 @@ import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class HUPickingSlotBL_RetrieveTopLevelAndFilterForSourceHUsTests
+public class RetrieveAvailableHUsToPickFiltersTests
 {
 
 	@Before
@@ -63,7 +63,7 @@ public class HUPickingSlotBL_RetrieveTopLevelAndFilterForSourceHUsTests
 		final I_M_HU hu = newInstance(I_M_HU.class);
 		save(hu);
 
-		final List<I_M_HU> result = new HUPickingSlotBL().retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(hu));
+		final List<I_M_HU> result = RetrieveAvailableHUsToPickFilters.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(hu));
 		assertThat(result).isEmpty();
 	}
 
@@ -81,7 +81,7 @@ public class HUPickingSlotBL_RetrieveTopLevelAndFilterForSourceHUsTests
 		sourceHU.setM_HU(hu);
 		save(sourceHU);
 
-		final List<I_M_HU> result = new HUPickingSlotBL()
+		final List<I_M_HU> result = RetrieveAvailableHUsToPickFilters
 				.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(hu));
 		assertThat(result).containsExactly(hu);
 	}
@@ -124,8 +124,8 @@ public class HUPickingSlotBL_RetrieveTopLevelAndFilterForSourceHUsTests
 		sourceHU.setM_HU(tu);
 		save(sourceHU);
 
-		final List<I_M_HU> result = new HUPickingSlotBL()
-				.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(vhu));
+		final List<I_M_HU> result =
+				RetrieveAvailableHUsToPickFilters.retrieveTopLevelAndFilterForActualSourceHUs(ImmutableList.of(vhu));
 		assertThat(result).containsExactly(tu);
 	}
 }

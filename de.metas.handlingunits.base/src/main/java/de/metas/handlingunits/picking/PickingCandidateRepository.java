@@ -1,13 +1,19 @@
 package de.metas.handlingunits.picking;
 
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 
 /*
  * #%L
@@ -40,6 +46,8 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 @Service
 public class PickingCandidateRepository
 {
+	private static final Logger logger = LogManager.getLogger(PickingCandidateRepository.class);
+	
 	public List<I_M_ShipmentSchedule> retrieveShipmentSchedulesViaPickingCandidates(final int huId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -62,5 +70,43 @@ public class PickingCandidateRepository
 				.create()
 				.list();
 		return result;
+	}
+	
+	public I_M_Picking_Candidate getCreateCandidate(final int huId, final int pickingSlotId, final int shipmentScheduleId)
+	{
+		I_M_Picking_Candidate pickingCandidate = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.firstOnly(I_M_Picking_Candidate.class);
+
+		if (pickingCandidate == null)
+		{
+			pickingCandidate = InterfaceWrapperHelper.newInstance(I_M_Picking_Candidate.class);
+			pickingCandidate.setM_ShipmentSchedule_ID(shipmentScheduleId);
+			pickingCandidate.setM_PickingSlot_ID(pickingSlotId);
+			pickingCandidate.setM_HU_ID(huId);
+			pickingCandidate.setQtyPicked(BigDecimal.ZERO); // will be updated later
+			pickingCandidate.setC_UOM(null); // will be updated later
+			save(pickingCandidate);
+
+			logger.info("Created new M_Picking_Candidate for M_HU_ID={}, M_PickingSlot_ID={}, M_ShipmentSchedule_ID={}; candidate={}",
+					huId, pickingSlotId, shipmentScheduleId, pickingCandidate);
+		}
+
+		return pickingCandidate;
+	}
+	
+	public void deletePickingCandidate(final int huId)
+	{
+		Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.delete();
 	}
 }

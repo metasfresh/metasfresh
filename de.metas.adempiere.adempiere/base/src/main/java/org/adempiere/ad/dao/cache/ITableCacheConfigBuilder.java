@@ -41,7 +41,8 @@ public interface ITableCacheConfigBuilder
 	ITableCacheConfigBuilder setEnabled(final boolean enabled);
 
 	/**
-	 * When you do {@link TrxLevel#InTransactionOnly}, then distributed cache invalidation is pointless.
+	 * When you do {@link TrxLevel#InTransactionOnly}, then distributed cache invalidation is pointless.<br>
+	 * Using trx-only caching can make sense if some short lived is queried over and over again within one transaction.
 	 * 
 	 * @param trxLevel
 	 * @return

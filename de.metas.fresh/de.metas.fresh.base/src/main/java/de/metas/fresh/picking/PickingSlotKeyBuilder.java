@@ -39,6 +39,7 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.IPickingSlotDAO.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
+import lombok.NonNull;
 
 public class PickingSlotKeyBuilder
 {
@@ -81,35 +82,40 @@ public class PickingSlotKeyBuilder
 				.build();
 
 		final List<I_M_PickingSlot> bpPickingSlots = Services.get(IPickingSlotDAO.class).retrivePickingSlots(pickingSlotRequest);
+
 		for (final I_M_PickingSlot pickingSlot : bpPickingSlots)
 		{
-			if (!pickingSlot.isActive())
-			{
-				continue;
-			}
-
-			final int pickingSlotId = pickingSlot.getM_PickingSlot_ID();
-			if (pickingSlotsKeys.containsKey(pickingSlotId))
-			{
-				// already added
-				continue;
-			}
-
-			//
-			// Filter by warehouse
-			if (allowedWarehouseIds != null && !allowedWarehouseIds.isEmpty())
-			{
-				final int warehouseId = pickingSlot.getM_Warehouse_ID();
-				if (!allowedWarehouseIds.contains(warehouseId))
-				{
-					// skip because it's not in our list of accepted warehouses
-					continue;
-				}
-			}
-
-			final PickingSlotKey pickingSlotKey = new PickingSlotKey(terminalContext, pickingSlot);
-			pickingSlotsKeys.put(pickingSlotId, pickingSlotKey);
+			addIfValid(pickingSlot, allowedWarehouseIds);
 		}
+	}
+
+	private void addIfValid(
+			@NonNull final I_M_PickingSlot pickingSlot,
+			@NonNull final Set<Integer> allowedWarehouseIds)
+	{
+		if (!pickingSlot.isActive())
+		{
+			return;
+		}
+
+		final int pickingSlotId = pickingSlot.getM_PickingSlot_ID();
+		if (pickingSlotsKeys.containsKey(pickingSlotId))
+		{
+			return; // already added
+		}
+
+		// Filter by warehouse
+		if (allowedWarehouseIds != null && !allowedWarehouseIds.isEmpty())
+		{
+			final int warehouseId = pickingSlot.getM_Warehouse_ID();
+			if (!allowedWarehouseIds.contains(warehouseId))
+			{
+				return; // skip because it's not in our list of accepted warehouses
+			}
+		}
+
+		final PickingSlotKey pickingSlotKey = new PickingSlotKey(terminalContext, pickingSlot);
+		pickingSlotsKeys.put(pickingSlotId, pickingSlotKey);
 	}
 
 	public List<PickingSlotKey> getPickingSlotKeys()
