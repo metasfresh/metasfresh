@@ -106,6 +106,35 @@ public class WEBUI_Picking_PickQtyToNewHU
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+
+		final I_M_HU hu = createAndAddHU(pickingSlotRow);
+		addPickedQuantity(hu, pickingSlotRow);
+
+		invalidateView();
+		invalidateParentView();
+
+		return MSG_OK;
+	}
+
+	private void addPickedQuantity(
+			@NonNull final I_M_HU hu, 
+			@NonNull final PickingSlotRow pickingSlotRow)
+	{
+		if (qtyCU.signum() > 0)
+		{
+			final AddQtyToHURequest request = AddQtyToHURequest.builder()
+					.qtyCU(qtyCU)
+					.huId(hu.getM_HU_ID())
+					.pickingSlotId(pickingSlotRow.getPickingSlotId())
+					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
+					.build();
+
+			pickingCandidateCommand.addQtyToHU(request);
+		}
+	}
+
+	private I_M_HU createAndAddHU(@NonNull final PickingSlotRow pickingSlotRow)
+	{
 		final I_M_Locator pickingSlotLocator = getPickingSlotLocator(pickingSlotRow);
 
 		// Create a new empty TU
@@ -117,23 +146,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		pickingCandidateCommand.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
 
-		// add the qty
-		if (qtyCU.signum() > 0)
-		{
-			final AddQtyToHURequest request = AddQtyToHURequest.builder()
-					.qtyCU(qtyCU)
-					.huId(hu.getM_HU_ID())
-					.pickingSlotId(pickingSlotRow.getPickingSlotId())
-					.shipmentScheduleId(shipmentScheduleId)
-					.build();
-
-			pickingCandidateCommand.addQtyToHU(request);
-		}
-
-		invalidateView();
-		invalidateParentView();
-
-		return MSG_OK;
+		return hu;
 	}
 
 	/**

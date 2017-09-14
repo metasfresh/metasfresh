@@ -4,7 +4,7 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
@@ -37,7 +37,7 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		implements IProcessPrecondition
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private SourceHUsRepository sourceHUsRepository;
 
 
 	@Override
@@ -64,14 +64,12 @@ public class WEBUI_Picking_M_Source_HU_Delete
 		final int huId = rowToProcess.getHuId();
 
 		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
-		final boolean sourceWasDeleted = pickingCandidateCommand.removeSourceHu(huId);
+		final boolean sourceWasDeleted = sourceHUsRepository.removeSourceHu(huId);
 		if (sourceWasDeleted)
 		{
 			getView().invalidateAll();
-//			final PickingSlotView pickingSlotView = PickingSlotView.cast(getView());
 		}
 		invalidateView();
-	//	invalidateParentView();
 
 		return MSG_OK;
 	}

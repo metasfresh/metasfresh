@@ -120,9 +120,7 @@ public final class PickingSlotRow implements IViewRow
 	@Builder(builderMethodName = "fromSourceHUBuilder", builderClassName = "FromSourceHUBuilder")
 	private PickingSlotRow(
 			final int huId,
-			//
 			final HUEditorRowType huEditorRowType,
-			//
 			final String huCode,
 			final JSONLookupValue product,
 			final String packingInfo,
@@ -182,7 +180,6 @@ public final class PickingSlotRow implements IViewRow
 		processed = false;
 		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
 
-		//
 		// HU
 		huId = -1;
 		huStorageProductId = -1;
@@ -191,14 +188,12 @@ public final class PickingSlotRow implements IViewRow
 		huPackingInfo = null;
 		huQtyCU = null;
 
-		//
 		// Picking slot info
 		pickingSlotRow = true;
 		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
 		this.pickingSlotWarehouse = pickingSlotWarehouse;
 
-		//
 		// Included rows
 		this.includedHURows = includedHURows == null ? ImmutableMap.of() : Maps.uniqueIndex(includedHURows, PickingSlotRow::getPickingSlotRowId);
 	}
@@ -242,7 +237,6 @@ public final class PickingSlotRow implements IViewRow
 		this.processed = processed;
 		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, id.toDocumentId());
 
-		//
 		// HU
 		this.huId = huId;
 		this.huStorageProductId = huStorageProductId;
@@ -251,14 +245,12 @@ public final class PickingSlotRow implements IViewRow
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
 
-		//
 		// Picking slot info
 		pickingSlotRow = false;
 		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = null;
 		pickingSlotWarehouse = null;
 
-		//
 		// Included rows
 		this.includedHURows = includedHURows == null ? ImmutableMap.of() : Maps.uniqueIndex(includedHURows, PickingSlotRow::getPickingSlotRowId);
 	}

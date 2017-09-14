@@ -135,17 +135,8 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 			final int pickingSlotId,
 			@NonNull final I_M_HU hu)
 	{
-		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<>();
+		final IFreshPackingItem itemToPack = createItemToPack(hu);
 
-		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
-		for (final I_M_Picking_Candidate pc : pickingCandidates)
-		{
-			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
-			final BigDecimal qty = pc.getQtyPicked();
-			scheds2Qtys.put(shipmentSchedule, qty);
-		}
-
-		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
 		final PackingItemsMap packingItemsMap = new PackingItemsMap();
 		packingItemsMap.addUnpackedItem(itemToPack);
 
@@ -160,6 +151,22 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 				.setPackingContext(packingContext)
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();
+	}
+
+	private IFreshPackingItem createItemToPack(@NonNull final I_M_HU hu)
+	{
+		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<>();
+
+		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
+		for (final I_M_Picking_Candidate pc : pickingCandidates)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
+			final BigDecimal qty = pc.getQtyPicked();
+			scheds2Qtys.put(shipmentSchedule, qty);
+		}
+
+		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
+		return itemToPack;
 	}
 
 	@Override

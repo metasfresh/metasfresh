@@ -2,7 +2,7 @@ package de.metas.ui.web.picking.process;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.process.IProcessPrecondition;
 
 /*
@@ -42,7 +42,7 @@ public class WEBUI_Picking_M_Source_HU_Create
 {
 
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private SourceHUsRepository sourceHUsRepository;
 
 	@Override
 	protected String doIt() throws Exception
@@ -50,7 +50,7 @@ public class WEBUI_Picking_M_Source_HU_Create
 		retrieveEligibleHUEditorRows().forEach(
 				huEditorRow -> {
 
-					pickingCandidateCommand.addSourceHu(huEditorRow.getM_HU_ID());
+					sourceHUsRepository.addSourceHu(huEditorRow.getM_HU_ID());
 				});
 
 		invalidateViewsAndPrepareReturn();
