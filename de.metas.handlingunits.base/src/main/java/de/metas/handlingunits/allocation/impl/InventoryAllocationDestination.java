@@ -250,10 +250,11 @@ public class InventoryAllocationDestination implements IAllocationDestination
 
 			setInventoryLinePiip(hu, inventoryLine);
 
+			final I_M_HU tuHU = retrieveTu(hu);
 			//
 			// Calculate and update inventory line's QtyTU
 			{
-				final BigDecimal countTUs = countTUs(request.getHUContext(), hu, inventoryLine);
+				final BigDecimal countTUs = countTUs(request.getHUContext(), tuHU, inventoryLine);
 				final BigDecimal qtyTU = inventoryLine.getQtyTU().add(countTUs);
 				inventoryLine.setQtyTU(qtyTU);
 			}
@@ -261,7 +262,7 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Collect HU's packing materials
 			{
-				collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), hu);
+				collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
 				if (topLevelHU.getM_HU_ID() != hu.getM_HU_ID())
 				{
 					collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
@@ -461,13 +462,13 @@ public class InventoryAllocationDestination implements IAllocationDestination
 	 * Counts the number of TUs from from the
 	 * 
 	 * @param huContext
-	 * @param hu
+	 * @param tuHU TU or aggregated TU
 	 * @param inventoryLine
 	 * @return
 	 */
 	private BigDecimal countTUs(
 			@NonNull final IHUContext huContext,
-			@NonNull final I_M_HU hu,
+			@NonNull final I_M_HU tuHU,
 			@NonNull final I_M_InventoryLine inventoryLine)
 	{
 		final I_M_InOutLine receiptLine = InterfaceWrapperHelper.create(inventoryLine.getM_InOutLine(), I_M_InOutLine.class);
@@ -478,7 +479,6 @@ public class InventoryAllocationDestination implements IAllocationDestination
 			pmCollectorForCountingTUs = new HUPackingMaterialsCollector(huContext);
 		}
 
-		final I_M_HU tuHU = retrieveTu(hu);
 		pmCollectorForCountingTUs.addHURecursively(tuHU, inOutLineSource);
 
 		final int countTUs = pmCollectorForCountingTUs.getAndResetCountTUs();

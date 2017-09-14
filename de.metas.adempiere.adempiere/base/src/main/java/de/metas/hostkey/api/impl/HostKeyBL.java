@@ -71,7 +71,8 @@ public class HostKeyBL implements IHostKeyBL
 			final I_AD_User user = InterfaceWrapperHelper.create(ctx, userId, I_AD_User.class, ITrx.TRXNAME_None);
 			if (user!=null && user.isLoginAsHostKey() )
 			{
-				hostkey = user.getLogin();
+				final de.metas.adempiere.model.I_AD_User userLogin = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
+				hostkey = userLogin.getLogin();
 			}
 		}
 
