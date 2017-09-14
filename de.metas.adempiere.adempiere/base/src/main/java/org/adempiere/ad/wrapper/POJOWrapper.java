@@ -38,6 +38,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
 import org.adempiere.ad.service.IDeveloperModeBL;
@@ -56,6 +58,7 @@ import org.compiere.util.Evaluatee2;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
+import lombok.NonNull;
 
 /**
  * Simple implementation which binds an given interface to a internal Map.
@@ -542,7 +545,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	@Override
-	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable
+	public Object invoke(
+			final Object proxy, 
+			@NonNull final Method method, 
+			@Nullable final Object[] args) throws Throwable
 	{
 		try
 		{
@@ -554,7 +560,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	private Object invoke0(final Method method, final Object[] args)
+	private Object invoke0(
+			@NonNull final Method method, 
+			@Nullable final Object[] args)
 	{
 		final String methodName = method.getName();
 
@@ -598,7 +606,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	private Object invokeSet(final Method method, final Object[] args, final String methodName)
+	private Object invokeSet(
+			@NonNull final Method method, 
+			@NonNull final Object[] args, 
+			@NonNull final String methodName)
 	{
 		final String propertyNameLowerCase = methodName.substring(3);
 		final Class<?> paramType = method.getParameterTypes()[0];

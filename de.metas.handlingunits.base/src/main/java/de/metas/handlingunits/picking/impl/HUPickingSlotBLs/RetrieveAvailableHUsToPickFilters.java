@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.impl;
+package de.metas.handlingunits.picking.impl.HUPickingSlotBLs;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,6 +18,7 @@ import de.metas.handlingunits.IHandlingUnitsBL.TopLevelHusQuery;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.impl.HUPickingSlotBL;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
