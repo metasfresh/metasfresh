@@ -7,6 +7,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.ad.expression.json.JsonLogicExpressionSerializer;
+import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -94,7 +95,13 @@ public final class ConstantLogicExpression implements ILogicExpression
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<String> getParametersAsPlainStrings()
+	{
+		return ImmutableSet.of();
+	}
+	
+	@Override
+	public Set<CtxName> getParameters()
 	{
 		return ImmutableSet.of();
 	}

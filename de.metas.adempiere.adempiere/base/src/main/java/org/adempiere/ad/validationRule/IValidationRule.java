@@ -25,7 +25,7 @@ public interface IValidationRule
 	 */
 	default boolean isImmutable()
 	{
-		return getPrefilterWhereClause().getParameters().isEmpty()
+		return getPrefilterWhereClause().getParametersAsPlainStrings().isEmpty()
 				&& getPostQueryFilter().getParameters().isEmpty();
 	}
 
