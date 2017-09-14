@@ -171,12 +171,6 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public Set<String> getParameterNames()
-		{
-			return ImmutableSet.of();
-		}
-
-		@Override
 		public Set<CtxName> getParameters()
 		{
 			return ImmutableSet.of();
@@ -261,12 +255,6 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		}
 
 		@Override
-		public Set<String> getParameterNames()
-		{
-			return ImmutableSet.of();
-		}
-
-		@Override
 		public Set<CtxName> getParameters()
 		{
 			return ImmutableSet.of();
@@ -348,12 +336,6 @@ public abstract class StringExpressionSupportTemplate<V, ET extends IExpression<
 		public String getFormatedExpressionString()
 		{
 			return expressionStr; // expressionStr is good enough in this case
-		}
-
-		@Override
-		public Set<String> getParameterNames()
-		{
-			return CtxNames.toNames(_parametersList);
 		}
 
 		@Override

@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.Check;
 
 import com.google.common.base.Splitter;
@@ -24,12 +26,12 @@ import lombok.experimental.UtilityClass;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,7 +40,7 @@ import lombok.experimental.UtilityClass;
 
 /**
  * This class contains the static methods and constants around {@link CtxName}.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -61,7 +63,7 @@ public class CtxNames
 
 	/**
 	 * Returns an immutable set of {@link CtxName}s that contains the results of {@link CtxNames#parse(String)}, applied to the strings of the given {@code stringsWithoutMarkers}.
-	 * 
+	 *
 	 * @param stringsWithoutMarkers may not be {@code null}.
 	 * @return
 	 */
@@ -74,12 +76,16 @@ public class CtxNames
 
 	/**
 	 * Returns an immutable set of strings which contains the {@link CtxName#getName()}s of the give {@code ctxNames}.
-	 * 
-	 * @param ctxNames may not be {@code null}.
+	 *
+	 * @param ctxNames may be {@code null}.
 	 * @return
 	 */
-	public Set<String> toNames(@NonNull final Collection<CtxName> ctxNames)
+	public Set<String> toNames(@Nullable final Collection<CtxName> ctxNames)
 	{
+		if (ctxNames == null)
+		{
+			return null;
+		}
 		return ctxNames.stream()
 				.map(CtxName::getName)
 				.collect(ImmutableSet.toImmutableSet());
@@ -92,11 +98,27 @@ public class CtxNames
 			return null;
 		}
 
-		String name = null;
-
 		final List<String> modifiers = new ArrayList<>();
+		final String name = extractNameAndModifiers(contextWithoutMarkers, modifiers);
+
+		final String defaultValue = extractDefaultValue(modifiers);
+
+		return new CtxName(name, modifiers, defaultValue);
+	}
+
+	/**
+	 * 
+	 * @param contextWithoutMarkers
+	 * @param modifiers found modifiers are added to this list
+	 * @return
+	 */
+	private static String extractNameAndModifiers(
+			@NonNull final String contextWithoutMarkers,
+			@NonNull final List<String> modifiers)
+	{
+		String name = null;
 		boolean firstToken = true;
-		for (String token : SEPARATOR_SPLITTER.splitToList(contextWithoutMarkers))
+		for (final String token : SEPARATOR_SPLITTER.splitToList(contextWithoutMarkers))
 		{
 			if (firstToken)
 			{
@@ -109,7 +131,11 @@ public class CtxNames
 
 			firstToken = false;
 		}
+		return name;
+	}
 
+	static String extractDefaultValue(final List<String> modifiers)
+	{
 		final String defaultValue;
 		if (!modifiers.isEmpty() && !isModifier(modifiers.get(modifiers.size() - 1)))
 		{
@@ -119,8 +145,7 @@ public class CtxNames
 		{
 			defaultValue = VALUE_NULL;
 		}
-
-		return new CtxName(name, modifiers, defaultValue);
+		return defaultValue;
 	}
 
 	/** Parse a given name, surrounded by {@value #NAME_Marker} */

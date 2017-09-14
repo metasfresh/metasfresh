@@ -39,12 +39,6 @@ public final class NullStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public Set<String> getParameterNames()
-	{
-		return ImmutableSet.of();
-	}
-
-	@Override
 	public Set<CtxName> getParameters()
 	{
 		return ImmutableSet.of();

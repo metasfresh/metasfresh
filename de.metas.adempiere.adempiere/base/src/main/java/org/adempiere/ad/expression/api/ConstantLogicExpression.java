@@ -93,12 +93,6 @@ public final class ConstantLogicExpression implements ILogicExpression
 	{
 		return expressionString;
 	}
-
-	@Override
-	public Set<String> getParameterNames()
-	{
-		return ImmutableSet.of();
-	}
 	
 	@Override
 	public Set<CtxName> getParameters()
