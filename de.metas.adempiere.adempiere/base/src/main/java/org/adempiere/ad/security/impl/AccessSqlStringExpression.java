@@ -16,6 +16,7 @@ import org.adempiere.ad.security.IUserRolePermissions;
 import org.adempiere.ad.security.UserRolePermissionsKey;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
@@ -77,18 +78,17 @@ public final class AccessSqlStringExpression implements IStringExpression
 	 *
 	 * @see UserRolePermissionsKey#toPermissionsKeyString()
 	 */
-	public static final CtxName PARAM_UserRolePermissionsKey = CtxName.parse("#PermissionsKey");
+	public static final CtxName PARAM_UserRolePermissionsKey = CtxNames.parse("#PermissionsKey");
 
 	private final IStringExpression sqlExpression;
 	private final String tableNameIn;
 	private final boolean fullyQualified;
 	private final boolean rw;
 
-	private final Set<String> parameters;
+	private final Set<CtxName> parametersAsCtxNames;
 
 	private AccessSqlStringExpression(final IStringExpression sqlExpression, final String tableNameIn, final boolean fullyQualified, final boolean rw)
 	{
-		super();
 		Check.assume(sqlExpression != null && !sqlExpression.isNullExpression(), "Parameter sqlExpression shall not be unll but it was {}", sqlExpression);
 		this.sqlExpression = sqlExpression;
 
@@ -98,10 +98,10 @@ public final class AccessSqlStringExpression implements IStringExpression
 		this.fullyQualified = fullyQualified;
 		this.rw = rw;
 
-		final LinkedHashSet<String> parameters = new LinkedHashSet<>();
-		parameters.add(PARAM_UserRolePermissionsKey.getName());
-		parameters.addAll(sqlExpression.getParameters());
-		this.parameters = ImmutableSet.copyOf(parameters);
+		final LinkedHashSet<CtxName> parametersAsCtxNames = new LinkedHashSet<>();
+		parametersAsCtxNames.add(PARAM_UserRolePermissionsKey);
+		parametersAsCtxNames.addAll(sqlExpression.getParameters());
+		this.parametersAsCtxNames = ImmutableSet.copyOf(parametersAsCtxNames);
 	}
 
 	@Override
@@ -158,9 +158,9 @@ public final class AccessSqlStringExpression implements IStringExpression
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
-		return parameters;
+		return parametersAsCtxNames;
 	}
 
 	@Override

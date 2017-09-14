@@ -32,7 +32,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.dbPort.Convert;
 import org.compiere.util.CCache;
-import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -255,7 +255,7 @@ public class MColumn extends X_AD_Column
 		{
 			// Make sure there are no context variables in ColumnSQL
 			final String columnSql = getColumnSQL();
-			if (columnSql != null && columnSql.indexOf(CtxName.NAME_Marker) >= 0)
+			if (columnSql != null && columnSql.indexOf(CtxNames.NAME_Marker) >= 0)
 			{
 				throw new AdempiereException("Context variables are not allowed in ColumnSQL: " + columnSql);
 			}
