@@ -14,7 +14,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 286350204L;
+	private static final long serialVersionUID = 1360281306L;
 
     /** Standard Constructor */
     public X_AD_User (Properties ctx, int AD_User_ID, String trxName)
@@ -684,16 +684,16 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return (java.lang.String)get_Value(COLUMNNAME_Included_Tab_ID);
 	}
 
-	/** Set BillTo Contact Default.
-		@param IsBillToContact_Default BillTo Contact Default	  */
+	/** Set Rechnungskontakt.
+		@param IsBillToContact_Default Rechnungskontakt	  */
 	@Override
 	public void setIsBillToContact_Default (boolean IsBillToContact_Default)
 	{
 		set_Value (COLUMNNAME_IsBillToContact_Default, Boolean.valueOf(IsBillToContact_Default));
 	}
 
-	/** Get BillTo Contact Default.
-		@return BillTo Contact Default	  */
+	/** Get Rechnungskontakt.
+		@return Rechnungskontakt	  */
 	@Override
 	public boolean isBillToContact_Default () 
 	{
@@ -923,16 +923,16 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return false;
 	}
 
-	/** Set ShipTo Contact Default.
-		@param IsShipToContact_Default ShipTo Contact Default	  */
+	/** Set Lieferkontakt.
+		@param IsShipToContact_Default Lieferkontakt	  */
 	@Override
 	public void setIsShipToContact_Default (boolean IsShipToContact_Default)
 	{
 		set_Value (COLUMNNAME_IsShipToContact_Default, Boolean.valueOf(IsShipToContact_Default));
 	}
 
-	/** Get ShipTo Contact Default.
-		@return ShipTo Contact Default	  */
+	/** Get Lieferkontakt.
+		@return Lieferkontakt	  */
 	@Override
 	public boolean isShipToContact_Default () 
 	{

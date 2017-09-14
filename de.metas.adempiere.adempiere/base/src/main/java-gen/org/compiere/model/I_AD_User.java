@@ -765,7 +765,7 @@ public interface I_AD_User
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set BillTo Contact Default.
+	 * Set Rechnungskontakt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -774,7 +774,7 @@ public interface I_AD_User
 	public void setIsBillToContact_Default (boolean IsBillToContact_Default);
 
 	/**
-	 * Get BillTo Contact Default.
+	 * Get Rechnungskontakt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1001,7 +1001,7 @@ public interface I_AD_User
     public static final String COLUMNNAME_IsSalesContact_Default = "IsSalesContact_Default";
 
 	/**
-	 * Set ShipTo Contact Default.
+	 * Set Lieferkontakt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1010,7 +1010,7 @@ public interface I_AD_User
 	public void setIsShipToContact_Default (boolean IsShipToContact_Default);
 
 	/**
-	 * Get ShipTo Contact Default.
+	 * Get Lieferkontakt.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
