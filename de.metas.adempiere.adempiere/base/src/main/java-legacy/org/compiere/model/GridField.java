@@ -310,11 +310,11 @@ public class GridField
 	{
 		final List<String> list = new ArrayList<String>();
 		// Display
-		list.addAll(m_vo.getDisplayLogic().getParameters());
-		list.addAll(m_vo.getDisplayLogic().getParameters()); // metas: 03093
-		list.addAll(m_vo.getReadOnlyLogic().getParameters()); // metas: 03093
-		list.addAll(m_vo.getMandatoryLogic().getParameters()); // metas: 03093
-		list.addAll(m_vo.getColorLogic().getParameters()); // metas-2009_0021_AP1_CR045
+		list.addAll(m_vo.getDisplayLogic().getParameterNames());
+		list.addAll(m_vo.getDisplayLogic().getParameterNames()); // metas: 03093
+		list.addAll(m_vo.getReadOnlyLogic().getParameterNames()); // metas: 03093
+		list.addAll(m_vo.getMandatoryLogic().getParameterNames()); // metas: 03093
+		list.addAll(m_vo.getColorLogic().getParameterNames()); // metas-2009_0021_AP1_CR045
 		// Lookup
 		final Lookup lookup = getLookup();
 		if (lookup != null)

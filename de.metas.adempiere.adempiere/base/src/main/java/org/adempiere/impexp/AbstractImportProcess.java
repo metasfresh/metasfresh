@@ -72,10 +72,10 @@ public abstract class AbstractImportProcess<ImportRecordType> implements IImport
 		Nothing,
 	};
 
-	protected static final String COLUMNNAME_I_IsImported = "I_IsImported";
-	protected static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
-	protected static final String COLUMNNAME_Processed = "Processed";
-	protected static final String COLUMNNAME_Processing = "Processing";
+	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+	public static final String COLUMNNAME_Processed = "Processed";
+	public static final String COLUMNNAME_Processing = "Processing";
 
 	// services
 	protected final transient Logger log = LogManager.getLogger(getClass());

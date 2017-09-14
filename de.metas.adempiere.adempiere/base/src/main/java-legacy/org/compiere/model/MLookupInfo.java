@@ -31,6 +31,7 @@ import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MLookupFactory.LanguageInfo;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -85,7 +86,7 @@ public final class MLookupInfo implements Serializable, Cloneable
 
 	static final long serialVersionUID = -7958664359250070233L;
 
-	/* package */static final CtxName CTXNAME_AD_Language = CtxName.parse(Env.CTXNAME_AD_Language);
+	/* package */static final CtxName CTXNAME_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
 
 	/** SQL Query */
 	private final TranslatableParameterizedString sqlQuery;

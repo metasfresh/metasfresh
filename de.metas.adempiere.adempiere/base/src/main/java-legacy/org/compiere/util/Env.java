@@ -2129,7 +2129,7 @@ public final class Env
 	{
 		Check.assumeNotNull(ctx, "ctx not null");
 
-		final CtxName name = CtxName.parse(context);
+		final CtxName name = CtxNames.parse(context);
 		Check.assumeNotNull(name, "name not null");
 
 		boolean isExplicitGlobal = name.isExplicitGlobal();

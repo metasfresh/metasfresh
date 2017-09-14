@@ -25,6 +25,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
+
 import de.metas.logging.LogManager;
 
 
@@ -103,10 +104,6 @@ public class Evaluator
 		return expression.evaluate(source, ignoreUnparsable);
 	}   //  evaluateLogic
 
-	// private static boolean evaluateLogicTuple (Evaluatee source, String logic) // metas: removed
-	
-	// private static boolean evaluateLogicTuple (String value1, String operand, String value2) // metas: removed
-	
 	/**
 	 *  Parse String and add variables with @ to the list.
 	 *  @param list list to be added to
@@ -123,7 +120,7 @@ public class Evaluator
 	// metas:
 	private static String getValue(Evaluatee source, String variable)
 	{
-		return CtxName.parse(variable).getValueAsString(source);
+		return CtxNames.parse(variable).getValueAsString(source);
 	}
 	
 	public static String parseContext(Evaluatee source, String expression)
@@ -178,6 +175,6 @@ public class Evaluator
 			return;
 		}
 		
-		list.addAll(expr.getParameters());
+		list.addAll(expr.getParameterNames());
 	}
 }	//	Evaluator

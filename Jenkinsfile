@@ -121,6 +121,8 @@ So if this is a "master" build, but it was invoked by a "feature-branch" build t
 	buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
 ]);
 
+try
+{
 timestamps
 {
 
@@ -374,3 +376,8 @@ stage('Invoke downstream jobs')
 	)
 } // stage
 } // timestamps
+} catch(all)
+{
+  mattermostSend color: 'danger', message: "This build failed or was aborted: ${BUILD_URL}"
+  error 'Build failed'
+}

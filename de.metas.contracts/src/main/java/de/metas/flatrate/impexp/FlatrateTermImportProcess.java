@@ -254,6 +254,13 @@ public class FlatrateTermImportProcess extends AbstractImportProcess<I_I_Flatrat
 			final BigDecimal price = importRecord.getPrice();
 			contract.setPriceActual(price);
 		}
+		
+		//
+		// Qty
+		if (importRecord.getQty() != null && importRecord.getQty().intValue() > 0)
+		{
+			contract.setPlannedQtyPerUnit(importRecord.getQty());
+		}
 
 		//
 		// Start/End date

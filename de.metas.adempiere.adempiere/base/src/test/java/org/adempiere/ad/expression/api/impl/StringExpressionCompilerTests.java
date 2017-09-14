@@ -51,7 +51,7 @@ public class StringExpressionCompilerTests
 		{
 			final String sql = "C_BPartner_ID=@C_BPartner_Override_ID/-1@ AND C_BPartner_Location_ID=@C_BPartner_Location_Override_ID/-1@";
 			final IStringExpression expression = compiler.compile(sql);
-			final Set<String> dependsActual = expression.getParameters();
+			final Set<String> dependsActual = expression.getParameterNames();
 			final Set<String> dependsExpected = ImmutableSet.of("C_BPartner_Override_ID", "C_BPartner_Location_Override_ID");
 			assertEquals(dependsExpected, dependsActual);
 		}
@@ -59,7 +59,7 @@ public class StringExpressionCompilerTests
 			// test if is also works with strings and with nested '-signs
 			final String sql = "Type='@StringVar/'NONE'@' AND C_BPartner_Location_ID=@IntVar_ID/-1@ AND Type2='@NoDefaultStringVar@'";
 			final IStringExpression expression = compiler.compile(sql);
-			final Set<String> dependsActual = expression.getParameters();
+			final Set<String> dependsActual = expression.getParameterNames();
 			final Set<String> dependsExpected = ImmutableSet.of("StringVar", "IntVar_ID", "NoDefaultStringVar");
 			assertEquals(dependsExpected, dependsActual);
 		}
@@ -71,7 +71,7 @@ public class StringExpressionCompilerTests
 		final String expressionStr = "C_BPartner_ID=@C_BPartner_ID@ AND Text='@@'";
 		final IStringExpression expression = compiler.compile(expressionStr);
 		final Set<String> expectedParams = ImmutableSet.of("C_BPartner_ID");
-		assertEquals("Invalid params", expectedParams, expression.getParameters());
+		assertEquals("Invalid params", expectedParams, expression.getParameterNames());
 
 		assertEquals("Formated expression shall be equal to initial expression", expressionStr, expression.getFormatedExpressionString());
 

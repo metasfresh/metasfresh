@@ -14,7 +14,7 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1068088123L;
+	private static final long serialVersionUID = 99009869L;
 
     /** Standard Constructor */
     public X_I_BPartner (Properties ctx, int I_BPartner_ID, String trxName)
@@ -25,9 +25,11 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 			setI_BPartner_ID (0);
 			setI_IsImported (false); // N
 			setIsBillTo (false); // N
+			setIsBillToContact_Default (false); // N
 			setIsBillToDefault (false); // N
 			setIsDefaultContact (false); // N
 			setIsShipTo (false); // N
+			setIsShipToContact_Default (false); // N
 			setIsShipToDefault (false); // N
         } */
     }
@@ -697,6 +699,29 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 		return false;
 	}
 
+	/** Set Rechnungskontakt.
+		@param IsBillToContact_Default Rechnungskontakt	  */
+	@Override
+	public void setIsBillToContact_Default (boolean IsBillToContact_Default)
+	{
+		set_Value (COLUMNNAME_IsBillToContact_Default, Boolean.valueOf(IsBillToContact_Default));
+	}
+
+	/** Get Rechnungskontakt.
+		@return Rechnungskontakt	  */
+	@Override
+	public boolean isBillToContact_Default () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsBillToContact_Default);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Rechnung Standard Adresse.
 		@param IsBillToDefault Rechnung Standard Adresse	  */
 	@Override
@@ -812,6 +837,29 @@ public class X_I_BPartner extends org.compiere.model.PO implements I_I_BPartner,
 	public boolean isShipTo () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsShipTo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set Lieferkontakt.
+		@param IsShipToContact_Default Lieferkontakt	  */
+	@Override
+	public void setIsShipToContact_Default (boolean IsShipToContact_Default)
+	{
+		set_Value (COLUMNNAME_IsShipToContact_Default, Boolean.valueOf(IsShipToContact_Default));
+	}
+
+	/** Get Lieferkontakt.
+		@return Lieferkontakt	  */
+	@Override
+	public boolean isShipToContact_Default () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsShipToContact_Default);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 

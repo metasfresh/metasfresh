@@ -85,7 +85,10 @@ public class AttachmentDAO implements IAttachmentDAO
 	public AttachmentEntry retrieveAttachmentEntryById(final int attachmentId, final int attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry entryRecord = InterfaceWrapperHelper.load(attachmentEntryId, I_AD_AttachmentEntry.class);
-		if (entryRecord.getAD_Attachment_ID() != attachmentId)
+		
+		// Make sure the attachmentId is matching
+		// NOTE: because some BLs are not aware of attachmentId but only about attachmentEntryId, we are validating only when provided
+		if (attachmentId > 0 && entryRecord.getAD_Attachment_ID() != attachmentId)
 		{
 			throw new AdempiereException("Attachment entry is not matching the attachmentId"); // shall not happen
 		}
