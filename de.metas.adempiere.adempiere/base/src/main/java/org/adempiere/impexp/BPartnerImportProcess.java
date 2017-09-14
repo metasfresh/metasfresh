@@ -283,7 +283,8 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 
 	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner importRecord)
 	{
-		return p -> importRecord.getC_Country_ID() == p.getC_Country_ID()
+		return p -> p.getC_BPartner_Location_ID() > 0 
+				&& importRecord.getC_Country_ID() == p.getC_Country_ID()
 				&& importRecord.getC_Region_ID() == p.getC_Region_ID()
 				&& Objects.equals(importRecord.getCity(), p.getCity())
 				&& Objects.equals(importRecord.getAddress1(), p.getAddress1())
