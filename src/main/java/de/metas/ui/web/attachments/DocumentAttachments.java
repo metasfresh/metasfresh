@@ -123,7 +123,7 @@ final class DocumentAttachments
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		attachmentsBL.createAttachment(recordRef, name, data);
+		attachmentsBL.addEntry(recordRef, name, data);
 
 		notifyRelatedDocumentTabsChanged();
 	}
