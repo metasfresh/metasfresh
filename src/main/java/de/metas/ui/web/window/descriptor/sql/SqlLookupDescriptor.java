@@ -20,6 +20,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
 
@@ -76,11 +77,11 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 		return (SqlLookupDescriptor)descriptor;
 	}
 
-	public static final CtxName SQL_PARAM_KeyId = CtxName.parse("SqlKeyId");
+	public static final CtxName SQL_PARAM_KeyId = CtxNames.parse("SqlKeyId");
 
 	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
 	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
-	public static final CtxName SQL_PARAM_ShowInactive = CtxName.parse("SqlShowInactive/N");
+	public static final CtxName SQL_PARAM_ShowInactive = CtxNames.parse("SqlShowInactive/N");
 
 	private static final int WINDOWNO_Dummy = 99999;
 
@@ -361,7 +362,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				}
 
 				dependsOnFieldNames = ImmutableSet.<String> builder()
-						.addAll(validationRule.getPrefilterWhereClause().getParameters())
+						.addAll(validationRule.getPrefilterWhereClause().getParametersAsPlainStrings())
 						.addAll(validationRule.getPostQueryFilter().getParameters())
 						.build();
 			}
