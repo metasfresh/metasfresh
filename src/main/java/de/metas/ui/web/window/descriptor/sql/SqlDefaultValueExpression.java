@@ -152,9 +152,9 @@ public final class SqlDefaultValueExpression<V> implements IExpression<V>
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
-		return stringExpression.getParametersAsPlainStrings();
+		return stringExpression.getParameterNames();
 	}
 
 	@Override

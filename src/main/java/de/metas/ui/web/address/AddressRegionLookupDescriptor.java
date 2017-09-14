@@ -111,7 +111,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public Set<String> getDependsOnFieldNames()
 	{
-		return CtxNames.asNames(PARAMETERS);
+		return CtxNames.toNames(PARAMETERS);
 	}
 
 	@Override

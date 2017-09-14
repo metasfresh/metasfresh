@@ -362,7 +362,7 @@ public final class SqlLookupDescriptor implements LookupDescriptor
 				}
 
 				dependsOnFieldNames = ImmutableSet.<String> builder()
-						.addAll(validationRule.getPrefilterWhereClause().getParametersAsPlainStrings())
+						.addAll(validationRule.getPrefilterWhereClause().getParameterNames())
 						.addAll(validationRule.getPostQueryFilter().getParameters())
 						.build();
 			}

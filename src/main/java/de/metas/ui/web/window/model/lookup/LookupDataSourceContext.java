@@ -303,7 +303,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			//
 			// Collect all values required by the post-query predicate
 			// failIfNotFound=false because it might be that NOT all postQueryPredicate's parameters are mandatory!
-			collectContextValues(CtxNames.parseStrings(postQueryPredicate.getParameters()), false);
+			collectContextValues(CtxNames.parseAll(postQueryPredicate.getParameters()), false);
 
 			//
 			// Build the effective context
