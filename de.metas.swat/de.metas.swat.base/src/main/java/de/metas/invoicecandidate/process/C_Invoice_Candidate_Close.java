@@ -9,8 +9,8 @@ import org.adempiere.util.Services;
 
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.process.ProcessInfo;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
 
 /*
  * #%L
@@ -59,7 +59,7 @@ public class C_Invoice_Candidate_Close extends JavaProcess
 		final IQueryFilter<I_C_Invoice_Candidate> userSelectionFilter = processInfo.getQueryFilter();
 
 		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate.class, processInfo)
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.filter(userSelectionFilter) // Apply the user selection filter
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
