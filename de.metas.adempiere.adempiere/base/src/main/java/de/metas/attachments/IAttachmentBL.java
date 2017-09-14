@@ -81,25 +81,6 @@ public interface IAttachmentBL extends ISingletonService
 	 */
 	List<AttachmentEntry> addEntriesFromFiles(Object model, Collection<File> files);
 
-	/**
-	 * Method to attach file to object model.
-	 *
-	 * @param model model or {@link ITableRecordReference}
-	 * @param file
-	 * @return the attachment
-	 */
-	I_AD_Attachment createAttachment(Object model, File file);
-
-	/**
-	 * Method to attach file (described by name and data) to object model.
-	 *
-	 * @param model model or {@link ITableRecordReference}
-	 * @param name filename
-	 * @param data file content
-	 * @return the attachment
-	 */
-	I_AD_Attachment createAttachment(Object model, String name, byte[] data);
-
 	AttachmentEntry getEntryById(Object model, int attachmentEntryId);
 
 	AttachmentEntry getEntryByFilename(Object model, String filename);

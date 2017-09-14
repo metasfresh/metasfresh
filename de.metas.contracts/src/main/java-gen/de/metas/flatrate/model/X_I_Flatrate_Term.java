@@ -15,7 +15,7 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 1355694496L;
+	private static final long serialVersionUID = -172093638L;
 
     /** Standard Constructor */
     public X_I_Flatrate_Term (Properties ctx, int I_Flatrate_Term_ID, String trxName)
@@ -465,6 +465,28 @@ public class X_I_Flatrate_Term extends org.compiere.model.PO implements I_I_Flat
 	public java.lang.String getProductValue () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductValue);
+	}
+
+	/** Set Menge.
+		@param Qty 
+		Menge
+	  */
+	@Override
+	public void setQty(BigDecimal Qty)
+	{
+		set_Value (COLUMNNAME_Qty, Qty);
+	}
+
+	/** Get Menge.
+		@return Menge
+	  */
+	@Override
+	public BigDecimal getQty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Anfangsdatum.

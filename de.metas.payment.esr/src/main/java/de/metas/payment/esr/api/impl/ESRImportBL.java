@@ -7,11 +7,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,7 +39,6 @@ import org.adempiere.util.Services;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.acct.Doc;
-import org.compiere.model.I_AD_Attachment;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -58,9 +58,6 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IPeriodBL;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.IAttachmentBL;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
@@ -85,7 +82,6 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
-import de.metas.payment.esr.processor.impl.LoadESRImportFileWorkpackageProcessor;
 import lombok.NonNull;
 
 public class ESRImportBL implements IESRImportBL
@@ -102,8 +98,6 @@ public class ESRImportBL implements IESRImportBL
 	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
 
 	private static final String ESR_NO_HAS_WRONG_ORG_2P = "de.metas.payment.esr.EsrNoHasWrongOrg";
-
-	private final IAttachmentBL attachementBL = Services.get(IAttachmentBL.class);
 
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
@@ -139,23 +133,6 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	@Override
-	public void loadESRImportFile(final I_ESR_Import esrImport, final String filename, final I_C_Async_Batch asyncBatch)
-	{
-		Services.get(IESRImportDAO.class).deleteLines(esrImport);
-
-		final File file = new File(filename);
-
-		// 03928: Create attachment
-		// attaching the file first, so that it's available for our support, if anything goes wrong
-		final I_AD_Attachment attachment = Services.get(IAttachmentBL.class).createAttachment(esrImport, file);
-
-		Check.errorUnless(attachment != null, "File {} not attached to {}", file, esrImport);
-
-		// enqueue for importing async
-		enqueueESRImport(esrImport, asyncBatch);
-	}
-
-	@Override
 	public void loadESRImportFile(final I_ESR_Import esrImport)
 	{
 		lockAndProcess(esrImport, new Runnable()
@@ -170,8 +147,18 @@ public class ESRImportBL implements IESRImportBL
 
 	private void loadAndEvaluateESRImportFile0(@NonNull final I_ESR_Import esrImport)
 	{
-		final I_AD_Attachment attachment = attachementBL.getAttachment(esrImport);
-		final byte[] data = attachementBL.getFirstEntryAsBytesOrNull(attachment);
+		//
+		// Fetch data to be imported from attachment
+		final byte[] data;
+		if(esrImport.getAD_AttachmentEntry_ID() > 0)
+		{
+			data = Services.get(IAttachmentBL.class).getEntryByIdAsBytes(esrImport, esrImport.getAD_AttachmentEntry_ID());
+		}
+		// Fallback: usually that shall not happen or it might happen for old/legacy data
+		else
+		{
+			data = Services.get(IAttachmentBL.class).getFirstEntryAsBytesOrNull(esrImport);
+		}
 
 		// there is no actual data
 		if (data == null || data.length == 0)
@@ -232,7 +219,7 @@ public class ESRImportBL implements IESRImportBL
 		evaluate(esrImport);
 	}
 
-	private I_ESR_ImportLine createEsrImportLine(final I_ESR_Import esrImport, int lineNo, final ESRTransaction esrTransaction)
+	private I_ESR_ImportLine createEsrImportLine(final I_ESR_Import esrImport, final int lineNo, final ESRTransaction esrTransaction)
 	{
 		final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImport);
 		importLine.setLineNo(lineNo * 10);
@@ -306,7 +293,7 @@ public class ESRImportBL implements IESRImportBL
 	@VisibleForTesting
 	boolean evaluateTrxQty(
 			@NonNull final I_ESR_Import esrImport,
-			int trxQty)
+			final int trxQty)
 	{
 		if (InterfaceWrapperHelper.isNull(esrImport, I_ESR_Import.COLUMNNAME_ESR_Control_Trx_Qty))
 		{
@@ -447,27 +434,6 @@ public class ESRImportBL implements IESRImportBL
 			key = NO_INVOICE_KEY;
 		}
 		return key;
-	}
-
-	/**
-	 * enqueue the esr import in order to be imported later
-	 *
-	 * @param esrImport
-	 * @param asyncBatch
-	 */
-	private void enqueueESRImport(final I_ESR_Import esrImport, final I_C_Async_Batch asyncBatch)
-	{
-		// NOTE: locking not required
-
-		final Properties ctx = getCtx(esrImport);
-		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, LoadESRImportFileWorkpackageProcessor.class);
-
-		queue.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
-				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
-				.addElement(esrImport)
-				.build();
 	}
 
 	@Override
@@ -1256,40 +1222,69 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
-	private byte[] createChecksum(final String filename) throws Exception
+	private static byte[] computeMD5ChecksumAsBytes(final String filename)
 	{
-		final InputStream fis = new FileInputStream(filename);
-
-		final byte[] buffer = new byte[1024];
-		final MessageDigest complete = MessageDigest.getInstance("MD5");
-		int numRead;
-
-		do
+		try (final InputStream fis = new FileInputStream(filename))
 		{
-			numRead = fis.read(buffer);
-			if (numRead > 0)
-			{
-				complete.update(buffer, 0, numRead);
-			}
+			return computeMD5ChecksumAsBytes(fis);
 		}
-		while (numRead != -1);
-
-		fis.close();
-		return complete.digest();
+		catch (final IOException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
 	}
 
-	@Override
-	public String getMD5Checksum(final String filename) throws Exception
+	private static byte[] computeMD5ChecksumAsBytes(final InputStream in)
 	{
-		final byte[] b = createChecksum(filename);
+		try
+		{
+			final byte[] buffer = new byte[1024];
+			final MessageDigest complete = MessageDigest.getInstance("MD5");
+			int numRead;
+
+			do
+			{
+				numRead = in.read(buffer);
+				if (numRead > 0)
+				{
+					complete.update(buffer, 0, numRead);
+				}
+			}
+			while (numRead != -1);
+
+			return complete.digest();
+		}
+		catch (final IOException | NoSuchAlgorithmException ex)
+		{
+			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private static final String convertMD5BytesToString(final byte[] md5)
+	{
 		String result = "";
 
-		for (int i = 0; i < b.length; i++)
+		for (int i = 0; i < md5.length; i++)
 		{
-			result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+			result += Integer.toString((md5[i] & 0xff) + 0x100, 16).substring(1);
 		}
 		return result;
 	}
+
+	@Override
+	public String computeMD5Checksum(final String filename)
+	{
+		final byte[] md5 = computeMD5ChecksumAsBytes(filename);
+		return convertMD5BytesToString(md5);
+	}
+	
+	@Override
+	public String computeMD5Checksum(final byte[] fileContent)
+	{
+		final byte[] md5 = computeMD5ChecksumAsBytes(new ByteArrayInputStream(fileContent));
+		return convertMD5BytesToString(md5);
+	}
+
 
 	@Override
 	public void unlinkESRImportLinesFor(final I_C_BankStatementLine bankStatementLine)

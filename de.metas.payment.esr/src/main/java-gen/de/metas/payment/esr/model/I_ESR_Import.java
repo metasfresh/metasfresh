@@ -23,6 +23,29 @@ public interface I_ESR_Import
     /** Load Meta Data */
 
 	/**
+	 * Set Attachment entry.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID);
+
+	/**
+	 * Get Attachment entry.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getAD_AttachmentEntry_ID();
+
+    /** Column definition for AD_AttachmentEntry_ID */
+    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_AD_AttachmentEntry_ID = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "AD_AttachmentEntry_ID", null);
+    /** Column name AD_AttachmentEntry_ID */
+    public static final String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
+
+	/**
 	 * Get Mandant.
 	 * Mandant für diese Installation.
 	 *
@@ -224,7 +247,8 @@ public interface I_ESR_Import
     public static final String COLUMNNAME_ESR_Control_Amount = "ESR_Control_Amount";
 
 	/**
-	 * Set Anzahl Transaktionen.
+	 * Set Anzahl Transaktionen (kontr.).
+	 * Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -233,7 +257,8 @@ public interface I_ESR_Import
 	public void setESR_Control_Trx_Qty (java.math.BigDecimal ESR_Control_Trx_Qty);
 
 	/**
-	 * Get Anzahl Transaktionen.
+	 * Get Anzahl Transaktionen (kontr.).
+	 * Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -268,6 +293,35 @@ public interface I_ESR_Import
     public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Import_ID = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "ESR_Import_ID", null);
     /** Column name ESR_Import_ID */
     public static final String COLUMNNAME_ESR_Import_ID = "ESR_Import_ID";
+
+	/**
+	 * Set Anzahl Transaktionen.
+	 * Anzahl der importierten Zeilen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setESR_Trx_Qty (java.math.BigDecimal ESR_Trx_Qty);
+
+	/**
+	 * Get Anzahl Transaktionen.
+	 * Anzahl der importierten Zeilen
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public java.math.BigDecimal getESR_Trx_Qty();
+
+    /** Column definition for ESR_Trx_Qty */
+    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Trx_Qty = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "ESR_Trx_Qty", null);
+    /** Column name ESR_Trx_Qty */
+    public static final String COLUMNNAME_ESR_Trx_Qty = "ESR_Trx_Qty";
 
 	/**
 	 * Set Hash.
