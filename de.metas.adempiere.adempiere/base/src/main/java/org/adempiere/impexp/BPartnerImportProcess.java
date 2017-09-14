@@ -221,11 +221,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartner.setAD_Org_ID(importRecord.getAD_Org_ID());
 		//
 		String value = importRecord.getValue();
-		if (Check.isEmpty(value, true))
-		{
-			value = importRecord.getEMail();
-		}
-		bpartner.setValue(value);
+		bpartner.setValue(Check.isEmpty(value, true) ? importRecord.getEMail() : value);
 		//
 		String name = importRecord.getName();
 		if (Check.isEmpty(name, true))
