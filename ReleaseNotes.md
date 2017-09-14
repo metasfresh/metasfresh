@@ -34,8 +34,11 @@ Here come the actual release notes:
     * New Window for GL Category in WebUI Finance/ Settings.
   * [#2449](https://github.com/metasfresh/metasfresh/issues/2449) Adjust the window Product for Procurement Contracts
     * Adjustments to the WebUI Window for Product for Procurement Contracts maintenance. Translations added for de_DE and en_US.
-  *[#2453](https://github.com/metasfresh/metasfresh/issues/2453) Add missing Reports to WebUI menu
+  * [#2453](https://github.com/metasfresh/metasfresh/issues/2453) Add missing Reports to WebUI menu
     * New reports in WebUI Menu for Purchase and Sales Tracing and for Finance (Cost Center ajdustments).
+  * [#2469](https://github.com/metasfresh/metasfresh/issues/2469) Window for C_Postal in WebUI
+    * New Window Country, City and Postal for WebUI. Added to WebUI menu in System/ Settings. Allowing to the User to maintain Postal-City combinations and use them for fast Location recordning.
+  
 
 # metasfresh 5.26 (2017-37)
 
