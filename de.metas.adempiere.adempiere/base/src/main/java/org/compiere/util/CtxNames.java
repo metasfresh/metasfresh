@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.Check;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -134,7 +135,7 @@ public class CtxNames
 		return name;
 	}
 
-	static String extractDefaultValue(final List<String> modifiers)
+	private static String extractDefaultValue(final List<String> modifiers)
 	{
 		final String defaultValue;
 		if (!modifiers.isEmpty() && !isModifier(modifiers.get(modifiers.size() - 1)))
@@ -175,6 +176,7 @@ public class CtxNames
 	 * @param expression expression with context variables (e.g. sql where clause)
 	 * @return true if expression contains given name
 	 */
+	@VisibleForTesting
 	static boolean containsName(final String name, final String expression)
 	{
 		// FIXME: replace it with StringExpression
