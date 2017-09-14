@@ -66,6 +66,7 @@ public final class RelationTypeZoomProvidersFactory
 	 * column of the reference's AD_Ref_Table entries. See {@link #retrieveTypes(PO, int)}.
 	 * <p>
 	 * <b>Warning:</b> Doesn't support POs with more or less than one key column.
+	 * <b>Warning:</b> The ReferenceTarget relation types are excluded
 	 */
 	private final static String SQL =                 //
 			"  SELECT " //
@@ -79,6 +80,7 @@ public final class RelationTypeZoomProvidersFactory
 					+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
 					+ "  WHERE " //
 					+ "    rt.IsActive='Y'" //
+					+ "    AND rt.IsReferenceTarget  = 'N'"
 					+ "    AND ref.IsActive='Y'" //
 					+ "    AND ref.ValidationType='T'" // must have table validation
 					+ "    AND (" // join the source AD_Reference
@@ -94,6 +96,10 @@ public final class RelationTypeZoomProvidersFactory
 					+ "    AND tab.AD_Key=?" //
 					+ "  ORDER BY rt.Name";
 
+	/**
+	 * Selection for ReferenceTarget relation types.
+	 * The ReferenceTarget relation types only have Target reference ( no source) and thye must contains the columns "AD_Table_ID" and "Record_ID" which will make the link with the source table ( the current table in the context)
+	 */
 	private final static String SQL_Reference = "  SELECT " //
 			+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID //
 			+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name //
@@ -135,7 +141,7 @@ public final class RelationTypeZoomProvidersFactory
 				.orElseThrow(() -> new IllegalArgumentException("No zoom provider found for sourceTableName=" + sourceTableName + ", internalName=" + internalName));
 	}
 
-	public List<RelationTypeZoomProvider> retrieveReferenceZoomProvidersBySourceTableName(final String tableName)
+	public List<ReferenceTargetRelationTypeZoomProvider> retrieveReferenceZoomProvidersBySourceTableName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 
@@ -147,29 +153,23 @@ public final class RelationTypeZoomProvidersFactory
 			throw PORelationException.throwWrongKeyColumnCount(tableName, poInfo.getKeyColumnNames());
 		}
 
-		// TODO
-
-		// not needed here
-		// final int adTableId = poInfo.getAD_Table_ID();
-		// final int keyColumnId = poInfo.getAD_Column_ID(keyColumnName);
-		//
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		
+
 		try
 		{
 			pstmt = DB.prepareStatement(SQL_Reference, ITrx.TRXNAME_None);
-		
+
 			rs = pstmt.executeQuery();
 
-			final List<RelationTypeZoomProvider> result = retrieveZoomProviders(rs);
+			final List<ReferenceTargetRelationTypeZoomProvider> result = retrieveReferenceTargetZoomProviders(rs);
 			logger.info("There are {} matching types for {}", result.size(), tableName);
 
 			return result;
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, SQL);
+			throw new DBException(e, SQL_Reference);
 		}
 		finally
 		{
@@ -178,6 +178,12 @@ public final class RelationTypeZoomProvidersFactory
 
 	}
 
+	/**
+	 * 
+	 * @param tableName the source table, from the context of the window. It is basically the table of the entry that is currently opened in the UI.
+	 * 
+	 * @return the General RelationTypeZoomProvider entries for the given table name. The Reference Target relation types will be excluded
+	 */
 	private List<RelationTypeZoomProvider> retrieveZoomProvidersBySourceTableName(final String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
@@ -218,6 +224,61 @@ public final class RelationTypeZoomProvidersFactory
 
 	}
 
+	/**
+	 * Retrieve all the zoom providers that are reference target. It means they are based on relation types with no source reference, only target. The reference target table must contain the columns "AD_Table_ID" and "Record_ID" which will make the link with the source table entry.
+	 * 
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
+	private static List<ReferenceTargetRelationTypeZoomProvider> retrieveReferenceTargetZoomProviders(final ResultSet rs) throws SQLException
+	{
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final Properties ctx = Env.getCtx();
+
+		final List<ReferenceTargetRelationTypeZoomProvider> result = new ArrayList<>();
+		final Set<Integer> alreadySeen = new HashSet<>();
+
+		while (rs.next())
+		{
+			final int adRelationTypeId = rs.getInt(I_AD_RelationType.COLUMNNAME_AD_RelationType_ID);
+			if (!alreadySeen.add(adRelationTypeId))
+			{
+				continue;
+			}
+
+			final I_AD_RelationType relationType = InterfaceWrapperHelper.create(ctx, adRelationTypeId, I_AD_RelationType.class, ITrx.TRXNAME_None);
+
+			final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
+			final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
+
+			try
+			{
+				final ReferenceTargetRelationTypeZoomProvider zoomProvider = new ReferenceTargetRelationTypeZoomProvider.Builder()
+						.setDirected(relationType.isDirected())
+						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
+						.setInternalName(relationType.getInternalName())
+						//
+						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
+						.setTargetRoleDisplayName(roleTargetDisplayName)
+						//
+						.buildOrNull();
+
+				if (zoomProvider == null)
+				{
+					continue;
+				}
+
+				result.add(zoomProvider);
+			}
+			catch (Exception ex)
+			{
+				logger.warn("Failed creating reference target zoom provider for {}. Skipped.", relationType, ex);
+			}
+		}
+		return result;
+	}
+
 	private static List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
 	{
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
@@ -244,7 +305,7 @@ public final class RelationTypeZoomProvidersFactory
 
 			try
 			{
-				final RelationTypeZoomProvider zoomProvider = RelationTypeZoomProvider.builder()
+				final RelationTypeZoomProvider zoomProvider = new RelationTypeZoomProvider.Builder()
 						.setDirected(relationType.isDirected())
 						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 						.setInternalName(relationType.getInternalName())

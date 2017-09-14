@@ -3,16 +3,11 @@ package org.adempiere.model;
 import java.util.List;
 import java.util.Properties;
 
-import javax.annotation.Nullable;
-
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.PORelationException;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
@@ -23,17 +18,14 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 import lombok.ToString;
 
 /*
@@ -58,25 +50,21 @@ import lombok.ToString;
  * #L%
  */
 
-public class RelationTypeZoomProvider implements IZoomProvider
+/**
+ * Implementation for relation Type Zoom Providers that have both source and target references
+ * 
+ * @author metas-dev <dev@metasfresh.com>
+ *
+ */
+public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 {
-	public static final Builder builder()
-	{
-		return new Builder();
-	}
 
 	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
-
-	private final boolean directed;
-	private final String zoomInfoId;
-	private final String internalName;
-	private final int adRelationTypeId;
-	private final boolean isReferenceTarget;
 
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
 
-	private RelationTypeZoomProvider(final Builder builder)
+	public RelationTypeZoomProvider(final Builder builder)
 	{
 		super();
 
@@ -85,22 +73,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		internalName = builder.getInternalName();
 		adRelationTypeId = builder.getAD_RelationType_ID();
 
-		isReferenceTarget = builder.isReferenceTarget();
+		source = new ZoomProviderDestination(
+				builder.getSource_Reference_ID(),
+				builder.getSourceTableRefInfoOrNull(),
+				builder.getSourceRoleDisplayName());
 
-		if (!isReferenceTarget)
-		{
-			source = new ZoomProviderDestination(
-					builder.getSource_Reference_ID(),
-					builder.getSourceTableRefInfoOrNull(),
-					builder.getSourceRoleDisplayName(),
-					false // builder.isReferenceTarget
-			);
-		}
-		else
-		{
-			source = null;
-		}
-		target = new ZoomProviderDestination(builder.getTarget_Reference_ID(), builder.getTargetTableRefInfoOrNull(), builder.getTargetRoleDisplayName(), builder.isReferenceTarget);
+		target = new ZoomProviderDestination(builder.getTarget_Reference_ID(), builder.getTargetTableRefInfoOrNull(), builder.getTargetRoleDisplayName());
 	}
 
 	@Override
@@ -113,26 +91,21 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.add("directed", directed)
 				.add("source", source)
 				.add("target", target)
-				.add("isReferenceTarget", isReferenceTarget)
 				.toString();
 	}
 
 	@Override
 	public List<ZoomInfo> retrieveZoomInfos(final IZoomSource zoomSource, final int targetAD_Window_ID, final boolean checkRecordsCount)
 	{
+		// This kind of relation types must have both source and target reference tables.
 		final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(zoomSource);
 		final ZoomProviderDestination source = sourceAndTarget.getLeft();
 		final ZoomProviderDestination target = sourceAndTarget.getRight();
 
-		final boolean isReferenceTarget = target.isReferenceTarget();
-
-		if (!isReferenceTarget)
+		if (!source.matchesAsSource(zoomSource))
 		{
-			if (!source.matchesAsSource(zoomSource))
-			{
-				logger.trace("Skip {} because {} is not matching source={}", this, zoomSource, source);
-				return ImmutableList.of();
-			}
+			logger.trace("Skip {} because {} is not matching source={}", this, zoomSource, source);
+			return ImmutableList.of();
 		}
 
 		final int adWindowId = target.getAD_Window_ID(zoomSource.isSOTrx());
@@ -159,7 +132,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return directed;
 	}
 
-	private String getZoomInfoId()
+	protected String getZoomInfoId()
 	{
 		return zoomInfoId;
 	}
@@ -174,19 +147,19 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return adRelationTypeId;
 	}
 
-	private ZoomProviderDestination getTarget()
+	protected ZoomProviderDestination getTarget()
 	{
 		return target;
-	}
-
-	private ZoomProviderDestination getSource()
-	{
-		return source;
 	}
 
 	public String getTargetTableName()
 	{
 		return target.getTableName();
+	}
+
+	protected ZoomProviderDestination getSource()
+	{
+		return source;
 	}
 
 	public String getSourceTableName()
@@ -201,41 +174,38 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		final ZoomProviderDestination target = getTarget();
 		final ZoomProviderDestination source = getSource();
-		if (!target.isReferenceTarget())
+
+		if (isDirected())
 		{
-			if (isDirected())
+			// the type is directed, so our destination is always the *target* reference
+			return ImmutablePair.of(source, target);
+		}
+		else if (source.getTableName().equals(target.getTableName()))
+		{
+			// this relation type is from one table to the same table
+			// use the window-id to distinguish
+			final boolean isSOTrx = zoomSource.isSOTrx();
+			if (zoomSource.getAD_Window_ID() == source.getAD_Window_ID(isSOTrx))
 			{
-				// the type is directed, so our destination is always the *target* reference
 				return ImmutablePair.of(source, target);
-			}
-			else if (source.getTableName().equals(target.getTableName()))
-			{
-				// this relation type is from one table to the same table
-				// use the window-id to distinguish
-				final boolean isSOTrx = zoomSource.isSOTrx();
-				if (zoomSource.getAD_Window_ID() == source.getAD_Window_ID(isSOTrx))
-				{
-					return ImmutablePair.of(source, target);
-				}
-				else
-				{
-					return ImmutablePair.of(target, source);
-				}
 			}
 			else
 			{
-				if (zoomSource.getTableName().equals(source.getTableName()))
-				{
-					return ImmutablePair.of(source, target);
-				}
-				else
-				{
-					return ImmutablePair.of(target, source);
-				}
+				return ImmutablePair.of(target, source);
+			}
+		}
+		else
+		{
+			if (zoomSource.getTableName().equals(source.getTableName()))
+			{
+				return ImmutablePair.of(source, target);
+			}
+			else
+			{
+				return ImmutablePair.of(target, source);
 			}
 		}
 
-		return ImmutablePair.of(null, target);
 	}
 
 	/**
@@ -247,22 +217,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final ITableRefInfo refTable = target.getTableRefInfo();
 		final String refTableWhereClause = refTable.getWhereClause();
 
-		if (target.isReferenceTarget)
-		{
-			queryWhereClause
-					.append(zoomSource.getAD_Table_ID())
-					.append(" = ")
-					.append(refTable.getTableName())
-					.append(".")
-					.append("AD_Table_ID")
-					.append(" AND ")
-					.append(zoomSource.getRecord_ID())
-					.append(" = ")
-					.append(refTable.getTableName())
-					.append(".")
-					.append("Record_ID");
-		}
-		else if (!Check.isEmpty(refTableWhereClause))
+		if (!Check.isEmpty(refTableWhereClause))
 		{
 			queryWhereClause.append(parseWhereClause(zoomSource, refTableWhereClause, true));
 		}
@@ -312,23 +267,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return whereParsed;
 	}
 
-	private static void updateRecordsCountAndZoomValue(final MQuery query)
-	{
-		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
-
-		final String sqlCount = "SELECT COUNT(*) " + sqlCommon;
-		final int count = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
-		query.setRecordCount(count);
-
-		if (count > 0)
-		{
-			final String sqlFirstKey = "SELECT " + query.getZoomColumnName() + sqlCommon;
-
-			final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
-			query.setZoomValue(firstKey);
-		}
-	}
-
 	public <T> List<T> retrieveDestinations(final Properties ctx, final PO sourcePO, final Class<T> clazz, final String trxName)
 	{
 		final IZoomSource zoomSource = POZoomSource.of(sourcePO, -1);
@@ -341,132 +279,6 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				.setOnlyActiveRecords(true)
 				.setOrderBy(query.getZoomColumnName())
 				.list(clazz);
-	}
-
-	private static final class ZoomProviderDestination
-	{
-		private final int AD_Reference_ID;
-		private final ITableRefInfo tableRefInfo;
-		private final ITranslatableString roleDisplayName;
-
-		private final boolean isReferenceTarget;
-
-		private ZoomProviderDestination(final int AD_Reference_ID, @NonNull final ITableRefInfo tableRefInfo, @Nullable final ITranslatableString roleDisplayName, final boolean isReferenceTarget)
-		{
-			super();
-			Preconditions.checkArgument(AD_Reference_ID > 0, "AD_Reference_ID > 0");
-			this.AD_Reference_ID = AD_Reference_ID;
-			this.tableRefInfo = tableRefInfo;
-			this.roleDisplayName = roleDisplayName;
-
-			this.isReferenceTarget = isReferenceTarget;
-		}
-
-		@Override
-		public String toString()
-		{
-			return MoreObjects.toStringHelper(this)
-					.add("AD_Reference_ID", AD_Reference_ID)
-					.add("roleDisplayName", roleDisplayName)
-					.add("tableRefInfo", tableRefInfo)
-					.toString();
-		}
-
-		public String getTableName()
-		{
-			return tableRefInfo.getTableName();
-		}
-
-		public String getKeyColumnName()
-		{
-			return tableRefInfo.getKeyColumn();
-		}
-
-		public ITableRefInfo getTableRefInfo()
-		{
-			return tableRefInfo;
-		}
-
-		public boolean isReferenceTarget()
-		{
-			return isReferenceTarget;
-		}
-
-		public ITranslatableString getRoleDisplayName(final int fallbackAD_Window_ID)
-		{
-			if (roleDisplayName != null)
-			{
-				return roleDisplayName;
-			}
-
-			// Fallback to window name
-			final ITranslatableString windowName = Services.get(IADWindowDAO.class).retrieveWindowName(fallbackAD_Window_ID);
-			Check.errorIf(windowName == null, "Found no display string for, destination={}, AD_Window_ID={}", this, fallbackAD_Window_ID);
-			return windowName;
-		}
-
-		/**
-		 * @return the <code>AD_Window_ID</code>
-		 * @throws PORelationException if no <code>AD_Window_ID</code> can be found.
-		 */
-		public int getAD_Window_ID(final boolean isSOTrx)
-		{
-			int windowId = tableRefInfo.getZoomAD_Window_ID_Override();
-			if (windowId > 0)
-			{
-				return windowId;
-			}
-
-			if (isSOTrx)
-			{
-				windowId = tableRefInfo.getZoomSO_Window_ID();
-			}
-			else
-			{
-				windowId = tableRefInfo.getZoomPO_Window_ID();
-			}
-			if (windowId <= 0)
-			{
-				throw PORelationException.throwMissingWindowId(tableRefInfo.getName(), tableRefInfo.getTableName(), isSOTrx);
-			}
-
-			return windowId;
-		}
-
-		public boolean matchesAsSource(final IZoomSource zoomSource)
-		{
-			if(isReferenceTarget())
-			{
-				// the source always matches if the target is ReferenceTarget
-				return true;
-			}
-			
-			final String whereClause = tableRefInfo.getWhereClause();
-			if (Check.isEmpty(whereClause, true))
-			{
-				logger.debug("whereClause is empty. Returning true (matching)");
-				return true;
-			}
-
-			final String parsedWhere = parseWhereClause(zoomSource, whereClause, false);
-			if (Check.isEmpty(parsedWhere))
-			{
-				return false;
-			}
-
-			final String keyColumnName = zoomSource.getKeyColumnName();
-			Check.assumeNotEmpty(keyColumnName, "keyColumn is not empty for {}", zoomSource);
-
-			final StringBuilder whereClauseEffective = new StringBuilder();
-			whereClauseEffective.append(parsedWhere);
-			whereClauseEffective.append(" AND ( ").append(keyColumnName).append("=").append(zoomSource.getRecord_ID()).append(" )");
-
-			final boolean match = new Query(zoomSource.getCtx(), zoomSource.getTableName(), whereClauseEffective.toString(), zoomSource.getTrxName())
-					.match();
-
-			logger.debug("whereClause='{}' matches source='{}': {}", parsedWhere, zoomSource, match);
-			return match;
-		}
 	}
 
 	@ToString(exclude = "lookupDAO")
@@ -487,7 +299,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private ITranslatableString targetRoleDisplayName;
 		private ITableRefInfo targetTableRefInfo = null; // lazy
 
-		private Builder()
+		public Builder()
 		{
 			super();
 		}
