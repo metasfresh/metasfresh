@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.adempiere.util.Check;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -27,11 +27,11 @@ import lombok.experimental.UtilityClass;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -48,32 +48,43 @@ public class CtxNames
 	public static final String NAME_Marker = "@";
 	public static final String MODIFIER_Old = "old";
 
-
 	public static final String VALUE_NULL = null;
-	
+
 	public static final String SEPARATOR = "/";
 	private static final Splitter SEPARATOR_SPLITTER = Splitter.on(SEPARATOR)
-			//.omitEmptyStrings() // DO NOT omit empty strings because we want to support expressions like: @Description/@
-			;
-	
+	// .omitEmptyStrings() // DO NOT omit empty strings because we want to support expressions like: @Description/@
+	;
+
 	private static final List<String> MODIFIERS = ImmutableList.<String> builder()
 			.add(MODIFIER_Old)
 			.build();
-	
-	public Set<CtxName> parseStringsWithoutMarkers(@NonNull final Collection<String> strings)
+
+	/**
+	 * Returns an immutable set of {@link CtxName}s that contains the results of {@link CtxNames#parse(String)}, applied to the strings of the given {@code stringsWithoutMarkers}.
+	 * 
+	 * @param stringsWithoutMarkers may not be {@code null}.
+	 * @return
+	 */
+	public Set<CtxName> parseStrings(@NonNull final Collection<String> stringsWithoutMarkers)
 	{
-		return strings.stream()
-				.map(s -> parse(s))
-				.collect(Collectors.toSet());
+		return stringsWithoutMarkers.stream()
+				.map(CtxNames::parse)
+				.collect(ImmutableSet.toImmutableSet());
 	}
-	
+
+	/**
+	 * Returns an immutable set of strings which contains the {@link CtxName#getName()}s of the give {@code ctxNames}.
+	 * 
+	 * @param ctxNames may not be {@code null}.
+	 * @return
+	 */
 	public Set<String> asNames(@NonNull final Collection<CtxName> ctxNames)
 	{
 		return ctxNames.stream()
 				.map(CtxName::getName)
-				.collect(Collectors.toSet());
+				.collect(ImmutableSet.toImmutableSet());
 	}
-	
+
 	public static CtxName parse(final String contextWithoutMarkers)
 	{
 		if (contextWithoutMarkers == null)
@@ -95,7 +106,7 @@ public class CtxNames
 			{
 				modifiers.add(token);
 			}
-			
+
 			firstToken = false;
 		}
 

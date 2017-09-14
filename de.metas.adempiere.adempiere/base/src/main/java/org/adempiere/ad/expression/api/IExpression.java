@@ -49,7 +49,7 @@ public interface IExpression<V>
 
 	/**
 	 * Return the parameters as {@link CtxName}s.<br>
-	 * If you really, really have only strings in your implementation, you can use {@link CtxNames#parseStringsWithoutMarkers(java.util.Collection)} to implement the method.
+	 * If you really, really have only strings in your implementation, you can use {@link CtxNames#parseStrings(java.util.Collection)} to implement the method.
 	 * 
 	 * @return
 	 */
