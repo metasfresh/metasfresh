@@ -484,6 +484,9 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		user.setEMail(importRecord.getEMail());
 		user.setBirthday(importRecord.getBirthday());
 		user.setIsDefaultContact(importRecord.isDefaultContact());
+		
+		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
+		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}
 
 	/**
@@ -530,6 +533,9 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			user.setBirthday(importRecord.getBirthday());
 		}
 		user.setIsDefaultContact(importRecord.isDefaultContact());
+		
+		user.setIsBillToContact_Default(importRecord.isBillToContact_Default());
+		user.setIsShipToContact_Default(importRecord.isShipToContact_Default());
 	}
 
 	private final void createUpdateInterestArea(final I_I_BPartner importRecord)
