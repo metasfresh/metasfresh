@@ -221,11 +221,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartner.setAD_Org_ID(importRecord.getAD_Org_ID());
 		//
 		String value = importRecord.getValue();
-		if (Check.isEmpty(value, true))
-		{
-			value = importRecord.getEMail();
-		}
-		bpartner.setValue(value);
+		bpartner.setValue(Check.isEmpty(value, true) ? importRecord.getEMail() : value);
 		//
 		String name = importRecord.getName();
 		if (Check.isEmpty(name, true))
@@ -244,6 +240,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartner.setVATaxID(importRecord.getTaxID());
 		bpartner.setNAICS(importRecord.getNAICS());
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
+		bpartner.setAD_Language(importRecord.getAD_Language());
 		return bpartner;
 	}
 
@@ -278,6 +275,13 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		}
+		
+		if (importRecord.getAD_Language() != null)
+		{
+			bpartner.setAD_Language(importRecord.getAD_Language());
+		}
+		
+		bpartner.setAD_Language(importRecord.getAD_Language());
 		return bpartner;
 	}
 
