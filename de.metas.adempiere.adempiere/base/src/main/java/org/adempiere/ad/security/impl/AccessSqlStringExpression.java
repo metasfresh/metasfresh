@@ -158,7 +158,7 @@ public final class AccessSqlStringExpression implements IStringExpression
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		return parametersAsCtxNames.stream().map(CtxName::getName).collect(ImmutableSet.toImmutableSet());
 	}

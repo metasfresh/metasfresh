@@ -71,7 +71,7 @@ public class SysDateDateExpression implements IExpression<java.util.Date>
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		return ImmutableSet.of();
 	}

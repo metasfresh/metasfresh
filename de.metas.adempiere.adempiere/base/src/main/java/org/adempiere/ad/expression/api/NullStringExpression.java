@@ -39,7 +39,7 @@ public final class NullStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		return ImmutableSet.of();
 	}

@@ -210,9 +210,9 @@ public final class TranslatableParameterizedStringExpression implements IStringE
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
-		return CtxNames.asNames(parameters);
+		return CtxNames.toNames(parameters);
 	}
 
 	@Override

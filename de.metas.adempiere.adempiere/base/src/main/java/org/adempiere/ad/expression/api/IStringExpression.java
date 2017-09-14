@@ -99,7 +99,7 @@ public interface IStringExpression extends IExpression<String>
 		
 	default boolean requiresParameter(final String parameterName)
 	{
-		return getParametersAsPlainStrings().contains(parameterName);
+		return getParameterNames().contains(parameterName);
 	}
 
 	@Override

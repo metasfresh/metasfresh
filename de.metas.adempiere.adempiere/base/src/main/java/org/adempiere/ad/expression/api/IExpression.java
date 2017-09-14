@@ -41,15 +41,15 @@ public interface IExpression<V>
 
 	/**
 	 * Gets the list of parameter names.<br>
-	 * In most implementations this should be the result of {@link #getParameters()} that was "dumbed down" via {@link CtxNames#asNames(java.util.Collection)}.
+	 * In most implementations this should be the result of {@link #getParameters()} that was "dumbed down" via {@link CtxNames#toNames(java.util.Collection)}.
 	 * 
 	 * @return list of parameter names or empty list; never return {@code null}
 	 */
-	Set<String> getParametersAsPlainStrings();
+	Set<String> getParameterNames();
 
 	/**
 	 * Return the parameters as {@link CtxName}s.<br>
-	 * If you really, really have only strings in your implementation, you can use {@link CtxNames#parseStrings(java.util.Collection)} to implement the method.
+	 * If you really, really have only strings in your implementation, you can use {@link CtxNames#parseAll(java.util.Collection)} to implement the method.
 	 * 
 	 * @return
 	 */

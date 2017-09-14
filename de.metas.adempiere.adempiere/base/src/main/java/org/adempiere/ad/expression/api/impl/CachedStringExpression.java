@@ -125,9 +125,9 @@ public final class CachedStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
-		return expression.getParametersAsPlainStrings();
+		return expression.getParameterNames();
 	}
 	
 	@Override
@@ -149,7 +149,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 		{
 			// Build the effective context
 			final boolean failIfNotFound = onVariableNotFound == OnVariableNotFound.Fail;
-			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParametersAsPlainStrings(), ctx, failIfNotFound);
+			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParameterNames(), ctx, failIfNotFound);
 
 			// Caching key: the effective context and the OnVariableNotFound
 			final ArrayKey key = mkCachingKey(ctxEffective, onVariableNotFound);
@@ -172,7 +172,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 		{
 			// Build the effective context
 			final boolean failIfNotFound = false;
-			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParametersAsPlainStrings(), ctx, failIfNotFound);
+			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParameterNames(), ctx, failIfNotFound);
 
 			// Caching key: the effective context and the OnVariableNotFound
 			final OnVariableNotFound onVariableNotFound = null; // not relevant

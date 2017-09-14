@@ -172,9 +172,9 @@ import com.google.common.collect.ImmutableSet;
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
-		return CtxNames.asNames(getParameters());
+		return CtxNames.toNames(getParameters());
 	}
 
 	@Override

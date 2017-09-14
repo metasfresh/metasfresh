@@ -66,7 +66,7 @@ public interface ILogicExpression extends IExpression<Boolean>
 	String getFormatedExpressionString();
 
 	@Override
-	Set<String> getParametersAsPlainStrings();
+	Set<String> getParameterNames();
 
 	@Override
 	default Boolean evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)

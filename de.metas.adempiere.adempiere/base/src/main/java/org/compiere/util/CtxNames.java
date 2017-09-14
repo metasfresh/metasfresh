@@ -65,7 +65,7 @@ public class CtxNames
 	 * @param stringsWithoutMarkers may not be {@code null}.
 	 * @return
 	 */
-	public Set<CtxName> parseStrings(@NonNull final Collection<String> stringsWithoutMarkers)
+	public Set<CtxName> parseAll(@NonNull final Collection<String> stringsWithoutMarkers)
 	{
 		return stringsWithoutMarkers.stream()
 				.map(CtxNames::parse)
@@ -78,7 +78,7 @@ public class CtxNames
 	 * @param ctxNames may not be {@code null}.
 	 * @return
 	 */
-	public Set<String> asNames(@NonNull final Collection<CtxName> ctxNames)
+	public Set<String> toNames(@NonNull final Collection<CtxName> ctxNames)
 	{
 		return ctxNames.stream()
 				.map(CtxName::getName)

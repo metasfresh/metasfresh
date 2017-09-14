@@ -119,7 +119,7 @@ public final class ConstantStringExpression implements IStringExpression, ICache
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		return ImmutableSet.of();
 	}

@@ -210,9 +210,9 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
-		return CtxNames.asNames(getParameters());
+		return CtxNames.toNames(getParameters());
 	}
 
 	@Override

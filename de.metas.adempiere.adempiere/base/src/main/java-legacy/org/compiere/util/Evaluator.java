@@ -175,6 +175,6 @@ public class Evaluator
 			return;
 		}
 		
-		list.addAll(expr.getParametersAsPlainStrings());
+		list.addAll(expr.getParameterNames());
 	}
 }	//	Evaluator

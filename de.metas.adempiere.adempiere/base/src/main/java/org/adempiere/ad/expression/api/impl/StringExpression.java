@@ -127,9 +127,9 @@ import com.google.common.collect.ImmutableSet;
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
-		return CtxNames.asNames(parametersAsCtxName);
+		return CtxNames.toNames(parametersAsCtxName);
 	}
 
 	@Override

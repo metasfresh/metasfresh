@@ -69,13 +69,13 @@ import com.google.common.base.MoreObjects;
 	@Override
 	public Set<String> getAllParameters()
 	{
-		return whereClause.getParametersAsPlainStrings();
+		return whereClause.getParameterNames();
 	}
 
 	@Override
 	public boolean isImmutable()
 	{
-		return whereClause.getParametersAsPlainStrings().isEmpty();
+		return whereClause.getParameterNames().isEmpty();
 	}
 
 	@Override

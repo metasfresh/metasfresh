@@ -210,12 +210,12 @@ public final class CompositeStringExpression implements IStringExpression
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		if (_parameters == null)
 		{
 			_parameters = expressions.stream()
-					.flatMap(expression -> expression.getParametersAsPlainStrings().stream())
+					.flatMap(expression -> expression.getParameterNames().stream())
 					.collect(GuavaCollectors.toImmutableSet());
 		}
 		return _parameters;

@@ -109,7 +109,7 @@ import com.google.common.collect.ImmutableSet;
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		return parameters;
 	}

@@ -95,7 +95,7 @@ public final class ConstantLogicExpression implements ILogicExpression
 	}
 
 	@Override
-	public Set<String> getParametersAsPlainStrings()
+	public Set<String> getParameterNames()
 	{
 		return ImmutableSet.of();
 	}
