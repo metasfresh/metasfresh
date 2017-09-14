@@ -41,11 +41,15 @@ public interface IExpression<V>
 
 	/**
 	 * Gets the list of parameter names.<br>
-	 * In most implementations this should be the result of {@link #getParameters()} that was "dumbed down" via {@link CtxNames#toNames(java.util.Collection)}.
+	 * In most implementations this can be the result of a {@link #getParameters()} that was "dumbed down" via {@link CtxNames#toNames(java.util.Collection)}.<br>
+	 * However, if your implementation wraps around and delegates to an internal {@link IExpression} instance, then I recommend to explicitly delegate also this method.
 	 * 
 	 * @return list of parameter names or empty list; never return {@code null}
 	 */
-	Set<String> getParameterNames();
+	default Set<String> getParameterNames()
+	{
+		return CtxNames.toNames(getParameters());
+	}
 
 	/**
 	 * Return the parameters as {@link CtxName}s.<br>

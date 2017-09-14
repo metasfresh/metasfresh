@@ -86,11 +86,9 @@ public final class CompositeStringExpression implements IStringExpression
 	private transient String _expressionStr;
 	private transient String _formatedExpressionString;
 	
-	private transient Set<String> _parameters;
 	private transient Set<CtxName> _parametersAsCtxNames;
 
 	private Integer _hashCode;
-
 
 	private CompositeStringExpression(final Collection<IStringExpression> expressions)
 	{
@@ -208,19 +206,6 @@ public final class CompositeStringExpression implements IStringExpression
 					.addExpression(this);
 		}
 	}
-
-	@Override
-	public Set<String> getParameterNames()
-	{
-		if (_parameters == null)
-		{
-			_parameters = expressions.stream()
-					.flatMap(expression -> expression.getParameterNames().stream())
-					.collect(GuavaCollectors.toImmutableSet());
-		}
-		return _parameters;
-	}
-	
 
 	@Override
 	public Set<CtxName> getParameters()
