@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+import java.util.function.Function;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -58,10 +59,12 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 
 /*
  * #%L
@@ -109,6 +112,8 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	private final IViewsRepository viewsRepo;
 	private final ViewId viewId;
 	private final DocumentIdsSelection viewSelectedDocumentIds;
+	
+	private final DocumentPath contextSingleDocumentPath;
 
 	private boolean executed = false;
 	private ProcessInstanceResult executionResult;
@@ -126,6 +131,8 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		viewsRepo = builder.viewsRepo;
 		viewId = builder.viewId;
 		viewSelectedDocumentIds = builder.viewSelectedDocumentIds == null ? DocumentIdsSelection.EMPTY : builder.viewSelectedDocumentIds;
+		
+		contextSingleDocumentPath = builder.contextSingleDocumentPath;
 
 		executed = false;
 		executionResult = null;
@@ -147,6 +154,8 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		viewsRepo = from.viewsRepo;
 		viewId = from.viewId;
 		viewSelectedDocumentIds = from.viewSelectedDocumentIds;
+		
+		contextSingleDocumentPath = from.contextSingleDocumentPath;
 
 		executed = from.executed;
 		executionResult = from.executionResult;
@@ -191,6 +200,19 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 	public ADProcessInstanceController copy(final CopyMode copyMode, final IDocumentChangesCollector changesCollector)
 	{
 		return new ADProcessInstanceController(this, copyMode, changesCollector);
+	}
+	
+	public ADProcessInstanceController bindContextSingleDocument(final DocumentCollection documentsCollection)
+	{
+		if(contextSingleDocumentPath == null)
+		{
+			return this;
+		}
+		
+		final Document contextSingleDocument = documentsCollection.forDocumentReadonly(contextSingleDocumentPath, NullDocumentChangesCollector.instance, Function.identity());
+		getParametersDocument().setShadowParentDocumentEvaluatee(contextSingleDocument.asEvaluatee());
+		
+		return this;
 	}
 
 	public IAutoCloseable activate()
@@ -263,7 +285,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		return executionResult;
 	}
 
-	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, IViewsRepository viewsRepo)
+	private static final ProcessInstanceResult executeADProcess(final DocumentId adPInstanceId, final ProcessDescriptor processDescriptor, final IViewsRepository viewsRepo)
 	{
 		//
 		// Create the process info and execute the process synchronously
@@ -551,7 +573,11 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 		private IViewsRepository viewsRepo;
 		private ViewId viewId;
 		private DocumentIdsSelection viewSelectedDocumentIds;
+		
 		private Object processClassInstance;
+		
+		private DocumentPath contextSingleDocumentPath;
+		
 
 		private Builder()
 		{
@@ -594,9 +620,15 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 			return this;
 		}
 
-		public Builder setProcessClassInstance(Object processClassInstance)
+		public Builder setProcessClassInstance(final Object processClassInstance)
 		{
 			this.processClassInstance = processClassInstance;
+			return this;
+		}
+		
+		public Builder setContextSingleDocumentPath(final DocumentPath contextSingleDocumentPath)
+		{
+			this.contextSingleDocumentPath = contextSingleDocumentPath;
 			return this;
 		}
 	}

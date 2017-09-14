@@ -185,6 +185,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setViewsRepo(viewsRepo)
 					.setView(request.getViewId(), request.getViewDocumentIds())
 					.setProcessClassInstance(processClassInstance)
+					.setContextSingleDocumentPath(request.getSingleDocumentPath())
 					.build();
 			processInstances.put(adPInstanceId, pinstance.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 			return pinstance;
@@ -212,7 +213,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			{
 				final DocumentId viewSingleDocumentId = viewDocumentIds.getSingleDocumentId();
 				final TableRecordReference recordRef = view.getTableRecordReferenceOrNull(viewSingleDocumentId);
-				if(recordRef != null)
+				if (recordRef != null)
 				{
 					tableName = recordRef.getTableName();
 					recordId = recordRef.getRecord_ID();
@@ -230,7 +231,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			}
 
 			//
-			if(viewDocumentIds.isEmpty())
+			if (viewDocumentIds.isEmpty())
 			{
 				sqlWhereClause = null;
 			}
@@ -343,7 +344,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	{
 		try (final IAutoCloseable readLock = getOrLoad(pinstanceId).lockForReading())
 		{
-			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
+					.bindContextSingleDocument(documentsCollection);
 			try (final IAutoCloseable c = processInstance.activate())
 			{
 				return processor.apply(processInstance);
@@ -368,7 +370,8 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	{
 		try (final IAutoCloseable writeLock = getOrLoad(pinstanceId).lockForWriting())
 		{
-			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckOutWritable, changesCollector);
+			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId).copy(CopyMode.CheckOutWritable, changesCollector)
+					.bindContextSingleDocument(documentsCollection);
 
 			// Make sure the process was not already executed.
 			// If it was executed we are not allowed to change it.
