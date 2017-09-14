@@ -24,6 +24,8 @@ Here come the actual release notes:
     * New window for Invoice Allocation as substitute for 3rd Level Subtab in old Contract Window.
   * [#2406](https://github.com/metasfresh/metasfresh/issues/2406) New Window for C_SubscriptionProgress in WebUI
     * New window for Subscription Progress/ History as substitute for 3rd Level Subtab in old Contract Window.
+  * [#2408](https://github.com/metasfresh/metasfresh/issues/2408) Contract Date and Contract DocumentNo
+    * New Fields in Contract Window: Document No and Date, allowing a better recognition of the Contract creation.
   * [#2416](https://github.com/metasfresh/metasfresh/issues/2416) New Window for M_QualityInsp_LagerKonf_Version in WebUI
     * New Windows for yearly Swiss Storage Conference, allowing the user to define the Storage Conference Criteria.
   * [#2421](https://github.com/metasfresh/metasfresh/issues/2421) New Fields MasterStartDate and MasterEndDate in FlatRate Term
