@@ -76,12 +76,6 @@ public class AutoSequenceDefaultValueExpression implements IStringExpression
 	}
 
 	@Override
-	public Set<String> getParameterNames()
-	{
-		return CtxNames.toNames(PARAMETERS);
-	}
-
-	@Override
 	public Set<CtxName> getParameters()
 	{
 		return PARAMETERS;
