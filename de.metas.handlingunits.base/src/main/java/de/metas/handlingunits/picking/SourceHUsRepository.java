@@ -61,7 +61,7 @@ import lombok.NonNull;
 public class SourceHUsRepository
 {
 	private static final Logger logger = LogManager.getLogger(SourceHUsRepository.class);
-	
+
 	private final HUTraceRepository huTraceRepository;
 
 	private final PickingCandidateRepository pickingCandidateRepo;
@@ -82,6 +82,15 @@ public class SourceHUsRepository
 	 */
 	public Collection<I_M_HU> retrieveSourceHUsViaTracing(@NonNull final List<Integer> huIds)
 	{
+		final Set<Integer> vhuSourceIds = retrieveVhus(huIds);
+
+		final Set<I_M_HU> topLevelSourceHus = retrieveTopLevelSourceHus(vhuSourceIds);
+
+		return topLevelSourceHus;
+	}
+
+	private Set<Integer> retrieveVhus(@NonNull final List<Integer> huIds)
+	{
 		final Set<Integer> vhuSourceIds = new HashSet<>();
 
 		for (final int huId : huIds)
@@ -97,9 +106,17 @@ public class SourceHUsRepository
 				vhuSourceIds.add(traceEvent.getVhuSourceId());
 			}
 		}
+		return vhuSourceIds;
+	}
 
-		//
-		// don't use Services.get(IHandlingUnitsBL.class).getTopLevelHUs() because the sourceHUs might already be destroyed
+	/**
+	 * Don't use Services.get(IHandlingUnitsBL.class).getTopLevelHUs() because the sourceHUs might already be destroyed.f
+	 * 
+	 * @param vhuSourceIds
+	 * @return
+	 */
+	private Set<I_M_HU> retrieveTopLevelSourceHus(@NonNull final Set<Integer> vhuSourceIds)
+	{
 		final Set<I_M_HU> topLevelSourceHus = new TreeSet<>(Comparator.comparing(I_M_HU::getM_HU_ID));
 		for (int vhuSourceId : vhuSourceIds)
 		{
@@ -116,6 +133,7 @@ public class SourceHUsRepository
 		}
 		return topLevelSourceHus;
 	}
+
 
 	public Collection<I_M_HU> retrieveMatchingSourceHUs(final int huId)
 	{
@@ -178,5 +196,5 @@ public class SourceHUsRepository
 
 		return deleteCount > 0;
 	}
-	
+
 }

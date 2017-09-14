@@ -59,36 +59,19 @@ public class SetCandidatesInProgress
 		{
 			return 0;
 		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		final Collection<I_M_HU> sourceHUs = sourceHUsRepository.retrieveSourceHUsViaTracing(huIds);
 		for (final I_M_HU sourceHU : sourceHUs)
 		{
-			if (!Services.get(IHandlingUnitsBL.class).isDestroyed(sourceHU))
+			if (!handlingUnitsBL.isDestroyed(sourceHU))
 			{
 				continue;
 			}
-			final I_M_Source_HU sourceHuRecord = queryBL.createQueryBuilder(I_M_Source_HU.class)
-					.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, sourceHU.getM_HU_ID())
-					.create()
-					.firstOnly(I_M_Source_HU.class);
-			if (sourceHuRecord == null)
-			{
-				continue; // shouldn't happen
-			}
-
-			huSnapshotDAO.restoreHUs()
-					.addModel(sourceHU)
-					.setContext(PlainContextAware.newWithThreadInheritedTrx())
-					.setDateTrx(SystemTime.asDate())
-					.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
-					.restoreFromSnapshot();
-
-			sourceHuRecord.setPreDestroy_Snapshot_UUID(null);
-			save(sourceHuRecord);
+			restoreHu(sourceHU);
 		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final IQuery<I_M_Picking_Candidate> query = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -100,6 +83,37 @@ public class SetCandidatesInProgress
 				.addSetColumnValue(I_M_Picking_Candidate.COLUMNNAME_Status, X_M_Picking_Candidate.STATUS_IP);
 
 		return query.updateDirectly(updater);
+	}
+
+	/**
+	 * Restores the given destroyed HU from the snapshot ID stored in its {@link I_M_Source_HU} record.
+	 * 
+	 * @param sourceHU
+	 */
+	private void restoreHu(@NonNull final I_M_HU sourceHU)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+
+		final I_M_Source_HU sourceHuRecord = queryBL.createQueryBuilder(I_M_Source_HU.class)
+				.addEqualsFilter(I_M_Source_HU.COLUMN_M_HU_ID, sourceHU.getM_HU_ID())
+				.create()
+				.firstOnly(I_M_Source_HU.class);
+		if (sourceHuRecord == null)
+		{
+			return;
+		}
+
+		huSnapshotDAO.restoreHUs()
+				.addModel(sourceHU)
+				.setContext(PlainContextAware.newWithThreadInheritedTrx())
+				.setDateTrx(SystemTime.asDate())
+				.setSnapshotId(sourceHuRecord.getPreDestroy_Snapshot_UUID())
+				.restoreFromSnapshot();
+
+		sourceHuRecord.setPreDestroy_Snapshot_UUID(null);
+		save(sourceHuRecord);
+
 	}
 
 }

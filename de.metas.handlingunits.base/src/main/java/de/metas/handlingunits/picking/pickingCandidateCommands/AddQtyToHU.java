@@ -62,7 +62,7 @@ import lombok.NonNull;
 public class AddQtyToHU
 {
 	private static final Logger logger = LogManager.getLogger(AddQtyToHU.class);
-	
+
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	public AddQtyToHU(@NonNull final PickingCandidateRepository pickingCandidateRepository)
@@ -88,35 +88,9 @@ public class AddQtyToHU
 
 		final I_M_Picking_Candidate candidate = pickingCandidateRepository.getCreateCandidate(huId, pickingSlotId, shipmentScheduleId);
 
-		//
-		// Source - take the preselected sourceHUs
-		final HUListAllocationSourceDestination source;
-		{
-			final PickingHUsQuery query = PickingHUsQuery.builder()
-					.considerAttributes(true)
-					.shipmentSchedules(ImmutableList.of(shipmentSchedule))
-					.onlyTopLevelHUs(true)
-					.build();
-			final List<I_M_HU> sourceHUs = Services.get(IHUPickingSlotBL.class).retrieveAvailableSourceHUs(query);
-			source = HUListAllocationSourceDestination.of(sourceHUs);
-			source.setDestroyEmptyHUs(false); // don't automatically destroy them. we will do that ourselves if the sourceHUs are empty at the time we process our picking candidates
-		}
+		final HUListAllocationSourceDestination source = createAllocationSource(shipmentSchedule);
+		final IAllocationDestination destination = createAllocationDestination(huId);
 
-		//
-		// Destination: HU
-		final IAllocationDestination destination;
-		{
-			final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
-			// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
-			if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
-			{
-				throw new AdempiereException("not an active HU").setParameter("hu", hu);
-			}
-			destination = HUListAllocationSourceDestination.of(hu);
-		}
-
-		//
-		// Request
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 		// create the context with the tread-inherited transaction! Otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
@@ -131,7 +105,6 @@ public class AddQtyToHU
 				.setForceQtyAllocation(true)
 				.create();
 
-		//
 		// Load QtyCU to HU(destination)
 		final IAllocationResult loadResult = HULoader.of(source, destination)
 				.setAllowPartialLoads(true) // don't fail if the the picking staff attempted to to pick more than the TU's capacity
@@ -139,14 +112,48 @@ public class AddQtyToHU
 				.load(request);
 		logger.info("addQtyToHU done; huId={}, qtyCU={}, loadResult={}", huId, qtyCU, loadResult);
 
-		//
 		// Update the candidate
 		final Quantity qtyPicked = Quantity.of(loadResult.getQtyAllocated(), request.getC_UOM());
 		addQtyToCandidate(candidate, product, qtyPicked);
 
 		return qtyPicked;
 	}
-	
+
+	/**
+	 * Source - take the preselected sourceHUs
+	 * 
+	 * @param shipmentSchedule
+	 * @return
+	 */
+	private HUListAllocationSourceDestination createAllocationSource(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final PickingHUsQuery query = PickingHUsQuery.builder()
+				.considerAttributes(true)
+				.shipmentSchedules(ImmutableList.of(shipmentSchedule))
+				.onlyTopLevelHUs(true)
+				.build();
+
+		final List<I_M_HU> sourceHUs = Services.get(IHUPickingSlotBL.class).retrieveAvailableSourceHUs(query);
+		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(sourceHUs);
+		source.setDestroyEmptyHUs(false); // don't automatically destroy them. we will do that ourselves if the sourceHUs are empty at the time we process our picking candidates
+
+		return source;
+	}
+
+	private IAllocationDestination createAllocationDestination(final int huId)
+	{
+		final I_M_HU hu = InterfaceWrapperHelper.load(huId, I_M_HU.class);
+
+		// we made sure that the source HU is active, so the target HU also needs to be active. Otherwise, goods would just seem to vanish
+		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		{
+			throw new AdempiereException("not an active HU").setParameter("hu", hu);
+		}
+		final IAllocationDestination destination = HUListAllocationSourceDestination.of(hu);
+
+		return destination;
+	}
+
 	private void addQtyToCandidate(
 			@NonNull final I_M_Picking_Candidate candidate,
 			@NonNull final I_M_Product product,

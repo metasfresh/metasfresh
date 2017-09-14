@@ -18,6 +18,7 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
 import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
@@ -46,7 +47,7 @@ import lombok.NonNull;
 public class SetCandidatesProcessed
 {
 	private static final Logger logger = LogManager.getLogger(SetCandidatesProcessed.class);
-	
+
 	private final SourceHUsRepository sourceHUsRepository;
 
 	public SetCandidatesProcessed(@NonNull final SourceHUsRepository sourceHUsRepository)
@@ -78,34 +79,41 @@ public class SetCandidatesProcessed
 
 		return query.updateDirectly(updater);
 	}
-	
-	private void destroyEmptySourceHUs(final Collection<I_M_HU> sourceHus)
+
+	private void destroyEmptySourceHUs(@NonNull final Collection<I_M_HU> sourceHus)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 
 		// clean up and unselect used up source HUs
 		for (final I_M_HU sourceHu : sourceHus)
 		{
-			if (!handlingUnitsBL.getStorageFactory().getStorage(sourceHu).isEmpty())
+			if (!storageFactory.getStorage(sourceHu).isEmpty())
 			{
-				continue;
+				return;
 			}
 
-			final String snapshotId = huSnapshotDAO.createSnapshot()
-					.setContext(PlainContextAware.newWithThreadInheritedTrx())
-					.addModel(sourceHu)
-					.createSnapshots()
-					.getSnapshotId();
-
-			handlingUnitsBL.destroyIfEmptyStorage(sourceHu);
-			Check.errorUnless(handlingUnitsBL.isDestroyed(sourceHu), "We invoked IHandlingUnitsBL.destroyIfEmptyStorage on an HU with empty storage, but its not destroyed; hu={}", sourceHu);
-
-			sourceHuDestroyed(sourceHu.getM_HU_ID(), snapshotId);
-			logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHu.getM_HU_ID());
+			takeSnapShotAndDestroyHu(sourceHu);
 		}
 	}
-	
+
+	private void takeSnapShotAndDestroyHu(@NonNull final I_M_HU sourceHu)
+	{
+		final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		final String snapshotId = huSnapshotDAO.createSnapshot()
+				.setContext(PlainContextAware.newWithThreadInheritedTrx())
+				.addModel(sourceHu)
+				.createSnapshots()
+				.getSnapshotId();
+
+		handlingUnitsBL.destroyIfEmptyStorage(sourceHu);
+		Check.errorUnless(handlingUnitsBL.isDestroyed(sourceHu), "We invoked IHandlingUnitsBL.destroyIfEmptyStorage on an HU with empty storage, but its not destroyed; hu={}", sourceHu);
+
+		sourceHuDestroyed(sourceHu.getM_HU_ID(), snapshotId);
+		logger.info("Source M_HU with M_HU_ID={} is now destroyed", sourceHu.getM_HU_ID());
+	}
+
 	private void sourceHuDestroyed(
 			final int huId,
 			@NonNull final String huSnapShotId)
