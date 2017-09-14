@@ -1,5 +1,8 @@
 package org.adempiere.impexp;
 
+import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_ErrorMsg;
+import static org.adempiere.impexp.AbstractImportProcess.COLUMNNAME_I_IsImported;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
@@ -8,8 +11,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-
-import static org.adempiere.impexp.AbstractImportProcess.*;
 
 /*
  * #%L
@@ -43,11 +44,11 @@ import static org.adempiere.impexp.AbstractImportProcess.*;
  *
  */
 @UtilityClass
-class BPartnerImportTableSqlUpdater
+public class BPartnerImportTableSqlUpdater
 {
 	private static final transient Logger logger = LogManager.getLogger(BPartnerImportTableSqlUpdater.class);
 
-	void updateBPartnerImtortTable(@NonNull final String whereClause)
+	public void updateBPartnerImtortTable(@NonNull final String whereClause)
 	{
 		// Set BP_Group
 		dbUpdateBPGroups(whereClause);
@@ -86,7 +87,7 @@ class BPartnerImportTableSqlUpdater
 				+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y'"
 				+ " AND g.AD_Client_ID=i.AD_Client_ID) ");
 		sql.append("WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
-				+ " AND " + AbstractImportProcess.COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
+				+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'").append(whereClause);
 		int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Set Group Default=" + no);
 		//

@@ -280,7 +280,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		}
 		return bpartner;
 	}
-	
+
 	private static Predicate<I_I_BPartner> isSameAddress(final I_I_BPartner importRecord)
 	{
 		return p -> importRecord.getC_Country_ID() == p.getC_Country_ID()
@@ -392,7 +392,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		importRecord.setC_BPartner_Location(bpartnerLocation);
 		return bpartnerLocation;
 	}
-	
+
 	private I_AD_User createUpdateContact(final I_I_BPartner importRecord)
 	{
 		final I_C_BPartner bpartner = importRecord.getC_BPartner();
@@ -421,46 +421,14 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				name = importRecord.getEMail();
 			}
 			user.setName(name);
-			user.setFirstname(importRecord.getFirstname());
-			user.setLastname(importRecord.getLastname());
 
-			if (importRecord.getTitle() != null)
-			{
-				user.setTitle(importRecord.getTitle());
-			}
-			if (importRecord.getContactDescription() != null)
-			{
-				user.setDescription(importRecord.getContactDescription());
-			}
-			if (importRecord.getComments() != null)
-			{
-				user.setComments(importRecord.getComments());
-			}
-			if (importRecord.getPhone() != null)
-			{
-				user.setPhone(importRecord.getPhone());
-			}
-			if (importRecord.getPhone2() != null)
-			{
-				user.setPhone2(importRecord.getPhone2());
-			}
-			if (importRecord.getFax() != null)
-			{
-				user.setFax(importRecord.getFax());
-			}
-			if (importRecord.getEMail() != null)
-			{
-				user.setEMail(importRecord.getEMail());
-			}
-			if (importRecord.getBirthday() != null)
-			{
-				user.setBirthday(importRecord.getBirthday());
-			}
-			user.setIsDefaultContact(importRecord.isDefaultContact());
+			updateWithAvailablemportRecordFields(importRecord, user);
+
 			if (bpartnerLocation != null)
 			{
 				user.setC_BPartner_Location(bpartnerLocation);
 			}
+
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, user, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(user);
 		}
@@ -480,18 +448,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 				name = importRecord.getEMail();
 			}
 			user.setName(name);
-			user.setFirstname(importRecord.getFirstname());
-			user.setLastname(importRecord.getLastname());
-
-			user.setTitle(importRecord.getTitle());
-			user.setDescription(importRecord.getContactDescription());
-			user.setComments(importRecord.getComments());
-			user.setPhone(importRecord.getPhone());
-			user.setPhone2(importRecord.getPhone2());
-			user.setFax(importRecord.getFax());
-			user.setEMail(importRecord.getEMail());
-			user.setBirthday(importRecord.getBirthday());
-			user.setIsDefaultContact(importRecord.isDefaultContact());
+			updateWithImportRecordFields(importRecord, user);
 			if (bpartnerLocation != null)
 			{
 				user.setC_BPartner_Location_ID(bpartnerLocation.getC_BPartner_Location_ID());
@@ -504,6 +461,74 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		}
 
 		return user;
+	}
+
+	/**
+	 * Similar to {@link #updateWithAvailablemportRecordFields(I_I_BPartner, I_AD_User)}, but also {@code null} values are copied from the given {@code importRecord}.
+	 * 
+	 * @param importRecord
+	 * @param user
+	 */
+	private void updateWithImportRecordFields(final I_I_BPartner importRecord, final I_AD_User user)
+	{
+		user.setFirstname(importRecord.getFirstname());
+		user.setLastname(importRecord.getLastname());
+
+		user.setTitle(importRecord.getTitle());
+		user.setDescription(importRecord.getContactDescription());
+		user.setComments(importRecord.getComments());
+		user.setPhone(importRecord.getPhone());
+		user.setPhone2(importRecord.getPhone2());
+		user.setFax(importRecord.getFax());
+		user.setEMail(importRecord.getEMail());
+		user.setBirthday(importRecord.getBirthday());
+		user.setIsDefaultContact(importRecord.isDefaultContact());
+	}
+
+	/**
+	 * If a particular field is set in the given {@code importRecord}, the given {@code user} user's respective file is updated.
+	 * 
+	 * @param importRecord
+	 * @param user
+	 */
+	private void updateWithAvailablemportRecordFields(final I_I_BPartner importRecord, final I_AD_User user)
+	{
+		user.setFirstname(importRecord.getFirstname());
+		user.setLastname(importRecord.getLastname());
+
+		if (importRecord.getTitle() != null)
+		{
+			user.setTitle(importRecord.getTitle());
+		}
+		if (importRecord.getContactDescription() != null)
+		{
+			user.setDescription(importRecord.getContactDescription());
+		}
+		if (importRecord.getComments() != null)
+		{
+			user.setComments(importRecord.getComments());
+		}
+		if (importRecord.getPhone() != null)
+		{
+			user.setPhone(importRecord.getPhone());
+		}
+		if (importRecord.getPhone2() != null)
+		{
+			user.setPhone2(importRecord.getPhone2());
+		}
+		if (importRecord.getFax() != null)
+		{
+			user.setFax(importRecord.getFax());
+		}
+		if (importRecord.getEMail() != null)
+		{
+			user.setEMail(importRecord.getEMail());
+		}
+		if (importRecord.getBirthday() != null)
+		{
+			user.setBirthday(importRecord.getBirthday());
+		}
+		user.setIsDefaultContact(importRecord.isDefaultContact());
 	}
 
 	private final void createUpdateInterestArea(final I_I_BPartner importRecord)
