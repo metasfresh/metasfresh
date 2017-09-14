@@ -244,6 +244,7 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		bpartner.setVATaxID(importRecord.getTaxID());
 		bpartner.setNAICS(importRecord.getNAICS());
 		bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
+		bpartner.setAD_Language(importRecord.getAD_Language());
 		return bpartner;
 	}
 
@@ -278,6 +279,13 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 		{
 			bpartner.setC_BP_Group_ID(importRecord.getC_BP_Group_ID());
 		}
+		
+		if (importRecord.getAD_Language() != null)
+		{
+			bpartner.setAD_Language(importRecord.getAD_Language());
+		}
+		
+		bpartner.setAD_Language(importRecord.getAD_Language());
 		return bpartner;
 	}
 
