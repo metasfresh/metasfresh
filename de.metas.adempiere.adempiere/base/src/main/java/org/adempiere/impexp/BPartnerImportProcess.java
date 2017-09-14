@@ -377,10 +377,10 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			
 			// also set isBillTo and IsShipTo flags
 			
-			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
 			bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
-			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
+			bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
 			bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
+			bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
 
 			if (importRecord.getPhone() != null)
 				bpartnerLocation.setPhone(importRecord.getPhone());
@@ -416,10 +416,11 @@ public class BPartnerImportProcess extends AbstractImportProcess<I_I_BPartner>
 			bpartnerLocation.setFax(importRecord.getFax());
 			
 			// set isShipTo and isBillTo
-			bpartnerLocation.setIsShipTo(importRecord.isShipTo());
 			bpartnerLocation.setIsShipToDefault(importRecord.isShipToDefault());
-			bpartnerLocation.setIsBillTo(importRecord.isBillTo());
+			bpartnerLocation.setIsShipTo(importRecord.isShipToDefault() ? importRecord.isShipToDefault() : importRecord.isShipTo()); // if isShipToDefault='Y', then use that value
 			bpartnerLocation.setIsBillToDefault(importRecord.isBillToDefault());
+			bpartnerLocation.setIsBillTo(importRecord.isBillToDefault() ? importRecord.isBillToDefault() : importRecord.isBillTo()); // if isBillToDefault='Y', the use that value
+
 			
 			ModelValidationEngine.get().fireImportValidate(this, importRecord, bpartnerLocation, IImportValidator.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bpartnerLocation);

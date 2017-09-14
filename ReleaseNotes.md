@@ -26,6 +26,16 @@ Here come the actual release notes:
     * New window for Subscription Progress/ History as substitute for 3rd Level Subtab in old Contract Window.
   * [#2416](https://github.com/metasfresh/metasfresh/issues/2416) New Window for M_QualityInsp_LagerKonf_Version in WebUI
     * New Windows for yearly Swiss Storage Conference, allowing the user to define the Storage Conference Criteria.
+  * [#2421](https://github.com/metasfresh/metasfresh/issues/2421) New Fields MasterStartDate and MasterEndDate in FlatRate Term
+    * New Fields for Matercontract Start and End to the Flatrate Term Window in WebUI.
+  * [#2426](https://github.com/metasfresh/metasfresh/issues/2426) Translation for window "RfQ" in WebUI
+    * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
+  * [#2442](https://github.com/metasfresh/metasfresh/issues/2442) New Window for GL Journal Category in WebUI
+    * New Window for GL Category in WebUI Finance/ Settings.
+  * [#2449](https://github.com/metasfresh/metasfresh/issues/2449) Adjust the window Product for Procurement Contracts
+    * Adjustments to the WebUI Window for Product for Procurement Contracts maintenance. Translations added for de_DE and en_US.
+  *[#2453](https://github.com/metasfresh/metasfresh/issues/2453) Add missing Reports to WebUI menu
+    * New reports in WebUI Menu for Purchase and Sales Tracing and for Finance (Cost Center ajdustments).
 
 # metasfresh 5.26 (2017-37)
 
