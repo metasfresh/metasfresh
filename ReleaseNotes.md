@@ -38,6 +38,8 @@ Here come the actual release notes:
     * New reports in WebUI Menu for Purchase and Sales Tracing and for Finance (Cost Center ajdustments).
   * [#2469](https://github.com/metasfresh/metasfresh/issues/2469) Window for C_Postal in WebUI
     * New Window Country, City and Postal for WebUI. Added to WebUI menu in System/ Settings. Allowing to the User to maintain Postal-City combinations and use them for fast Location recordning.
+  * [#2450](https://github.com/metasfresh/metasfresh/issues/2450) Translation for Packvorschrift-Produkt-Zuordnung in English version
+    * New en_US Translation for the Field Packing Instruciotn. Making the Name shorter and more comprehensive for the user.
   
 
 # metasfresh 5.26 (2017-37)
