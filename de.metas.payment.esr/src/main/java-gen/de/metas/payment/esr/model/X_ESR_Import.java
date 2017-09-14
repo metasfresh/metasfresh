@@ -4,7 +4,6 @@ package de.metas.payment.esr.model;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
 
 /** Generated Model for ESR_Import
  *  @author Adempiere (generated) 
@@ -16,7 +15,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 814321415L;
+	private static final long serialVersionUID = 1770319772L;
 
     /** Standard Constructor */
     public X_ESR_Import (Properties ctx, int ESR_Import_ID, String trxName)
@@ -25,15 +24,11 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
       /** if (ESR_Import_ID == 0)
         {
 			setC_BP_BankAccount_ID (0);
-			setDateDoc (new Timestamp( System.currentTimeMillis() ));
-// @#Date@
+			setDateDoc (new Timestamp( System.currentTimeMillis() )); // @#Date@
 			setESR_Import_ID (0);
-			setIsReceipt (true);
-// Y
-			setIsValid (false);
-// N
-			setProcessed (false);
-// N
+			setIsReceipt (true); // Y
+			setIsValid (false); // N
+			setProcessed (false); // N
         } */
     }
 
@@ -51,6 +46,28 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
+
+	/** Set Attachment entry.
+		@param AD_AttachmentEntry_ID Attachment entry	  */
+	@Override
+	public void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID)
+	{
+		if (AD_AttachmentEntry_ID < 1) 
+			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, Integer.valueOf(AD_AttachmentEntry_ID));
+	}
+
+	/** Get Attachment entry.
+		@return Attachment entry	  */
+	@Override
+	public int getAD_AttachmentEntry_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_AD_AttachmentEntry_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	@Override
 	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccount() throws RuntimeException
@@ -172,16 +189,19 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 		return bd;
 	}
 
-	/** Set Anzahl Transaktionen.
-		@param ESR_Control_Trx_Qty Anzahl Transaktionen	  */
+	/** Set Anzahl Transaktionen (kontr.).
+		@param ESR_Control_Trx_Qty 
+		Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
+	  */
 	@Override
 	public void setESR_Control_Trx_Qty (java.math.BigDecimal ESR_Control_Trx_Qty)
 	{
 		set_Value (COLUMNNAME_ESR_Control_Trx_Qty, ESR_Control_Trx_Qty);
 	}
 
-	/** Get Anzahl Transaktionen.
-		@return Anzahl Transaktionen	  */
+	/** Get Anzahl Transaktionen (kontr.).
+		@return Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
+	  */
 	@Override
 	public java.math.BigDecimal getESR_Control_Trx_Qty () 
 	{
@@ -211,6 +231,27 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Anzahl Transaktionen.
+		@param ESR_Trx_Qty 
+		Anzahl der importierten Zeilen
+	  */
+	@Override
+	public void setESR_Trx_Qty (java.math.BigDecimal ESR_Trx_Qty)
+	{
+		throw new IllegalArgumentException ("ESR_Trx_Qty is virtual column");	}
+
+	/** Get Anzahl Transaktionen.
+		@return Anzahl der importierten Zeilen
+	  */
+	@Override
+	public java.math.BigDecimal getESR_Trx_Qty () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ESR_Trx_Qty);
+		if (bd == null)
+			 return BigDecimal.ZERO;
+		return bd;
 	}
 
 	/** Set Hash.
