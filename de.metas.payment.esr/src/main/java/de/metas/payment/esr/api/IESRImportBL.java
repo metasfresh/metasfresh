@@ -27,7 +27,6 @@ import org.adempiere.util.ISingletonService;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.banking.model.I_C_BankStatementLine;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.payment.esr.actionhandler.IESRActionHandler;
@@ -37,15 +36,6 @@ import de.metas.payment.esr.model.validator.ESR_ImportLine;
 
 public interface IESRImportBL extends ISingletonService
 {
-	/**
-	 * Loads the given file by creating an entry in attachment and enqueing the esr import for importing in async mode
-	 *
-	 * @param esrImport
-	 * @param filename
-	 * @param asyncBatch
-	 */
-	void loadESRImportFile(I_ESR_Import esrImport, String filename, I_C_Async_Batch asyncBatch);
-
 	/**
 	 * Loads the given V11 file by creating one {@link I_ESR_ImportLine} for each line of the file.
 	 * Note that this method also matches the line's references against the system by calling {@link #matchESRImportLine(I_ESR_ImportLine)}.
@@ -124,9 +114,10 @@ public interface IESRImportBL extends ISingletonService
 	 *
 	 * @param filename
 	 * @return
-	 * @throws Exception
 	 */
-	String getMD5Checksum(String filename) throws Exception;
+	String computeMD5Checksum(String filename);
+
+	String computeMD5Checksum(byte[] fileContent);
 
 	/**
 	 * Link an unlinked payment to the importLine invoice (i.e. create allocation).
