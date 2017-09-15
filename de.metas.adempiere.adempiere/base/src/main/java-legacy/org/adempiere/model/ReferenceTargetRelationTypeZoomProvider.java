@@ -11,7 +11,7 @@ import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_Column;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -88,8 +88,11 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		final ITableRefInfo refTable = target.getTableRefInfo();
 
 		final Properties ctx = zoomSource.getCtx();
-		final I_AD_Reference reference = InterfaceWrapperHelper.create(ctx, target.getAD_Reference_ID(), I_AD_Reference.class, ITrx.TRXNAME_None);
-
+		
+		final I_AD_Column referenceTargetColumn = InterfaceWrapperHelper.create(ctx, refTable.getReferenceTargetColumnID(), I_AD_Column.class, ITrx.TRXNAME_None);
+		
+		Check.assumeNotNull(referenceTargetColumn, "No ReferenceTarget Column defined for the AD_Ref_Table entry " + refTable);
+		
 		queryWhereClause
 				.append(zoomSource.getAD_Table_ID())
 				.append(" = ")
@@ -101,7 +104,7 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 				.append(" = ")
 				.append(refTable.getTableName())
 				.append(".")
-				.append(reference.getAD_Column_ReferenceTarget().getColumnName());
+				.append(referenceTargetColumn.getColumnName());
 
 		final MQuery query = new MQuery();
 		query.addRestriction(queryWhereClause.toString());

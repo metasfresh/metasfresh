@@ -155,6 +155,14 @@ public class LookupDAO implements ILookupDAO
 		private final int zoomAD_Window_ID_Override;
 		private final boolean autoComplete;
 
+		// #2340
+		// Flag to mark a ref_table as ReferenceTarget
+		private boolean isReferenceTarget;
+		// #2340
+		// Specify which [table_]Record_ID column is the wanter ReferenceTargetColumn; only relevant if the isReferenceTarget flag is true
+		private int referenceTargetColumnID;
+
+	
 		private TableRefInfo(final TableRefInfoBuilder builder)
 		{
 			super();
@@ -211,6 +219,12 @@ public class LookupDAO implements ILookupDAO
 			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override <= 0 ? -1 : builder.zoomAD_Window_ID_Override;
 
 			autoComplete = builder.autoComplete;
+
+			// #2340 ReferenceTarget
+			isReferenceTarget = builder.isReferenceTarget;
+			// #2340
+			// Specify which [table_]Record_ID column is the wanter ReferenceTargetColumn
+			referenceTargetColumnID = builder.referenceTargetColumnID;
 		}
 
 		@Override
@@ -231,6 +245,9 @@ public class LookupDAO implements ILookupDAO
 					.add("zoomWindowPO", zoomPO_Window_ID)
 					.add("overrideZoomWindow", zoomAD_Window_ID_Override)
 					.add("autoComplete", autoComplete)
+					// #2340
+					.add("isReferenceTarget", isReferenceTarget)
+					.add("referenceTargetColumnID", referenceTargetColumnID)
 					.toString();
 		}
 
@@ -250,6 +267,9 @@ public class LookupDAO implements ILookupDAO
 					.append(zoomPO_Window_ID)
 					.append(zoomAD_Window_ID_Override)
 					.append(autoComplete)
+					// #2340
+					.append(isReferenceTarget)
+					.append(referenceTargetColumnID)
 					.toHashcode();
 		}
 
@@ -282,7 +302,7 @@ public class LookupDAO implements ILookupDAO
 					.append(autoComplete, other.autoComplete)
 					.isEqual();
 		}
-		
+
 		@Override
 		public String getName()
 		{
@@ -348,13 +368,12 @@ public class LookupDAO implements ILookupDAO
 		{
 			return zoomAD_Window_ID_Override;
 		}
-		
+
 		@Override
 		public String getDisplayColumnSQL()
 		{
 			return displayColumnSQL;
 		}
-
 
 		@Override
 		public boolean isAutoComplete()
@@ -370,6 +389,19 @@ public class LookupDAO implements ILookupDAO
 			return isNumeric;
 
 		}
+
+		@Override
+		public boolean isReferenceTarget()
+		{
+			return isReferenceTarget;
+		}
+		
+		@Override
+		public int getReferenceTargetColumnID()
+		{
+			return referenceTargetColumnID;
+		}
+
 	}
 
 	static final class TableRefInfoBuilder
@@ -387,6 +419,10 @@ public class LookupDAO implements ILookupDAO
 		private int zoomPO_Window_ID = -1;
 		private int zoomAD_Window_ID_Override = -1;
 		private boolean autoComplete = true;
+
+		// #2340 ReferenceTarget
+		private boolean isReferenceTarget = false;
+		private int referenceTargetColumnID = -1;
 
 		private TableRefInfoBuilder()
 		{
@@ -457,7 +493,7 @@ public class LookupDAO implements ILookupDAO
 			this.zoomPO_Window_ID = zoomPO_Window_ID;
 			return this;
 		}
-		
+
 		public TableRefInfoBuilder setZoomAD_Window_ID_Override(final int zoomAD_Window_ID_Override)
 		{
 			this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
@@ -470,12 +506,24 @@ public class LookupDAO implements ILookupDAO
 			return this;
 		}
 
-
 		public TableRefInfoBuilder setAutoComplete(final boolean autoComplete)
 		{
 			this.autoComplete = autoComplete;
 			return this;
 		}
+
+		public TableRefInfoBuilder setReferenceTarget(final boolean isReferenceTarget)
+		{
+			this.isReferenceTarget = isReferenceTarget;
+			return this;
+		}
+
+		public TableRefInfoBuilder setReferenceTargetColumnID(final int referenceTargetColumnID)
+		{
+			this.referenceTargetColumnID = referenceTargetColumnID;
+			return this;
+		}
+
 	}
 
 	/* package */class LookupDisplayInfo implements ILookupDisplayInfo
@@ -602,7 +650,7 @@ public class LookupDAO implements ILookupDAO
 	{
 		// NOTE: this method is called when we are loading POInfoColumn,
 		// so it's very important to not use POs here but just plain SQL!
-		
+
 		if (AD_Reference_ID <= 0)
 		{
 			logger.warn("retrieveTableRefInfoOrNull: Invalid AD_Reference_ID={}. Returning null", AD_Reference_ID);
@@ -616,6 +664,9 @@ public class LookupDAO implements ILookupDAO
 				+ "rt.AD_Window_ID as RT_AD_Window_ID, " // 12
 				+ "t." + I_AD_Table.COLUMNNAME_IsAutocomplete // 13
 				+ ", r.Name as ReferenceName" // 14
+				// #2340 Also collect infor about the ref table being a reference target
+				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_IsReferenceTarget // 15
+				+ ", rt." + I_AD_Ref_Table.COLUMNNAME_AD_Column_ReferenceTarget_ID // 16
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
@@ -650,6 +701,10 @@ public class LookupDAO implements ILookupDAO
 				final boolean autoComplete = "Y".equals(rs.getString(13));
 				final String referenceName = rs.getString(14);
 
+				// #2340 referenceTarget
+				final boolean isReferenceTarget = "Y".equals(rs.getString(15));
+				final int referenceTargetColumnID = rs.getInt(16);
+
 				tableRefInfo = TableRefInfo.builder()
 						.setName(referenceName)
 						.setTableName(TableName)
@@ -664,6 +719,9 @@ public class LookupDAO implements ILookupDAO
 						.setZoomPO_Window_ID(zoomPO_Window_ID)
 						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
 						.setAutoComplete(autoComplete)
+						// #2340 ReferenceTarget
+						.setReferenceTarget(isReferenceTarget)
+						.setReferenceTargetColumnID(referenceTargetColumnID)
 						.build();
 			}
 
@@ -905,7 +963,7 @@ public class LookupDAO implements ILookupDAO
 		return isOrderByValue;
 	}
 
-	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair>implements INamePairIterator
+	public static class SQLNamePairIterator extends AbstractPreparedStatementBlindIterator<NamePair> implements INamePairIterator
 	{
 		private final String sql;
 		private final boolean numericKey;
@@ -1148,8 +1206,8 @@ public class LookupDAO implements ILookupDAO
 
 	@Override
 	@Cached(
-	// NOTE: short term caching because we are caching mutable values
-	expireMinutes = 1)
+			// NOTE: short term caching because we are caching mutable values
+			expireMinutes = 1)
 	public NamePair retrieveLookupValue(
 			@CacheAllowMutable final IValidationContext validationCtx,
 			@CacheAllowMutable final MLookupInfo lookupInfo,

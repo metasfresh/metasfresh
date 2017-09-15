@@ -21,7 +21,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
-import org.compiere.model.I_AD_Reference;
+import org.compiere.model.I_AD_Ref_Table;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -108,18 +108,21 @@ public final class RelationTypeZoomProvidersFactory
 			+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID //
 
 			+ "  FROM" //
-			+ "    AD_RelationType rt, AD_Reference ref"
+			+ "    AD_RelationType rt, AD_Reference ref, AD_Ref_Table tab" //
 			+ "  WHERE " //
 			+ "    rt.IsActive='Y'" //
-			+ "    AND rt.IsReferenceTarget  = 'Y'"
+			+ "    AND rt." + I_AD_RelationType.COLUMNNAME_IsReferenceTarget + " = 'Y'"
 			+ "    AND ref.IsActive='Y'" //
 			+ "    AND ref.ValidationType='T'" // must have table validation
-			+ "	   AND ref." + I_AD_Reference.COLUMNNAME_IsReferenceTarget + " = 'Y'"
+	
 			+ "    AND (" // join the source AD_Reference
 			+ "      rt.AD_Reference_Source_ID is null" //
 			+ "      AND " // not directed? -> also join the target AD_Reference
 			+ "        rt.AD_Reference_Target_ID=ref.AD_Reference_ID" //
 			+ "      )" //
+			+ "    AND tab.IsActive='Y'" // Join the AD_Reference's AD_Ref_Table
+			+ "    AND tab.AD_Reference_ID=ref.AD_Reference_ID" //
+			+ "    AND tab." + I_AD_Ref_Table.COLUMNNAME_IsReferenceTarget + " = 'Y'"
 			+ "  ORDER BY rt.Name";
 
 	private final CCache<String, List<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
