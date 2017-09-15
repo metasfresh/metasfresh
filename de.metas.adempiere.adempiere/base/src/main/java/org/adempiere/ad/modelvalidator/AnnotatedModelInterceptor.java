@@ -1,6 +1,5 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,12 +31,10 @@ import org.compiere.model.ModelValidator;
 import org.reflections.ReflectionUtils;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Throwables;
 
 import de.metas.logging.LogManager;
-import lombok.NonNull;
 
 /**
  * Wrapping class which introspect an object, identifies it's pointcuts (ModelChange, DocValidate etc) and maps them to {@link ModelValidator} interface.
@@ -77,8 +74,9 @@ import lombok.NonNull;
 	 * @param annotatedObject
 	 * @throws AdempiereException if annotations were not correctly used
 	 */
-	AnnotatedModelInterceptor(@NonNull final Object annotatedObject) throws AdempiereException
+	AnnotatedModelInterceptor(final Object annotatedObject) throws AdempiereException
 	{
+		Check.assumeNotNull(annotatedObject, "annotatedObject is not null");
 		this.annotatedObject = annotatedObject;
 		this.annotatedClass = annotatedObject.getClass();
 
@@ -385,7 +383,7 @@ import lombok.NonNull;
 		logger.debug("Loaded {}", pointcut);
 	}
 
-	private void bindPointcuts(@NonNull final IModelValidationEngine engine)
+	private void bindPointcuts(IModelValidationEngine engine)
 	{
 		if (!hasPointcuts())
 		{
@@ -393,7 +391,7 @@ import lombok.NonNull;
 		}
 
 		logger.debug("Binding pointcuts for {}", annotatedClass);
-		for (final Map.Entry<PointcutKey, SortedSet<Pointcut>> e : mapPointcuts.entrySet())
+		for (Map.Entry<PointcutKey, SortedSet<Pointcut>> e : mapPointcuts.entrySet())
 		{
 			final Set<Pointcut> list = e.getValue();
 			if (list == null || list.isEmpty())
@@ -537,59 +535,35 @@ import lombok.NonNull;
 		}
 	}
 
-	@VisibleForTesting
-	final void executeNow(
-			@NonNull final Object po,
-			@NonNull final IPointcut pointcut,
-			final int timing)
+	private final void executeNow(final Object po, final IPointcut pointcut, final int timing)
 	{
-		if (AnnotatedModelInterceptorDisabler.get().isDisabled(pointcut))
-		{
-			logger.info("Not executing pointCut because it is disabled via sysconfig (name-prefix={}); pointcut={}",
-					AnnotatedModelInterceptorDisabler.SYS_CONFIG_NAME_PREFIX, pointcut);
-			return;
-		}
-
 		final Object model = InterfaceWrapperHelper.create(po, pointcut.getModelClass());
 		try
 		{
-			executeNow0(model, pointcut, timing);
+			final Method method = pointcut.getMethod();
+
+			// Make sure the method is accessible
+			if (!method.isAccessible())
+			{
+				method.setAccessible(true);
+			}
+
+			logger.debug("Executing: {}", pointcut);
+
+			if (pointcut.isMethodRequiresTiming())
+			{
+				final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
+				method.invoke(annotatedObject, model, timingParam);
+			}
+			else
+			{
+				method.invoke(annotatedObject, model);
+			}
 		}
 		catch (Exception e)
 		{
-			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.get().createHowtoDisableMsg(pointcut);
-			logger.error(howtoDisableMsg);
-
 			// 03444 if the pointcut method threw an adempiere exception, just forward it
-			throw AdempiereException
-				.wrapIfNeeded(e)
-				.setParameter("howtoDisableMsg", howtoDisableMsg);
-		}
-	}
-
-	void executeNow0(
-			@NonNull final Object model,
-			@NonNull final IPointcut pointcut, 
-			final int timing) throws IllegalAccessException, InvocationTargetException
-	{
-		final Method method = pointcut.getMethod();
-
-		// Make sure the method is accessible
-		if (!method.isAccessible())
-		{
-			method.setAccessible(true);
-		}
-
-		logger.debug("Executing: {}", pointcut);
-
-		if (pointcut.isMethodRequiresTiming())
-		{
-			final Object timingParam = pointcut.convertToMethodTimingParameterType(timing);
-			method.invoke(annotatedObject, model, timingParam);
-		}
-		else
-		{
-			method.invoke(annotatedObject, model);
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 	}
 
