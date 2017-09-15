@@ -301,7 +301,7 @@ public class Fresh_08412_ProcessHUs extends JavaProcess
 		huPPOrderBL.createIssueProducer()
 				.setMovementDate(ppOrder.getDatePromised())
 				.setTargetOrderBOMLine(ppOrderBOMLine)
-				.createIssues(hu);
+				.createDraftIssue(hu);
 
 		if (!handlingUnitsBL.isDestroyedRefreshFirst(hu))
 		{

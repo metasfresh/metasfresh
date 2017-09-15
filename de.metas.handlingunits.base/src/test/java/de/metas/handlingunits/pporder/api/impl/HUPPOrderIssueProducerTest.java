@@ -296,13 +296,13 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			);
 
 			Assert.assertEquals("Invalid HUs count", 1, newHUs.size());
+			Services.get(IHandlingUnitsBL.class).setHUStatusActive(newHUs);
+
 			final I_M_HU newHU = newHUs.get(0);
 
 			newHU.setM_Locator(ppOrder.getM_Locator());
 			InterfaceWrapperHelper.save(newHU);
 			Assert.assertNotNull("HU's locator shall be set", newHU.getM_Locator());
-
-			Services.get(IHandlingUnitsBL.class).setHUStatusActive(newHUs);
 
 			return newHU;
 		});
@@ -314,7 +314,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		final List<I_PP_Order_Qty> candidates = new HUPPOrderIssueProducer()
 				.setMovementDate(movementDate)
 				.setTargetOrderBOMLine(ppOrderBOMLine_Folie)
-				.createIssues(hu);
+				.createDraftIssue(hu);
 		System.out.println("Candidates:\n " + Joiner.on("\n").join(candidates));
 		//
 		final List<I_PP_Cost_Collector> costCollectors;

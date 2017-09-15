@@ -12,6 +12,7 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUContext;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;
+import lombok.NonNull;
 
 @Validator(I_M_HU.class)
 public class M_HU
@@ -32,8 +34,7 @@ public class M_HU
 	 *
 	 * @param hu
 	 */
-	@ModelChange(timings =
-		{ ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -70,6 +71,21 @@ public class M_HU
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_HUStatus)
+	public void validateStatusChange(@NonNull final I_M_HU hu)
+	{
+		final I_M_HU oldHu = InterfaceWrapperHelper.createOld(hu, I_M_HU.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		huStatusBL.assertAllowedStatusChange(oldHu.getHUStatus(), hu.getHUStatus());
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID)
+	public void validateLocatorChange(@NonNull final I_M_HU hu)
+	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		huStatusBL.assertAllowedLocatorChange(hu.getHUStatus());
+	}
+
 	/**
 	 * Updates the status, locator BP and BPL for child handling units.
 	 * 
@@ -77,14 +93,13 @@ public class M_HU
 	 *
 	 * @param hu
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged =
-		{
-				I_M_HU.COLUMNNAME_HUStatus,
-				I_M_HU.COLUMNNAME_IsActive,
-				I_M_HU.COLUMNNAME_C_BPartner_ID,
-				I_M_HU.COLUMNNAME_C_BPartner_Location_ID,
-				I_M_HU.COLUMNNAME_M_Locator_ID
-		})
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
+			I_M_HU.COLUMNNAME_HUStatus,
+			I_M_HU.COLUMNNAME_IsActive,
+			I_M_HU.COLUMNNAME_C_BPartner_ID,
+			I_M_HU.COLUMNNAME_C_BPartner_Location_ID,
+			I_M_HU.COLUMNNAME_M_Locator_ID
+	})
 	public void updateChildren(final I_M_HU hu)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -130,10 +145,9 @@ public class M_HU
 	 *
 	 * @param hu
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged =
-		{
-				I_M_HU.COLUMNNAME_HUStatus
-		})
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
+			I_M_HU.COLUMNNAME_HUStatus
+	})
 	public void onDestroyedHU(final I_M_HU hu)
 	{
 		//
@@ -161,14 +175,12 @@ public class M_HU
 		huPickingSlotBL.removeFromPickingSlotQueue(hu);
 	}
 
-	@ModelChange(timings =
-		{ ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged =
-		{
-				I_M_HU.COLUMNNAME_HUStatus,
-				I_M_HU.COLUMNNAME_IsActive,
-				I_M_HU.COLUMNNAME_C_BPartner_ID,
-				I_M_HU.COLUMNNAME_M_Locator_ID
-		})
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = {
+			I_M_HU.COLUMNNAME_HUStatus,
+			I_M_HU.COLUMNNAME_IsActive,
+			I_M_HU.COLUMNNAME_C_BPartner_ID,
+			I_M_HU.COLUMNNAME_M_Locator_ID
+	})
 	public void fireStorageSegmentChanged(final I_M_HU hu)
 	{
 		// Consider only VHUs

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.modelinterceptor;
+package de.metas.handlingunits.picking.interceptor;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;

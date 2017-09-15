@@ -40,7 +40,6 @@ import org.eevolution.api.IPPCostCollectorBL;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeDAO;
 import de.metas.handlingunits.exceptions.HUException;
@@ -51,9 +50,9 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPCostCollectorBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
-import de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import lombok.NonNull;
 
 @Validator(I_PP_Cost_Collector.class)
 public class PP_Cost_Collector
@@ -201,7 +200,7 @@ public class PP_Cost_Collector
 				});
 	}
 
-	private final void reverseCostCollector_Issue(final I_PP_Cost_Collector cc)
+	private final void reverseCostCollector_Issue(@NonNull final I_PP_Cost_Collector cc)
 	{
 		final IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 		huPPCostCollectorBL.restoreTopLevelHUs(cc);
@@ -210,28 +209,23 @@ public class PP_Cost_Collector
 		// Delete issue candidate
 		final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 		final I_PP_Order_Qty issueCandidate = huPPOrderQtyDAO.retrieveOrderQtyForCostCollector(cc.getPP_Order_ID(), cc.getPP_Cost_Collector_ID());
-		if(issueCandidate != null)
+		if (issueCandidate != null)
 		{
 			//
 			// Make sure the HU is valid
 			final I_M_HU hu = issueCandidate.getM_HU();
-			if(!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+			if (!X_M_HU.HUSTATUS_Issued.equals(hu.getHUStatus()))
 			{
-				throw new HUException("Expected the HU to be active again but it wasn't")
-					.setParameter("HU", hu)
-					.setParameter("HUStatus", hu.getHUStatus())
-					.setParameter("candidate", issueCandidate)
-					.setParameter("costCollector", cc)
-					.appendParametersToMessage();
+				throw new HUException("Expected the HU to be issued again but it wasn't")
+						.setParameter("HU", hu)
+						.setParameter("HUStatus", hu.getHUStatus())
+						.setParameter("candidate", issueCandidate)
+						.setParameter("costCollector", cc)
+						.appendParametersToMessage();
 			}
-			
-			//candidate.setPP_Cost_Collector(null);
+
 			issueCandidate.setProcessed(false);
 			huPPOrderQtyDAO.delete(issueCandidate);
-			
-			//
-			// Make sure the HU will be unlocked (if not already)
-			Services.get(IHULockBL.class).unlockOnAfterCommit(hu.getM_HU_ID(), HUPPOrderIssueProducer.lockOwner);
 		}
 	}
 

@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.modelinterceptor;
+package de.metas.handlingunits.picking.interceptor;
 
 /*
  * #%L
