@@ -69,6 +69,14 @@ public final class ProcessInfoParameter implements Serializable
 		final String info_To = null;
 		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
 	}
+	
+	public static final ProcessInfoParameter of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
+	{
+		final String info = null;
+		final String info_To = null;
+		return new ProcessInfoParameter(parameterName, parameterValue, parameterValueTo, info, info_To);
+	}
+
 
 	public static final ProcessInfoParameter of(final String parameterName, final boolean parameterValue)
 	{
@@ -200,7 +208,7 @@ public final class ProcessInfoParameter implements Serializable
 		return toString(m_Parameter_To);
 	}
 
-	private static final String toString(Object value)
+	private static final String toString(final Object value)
 	{
 		if (value == null)
 		{
