@@ -102,7 +102,10 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		final ZoomProviderDestination source = sourceAndTarget.getLeft();
 		final ZoomProviderDestination target = sourceAndTarget.getRight();
 
-		if (!source.matchesAsSource(zoomSource))
+		
+		final SourceZoomProviderDestination sourceZoomProviderDestination = (SourceZoomProviderDestination) source;
+		
+		if (!sourceZoomProviderDestination.matchesAsSource(zoomSource))
 		{
 			logger.trace("Skip {} because {} is not matching source={}", this, zoomSource, source);
 			return ImmutableList.of();
@@ -126,6 +129,9 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		final String zoomInfoId = getZoomInfoId();
 		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
 	}
+	
+
+	
 
 	protected ZoomProviderDestination getTarget()
 	{
@@ -405,6 +411,45 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		{
 			return targetRoleDisplayName;
 		}
+	}
+	
+	protected static final class SourceZoomProviderDestination extends ZoomProviderDestination
+	{
+
+		protected SourceZoomProviderDestination(int AD_Reference_ID, ITableRefInfo tableRefInfo, ITranslatableString roleDisplayName)
+		{
+			super(AD_Reference_ID, tableRefInfo, roleDisplayName);
+		}
+		
+		protected boolean matchesAsSource(final IZoomSource zoomSource)
+		{
+			final String whereClause = getTableRefInfo().getWhereClause();
+			if (Check.isEmpty(whereClause, true))
+			{
+				logger.debug("whereClause is empty. Returning true (matching)");
+				return true;
+			}
+
+			final String parsedWhere = parseWhereClause(zoomSource, whereClause, false);
+			if (Check.isEmpty(parsedWhere))
+			{
+				return false;
+			}
+
+			final String keyColumnName = zoomSource.getKeyColumnName();
+			Check.assumeNotEmpty(keyColumnName, "keyColumn is not empty for {}", zoomSource);
+
+			final StringBuilder whereClauseEffective = new StringBuilder();
+			whereClauseEffective.append(parsedWhere);
+			whereClauseEffective.append(" AND ( ").append(keyColumnName).append("=").append(zoomSource.getRecord_ID()).append(" )");
+
+			final boolean match = new Query(zoomSource.getCtx(), zoomSource.getTableName(), whereClauseEffective.toString(), zoomSource.getTrxName())
+					.match();
+
+			logger.debug("whereClause='{}' matches source='{}': {}", parsedWhere, zoomSource, match);
+			return match;
+		}
+		
 	}
 
 }

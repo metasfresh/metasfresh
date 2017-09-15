@@ -256,7 +256,7 @@ public final class RelationTypeZoomProvidersFactory
 
 			try
 			{
-				final ReferenceTargetRelationTypeZoomProvider zoomProvider = new ReferenceTargetRelationTypeZoomProvider.Builder()
+				final ReferenceTargetRelationTypeZoomProvider zoomProvider = ReferenceTargetRelationTypeZoomProvider.builder()
 						.setDirected(relationType.isDirected())
 						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 						.setInternalName(relationType.getInternalName())

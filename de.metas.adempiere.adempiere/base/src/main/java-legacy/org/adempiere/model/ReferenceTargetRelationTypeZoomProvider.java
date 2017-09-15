@@ -88,8 +88,8 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		final ITableRefInfo refTable = target.getTableRefInfo();
 
 		final Properties ctx = zoomSource.getCtx();
-		final I_AD_Reference reference = InterfaceWrapperHelper.create(ctx ,target.getAD_Reference_ID(), I_AD_Reference.class, ITrx.TRXNAME_None);
-		
+		final I_AD_Reference reference = InterfaceWrapperHelper.create(ctx, target.getAD_Reference_ID(), I_AD_Reference.class, ITrx.TRXNAME_None);
+
 		queryWhereClause
 				.append(zoomSource.getAD_Table_ID())
 				.append(" = ")
@@ -161,6 +161,11 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 				.list(clazz);
 	}
 
+	public static final Builder builder()
+	{
+		return new Builder();
+	}
+
 	@ToString(exclude = "lookupDAO")
 	public static final class Builder
 	{
@@ -174,11 +179,6 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		private int targetReferenceId = -1;
 		private ITranslatableString targetRoleDisplayName;
 		private ITableRefInfo targetTableRefInfo = null; // lazy
-
-		protected Builder()
-		{
-			super();
-		}
 
 		public ReferenceTargetRelationTypeZoomProvider buildOrNull()
 		{
