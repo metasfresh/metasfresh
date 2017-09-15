@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ##Features
 * metasfresh-app
+  * [#2089](https://github.com/metasfresh/metasfresh/issues/2089) Inventory Move Window improvements
+    * Improvements done to the Inventory Movement Window.
   * [#2381](https://github.com/metasfresh/metasfresh/issues/2381) Detailed Improvement of Flatrate Term window in WebUI
     * New Window for contracts in WebUI, making the contract management easier and more transparent.
   * [#2386](https://github.com/metasfresh/metasfresh/issues/2386) New Window for M_PickingSlot_Trx in WebUI
