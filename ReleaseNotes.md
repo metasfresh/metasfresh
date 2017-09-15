@@ -14,14 +14,14 @@ Here come the actual release notes:
 
 **upcoming release for week 2017-39**
 
-##Features
+## Features
 * metasfresh-app
 
 # metasfresh 5.27 (2017-38)
 
 **upcoming release for week 2017-38**
 
-##Features
+## Features
 * metasfresh-app
   * [#2218](https://github.com/metasfresh/metasfresh/issues/2218) User would like to import default values for contact and address
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
@@ -92,7 +92,7 @@ Here come the actual release notes:
 
 # metasfresh 5.26 (2017-37)
 
-**upcoming release for week 2017-37**
+**release for week 2017-37**
 
 ## Features
 * metasfresh-app
