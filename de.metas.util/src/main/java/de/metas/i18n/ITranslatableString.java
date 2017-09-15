@@ -1,8 +1,10 @@
 package de.metas.i18n;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableList;
 
 /*
  * #%L
@@ -35,24 +37,57 @@ import java.util.Set;
  */
 public interface ITranslatableString
 {
-	public static ITranslatableString compose(final ITranslatableString... trls)
-	{
-		return compose(""/* joinString */, trls);
-	}
-
-	public static ITranslatableString compose(final String joiningString, final ITranslatableString... trls)
+	public static ITranslatableString compose(final String joiningString, final Object... trls)
 	{
 		if (trls == null || trls.length == 0)
 		{
 			throw new IllegalArgumentException("trls is null or empty");
 		}
 
-		if (trls.length == 1)
-		{
-			return trls[0];
-		}
+		final List<ITranslatableString> trlsList = Stream.of(trls)
+				.map(ITranslatableString::toTranslatableStringOrNull)
+				.filter(trl -> trl != null) // skip nulls
+				.collect(ImmutableList.toImmutableList());
 
-		return new CompositeTranslatableString(Arrays.asList(trls), joiningString);
+		if (trlsList.isEmpty())
+		{
+			return empty();
+		}
+		else if (trlsList.size() == 1)
+		{
+			return trlsList.get(0);
+		}
+		else
+		{
+			return new CompositeTranslatableString(trlsList, joiningString);
+		}
+	}
+
+	/**
+	 * @return translatable string or null if the <code>trlObj</code> is null or empty string
+	 */
+	static ITranslatableString toTranslatableStringOrNull(final Object trlObj)
+	{
+		if (trlObj == null)
+		{
+			return null;
+		}
+		else if (trlObj instanceof ITranslatableString)
+		{
+			return (ITranslatableString)trlObj;
+		}
+		else
+		{
+			final String trlStr = trlObj.toString();
+			if (trlStr == null || trlStr.isEmpty())
+			{
+				return null;
+			}
+			else
+			{
+				return constant(trlStr);
+			}
+		}
 	}
 
 	public static ITranslatableString compose(final String joiningString, final List<ITranslatableString> trls)
@@ -86,7 +121,7 @@ public interface ITranslatableString
 
 	public Set<String> getAD_Languages();
 
-	default boolean isTranslatedTo(String adLanguage)
+	default boolean isTranslatedTo(final String adLanguage)
 	{
 		return getAD_Languages().contains(adLanguage);
 	}
