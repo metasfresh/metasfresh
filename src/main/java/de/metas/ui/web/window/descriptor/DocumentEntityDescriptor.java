@@ -24,6 +24,7 @@ import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.util.GuavaCollectors;
 import org.adempiere.util.Services;
 import org.slf4j.Logger;
@@ -411,6 +412,22 @@ public class DocumentEntityDescriptor
 	public boolean isPrintable()
 	{
 		return printProcessId.orElse(-1) > 0;
+	}
+	
+	public boolean isCloneEnabled()
+	{
+		if(!CopyRecordFactory.isEnabled())
+		{
+			return false;
+		}
+		
+		final String tableName = getTableNameOrNull();
+		if(tableName == null)
+		{
+			return false;
+		}
+		
+		return CopyRecordFactory.isEnabledForTableName(tableName);
 	}
 
 	//

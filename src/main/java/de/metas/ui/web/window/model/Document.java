@@ -1970,6 +1970,12 @@ public final class Document
 	public Set<DocumentStandardAction> getStandardActions()
 	{
 		final EnumSet<DocumentStandardAction> standardActions = EnumSet.allOf(DocumentStandardAction.class);
+
+		// Remove Clone action if not supported
+		if(!getEntityDescriptor().isCloneEnabled())
+		{
+			standardActions.remove(DocumentStandardAction.Clone);
+		}
 		
 		// Remove Print action if document is not printable (https://github.com/metasfresh/metasfresh-webui-api/issues/570)
 		if(!getEntityDescriptor().isPrintable())
