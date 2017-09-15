@@ -5,20 +5,15 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.PORelationException;
-import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
-import org.compiere.model.Query;
 import org.compiere.util.DB;
-import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
@@ -68,7 +63,7 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 		return zoomInfoId;
 	}
 
-	String getInternalName()
+	public String getInternalName()
 	{
 		return internalName;
 	}
@@ -81,39 +76,6 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 	protected abstract ZoomProviderDestination getTarget();
 
 	protected abstract String getTargetTableName();
-
-	/**
-	 * Parses given <code>where</code>
-	 *
-	 * @param source zoom source
-	 * @param where where clause to be parsed
-	 * @param throwEx true if an exception shall be thrown in case the parsing failed.
-	 * @return parsed where clause or empty string in case parsing failed and throwEx is <code>false</code>
-	 */
-	private static String parseWhereClause(final IZoomSource source, final String where, final boolean throwEx)
-	{
-		final IStringExpression whereExpr = IStringExpression.compileOrDefault(where, IStringExpression.NULL);
-		if (whereExpr.isNullExpression())
-		{
-			return "";
-		}
-
-		final Evaluatee evalCtx = source.createEvaluationContext();
-		final OnVariableNotFound onVariableNotFound = throwEx ? OnVariableNotFound.Fail : OnVariableNotFound.ReturnNoResult;
-		final String whereParsed = whereExpr.evaluate(evalCtx, onVariableNotFound);
-		if (whereExpr.isNoResult(whereParsed))
-		{
-			// NOTE: logging as debug instead of warning because this might be a standard use case,
-			// i.e. we are checking if a given where clause has some results, so the method was called with throwEx=false
-			// and if we reached this point it means one of the context variables were not present and it has no default value.
-			// This is perfectly normal, a default value is really not needed because we don't want to execute an SQL command
-			// which would return no result. It's much more efficient to stop here.
-			logger.debug("Could not parse where clause:\n{} \n EvalCtx: {} \n ZoomSource: {}", where, evalCtx, source);
-			return "";
-		}
-
-		return whereParsed;
-	}
 
 	protected static void updateRecordsCountAndZoomValue(final MQuery query)
 	{
@@ -159,10 +121,11 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 					.toString();
 		}
 
-		public int getAD_Reference_ID ()
+		public int getAD_Reference_ID()
 		{
 			return AD_Reference_ID;
 		}
+
 		public String getTableName()
 		{
 			return tableRefInfo.getTableName();
