@@ -2,7 +2,6 @@ package de.metas.process;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -371,15 +370,6 @@ public final class ProcessClassInfo
 	{
 		return parameterInfos.get(ProcessClassParamInfo.createParameterUniqueKey(parameterName, parameterTo));
 	}
-	
-	public List<ProcessClassParamInfo> getParameterInfos(final String parameterName)
-	{
-		final List<ProcessClassParamInfo> params = new ArrayList<>();
-		params.addAll(parameterInfos.get(ProcessClassParamInfo.createParameterUniqueKey(parameterName, false)));
-		params.addAll(parameterInfos.get(ProcessClassParamInfo.createParameterUniqueKey(parameterName, true)));
-		return params;
-	}
-
 
 	/**
 	 * @return true if a current record needs to be selected when this process is called from gear/window.

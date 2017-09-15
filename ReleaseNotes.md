@@ -23,6 +23,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2089](https://github.com/metasfresh/metasfresh/issues/2089) Inventory Move Window improvements
+    * Improvements done to the Inventory Movement Window.
   * [#2218](https://github.com/metasfresh/metasfresh/issues/2218) User would like to import default values for contact and address
   * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
   * [#2247](https://github.com/metasfresh/metasfresh/issues/2474) Extend Partner Import with ad_language
