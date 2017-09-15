@@ -21,6 +21,7 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.PORelationException;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_AD_RelationType;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -113,6 +114,7 @@ public final class RelationTypeZoomProvidersFactory
 			+ "    AND rt.IsReferenceTarget  = 'Y'"
 			+ "    AND ref.IsActive='Y'" //
 			+ "    AND ref.ValidationType='T'" // must have table validation
+			+ "	   AND ref." + I_AD_Reference.COLUMNNAME_IsReferenceTarget + " = 'Y'"
 			+ "    AND (" // join the source AD_Reference
 			+ "      rt.AD_Reference_Source_ID is null" //
 			+ "      AND " // not directed? -> also join the target AD_Reference
@@ -259,7 +261,7 @@ public final class RelationTypeZoomProvidersFactory
 						.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 						.setInternalName(relationType.getInternalName())
 						//
-						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
+						.setTarget_Reference_ID(relationType.getAD_Reference_Target_ID())
 						.setTargetRoleDisplayName(roleTargetDisplayName)
 						//
 						.buildOrNull();
@@ -316,8 +318,7 @@ public final class RelationTypeZoomProvidersFactory
 						.setTarget_Reference_AD(relationType.getAD_Reference_Target_ID())
 						.setTargetRoleDisplayName(roleTargetDisplayName)
 						//
-						.setIsReferenceTarget(relationType.isReferenceTarget())
-						//
+
 						.buildOrNull();
 				if (zoomProvider == null)
 				{

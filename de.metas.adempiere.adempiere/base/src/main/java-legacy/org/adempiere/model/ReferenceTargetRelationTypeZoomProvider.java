@@ -5,11 +5,13 @@ import java.util.Properties;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.ZoomInfoFactory.IZoomSource;
 import org.adempiere.model.ZoomInfoFactory.POZoomSource;
 import org.adempiere.model.ZoomInfoFactory.ZoomInfo;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
@@ -85,6 +87,9 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		final StringBuilder queryWhereClause = new StringBuilder();
 		final ITableRefInfo refTable = target.getTableRefInfo();
 
+		final Properties ctx = zoomSource.getCtx();
+		final I_AD_Reference reference = InterfaceWrapperHelper.create(ctx ,target.getAD_Reference_ID(), I_AD_Reference.class, ITrx.TRXNAME_None);
+		
 		queryWhereClause
 				.append(zoomSource.getAD_Table_ID())
 				.append(" = ")
@@ -96,7 +101,7 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 				.append(" = ")
 				.append(refTable.getTableName())
 				.append(".")
-				.append("Record_ID");
+				.append(reference.getAD_Column_ReferenceTarget().getColumnName());
 
 		final MQuery query = new MQuery();
 		query.addRestriction(queryWhereClause.toString());
@@ -166,10 +171,6 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 		private int adRelationTypeId;
 		private boolean isReferenceTarget;
 
-		private int sourceReferenceId = -1;
-		private ITranslatableString sourceRoleDisplayName;
-		private ITableRefInfo sourceTableRefInfo = null; // lazy
-
 		private int targetReferenceId = -1;
 		private ITranslatableString targetRoleDisplayName;
 		private ITableRefInfo targetTableRefInfo = null; // lazy
@@ -235,7 +236,7 @@ public class ReferenceTargetRelationTypeZoomProvider extends AbstractRelationTyp
 			return directed;
 		}
 
-		public Builder setTarget_Reference_AD(final int targetReferenceId)
+		public Builder setTarget_Reference_ID(final int targetReferenceId)
 		{
 			this.targetReferenceId = targetReferenceId;
 			targetTableRefInfo = null; // lazy

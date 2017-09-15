@@ -127,26 +127,6 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		return ImmutableList.of(ZoomInfo.of(zoomInfoId, adWindowId, query, display));
 	}
 
-	public boolean isDirected()
-	{
-		return directed;
-	}
-
-	protected String getZoomInfoId()
-	{
-		return zoomInfoId;
-	}
-
-	String getInternalName()
-	{
-		return internalName;
-	}
-
-	public int getAD_RelationType_ID()
-	{
-		return adRelationTypeId;
-	}
-
 	protected ZoomProviderDestination getTarget()
 	{
 		return target;
@@ -289,7 +269,6 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		private Boolean directed;
 		private String internalName;
 		private int adRelationTypeId;
-		private boolean isReferenceTarget;
 
 		private int sourceReferenceId = -1;
 		private ITranslatableString sourceRoleDisplayName;
@@ -299,21 +278,15 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		private ITranslatableString targetRoleDisplayName;
 		private ITableRefInfo targetTableRefInfo = null; // lazy
 
-		public Builder()
-		{
-			super();
-		}
-
 		public RelationTypeZoomProvider buildOrNull()
 		{
-			if (!isReferenceTarget())
+
+			if (getSourceTableRefInfoOrNull() == null)
 			{
-				if (getSourceTableRefInfoOrNull() == null)
-				{
-					logger.info("Skip building {} because source tableRefInfo is null", this);
-					return null;
-				}
+				logger.info("Skip building {} because source tableRefInfo is null", this);
+				return null;
 			}
+
 			if (getTargetTableRefInfoOrNull() == null)
 			{
 				logger.info("Skip building {} because target tableRefInfo is null", this);
@@ -431,17 +404,6 @@ public class RelationTypeZoomProvider extends AbstractRelationTypeZoomProvider
 		public ITranslatableString getTargetRoleDisplayName()
 		{
 			return targetRoleDisplayName;
-		}
-
-		public Builder setIsReferenceTarget(boolean isReferenceTarget)
-		{
-			this.isReferenceTarget = isReferenceTarget;
-			return this;
-		}
-
-		private boolean isReferenceTarget()
-		{
-			return isReferenceTarget;
 		}
 	}
 

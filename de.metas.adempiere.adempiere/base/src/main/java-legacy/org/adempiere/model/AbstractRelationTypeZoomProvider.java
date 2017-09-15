@@ -159,6 +159,10 @@ public abstract class AbstractRelationTypeZoomProvider implements IZoomProvider
 					.toString();
 		}
 
+		public int getAD_Reference_ID ()
+		{
+			return AD_Reference_ID;
+		}
 		public String getTableName()
 		{
 			return tableRefInfo.getTableName();
