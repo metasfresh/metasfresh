@@ -125,13 +125,12 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		// Update result from view
 		// Do this only when view is not null to avoid reseting previous set info (shall not happen)
 		final ProcessExecutionResult result = getResultOrNull();
-		if (result != null) // might be null when preconditions are checked (for example)
+		if (result != null // might be null when preconditions are checked (for example)
+				&& view != null)
 		{
-			if (view != null)
-			{
-				result.setWebuiViewId(view.getViewId().getViewId());
-			}
+			result.setWebuiViewId(view.getViewId().getViewId());
 		}
+
 	}
 
 	protected final <T extends IView> T getView(final Class<T> type)

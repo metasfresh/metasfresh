@@ -1,13 +1,9 @@
 package de.metas.ui.web.picking.process;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.process.IProcessPrecondition;
-import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 
 /*
  * #%L
@@ -32,19 +28,21 @@ import de.metas.ui.web.picking.pickingslot.PickingSlotView;
  */
 
 /**
- * Assigns an existing HU to a picking slot.
+ * This process is available from the HU editor window opened by {@link WEBUI_Picking_OpenHUsToPick}.<br>
+ * Its job is to flag the currently selected HUs so they are available as source-HUs for either {@link WEBUI_Picking_PickQtyToNewHU} or {@link WEBUI_Picking_PickQtyToExistingHU}.
  * 
- * This process is called from the HU selection dialog that is opened by {@link WEBUI_Picking_OpenHUsToPick}.
+ * @task https://github.com/metasfresh/metasfresh/issues/2298
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickSelectedHU
+public class WEBUI_Picking_M_Source_HU_Create
 		extends WEBUI_Picking_Select_M_HU_Base
 		implements IProcessPrecondition
 {
+
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private SourceHUsRepository sourceHUsRepository;
 
 	@Override
 	protected String doIt() throws Exception
@@ -52,27 +50,10 @@ public class WEBUI_Picking_PickSelectedHU
 		retrieveEligibleHUEditorRows().forEach(
 				huEditorRow -> {
 
-					pickHuRow(huEditorRow);
+					sourceHUsRepository.addSourceHu(huEditorRow.getM_HU_ID());
 				});
 
 		invalidateViewsAndPrepareReturn();
 		return MSG_OK;
-	}
-
-	void pickHuRow(final HUEditorRow huRow)
-	{
-		final int huId = huRow.getM_HU_ID();
-		if (!huRow.isTopLevel())
-		{
-			// TODO: extract as top level
-			throw new AdempiereException("Not a top level HU");
-		}
-
-		final PickingSlotView pickingSlotsView = getPickingSlotViewOrNull();
-		final PickingSlotRow pickingSlotRow = getPickingSlotRow();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = pickingSlotsView.getCurrentShipmentScheduleId();
-
-		pickingCandidateCommand.addHUToPickingSlot(huId, pickingSlotId, shipmentScheduleId);
 	}
 }

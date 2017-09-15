@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.packageable;
 
 import java.util.Collection;
 import java.util.List;
@@ -7,8 +7,10 @@ import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -115,7 +117,9 @@ public class PackageableViewFactory implements IViewFactory
 
 		final ViewId viewId = ViewId.random(PickingConstants.WINDOWID_PickingView);
 
-		final Set<DocumentId> rowIds = request.getFilterOnlyIds().stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
+		final Set<DocumentId> rowIds = request
+				.getFilterOnlyIds() // this is never null, empty means "no restriction"
+				.stream().map(DocumentId::of).collect(ImmutableSet.toImmutableSet());
 		final Supplier<List<PackageableRow>> rowsSupplier = () -> pickingViewRepo.retrieveRowsByIds(viewId, rowIds);
 
 		return PackageableView.builder()

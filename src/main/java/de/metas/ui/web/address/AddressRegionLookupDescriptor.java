@@ -12,6 +12,8 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.CCache;
 import org.compiere.util.CCache.CCacheStats;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
@@ -60,12 +62,12 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	private static final Optional<String> LookupTableName = Optional.of(I_C_Region.Table_Name);
 	private static final String CACHE_PREFIX = I_C_Region.Table_Name;
 	private static final String CONTEXT_LookupTableName = I_C_Region.Table_Name;
-	private static final Set<String> PARAMETERS = ImmutableSet.of(
-			I_C_Location.COLUMNNAME_C_Country_ID //
-			, LookupDataSourceContext.PARAM_Filter.getName() //
-			, LookupDataSourceContext.PARAM_Offset.getName() //
-			, LookupDataSourceContext.PARAM_Limit.getName() //
-	);
+
+	private static final Set<CtxName> PARAMETERS = ImmutableSet.of(
+			CtxNames.parse(I_C_Location.COLUMNNAME_C_Country_ID),
+			LookupDataSourceContext.PARAM_Filter,
+			LookupDataSourceContext.PARAM_Offset,
+			LookupDataSourceContext.PARAM_Limit);
 
 	private final CCache<Integer, LookupValuesList> regionsByCountryId = CCache.newLRUCache(CACHE_PREFIX + "RegionLookupValues", 100, 0);
 
@@ -118,7 +120,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public Set<String> getDependsOnFieldNames()
 	{
-		return PARAMETERS;
+		return CtxNames.toNames(PARAMETERS);
 	}
 
 	@Override

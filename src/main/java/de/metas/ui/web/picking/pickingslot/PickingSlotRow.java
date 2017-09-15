@@ -1,9 +1,11 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import org.adempiere.util.Check;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -14,11 +16,12 @@ import com.google.common.collect.Maps;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.ui.web.picking.PickingConstants;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
-import de.metas.ui.web.view.ViewRow.DefaultRowType;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumn.ViewColumnLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
@@ -70,7 +73,7 @@ public final class PickingSlotRow implements IViewRow
 	}
 
 	private final PickingSlotRowId id;
-	private final IViewRowType type;
+	private final PickingSlotRowType type;
 
 	private final DocumentPath documentPath;
 
@@ -88,43 +91,77 @@ public final class PickingSlotRow implements IViewRow
 
 	//
 	// HU
-	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
-		})
+	@ViewColumn(captionKey = "HUCode", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 10)
+	})
 	private final String huCode;
 
-	// @ViewColumn(captionKey = "Processed", widgetType = DocumentFieldWidgetType.YesNo, layouts = {
-	// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 20)
-	// })
-	// this is the "standard" processed flag which every IViewRow has-.
-	// TODO: decide whether to display it or not
 	private final boolean processed;
 
-	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
-		})
+	@ViewColumn(captionKey = "M_Product_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
+	})
 	private final JSONLookupValue huProduct;
 
-	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
-		})
+	@ViewColumn(captionKey = "M_HU_PI_Item_Product_ID", widgetType = DocumentFieldWidgetType.Text, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 40)
+	})
 	private final String huPackingInfo;
 
-	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts =
-		{
-				@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
-		})
+	@ViewColumn(captionKey = "QtyCU", widgetType = DocumentFieldWidgetType.Quantity, layouts = {
+			@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
+	})
 	private final BigDecimal huQtyCU;
 
 	private transient ImmutableMap<String, Object> _fieldNameAndJsonValues;
 
 	private final ImmutableMap<PickingSlotRowId, PickingSlotRow> includedHURows;
 
+	@Builder(builderMethodName = "fromSourceHUBuilder", builderClassName = "FromSourceHUBuilder")
+	private PickingSlotRow(
+			final int huId,
+			final HUEditorRowType huEditorRowType,
+			final String huCode,
+			final JSONLookupValue product,
+			final String packingInfo,
+			final BigDecimal qtyCU)
+	{
+		id = PickingSlotRowId.ofSourceHU(huId);
+
+		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
+		processed = true;
+		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
+
+		//
+		// HU
+		this.huId = huId;
+		this.huStorageProductId = -1;
+		this.huCode = huCode;
+		huProduct = product;
+		huPackingInfo = packingInfo;
+		huQtyCU = qtyCU;
+
+		//
+		// Picking slot info
+		pickingSlotRow = false;
+		pickingSlotId = -1;
+		pickingSlotCaption = null;
+		pickingSlotWarehouse = null;
+
+		//
+		// Included rows - we don't show any
+		this.includedHURows = ImmutableMap.of();
+	}
+
 	/**
-	 * Picking slot row constructor
+	 * Picking slot row constructor.
+	 * 
+	 * @param pickingSlotId
+	 * @param pickingSlotName
+	 * @param pickingSlotWarehouse
+	 * @param pickingSlotBPartner
+	 * @param pickingSlotBPLocation
+	 * @param includedHURows
 	 */
 	@Builder(builderMethodName = "fromPickingSlotBuilder", builderClassName = "FromPickingSlotBuilder")
 	private PickingSlotRow(
@@ -138,11 +175,11 @@ public final class PickingSlotRow implements IViewRow
 			final List<PickingSlotRow> includedHURows)
 	{
 		id = PickingSlotRowId.ofPickingSlotId(pickingSlotId);
-		type = DefaultRowType.Row;
+
+		type = PickingSlotRowType.forPickingSlotRow();
 		processed = false;
 		documentPath = DocumentPath.rootDocumentPath(PickingConstants.WINDOWID_PickingSlotView, id.toDocumentId());
 
-		//
 		// HU
 		huId = -1;
 		huStorageProductId = -1;
@@ -151,39 +188,40 @@ public final class PickingSlotRow implements IViewRow
 		huPackingInfo = null;
 		huQtyCU = null;
 
-		//
 		// Picking slot info
 		pickingSlotRow = true;
 		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = buildPickingSlotCaption(pickingSlotName, pickingSlotBPartner, pickingSlotBPLocation);
 		this.pickingSlotWarehouse = pickingSlotWarehouse;
 
-		//
 		// Included rows
 		this.includedHURows = includedHURows == null ? ImmutableMap.of() : Maps.uniqueIndex(includedHURows, PickingSlotRow::getPickingSlotRowId);
 	}
 
 	/**
-	 * HU row constructor
-	 *
+	 * Constructor for a row that represents an HU which is already assigned to a picking slot (aka a picked HU).
+	 * 
+	 * @param pickingSlotId
+	 * @param huId
+	 * @param huStorageProductId
+	 * @param type
+	 * @param processed
 	 * @param code
 	 * @param product
 	 * @param packingInfo
 	 * @param qtyCU
-	 * @param huRows
+	 * @param includedHURows
 	 */
-	@Builder(builderMethodName = "fromHUBuilder", builderClassName = "FromHUBuilder")
+	@Builder(builderMethodName = "fromPickedHUBuilder", builderClassName = "FromPickedHUBuilder")
 	private PickingSlotRow(
 			final int pickingSlotId,
 			final int huId,
 			final int huStorageProductId,
 			//
-			// @NonNull final DocumentId id,
-			final IViewRowType type,
+			final HUEditorRowType huEditorRowType,
 			final boolean processed,
-			// @NonNull final DocumentPath documentPath,
 			//
-			final String code,
+			final String huCode,
 			final JSONLookupValue product,
 			final String packingInfo,
 			final BigDecimal qtyCU,
@@ -193,28 +231,26 @@ public final class PickingSlotRow implements IViewRow
 		Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
 		Preconditions.checkArgument(huId > 0, "huId > 0");
 
-		id = PickingSlotRowId.ofHU(pickingSlotId, huId, huStorageProductId);
-		this.type = type;
+		id = PickingSlotRowId.ofPickedHU(pickingSlotId, huId, huStorageProductId);
+
+		this.type = PickingSlotRowType.forPickingHuRow(huEditorRowType);
 		this.processed = processed;
 		documentPath = DocumentPath.rootDocumentPath(WEBUI_HU_Constants.WEBUI_HU_Window_ID, id.toDocumentId());
 
-		//
 		// HU
 		this.huId = huId;
 		this.huStorageProductId = huStorageProductId;
-		huCode = code;
+		this.huCode = huCode;
 		huProduct = product;
 		huPackingInfo = packingInfo;
 		huQtyCU = qtyCU;
 
-		//
 		// Picking slot info
 		pickingSlotRow = false;
 		this.pickingSlotId = pickingSlotId;
 		pickingSlotCaption = null;
 		pickingSlotWarehouse = null;
 
-		//
 		// Included rows
 		this.includedHURows = includedHURows == null ? ImmutableMap.of() : Maps.uniqueIndex(includedHURows, PickingSlotRow::getPickingSlotRowId);
 	}
@@ -327,6 +363,10 @@ public final class PickingSlotRow implements IViewRow
 		return pickingSlotCaption;
 	}
 
+	/**
+	 * 
+	 * @return {@code true} if this row represents an actual picking slot and not any sort of HU that is also shown in this view.
+	 */
 	public boolean isPickingSlotRow()
 	{
 		return pickingSlotRow;
@@ -342,9 +382,22 @@ public final class PickingSlotRow implements IViewRow
 		return huId;
 	}
 
-	public boolean isHURow()
+	/**
+	 * 
+	 * @return {@code true} is this row represents an HU that is assigned to a picking slot
+	 */
+	public boolean isPickedHURow()
 	{
-		return !isPickingSlotRow();
+		return getHuId() > 0 && getPickingSlotId() > 0;
+	}
+
+	/**
+	 * 
+	 * @return {@code true} if this row represents an HU that is a source-HU for fine-picking.
+	 */
+	public boolean isPickingSourceHURow()
+	{
+		return getHuId() > 0 && getPickingSlotId() < 0;
 	}
 
 	public int getPickingSlotWarehouseId()
@@ -362,12 +415,22 @@ public final class PickingSlotRow implements IViewRow
 	{
 		public static final PickingSlotRowId ofPickingSlotId(final int pickingSlotId)
 		{
+			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
 			return new PickingSlotRowId(pickingSlotId, -1, -1);
 		}
 
-		public static final PickingSlotRowId ofHU(final int pickingSlotId, final int huId, final int huStorageProductId)
+		public static final PickingSlotRowId ofPickedHU(final int pickingSlotId, final int huId, final int huStorageProductId)
 		{
+			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
+			Preconditions.checkArgument(huId > 0, "huId > 0");
+
 			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
+		}
+
+		public static final PickingSlotRowId ofSourceHU(final int huId)
+		{
+			Preconditions.checkArgument(huId > 0, "huId > 0");
+			return new PickingSlotRowId(-1, huId, -1);
 		}
 
 		@Getter
@@ -384,10 +447,9 @@ public final class PickingSlotRow implements IViewRow
 		@Builder
 		private PickingSlotRowId(final int pickingSlotId, final int huId, final int huStorageProductId)
 		{
-			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
-			this.pickingSlotId = pickingSlotId;
-			this.huId = huId > 0 ? huId : -1;
-			this.huStorageProductId = huStorageProductId > 0 ? huStorageProductId : -1;
+			this.pickingSlotId = pickingSlotId > 0 ? pickingSlotId : 0;
+			this.huId = huId > 0 ? huId : 0;
+			this.huStorageProductId = huStorageProductId > 0 ? huStorageProductId : 0;
 		}
 
 		@Override
@@ -401,9 +463,12 @@ public final class PickingSlotRow implements IViewRow
 			DocumentId id = this._documentId;
 			if (id == null)
 			{
-				final String idStr = Joiner.on(SEPARATOR).skipNulls().join(pickingSlotId,
-						huId > 0 ? huId : null,
-						huStorageProductId > 0 ? huStorageProductId : null);
+				final String idStr = Joiner.on(SEPARATOR).skipNulls()
+						.join(
+								pickingSlotId,
+								huId > 0 ? huId : null,
+								huStorageProductId > 0 ? huStorageProductId : null);
+
 				id = _documentId = DocumentId.ofString(idStr);
 			}
 			return id;
@@ -418,9 +483,9 @@ public final class PickingSlotRow implements IViewRow
 				throw new IllegalArgumentException("Invalid id: " + documentId);
 			}
 
-			final int pickingSlotId = Integer.parseInt(parts.get(0));
-			final int huId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : -1;
-			final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : -1;
+			final int pickingSlotId = !Check.isEmpty(parts.get(0), true) ? Integer.parseInt(parts.get(0)) : 0;
+			final int huId = partsCount >= 2 ? Integer.parseInt(parts.get(1)) : 0;
+			final int huStorageProductId = partsCount >= 3 ? Integer.parseInt(parts.get(2)) : 0;
 
 			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 		}
@@ -447,5 +512,10 @@ public final class PickingSlotRow implements IViewRow
 	public BigDecimal getHuQtyCU()
 	{
 		return huQtyCU;
+	}
+
+	public int getHuProductId()
+	{
+		return huProduct != null ? huProduct.getKeyAsInt() : 0;
 	}
 }

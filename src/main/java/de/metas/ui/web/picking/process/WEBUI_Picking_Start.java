@@ -48,7 +48,7 @@ import lombok.NonNull;
 
 public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
-	
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -59,7 +59,7 @@ public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IPr
 	protected String doIt() throws Exception
 	{
 		// repeat the verification from checkPreconditionsApplicable() just to be sure.
-		// We had cases where the selected rows of checkPreconditionsApplicable() were not the selected rows of doIt() 
+		// We had cases where the selected rows of checkPreconditionsApplicable() were not the selected rows of doIt()
 		final ProcessPreconditionsResolution verifySelectedDocuments = verifySelectedDocuments();
 		if (verifySelectedDocuments.isRejected())
 		{
@@ -73,19 +73,24 @@ public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IPr
 				.map(IViewRow::getId)
 				.map(rowId -> rowId.removePrefixAndConvertToInt("D")) // FIXME: hardcoded
 				.collect(ImmutableList.toImmutableList());
+
 		if (rowIds.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		getResult().setRecordsToOpen(TableRecordReference.ofRecordIds(I_M_Packageable_V.Table_Name, rowIds), PickingConstants.WINDOWID_PickingView.toInt());
+		getResult()
+				.setRecordsToOpen(
+						TableRecordReference.ofRecordIds(I_M_Packageable_V.Table_Name, rowIds),
+						PickingConstants.WINDOWID_PickingView.toInt());
+
 		return MSG_OK;
 	}
 
 	private ProcessPreconditionsResolution verifySelectedDocuments()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedDocumentIds();
-		
+
 		if (selectedRowIds.isEmpty())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
@@ -95,9 +100,9 @@ public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IPr
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P, 50));
 		}
-		
+
 		final boolean hasNonIntegerIds = selectedRowIds.stream().anyMatch(rowId -> !rowId.isInt());
-		if(hasNonIntegerIds)
+		if (hasNonIntegerIds)
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_CANNOT_PICK_INCLUDED_ROWS));
 		}
@@ -124,5 +129,5 @@ public class WEBUI_Picking_Start extends ViewBasedProcessTemplate implements IPr
 		final JSONLookupValue jsonLookupValue = (JSONLookupValue)row.getFieldNameAndJsonValues().get(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 		return jsonLookupValue.getKeyAsInt();
 	}
-	
+
 }

@@ -237,7 +237,7 @@ public class ViewsRepository implements IViewsRepository
 	public IView createView(final CreateViewRequest request)
 	{
 		logger.trace("Creating new view from {}", request);
-		
+
 		final WindowId windowId = request.getWindowId();
 		final JSONViewDataType viewType = request.getViewType();
 		final IViewFactory factory = getFactory(windowId, viewType);
@@ -259,7 +259,7 @@ public class ViewsRepository implements IViewsRepository
 	public IView filterView(final ViewId viewId, final JSONFilterViewRequest jsonRequest)
 	{
 		logger.trace("Creating filtered view from {} using {}", viewId, jsonRequest);
-		
+
 		// Get current view
 		final IView view = getView(viewId);
 
@@ -296,7 +296,7 @@ public class ViewsRepository implements IViewsRepository
 	public IView deleteStickyFilter(final ViewId viewId, final String filterId)
 	{
 		logger.trace("Deleting sticky filter {} from {}", filterId, viewId);
-		
+
 		// Get current view
 		final IView view = getView(viewId);
 
@@ -371,7 +371,7 @@ public class ViewsRepository implements IViewsRepository
 
 	@Override
 	@Async
-	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
+	public void notifyRecordsChanged(@NonNull final Set<TableRecordReference> recordRefs)
 	{
 		if (recordRefs.isEmpty())
 		{
