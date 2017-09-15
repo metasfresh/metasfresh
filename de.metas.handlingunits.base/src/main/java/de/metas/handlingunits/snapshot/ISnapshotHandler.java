@@ -54,19 +54,19 @@ public interface ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType>
 	ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setDateTrx(Date dateTrx);
 
 	/**
-	 * Set a referenced model to be used by transactions which would be created during the model restoration.
+	 * Optionally, Set a referenced model to be used by transactions which would be created during the model restoration.
 	 * 
 	 * Mainly the referenced model is a document or a document line on which the transactions are linking to.
 	 * 
-	 * @param referencedModel
+	 * @param referencedModel may be {@code null}
 	 * @return
 	 */
 	ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setReferencedModel(Object referencedModel);
 
 	/**
-	 * Sets the Snapshot ID to be used.
+	 * Sets the Snapshot ID to be used. A Snapshot ID is mandatory.
 	 * 
-	 * @param snapshotId
+	 * @param snapshotId may not be {@code null} or empty.
 	 */
 	ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setSnapshotId(String snapshotId);
 

@@ -49,6 +49,7 @@ import org.adempiere.inout.util.IShipmentCandidates.PostageFreeStatus;
 import org.adempiere.inout.util.ShipmentCandidates;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleStorageRecord;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.IContextAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -61,6 +62,7 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.MInOut;
@@ -95,8 +97,12 @@ import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.purchasing.api.IBPartnerProductDAO;
 import de.metas.storage.IStorageBL;
+import de.metas.storage.IStorageEngine;
+import de.metas.storage.IStorageEngineService;
+import de.metas.storage.IStorageQuery;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
+import lombok.NonNull;
 
 /**
  * This service computes the quantities to be shipped to customers for a list of {@link I_C_OrderLine}s and their respective {@link I_M_ShipmentSchedule}s.
@@ -282,7 +288,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						&& sched.getQtyDelivered().signum() == 0 // also don't try to delete if there is already a picked or delivered Qty.
 						&& sched.getQtyPickList().signum() == 0)
 				{
-						logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
+					logger.debug("QtyToDeliver_Override=" + sched.getQtyToDeliver_Override()
 							+ "; QtyReserved=" + sched.getQtyReserved()
 							+ "; DocStatus=" + orderDocStatus
 							+ "; => Deleting " + sched);
@@ -1241,5 +1247,38 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		schedule.setQtyOrdered_Override(qtyDelivered);
 
 		InterfaceWrapperHelper.save(schedule);
+	}
+
+	@Override
+	public IStorageQuery createStorageQuery(
+			@NonNull final I_M_ShipmentSchedule sched, 
+			final boolean considerAttributes)
+	{
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+
+		// Create storage query
+		final I_M_Warehouse warehouse = shipmentScheduleEffectiveBL.getWarehouse(sched);
+		final I_C_BPartner bpartner = shipmentScheduleEffectiveBL.getBPartner(sched);
+
+		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
+		final IStorageEngine storageEngine = storageEngineProvider.getStorageEngine();
+
+		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
+
+		storageQuery.addProduct(sched.getM_Product());
+		storageQuery.addWarehouse(warehouse);
+		storageQuery.addPartner(bpartner);
+
+		// Add query attributes
+		if (considerAttributes)
+		{
+			final I_M_AttributeSetInstance asi = sched.getM_AttributeSetInstance_ID() > 0 ? sched.getM_AttributeSetInstance() : null;
+			if (asi != null && asi.getM_AttributeSetInstance_ID() > 0)
+			{
+				final IAttributeSet attributeSet = storageEngine.getAttributeSet(asi);
+				storageQuery.addAttributes(attributeSet);
+			}
+		}
+		return storageQuery;
 	}
 }

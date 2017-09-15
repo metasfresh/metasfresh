@@ -23,10 +23,10 @@ package de.metas.handlingunits.model.validator;
  */
 
 import java.util.Arrays;
-import java.util.Properties;
 
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.cache.IModelCacheService;
+import org.adempiere.ad.dao.cache.ITableCacheConfigBuilder;
 import org.adempiere.ad.dao.cache.ITableCacheConfig.TrxLevel;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -40,17 +40,13 @@ import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
 import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
+import org.compiere.util.CacheMgt;
 import org.eevolution.model.I_DD_OrderLine;
 
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.ddorder.spi.impl.DDOrderLineHUDocumentHandler;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
@@ -71,8 +67,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPListener;
 import de.metas.handlingunits.ordercandidate.spi.impl.OLCandPIIPValidator;
+import de.metas.handlingunits.picking.modelinterceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
@@ -104,6 +104,7 @@ import de.metas.ordercandidate.api.IOLCandValdiatorBL;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
+import lombok.NonNull;
 
 public final class Main extends AbstractModuleInterceptor
 {
@@ -119,10 +120,6 @@ public final class Main extends AbstractModuleInterceptor
 
 		registerHUSSAggregationKeyDependencies();
 
-		//
-		// Setup caching
-		setupTableCacheConfig();
-		
 		setupPricing();
 
 		//
@@ -146,11 +143,11 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_Product(), client);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_ProductPrice(), client);
 
-		engine.addModelValidator( de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE, client);
-		
+		engine.addModelValidator(de.metas.handlingunits.hutransaction.interceptor.M_HU.INSTANCE, client);
+
 		// #484 HU tracing
 		engine.addModelValidator(de.metas.handlingunits.trace.interceptor.HUTraceModuleInterceptor.INSTANCE, client);
-				
+
 		// M_Package integration
 		engine.addModelValidator(new M_ShippingPackage(), client);
 
@@ -177,10 +174,10 @@ public final class Main extends AbstractModuleInterceptor
 		// Shipment
 		engine.addModelValidator(new M_ShipmentSchedule(), client);
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client);
-		
+
 		// #2143: update HUs after inventory reversal
 		engine.addModelValidator(new M_Inventory(), client);
-		
+
 		programaticCalloutProvider.registerAnnotatedCallout(de.metas.handlingunits.inout.callout.M_InOutLine.instance);
 		// replace the default implementation with our own HU-aware one
 		Services.registerService(IShipmentScheduleInvalidateBL.class, new HUShipmentScheduleInvalidateBL());
@@ -191,6 +188,9 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Manufacturing
 		engine.addModelValidator(new PP_Cost_Collector(), client);
+
+		// https://github.com/metasfresh/metasfresh/issues/2298
+		engine.addModelValidator(de.metas.handlingunits.picking.modelinterceptor.M_HU.INSTANCE, client);
 
 		//
 		// Tour Planning
@@ -236,32 +236,48 @@ public final class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	public void onUserLogin(final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
+	protected void setupCaching(@NonNull final IModelCacheService cachingService)
 	{
-		//
-		// Warm-up our cache
-		// NOTE: We are calling this on user login and not "onInit" because after logout, cache is reseted.
-		// On server side, it's not so important to warm-up cache, because it will be warmed up much more quickly
-		if (Ini.isClient())
-		{
-			cacheWarmUp();
-		}
+		// master data
+		setupMasterDataCaching(cachingService);
+
+		setupRemoteCaching();
+
+		setupInTrxOnlyCaching(cachingService);
 	}
 
-	private void setupTableCacheConfig()
+	private void setupMasterDataCaching(final IModelCacheService cachingService)
 	{
-		final IModelCacheService cachingService = Services.get(IModelCacheService.class);
-
-		// master data
 		cachingService.addTableCacheConfig(I_M_HU_PI.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Version.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Item.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Item_Product.class);
 		cachingService.addTableCacheConfig(I_M_HU_PI_Attribute.class);
 		cachingService.addTableCacheConfig(I_M_HU_PackingMaterial.class);
+	}
 
-		//
-		// Setup tables for InTransaction only caching
+	private void setupRemoteCaching()
+	{
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI_Version.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI_Item.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI_Item_Product.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PI_Attribute.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_HU_PackingMaterial.Table_Name);
+
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Source_HU.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_Picking_Candidate.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_M_PickingSlot_HU.Table_Name);
+	}
+
+	/**
+	 * Setup tables for InTransaction only caching. see {@link ITableCacheConfigBuilder#setTrxLevel(TrxLevel)}.
+	 * 
+	 * @param cachingService
+	 */
+	private void setupInTrxOnlyCaching(final IModelCacheService cachingService)
+	{
 		for (final String tableName : Arrays.asList(
 				I_M_HU.Table_Name, I_M_HU_Storage.Table_Name, I_M_HU_Item.Table_Name, I_M_HU_Item_Storage.Table_Name, I_M_HU_Attribute.Table_Name))
 		{
@@ -296,17 +312,17 @@ public final class Main extends AbstractModuleInterceptor
 		{
 			huTrxBL.addListener(WeightGenerateHUTrxListener.instance);
 		}
-		
+
 		//
 		// Receipt schedule
 		{
 			Services.get(IReceiptScheduleProducerFactory.class)
 					.registerProducer(I_C_OrderLine.Table_Name, HUReceiptScheduleProducer.class)
 					.registerWarehouseDestProvider(QualityInspectionWarehouseDestProvider.instance);
-			
+
 			Services.get(IReceiptScheduleBL.class)
 					.addReceiptScheduleListener(HUReceiptScheduleListener.instance);
-			
+
 			Services.get(IHUDocumentFactoryService.class)
 					.registerHUDocumentFactory(de.metas.inoutcandidate.model.I_M_ReceiptSchedule.Table_Name, new ReceiptScheduleHUDocumentFactory());
 
@@ -397,72 +413,5 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// Register Handlers
 		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new HUShipmentScheduleKeyValueHandler());
-	}
-
-	/**
-	 * Warm up our cache.
-	 *
-	 * This method will be executed in a separate thread to not affect system start-up.
-	 *
-	 * @see #cacheWarmUpNow();
-	 */
-	private void cacheWarmUp()
-	{
-		final Runnable runnable = new Runnable()
-		{
-
-			@Override
-			public void run()
-			{
-				cacheWarmUpNow();
-			}
-		};
-
-		final Thread thread = new Thread(runnable, getClass().getName() + "-CacheWarmUp");
-		thread.start();
-	}
-
-	/**
-	 * Do some DAO retrievals in order to warm up our cache.
-	 */
-	private void cacheWarmUpNow()
-	{
-		final Properties ctx = Env.getCtx();
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHUPIAttributesDAO huAttributesDAO = Services.get(IHUPIAttributesDAO.class);
-
-		//
-		// Retrieve all HU PI's and:
-		// * fetch their PI Items
-		// * fetch their PI Attributes
-		// NOTE: we assume there are not so many HU PIs
-		for (final I_M_HU_PI huPI : handlingUnitsDAO.retrieveAvailablePIs(ctx))
-		{
-			{
-				final I_M_HU_PI_Version piVersionCurrent = handlingUnitsDAO.retrievePICurrentVersionOrNull(huPI);
-				if (piVersionCurrent != null)
-				{
-					piVersionCurrent.getM_HU_PI(); // shall do nothing because this reference was already set... but just to be sure
-				}
-			}
-
-			final I_C_BPartner bpartner = null; // all BPs
-			for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(huPI, bpartner))
-			{
-				piItem.getM_HU_PI_Version(); // shall do nothing because this reference was already set... but just to be sure
-				piItem.getC_BPartner();
-				piItem.getIncluded_HU_PI();
-				piItem.getM_HU_PackingMaterial();
-			}
-
-			for (final I_M_HU_PI_Attribute piAttribute : huAttributesDAO.retrievePIAttributes(huPI))
-			{
-				piAttribute.getM_HU_PI_Version(); // shall do nothing because this reference was already set... but just to be sure
-				piAttribute.getAggregationStrategy_JavaClass();
-				piAttribute.getHU_TansferStrategy_JavaClass();
-				piAttribute.getSplitterStrategy_JavaClass();
-				piAttribute.getM_Attribute();
-			}
-		}
 	}
 }

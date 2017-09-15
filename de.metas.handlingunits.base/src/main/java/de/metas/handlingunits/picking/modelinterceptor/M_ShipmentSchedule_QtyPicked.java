@@ -1,4 +1,4 @@
-package de.metas.handlingunits.model.validator;
+package de.metas.handlingunits.picking.modelinterceptor;
 
 /*
  * #%L
@@ -36,8 +36,6 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 @Interceptor(I_M_ShipmentSchedule_QtyPicked.class)
 public class M_ShipmentSchedule_QtyPicked
 {
-	// private final transient Logger logger = CLogMgt.getLogger(getClass());
-
 	/**
 	 * Asserts {@link I_M_ShipmentSchedule_QtyPicked#COLUMNNAME_M_LU_HU_ID} has a valid LU or null.
 	 *

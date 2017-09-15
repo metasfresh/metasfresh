@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.picking;
 
 /*
  * #%L
@@ -23,19 +23,25 @@ package de.metas.handlingunits;
  */
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.adempiere.util.ISingletonService;
+import org.adempiere.util.Services;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot_Trx;
+import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.IPickingSlotBL;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Singular;
 
 /**
  * Note: Please use this interface in this module instead of {@link IPickingSlotBL}.
@@ -153,17 +159,28 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 	}
 
 	/**
-	 * Search for available (top level) HUs to be picked.
+	 * Search for available (top level) HUs to be picked. Picking in this case means that the whole HU is assigned to a picking slot.<br>
+	 * Available HUs are not yet picked and are not yet selected to be source HUs
 	 *
 	 * @param request
 	 * 
 	 * @return matching HUs
 	 */
-	List<I_M_HU> retrieveAvailableHUsToPick(AvailableHUsToPickRequest request);
+	List<I_M_HU> retrieveAvailableHUsToPick(PickingHUsQuery request);
+
+	/**
+	 * Search for available fine picking source HUs.<br>
+	 * Those HUs are referenced by {@link I_M_Source_HU} records and are available<br>
+	 * to serve as source HU from which stuff is loaded into the picking-HUs. That means that they may not yet be empty.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	List<I_M_HU> retrieveAvailableSourceHUs(PickingHUsQuery query);
 
 	@lombok.Builder
 	@lombok.Value
-	public static final class AvailableHUsToPickRequest
+	class PickingHUsQuery
 	{
 		/**
 		 * If true we shall consider the HU attributes while searching for matching HUs.
@@ -172,7 +189,7 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		boolean considerAttributes = true;
 
 		/**
-		 * ShipmentSchedules for which the HUs shall be picked. May not be {@code null}.
+		 * ShipmentSchedules for which the HUs shall be picked. Needed to filter by the HUs' product and location and may therefore not be {@code null}.
 		 */
 		@NonNull
 		List<I_M_ShipmentSchedule> shipmentSchedules;
@@ -182,5 +199,41 @@ public interface IHUPickingSlotBL extends IPickingSlotBL, ISingletonService
 		 */
 		@Default
 		boolean onlyTopLevelHUs = true;
+	}
+
+	/**
+	 * Returns those fine picking source HUs whose location and product match any the given query.
+	 * 
+	 * @param query
+	 * @return
+	 */
+	List<I_M_HU> retrieveActiveSourceHUs(RetrieveActiveSourceHusQuery query);
+
+	/**
+	 * Specifies which source HUs (products and warehouse) to retrieve in particular
+	 */
+	@lombok.Value
+	class RetrieveActiveSourceHusQuery
+	{
+		/**
+		 * Query for HUs that have any of the given product IDs. Empty means that no HUs will be found.
+		 */
+		@Singular
+		Set<Integer> productIds;
+
+		int warehouseId;
+
+		/**
+		 * @param shipmentSchedules the schedules to make the new instance from; may not be {@code null}. Empty means that no HUs will be found.
+		 */
+		public static RetrieveActiveSourceHusQuery fromShipmentSchedules(@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
+		{
+			final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+			final Set<Integer> productIds = shipmentSchedules.stream().map(s -> s.getM_Product_ID()).collect(Collectors.toSet());
+
+			final int effectiveWarehouseId = shipmentSchedules.isEmpty() ? -1 : shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedules.get(0));
+
+			return new RetrieveActiveSourceHusQuery(productIds, effectiveWarehouseId);
+		}
 	}
 }

@@ -38,10 +38,10 @@ import de.metas.adempiere.form.terminal.context.ITerminalContext;
 import de.metas.fresh.picking.form.FreshPackingItemHelper;
 import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHUPickingSlotBL.AvailableHUsToPickRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.terminal.ProductKey;
 
@@ -235,7 +235,7 @@ public class FreshProductKey extends ProductKey
 		final List<I_M_ShipmentSchedule> shipmentSchedules = unallocatedPackingItem.getShipmentSchedules();
 
 		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		return huPickingSlotBL.retrieveAvailableHUsToPick(AvailableHUsToPickRequest.builder()
+		return huPickingSlotBL.retrieveAvailableHUsToPick(PickingHUsQuery.builder()
 				.shipmentSchedules(shipmentSchedules)
 				.considerAttributes(considerAttributes)
 				.onlyTopLevelHUs(true)

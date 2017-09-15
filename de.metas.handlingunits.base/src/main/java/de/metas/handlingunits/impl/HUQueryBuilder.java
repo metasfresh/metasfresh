@@ -65,12 +65,12 @@ import de.metas.dimension.IDimensionspecDAO;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 
 /**
  * {@link IHUQueryBuilder} implementation.
@@ -94,7 +94,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 	@ToStringBuilder(skip = true)
 	private Object _contextProvider;
-	
+
 	/**
 	 * Shall we select only those HUs which are top level (i.e. not included in other HUs)?
 	 *
@@ -121,13 +121,17 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	private final Set<Integer> _onlyInBpartnerIdsRO = Collections.unmodifiableSet(_onlyInBpartnerIds);
 	private final Set<Integer> _onlyWithBPartnerLocationIds = new HashSet<>();
 	private final Set<Integer> _onlyWithProductIds = new HashSet<>();
-	private Boolean _emptyStorage = null;
+	
+	private Boolean _emptyStorageOnly = null;
+	
+	private boolean _allowEmptyStorage = false;
+	
 	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} */
 	private final Map<Integer, HUAttributeQueryFilterVO> onlyAttributeId2values = new HashMap<>();
 
 	/** M_Attribute_ID to {@link HUAttributeQueryFilterVO} for barcode */
 	private final Map<Integer, HUAttributeQueryFilterVO> _barcodeAttributesIds2Value = new HashMap<>();
-	
+
 	private final Set<String> _huStatusesToInclude = new HashSet<>();
 	private final Set<String> _huStatusesToExclude = new HashSet<>();
 	private boolean onlyActiveHUs = true;
@@ -178,7 +182,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		copy._onlyInBpartnerIds.addAll(_onlyInBpartnerIds);
 		copy._onlyWithBPartnerLocationIds.addAll(_onlyWithBPartnerLocationIds);
 		copy._onlyWithProductIds.addAll(_onlyWithProductIds);
-		copy._emptyStorage = this._emptyStorage;
+		copy._emptyStorageOnly = this._emptyStorageOnly;
 		for (final Map.Entry<Integer, HUAttributeQueryFilterVO> e : onlyAttributeId2values.entrySet())
 		{
 			final Integer attributeId = e.getKey();
@@ -235,7 +239,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(_onlyInBpartnerIds)
 				.append(_onlyWithBPartnerLocationIds)
 				.append(_onlyWithProductIds)
-				.append(_emptyStorage)
+				.append(_emptyStorageOnly)
 				.append(onlyAttributeId2values)
 				.append(_barcodeAttributesIds2Value)
 				.append(_huStatusesToInclude)
@@ -278,7 +282,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 				.append(_onlyInBpartnerIds, other._onlyInBpartnerIds)
 				.append(_onlyWithBPartnerLocationIds, other._onlyWithBPartnerLocationIds)
 				.append(_onlyWithProductIds, other._onlyWithProductIds)
-				.append(_emptyStorage, other._emptyStorage)
+				.append(_emptyStorageOnly, other._emptyStorageOnly)
 				.append(onlyAttributeId2values, other.onlyAttributeId2values)
 				.append(_barcodeAttributesIds2Value, other._barcodeAttributesIds2Value)
 				.append(_huStatusesToInclude, other._huStatusesToInclude)
@@ -366,7 +370,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		//
 		// Only Active HUs
-		if(onlyActiveHUs)
+		if (onlyActiveHUs)
 		{
 			filters.addOnlyActiveRecordsFilter();
 		}
@@ -426,11 +430,16 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 		final Set<Integer> onlyWithProductIds = getOnlyWithProductIds();
 		if (!onlyWithProductIds.isEmpty())
 		{
-			final IQuery<I_M_HU_Storage> huStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
-					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds)
-					.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO)
+			final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
 					.addOnlyActiveRecordsFilter()
-					.create();
+					.addInArrayOrAllFilter(I_M_HU_Storage.COLUMN_M_Product_ID, onlyWithProductIds);
+
+			if (!_allowEmptyStorage)
+			{
+				huStoragesQueryBuilder.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO);
+			}
+
+			final IQuery<I_M_HU_Storage> huStoragesQuery = huStoragesQueryBuilder.create();
 
 			filters.addInSubQueryFilter(I_M_HU.COLUMN_M_HU_ID,
 					I_M_HU_Storage.COLUMN_M_HU_ID, huStoragesQuery);
@@ -438,7 +447,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 		//
 		// Empty storage filter
-		if (_emptyStorage != null)
+		if (_emptyStorageOnly != null)
 		{
 			final IQuery<I_M_HU_Storage> notEmptyHUStoragesQuery = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
 					.addNotEqualsFilter(I_M_HU_Storage.COLUMN_Qty, BigDecimal.ZERO)
@@ -446,7 +455,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 					.create();
 
 			// Empty Storage Only
-			if (_emptyStorage)
+			if (_emptyStorageOnly)
 			{
 				// FIXME: not sure it's ok!!!
 				// We must rewrite (Not)InSubQueryFilter using EXISTS
@@ -697,7 +706,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 
 	private final Object getContextProvider()
 	{
-		if(_contextProvider == null)
+		if (_contextProvider == null)
 		{
 			// context provider is optional; if it was not set, then use this default one
 			_contextProvider = PlainContextAware.newWithThreadInheritedTrx();
@@ -839,16 +848,23 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 	}
 
 	@Override
+	public IHUQueryBuilder setAllowEmptyStorage()
+	{
+		_allowEmptyStorage = true;
+		return this;
+	}
+	
+	@Override
 	public IHUQueryBuilder setEmptyStorageOnly()
 	{
-		_emptyStorage = true;
+		_emptyStorageOnly = true;
 		return this;
 	}
 
 	@Override
 	public IHUQueryBuilder setNotEmptyStorageOnly()
 	{
-		_emptyStorage = false;
+		_emptyStorageOnly = false;
 		return this;
 	}
 
@@ -1180,7 +1196,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 			return this;
 		}
 
-		if(_onlyHUIds == null)
+		if (_onlyHUIds == null)
 		{
 			_onlyHUIds = new HashSet<>();
 		}

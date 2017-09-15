@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -104,17 +103,7 @@ public class HUAccessService
 		{
 			return -1;
 		}
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		I_M_HU parent = hu;
-		I_M_HU greaterParent = handlingUnitsDAO.retrieveParent(parent);
-		while (greaterParent != null)
-		{
-			parent = greaterParent;
-			greaterParent = handlingUnitsDAO.retrieveParent(parent);
-		}
-		return parent.getM_HU_ID();
+		return handlingUnitsBL.getTopLevelParent(hu).getM_HU_ID();
 	}
 
 	public Optional<IPair<I_M_Product, BigDecimal>> retrieveProductAndQty(@NonNull final I_M_HU vhu)
