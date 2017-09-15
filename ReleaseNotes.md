@@ -10,28 +10,50 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.28 (2017-39)
+
+**upcoming release for week 2017-39**
+
+## Features
+* metasfresh-app
+
 # metasfresh 5.27 (2017-38)
 
 **upcoming release for week 2017-38**
 
-##Features
+## Features
 * metasfresh-app
+  * [#2089](https://github.com/metasfresh/metasfresh/issues/2089) Inventory Move Window improvements
+    * Improvements done to the Inventory Movement Window.
+  * [#2218](https://github.com/metasfresh/metasfresh/issues/2218) User would like to import default values for contact and address
+  * [#2245](https://github.com/metasfresh/metasfresh/issues/2445) Support quantity in flatrate term import
+  * [#2247](https://github.com/metasfresh/metasfresh/issues/2474) Extend Partner Import with ad_language
+  * [#2436](https://github.com/metasfresh/metasfresh/issues/2436) Use default values for IsShipTo and isBillTo when importing bpartner
+  * [#2459](https://github.com/metasfresh/metasfresh/issues/2459) shipto and billto contact / user
+  * [#2298](https://github.com/metasfresh/metasfresh/issues/2298) Introduce source-HU to fine-Picking
+  * [#2361](https://github.com/metasfresh/metasfresh/issues/2361) Invoice Candidates Action Approval for Invoicing
   * [#2381](https://github.com/metasfresh/metasfresh/issues/2381) Detailed Improvement of Flatrate Term window in WebUI
     * New Window for contracts in WebUI, making the contract management easier and more transparent.
   * [#2386](https://github.com/metasfresh/metasfresh/issues/2386) New Window for M_PickingSlot_Trx in WebUI
     * New Window in WebUI allowing to View Picking Slot Transations and involved Handling Units.
+  * [#2387](https://github.com/metasfresh/metasfresh/issues/2387) Autocomplete for zip / postal code and city
+  * [#2397](https://github.com/metasfresh/metasfresh/issues/2397) Import and Store Contract meta-data e.g. startdate on flatrate
   * [#2405](https://github.com/metasfresh/metasfresh/issues/2405) New Window for C_Invoice_Clearing_Alloc in WebUI
     * New window for Invoice Allocation as substitute for 3rd Level Subtab in old Contract Window.
   * [#2406](https://github.com/metasfresh/metasfresh/issues/2406) New Window for C_SubscriptionProgress in WebUI
     * New window for Subscription Progress/ History as substitute for 3rd Level Subtab in old Contract Window.
   * [#2408](https://github.com/metasfresh/metasfresh/issues/2408) Contract Date and Contract DocumentNo
     * New Fields in Contract Window: Document No and Date, allowing a better recognition of the Contract creation.
+  * [#2413](https://github.com/metasfresh/metasfresh/issues/2413) Make request status a search field in request window
   * [#2416](https://github.com/metasfresh/metasfresh/issues/2416) New Window for M_QualityInsp_LagerKonf_Version in WebUI
     * New Windows for yearly Swiss Storage Conference, allowing the user to define the Storage Conference Criteria.
   * [#2421](https://github.com/metasfresh/metasfresh/issues/2421) New Fields MasterStartDate and MasterEndDate in FlatRate Term
     * New Fields for Matercontract Start and End to the Flatrate Term Window in WebUI.
   * [#2426](https://github.com/metasfresh/metasfresh/issues/2426) Translation for window "RfQ" in WebUI
     * Adjustments to the Request for Quotation Window, Refining Layout and adding Translations for en_US, de_DE locale/ Language.
+  * [#2429](https://github.com/metasfresh/metasfresh/issues/2429) hide qty TU when HU name is empty
+  * [#2431](https://github.com/metasfresh/metasfresh/issues/2431) Product Filter in Handling Unit Editor
+  * [#2434](https://github.com/metasfresh/metasfresh/issues/2434) Make field ad_user_incharge_id from C_Flatrate_Term optional
   * [#2442](https://github.com/metasfresh/metasfresh/issues/2442) New Window for GL Journal Category in WebUI
     * New Window for GL Category in WebUI Finance/ Settings.
   * [#2449](https://github.com/metasfresh/metasfresh/issues/2449) Adjust the window Product for Procurement Contracts
@@ -42,11 +64,37 @@ Here come the actual release notes:
     * New Window Country, City and Postal for WebUI. Added to WebUI menu in System/ Settings. Allowing to the User to maintain Postal-City combinations and use them for fast Location recordning.
   * [#2450](https://github.com/metasfresh/metasfresh/issues/2450) Translation for Packvorschrift-Produkt-Zuordnung in English version
     * New en_US Translation for the Field Packing Instruciotn. Making the Name shorter and more comprehensive for the user.
-  
+  * [#2463](https://github.com/metasfresh/metasfresh/issues/2463) Extend Partner Import to support contact flags
+
+* metasfresh-webui-api
+  * [#142](https://github.com/metasfresh/metasfresh-webui-api/issues/142) Provide v11 / CAMT 54 File Import
+  * [#178](https://github.com/metasfresh/metasfresh-webui-api/issues/178) Have Letter Feature in Sales Order Window
+  * [#547](https://github.com/metasfresh/metasfresh-webui-api/issues/547) Provide mass export of Data to Excel
+  * [#581](https://github.com/metasfresh/metasfresh-webui-api/issues/581) API to provide user session's locale
+  * [#583](https://github.com/metasfresh/metasfresh-webui-api/issues/583) Provide the document's standard actions
+  * [#585](https://github.com/metasfresh/metasfresh-webui-api/issues/585) Lookup validation rule shall support @CtxName/Default@ annotation
+
+* metasfresh-webui-frontend
+  * [#1060](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1060) Locale viewing and editing in User Interface
+
+* other
+  * [metasfresh/metasfresh-parent#14](https://github.com/metasfresh/metasfresh-parent/issues/14) Look for a way of not having the "placeholder" on local builds
+
+## Fixes
+* metasfresh-app
+  * [#2401](https://github.com/metasfresh/metasfresh/issues/2401) vendor return with quality discount
+  * [#2412](https://github.com/metasfresh/metasfresh/issues/2412) OrderCheckout Jaspers display empty C_BPartner_Product.ProductName
+  * [#2423](https://github.com/metasfresh/metasfresh/issues/2423) fix jaspers for vendor return with quality issue
+  * [#2430](https://github.com/metasfresh/metasfresh/issues/2430) Invoice candidate close is retrieving the invoice candidates out of transaction
+  * [#2457](https://github.com/metasfresh/metasfresh/issues/2457) Duplicate locations on partner import when multiple contacts
+
+* metasfresh-webui-api
+  * [#570](https://github.com/metasfresh/metasfresh-webui-api/issues/570) clicking print on non-document window shows error page
+  * [#582](https://github.com/metasfresh/metasfresh-webui-api/issues/582) Cannot invoice disposal's invoice candidates
 
 # metasfresh 5.26 (2017-37)
 
-**upcoming release for week 2017-37**
+**release for week 2017-37**
 
 ## Features
 * metasfresh-app
@@ -59,7 +107,7 @@ Here come the actual release notes:
   * [#2304](https://github.com/metasfresh/metasfresh/issues/2304) New Action: Create new Product Prices from selected Pricelist Version
     * Improvement of Price List and Product Prices Window, adding the action to create new Price List version easiliy via mass selection and calculation schema.
   * [#2306](https://github.com/metasfresh/metasfresh/issues/2306) Period mass actions missing in WebUI
-    * New Action "Open all/ Close all" in Period Window, allowing to change the Perdion status of all Doctype in few clicks.
+    * New Action "Open all/ Close all" in Period Window, allowing to change the Period status of all Doctypes in few clicks.
   * [#2307](https://github.com/metasfresh/metasfresh/issues/2307) Window Period adjustments, add missing Translations
     * Translation for en_US and further refinements of Calendar Period Window in WebUI.
   * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
@@ -91,16 +139,17 @@ Here come the actual release notes:
   * [#2391](https://github.com/metasfresh/metasfresh/issues/2391) Partial vendor Returns
     * New Functionality in Handling unit Editor now allowing to also do partial Vendor Returns.
   * [#2398](https://github.com/metasfresh/metasfresh/issues/2398) Reverse Correct of Disposal takes too long
+    * Performance Improvement for the reverse correction of Disposal Documents.
 
 * metasfresh-webui-api
   * [#563](https://github.com/metasfresh/metasfresh-webui-api/issues/563) Handling Unit Editor - remove hardcoded filter for active HUs
     * Removing the hardcoded isActive Filter from Handling Unit Editor in WebUI.
   * [#564](https://github.com/metasfresh/metasfresh-webui-api/issues/564) Filter Layout Sequence
-    * New Functionality in Filter Configuration. now allowing to define the sequence in which Filters are shown.
+    * New Functionality in Filter Configuration. Now allowing to define the sequence in which Filters are shown.
   * [#573](https://github.com/metasfresh/metasfresh-webui-api/issues/573) MoveToDirectWarehouse shall support multiple HUs
     * New Functionality in Handling Unit Action for Internal Use, now allowing to mass-select and use Handling Units in one step.
   * [#577](https://github.com/metasfresh/metasfresh-webui-api/issues/577) API for Edit Fields in Main Grid View
-    * Adding teh API for editing Fields in Main Table Grid Views.
+    * Adding the API for editing Fields in Main Table Grid Views.
 
 * metasfresh-webui-frontend
   * [#1147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1147) Implement the initial Sorting Indicator in included Tabs
@@ -108,32 +157,47 @@ Here come the actual release notes:
   * [#1152](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1152) find a new shortcut for CTRL + X
     * Providing a new shortcut for eMail send. It's now ctrl+k instead of ctrl+x.
   * [#1164](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1164) frontend: document cloning
+    * New Functionality that allows the user to easily copy/ clone documents.
 
 
 ## Fixes
 * metasfresh-app
   * [#2141](https://github.com/metasfresh/metasfresh/issues/2141) Year-End P&L Process w/ multiple Organisations error
-  * [#2303](https://github.com/metasfresh/metasfresh/issues/2302) Order validation rule for packing instruction needs to look at DatePromised
+    * Fixes a Bug that wrongly calculated the year end P&L when organisations are different but youse the identical Accounting Schema (defined on client level).
+  * [#2302](https://github.com/metasfresh/metasfresh/issues/2302) Order validation rule for packing instruction needs to look at DatePromised
+    * Fix for a minor Bug that appeared when choosing the Packing Instructions in validation rule for Orderlines.
   * [#2342](https://github.com/metasfresh/metasfresh/issues/2342) Make Material Disposal Lines and their Movements respect all the details from the HUs
+    * Fixes a minor Bug in the new Disposal Functionality according to missing Handling Unit Information.
   * [#2354](https://github.com/metasfresh/metasfresh/issues/2354) LU has HU_Status Active after picking
+    * Minor Fix for the Handling Unit Status Handling, here having the wrong status for included Handling Units after Picking workflow.
   * [#2389](https://github.com/metasfresh/metasfresh/issues/2389) edi problem for customer returns
+    * Fix in Customer Returns when using w/ EDI.
   * [#2399](https://github.com/metasfresh/metasfresh/issues/2399) uom in customer return lines
+    * Minor fix for UOM Cornercase. Now showing the correct UOM in customer return Line.
 
 * metasfresh-webui-api
   * [#532](https://github.com/metasfresh/metasfresh-webui-api/issues/532) Unable to see list of document's attachments
+    * Fix for the new Document Attachments List in WebUI, now showing the attached Files again.
   * [#572](https://github.com/metasfresh/metasfresh-webui-api/issues/572) qty doubled on vendor/customer return and destroyed HUs
+    * Quantity Fix in Vendor and Customer Return Lines.
   * [#578](https://github.com/metasfresh/metasfresh-webui-api/issues/578) storage error on disposal
+    * Getting rid of en error that appeared in Storage when disposing Handling Units.
 
 * metasfresh-webui-frontend
   * [#1156](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1156) Offline message is no longer displayed
-    * Fixes the message that is shown when the appclicaton turns offline.
+    * Fixes the message that is shown when the application turns offline.
   * [#1159](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1159) batch entry: scrollbar not moving when using keyboard
+    * Now moving the scrollbar when using the arrow keys in WebUI frontend.
   * [#1165](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1165) frontend cache for dropdown value not invalidated on lookupValuesStale is true
+    * Fix in Frontend Caching.
   * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
     * Fix and adjustment to the Lookup fields behavior in included Views.
   * [#1172](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1172) filtering is not working in picking
+    * Allowing the Filters to be uses in the new Picking Window in WebUI.
   * [#1178](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1178) [ctrl]+u sometimes opens chrome sourceview instead of trigger main quickaction
+    * Harmonizing the usage of ctrl+u key combination in WebUI Windows and Fields.
   * [#1179](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1179) [ctrl]+enter does not save changes before
+    * Harmonizing the usage of ctrl+enter key combination in WebUI Windows and Fields.
   * [#1183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1183) Purchase order: screen is scrolling when i am trying to type in Delivery from field
     * Avoiding the scroll of the main page when scrolling in a Lookup Field
 
@@ -3919,7 +3983,7 @@ This week's RC
  - FRESH-331 Double click needed for weighing machine and occasional NPE
     * Improved logging and making the application more robust
  - FRESH-329: periods missing in dropdown because of no translations
-    * Fixed an Issue with Calendar Periods. These were  not shown because of missing Translations.
+    * Fixed an Issue with Calendar Periods. These were not shown because of missing Translations.
  - FRESH-327 Subsequent change of logo not working correctly without cache reset
     * Fixing an issue with Caching of Logo. Cache was not resetted after changing the Logo in running Client Session.
  - FRESH-312 Project cannot be compiled when downloading from github directly
