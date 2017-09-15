@@ -48,7 +48,7 @@ public interface IHUPPOrderBL extends ISingletonService
 	 * <ul>
 	 * <li>contain the given {@code ppOrderBomLine}'s product</li>
 	 * <li>are in the bomline's warehouse</li>
-	 * <li>are still active and are not yet referenced by a poOrder candidate (i.e. {@link I_PP_Order_Qty})</li>
+	 * <li>are still active</li>
 	 * </lu>
 	 * 
 	 * @param ppOrderBomLine
