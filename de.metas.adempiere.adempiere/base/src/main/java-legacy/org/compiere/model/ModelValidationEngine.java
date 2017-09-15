@@ -922,7 +922,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	@SuppressWarnings("deprecation")
-	void invokeModelChangeMethod(
+	private void invokeModelChangeMethod(
 			@NonNull final PO po,
 			final int changeType,
 			@NonNull final ModelValidator validator)
