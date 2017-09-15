@@ -8,6 +8,7 @@ import org.compiere.util.DisplayType;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 
 /*
@@ -46,6 +47,7 @@ public enum DocumentFieldWidgetType
 	, Date(LayoutAlign.Right, java.util.Date.class, DisplayType.Date) //
 	, Time(LayoutAlign.Right, java.util.Date.class, DisplayType.Time) //
 	, DateTime(LayoutAlign.Right, java.util.Date.class, DisplayType.DateTime) //
+	, DateRange(LayoutAlign.Left, DateRangeValue.class, -1) //
 
 	// Numbers, Amounts, Prices
 	, Integer(LayoutAlign.Right, Integer.class, DisplayType.Integer) //

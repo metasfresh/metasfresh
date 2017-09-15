@@ -10,6 +10,7 @@ import org.compiere.util.NamePair;
 
 import de.metas.ui.web.window.datatypes.json.JSONDate;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONRange;
 
 /*
  * #%L
@@ -63,6 +64,11 @@ public final class Values
 		{
 			final java.util.Date valueDate = (java.util.Date)value;
 			return JSONDate.toJson(valueDate);
+		}
+		else if(value instanceof DateRangeValue)
+		{
+			final DateRangeValue dateRange = (DateRangeValue)value;
+			return JSONRange.of(dateRange);
 		}
 		else if (value instanceof LookupValue)
 		{

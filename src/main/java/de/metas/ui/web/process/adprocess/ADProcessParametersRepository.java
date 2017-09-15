@@ -12,6 +12,7 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -184,21 +185,33 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 
 		final Object parameter;
 		final String info;
+		final Object parameterTo;
+		final String infoTo;
 		if (fieldValue instanceof LookupValue)
 		{
 			final LookupValue lookupValue = (LookupValue)fieldValue;
 			parameter = lookupValue.getId();
 			info = lookupValue.getDisplayName();
+			parameterTo = null;
+			infoTo = null;
+		}
+		else if (fieldValue instanceof DateRangeValue)
+		{
+			final DateRangeValue dateRange = (DateRangeValue)fieldValue;
+			parameter = dateRange.getFrom();
+			info = parameter == null ? null : parameter.toString();
+			parameterTo = dateRange.getTo();
+			infoTo = parameterTo == null ? null : parameterTo.toString();
 		}
 		else
 		{
 			parameter = fieldValue;
 			info = fieldValue == null ? null : fieldValue.toString();
+			parameterTo = null;
+			infoTo = null;
 		}
 
-		final Object parameter_To = null;
-		final String info_To = null;
-		return new ProcessInfoParameter(parameterName, parameter, parameter_To, info, info_To);
+		return new ProcessInfoParameter(parameterName, parameter, parameterTo, info, infoTo);
 	}
 
 	@Override

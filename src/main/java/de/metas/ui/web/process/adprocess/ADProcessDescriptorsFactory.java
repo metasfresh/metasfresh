@@ -37,6 +37,7 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
@@ -194,7 +195,6 @@ import lombok.NonNull;
 	{
 		final IModelTranslationMap adProcessParaTrlsMap = InterfaceWrapperHelper.getModelTranslationMap(adProcessParam);
 		final String parameterName = adProcessParam.getColumnName();
-		final boolean isParameterTo = false; // TODO: implement range parameters support
 
 		//
 		// Ask the provider if it has some custom lookup descriptor
@@ -212,7 +212,7 @@ import lombok.NonNull;
 		//
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProvider.provideForScope(LookupDescriptorProvider.LookupScope.DocumentField);
 
-		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor);
+		final DocumentFieldWidgetType widgetType = extractWidgetType(parameterName, adProcessParam.getAD_Reference_ID(), lookupDescriptor, adProcessParam.isRange());
 		final Class<?> valueClass = DescriptorsFactoryHelper.getValueClass(widgetType, lookupDescriptor);
 		final boolean allowShowPassword = widgetType == DocumentFieldWidgetType.Password ? true : false; // process parameters shall always allow displaying the password
 
@@ -249,31 +249,28 @@ import lombok.NonNull;
 		;
 
 		// Add a callout to forward process parameter value (UI) to current process instance
-		if (webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName, isParameterTo))
+		if (webuiProcesClassInfo.isForwardValueToJavaProcessInstance(parameterName))
 		{
-			paramDescriptor.addCallout(calloutField -> forwardValueToCurrentProcessInstance(calloutField, isParameterTo));
+			paramDescriptor.addCallout(ProcessParametersCallout::forwardValueToCurrentProcessInstance);
 		}
 
 		return paramDescriptor;
 	}
 
-	private static final void forwardValueToCurrentProcessInstance(final ICalloutField calloutField, final boolean isParameterTo)
+	private static DocumentFieldWidgetType extractWidgetType(final String parameterName, final int adReferenceId, final LookupDescriptor lookupDescriptor, final boolean isRange)
 	{
-		final JavaProcess processInstance = JavaProcess.currentInstance();
+		final DocumentFieldWidgetType widgetType = DescriptorsFactoryHelper.extractWidgetType(parameterName, adReferenceId, lookupDescriptor);
 
-		final String parameterName = calloutField.getColumnName();
-
-		//
-		// Build up our value source
-		Object parameterValue = calloutField.getValue();
-		if (parameterValue instanceof LookupValue)
+		// Date range:
+		if (isRange && widgetType == DocumentFieldWidgetType.Date)
 		{
-			parameterValue = ((LookupValue)parameterValue).getId();
+			return DocumentFieldWidgetType.DateRange;
 		}
-		final IRangeAwareParams source = ProcessParams.ofValue(parameterName, parameterValue);
-
-		// Ask the instance to load the parameter
-		processInstance.loadParameterValueNoFail(parameterName, isParameterTo, source);
+		// Others
+		else
+		{
+			return widgetType;
+		}
 	}
 
 	private static final ProcessDescriptorType extractType(final I_AD_Process adProcess)
@@ -314,6 +311,38 @@ import lombok.NonNull;
 		}
 
 		return null;
+	}
+
+	private static final class ProcessParametersCallout
+	{
+		private static final void forwardValueToCurrentProcessInstance(final ICalloutField calloutField)
+		{
+			final JavaProcess processInstance = JavaProcess.currentInstance();
+
+			final String parameterName = calloutField.getColumnName();
+
+			//
+			// Build up our value source
+			final IRangeAwareParams source;
+			final Object fieldValue = calloutField.getValue();
+			if (fieldValue instanceof LookupValue)
+			{
+				final Object idObj = ((LookupValue)fieldValue).getId();
+				source = ProcessParams.ofValueObject(parameterName, idObj);
+			}
+			else if (fieldValue instanceof DateRangeValue)
+			{
+				final DateRangeValue dateRange = (DateRangeValue)fieldValue;
+				source = ProcessParams.of(parameterName, dateRange.getFrom(), dateRange.getTo());
+			}
+			else
+			{
+				source = ProcessParams.ofValueObject(parameterName, fieldValue);
+			}
+
+			// Ask the instance to load the parameter
+			processInstance.loadParameterValueNoFail(parameterName, source);
+		}
 	}
 
 	private static final class ProcessParametersDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder

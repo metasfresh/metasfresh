@@ -190,9 +190,9 @@ final class WebuiProcessClassInfo
 		return paramLookupValuesProviders.get(parameterName);
 	}
 
-	public boolean isForwardValueToJavaProcessInstance(final String parameterName, final boolean isParameterTo)
+	public boolean isForwardValueToJavaProcessInstance(final String parameterName)
 	{
-		return !processClassInfo.getParameterInfos(parameterName, isParameterTo).isEmpty();
+		return !processClassInfo.getParameterInfos(parameterName).isEmpty();
 	}
 
 	//

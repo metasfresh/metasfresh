@@ -34,7 +34,7 @@ public enum JSONLayoutWidgetType
 {
 	Text, LongText, Link, Password
 
-	, Date, Time, DateTime
+	, Date, Time, DateTime, DateRange
 
 	, Integer, Number, Amount, Quantity, CostPrice
 
@@ -50,7 +50,7 @@ public enum JSONLayoutWidgetType
 	//
 	;
 
-	public static JSONLayoutWidgetType fromNullable(DocumentFieldWidgetType widgetType)
+	public static JSONLayoutWidgetType fromNullable(final DocumentFieldWidgetType widgetType)
 	{
 		if (widgetType == null)
 		{
@@ -72,6 +72,7 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.Date, JSONLayoutWidgetType.Date)
 			.put(DocumentFieldWidgetType.Time, JSONLayoutWidgetType.Time)
 			.put(DocumentFieldWidgetType.DateTime, JSONLayoutWidgetType.DateTime)
+			.put(DocumentFieldWidgetType.DateRange, JSONLayoutWidgetType.DateRange)
 			.put(DocumentFieldWidgetType.Integer, JSONLayoutWidgetType.Integer)
 			.put(DocumentFieldWidgetType.Number, JSONLayoutWidgetType.Number)
 			.put(DocumentFieldWidgetType.Amount, JSONLayoutWidgetType.Amount)
