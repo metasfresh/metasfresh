@@ -1,6 +1,9 @@
 package de.metas.ui.web.address;
 
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_Region;
+
+import de.metas.adempiere.model.I_C_Postal;
 
 /*
  * #%L
@@ -66,6 +69,7 @@ public interface IAddressModel
 	String COLUMNNAME_C_Region_ID = "C_Region_ID";
 	void setC_Region_ID(int C_Region_ID);
 	int getC_Region_ID();
+	I_C_Region getC_Region();
 	//@formatter:on
 
 	//@formatter:off
@@ -80,4 +84,13 @@ public interface IAddressModel
 	void setHasRegion(boolean HasRegion);
 	boolean isHasRegion();
 	//@formatter:on
+	
+
+	//@formatter:off
+	String COLUMNNAME_C_Postal_ID = "C_Postal_ID";
+	void setC_Postal_ID(int C_Postal_ID);
+	int getC_Postal_ID();
+	I_C_Postal getC_Postal();
+	//@formatter:on
+
 }

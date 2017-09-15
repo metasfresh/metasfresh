@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Check;
 import org.adempiere.util.Services;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.CCache;
@@ -17,6 +16,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.adempiere.service.ICountryDAO;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -41,22 +41,31 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupVal
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
 public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	private static final Optional<String> LookupTableName = Optional.of(I_C_Country.Table_Name); 
+	public static final AddressCountryLookupDescriptor newInstance()
+	{
+		return new AddressCountryLookupDescriptor();
+	}
+
+	private static final Optional<String> LookupTableName = Optional.of(I_C_Country.Table_Name);
 	private static final String CACHE_PREFIX = I_C_Country.Table_Name;
 	private static final String CONTEXT_LookupTableName = I_C_Country.Table_Name;
 
 	private final CCache<Object, LookupValuesList> allCountriesCache = CCache.newLRUCache(CACHE_PREFIX + "#All#LookupValues", 1, 0);
+
+	private AddressCountryLookupDescriptor()
+	{
+	}
 
 	@Override
 	public String getCachePrefix()
@@ -69,13 +78,13 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	{
 		return true;
 	}
-	
+
 	@Override
 	public Optional<String> getLookupTableName()
 	{
 		return LookupTableName;
 	}
-	
+
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
@@ -135,9 +144,13 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 		{
 			throw new IllegalStateException("No ID provided in " + evalCtx);
 		}
-
-		final String adLanguage = evalCtx.getAD_Language();
-		final LookupValue country = getAllCountriesById(adLanguage).getById(id);
+		
+		return getLookupValueById(id);
+	}
+	
+	public LookupValue getLookupValueById(final Object idObj)
+	{
+		final LookupValue country = getAllCountriesById().getById(idObj);
 		return Util.coalesce(country, LOOKUPVALUE_NULL);
 	}
 
@@ -160,7 +173,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 
 		//
 		// Get, filter, return
-		return getAllCountriesById(evalCtx.getAD_Language())
+		return getAllCountriesById()
 				.getValues()
 				.stream()
 				.filter(filter)
@@ -169,30 +182,27 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 				.collect(LookupValuesList.collect());
 	}
 
-	private LookupValuesList getAllCountriesById(final String adLanguage)
+	private LookupValuesList getAllCountriesById()
 	{
-		Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-		
-		final Object cacheKey = adLanguage;
-		return allCountriesCache.getOrLoad(cacheKey, () -> retriveAllCountriesById(adLanguage));
+		final Object cacheKey = "ALL";
+		return allCountriesCache.getOrLoad(cacheKey, () -> retriveAllCountriesById());
 	}
 
-	private LookupValuesList retriveAllCountriesById(final String adLanguage)
+	private LookupValuesList retriveAllCountriesById()
 	{
 		return Services.get(ICountryDAO.class)
 				.getCountries(Env.getCtx())
 				.stream()
-				.map(countryRecord -> createLookupValue(countryRecord, adLanguage))
+				.map(countryRecord -> createLookupValue(countryRecord))
 				.collect(LookupValuesList.collect());
 
 	}
 
-	private IntegerLookupValue createLookupValue(final I_C_Country countryRecord, final String adLanguage)
+	private IntegerLookupValue createLookupValue(final I_C_Country countryRecord)
 	{
 		final int countryId = countryRecord.getC_Country_ID();
-		final String countryName = InterfaceWrapperHelper.getModelTranslationMap(countryRecord)
-				.translateColumn(I_C_Country.COLUMNNAME_Name, adLanguage)
-				.orElse(countryRecord.getName());
+		final ITranslatableString countryName = InterfaceWrapperHelper.getModelTranslationMap(countryRecord)
+				.getColumnTrl(I_C_Country.COLUMNNAME_Name, countryRecord.getName());
 		return IntegerLookupValue.of(countryId, countryName);
 	}
 
