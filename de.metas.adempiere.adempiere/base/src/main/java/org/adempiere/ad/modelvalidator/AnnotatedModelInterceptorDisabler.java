@@ -2,8 +2,11 @@ package org.adempiere.ad.modelvalidator;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.Services;
@@ -66,7 +69,9 @@ public class AnnotatedModelInterceptorDisabler
 		}
 	});
 
-	private static final HashSet<String> disabledPointcutNames = new HashSet<>();
+	private final HashSet<String> disabledPointcutNames = new HashSet<>();
+
+	private final ReadWriteLock lockForDisabledPointcutNames = new ReentrantReadWriteLock();
 
 	@VisibleForTesting
 	AnnotatedModelInterceptorDisabler()
@@ -122,29 +127,39 @@ public class AnnotatedModelInterceptorDisabler
 	{
 		final int result = disabledPointcutNames.size();
 
-		final boolean removePrefix = true;
-		
 		// do the the relatively slow DB query outside the synchronized area.
-		final Map<String, String> reloadedSysConfigValues = Services.get(ISysConfigBL.class)
-				.getValuesForPrefix(SYS_CONFIG_NAME_PREFIX, removePrefix, 0, 0);
+		final boolean removePrefix = true;
+		final Set<String> preparedSet = Services.get(ISysConfigBL.class)
+				.getValuesForPrefix(SYS_CONFIG_NAME_PREFIX, removePrefix, 0, 0)
+				.entrySet()
+				.stream()
+				.filter(entry -> "N".equalsIgnoreCase(entry.getValue()))
+				.map(Entry::getKey)
+				.collect(Collectors.toSet());
 
-		synchronized (disabledPointcutNames)
+		lockForDisabledPointcutNames.writeLock().lock();
+		try
 		{
 			disabledPointcutNames.clear();
-			reloadedSysConfigValues.entrySet()
-					.stream()
-					.filter(entry -> "N".equalsIgnoreCase(entry.getValue()))
-					.map(Entry::getKey)
-					.forEach(key -> disabledPointcutNames.add(key));
+			disabledPointcutNames.addAll(preparedSet);
+		}
+		finally
+		{
+			lockForDisabledPointcutNames.writeLock().unlock();
 		}
 		return result;
 	}
 
 	public boolean isDisabled(@NonNull final IPointcut pointcut)
 	{
-		synchronized (disabledPointcutNames)
+		lockForDisabledPointcutNames.readLock().lock();
+		try
 		{
 			return disabledPointcutNames.contains(createMethodString(pointcut));
+		}
+		finally
+		{
+			lockForDisabledPointcutNames.readLock().unlock();
 		}
 	}
 }
