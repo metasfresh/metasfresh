@@ -77,12 +77,24 @@ public final class LookupValuesList
 
 	public static final LookupValuesList fromNullable(final LookupValue lookupValue)
 	{
-		if(lookupValue == null)
+		if (lookupValue == null)
+		{
+			return EMPTY;
+		}
+
+		final ImmutableMap<Object, LookupValue> valuesById = ImmutableMap.of(lookupValue.getId(), lookupValue);
+		final Map<String, String> debugProperties = ImmutableMap.of();
+		return new LookupValuesList(valuesById, debugProperties);
+	}
+
+	public static final LookupValuesList fromCollection(final Collection<? extends LookupValue> lookupValues)
+	{
+		if (lookupValues.isEmpty())
 		{
 			return EMPTY;
 		}
 		
-		final ImmutableMap<Object, LookupValue> valuesById = ImmutableMap.of(lookupValue.getId(), lookupValue);
+		final ImmutableMap<Object, LookupValue> valuesById = lookupValues.stream().collect(GuavaCollectors.toImmutableMapByKey(LookupValue::getId));
 		final Map<String, String> debugProperties = ImmutableMap.of();
 		return new LookupValuesList(valuesById, debugProperties);
 	}
