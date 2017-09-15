@@ -7,6 +7,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 
 /**
  * Provides specific business logic for interconnection between manufacturing order and handling units module.
@@ -42,7 +43,18 @@ public interface IHUPPOrderBL extends ISingletonService
 
 	IHUPPOrderIssueProducer createIssueProducer();
 
-	IHUQueryBuilder createHUsAvailableToIssueQuery(int productId);
+	/**
+	 * Create a query builder that retrieves all HUs that
+	 * <ul>
+	 * <li>contain the given {@code ppOrderBomLine}'s product</li>
+	 * <li>are in the bomline's warehouse</li>
+	 * <li>are still active and are not yet referenced by a poOrder candidate (i.e. {@link I_PP_Order_Qty})</li>
+	 * </lu>
+	 * 
+	 * @param ppOrderBomLine
+	 * @return
+	 */
+	IHUQueryBuilder createHUsAvailableToIssueQuery(I_PP_Order_BOMLine ppOrderBomLine);
 
 	void processPlanning(String targetPlanningStatus, int ppOrderId);
 
