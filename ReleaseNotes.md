@@ -59,7 +59,7 @@ Here come the actual release notes:
   * [#2304](https://github.com/metasfresh/metasfresh/issues/2304) New Action: Create new Product Prices from selected Pricelist Version
     * Improvement of Price List and Product Prices Window, adding the action to create new Price List version easiliy via mass selection and calculation schema.
   * [#2306](https://github.com/metasfresh/metasfresh/issues/2306) Period mass actions missing in WebUI
-    * New Action "Open all/ Close all" in Period Window, allowing to change the Perdion status of all Doctype in few clicks.
+    * New Action "Open all/ Close all" in Period Window, allowing to change the Period status of all Doctypes in few clicks.
   * [#2307](https://github.com/metasfresh/metasfresh/issues/2307) Window Period adjustments, add missing Translations
     * Translation for en_US and further refinements of Calendar Period Window in WebUI.
   * [#2314](https://github.com/metasfresh/metasfresh/issues/2314) Sales Order detail adjustments from User Feedback
@@ -3935,7 +3935,7 @@ This week's RC
  - FRESH-331 Double click needed for weighing machine and occasional NPE
     * Improved logging and making the application more robust
  - FRESH-329: periods missing in dropdown because of no translations
-    * Fixed an Issue with Calendar Periods. These were  not shown because of missing Translations.
+    * Fixed an Issue with Calendar Periods. These were not shown because of missing Translations.
  - FRESH-327 Subsequent change of logo not working correctly without cache reset
     * Fixing an issue with Caching of Logo. Cache was not resetted after changing the Logo in running Client Session.
  - FRESH-312 Project cannot be compiled when downloading from github directly
