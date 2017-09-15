@@ -96,11 +96,11 @@ Here come the actual release notes:
   * [#563](https://github.com/metasfresh/metasfresh-webui-api/issues/563) Handling Unit Editor - remove hardcoded filter for active HUs
     * Removing the hardcoded isActive Filter from Handling Unit Editor in WebUI.
   * [#564](https://github.com/metasfresh/metasfresh-webui-api/issues/564) Filter Layout Sequence
-    * New Functionality in Filter Configuration. now allowing to define the sequence in which Filters are shown.
+    * New Functionality in Filter Configuration. Now allowing to define the sequence in which Filters are shown.
   * [#573](https://github.com/metasfresh/metasfresh-webui-api/issues/573) MoveToDirectWarehouse shall support multiple HUs
     * New Functionality in Handling Unit Action for Internal Use, now allowing to mass-select and use Handling Units in one step.
   * [#577](https://github.com/metasfresh/metasfresh-webui-api/issues/577) API for Edit Fields in Main Grid View
-    * Adding teh API for editing Fields in Main Table Grid Views.
+    * Adding the API for editing Fields in Main Table Grid Views.
 
 * metasfresh-webui-frontend
   * [#1147](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1147) Implement the initial Sorting Indicator in included Tabs
@@ -108,16 +108,23 @@ Here come the actual release notes:
   * [#1152](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1152) find a new shortcut for CTRL + X
     * Providing a new shortcut for eMail send. It's now ctrl+k instead of ctrl+x.
   * [#1164](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1164) frontend: document cloning
+    * New Functionality that allows the user to easily copy/ clone documents.
 
 
 ## Fixes
 * metasfresh-app
   * [#2141](https://github.com/metasfresh/metasfresh/issues/2141) Year-End P&L Process w/ multiple Organisations error
+    * Fixes a Bug that wrongly calculated the year end P&L when organisations are different but youse the identical Accounting Schema (defined on client level).
   * [#2303](https://github.com/metasfresh/metasfresh/issues/2302) Order validation rule for packing instruction needs to look at DatePromised
+    * Fixe for a minor Bug that apeared when choosing the Packing Instructions in validation rule for Orderlines.
   * [#2342](https://github.com/metasfresh/metasfresh/issues/2342) Make Material Disposal Lines and their Movements respect all the details from the HUs
+    * Fixes a minor Bug in the new Disposal Functionality according to missing Handling Unit Information.
   * [#2354](https://github.com/metasfresh/metasfresh/issues/2354) LU has HU_Status Active after picking
+    * Minor Fix for the Handling Unit Status Handling, here having the wrong status for included Handling Units after Picking workflow.
   * [#2389](https://github.com/metasfresh/metasfresh/issues/2389) edi problem for customer returns
+    * Fix in Customer Returns when using w/ EDI.
   * [#2399](https://github.com/metasfresh/metasfresh/issues/2399) uom in customer return lines
+    * Minor fix for UOM Cornercase. Now showing the correct UOM in customer return Line.
 
 * metasfresh-webui-api
   * [#532](https://github.com/metasfresh/metasfresh-webui-api/issues/532) Unable to see list of document's attachments
