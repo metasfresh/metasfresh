@@ -148,7 +148,7 @@ public final class PPOrderHUsToIssueActions
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createIssues(hus);
+				.createDraftIssues(hus);
 
 		husView.removeHUsAndInvalidate(hus);
 		ppOrderView.invalidateAll();
@@ -190,7 +190,7 @@ public final class PPOrderHUsToIssueActions
 		Services.get(IHUPPOrderBL.class)
 				.createIssueProducer()
 				.setTargetOrderBOMLinesByPPOrderId(ppOrderId)
-				.createIssues(extractedTUs);
+				.createDraftIssues(extractedTUs);
 
 		husView.invalidateAll();
 		ppOrderView.invalidateAll();
