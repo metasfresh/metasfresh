@@ -116,7 +116,7 @@ Here come the actual release notes:
   * [#2141](https://github.com/metasfresh/metasfresh/issues/2141) Year-End P&L Process w/ multiple Organisations error
     * Fixes a Bug that wrongly calculated the year end P&L when organisations are different but youse the identical Accounting Schema (defined on client level).
   * [#2303](https://github.com/metasfresh/metasfresh/issues/2302) Order validation rule for packing instruction needs to look at DatePromised
-    * Fixe for a minor Bug that apeared when choosing the Packing Instructions in validation rule for Orderlines.
+    * Fix for a minor Bug that apeared when choosing the Packing Instructions in validation rule for Orderlines.
   * [#2342](https://github.com/metasfresh/metasfresh/issues/2342) Make Material Disposal Lines and their Movements respect all the details from the HUs
     * Fixes a minor Bug in the new Disposal Functionality according to missing Handling Unit Information.
   * [#2354](https://github.com/metasfresh/metasfresh/issues/2354) LU has HU_Status Active after picking
@@ -128,19 +128,27 @@ Here come the actual release notes:
 
 * metasfresh-webui-api
   * [#532](https://github.com/metasfresh/metasfresh-webui-api/issues/532) Unable to see list of document's attachments
+    * Fix for the new Document Attachments List in WebUI, now showing the attached Files again.
   * [#572](https://github.com/metasfresh/metasfresh-webui-api/issues/572) qty doubled on vendor/customer return and destroyed HUs
+    * Quantity Fix in Venord and Customer Return Lines.
   * [#578](https://github.com/metasfresh/metasfresh-webui-api/issues/578) storage error on disposal
+    * Getting rid of en error that appeared in Storage when disposing Handling Units.
 
 * metasfresh-webui-frontend
   * [#1156](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1156) Offline message is no longer displayed
     * Fixes the message that is shown when the appclicaton turns offline.
   * [#1159](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1159) batch entry: scrollbar not moving when using keyboard
+    * Now moving the scrollbar when using the arrow keys in WebUI frontend. 
   * [#1165](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1165) frontend cache for dropdown value not invalidated on lookupValuesStale is true
+    * Fix in Frontend Caching.
   * [#1170](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1170) Edit Account Lookup Fields in GridView not possible
     * Fix and adjustment to the Lookup fields behavior in included Views.
   * [#1172](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1172) filtering is not working in picking
+    * Allowing the Filters to be uses in the new Picking Window in WebUI.
   * [#1178](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1178) [ctrl]+u sometimes opens chrome sourceview instead of trigger main quickaction
+    * Harmonizing the usage of ctrl+u key combination in WebUI Windows and Fields.
   * [#1179](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1179) [ctrl]+enter does not save changes before
+    * Harmonizing the usage of ctrl+enter key combination in WebUI Windows and Fields.
   * [#1183](https://github.com/metasfresh/metasfresh-webui-frontend/issues/1183) Purchase order: screen is scrolling when i am trying to type in Delivery from field
     * Avoiding the scroll of the main page when scrolling in a Lookup Field
 
