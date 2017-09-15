@@ -44,11 +44,11 @@ import lombok.NonNull;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -78,7 +78,6 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	private GenericSqlLookupDataSourceFetcher(final LookupDescriptor lookupDescriptor)
 	{
 		super();
-		
 		// NOTE: don't store a reference to our descriptor, just extract what we need!
 
 		Preconditions.checkNotNull(lookupDescriptor);
@@ -90,9 +89,9 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
 		sqlForFetchingDisplayNameByIdExpression = sqlLookupDescriptor.getSqlForFetchingDisplayNameByIdExpression();
 		postQueryPredicate = sqlLookupDescriptor.getPostQueryPredicate();
-		
+
 		isTranslatable = sqlForFetchingDisplayNameByIdExpression.requiresParameter(LookupDataSourceContext.PARAM_AD_Language.getName());
-		
+
 		zoomIntoWindowId = lookupDescriptor.getZoomIntoWindowId();
 	}
 
@@ -113,7 +112,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		// NOTE: it's very important to have the lookupTableName as cache name prefix because we want the cache invalidation to happen for this table
 		return lookupTableName;
 	}
-	
+
 	@Override
 	public Optional<String> getLookupTableName()
 	{
@@ -125,13 +124,13 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	{
 		return zoomIntoWindowId;
 	}
-	
+
 	@Override
 	public boolean isCached()
 	{
 		return false;
 	}
-	
+
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
@@ -182,8 +181,8 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 				debugProperties.put("debug-sql", sqlForFetching);
 				debugProperties.put("debug-params", evalCtx.toString());
 			}
-			
-			LookupValuesList values = data.fetchAll()
+
+			final LookupValuesList values = data.fetchAll()
 					.stream()
 					.filter(evalCtx::acceptItem)
 					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage))
@@ -209,9 +208,9 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		{
 			return LOOKUPVALUE_NULL;
 		}
-		
+
 		final ITranslatableString displayNameTrl;
-		if(isTranslatable)
+		if (isTranslatable)
 		{
 			final String adLanguage = evalCtx.getAD_Language();
 			displayNameTrl = ImmutableTranslatableString.singleLanguage(adLanguage, displayName);

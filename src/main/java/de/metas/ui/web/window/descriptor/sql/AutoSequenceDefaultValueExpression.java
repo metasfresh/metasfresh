@@ -7,6 +7,8 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Services;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
@@ -53,7 +55,9 @@ public class AutoSequenceDefaultValueExpression implements IStringExpression
 
 	private static final String PARAMETER_AD_Client_ID = WindowConstants.FIELDNAME_AD_Client_ID;
 	private static final String PARAMETER_AD_Org_ID = WindowConstants.FIELDNAME_AD_Org_ID;
-	private static final Set<String> PARAMETERS = ImmutableSet.of(PARAMETER_AD_Client_ID, PARAMETER_AD_Org_ID);
+	private static final Set<CtxName> PARAMETERS = ImmutableSet.of(
+			CtxNames.parse(PARAMETER_AD_Client_ID),
+			CtxNames.parse(PARAMETER_AD_Org_ID));
 
 	private final String tableName;
 
@@ -62,15 +66,17 @@ public class AutoSequenceDefaultValueExpression implements IStringExpression
 		this.tableName = tableName;
 	}
 
+	/**
+	 * Returns the constant {@code "@Value@"}. Not important, just to have something not null
+	 */
 	@Override
 	public String getExpressionString()
 	{
-		// not important, just to have something not null
 		return "@Value@";
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
 		return PARAMETERS;
 	}

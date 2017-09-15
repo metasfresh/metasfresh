@@ -1269,9 +1269,9 @@ public final class DocumentFieldDescriptor implements Serializable
 		private DocumentFieldDependencyMap buildDependencies()
 		{
 			final DocumentFieldDependencyMap.Builder dependencyMapBuilder = DocumentFieldDependencyMap.builder()
-					.add(fieldName, getReadonlyLogicEffective().getParameters(), DependencyType.ReadonlyLogic)
-					.add(fieldName, getDisplayLogic().getParameters(), DependencyType.DisplayLogic)
-					.add(fieldName, getMandatoryLogicEffective().getParameters(), DependencyType.MandatoryLogic);
+					.add(fieldName, getReadonlyLogicEffective().getParameterNames(), DependencyType.ReadonlyLogic)
+					.add(fieldName, getDisplayLogic().getParameterNames(), DependencyType.DisplayLogic)
+					.add(fieldName, getMandatoryLogicEffective().getParameterNames(), DependencyType.MandatoryLogic);
 
 			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().provideForScope(LookupScope.DocumentField);
 			if (lookupDescriptor != null)

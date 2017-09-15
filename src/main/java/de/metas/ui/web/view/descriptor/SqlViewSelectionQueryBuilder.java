@@ -20,6 +20,7 @@ import org.adempiere.ad.security.impl.AccessSqlStringExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.Check;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -84,7 +85,7 @@ public final class SqlViewSelectionQueryBuilder
 	public static final String COLUMNNAME_Paging_SeqNo = "_sel_SeqNo";
 	public static final String COLUMNNAME_Paging_Record_ID = "_sel_Record_ID";
 	public static final String COLUMNNAME_Paging_Parent_ID = "_sel_Parent_ID";
-	public static final CtxName Paging_Record_IDsPlaceholder = CtxName.parse("_sel_Record_IDs");
+	public static final CtxName Paging_Record_IDsPlaceholder = CtxNames.parse("_sel_Record_IDs");
 
 	private final SqlViewBinding _viewBinding;
 	private SqlDocumentFilterConverter _sqlDocumentFieldConverter; // lazy

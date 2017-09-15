@@ -423,7 +423,6 @@ public final class PickingSlotRow implements IViewRow
 		{
 			Preconditions.checkArgument(pickingSlotId > 0, "pickingSlotId > 0");
 			Preconditions.checkArgument(huId > 0, "huId > 0");
-			// Preconditions.checkArgument(huStorageProductId > 0, "huStorageProductId > 0");
 
 			return new PickingSlotRowId(pickingSlotId, huId, huStorageProductId);
 		}
