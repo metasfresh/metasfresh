@@ -1,5 +1,7 @@
 package de.metas.ui.web.handlingunits;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,7 @@ import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 /*
@@ -68,6 +71,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@EqualsAndHashCode
 public final class HUEditorRow implements IViewRow
 {
 	public static final Builder builder(final WindowId windowId)
@@ -106,7 +110,6 @@ public final class HUEditorRow implements IViewRow
 
 	@ViewColumn(captionKey = "HU_UnitType", widgetType = DocumentFieldWidgetType.Text, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 30)
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 30)
 	})
 	private final JSONLookupValue huUnitType;
 
@@ -124,13 +127,11 @@ public final class HUEditorRow implements IViewRow
 
 	@ViewColumn(captionKey = "C_UOM_ID", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60),
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 	})
 	private final JSONLookupValue uom;
 
 	@ViewColumn(captionKey = "HUStatus", widgetType = DocumentFieldWidgetType.Lookup, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-			// @ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 70)
 	})
 	private final JSONLookupValue huStatus;
 
@@ -311,7 +312,7 @@ public final class HUEditorRow implements IViewRow
 		{
 			return null;
 		}
-		return InterfaceWrapperHelper.create(Env.getCtx(), huId, I_M_HU.class, ITrx.TRXNAME_ThreadInherited);
+		return load(huId, I_M_HU.class);
 	}
 
 	public boolean isHUPlanningReceiptOwnerPM()

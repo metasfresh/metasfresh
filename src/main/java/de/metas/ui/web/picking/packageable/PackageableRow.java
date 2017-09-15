@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.packageable;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.picking.PickingViewsIndexStorage;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.IViewRowAttributes;
 import de.metas.ui.web.view.IViewRowType;
@@ -63,11 +64,11 @@ public final class PackageableRow implements IViewRow
 	private final boolean processed;
 	private final DocumentPath documentPath;
 
-	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID, layouts =
+	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_C_Order_ID, layouts =
 		{
 				@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 10)
 		})
-	private final LookupValue warehouse;
+	private final LookupValue order;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Lookup, captionKey = I_M_Packageable_V.COLUMNNAME_M_Product_ID, layouts =
 		{
@@ -118,7 +119,7 @@ public final class PackageableRow implements IViewRow
 			final boolean processed,
 			@NonNull final DocumentPath documentPath,
 
-			final LookupValue warehouse,
+			final LookupValue order,
 			final LookupValue product,
 			final BigDecimal qtyToDeliver,
 			final BigDecimal qtyPickedPlanned,
@@ -132,7 +133,7 @@ public final class PackageableRow implements IViewRow
 		this.processed = processed;
 		this.documentPath = documentPath;
 
-		this.warehouse = warehouse;
+		this.order = order;
 		this.product = product;
 		this.qtyToDeliver = qtyToDeliver;
 		this.qtyPickedPlanned = qtyPickedPlanned != null ? qtyPickedPlanned : BigDecimal.ZERO;
@@ -143,7 +144,7 @@ public final class PackageableRow implements IViewRow
 		// create the included view's ID
 		// note that despite all our packageable-rows have the same picking slots, the IDs still need to be individual per-row,
 		// because we need to notify the picking slot view of this packageable-rows is selected at a given point in time
-		this.includedViewId = PickingSlotViewsIndexStorage.createViewId(viewId, id);
+		this.includedViewId = PickingViewsIndexStorage.createViewId(viewId, id);
 	}
 
 	@Override

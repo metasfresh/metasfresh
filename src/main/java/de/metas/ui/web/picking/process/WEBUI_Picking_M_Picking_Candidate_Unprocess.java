@@ -2,16 +2,18 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_PROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P;
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -23,17 +25,17 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateCommand;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -87,67 +89,31 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 		}
 
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isHURow())
+		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
 		if (!pickingSlotRow.isProcessed())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_PROCESSED_RECORDS));
 		}
-
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
-
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 		final I_M_HU hu = load(rowToProcess.getHuId(), I_M_HU.class);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = retrieveQtyPickedRecords(hu);
 
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(shipmentSchedule, hu, ITrx.TRXNAME_ThreadInherited);
+		assertHuIsNotShipped(hu, qtyPickedList);
+		assertHuIsPicked(hu);
 
-		//
-		// check if there is already a shipment.
-		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : qtyPickedList)
-		{
-			if (qtyPicked.getM_InOutLine_ID() > 0)
-			{
-				throw new AdempiereException(MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P, new Object[]
-					{ hu.getValue(), qtyPicked.getM_InOutLine().getM_InOut().getDocumentNo() });
-			}
-		}
-
-		// also generally verify the HU's status.
-		if (!X_M_HU.HUSTATUS_Picked.equals(hu.getHUStatus()))
-		{
-			//
-			final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-			final String currentStatusTrl = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus());
-			final String pickedStatusTrl = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked);
-			throw new AdempiereException(MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P, new Object[]
-				{ hu.getValue(), currentStatusTrl, pickedStatusTrl });
-		}
-
-		//
 		// if everything is OK, go ahead
-
-		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : qtyPickedList)
-		{
-			delete(qtyPicked);
-		}
-
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-		final IMutableHUContext huContext = huContextFactory.createMutableHUContext(getCtx(), ITrx.TRXNAME_ThreadInherited);
-		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
-		handlingUnitsDAO.saveHU(hu);
+		qtyPickedList.forEach(InterfaceWrapperHelper::delete);
+		updateHuStatus(hu);
 		pickingCandidateCommand.setCandidatesInProgress(ImmutableList.of(hu.getM_HU_ID()));
 
 		invalidateView();
@@ -156,10 +122,70 @@ public class WEBUI_Picking_M_Picking_Candidate_Unprocess
 		return MSG_OK;
 	}
 
-	@Override
-	protected PickingSlotView getView()
+	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(@NonNull final I_M_HU hu)
 	{
-		return PickingSlotView.cast(super.getView());
+		final List<I_M_ShipmentSchedule> scheds = Services.get(IQueryBL.class).createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_HU_ID, hu.getM_HU_ID())
+				.andCollect(I_M_Picking_Candidate.COLUMN_M_ShipmentSchedule_ID)
+				.create()
+				.list();
+
+		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = new ArrayList<>();
+		for (final I_M_ShipmentSchedule shipmentSchedule : scheds)
+		{
+			qtyPickedList.addAll(huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(shipmentSchedule, hu, ITrx.TRXNAME_ThreadInherited));
+		}
+		return qtyPickedList;
+	}
+
+	/**
+	 * Check if there is already a shipment.
+	 * 
+	 * @param hu
+	 * @param qtyPickedList
+	 */
+	private void assertHuIsNotShipped(
+			@NonNull final I_M_HU hu, 
+			@NonNull final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList)
+	{
+		for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : qtyPickedList)
+		{
+			if (qtyPicked.getM_InOutLine_ID() > 0)
+			{
+				throw new AdempiereException(MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P, new Object[] { hu.getValue(), qtyPicked.getM_InOutLine().getM_InOut().getDocumentNo() });
+			}
+		}
+	}
+
+	/**
+	 * Generally verify the HU's status.
+	 * 
+	 * @param hu
+	 */
+	private void assertHuIsPicked(@NonNull final I_M_HU hu)
+	{
+		if (X_M_HU.HUSTATUS_Picked.equals(hu.getHUStatus()))
+		{
+			return;
+		}
+		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final String currentStatusTrl = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus());
+		final String pickedStatusTrl = adReferenceDAO.retrieveListNameTrl(getCtx(), X_M_HU.HUSTATUS_AD_Reference_ID, X_M_HU.HUSTATUS_Picked);
+		throw new AdempiereException(MSG_WEBUI_PICKING_WRONG_HU_STATUS_3P, new Object[] { hu.getValue(), currentStatusTrl, pickedStatusTrl });
+	}
+
+	private void updateHuStatus(@NonNull final I_M_HU hu)
+	{
+		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final IMutableHUContext huContext = huContextFactory.createMutableHUContext(getCtx(), ITrx.TRXNAME_ThreadInherited);
+		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
+		handlingUnitsDAO.saveHU(hu);
 	}
 
 	@Override

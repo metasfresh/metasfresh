@@ -65,7 +65,6 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse extends HUEditorProcessTemplate i
 	@Override
 	protected String doIt() throws Exception
 	{
-		
 		final List<I_M_HU> hus = getSelectedHUs(Select.ONLY_TOPLEVEL);
 		movementResult = huMovementBL.moveHUsToWarehouse(hus, warehouse);
 

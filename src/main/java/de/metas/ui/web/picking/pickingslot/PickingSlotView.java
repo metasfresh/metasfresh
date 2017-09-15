@@ -1,38 +1,36 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Services;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.picking.packageable.PackageableView;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow.PickingSlotRowId;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
-import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -66,38 +64,46 @@ import lombok.NonNull;
  */
 
 /**
- * Picking editor's view left-hand side view which lists one or more {@link PackageableRow} records to be picked.
+ * Picking editor's view right-hand side view which lists {@link PickingSlotRow}s.
  * <p>
- * Note that technically this view also contains the right-hand side {@link PickingSlotView}.
+ * Note that technically this is contained the left-hand side {@link PackageableView}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class PackageableView implements IView
+public class PickingSlotView implements IView
 {
-	private final PickingCandidateCommand pickingCandidateCommand;
-
-	public static PackageableView cast(final IView view)
+	public static PickingSlotView cast(final IView pickingSlotView)
 	{
-		return (PackageableView)view;
+		return (PickingSlotView)pickingSlotView;
 	}
 
 	private final ViewId viewId;
+	private final ViewId parentViewId;
+	private final DocumentId parentRowId;
 	private final ITranslatableString description;
-	private final ExtendedMemorizingSupplier<Map<DocumentId, PackageableRow>> rowsSupplier;
-
-	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
+	private final int currentShipmentScheduleId;
+	private final ExtendedMemorizingSupplier<Map<PickingSlotRowId, PickingSlotRow>> rowsSupplier;
+	private final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	@Builder
-	private PackageableView(@NonNull final ViewId viewId,
-			@NonNull final ITranslatableString description,
-			@NonNull final Supplier<List<PackageableRow>> rowsSupplier,
-			@NonNull final PickingCandidateCommand pickingCandidateCommand)
+	private PickingSlotView(@NonNull final ViewId viewId,
+			final ViewId parentViewId,
+			final DocumentId parentRowId,
+			final ITranslatableString description,
+			final int currentShipmentScheduleId,
+			final Supplier<List<PickingSlotRow>> rows,
+			final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
+		Preconditions.checkArgument(currentShipmentScheduleId > 0, "shipmentScheduleId > 0");
+
 		this.viewId = viewId;
+		this.parentViewId = parentViewId;
+		this.parentRowId = parentRowId;
 		this.description = description != null ? description : ITranslatableString.empty();
-		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rowsSupplier.get(), PackageableRow::getId));
-		this.pickingCandidateCommand = pickingCandidateCommand;
+		this.currentShipmentScheduleId = currentShipmentScheduleId;
+		this.rowsSupplier = ExtendedMemorizingSupplier.of(() -> Maps.uniqueIndex(rows.get(), PickingSlotRow::getPickingSlotRowId));
+		this.additionalRelatedProcessDescriptors = additionalRelatedProcessDescriptors != null ? ImmutableList.copyOf(additionalRelatedProcessDescriptors) : ImmutableList.of();
 	}
 
 	@Override
@@ -125,64 +131,35 @@ public class PackageableView implements IView
 	}
 
 	/**
-	 * Always returns {@link I_M_Packageable_V#Table_Name}.
+	 * Always returns {@link I_M_PickingSlot#Table_Name}
 	 */
 	@Override
 	public String getTableNameOrNull(@Nullable final DocumentId ignored)
 	{
-		return I_M_Packageable_V.Table_Name;
+		return I_M_PickingSlot.Table_Name;
 	}
 
 	@Override
 	public ViewId getParentViewId()
 	{
-		return null;
+		return parentViewId;
 	}
 
 	@Override
 	public DocumentId getParentRowId()
 	{
-		return null;
-	}
-
-	private final Map<DocumentId, PackageableRow> getRows()
-	{
-		return rowsSupplier.get();
+		return parentRowId;
 	}
 
 	@Override
 	public long size()
 	{
-		return getRows().size();
+		return rowsSupplier.get().size();
 	}
 
 	@Override
 	public void close()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		
-		final Properties ctx = Env.getCtx();
-		final boolean closeCandidatesNow = sysConfigBL.getBooleanValue("WEBUI_Picking.Close_PickingCandidatesOnWindowClose", false, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
-		if (!closeCandidatesNow)
-		{
-			return; // nothing to do.
-		}
-
-		final List<Integer> shipmentScheduleIds = getRows()
-				.values().stream()
-				.map(row -> row.getShipmentScheduleId())
-				.collect(Collectors.toList());
-
-		pickingCandidateCommand.setCandidatesClosed(shipmentScheduleIds);
-	}
-
-	@Override
-	public void invalidateAll()
-	{
-		rowsSupplier.forget();
-
-		ViewChangesCollector.getCurrentOrAutoflush()
-				.collectFullyChanged(this);
 	}
 
 	@Override
@@ -200,7 +177,7 @@ public class PackageableView implements IView
 	@Override
 	public ViewResult getPage(final int firstRow, final int pageLength, final List<DocumentQueryOrderBy> orderBys)
 	{
-		final List<PackageableRow> pageRows = getRows().values().stream()
+		final List<PickingSlotRow> pageRows = rowsSupplier.get().values().stream()
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : 30)
 				.collect(ImmutableList.toImmutableList());
@@ -209,14 +186,35 @@ public class PackageableView implements IView
 	}
 
 	@Override
-	public PackageableRow getById(final DocumentId rowId) throws EntityNotFoundException
+	public PickingSlotRow getById(@NonNull final DocumentId id) throws EntityNotFoundException
 	{
-		final PackageableRow row = getRows().get(rowId);
-		if (row == null)
+		final PickingSlotRowId rowId = PickingSlotRowId.fromDocumentId(id);
+
+		if (rowId.getPickingSlotId() <= 0)
 		{
-			throw new EntityNotFoundException("Row not found").setParameter("rowId", rowId);
+			return assertRowNotNull(rowId, rowsSupplier.get().get(rowId));
 		}
-		return row;
+
+		final PickingSlotRowId pickingSlotRowId = PickingSlotRowId.ofPickingSlotId(rowId.getPickingSlotId());
+		final PickingSlotRow pickingSlotRow = rowsSupplier.get().get(pickingSlotRowId);
+
+		if (java.util.Objects.equals(rowId, pickingSlotRowId))
+		{
+			return assertRowNotNull(pickingSlotRowId, pickingSlotRow);
+		}
+
+		return pickingSlotRow.findIncludedRowById(rowId)
+				.orElseThrow(() -> new EntityNotFoundException("Row not found").setParameter("pickingSlotRow", pickingSlotRow).setParameter("rowId", rowId));
+
+	}
+
+	PickingSlotRow assertRowNotNull(final PickingSlotRowId pickingSlotRowId, final PickingSlotRow pickingSlotRow)
+	{
+		if (pickingSlotRow == null)
+		{
+			throw new EntityNotFoundException("Row not found").setParameter("pickingSlotRowId", pickingSlotRowId);
+		}
+		return pickingSlotRow;
 	}
 
 	@Override
@@ -225,54 +223,39 @@ public class PackageableView implements IView
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * Just throws an {@link UnsupportedOperationException}.
-	 */
 	@Override
 	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
+		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * Just returns an empty list.
-	 */
 	@Override
 	public List<DocumentFilter> getStickyFilters()
 	{
+		// TODO Auto-generated method stub
 		return ImmutableList.of();
 	}
 
-	/**
-	 * Just returns an empty list.
-	 */
 	@Override
 	public List<DocumentFilter> getFilters()
 	{
 		return ImmutableList.of();
 	}
 
-	/**
-	 * Just returns an empty list.
-	 */
 	@Override
 	public List<DocumentQueryOrderBy> getDefaultOrderBys()
 	{
 		return ImmutableList.of();
 	}
 
-	/**
-	 * Just returns {@code null}.
-	 */
 	@Override
 	public String getSqlWhereClause(final DocumentIdsSelection rowIds, final SqlOptions sqlOpts)
 	{
+		// TODO Auto-generated method stub
 		return null;
 	}
 
-	/**
-	 * Returns {@code false}.
-	 */
 	@Override
 	public boolean hasAttributesSupport()
 	{
@@ -282,58 +265,59 @@ public class PackageableView implements IView
 	@Override
 	public <T> List<T> retrieveModelsByIds(final DocumentIdsSelection rowIds, final Class<T> modelClass)
 	{
-		final Set<Integer> shipmentScheduleIds = rowIds.toIntSet();
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<I_M_Packageable_V> packables = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Packageable_V.class)
-				.addInArrayFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.create()
-				.list(I_M_Packageable_V.class);
-		return InterfaceWrapperHelper.createList(packables, modelClass);
+		throw new UnsupportedOperationException();
 	}
 
-	/**
-	 * Also supports {@link DocumentIdsSelection#ALL}, because there won't be too many packageable lines at one time.
-	 */
 	@Override
 	public Stream<? extends IViewRow> streamByIds(final DocumentIdsSelection rowIds)
 	{
 		if (rowIds.isAll())
 		{
-			return getRows().values().stream();
+			return rowsSupplier.get().values().stream();
 		}
-		return rowIds.stream().map(this::getById);
+		else
+		{
+			return rowIds.stream().map(this::getById);
+		}
 	}
 
-	/**
-	 * Does nothing
-	 */
 	@Override
 	public void notifyRecordsChanged(final Set<TableRecordReference> recordRefs)
 	{
+		// TODO Auto-generated method stub
+
 	}
 
-	/* package */ void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)
+	@Override
+	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
-		pickingSlotsViewByRowId.put(rowId, pickingSlotView);
+		return additionalRelatedProcessDescriptors;
 	}
 
-	/* package */ void removePickingSlotView(@NonNull final DocumentId rowId)
+	/**
+	 * Returns the {@code M_ShipmentSchedule_ID} of the packageable line that is currently selected within the {@link PackageableView}.
+	 * 
+	 * @return never returns a value {@code <= 0} (see constructor code).
+	 */
+	public int getCurrentShipmentScheduleId()
 	{
-		pickingSlotsViewByRowId.remove(rowId);
+		return currentShipmentScheduleId;
 	}
 
-	/* package */ PickingSlotView getPickingSlotViewOrNull(@NonNull final DocumentId rowId)
+	/**
+	 * Convenience method. See {@link #getCurrentShipmentScheduleId()}.
+	 * 
+	 * @return never returns {@code null} (see constructor code).
+	 */
+	public I_M_ShipmentSchedule getCurrentShipmentSchedule()
 	{
-		return pickingSlotsViewByRowId.get(rowId);
+		final I_M_ShipmentSchedule shipmentSchedule = load(currentShipmentScheduleId, I_M_ShipmentSchedule.class);
+		return shipmentSchedule;
 	}
 
-	/* package */ PickingSlotView computePickingSlotViewIfAbsent(@NonNull final DocumentId rowId, @NonNull final Supplier<PickingSlotView> pickingSlotViewFactory)
+	@Override
+	public void invalidateAll()
 	{
-		return pickingSlotsViewByRowId.computeIfAbsent(rowId, id -> pickingSlotViewFactory.get());
+		rowsSupplier.forget();
 	}
 }

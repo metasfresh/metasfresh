@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKING_SLOT;
 
 import java.math.BigDecimal;
@@ -21,17 +22,16 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateCommand.AddQtyToHURequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.NonNull;
@@ -66,7 +66,8 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
+public class WEBUI_Picking_PickQtyToNewHU
+		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired
@@ -93,6 +94,11 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKING_SLOT));
 		}
 
+		if (!checkSourceHuPrecondition())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -100,6 +106,35 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
+
+		final I_M_HU hu = createAndAddHU(pickingSlotRow);
+		addPickedQuantity(hu, pickingSlotRow);
+
+		invalidateView();
+		invalidateParentView();
+
+		return MSG_OK;
+	}
+
+	private void addPickedQuantity(
+			@NonNull final I_M_HU hu, 
+			@NonNull final PickingSlotRow pickingSlotRow)
+	{
+		if (qtyCU.signum() > 0)
+		{
+			final AddQtyToHURequest request = AddQtyToHURequest.builder()
+					.qtyCU(qtyCU)
+					.huId(hu.getM_HU_ID())
+					.pickingSlotId(pickingSlotRow.getPickingSlotId())
+					.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
+					.build();
+
+			pickingCandidateCommand.addQtyToHU(request);
+		}
+	}
+
+	private I_M_HU createAndAddHU(@NonNull final PickingSlotRow pickingSlotRow)
+	{
 		final I_M_Locator pickingSlotLocator = getPickingSlotLocator(pickingSlotRow);
 
 		// Create a new empty TU
@@ -107,19 +142,11 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 
 		// Add the TU to picking slot (as candidate)
 		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getShipmentScheduleId();
+		final int shipmentScheduleId = getView().getCurrentShipmentScheduleId();
+
 		pickingCandidateCommand.addHUToPickingSlot(hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
 
-		// add the qty
-		if (qtyCU.signum() > 0)
-		{
-			pickingCandidateCommand.addQtyToHU(qtyCU, hu.getM_HU_ID(), pickingSlotId, shipmentScheduleId);
-		}
-
-		invalidateView();
-		invalidateParentView();
-
-		return MSG_OK;
+		return hu;
 	}
 
 	/**
@@ -130,7 +157,7 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 	private LookupValuesList getM_HU_PI_Item_Products()
 	{
 		final Properties ctx = getCtx();
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 
 		return WEBUI_ProcessHelper.retrieveHUPIItemProducts(ctx,
 				shipmentSchedule.getM_Product(),
@@ -146,7 +173,7 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 	{
 		if (Objects.equals(PARAM_QTY_CU, parameter.getColumnName()))
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+			final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 			return shipmentSchedule.getQtyToDeliver(); // TODO: get the "better" value from teo, when it's available
 		}
 		else if (Objects.equals(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, parameter.getColumnName()))
@@ -187,7 +214,9 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 	 * @param locator
 	 * @return
 	 */
-	private static final I_M_HU createTU(@NonNull final I_M_HU_PI_Item_Product itemProduct, @NonNull final I_M_Locator locator)
+	private static final I_M_HU createTU(
+			@NonNull final I_M_HU_PI_Item_Product itemProduct,
+			@NonNull final I_M_Locator locator)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
@@ -199,20 +228,10 @@ public class WEBUI_Picking_PickToNewHU extends ViewBasedProcessTemplate
 						.setM_HU_Item_Parent(null) // no parent
 						.setM_HU_PI_Item_Product(itemProduct)
 						.setM_Locator(locator)
-						.setHUStatus(X_M_HU.HUSTATUS_Planning)
+
+						// we are going to load from a "real" source HU onto this HU, so both shall be active. Otherwise it would look as if stuff was vanishing for the source HU
+						.setHUStatus(X_M_HU.HUSTATUS_Active)
+
 						.create(huPI));
 	}
-
-	@Override
-	protected PickingSlotView getView()
-	{
-		return PickingSlotView.cast(super.getView());
-	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
-	}
-
 }

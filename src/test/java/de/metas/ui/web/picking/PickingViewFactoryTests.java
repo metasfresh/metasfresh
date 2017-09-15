@@ -5,6 +5,9 @@ import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.ui.web.picking.packageable.PackageableViewFactory;
+import de.metas.ui.web.picking.packageable.PackageableViewRepository;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.json.JSONViewDataType;

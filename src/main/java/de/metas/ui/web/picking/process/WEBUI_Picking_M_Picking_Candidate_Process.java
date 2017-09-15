@@ -2,22 +2,18 @@ package de.metas.ui.web.picking.process;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.Loggables;
 import org.adempiere.util.Services;
-import org.adempiere.util.StringUtils;
-import org.compiere.model.I_M_Product;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 import de.metas.adempiere.form.PackingItemsMap;
 import de.metas.fresh.picking.form.FreshPackingItemHelper;
@@ -25,20 +21,17 @@ import de.metas.fresh.picking.form.IFreshPackingItem;
 import de.metas.fresh.picking.service.IPackingContext;
 import de.metas.fresh.picking.service.IPackingService;
 import de.metas.fresh.picking.service.impl.HU2PackingItemsAllocator;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -66,7 +59,6 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * Processes the unprocessed {@link I_M_Picking_Candidate} of the currently selected TU.<br>
  * Processing means that
  * <ul>
- * <li>the HU is changed from status "planned" or "active" to "picked"</li>
  * <li>the HU is associated with its shipment schedule (changes QtyPicked and QtyToDeliver)</li>
  * <li>The HU is added to its picking slot's picking-slot-queue</li>
  * </ul>
@@ -81,9 +73,12 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
-	
+
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
+
+	@Autowired
+	private PickingCandidateRepository pickingCandidateRepository;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -94,14 +89,14 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 		}
 
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isHURow())
+		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-		if(pickingSlotRow.getIncludedRows().isEmpty())
+		if (pickingSlotRow.getIncludedRows().isEmpty())
 		{
 			// we want a toplevel HU..this is kindof dirty, but should work in this context
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
 
 		if (pickingSlotRow.getHuQtyCU().signum() <= 0)
@@ -122,38 +117,33 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
 
-		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
-		final IPackingService packingService = Services.get(IPackingService.class);
-
-		final I_M_PickingSlot pickingSlot = load(rowToProcess.getPickingSlotId(), I_M_PickingSlot.class);
 		final I_M_HU hu = loadOutOfTrx(rowToProcess.getHuId(), I_M_HU.class); // HU2PackingItemsAllocator wants them to be out of trx
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
-		final I_M_Product product = shipmentSchedule.getM_Product();
+		allocateHuToShipmentSchedule(
+				rowToProcess.getPickingSlotId(),
+				hu);
 
-		BigDecimal qty = BigDecimal.ZERO;
-		final List<IHUProductStorage> huProductStorages = storageFactory.getHUProductStorages(ImmutableList.of(hu), product);
-		for (final IHUProductStorage storage : huProductStorages)
-		{
-			qty = qty.add(storage.getQty(product.getC_UOM()));
-		}
+		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
 
-		if (qty.signum() <= 0)
-		{
-			// should not happen due to our checkPreconditionsApplicable(), but happened in other processes, sometimes..we just were unable to reproduce
-			final String msg = StringUtils.formatMessage("The current HU has no quantity of the current product; hu={}; product={}", hu, product);
-			Loggables.get().addLog(msg);
-			throw new AdempiereException(msg);
-		}
+		invalidateView();
+		invalidateParentView();
 
-		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(ImmutableMap.of(shipmentSchedule, qty));
+		return MSG_OK;
+	}
+
+	private void allocateHuToShipmentSchedule(
+			final int pickingSlotId,
+			@NonNull final I_M_HU hu)
+	{
+		final IFreshPackingItem itemToPack = createItemToPack(hu);
 
 		final PackingItemsMap packingItemsMap = new PackingItemsMap();
 		packingItemsMap.addUnpackedItem(itemToPack);
 
+		final IPackingService packingService = Services.get(IPackingService.class);
 		final IPackingContext packingContext = packingService.createPackingContext(getCtx());
 		packingContext.setPackingItemsMap(packingItemsMap); // don't know what to do with it, but i saw that it can't be null
-		packingContext.setPackingItemsMapKey(pickingSlot.getM_PickingSlot_ID());
+		packingContext.setPackingItemsMapKey(pickingSlotId);
 
 		// Allocate given HUs to "itemToPack"
 		new HU2PackingItemsAllocator()
@@ -161,19 +151,22 @@ public class WEBUI_Picking_M_Picking_Candidate_Process
 				.setPackingContext(packingContext)
 				.setFromHUs(ImmutableList.of(hu))
 				.allocate();
-
-		pickingCandidateCommand.setCandidatesProcessed(ImmutableList.of(rowToProcess.getHuId()));
-				
-		invalidateView();
-		invalidateParentView();
-		
-		return MSG_OK;
 	}
 
-	@Override
-	protected PickingSlotView getView()
+	private IFreshPackingItem createItemToPack(@NonNull final I_M_HU hu)
 	{
-		return PickingSlotView.cast(super.getView());
+		final Map<I_M_ShipmentSchedule, BigDecimal> scheds2Qtys = new HashMap<>();
+
+		final List<I_M_Picking_Candidate> pickingCandidates = pickingCandidateRepository.retrievePickingCandidates(hu.getM_HU_ID());
+		for (final I_M_Picking_Candidate pc : pickingCandidates)
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = pc.getM_ShipmentSchedule();
+			final BigDecimal qty = pc.getQtyPicked();
+			scheds2Qtys.put(shipmentSchedule, qty);
+		}
+
+		final IFreshPackingItem itemToPack = FreshPackingItemHelper.create(scheds2Qtys);
+		return itemToPack;
 	}
 
 	@Override

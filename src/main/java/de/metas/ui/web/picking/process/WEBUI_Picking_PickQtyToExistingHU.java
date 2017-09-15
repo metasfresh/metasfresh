@@ -1,7 +1,8 @@
 package de.metas.ui.web.picking.process;
 
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -9,16 +10,15 @@ import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.PickingCandidateCommand.AddQtyToHURequest;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingCandidateCommand;
-import de.metas.ui.web.picking.PickingSlotRow;
-import de.metas.ui.web.picking.PickingSlotView;
-import de.metas.ui.web.picking.PickingSlotViewFactory;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import lombok.NonNull;
 
 /*
@@ -51,13 +51,13 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class WEBUI_Picking_PickToExistingHU
-		extends ViewBasedProcessTemplate
+public class WEBUI_Picking_PickQtyToExistingHU
+		extends WEBUI_Picking_With_M_Source_HU_Base
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	@Autowired
 	private PickingCandidateCommand pickingCandidateCommand;
-	
+
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	private BigDecimal qtyCU;
@@ -71,25 +71,20 @@ public class WEBUI_Picking_PickToExistingHU
 		}
 
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isHURow())
+		if (!pickingSlotRow.isPickedHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_HU));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
 		}
-		
+
 		if (pickingSlotRow.isProcessed())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
 		}
 
-
-// let's decide later, if we allow qty to be added out of thin air in case of "force"
-// for now,the qty should come from an exiting HU that's somewhere in this warehouse		
-//		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule();
-//		final String deliveryRule = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryRule(shipmentSchedule);
-//		if (!Objects.equals(X_M_ShipmentSchedule.DELIVERYRULE_Force, deliveryRule))
-//		{
-//			return ProcessPreconditionsResolution.reject("deliveryRule must be 'force'");
-//		}
+		if (!checkSourceHuPrecondition())
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_MISSING_SOURCE_HU));
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -98,28 +93,20 @@ public class WEBUI_Picking_PickToExistingHU
 	protected String doIt() throws Exception
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final int huId = pickingSlotRow.getHuId();
-		final int pickingSlotId = pickingSlotRow.getPickingSlotId();
-		final int shipmentScheduleId = getView().getShipmentScheduleId();
 
-		pickingCandidateCommand.addQtyToHU(qtyCU, huId, pickingSlotId, shipmentScheduleId);
+		final AddQtyToHURequest request = AddQtyToHURequest.builder()
+				.qtyCU(qtyCU)
+				.huId(pickingSlotRow.getHuId())
+				.pickingSlotId(pickingSlotRow.getPickingSlotId())
+				.shipmentScheduleId(getView().getCurrentShipmentScheduleId())
+				.build();
+
+		pickingCandidateCommand.addQtyToHU(request);
 
 		invalidateView();
 		invalidateParentView();
 
 		return MSG_OK;
-	}
-
-	@Override
-	protected PickingSlotView getView()
-	{
-		return PickingSlotView.cast(super.getView());
-	}
-
-	@Override
-	protected PickingSlotRow getSingleSelectedRow()
-	{
-		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
 
 	/**
@@ -133,7 +120,7 @@ public class WEBUI_Picking_PickToExistingHU
 			return DEFAULT_VALUE_NOTAVAILABLE;
 		}
 
-		final I_M_ShipmentSchedule shipmentSchedule = getView().getShipmentSchedule(); // can't be null
+		final I_M_ShipmentSchedule shipmentSchedule = getView().getCurrentShipmentSchedule(); // can't be null
 		return shipmentSchedule.getQtyToDeliver();
 	}
 

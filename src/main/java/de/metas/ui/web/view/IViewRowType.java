@@ -31,6 +31,11 @@ public interface IViewRowType
 {
 	String getName();
 	
+	/**
+	 * The name of the icon associated with this row type. It's the frontend's job to come up with the actual icon.
+	 * 
+	 * @return
+	 */
 	default String getIconName()
 	{
 		return getName();

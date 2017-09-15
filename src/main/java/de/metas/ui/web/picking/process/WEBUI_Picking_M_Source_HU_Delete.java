@@ -1,15 +1,13 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_SOURCE_HU;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import de.metas.handlingunits.picking.PickingCandidateCommand;
+import de.metas.handlingunits.picking.SourceHUsRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
-import de.metas.ui.web.picking.pickingslot.PickingSlotViewFactory;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 
 /*
@@ -34,21 +32,13 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
  * #L%
  */
 
-/**
- * Unassigns the currently selected HU from its picking slot so that it could be picked again.
- * 
- * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
- * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
-public class WEBUI_Picking_RemoveHUFromPickingSlot
+public class WEBUI_Picking_M_Source_HU_Delete
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
 	@Autowired
-	private PickingCandidateCommand pickingCandidateCommand;
+	private SourceHUsRepository sourceHUsRepository;
+
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -59,25 +49,26 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 		}
 
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		if (!pickingSlotRow.isPickedHURow())
+		if (!pickingSlotRow.isPickingSourceHURow())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_SELECT_PICKED_HU));
-		}
-		
-		if (pickingSlotRow.isProcessed())
-		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_WEBUI_PICKING_NO_UNPROCESSED_RECORDS));
+			return ProcessPreconditionsResolution.rejectWithInternalReason(MSG_WEBUI_PICKING_SELECT_SOURCE_HU);
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
 	@Override
-	protected String doIt()
+	protected String doIt() throws Exception
 	{
-		final PickingSlotRow huRow = getSingleSelectedRow();
-		pickingCandidateCommand.removeHUFromPickingSlot(huRow.getHuId());
+		final PickingSlotRow rowToProcess = getSingleSelectedRow();
+		final int huId = rowToProcess.getHuId();
 
+		// unselect the row we just deleted the record of, to avoid an 'EntityNotFoundException'
+		final boolean sourceWasDeleted = sourceHUsRepository.removeSourceHu(huId);
+		if (sourceWasDeleted)
+		{
+			getView().invalidateAll();
+		}
 		invalidateView();
 
 		return MSG_OK;
@@ -88,4 +79,5 @@ public class WEBUI_Picking_RemoveHUFromPickingSlot
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
 	}
+
 }

@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking;
+package de.metas.ui.web.picking.pickingslot;
 /*
  * #%L
  * metasfresh-webui-api
@@ -27,9 +27,9 @@ import com.google.common.collect.ImmutableList;
 
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 /**
  * Used in the repo services, to specify which data we want to be retrieved.
@@ -37,7 +37,7 @@ import lombok.Singular;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-@Data
+@Value
 @Builder
 public class PickingSlotRepoQuery
 {
@@ -53,7 +53,7 @@ public class PickingSlotRepoQuery
 	
 	@NonNull
 	@Singular
-	final ImmutableList<Integer> shipmentScheduleIds;
+	ImmutableList<Integer> shipmentScheduleIds;
 
 	public enum PickingCandidate
 	{
@@ -70,12 +70,12 @@ public class PickingSlotRepoQuery
 		/**
 		 * Retrieve all picking slot items, no matter whether they have a {@link I_M_Picking_Candidate} assigned to their underlying {@link I_M_PickingSlot} or not.
 		 */
-		DONT_CARE
+		ONLY_NOT_CLOSED
 	}
 
 	/**
 	 * Optional; a <code>null</code> value means "return both with and without"
 	 */
 	@Default
-	final PickingCandidate pickingCandidates = PickingCandidate.DONT_CARE;
+	PickingCandidate pickingCandidates = PickingCandidate.ONLY_NOT_CLOSED;
 }
