@@ -790,7 +790,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	private final void fireModelChange0(
-			final PO po, 
+			final PO po,
 			final int changeType,
 			@Nullable List<ModelValidator> interceptorsSystem,
 			@Nullable List<ModelValidator> interceptorsClient,
@@ -911,8 +911,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	private final void invokeModelChangeMethods(
-			@NonNull final PO po, 
-			final int changeType, 
+			@NonNull final PO po,
+			final int changeType,
 			@NonNull final List<ModelValidator> validators)
 	{
 		for (final ModelValidator validator : validators)
@@ -923,42 +923,49 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	@SuppressWarnings("deprecation")
 	void invokeModelChangeMethod(
-			@NonNull final PO po, 
-			final int changeType, 
+			@NonNull final PO po,
+			final int changeType,
 			@NonNull final ModelValidator validator)
 	{
 		try
 		{
-			if (appliesFor(validator, po.getAD_Client_ID()))
+			if (!appliesFor(validator, po.getAD_Client_ID()))
 			{
-				if (changeType == ModelValidator.TYPE_SUBSEQUENT)
-				{
-					if (m_modelChangeSubsequent.containsKey(validator))
-					{
-						// create a queue record
-						final MADProcessablePO processablePO = MADProcessablePO.createOrRetrieveFor(po, validator);
+				return;
+			}
+			if (changeType == ModelValidator.TYPE_SUBSEQUENT)
+			{
+				handleTypeSubsequent(po, validator);
+				return;
+			}
 
-						if (m_modelChangeSubsequent.get(validator))
-						{
-							// process 'po' right now. If a problem occurs, record it in 'processablePO'
-							Services.get(IProcessingService.class).process(processablePO, null);
-						}
-					}
-				}
-				else
-				{
-					// the default cause
-					String error = validator.modelChange(po, changeType);
-					if (error != null && error.length() > 0)
-					{
-						throw new AdempiereException(error);
-					}
-				}
+			// the default cause
+			final String error = validator.modelChange(po, changeType);
+			if (!Check.isEmpty(error))
+			{
+				throw new AdempiereException(error);
 			}
 		}
 		catch (Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	private void handleTypeSubsequent(
+			@NonNull final PO po, 
+			@NonNull final ModelValidator validator)
+	{
+		if (m_modelChangeSubsequent.containsKey(validator))
+		{
+			// create a queue record
+			final MADProcessablePO processablePO = MADProcessablePO.createOrRetrieveFor(po, validator);
+
+			if (m_modelChangeSubsequent.get(validator))
+			{
+				// process 'po' right now. If a problem occurs, record it in 'processablePO'
+				Services.get(IProcessingService.class).process(processablePO, null);
+			}
 		}
 	}
 

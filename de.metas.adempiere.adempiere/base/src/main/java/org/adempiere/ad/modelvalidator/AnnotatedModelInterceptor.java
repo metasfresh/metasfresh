@@ -538,7 +538,7 @@ import lombok.NonNull;
 	}
 
 	@VisibleForTesting
-	final void executeNow(
+	private final void executeNow(
 			@NonNull final Object po,
 			@NonNull final IPointcut pointcut,
 			final int timing)
@@ -567,7 +567,7 @@ import lombok.NonNull;
 		}
 	}
 
-	void executeNow0(
+	private void executeNow0(
 			@NonNull final Object model,
 			@NonNull final IPointcut pointcut, 
 			final int timing) throws IllegalAccessException, InvocationTargetException
@@ -611,12 +611,12 @@ import lombok.NonNull;
 		return "annotated[" + this.annotatedClass.getName() + "]";
 	}
 
-	private final PointcutKey mkKey(Pointcut pointcut)
+	private final PointcutKey mkKey(@NonNull final Pointcut pointcut)
 	{
 		return mkKey(pointcut.getTableName(), pointcut.getType());
 	}
 
-	private final PointcutKey mkKey(String tableName, PointcutType type)
+	private final PointcutKey mkKey(@NonNull final String tableName, @NonNull final PointcutType type)
 	{
 		return new PointcutKey(tableName, type);
 	}
@@ -661,64 +661,13 @@ import lombok.NonNull;
 		return true;
 	}
 
-	private static class PointcutKey
+	@lombok.Value
+	private class PointcutKey
 	{
-		private final String tableName;
-		private final PointcutType type;
-
-		public PointcutKey(String tableName, PointcutType type)
-		{
-			super();
-			this.tableName = tableName;
-			this.type = type;
-		}
-
-		public String getTableName()
-		{
-			return tableName;
-		}
-
-		public PointcutType getType()
-		{
-			return type;
-		}
-
-		@Override
-		public int hashCode()
-		{
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((tableName == null) ? 0 : tableName.hashCode());
-			result = prime * result + ((type == null) ? 0 : type.hashCode());
-			return result;
-		}
-
-		@Override
-		public boolean equals(Object obj)
-		{
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			PointcutKey other = (PointcutKey)obj;
-			if (tableName == null)
-			{
-				if (other.tableName != null)
-					return false;
-			}
-			else if (!tableName.equals(other.tableName))
-				return false;
-			if (type != other.type)
-				return false;
-			return true;
-		}
-
-		@Override
-		public String toString()
-		{
-			return "PointcutKey [tableName=" + tableName + ", type=" + type + "]";
-		}
+		@NonNull
+		String tableName;
+		
+		@NonNull
+		PointcutType type;
 	}
 }

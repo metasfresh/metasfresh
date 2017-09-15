@@ -126,17 +126,9 @@ public class AnnotatedModelInterceptorDisabler
 	public int reloadDisabledPointcutNames()
 	{
 		final int result = disabledPointcutNames.size();
-
-		// do the the relatively slow DB query outside the synchronized area.
-		final boolean removePrefix = true;
-		final Set<String> preparedSet = Services.get(ISysConfigBL.class)
-				.getValuesForPrefix(SYS_CONFIG_NAME_PREFIX, removePrefix, 0, 0)
-				.entrySet()
-				.stream()
-				.filter(entry -> "N".equalsIgnoreCase(entry.getValue()))
-				.map(Entry::getKey)
-				.collect(Collectors.toSet());
-
+		
+		final Set<String> preparedSet = retrieveNewSetOfDisabledNames();
+		
 		lockForDisabledPointcutNames.writeLock().lock();
 		try
 		{
@@ -148,6 +140,23 @@ public class AnnotatedModelInterceptorDisabler
 			lockForDisabledPointcutNames.writeLock().unlock();
 		}
 		return result;
+	}
+
+	/**
+	 * do the the relatively slow DB query outside the synchronized area.
+	 * @return
+	 */
+	private Set<String> retrieveNewSetOfDisabledNames()
+	{
+		final boolean removePrefix = true;
+		final Set<String> preparedSet = Services.get(ISysConfigBL.class)
+				.getValuesForPrefix(SYS_CONFIG_NAME_PREFIX, removePrefix, 0, 0)
+				.entrySet()
+				.stream()
+				.filter(entry -> "N".equalsIgnoreCase(entry.getValue()))
+				.map(Entry::getKey)
+				.collect(Collectors.toSet());
+		return preparedSet;
 	}
 
 	public boolean isDisabled(@NonNull final IPointcut pointcut)

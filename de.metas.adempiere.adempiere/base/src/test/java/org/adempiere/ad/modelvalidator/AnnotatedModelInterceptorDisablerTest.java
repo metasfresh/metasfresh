@@ -51,6 +51,7 @@ public class AnnotatedModelInterceptorDisablerTest
 	 */
 	public void someTestMethod()
 	{
+		// no need for any code, we just need a method 
 	}
 
 	@Test
@@ -83,7 +84,7 @@ public class AnnotatedModelInterceptorDisablerTest
 		assertThat(annotatedModelInterceptorDisabler.isDisabled(pointcut)).isFalse();
 	}
 
-	void setupWithSysConfigValue(final String sysConfigValue)
+	private void setupWithSysConfigValue(final String sysConfigValue)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
 		sysConfig.setName("IntercetorEnabled_org.adempiere.ad.modelvalidator.AnnotatedModelInterceptorDisablerTest#someTestMethod");
