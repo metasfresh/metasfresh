@@ -37,12 +37,12 @@ import org.slf4j.Logger;
 
 import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHUPickingSlotBL.IQueueActionResult;
-import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;

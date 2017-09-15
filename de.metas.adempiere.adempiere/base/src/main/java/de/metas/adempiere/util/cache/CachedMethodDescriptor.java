@@ -71,8 +71,6 @@ import de.metas.adempiere.util.CacheTrx;
 
 	CachedMethodDescriptor(final Method method)
 	{
-		super();
-
 		Check.assumeNotNull(method, "method not null"); // shall not happen if we reach this point
 		this.method = method;
 

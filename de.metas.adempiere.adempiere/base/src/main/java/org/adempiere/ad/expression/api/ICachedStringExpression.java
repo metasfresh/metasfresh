@@ -30,4 +30,5 @@ package org.adempiere.ad.expression.api;
  */
 public interface ICachedStringExpression extends IStringExpression
 {
+		
 }

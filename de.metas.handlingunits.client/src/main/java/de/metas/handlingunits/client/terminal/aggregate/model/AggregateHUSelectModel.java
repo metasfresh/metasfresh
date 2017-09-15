@@ -37,8 +37,6 @@ import org.adempiere.util.Services;
 import org.adempiere.warehouse.model.I_M_Warehouse;
 
 import de.metas.adempiere.form.terminal.context.ITerminalContext;
-import de.metas.handlingunits.IHUPickingSlotBL;
-import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHUWarehouseDAO;
@@ -52,6 +50,8 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 import de.metas.interfaces.I_C_BPartner;
 
 /**

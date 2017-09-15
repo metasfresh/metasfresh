@@ -1,4 +1,4 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.picking.impl;
 
 /*
  * #%L
@@ -13,15 +13,14 @@ package de.metas.handlingunits.impl;
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 
 import java.util.List;
 
@@ -34,14 +33,17 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Check;
 import org.adempiere.util.Services;
+import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Locator;
 
-import de.metas.handlingunits.IHUPickingSlotDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Source_HU;
+import de.metas.handlingunits.picking.IHUPickingSlotDAO;
 
 public class HUPickingSlotDAO implements IHUPickingSlotDAO
 {
@@ -223,5 +225,31 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 				.create()
 				.setOnlyActiveRecords(true)
 				.list(I_M_PickingSlot.class);
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Picking_Candidate.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
+	public boolean isHuIdPicked(final int huId)
+	{
+		final boolean isAlreadyPicked = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.match();
+		return isAlreadyPicked;
+	}
+
+	@Override
+	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_HU.COLUMNNAME_M_HU_ID)
+	public boolean isSourceHU(final int huId)
+	{
+		final boolean isSourceHU = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_Source_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Source_HU.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.match();
+		return isSourceHU;
 	}
 }

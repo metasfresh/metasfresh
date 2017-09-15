@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.json.JsonStringExpressionSerializer;
+import org.compiere.util.CtxName;
 import org.compiere.util.Evaluatee;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -38,7 +39,7 @@ public final class NullStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
 		return ImmutableSet.of();
 	}

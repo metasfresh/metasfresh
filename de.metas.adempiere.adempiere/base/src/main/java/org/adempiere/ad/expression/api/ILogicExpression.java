@@ -23,7 +23,6 @@ package org.adempiere.ad.expression.api;
  */
 
 import java.util.List;
-import java.util.Set;
 
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.impl.LogicExpressionBuilder;
@@ -64,9 +63,6 @@ public interface ILogicExpression extends IExpression<Boolean>
 
 	@Override
 	String getFormatedExpressionString();
-
-	@Override
-	Set<String> getParameters();
 
 	@Override
 	default Boolean evaluate(final Evaluatee ctx, final boolean ignoreUnparsable)

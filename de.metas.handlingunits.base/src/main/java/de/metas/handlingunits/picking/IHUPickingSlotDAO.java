@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.picking;
 
 /*
  * #%L
@@ -33,6 +33,8 @@ import org.compiere.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_PickingSlot_HU;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_Source_HU;
 
 public interface IHUPickingSlotDAO extends ISingletonService
 {
@@ -96,4 +98,22 @@ public interface IHUPickingSlotDAO extends ISingletonService
 	 * @return
 	 */
 	IQueryFilter<I_M_HU> createHUOnPickingSlotQueryFilter(final Object contextProvider);
+	
+	/**
+	 * Return {@code true} if the given {@code M_HU_ID} is referenced by an active {@link I_M_Picking_Candidate}.<br>
+	 * Note that we use the ID for performance reasons.
+	 * 
+	 * @param huId
+	 * @return
+	 */
+	boolean isHuIdPicked(int huId);
+
+	/**
+	 * Return {@code true} if the given HU is referenced by an active {@link I_M_Source_HU}.<br>
+	 * Note that we use the ID for performance reasons.
+	 * 
+	 * @param huId
+	 * @return
+	 */
+	boolean isSourceHU(int huId);
 }

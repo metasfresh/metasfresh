@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableSet;
 /* package */final class StringExpression implements IStringExpression
 {
 	private final List<Object> expressionChunks;
-	private final Set<String> parametersAsStringList;
+	private final Set<CtxName> parametersAsCtxName;
 
 	// Precomputed values
 	private String _expressionStr;
@@ -38,23 +38,20 @@ import com.google.common.collect.ImmutableSet;
 
 	/* package */ StringExpression(@Nullable final String expressionStr, final List<Object> expressionChunks)
 	{
-		super();
 		_expressionStr = expressionStr;
 		this.expressionChunks = ImmutableList.copyOf(expressionChunks);
 
 		//
 		// Initialize stringParams list
-		final Set<String> stringParams = new LinkedHashSet<>(); // NOTE: preserve parameters order because at least some tests are relying on this
+		final Set<CtxName> ctxNameParams = new LinkedHashSet<>(); // NOTE: preserve parameters order because at least some tests are relying on this
 		for (final Object chunk : expressionChunks)
 		{
 			if (chunk instanceof CtxName)
 			{
-				// NOTE: we need only the parameter name (and not all modifiers)
-				final String parameterName = ((CtxName)chunk).getName();
-				stringParams.add(parameterName);
+				ctxNameParams.add((CtxName)chunk);
 			}
 		}
-		parametersAsStringList = ImmutableSet.copyOf(stringParams);
+		parametersAsCtxName = ImmutableSet.copyOf(ctxNameParams);
 	}
 
 	@Override
@@ -129,9 +126,9 @@ import com.google.common.collect.ImmutableSet;
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<CtxName> getParameters()
 	{
-		return parametersAsStringList;
+		return parametersAsCtxName;
 	}
 
 	@VisibleForTesting

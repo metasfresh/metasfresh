@@ -14,6 +14,7 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.util.Check;
+import org.compiere.util.CtxName;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
@@ -124,7 +125,13 @@ public final class CachedStringExpression implements ICachedStringExpression
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<String> getParameterNames()
+	{
+		return expression.getParameterNames();
+	}
+	
+	@Override
+	public Set<CtxName> getParameters()
 	{
 		return expression.getParameters();
 	}
@@ -142,7 +149,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 		{
 			// Build the effective context
 			final boolean failIfNotFound = onVariableNotFound == OnVariableNotFound.Fail;
-			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParameters(), ctx, failIfNotFound);
+			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParameterNames(), ctx, failIfNotFound);
 
 			// Caching key: the effective context and the OnVariableNotFound
 			final ArrayKey key = mkCachingKey(ctxEffective, onVariableNotFound);
@@ -165,7 +172,7 @@ public final class CachedStringExpression implements ICachedStringExpression
 		{
 			// Build the effective context
 			final boolean failIfNotFound = false;
-			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParameters(), ctx, failIfNotFound);
+			final EffectiveValuesEvaluatee ctxEffective = EffectiveValuesEvaluatee.extractFrom(expression.getParameterNames(), ctx, failIfNotFound);
 
 			// Caching key: the effective context and the OnVariableNotFound
 			final OnVariableNotFound onVariableNotFound = null; // not relevant
