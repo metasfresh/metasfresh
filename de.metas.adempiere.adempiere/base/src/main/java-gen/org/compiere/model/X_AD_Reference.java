@@ -14,7 +14,7 @@ public class X_AD_Reference extends org.compiere.model.PO implements I_AD_Refere
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 198066290L;
+	private static final long serialVersionUID = -142059681L;
 
     /** Standard Constructor */
     public X_AD_Reference (Properties ctx, int AD_Reference_ID, String trxName)
@@ -24,7 +24,6 @@ public class X_AD_Reference extends org.compiere.model.PO implements I_AD_Refere
         {
 			setAD_Reference_ID (0);
 			setEntityType (null); // U
-			setIsReferenceTarget (false); // N
 			setName (null);
 			setValidationType (null);
         } */
@@ -44,40 +43,6 @@ public class X_AD_Reference extends org.compiere.model.PO implements I_AD_Refere
       org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
       return poi;
     }
-
-	@Override
-	public org.compiere.model.I_AD_Column getAD_Column_ReferenceTarget() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Column_ReferenceTarget_ID, org.compiere.model.I_AD_Column.class);
-	}
-
-	@Override
-	public void setAD_Column_ReferenceTarget(org.compiere.model.I_AD_Column AD_Column_ReferenceTarget)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Column_ReferenceTarget_ID, org.compiere.model.I_AD_Column.class, AD_Column_ReferenceTarget);
-	}
-
-	/** Set AD_Column_ReferenceTarget_ID.
-		@param AD_Column_ReferenceTarget_ID AD_Column_ReferenceTarget_ID	  */
-	@Override
-	public void setAD_Column_ReferenceTarget_ID (int AD_Column_ReferenceTarget_ID)
-	{
-		if (AD_Column_ReferenceTarget_ID < 1) 
-			set_Value (COLUMNNAME_AD_Column_ReferenceTarget_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Column_ReferenceTarget_ID, Integer.valueOf(AD_Column_ReferenceTarget_ID));
-	}
-
-	/** Get AD_Column_ReferenceTarget_ID.
-		@return AD_Column_ReferenceTarget_ID	  */
-	@Override
-	public int getAD_Column_ReferenceTarget_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ReferenceTarget_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
 
 	/** Set Referenz.
 		@param AD_Reference_ID 
@@ -181,29 +146,6 @@ public class X_AD_Reference extends org.compiere.model.PO implements I_AD_Refere
 	public boolean isOrderByValue () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsOrderByValue);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
-	/** Set IsReferenceTarget.
-		@param IsReferenceTarget IsReferenceTarget	  */
-	@Override
-	public void setIsReferenceTarget (boolean IsReferenceTarget)
-	{
-		set_Value (COLUMNNAME_IsReferenceTarget, Boolean.valueOf(IsReferenceTarget));
-	}
-
-	/** Get IsReferenceTarget.
-		@return IsReferenceTarget	  */
-	@Override
-	public boolean isReferenceTarget () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsReferenceTarget);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
