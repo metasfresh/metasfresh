@@ -53,7 +53,13 @@ public class ProcessParams implements IRangeAwareParams
 		return new ProcessParams(ImmutableList.of(parameter));
 	}
 
-	public static final ProcessParams ofValue(final String parameterName, final Object parameterValue)
+	public static final ProcessParams of(final String parameterName, final java.util.Date parameterValue, final java.util.Date parameterValueTo)
+	{
+		final ProcessInfoParameter parameter = ProcessInfoParameter.of(parameterName, parameterValue, parameterValueTo);
+		return new ProcessParams(ImmutableList.of(parameter));
+	}
+
+	public static final ProcessParams ofValueObject(final String parameterName, final Object parameterValue)
 	{
 		final ProcessInfoParameter parameter = ProcessInfoParameter.ofValueObject(parameterName, parameterValue);
 		return new ProcessParams(ImmutableList.of(parameter));
