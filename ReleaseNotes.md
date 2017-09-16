@@ -16,6 +16,8 @@ Here come the actual release notes:
 
 ## Features
 * metasfresh-app
+  * [#2483](https://github.com/metasfresh/metasfresh/issues/2483) New Dist-Orgs Businesspartner Window in WebUI
+    * New Window in WebUI menu, adapting the requirements of dis-orgs to the Businesspartner window.
 
 # metasfresh 5.27 (2017-38)
 
