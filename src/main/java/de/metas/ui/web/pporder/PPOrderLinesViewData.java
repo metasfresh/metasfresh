@@ -53,12 +53,15 @@ import lombok.NonNull;
 	/** All records (included ones too) indexed by DocumentId */
 	private final ImmutableMap<DocumentId, PPOrderLineRow> allRecordsById;
 
-	PPOrderLinesViewData(@NonNull final ITranslatableString description, @NonNull final String planningStatus, final List<PPOrderLineRow> records)
+	PPOrderLinesViewData(
+			@NonNull final ITranslatableString description, 
+			@NonNull final String planningStatus, 
+			@NonNull final List<PPOrderLineRow> records)
 	{
-		super();
 		this.description = description;
 		this.planningStatus = planningStatus;
 		this.records = ImmutableList.copyOf(records);
+
 		allRecordsById = buildRecordsByIdMap(this.records);
 	}
 	

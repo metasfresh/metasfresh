@@ -128,7 +128,7 @@ public final class PPOrderHUsToIssueActions
 	}
 
 	/**
-	 * Action to issue selected HUs to currenty selected manufacturing order BOM line
+	 * Action to issue selected HUs to currently selected manufacturing order BOM line
 	 *
 	 * @param husView
 	 * @param selectedHURowIds
