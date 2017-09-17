@@ -1,450 +1,428 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-
+/** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
-/**
- * Generated Model for C_Location.
- * Entity Types: [D]
- * @author Adempiere (generated)
- * @version
+import java.sql.ResultSet;
+import java.util.Properties;
+
+/** Generated Model for C_Location
+ *  @author Adempiere (generated) 
  */
-public class X_C_Location
-extends
-	org.compiere.model.PO
-implements
-	org.compiere.model.I_C_Location
-	,org.compiere.model.I_Persistent
+@SuppressWarnings("javadoc")
+public class X_C_Location extends org.compiere.model.PO implements I_C_Location, org.compiere.model.I_Persistent 
 {
-	private static final long serialVersionUID = -1484945173L;
-	
+
 	/**
-	 * Standard Constructor
+	 *
 	 */
-	public X_C_Location(java.util.Properties ctx, int C_Location_ID, java.lang.String trxName)
-	{
-		super (ctx, C_Location_ID, trxName);
-		/** if (C_Location_ID == 0)
-		{
-			setC_Country_ID(null);
-			setC_Location_ID(null);
-			setIsPostalValidated(null); // N
-			} */
-	}
-	
-	/**
-	 * Load Constructor
-	 */
-	public X_C_Location(java.util.Properties ctx, java.sql.ResultSet rs, java.lang.String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
-	
-	/**
-	 * Load Meta Data
-	 */
+	private static final long serialVersionUID = 454342047L;
+
+    /** Standard Constructor */
+    public X_C_Location (Properties ctx, int C_Location_ID, String trxName)
+    {
+      super (ctx, C_Location_ID, trxName);
+      /** if (C_Location_ID == 0)
+        {
+			setC_Country_ID (0);
+			setC_Location_ID (0);
+			setIsPostalValidated (false); // N
+        } */
+    }
+
+    /** Load Constructor */
+    public X_C_Location (Properties ctx, ResultSet rs, String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
+
+
+    /** Load Meta Data */
+    @Override
+    protected org.compiere.model.POInfo initPO (Properties ctx)
+    {
+      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+      return poi;
+    }
+
+	/** Set Straße und Nr..
+		@param Address1 
+		Adresszeile 1 für diesen Standort
+	  */
 	@Override
-	protected org.compiere.model.POInfo initPO(java.util.Properties ctx)
+	public void setAddress1 (java.lang.String Address1)
 	{
-		return org.compiere.model.POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
+		set_Value (COLUMNNAME_Address1, Address1);
 	}
-	
+
+	/** Get Straße und Nr..
+		@return Adresszeile 1 für diesen Standort
+	  */
 	@Override
-	public String toString()
-	{
-		StringBuffer sb = new StringBuffer ("X_C_Location[")
-			.append(get_ID()).append("]");
-		return sb.toString();
-	}
-	
-	/**
-	 * Get Record ID/ColumnName
-	 * @return ID/ColumnName pair
-	 */
-	@Deprecated
-	public org.compiere.util.KeyNamePair getKeyNamePair()
-	{
-		return new org.compiere.util.KeyNamePair(get_ID(), getCity());
-	}
-	
-	/**
-	 * Set Adresszeile 1.
-	 * Address line 1 for this location.
-	 * The Address 1 identifies the address for an entity's location
-	 */
-	@Override
-	public void setAddress1(java.lang.String Address1)
-	{
-		set_Value(COLUMNNAME_Address1, Address1);
-	}
-	
-	/**
-	 * Get Adresszeile 1.
-	 * Address line 1 for this location.
-	 * The Address 1 identifies the address for an entity's location
-	 */
-	@Override
-	public java.lang.String getAddress1()
+	public java.lang.String getAddress1 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Address1);
 	}
-	
-	/**
-	 * Set Adresszeile 2.
-	 * Address line 2 for this location.
-	 * The Address 2 provides additional address information for an entity.  It can be used for building location, apartment number or similar information.
-	 */
+
+	/** Set Adresszusatz.
+		@param Address2 
+		Adresszeile 2 für diesen Standort
+	  */
 	@Override
-	public void setAddress2(java.lang.String Address2)
+	public void setAddress2 (java.lang.String Address2)
 	{
-		set_Value(COLUMNNAME_Address2, Address2);
+		set_Value (COLUMNNAME_Address2, Address2);
 	}
-	
-	/**
-	 * Get Adresszeile 2.
-	 * Address line 2 for this location.
-	 * The Address 2 provides additional address information for an entity.  It can be used for building location, apartment number or similar information.
-	 */
+
+	/** Get Adresszusatz.
+		@return Adresszeile 2 für diesen Standort
+	  */
 	@Override
-	public java.lang.String getAddress2()
+	public java.lang.String getAddress2 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Address2);
 	}
-	
-	/**
-	 * Set Adresszeile 3.
-	 * Address Line 3 for the location.
-	 * The Address 2 provides additional address information for an entity.  It can be used for building location, apartment number or similar information.
-	 */
+
+	/** Set Adresszeile 3.
+		@param Address3 
+		Address Line 3 for the location
+	  */
 	@Override
-	public void setAddress3(java.lang.String Address3)
+	public void setAddress3 (java.lang.String Address3)
 	{
-		set_Value(COLUMNNAME_Address3, Address3);
+		set_Value (COLUMNNAME_Address3, Address3);
 	}
-	
-	/**
-	 * Get Adresszeile 3.
-	 * Address Line 3 for the location.
-	 * The Address 2 provides additional address information for an entity.  It can be used for building location, apartment number or similar information.
-	 */
+
+	/** Get Adresszeile 3.
+		@return Address Line 3 for the location
+	  */
 	@Override
-	public java.lang.String getAddress3()
+	public java.lang.String getAddress3 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Address3);
 	}
-	
-	/**
-	 * Set Adresszeile 4.
-	 * Address Line 4 for the location.
-	 * The Address 4 provides additional address information for an entity.  It can be used for building location, apartment number or similar information.
-	 */
+
+	/** Set Adresszusatz.
+		@param Address4 
+		Adresszeile 4 für diesen Standort
+	  */
 	@Override
-	public void setAddress4(java.lang.String Address4)
+	public void setAddress4 (java.lang.String Address4)
 	{
-		set_Value(COLUMNNAME_Address4, Address4);
+		set_Value (COLUMNNAME_Address4, Address4);
 	}
-	
-	/**
-	 * Get Adresszeile 4.
-	 * Address Line 4 for the location.
-	 * The Address 4 provides additional address information for an entity.  It can be used for building location, apartment number or similar information.
-	 */
+
+	/** Get Adresszusatz.
+		@return Adresszeile 4 für diesen Standort
+	  */
 	@Override
-	public java.lang.String getAddress4()
+	public java.lang.String getAddress4 () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Address4);
 	}
-	
-	/**
-	 * Set Ort.
-	 * City.
-	 * City in a country
-	 */
+
 	@Override
-	public void setC_City_ID(int C_City_ID)
+	public org.compiere.model.I_C_City getC_City() throws RuntimeException
 	{
-		set_Value(COLUMNNAME_C_City_ID, C_City_ID);
+		return get_ValueAsPO(COLUMNNAME_C_City_ID, org.compiere.model.I_C_City.class);
 	}
-	
-	/**
-	 * Get Ort.
-	 * City.
-	 * City in a country
-	 */
+
 	@Override
-	public int getC_City_ID()
+	public void setC_City(org.compiere.model.I_C_City C_City)
+	{
+		set_ValueFromPO(COLUMNNAME_C_City_ID, org.compiere.model.I_C_City.class, C_City);
+	}
+
+	/** Set Ort.
+		@param C_City_ID 
+		City
+	  */
+	@Override
+	public void setC_City_ID (int C_City_ID)
+	{
+		if (C_City_ID < 1) 
+			set_Value (COLUMNNAME_C_City_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_City_ID, Integer.valueOf(C_City_ID));
+	}
+
+	/** Get Ort.
+		@return City
+	  */
+	@Override
+	public int getC_City_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_City_ID);
-		return (ii == null ? 0 : ii.intValue());
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
-	
-	/**
-	 * Get model  Ort.
-	 * City.
-	 * City in a country
-	 */
+
 	@Override
-	public org.compiere.model.I_C_City getC_City() throws java.lang.RuntimeException
+	public org.compiere.model.I_C_Country getC_Country() throws RuntimeException
 	{
-		return (org.compiere.model.I_C_City)org.compiere.model.MTable.get(getCtx(), org.compiere.model.I_C_City.Table_Name)
-			.getPO(getC_City_ID(), get_TrxName());
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
 	}
-	
-	/**
-	 * Set Land.
-	 * Country .
-	 * The Country defines a Country.  Each Country must be defined before it can be used in any document.
-	 */
+
 	@Override
-	public void setC_Country_ID(int C_Country_ID)
+	public void setC_Country(org.compiere.model.I_C_Country C_Country)
 	{
-		set_Value(COLUMNNAME_C_Country_ID, C_Country_ID);
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
 	}
-	
-	/**
-	 * Get Land.
-	 * Country .
-	 * The Country defines a Country.  Each Country must be defined before it can be used in any document.
-	 */
+
+	/** Set Land.
+		@param C_Country_ID 
+		Country 
+	  */
 	@Override
-	public int getC_Country_ID()
+	public void setC_Country_ID (int C_Country_ID)
+	{
+		if (C_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Country_ID, Integer.valueOf(C_Country_ID));
+	}
+
+	/** Get Land.
+		@return Country 
+	  */
+	@Override
+	public int getC_Country_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Country_ID);
-		return (ii == null ? 0 : ii.intValue());
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
-	
-	/**
-	 * Get model  Land.
-	 * Country .
-	 * The Country defines a Country.  Each Country must be defined before it can be used in any document.
-	 */
+
+	/** Set Anschrift.
+		@param C_Location_ID 
+		Location or Address
+	  */
 	@Override
-	public org.compiere.model.I_C_Country getC_Country() throws java.lang.RuntimeException
+	public void setC_Location_ID (int C_Location_ID)
 	{
-		return (org.compiere.model.I_C_Country)org.compiere.model.MTable.get(getCtx(), org.compiere.model.I_C_Country.Table_Name)
-			.getPO(getC_Country_ID(), get_TrxName());
+		if (C_Location_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Location_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Location_ID, Integer.valueOf(C_Location_ID));
 	}
-	
-	/**
-	 * Set Anschrift.
-	 * Location or Address.
-	 * The Location / Address field defines the location of an entity.
-	 */
+
+	/** Get Anschrift.
+		@return Location or Address
+	  */
 	@Override
-	public void setC_Location_ID(int C_Location_ID)
-	{
-		set_ValueNoCheck(COLUMNNAME_C_Location_ID, C_Location_ID);
-	}
-	
-	/**
-	 * Get Anschrift.
-	 * Location or Address.
-	 * The Location / Address field defines the location of an entity.
-	 */
-	@Override
-	public int getC_Location_ID()
+	public int getC_Location_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
-		return (ii == null ? 0 : ii.intValue());
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
-	
-	/**
-	 * Set Region.
-	 * Identifies a geographical Region.
-	 * The Region identifies a unique Region for this Country.
-	 */
+
 	@Override
-	public void setC_Region_ID(int C_Region_ID)
+	public de.metas.adempiere.model.I_C_Postal getC_Postal() throws RuntimeException
 	{
-		set_Value(COLUMNNAME_C_Region_ID, C_Region_ID);
+		return get_ValueAsPO(COLUMNNAME_C_Postal_ID, de.metas.adempiere.model.I_C_Postal.class);
 	}
-	
-	/**
-	 * Get Region.
-	 * Identifies a geographical Region.
-	 * The Region identifies a unique Region for this Country.
-	 */
+
 	@Override
-	public int getC_Region_ID()
+	public void setC_Postal(de.metas.adempiere.model.I_C_Postal C_Postal)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Postal_ID, de.metas.adempiere.model.I_C_Postal.class, C_Postal);
+	}
+
+	/** Set Postal codes.
+		@param C_Postal_ID Postal codes	  */
+	@Override
+	public void setC_Postal_ID (int C_Postal_ID)
+	{
+		if (C_Postal_ID < 1) 
+			set_Value (COLUMNNAME_C_Postal_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Postal_ID, Integer.valueOf(C_Postal_ID));
+	}
+
+	/** Get Postal codes.
+		@return Postal codes	  */
+	@Override
+	public int getC_Postal_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Postal_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	@Override
+	public org.compiere.model.I_C_Region getC_Region() throws RuntimeException
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
+	}
+
+	@Override
+	public void setC_Region(org.compiere.model.I_C_Region C_Region)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
+	}
+
+	/** Set Region.
+		@param C_Region_ID 
+		Identifies a geographical Region
+	  */
+	@Override
+	public void setC_Region_ID (int C_Region_ID)
+	{
+		if (C_Region_ID < 1) 
+			set_Value (COLUMNNAME_C_Region_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Region_ID, Integer.valueOf(C_Region_ID));
+	}
+
+	/** Get Region.
+		@return Identifies a geographical Region
+	  */
+	@Override
+	public int getC_Region_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Region_ID);
-		return (ii == null ? 0 : ii.intValue());
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
-	
-	/**
-	 * Get model  Region.
-	 * Identifies a geographical Region.
-	 * The Region identifies a unique Region for this Country.
-	 */
+
+	/** Set C/O.
+		@param CareOf 
+		In care of
+	  */
 	@Override
-	public org.compiere.model.I_C_Region getC_Region() throws java.lang.RuntimeException
+	public void setCareOf (java.lang.String CareOf)
 	{
-		return (org.compiere.model.I_C_Region)org.compiere.model.MTable.get(getCtx(), org.compiere.model.I_C_Region.Table_Name)
-			.getPO(getC_Region_ID(), get_TrxName());
+		set_Value (COLUMNNAME_CareOf, CareOf);
 	}
-	
-	/**
-	 * Set C/O.
-	 * In care of
-	 */
+
+	/** Get C/O.
+		@return In care of
+	  */
 	@Override
-	public void setCareOf(java.lang.String CareOf)
-	{
-		set_Value(COLUMNNAME_CareOf, CareOf);
-	}
-	
-	/**
-	 * Get C/O.
-	 * In care of
-	 */
-	@Override
-	public java.lang.String getCareOf()
+	public java.lang.String getCareOf () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CareOf);
 	}
-	
-	/**
-	 * Set Ort.
-	 * Identifies a City.
-	 * The City identifies a unique City for this Country or Region.
-	 */
+
+	/** Set Ort.
+		@param City 
+		Identifies a City
+	  */
 	@Override
-	public void setCity(java.lang.String City)
+	public void setCity (java.lang.String City)
 	{
-		set_Value(COLUMNNAME_City, City);
+		set_Value (COLUMNNAME_City, City);
 	}
-	
-	/**
-	 * Get Ort.
-	 * Identifies a City.
-	 * The City identifies a unique City for this Country or Region.
-	 */
+
+	/** Get Ort.
+		@return Identifies a City
+	  */
 	@Override
-	public java.lang.String getCity()
+	public java.lang.String getCity () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_City);
 	}
-	
-	/**
-	 * Set PLZ verifiziert.
-	 * Sagt aus, ob Postleitzahl der Adresse verifiziert wurde..
-	 * Postleitzahlen können automatisch gegen vorhandene DPD-Routendaten verifiziert oder manuell durch den Benutzer angelegt und damit ebenfalls verifiziert werden.
-	 */
+
+	/** Set PLZ verifiziert.
+		@param IsPostalValidated 
+		Sagt aus, ob Postleitzahl der Adresse verifiziert wurde.
+	  */
 	@Override
-	public void setIsPostalValidated(boolean IsPostalValidated)
+	public void setIsPostalValidated (boolean IsPostalValidated)
 	{
-		set_Value(COLUMNNAME_IsPostalValidated, IsPostalValidated);
+		set_Value (COLUMNNAME_IsPostalValidated, Boolean.valueOf(IsPostalValidated));
 	}
-	
-	/**
-	 * Get PLZ verifiziert.
-	 * Sagt aus, ob Postleitzahl der Adresse verifiziert wurde..
-	 * Postleitzahlen können automatisch gegen vorhandene DPD-Routendaten verifiziert oder manuell durch den Benutzer angelegt und damit ebenfalls verifiziert werden.
-	 */
+
+	/** Get PLZ verifiziert.
+		@return Sagt aus, ob Postleitzahl der Adresse verifiziert wurde.
+	  */
 	@Override
-	public boolean isPostalValidated()
+	public boolean isPostalValidated () 
 	{
 		Object oo = get_Value(COLUMNNAME_IsPostalValidated);
-		return (oo instanceof Boolean ? ((Boolean)oo).booleanValue() : "Y".equals(oo));
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
-	
-	/**
-	 * Set PO Box
-	 */
+
+	/** Set Postfach.
+		@param POBox Postfach	  */
 	@Override
-	public void setPOBox(java.lang.String POBox)
+	public void setPOBox (java.lang.String POBox)
 	{
-		set_Value(COLUMNNAME_POBox, POBox);
+		set_Value (COLUMNNAME_POBox, POBox);
 	}
-	
-	/**
-	 * Get PO Box
-	 */
+
+	/** Get Postfach.
+		@return Postfach	  */
 	@Override
-	public java.lang.String getPOBox()
+	public java.lang.String getPOBox () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POBox);
 	}
-	
-	/**
-	 * Set PLZ.
-	 * Postal code.
-	 * The Postal Code or ZIP identifies the postal code for this entity's address.
-	 */
+
+	/** Set PLZ.
+		@param Postal 
+		Postal code
+	  */
 	@Override
-	public void setPostal(java.lang.String Postal)
+	public void setPostal (java.lang.String Postal)
 	{
-		set_Value(COLUMNNAME_Postal, Postal);
+		set_Value (COLUMNNAME_Postal, Postal);
 	}
-	
-	/**
-	 * Get PLZ.
-	 * Postal code.
-	 * The Postal Code or ZIP identifies the postal code for this entity's address.
-	 */
+
+	/** Get PLZ.
+		@return Postal code
+	  */
 	@Override
-	public java.lang.String getPostal()
+	public java.lang.String getPostal () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Postal);
 	}
-	
-	/**
-	 * Set -.
-	 * Additional ZIP or Postal code.
-	 * The Additional ZIP or Postal Code identifies, if appropriate, any additional Postal Code information.
-	 */
+
+	/** Set -.
+		@param Postal_Add 
+		Additional ZIP or Postal code
+	  */
 	@Override
-	public void setPostal_Add(java.lang.String Postal_Add)
+	public void setPostal_Add (java.lang.String Postal_Add)
 	{
-		set_Value(COLUMNNAME_Postal_Add, Postal_Add);
+		set_Value (COLUMNNAME_Postal_Add, Postal_Add);
 	}
-	
-	/**
-	 * Get -.
-	 * Additional ZIP or Postal code.
-	 * The Additional ZIP or Postal Code identifies, if appropriate, any additional Postal Code information.
-	 */
+
+	/** Get -.
+		@return Additional ZIP or Postal code
+	  */
 	@Override
-	public java.lang.String getPostal_Add()
+	public java.lang.String getPostal_Add () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Postal_Add);
 	}
-	
-	/**
-	 * Set Region.
-	 * Name of the Region.
-	 * The Region Name defines the name that will print when this region is used in a document.
-	 */
+
+	/** Set Region.
+		@param RegionName 
+		Name of the Region
+	  */
 	@Override
-	public void setRegionName(java.lang.String RegionName)
+	public void setRegionName (java.lang.String RegionName)
 	{
-		set_Value(COLUMNNAME_RegionName, RegionName);
+		set_Value (COLUMNNAME_RegionName, RegionName);
 	}
-	
-	/**
-	 * Get Region.
-	 * Name of the Region.
-	 * The Region Name defines the name that will print when this region is used in a document.
-	 */
+
+	/** Get Region.
+		@return Name of the Region
+	  */
 	@Override
-	public java.lang.String getRegionName()
+	public java.lang.String getRegionName () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_RegionName);
 	}
-	
-	
 }

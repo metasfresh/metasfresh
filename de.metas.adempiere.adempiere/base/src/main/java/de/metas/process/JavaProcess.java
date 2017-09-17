@@ -406,13 +406,13 @@ public abstract class JavaProcess implements IProcess, ILoggable, IContextAware
 	 * @param isParameterTo
 	 * @param source
 	 */
-	public final void loadParameterValueNoFail(final String parameterName, final boolean isParameterTo, final IRangeAwareParams source)
+	public final void loadParameterValueNoFail(final String parameterName, final IRangeAwareParams source)
 	{
 		final ProcessInfo pi = getProcessInfo();
 		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
 
 		// No parameters => nothing to do
-		final Collection<ProcessClassParamInfo> parameterInfos = processClassInfo.getParameterInfos(parameterName, isParameterTo);
+		final Collection<ProcessClassParamInfo> parameterInfos = processClassInfo.getParameterInfos(parameterName);
 		if (parameterInfos.isEmpty())
 		{
 			return;

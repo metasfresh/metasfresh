@@ -31,13 +31,8 @@ import com.google.common.collect.ImmutableSet;
 {
 	static final ConstantTranslatableString of(final String value)
 	{
-		if(value == null || value.isEmpty())
-		{
-			return EMPTY;
-		}
-		
 		final boolean anyLanguage = false;
-		return new ConstantTranslatableString(value, anyLanguage);
+		return of(value, anyLanguage);
 	}
 	
 	static final ConstantTranslatableString of(final String value, final boolean anyLanguage)
@@ -46,11 +41,16 @@ import com.google.common.collect.ImmutableSet;
 		{
 			return EMPTY;
 		}
+		if(" ".equals(value))
+		{
+			return SPACE;
+		}
 		
 		return new ConstantTranslatableString(value, anyLanguage);
 	}
 
 	static final ConstantTranslatableString EMPTY = new ConstantTranslatableString("", true);
+	private static final ConstantTranslatableString SPACE = new ConstantTranslatableString(" ", true);
 
 	private final String value;
 	private final boolean anyLanguage;
