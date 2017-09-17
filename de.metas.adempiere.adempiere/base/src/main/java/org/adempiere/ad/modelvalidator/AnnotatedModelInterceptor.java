@@ -557,7 +557,7 @@ import lombok.NonNull;
 		}
 		catch (Exception e)
 		{
-			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.get().createHowtoDisableMsg(pointcut);
+			final String howtoDisableMsg = AnnotatedModelInterceptorDisabler.get().getHowtoDisableMessage(pointcut);
 			logger.error(howtoDisableMsg);
 
 			// 03444 if the pointcut method threw an adempiere exception, just forward it

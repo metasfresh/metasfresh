@@ -1,10 +1,9 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.Services;
-import org.compiere.util.Env;
+import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.X_PP_Order;
 
 import com.google.common.base.Objects;
@@ -57,20 +56,21 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public IHUQueryBuilder createHUsAvailableToIssueQuery(final int productId)
+	public IHUQueryBuilder createHUsAvailableToIssueQuery(@NonNull final I_PP_Order_BOMLine ppOrderBomLine)
 	{
-		return Services.get(IHandlingUnitsDAO.class)
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		return handlingUnitsDAO
 				.createHUQueryBuilder()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				//
-				// TODO add warehouse filter
+
+				.addOnlyWithProductId(ppOrderBomLine.getM_Product_ID())
+				.addOnlyInWarehouseId(ppOrderBomLine.getM_Warehouse_ID())
+
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.addOnlyWithProductId(productId)
 				.setOnlyTopLevelHUs()
 				.onlyNotLocked();
 	}
-	
-	private static final ImmutableMultimap<String, String> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<String, String>builder()
+
+	private static final ImmutableMultimap<String, String> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<String, String> builder()
 			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Review)
 			.put(X_PP_Order.PLANNINGSTATUS_Planning, X_PP_Order.PLANNINGSTATUS_Complete)
 			.put(X_PP_Order.PLANNINGSTATUS_Review, X_PP_Order.PLANNINGSTATUS_Planning)
@@ -88,16 +88,16 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public void processPlanning(String targetPlanningStatus, int ppOrderId)
 	{
 		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-		
+
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.load(ppOrderId, I_PP_Order.class);
 		final String planningStatus = ppOrder.getPlanningStatus();
 		if (Objects.equal(planningStatus, targetPlanningStatus))
 		{
 			throw new IllegalStateException("Already " + targetPlanningStatus);
 		}
-		if(!canChangePlanningStatus(planningStatus, targetPlanningStatus))
+		if (!canChangePlanningStatus(planningStatus, targetPlanningStatus))
 		{
-			throw new IllegalStateException("Cannot chagen planning status from "+planningStatus+" to "+targetPlanningStatus);
+			throw new IllegalStateException("Cannot chagen planning status from " + planningStatus + " to " + targetPlanningStatus);
 		}
 
 		if (X_PP_Order.PLANNINGSTATUS_Planning.equals(targetPlanningStatus))
