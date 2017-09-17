@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -130,8 +132,6 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
 	{
-		//
-		// Check if HU status is eligible
 		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
 		{
 			throw new HUException("Only active HUs can be issued but " + hu + " is " + hu.getHUStatus());
@@ -150,8 +150,7 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 
 		// update the HU's status so that it's not moved somewhere else etc
 		handlingUnitsBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Issued);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		handlingUnitsDAO.saveHU(hu);
+		Services.get(IHandlingUnitsDAO.class).saveHU(hu);
 
 		return candidate;
 	}
@@ -212,27 +211,27 @@ public class HUPPOrderIssueProducer implements IHUPPOrderIssueProducer
 		return productStorage;
 	}
 
-	public I_PP_Order_Qty createIssueCandidate(
+	private I_PP_Order_Qty createIssueCandidate(
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
-		final Date movementDate = getMovementDate();
 		final int productId = productStorage.getM_Product_ID();
 		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
-		final int targetPPOrderId = targetBOMLine.getPP_Order_ID();
-		final int topLevelHUId = hu.getM_HU_ID();
-		final int locatorId = hu.getM_Locator_ID();
-		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
 
-		final I_PP_Order_Qty candidate = InterfaceWrapperHelper.newInstance(I_PP_Order_Qty.class);
-		candidate.setPP_Order_ID(targetPPOrderId);
+		final I_PP_Order_Qty candidate = newInstance(I_PP_Order_Qty.class);
+		
+		candidate.setPP_Order_ID(targetBOMLine.getPP_Order_ID());
 		candidate.setPP_Order_BOMLine(targetBOMLine);
-		candidate.setM_Locator_ID(locatorId);
-		candidate.setM_HU_ID(topLevelHUId);
+
+		candidate.setM_Locator_ID(hu.getM_Locator_ID());
+		candidate.setM_HU_ID(hu.getM_HU_ID());
 		candidate.setM_Product_ID(productId);
+
+		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage);
 		candidate.setQty(qtyToIssue.getQty());
 		candidate.setC_UOM(qtyToIssue.getUOM());
-		candidate.setMovementDate(TimeUtil.asTimestamp(movementDate));
+
+		candidate.setMovementDate(TimeUtil.asTimestamp(getMovementDate()));
 		candidate.setProcessed(false);
 		huPPOrderQtyDAO.save(candidate);
 
