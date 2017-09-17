@@ -92,7 +92,7 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public void assertAllowedStatusChange(final String oldHuStatus, final String newHuStatus)
+	public void assertStatusChangeIsAllowed(final String oldHuStatus, final String newHuStatus)
 	{
 		if (isAllowedStatusTransition(oldHuStatus, newHuStatus))
 		{
@@ -121,7 +121,7 @@ public class HUStatusBL implements IHUStatusBL
 	}
 
 	@Override
-	public void assertAllowedLocatorChange(@NonNull final String huStatus)
+	public void assertLocatorChangeIsAllowed(@NonNull final String huStatus)
 	{
 		if (ALLOWED_STATUSES_FOR_LOCATOR_CHANGE.contains(huStatus))
 		{

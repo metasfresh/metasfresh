@@ -24,7 +24,10 @@ package de.metas.handlingunits;
 
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.ISingletonService;
+
+import de.metas.handlingunits.model.I_M_HU;
 
 public interface IHUStatusBL extends ISingletonService
 {
@@ -52,7 +55,20 @@ public interface IHUStatusBL extends ISingletonService
 	 */
 	boolean isMovePackagingToEmptiesWarehouse(String huStatus);
 
-	void assertAllowedStatusChange(String oldHuStatus, String newHuStatus);
+	/**
+	 * Assert that a change of {@link I_M_HU#COLUMN_HUStatus} from the given {@code oldHuStatus} to the given {@code newHuStatus} is allowd.
+	 * 
+	 * @param oldHuStatus
+	 * @param newHuStatus
+	 * @throw {@link AdempiereException} if the transition is not allowed.
+	 */
+	void assertStatusChangeIsAllowed(String oldHuStatus, String newHuStatus);
 
-	void assertAllowedLocatorChange(String huStatus);
+	/**
+	 * Assert that {@link I_M_HU#COLUMN_M_Locator_ID} may be updated in HUs that have the given {@code huStatus}.
+	 * 
+	 * @param huStatus
+	 * @throws AdempiereException if the locatorId may not be updated.
+	 */
+	void assertLocatorChangeIsAllowed(String huStatus);
 }

@@ -17,8 +17,6 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.logging.LogManager;
 import de.metas.storage.IStorageListeners;
 import de.metas.storage.spi.hu.impl.StorageSegmentFromHU;
@@ -76,14 +74,14 @@ public class M_HU
 	{
 		final I_M_HU oldHu = InterfaceWrapperHelper.createOld(hu, I_M_HU.class);
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		huStatusBL.assertAllowedStatusChange(oldHu.getHUStatus(), hu.getHUStatus());
+		huStatusBL.assertStatusChangeIsAllowed(oldHu.getHUStatus(), hu.getHUStatus());
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID)
 	public void validateLocatorChange(@NonNull final I_M_HU hu)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		huStatusBL.assertAllowedLocatorChange(hu.getHUStatus());
+		huStatusBL.assertLocatorChangeIsAllowed(hu.getHUStatus());
 	}
 
 	/**
@@ -136,43 +134,6 @@ public class M_HU
 			childHU.setM_Locator_ID(parentLocatorId);
 			handlingUnitsDAO.saveHU(childHU);
 		}
-	}
-
-	/**
-	 * When a picked HU is destroyed, it has to be removed from the picking slot.
-	 * 
-	 * NOTE: We don't know if the old status of the HU is picked, but {@link}removeFromPickingSlotQueue
-	 *
-	 * @param hu
-	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = {
-			I_M_HU.COLUMNNAME_HUStatus
-	})
-	public void onDestroyedHU(final I_M_HU hu)
-	{
-		//
-		// Make sure our HU is top level
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final boolean isTopLevel = handlingUnitsBL.isTopLevel(hu);
-		if (!isTopLevel)
-		{
-			// Only do this for the top level HUs
-			return;
-		}
-
-		//
-		// Make sure our HU was destroyed
-		final String huStatus = hu.getHUStatus();
-		if (!X_M_HU.HUSTATUS_Destroyed.equals(huStatus))
-		{
-			// Do nothing in case the HU was not destroyed
-			return;
-		}
-
-		//
-		// At this point, it means we have a top-level, destroyed HU. We need to take it out from the picking slots
-		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-		huPickingSlotBL.removeFromPickingSlotQueue(hu);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE }, ifColumnsChanged = {
