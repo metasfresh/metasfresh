@@ -44,7 +44,7 @@ import lombok.NonNull;
  */
 
 /**
- * This class allows us to disable annotated model validators via {@link org.compiere.model.I_AD_SysConfig}.
+ * This class allows us to disable annotated model interceptors via {@link org.compiere.model.I_AD_SysConfig} records.
  * 
  * @author metas-dev <dev@metasfresh.com>
  * @task https://github.com/metasfresh/metasfresh/issues/2482
@@ -60,18 +60,27 @@ public class AnnotatedModelInterceptorDisabler
 		return INSTANCE;
 	}
 
-	private final LoadingCache<IPointcut, String> howtoDisableMsgCache = CacheBuilder.newBuilder().build(new CacheLoader<IPointcut, String>()
+	private final LoadingCache<IPointcut, String> howtoDisableMessages = CacheBuilder.newBuilder().build(new CacheLoader<IPointcut, String>()
 	{
 		@Override
 		public String load(final IPointcut pointcut) throws Exception
 		{
-			return createHowtoDisableMsg0(pointcut);
+			return createHowtoDisableMessage(pointcut);
 		}
 	});
 
-	private final HashSet<String> disabledPointcutNames = new HashSet<>();
+	private final LoadingCache<IPointcut, String> pointcutIds = CacheBuilder.newBuilder().build(new CacheLoader<IPointcut, String>()
+	{
+		@Override
+		public String load(@NonNull final IPointcut pointcut) throws Exception
+		{
+			return createPointcutId(pointcut);
+		}
+	});
 
-	private final ReadWriteLock lockForDisabledPointcutNames = new ReentrantReadWriteLock();
+	private final HashSet<String> disabledPointcutIds = new HashSet<>();
+
+	private final ReadWriteLock lockForDisabledPointcutIds = new ReentrantReadWriteLock();
 
 	@VisibleForTesting
 	AnnotatedModelInterceptorDisabler()
@@ -82,7 +91,7 @@ public class AnnotatedModelInterceptorDisabler
 			@Override
 			public int reset(@NonNull final String tableName, @NonNull final Object key)
 			{
-				return reloadDisabledPointcutNames();
+				return reloadDisabledPointcutIds();
 			}
 		});
 	}
@@ -93,60 +102,47 @@ public class AnnotatedModelInterceptorDisabler
 	 * @param pointcut
 	 * @return
 	 */
-	public String createHowtoDisableMsg(@NonNull final IPointcut pointcut)
+	public String getHowtoDisableMessage(@NonNull final IPointcut pointcut)
 	{
-		return howtoDisableMsgCache.getUnchecked(pointcut);
+		return howtoDisableMessages.getUnchecked(pointcut);
 	}
 
 	@VisibleForTesting
-	String createHowtoDisableMsg0(@NonNull final IPointcut pointcut)
+	String createHowtoDisableMessage(@NonNull final IPointcut pointcut)
 	{
-		final String methodString = createMethodString(pointcut);
+		final String pointcutId = createPointcutId(pointcut);
 
 		return String.format("Model interceptor method %s threw an exception.\nYou can disable this method with SysConfig %s='N' (with AD_Client_ID and AD_Org_ID=0!)",
-				methodString, createDisabledSysConfigKey(methodString));
+				pointcutId, createDisabledSysConfigKey(pointcutId));
 	}
 
-	private String createMethodString(@NonNull final IPointcut pointcut)
+	private String createPointcutId(@NonNull final IPointcut pointcut)
 	{
 		final Method method = pointcut.getMethod();
 
-		final String methodString = String.format("%s#%s",
+		final String pointcutId = String.format("%s#%s",
 				method.getDeclaringClass().getName(),
 				method.getName());
 
-		return methodString;
+		return pointcutId;
 	}
 
-	private String createDisabledSysConfigKey(@NonNull final String methodString)
+	private String createDisabledSysConfigKey(@NonNull final String pointcutId)
 	{
-		return SYS_CONFIG_NAME_PREFIX + methodString;
+		return SYS_CONFIG_NAME_PREFIX + pointcutId;
 	}
 
-	public int reloadDisabledPointcutNames()
+	public int reloadDisabledPointcutIds()
 	{
-		final int result = disabledPointcutNames.size();
-		
-		final Set<String> preparedSet = retrieveNewSetOfDisabledNames();
-		
-		lockForDisabledPointcutNames.writeLock().lock();
-		try
-		{
-			disabledPointcutNames.clear();
-			disabledPointcutNames.addAll(preparedSet);
-		}
-		finally
-		{
-			lockForDisabledPointcutNames.writeLock().unlock();
-		}
+		final int result = disabledPointcutIds.size();
+
+		final Set<String> newDisabledPointcutIds = retrieveDisabledPointcutIds();
+
+		replaceDisabledPointcutIds(newDisabledPointcutIds);
 		return result;
 	}
 
-	/**
-	 * do the the relatively slow DB query outside the synchronized area.
-	 * @return
-	 */
-	private Set<String> retrieveNewSetOfDisabledNames()
+	private Set<String> retrieveDisabledPointcutIds()
 	{
 		final boolean removePrefix = true;
 		final Set<String> preparedSet = Services.get(ISysConfigBL.class)
@@ -159,16 +155,32 @@ public class AnnotatedModelInterceptorDisabler
 		return preparedSet;
 	}
 
-	public boolean isDisabled(@NonNull final IPointcut pointcut)
+	private void replaceDisabledPointcutIds(@NonNull final Set<String> newIds)
 	{
-		lockForDisabledPointcutNames.readLock().lock();
+		lockForDisabledPointcutIds.writeLock().lock();
 		try
 		{
-			return disabledPointcutNames.contains(createMethodString(pointcut));
+			disabledPointcutIds.clear();
+			disabledPointcutIds.addAll(newIds);
 		}
 		finally
 		{
-			lockForDisabledPointcutNames.readLock().unlock();
+			lockForDisabledPointcutIds.writeLock().unlock();
+		}
+	}
+
+	public boolean isDisabled(@NonNull final IPointcut pointcut)
+	{
+		final String pointcutId = pointcutIds.getUnchecked(pointcut);
+
+		lockForDisabledPointcutIds.readLock().lock();
+		try
+		{
+			return disabledPointcutIds.contains(pointcutId);
+		}
+		finally
+		{
+			lockForDisabledPointcutIds.readLock().unlock();
 		}
 	}
 }
