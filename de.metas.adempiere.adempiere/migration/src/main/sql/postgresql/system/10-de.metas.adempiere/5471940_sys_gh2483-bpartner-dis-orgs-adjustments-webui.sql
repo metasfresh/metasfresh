@@ -230,3 +230,7 @@ where isbilltodefault = ''Y'' and bpl.c_bpartner_id = C_BPartner.C_BPartner_ID )
 UPDATE AD_Column SET ColumnSQL='(select address1 from c_bpartner_location bpl join c_location l on bpl.c_location_id = l.c_location_id  where isbilltodefault = ''Y'' and bpl.c_bpartner_id = C_BPartner.C_BPartner_ID )',Updated=TO_TIMESTAMP('2017-09-17 10:19:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557180
 ;
 
+-- 2017-09-17T11:06:33.454
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='(SELECT Email FROM AD_User u WHERE u.C_BPartner_ID=C_BPartner.C_BPartner_ID AND u.IsActive=''Y'' AND u.IsDefaultContact=''Y'')', IsUpdateable='N',Updated=TO_TIMESTAMP('2017-09-17 11:06:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557181
+;
