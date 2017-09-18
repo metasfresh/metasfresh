@@ -463,6 +463,11 @@ public class AdempiereException extends RuntimeException
 		return this;
 	}
 
+	public final boolean hasParameter(@NonNull final String name)
+	{
+		return parameters == null ? false : parameters.containsKey(name);
+	}
+
 	public final Map<String, Object> getParameters()
 	{
 		if (parameters == null)

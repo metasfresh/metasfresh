@@ -21,7 +21,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.model.X_M_HU_Status;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import lombok.Builder.Default;
 import lombok.NonNull;
@@ -96,12 +95,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if HU was destroyed
 	 */
 	boolean isDestroyed(I_M_HU hu);
-
-	/**
-	 * @param hu
-	 * @return true if HU was shipped
-	 */
-	boolean isShipped(I_M_HU hu);
 
 	/**
 	 * Refresh HU first before checking if it's destroyed

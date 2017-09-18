@@ -35,6 +35,7 @@ import org.adempiere.util.Services;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.I_AD_Val_Rule_Included;
+import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 
 import de.metas.adempiere.util.CacheCtx;
@@ -60,6 +61,18 @@ public class ValidationRuleDAO implements IValidationRuleDAO
 	}
 
 	@Override
+	public int retrieveValRuleIdByColumnName(final String tableName, final String columnName)
+	{
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		if(poInfo == null)
+		{
+			return -1;
+		}
+		
+		return poInfo.getColumnValRuleId(columnName);
+	}
+
+	@Override
 	public List<I_AD_Val_Rule> retrieveChildValRules(final I_AD_Val_Rule parent)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(parent);
@@ -76,7 +89,7 @@ public class ValidationRuleDAO implements IValidationRuleDAO
 				+ " WHERE " + I_AD_Val_Rule_Included.COLUMNNAME_AD_Val_Rule_ID
 				+ " = ? )";
 
-		final List<I_AD_Val_Rule> includedRules = new TypedSqlQuery<I_AD_Val_Rule>(ctx, I_AD_Val_Rule.class, whereClause, trxName)
+		final List<I_AD_Val_Rule> includedRules = new TypedSqlQuery<>(ctx, I_AD_Val_Rule.class, whereClause, trxName)
 				.setParameters(adValRuleId)
 				.setOnlyActiveRecords(true)
 				.list();

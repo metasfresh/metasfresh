@@ -83,8 +83,6 @@ public class ReceiptCorrectHUsProcessor
 
 	private ReceiptCorrectHUsProcessor(final Builder builder)
 	{
-		super();
-
 		final SetMultimap<Integer, I_M_HU> inoutId2hus = TreeMultimap.create(Ordering.natural(), HUByIdComparator.instance);
 		final Map<Integer, I_M_InOut> huId2inout = new HashMap<>();
 		final Map<Integer, I_M_HU> husById = new HashMap<>();
