@@ -29,6 +29,7 @@ import java.util.List;
 import org.adempiere.util.Check;
 import org.adempiere.util.StringUtils;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -52,6 +53,9 @@ public class HUStatusBL implements IHUStatusBL
 	private final static Multimap<String, String> ALLOWED_STATUS_TRANSITIONS = ImmutableMultimap.<String, String> builder()
 
 			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Active)
+
+			// e.g. if a purchase order is reactivated and there are already planning HUs that were supposed to be used on the material receipt
+			.put(X_M_HU.HUSTATUS_Planning, X_M_HU.HUSTATUS_Destroyed)
 
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Picked)
 			.put(X_M_HU.HUSTATUS_Active, X_M_HU.HUSTATUS_Issued)
@@ -94,7 +98,7 @@ public class HUStatusBL implements IHUStatusBL
 	@Override
 	public void assertStatusChangeIsAllowed(final String oldHuStatus, final String newHuStatus)
 	{
-		if (isAllowedStatusTransition(oldHuStatus, newHuStatus))
+		if (isStatusTransitionAllowed(oldHuStatus, newHuStatus))
 		{
 			return;
 		}
@@ -103,7 +107,8 @@ public class HUStatusBL implements IHUStatusBL
 		throw new HUException(StringUtils.formatMessage("Illegal M_HU.HUStatus change from {} to {}", oldHuStatus, newHuStatus));
 	}
 
-	private boolean isAllowedStatusTransition(final String oldHuStatus, final String newHuStatus)
+	@VisibleForTesting	
+	boolean isStatusTransitionAllowed(final String oldHuStatus, final String newHuStatus)
 	{
 		if (oldHuStatus == null)
 		{
