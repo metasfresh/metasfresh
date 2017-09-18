@@ -121,6 +121,8 @@ class TableCell extends Component {
             handleRightClick
         } = this.props;
 
+		 let tdValue = (!isEdited) ? this.fieldToString(widgetData[0].value, item.widgetType) : null;
+		
         return (
             <td
                 tabIndex={tabIndex}
@@ -155,11 +157,10 @@ class TableCell extends Component {
                             closeTableField={closeTableField}
                         />
                     :
-                       <div className="cell-text-wrapper">
-                           {this.fieldToString(
-                               widgetData[0].value, item.widgetType
-                           )}
+                       <div className="cell-text-wrapper" title={tdValue}>
+                           {tdValue}
                        </div>
+
                 }
             </td>
         )
