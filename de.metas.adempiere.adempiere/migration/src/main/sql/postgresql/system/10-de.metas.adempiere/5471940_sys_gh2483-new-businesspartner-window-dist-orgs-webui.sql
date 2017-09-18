@@ -171,7 +171,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Adjusted Insert to make sure that the column is not already created in other repositories
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
 SELECT 0,557181,560293,0,540871,0,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',0,'D','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.',0,'Y','Y','Y','Y','N','N','N','N','N','eMail',320,350,0,1,1,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100 
-WHERE EXISTS (SELECT  1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'EMail')
+WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'EMail')
 ;
 
 -- 2017-09-17T10:12:17.831
