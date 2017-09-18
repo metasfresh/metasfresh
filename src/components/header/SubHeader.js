@@ -123,11 +123,17 @@ class Subheader extends Component {
         nodes.map(node => dispatch(updateBreadcrumb(node)));
     }
 
+    handleDownloadSelected = event => {
+        if (this.props.selected.length === 0) {
+            event.preventDefault();
+        }
+    }
+
     renderNavColumn = () => {
         const {
-            dataId, windowType, openModal, closeSubheader, handlePrint,
+            dataId, windowType, query, openModal, closeSubheader, handlePrint,
             handleDelete, docNo, redirect, breadcrumb, siteName, editmode,
-            handleEditModeToggle, handleEmail, handleClone
+            handleEditModeToggle, handleEmail, handleClone, selected
         } = this.props;
 
         const {
@@ -218,6 +224,9 @@ class Subheader extends Component {
             } while (currentNode && currentNode.children && (currentNode.type !== 'window'));
         }
 
+        // TODO: refine gridView conditional
+        const gridView = parseInt(windowType) === 143;
+
         return (
             <div
                 className="subheader-column js-subheader-column"
@@ -232,7 +241,7 @@ class Subheader extends Component {
                         transparentBookmarks={!!siteName}
                         updateData={this.handleUpdateBreadcrumb}
                     >
-                        <span 
+                        <span
                             title={
                                 currentNode ? currentNode.caption : siteName
                             }
@@ -242,7 +251,6 @@ class Subheader extends Component {
                     </BookmarkButton>
                 </div>
                 <div className="subheader-break" />
-
                 {windowType && <div
                     className="subheader-item js-subheader-item"
                     tabIndex={0}
@@ -256,6 +264,19 @@ class Subheader extends Component {
                         {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
                     </span>
                 </div>}
+                {gridView && query && (
+                    <a
+                        className="subheader-item js-subheader-item"
+                        href={`/rest/api/documentView/${windowType}/${query.viewId}/export/excel?selectedIds=${selected.join(',')}`}
+                        download
+                        onClick={this.handleDownloadSelected}
+                        style={{
+                            opacity: selected.length === 0 ? '0.5' : 1
+                        }}
+                    >
+                        {counterpart.translate('window.downloadSelected.caption')}{selected.length === 0 && ` (${counterpart.translate('window.downloadSelected.nothingSelected')})`}
+                    </a>
+                )}
                 {docLinks}
                 {editmode !== undefined && <div
                     key={editmode}
