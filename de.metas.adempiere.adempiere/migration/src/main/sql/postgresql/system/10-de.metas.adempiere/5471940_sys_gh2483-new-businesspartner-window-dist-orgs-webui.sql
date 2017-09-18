@@ -83,8 +83,10 @@ UPDATE AD_Column SET ColumnSQL='(select postal from c_bpartner_location bpl join
 ;
 
 -- 2017-09-17T10:04:28.097
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,557180,560290,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100,'Adresszeile 1 für diesen Standort',60,'D','"Adresszeile 1" gibt die Anschrift für diesen Standort an.',0,'Y','Y','Y','Y','N','N','N','N','N','Straße und Nr.',290,320,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
+SELECT 0,557180,560290,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100,'Adresszeile 1 für diesen Standort',60,'D','"Adresszeile 1" gibt die Anschrift für diesen Standort an.',0,'Y','Y','Y','Y','N','N','N','N','N','Straße und Nr.',290,320,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:28','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'Address1')
 ;
 
 -- 2017-09-17T10:04:28.100
@@ -93,8 +95,10 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2017-09-17T10:04:52.016
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,557179,560291,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl',60,'D','"PLZ" bezeichnet die Postleitzahl für diese Adresse oder dieses Postfach.',0,'Y','Y','Y','Y','N','N','N','N','N','PLZ',300,330,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
+SELECT 0,557179,560291,0,540871,0,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100,'Postleitzahl',60,'D','"PLZ" bezeichnet die Postleitzahl für diese Adresse oder dieses Postfach.',0,'Y','Y','Y','Y','N','N','N','N','N','PLZ',300,330,0,1,1,TO_TIMESTAMP('2017-09-17 10:04:51','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'Postal')
 ;
 
 -- 2017-09-17T10:04:52.018
@@ -103,8 +107,10 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2017-09-17T10:05:13.844
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,557178,560292,0,540871,0,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100,'Name des Ortes',60,'D','Bezeichnet einen einzelnen Ort in diesem Land oder dieser Region.',0,'Y','Y','Y','Y','N','N','N','N','N','Ort',310,340,0,1,1,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
+SELECT 0,557178,560292,0,540871,0,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100,'Name des Ortes',60,'D','Bezeichnet einen einzelnen Ort in diesem Land oder dieser Region.',0,'Y','Y','Y','Y','N','N','N','N','N','Ort',310,340,0,1,1,TO_TIMESTAMP('2017-09-17 10:05:13','YYYY-MM-DD HH24:MI:SS'),100
+WHERE NOT EXISTS (SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'City')
 ;
 
 -- 2017-09-17T10:05:13.848
@@ -156,8 +162,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2017-09-17T10:12:17.828
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,557181,560293,0,540871,0,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',0,'D','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.',0,'Y','Y','Y','Y','N','N','N','N','N','eMail',320,350,0,1,1,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsCentrallyMaintained,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) 
+SELECT 0,557181,560293,0,540871,0,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100,'EMail-Adresse',0,'D','The Email Address is the Electronic Mail ID for this User and should be fully qualified (e.g. joe.smith@company.com). The Email Address is used to access the self service application functionality from the web.',0,'Y','Y','Y','Y','N','N','N','N','N','eMail',320,350,0,1,1,TO_TIMESTAMP('2017-09-17 10:12:17','YYYY-MM-DD HH24:MI:SS'),100
+SELECT 1 FROM AD_Field JOIN AD_Column ON AD_Field.AD_Column_ID = AD_Column.AD_Column_ID WHERE AD_Column.AD_TABLE_ID = 291 AND AD_Column.ColumnName = 'EMail'
 ;
 
 -- 2017-09-17T10:12:17.831
