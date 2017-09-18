@@ -66,14 +66,14 @@ public interface IHUPPOrderIssueProducer
 	/**
 	 * Sets movement date to be used in generated underlying {@link I_PP_Cost_Collector}s.
 	 *
-	 * @param movementDate
+	 * @param movementDate may be {@code null} in which case, the current time is used.
 	 */
 	IHUPPOrderIssueProducer setMovementDate(final Date movementDate);
 
 	/**
 	 * Sets manufacturing order BOM Lines which needs to be considered when issuing.
 	 *
-	 * @param targetOrderBOMLines
+	 * @param targetOrderBOMLines may not be {@code null} and need to contain lines that match the products of the HUs we give as parameters to {@link #createDraftIssues(Collection)}.
 	 */
 	IHUPPOrderIssueProducer setTargetOrderBOMLines(final List<I_PP_Order_BOMLine> targetOrderBOMLines);
 
