@@ -119,18 +119,24 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2017-09-17T10:05:49.999
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,560290,0,540871,541151,548670,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Strasse und Nr.',60,0,0,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
+SELECT 0,560290,0,540871,541151,548670,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Strasse und Nr.',60,0,0,TO_TIMESTAMP('2017-09-17 10:05:49','YYYY-MM-DD HH24:MI:SS'),100
+WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560290) AND WHERE NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560290)
 ;
 
 -- 2017-09-17T10:06:01.340
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,560291,0,540871,541151,548671,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','PLZ',70,0,0,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
+SELECT 0,560291,0,540871,541151,548671,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','PLZ',70,0,0,TO_TIMESTAMP('2017-09-17 10:06:01','YYYY-MM-DD HH24:MI:SS'),100
+WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560291) AND WHERE NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560291)
 ;
 
 -- 2017-09-17T10:06:12.465
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,560292,0,540871,541151,548672,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Ort',80,0,0,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100)
+-- Adjusted Insert to make sure that the column is not already created in other repositories
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
+VALUES 0,560292,0,540871,541151,548672,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','Ort',80,0,0,TO_TIMESTAMP('2017-09-17 10:06:12','YYYY-MM-DD HH24:MI:SS'),100
+WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560292) AND WHERE NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560292)
 ;
 
 -- 2017-09-17T10:08:14.609
@@ -175,7 +181,9 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2017-09-17T10:12:32.086
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,560293,0,540871,541151,548673,TO_TIMESTAMP('2017-09-17 10:12:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','eMail',90,0,0,TO_TIMESTAMP('2017-09-17 10:12:32','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) 
+SELECT 0,560293,0,540871,541151,548673,TO_TIMESTAMP('2017-09-17 10:12:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','N','eMail',90,0,0,TO_TIMESTAMP('2017-09-17 10:12:32','YYYY-MM-DD HH24:MI:SS'),100
+WHERE EXISTS (SELECT 1 FROM AD_Field where AD_Field.AD_Field_ID = 560293) AND WHERE NOT EXISTS (SELECT 1 FROM AD_UI_Element where AD_Field_ID = 560293)
 ;
 
 -- 2017-09-17T10:12:46.854
