@@ -224,9 +224,6 @@ class Subheader extends Component {
             } while (currentNode && currentNode.children && (currentNode.type !== 'window'));
         }
 
-        // TODO: refine gridView conditional
-        const gridView = parseInt(windowType) === 143;
-
         return (
             <div
                 className="subheader-column js-subheader-column"
@@ -264,7 +261,7 @@ class Subheader extends Component {
                         {keymap.GLOBAL_CONTEXT.NEW_DOCUMENT}
                     </span>
                 </div>}
-                {gridView && query && (
+                {windowType && query && query.viewId && (
                     <a
                         className="subheader-item js-subheader-item"
                         href={`${config.API_URL}/documentView/${windowType}/${query.viewId}/export/excel?selectedIds=${selected.join(',')}`}
